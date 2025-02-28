@@ -147,7 +147,7 @@ private:
 
     void advance_position_by(std::size_t length)
     {
-        MMML_ASSERT(m_pos.begin + length < m_source.length());
+        MMML_ASSERT(m_pos.begin + length <= m_source.length());
         for (std::size_t i = 0; i < length; ++i) {
             advance(m_pos, m_source[m_pos.begin]);
         }
