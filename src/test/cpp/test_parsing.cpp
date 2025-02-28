@@ -229,15 +229,15 @@ std::optional<Actual_Document> parse_file(std::string_view file, std::pmr::memor
     const auto actual = parsed->to_expected();                                                     \
     ASSERT_EQ(expected, actual)
 
-TEST(BMD_Parsing, empty)
+TEST(Parse, empty)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected { &memory };
 
-    PARSING_TEST_BOILERPLATE("empty.bmd");
+    PARSING_TEST_BOILERPLATE("empty.mmml");
 }
 
-TEST(BMD_Parsing, hello_code)
+TEST(Parse, hello_code)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
@@ -246,10 +246,10 @@ TEST(BMD_Parsing, hello_code)
         &memory
     };
 
-    PARSING_TEST_BOILERPLATE("hello_code.bmd");
+    PARSING_TEST_BOILERPLATE("hello_code.mmml");
 }
 
-TEST(BMD_Parsing, hello_directive)
+TEST(Parse, hello_directive)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const Expected_Argument arg0 { "hello", { Expected_Content::text(" world") } };
@@ -261,10 +261,10 @@ TEST(BMD_Parsing, hello_directive)
         &memory
     };
 
-    PARSING_TEST_BOILERPLATE("hello_directive.bmd");
+    PARSING_TEST_BOILERPLATE("hello_directive.mmml");
 }
 
-TEST(BMD_Parsing, directive_arg_balanced_braces)
+TEST(Parse, directive_arg_balanced_braces)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const Expected_Argument arg0 { "x", { Expected_Content::text("{}") } };
@@ -274,20 +274,20 @@ TEST(BMD_Parsing, directive_arg_balanced_braces)
         { Expected_Content::directive("d", { arg0, arg1 }), Expected_Content::text("\n") }, &memory
     };
 
-    PARSING_TEST_BOILERPLATE("directive_arg_balanced_braces.bmd");
+    PARSING_TEST_BOILERPLATE("directive_arg_balanced_braces.mmml");
 }
 
-TEST(BMD_Parsing, directive_arg_unbalanced_brace)
+TEST(Parse, directive_arg_unbalanced_brace)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
         { Expected_Content::directive("d"), Expected_Content::text("[}]\n") }, &memory
     };
 
-    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_brace.bmd");
+    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_brace.mmml");
 }
 
-TEST(BMD_Parsing, directive_arg_unbalanced_brace_2)
+TEST(Parse, directive_arg_unbalanced_brace_2)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
@@ -298,27 +298,27 @@ TEST(BMD_Parsing, directive_arg_unbalanced_brace_2)
         &memory
     };
 
-    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_brace_2.bmd");
+    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_brace_2.mmml");
 }
 
-TEST(BMD_Parsing, directive_arg_unbalanced_through_brace_escape)
+TEST(Parse, directive_arg_unbalanced_through_brace_escape)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
         { Expected_Content::directive("d"), Expected_Content::text("[\\{}]\n") }, &memory
     };
 
-    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_through_brace_escape.bmd");
+    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_through_brace_escape.mmml");
 }
 
-TEST(BMD_Parsing, directive_brace_escape)
+TEST(Parse, directive_brace_escape)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
         { Expected_Content::directive("d"), Expected_Content::text("[\\{}]\n") }, &memory
     };
 
-    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_through_brace_escape.bmd");
+    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_through_brace_escape.mmml");
 }
 
 } // namespace
