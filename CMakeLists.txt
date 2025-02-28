@@ -34,12 +34,12 @@ add_library(mmml STATIC
     include/mmml/directive_arguments.hpp
     include/mmml/directives.hpp
 
-    src/diagnostics.cpp
-    src/directives.cpp
-    src/html_writer.cpp
-    src/io.cpp
-    src/parse.cpp
-    src/tty.cpp
+    src/main/cpp/diagnostics.cpp
+    src/main/cpp/directives.cpp
+    src/main/cpp/html_writer.cpp
+    src/main/cpp/io.cpp
+    src/main/cpp/parse.cpp
+    src/main/cpp/tty.cpp
 )
 
 target_compile_options(mmml PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
@@ -48,7 +48,7 @@ target_link_options(mmml PUBLIC ${SANITIZER_OPTIONS})
 if(DEFINED EMSCRIPTEN)
     # https://stunlock.gg/posts/emscripten_with_cmake/
     add_executable(mmml-wasm ${HEADERS}
-        src/wasm.cpp
+        src/main/cpp/wasm.cpp
     )
     target_link_libraries(mmml-wasm bm)
     set_target_properties(mmml-wasm PROPERTIES
@@ -80,13 +80,13 @@ if(DEFINED EMSCRIPTEN)
 
 else(NOT DEFINED EMSCRIPTEN)
     add_executable(mmml-cli ${HEADERS}
-        src/cli.cpp
+        src/main/cpp/cli.cpp
     )
 
     add_executable(mmml-test ${HEADERS}
-        test/document_file_testing.cpp
-        test/test_parsing.cpp
-        test/test_valid.cpp
+        src/test/cpp/document_file_testing.cpp
+        src/test/cpp/test_parsing.cpp
+        src/test/cpp/test_valid.cpp
     )
 
     target_link_libraries(mmml-cli mmml)
