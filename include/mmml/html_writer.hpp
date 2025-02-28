@@ -7,18 +7,6 @@
 
 namespace mmml {
 
-/// @brief Returns `true` if the given string requires wrapping in quotes when it
-/// appears as the value in an attribute.
-/// For example, `id=123` is a valid HTML attribute with a value and requires
-/// no wrapping, but `id="<x>"` requires `<x>` to be surrounded by quotes.
-[[nodiscard]]
-inline bool requires_quotes_in_attribute(std::string_view value)
-{
-    return value.find_first_of("\"/'`=<> ") != std::string_view::npos;
-}
-
-struct Attribute_Writer;
-
 /// @brief A class which provides member functions for writing HTML content to a stream
 /// correctly.
 /// Both entire HTML documents can be written, as well as HTML snippets.

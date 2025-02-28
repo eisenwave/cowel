@@ -50,7 +50,7 @@ void HTML_Writer::write_inner_html(std::string_view text)
     m_out.append(text, Code_Span_Type::html_inner_text);
 }
 
-auto HTML_Writer::write_preamble() -> Self&
+HTML_Writer& HTML_Writer::write_preamble()
 {
     MMML_ASSERT(!m_in_attributes);
 
@@ -62,7 +62,7 @@ auto HTML_Writer::write_preamble() -> Self&
     return *this;
 }
 
-auto HTML_Writer::write_empty_tag(std::string_view id) -> Self&
+HTML_Writer& HTML_Writer::write_empty_tag(std::string_view id)
 {
     MMML_ASSERT(!m_in_attributes);
     MMML_ASSERT(is_html_identifier(id));
@@ -74,7 +74,7 @@ auto HTML_Writer::write_empty_tag(std::string_view id) -> Self&
     return *this;
 }
 
-auto HTML_Writer::open_tag(std::string_view id) -> Self&
+HTML_Writer& HTML_Writer::open_tag(std::string_view id)
 {
     MMML_ASSERT(!m_in_attributes);
     MMML_ASSERT(is_html_identifier(id));
@@ -98,7 +98,7 @@ Attribute_Writer HTML_Writer::open_tag_with_attributes(std::string_view id)
     return Attribute_Writer { *this };
 }
 
-auto HTML_Writer::close_tag(std::string_view id) -> Self&
+HTML_Writer& HTML_Writer::close_tag(std::string_view id)
 {
     MMML_ASSERT(!m_in_attributes);
     MMML_ASSERT(is_html_identifier(id));
@@ -113,7 +113,7 @@ auto HTML_Writer::close_tag(std::string_view id) -> Self&
     return *this;
 }
 
-auto HTML_Writer::write_comment(std::string_view comment) -> Self&
+HTML_Writer& HTML_Writer::write_comment(std::string_view comment)
 {
     auto builder = m_out.build(Code_Span_Type::html_comment);
     builder.append("<!--");
@@ -122,7 +122,7 @@ auto HTML_Writer::write_comment(std::string_view comment) -> Self&
     return *this;
 }
 
-auto HTML_Writer::write_attribute(std::string_view key, std::string_view value) -> Self&
+HTML_Writer& HTML_Writer::write_attribute(std::string_view key, std::string_view value)
 {
     MMML_ASSERT(m_in_attributes);
     MMML_ASSERT(is_html_identifier(key));
@@ -133,7 +133,7 @@ auto HTML_Writer::write_attribute(std::string_view key, std::string_view value) 
     if (!value.empty()) {
         m_out.append('=', Code_Span_Type::html_attribute_equal);
         auto builder = m_out.build(Code_Span_Type::html_attribute_value);
-        if (requires_quotes_in_attribute(value)) {
+        if (requires_quotes_in_html_attribute(value)) {
             builder.append('"');
             builder.append(value);
             builder.append('"');
@@ -146,7 +146,7 @@ auto HTML_Writer::write_attribute(std::string_view key, std::string_view value) 
     return *this;
 }
 
-auto HTML_Writer::end_attributes() -> Self&
+HTML_Writer& HTML_Writer::end_attributes()
 {
     MMML_ASSERT(m_in_attributes);
 
@@ -157,7 +157,7 @@ auto HTML_Writer::end_attributes() -> Self&
     return *this;
 }
 
-auto HTML_Writer::end_empty_tag_attributes() -> Self&
+HTML_Writer& HTML_Writer::end_empty_tag_attributes()
 {
     MMML_ASSERT(m_in_attributes);
 

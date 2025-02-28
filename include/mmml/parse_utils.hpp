@@ -146,9 +146,19 @@ inline bool is_identifier(std::string_view str) noexcept
 /// @brief Returns `true` if `str` is an HTML identifier, `false` otherwise.
 /// @param str the string to test
 [[nodiscard]]
-inline bool is_html_identifier(std::string_view str) noexcept
+inline bool is_html_identifier(std::string_view str)
 {
     return detail::is_identifier(str, html_identifier_characters);
+}
+
+/// @brief Returns `true` if the given string requires wrapping in quotes when it
+/// appears as the value in an attribute.
+/// For example, `id=123` is a valid HTML attribute with a value and requires
+/// no wrapping, but `id="<x>"` requires `<x>` to be surrounded by quotes.
+[[nodiscard]]
+inline bool requires_quotes_in_html_attribute(std::string_view value)
+{
+    return value.find_first_of("\"/'`=<> ") != std::string_view::npos;
 }
 
 /// @brief Matches a literal at the beginning of the given string.

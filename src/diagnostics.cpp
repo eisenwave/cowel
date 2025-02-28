@@ -157,11 +157,13 @@ void print_diagnostic_line(
     }
 }
 
+[[maybe_unused]]
 void print_error_line(Code_String& out, const Error_Line& line, std::string_view source)
 {
     return print_diagnostic_line(out, Error_Line_Type::error, line, source);
 }
 
+[[maybe_unused]]
 void print_note_line(Code_String& out, const Error_Line& line, std::string_view source)
 {
     return print_diagnostic_line(out, Error_Line_Type::note, line, source);
@@ -352,6 +354,9 @@ private:
             : level { ++level }
         {
         }
+
+        Scoped_Indent(const Scoped_Indent&) = delete;
+        Scoped_Indent& operator=(const Scoped_Indent&) = delete;
 
         ~Scoped_Indent()
         {

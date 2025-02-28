@@ -39,12 +39,14 @@ enum struct Argument_Status : Default_Underlying;
 struct Assertion_Error;
 enum struct Assertion_Error_Type : Default_Underlying;
 struct AST_Formatting_Options;
+struct Attribute_Writer;
 struct Builtin_Directive_Set;
 template <std::size_t>
 struct Characters;
 enum struct Code_Language : Default_Underlying;
 enum struct Code_Span_Type : Default_Underlying;
 struct Code_String;
+struct Code_String_Iterator;
 struct Content;
 struct Context;
 struct Directive_Behavior;

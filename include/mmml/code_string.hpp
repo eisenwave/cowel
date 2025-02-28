@@ -13,8 +13,6 @@
 
 namespace mmml {
 
-struct Code_String_Iterator;
-
 enum struct Sign_Policy : Default_Underlying {
     /// @brief Print only `-`, never `+`.
     negative_only,
