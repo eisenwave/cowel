@@ -51,9 +51,49 @@ enum struct AST_Instruction_Type : Default_Underlying {
     pop_block
 };
 
+[[nodiscard]]
+constexpr bool ast_instruction_type_has_operand(AST_Instruction_Type type)
+{
+    using enum AST_Instruction_Type;
+    switch (type) {
+    case pop_document:
+    case pop_directive:
+    case pop_arguments:
+    case pop_argument:
+    case pop_block: return false;
+    default: return true;
+    }
+}
+
+[[nodiscard]]
+constexpr std::string_view ast_instruction_type_name(AST_Instruction_Type type)
+{
+    using enum AST_Instruction_Type;
+    switch (type) {
+        MMML_ENUM_STRING_CASE(skip);
+        MMML_ENUM_STRING_CASE(escape);
+        MMML_ENUM_STRING_CASE(text);
+        MMML_ENUM_STRING_CASE(argument_name);
+        MMML_ENUM_STRING_CASE(push_document);
+        MMML_ENUM_STRING_CASE(pop_document);
+        MMML_ENUM_STRING_CASE(push_directive);
+        MMML_ENUM_STRING_CASE(pop_directive);
+        MMML_ENUM_STRING_CASE(push_arguments);
+        MMML_ENUM_STRING_CASE(pop_arguments);
+        MMML_ENUM_STRING_CASE(push_argument);
+        MMML_ENUM_STRING_CASE(pop_argument);
+        MMML_ENUM_STRING_CASE(push_block);
+        MMML_ENUM_STRING_CASE(pop_block);
+    }
+    MMML_ASSERT_UNREACHABLE("Invalid type.");
+}
+
 struct AST_Instruction {
     AST_Instruction_Type type;
-    std::size_t n;
+    std::size_t n = 0;
+
+    friend std::strong_ordering operator<=>(const AST_Instruction&, const AST_Instruction&)
+        = default;
 };
 
 /// @brief Parses the MMML document.
