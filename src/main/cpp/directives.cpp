@@ -1,9 +1,9 @@
 #include <ranges>
 #include <span>
 
+#include "mmml/annotated_string.hpp"
 #include "mmml/ast.hpp"
 #include "mmml/code_language.hpp"
-#include "mmml/code_string.hpp"
 #include "mmml/directive_arguments.hpp"
 #include "mmml/directives.hpp"
 #include "mmml/html_writer.hpp"
@@ -164,7 +164,11 @@ void to_plaintext_mapped_for_highlighting(
     }
 }
 
-void contents_to_html(Code_String& out, std::span<const ast::Content> content, Context& context)
+void contents_to_html(
+    Annotated_String& out,
+    std::span<const ast::Content> content,
+    Context& context
+)
 {
     HTML_Writer nested_writer { out };
     for (const ast::Content& c : content) {
@@ -390,7 +394,7 @@ struct HTML_Literal_Behavior : Pure_HTML_Behavior {
 
     void generate_html(HTML_Writer&, const ast::Directive& d, Context& context) const override
     {
-        Code_String buffer { context.get_transient_memory() };
+        Annotated_String buffer { context.get_transient_memory() };
         contents_to_html(buffer, d.get_content(), context);
     }
 };

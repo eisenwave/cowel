@@ -11,7 +11,7 @@ namespace mmml {
 /// @brief The type of a code span in a syntax-highlighted document.
 /// While languages have many more tokens, these all fall into the listed handful categories
 /// for the purpose of syntax highlighting.
-enum struct Code_Span_Type : Default_Underlying {
+enum struct Annotation_Type : Default_Underlying {
     text,
     identifier,
     type_name,

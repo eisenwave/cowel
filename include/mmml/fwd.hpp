@@ -34,6 +34,10 @@ using Default_Underlying = unsigned char;
 #define MMML_ENUM_STRING_CASE(...)                                                                 \
     case __VA_ARGS__: return #__VA_ARGS__
 
+struct Annotated_String;
+struct Annotated_String_Iterator;
+struct Annotation_Span;
+enum struct Annotation_Type : Default_Underlying;
 struct Argument_Matcher;
 enum struct Argument_Status : Default_Underlying;
 struct Assertion_Error;
@@ -46,9 +50,7 @@ struct Builtin_Directive_Set;
 template <std::size_t>
 struct Characters;
 enum struct Code_Language : Default_Underlying;
-enum struct Code_Span_Type : Default_Underlying;
-struct Code_String;
-struct Code_String_Iterator;
+enum struct Annotation_Type : Default_Underlying;
 struct Content;
 struct Context;
 struct Directive_Behavior;

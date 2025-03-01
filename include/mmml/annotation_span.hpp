@@ -3,14 +3,14 @@
 
 #include <cstddef>
 
-#include "mmml/code_span_type.hpp"
+#include "mmml/annotation_type.hpp"
 
 namespace mmml {
 
-struct Code_String_Span {
+struct Annotation_Span {
     std::size_t begin;
     std::size_t length;
-    Code_Span_Type type;
+    Annotation_Type type;
 
     [[nodiscard]]
     constexpr std::size_t end() const

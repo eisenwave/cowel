@@ -4,8 +4,8 @@
 
 #include <gtest/gtest.h>
 
+#include "mmml/annotated_string.hpp"
 #include "mmml/ast.hpp"
-#include "mmml/code_string.hpp"
 #include "mmml/diagnostics.hpp"
 #include "mmml/io.hpp"
 #include "mmml/io_error.hpp"
@@ -252,7 +252,7 @@ std::optional<Parsed_File> parse_file(std::string_view file, std::pmr::memory_re
     Parsed_File result { .source { memory }, .instructions { memory } };
 
     if (Result<void, mmml::IO_Error_Code> r = file_to_bytes(result.source, full_file); !r) {
-        Code_String out { memory };
+        Annotated_String out { memory };
         print_io_error(out, full_file, r.error());
         print_code_string(std::cout, out, is_stdout_tty);
         return {};
@@ -276,20 +276,20 @@ parse_and_build_file(std::string_view file, std::pmr::memory_resource* memory)
     return Actual_Document { std::move(parsed->source), std::move(content) };
 }
 
-void append_instruction(Code_String& out, const AST_Instruction& ins)
+void append_instruction(Annotated_String& out, const AST_Instruction& ins)
 {
-    out.append(ast_instruction_type_name(ins.type), Code_Span_Type::diagnostic_tag);
+    out.append(ast_instruction_type_name(ins.type), Annotation_Type::diagnostic_tag);
     if (ast_instruction_type_has_operand(ins.type)) {
         out.append(' ');
         out.append_integer(ins.n);
     }
     else if (ins.n != 0) {
         out.append(' ');
-        out.append_integer(ins.n, Code_Span_Type::diagnostic_error_text);
+        out.append_integer(ins.n, Annotation_Type::diagnostic_error_text);
     }
 }
 
-void dump_instructions(Code_String& out, std::span<const AST_Instruction> instructions)
+void dump_instructions(Annotated_String& out, std::span<const AST_Instruction> instructions)
 {
     for (const auto& i : instructions) {
         out.append("    ");
@@ -303,23 +303,23 @@ bool run_parse_test(std::string_view file, std::span<const AST_Instruction> expe
     std::pmr::monotonic_buffer_resource memory;
     std::optional<Parsed_File> actual = parse_file(file, &memory);
     if (!actual) {
-        Code_String error;
+        Annotated_String error;
         error.append(
             "Test failed because file couldn't be loaded and parsed.\n",
-            Code_Span_Type::diagnostic_error_text
+            Annotation_Type::diagnostic_error_text
         );
         print_code_string(std::cout, error, is_stdout_tty);
         return false;
     }
     if (!std::ranges::equal(expected, actual->instructions)) {
-        Code_String error;
+        Annotated_String error;
         error.append(
             "Test failed because expected parser output isn't matched.\n",
-            Code_Span_Type::diagnostic_error_text
+            Annotation_Type::diagnostic_error_text
         );
-        error.append("Expected:\n", Code_Span_Type::diagnostic_text);
+        error.append("Expected:\n", Annotation_Type::diagnostic_text);
         dump_instructions(error, expected);
-        error.append("Actual:\n", Code_Span_Type::diagnostic_text);
+        error.append("Actual:\n", Annotation_Type::diagnostic_text);
         dump_instructions(error, actual->instructions);
         print_code_string(std::cout, error, is_stdout_tty);
         return false;

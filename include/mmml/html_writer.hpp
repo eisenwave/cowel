@@ -25,7 +25,7 @@ public:
     using Self = HTML_Writer;
 
 private:
-    Code_String& m_out;
+    Annotated_String& m_out;
 
     std::size_t m_depth = 0;
     bool m_in_attributes = false;
@@ -35,7 +35,7 @@ public:
     /// Writes nothing to the stream.
     /// `out.fail()` shall be true.
     /// @param out the output stream
-    explicit HTML_Writer(Code_String& out);
+    explicit HTML_Writer(Annotated_String& out);
 
     HTML_Writer(const HTML_Writer&) = delete;
     HTML_Writer& operator=(const HTML_Writer&) = delete;

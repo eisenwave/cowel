@@ -6,8 +6,8 @@
 #include <utility>
 #include <vector>
 
-#include "mmml/code_span_type.hpp"
-#include "mmml/code_string_span.hpp"
+#include "mmml/annotation_span.hpp"
+#include "mmml/annotation_type.hpp"
 #include "mmml/source_position.hpp"
 #include "mmml/to_chars.hpp"
 
@@ -22,23 +22,23 @@ enum struct Sign_Policy : Default_Underlying {
     nonzero
 };
 
-struct Code_String {
+struct Annotated_String {
 public:
     struct Length {
         std::size_t text_length;
         std::size_t span_count;
     };
 
-    using iterator = Code_String_Span*;
-    using const_iterator = const Code_String_Span*;
+    using iterator = Annotation_Span*;
+    using const_iterator = const Annotation_Span*;
 
 private:
     std::pmr::vector<char> m_text;
-    std::pmr::vector<Code_String_Span> m_spans;
+    std::pmr::vector<Annotation_Span> m_spans;
 
 public:
     [[nodiscard]]
-    explicit Code_String(std::pmr::memory_resource* memory = std::pmr::get_default_resource())
+    explicit Annotated_String(std::pmr::memory_resource* memory = std::pmr::get_default_resource())
         : m_text(memory)
         , m_spans(memory)
     {
@@ -69,7 +69,7 @@ public:
     }
 
     [[nodiscard]]
-    std::string_view get_text(const Code_String_Span& span) const
+    std::string_view get_text(const Annotation_Span& span) const
     {
         return get_text().substr(span.begin, span.length);
     }
@@ -107,14 +107,14 @@ public:
         m_text.insert(m_text.end(), amount, c);
     }
 
-    void append(std::string_view text, Code_Span_Type type)
+    void append(std::string_view text, Annotation_Type type)
     {
         MMML_ASSERT(!text.empty());
         m_spans.push_back({ .begin = m_text.size(), .length = text.size(), .type = type });
         m_text.insert(m_text.end(), text.begin(), text.end());
     }
 
-    void append(char c, Code_Span_Type type)
+    void append(char c, Annotation_Type type)
     {
         m_spans.push_back({ .begin = m_text.size(), .length = 1, .type = type });
         m_text.push_back(c);
@@ -131,7 +131,7 @@ public:
 
     template <character_convertible Integer>
     void
-    append_integer(Integer x, Code_Span_Type type, Sign_Policy signs = Sign_Policy::negative_only)
+    append_integer(Integer x, Annotation_Type type, Sign_Policy signs = Sign_Policy::negative_only)
     {
         const bool plus
             = (signs == Sign_Policy::always && x >= 0) || (signs == Sign_Policy::nonzero && x > 0);
@@ -142,7 +142,7 @@ public:
 private:
     // using std::optional would obviously be more idiomatic, but we can avoid
     // #include <optional> for this file by using a pointer
-    void append_digits(std::string_view digits, bool plus, const Code_Span_Type* type = nullptr)
+    void append_digits(std::string_view digits, bool plus, const Annotation_Type* type = nullptr)
     {
         const std::size_t begin = m_text.size();
         std::size_t prefix_length = 0;
@@ -170,7 +170,7 @@ public:
     ///     .append(name);
     /// ```
     /// @param type the type of the appended span as a whole
-    Scoped_Builder build(Code_Span_Type type) &;
+    Scoped_Builder build(Annotation_Type type) &;
 
     [[nodiscard]]
     iterator begin()
@@ -209,14 +209,14 @@ public:
     }
 };
 
-struct [[nodiscard]] Code_String::Scoped_Builder {
+struct [[nodiscard]] Annotated_String::Scoped_Builder {
 private:
-    Code_String& self;
+    Annotated_String& self;
     std::size_t initial_size;
-    Code_Span_Type type;
+    Annotation_Type type;
 
 public:
-    Scoped_Builder(Code_String& self, Code_Span_Type type)
+    Scoped_Builder(Annotated_String& self, Annotation_Type type)
         : self { self }
         , initial_size { self.m_text.size() }
         , type { type }
@@ -263,7 +263,7 @@ public:
     }
 };
 
-inline Code_String::Scoped_Builder Code_String::build(Code_Span_Type type) &
+inline Annotated_String::Scoped_Builder Annotated_String::build(Annotation_Type type) &
 {
     return { *this, type };
 }

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <memory_resource>
 
-#include "mmml/code_string.hpp"
+#include "mmml/annotated_string.hpp"
 #include "mmml/diagnostics.hpp"
 #include "mmml/io.hpp"
 #include "mmml/parse.hpp"
@@ -71,7 +71,7 @@ public:
 
     Policy_Action error(IO_Error_Code e) final
     {
-        Code_String out;
+        Annotated_String out;
         print_io_error(out, file, e);
         print_code_string(std::cout, out, should_print_colors);
         return m_action = Policy_Action::failure;
