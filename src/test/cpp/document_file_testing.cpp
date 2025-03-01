@@ -9,6 +9,7 @@
 #include "mmml/tty.hpp"
 
 #include "diagnostic_policy.hpp"
+#include "document_file_testing.hpp"
 
 namespace mmml {
 namespace {

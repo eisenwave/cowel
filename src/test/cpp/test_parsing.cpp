@@ -44,8 +44,8 @@ enum struct Expected_Content_Type : Default_Underlying {
 struct Expected_Content {
     Expected_Content_Type type;
     std::string_view name_or_text;
-    std::vector<Expected_Argument> arguments;
-    std::vector<Expected_Content> content;
+    std::vector<Expected_Argument> arguments {};
+    std::vector<Expected_Content> content {};
 
     static Expected_Content text(std::string_view text)
     {
@@ -249,7 +249,8 @@ std::optional<Parsed_File> parse_file(std::string_view file, std::pmr::memory_re
     std::pmr::string full_file { "test/", memory };
     full_file += file;
 
-    Parsed_File result { .source { memory }, .instructions { memory } };
+    Parsed_File result { .source = std::pmr::vector<char> { memory },
+                         .instructions = std::pmr::vector<AST_Instruction> { memory } };
 
     if (Result<void, mmml::IO_Error_Code> r = file_to_bytes(result.source, full_file); !r) {
         Annotated_String out { memory };

@@ -307,10 +307,10 @@ void print_io_error(Annotated_String& out, std::string_view file, IO_Error_Code 
     out.append('\n');
 }
 
+namespace {
+
 void print_cut_off(Annotated_String& out, std::string_view v, std::size_t limit)
 {
-    MMML_ASSERT(limit >= 0);
-
     std::size_t visual_length = 0;
 
     for (std::size_t i = 0; i < v.length();) {
@@ -343,6 +343,8 @@ void print_cut_off(Annotated_String& out, std::string_view v, std::size_t limit)
         }
     }
 }
+
+} // namespace
 
 struct [[nodiscard]] AST_Printer : ast::Const_Visitor {
 private:
