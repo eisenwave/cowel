@@ -14,8 +14,6 @@
 namespace mmml {
 namespace {
 
-const bool should_print_colors = is_tty(stdout);
-
 struct Printing_Diagnostic_Policy : Diagnostic_Policy {
     std::string_view file;
     std::string_view source;
@@ -74,7 +72,7 @@ public:
     {
         Annotated_String out;
         print_io_error(out, file, e);
-        print_code_string(std::cout, out, should_print_colors);
+        print_code_string(std::cout, out, is_stdout_tty);
         return m_action = Policy_Action::failure;
     }
 
