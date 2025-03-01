@@ -501,6 +501,7 @@ void print_internal_error_notice(Annotated_String& out)
     out.append(notice, Annotation_Type::diagnostic_internal_error_notice);
 }
 
+#ifndef MMML_EMSCRIPTEN
 std::ostream& print_code_string(std::ostream& out, const Annotated_String& string, bool colors)
 {
     const std::string_view text = string.get_text();
@@ -525,5 +526,6 @@ std::ostream& print_code_string(std::ostream& out, const Annotated_String& strin
 
     return out;
 }
+#endif
 
 } // namespace mmml

@@ -1,3 +1,5 @@
+#ifndef MMML_EMSCRIPTEN
+
 #ifdef __unix__
 #include <unistd.h>
 #endif
@@ -20,3 +22,4 @@ const bool is_stdout_tty = is_tty(stdout);
 const bool is_stderr_tty = is_tty(stderr);
 
 } // namespace mmml
+#endif

@@ -1,6 +1,9 @@
 #ifndef MMML_TTY_HPP
 #define MMML_TTY_HPP
 
+#include "mmml/fwd.hpp"
+
+#ifndef MMML_EMSCRIPTEN
 #include <cstdio>
 
 namespace mmml {
@@ -21,5 +24,6 @@ extern const bool is_stdout_tty;
 extern const bool is_stderr_tty;
 
 } // namespace mmml
+#endif
 
 #endif

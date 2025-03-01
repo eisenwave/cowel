@@ -1,7 +1,10 @@
 #ifndef MMML_DIAGNOSTICS_HPP
 #define MMML_DIAGNOSTICS_HPP
 
+#ifndef MMML_EMSCRIPTEN
 #include <iosfwd>
+#endif
+
 #include <span>
 #include <string>
 #include <string_view>
@@ -72,7 +75,9 @@ void print_ast(
 
 void print_internal_error_notice(Annotated_String& out);
 
+#ifndef MMML_EMSCRIPTEN
 std::ostream& print_code_string(std::ostream& out, const Annotated_String& string, bool colors);
+#endif
 
 } // namespace mmml
 
