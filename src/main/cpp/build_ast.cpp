@@ -44,10 +44,10 @@ public:
 
     void advance_by(std::size_t n)
     {
-        MMML_ASSERT(m_pos.begin + n < m_source.size());
+        MMML_ASSERT(m_pos.begin + n <= m_source.size());
 
         for (std::size_t i = 0; i < n; ++i) {
-            advance(m_pos, m_source[i]);
+            advance(m_pos, m_source[m_pos.begin]);
         }
     }
 
@@ -91,6 +91,7 @@ public:
         switch (instruction.type) {
         case AST_Instruction_Type::skip: //
             advance_by(instruction.n);
+            pop();
             break;
         case AST_Instruction_Type::escape: //
             out.push_back(build_escape());
@@ -145,6 +146,9 @@ public:
         std::pmr::vector<ast::Content> block { m_memory };
         try_append_block(block);
 
+        const AST_Instruction pop_instruction = pop();
+        MMML_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_directive);
+
         const Local_Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
         return { span, name_length, std::move(arguments), std::move(block) };
     }
@@ -163,7 +167,12 @@ public:
 
         while (!eof()) {
             const AST_Instruction next = peek();
-            if (next.type == AST_Instruction_Type::pop_arguments) {
+            if (next.type == AST_Instruction_Type::skip) { // ,
+                advance_by(next.n);
+                pop();
+                continue;
+            }
+            if (next.type == AST_Instruction_Type::pop_arguments) { // ]
                 pop();
                 break;
             }
@@ -192,6 +201,7 @@ public:
             if (next.type == AST_Instruction_Type::argument_name) {
                 pop();
                 name = { m_pos, next.n };
+                advance_by(next.n);
                 continue;
             }
             append_content(children);
