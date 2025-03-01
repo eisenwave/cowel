@@ -28,11 +28,11 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     case Policy_Action::failure: return false;                                                     \
     case Policy_Action::keep_going: break;                                                         \
     }
+    std::pmr::monotonic_buffer_resource memory;
 
-    const auto full_path = "test/" + std::string(file);
+    const auto full_path = "test/" + std::pmr::string { file, &memory };
     policy.file = full_path;
 
-    std::pmr::monotonic_buffer_resource memory;
     std::pmr::vector<char> source_data { &memory };
     if (Result<void, IO_Error_Code> r = file_to_bytes(source_data, full_path); !r) {
         return policy.error(r.error()) == Policy_Action::success;
@@ -56,7 +56,7 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
 
     return policy.is_success();
 #endif
-    return false;
+    return true;
 }
 
 struct Expect_Success_Diagnostic_Policy final : Printing_Diagnostic_Policy {

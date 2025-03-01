@@ -1,5 +1,5 @@
+#include <iostream>
 #include <memory_resource>
-#include <ostream>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -35,30 +35,45 @@ struct Expected_Argument {
     friend bool operator==(const Expected_Argument&, const Expected_Argument&) = default;
 };
 
+enum struct Expected_Content_Type : Default_Underlying {
+    text,
+    escape,
+    directive,
+};
+
 struct Expected_Content {
-    bool is_directive;
+    Expected_Content_Type type;
     std::string_view name_or_text;
     std::vector<Expected_Argument> arguments;
     std::vector<Expected_Content> content;
 
     static Expected_Content text(std::string_view text)
     {
-        return { .is_directive = false, .name_or_text = text };
+        return { .type = Expected_Content_Type::text, .name_or_text = text };
+    }
+
+    static Expected_Content escape(std::string_view text)
+    {
+        return { .type = Expected_Content_Type::escape, .name_or_text = text };
     }
 
     static Expected_Content directive(std::string_view name)
     {
-        return { .is_directive = true, .name_or_text = name };
+        return { .type = Expected_Content_Type::directive, .name_or_text = name };
     }
     static Expected_Content
     directive(std::string_view name, std::vector<Expected_Argument>&& arguments)
     {
-        return { .is_directive = true, .name_or_text = name, .arguments = std::move(arguments) };
+        return { .type = Expected_Content_Type::directive,
+                 .name_or_text = name,
+                 .arguments = std::move(arguments) };
     }
     static Expected_Content
     directive(std::string_view name, std::vector<Expected_Content>&& content)
     {
-        return { .is_directive = true, .name_or_text = name, .content = std::move(content) };
+        return { .type = Expected_Content_Type::directive,
+                 .name_or_text = name,
+                 .content = std::move(content) };
     }
     static Expected_Content directive(
         std::string_view name,
@@ -66,7 +81,7 @@ struct Expected_Content {
         std::vector<Expected_Content>&& content
     )
     {
-        return { .is_directive = true,
+        return { .type = Expected_Content_Type::directive,
                  .name_or_text = name,
                  .arguments = std::move(arguments),
                  .content = std::move(content) };
@@ -77,7 +92,10 @@ struct Expected_Content {
         if (const auto* const d = get_if<ast::Directive>(&actual)) {
             return from(*d, source);
         }
-        std::string_view result = get<ast::Text>(actual).get_text(source);
+        if (const auto* const e = get_if<ast::Escaped>(&actual)) {
+            return escape(e->get_text(source));
+        }
+        const std::string_view result = get<ast::Text>(actual).get_text(source);
         return text(result);
     }
 
@@ -169,16 +187,26 @@ void write_special_escaped(std::ostream& out, char c)
 
 std::ostream& operator<<(std::ostream& out, const Expected_Content& content)
 {
-    if (content.is_directive) {
+    switch (content.type) {
+    case Expected_Content_Type::directive: {
         out << '\\' << content.name_or_text << '[' << content.arguments << "]{" << content.content
             << '}';
+        break;
     }
-    else {
+
+    case Expected_Content_Type::text: {
         out << "Text(";
         for (char c : content.name_or_text) {
             write_special_escaped(out, c);
         }
         out << ')';
+        break;
+    }
+
+    case Expected_Content_Type::escape: {
+        out << "Escape(" << content.name_or_text << ')';
+        break;
+    }
     }
     return out;
 }
@@ -207,6 +235,12 @@ struct [[nodiscard]] Actual_Document {
 struct Parsed_File {
     std::pmr::vector<char> source;
     std::pmr::vector<AST_Instruction> instructions;
+
+    [[nodiscard]]
+    std::string_view get_source_string() const
+    {
+        return { source.data(), source.size() };
+    }
 };
 
 [[nodiscard]]
@@ -217,16 +251,14 @@ std::optional<Parsed_File> parse_file(std::string_view file, std::pmr::memory_re
 
     Parsed_File result { .source { memory }, .instructions { memory } };
 
-    std::pmr::vector<char> source { memory };
-    if (Result<void, mmml::IO_Error_Code> r = file_to_bytes(source, full_file); !r) {
+    if (Result<void, mmml::IO_Error_Code> r = file_to_bytes(result.source, full_file); !r) {
         Code_String out { memory };
         print_io_error(out, full_file, r.error());
         print_code_string(std::cout, out, is_stdout_tty);
         return {};
     }
-    const std::string_view source_string { source.data(), source.size() };
 
-    parse(result.instructions, source_string);
+    parse(result.instructions, result.get_source_string());
     return result;
 }
 
@@ -235,24 +267,104 @@ std::optional<Actual_Document>
 parse_and_build_file(std::string_view file, std::pmr::memory_resource* memory)
 {
     std::optional<Parsed_File> parsed = parse_file(file, memory);
-    const std::string_view source_string { parsed->source.data(), parsed->source.size() };
+    if (!parsed) {
+        return {};
+    }
+    const std::string_view source_string = parsed->get_source_string();
 
     std::pmr::vector<ast::Content> content = build_ast(source_string, parsed->instructions, memory);
     return Actual_Document { std::move(parsed->source), std::move(content) };
 }
 
-#define PARSING_TEST_BOILERPLATE(...)                                                              \
+void append_instruction(Code_String& out, const AST_Instruction& ins)
+{
+    out.append(ast_instruction_type_name(ins.type), Code_Span_Type::diagnostic_tag);
+    if (ast_instruction_type_has_operand(ins.type)) {
+        out.append(' ');
+        out.append_integer(ins.n);
+    }
+    else if (ins.n != 0) {
+        out.append(' ');
+        out.append_integer(ins.n, Code_Span_Type::diagnostic_error_text);
+    }
+}
+
+void dump_instructions(Code_String& out, std::span<const AST_Instruction> instructions)
+{
+    for (const auto& i : instructions) {
+        out.append("    ");
+        append_instruction(out, i);
+        out.append('\n');
+    }
+}
+
+bool run_parse_test(std::string_view file, std::span<const AST_Instruction> expected)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    std::optional<Parsed_File> actual = parse_file(file, &memory);
+    if (!actual) {
+        Code_String error;
+        error.append(
+            "Test failed because file couldn't be loaded and parsed.\n",
+            Code_Span_Type::diagnostic_error_text
+        );
+        print_code_string(std::cout, error, is_stdout_tty);
+        return false;
+    }
+    if (!std::ranges::equal(expected, actual->instructions)) {
+        Code_String error;
+        error.append(
+            "Test failed because expected parser output isn't matched.\n",
+            Code_Span_Type::diagnostic_error_text
+        );
+        error.append("Expected:\n", Code_Span_Type::diagnostic_text);
+        dump_instructions(error, expected);
+        error.append("Actual:\n", Code_Span_Type::diagnostic_text);
+        dump_instructions(error, actual->instructions);
+        print_code_string(std::cout, error, is_stdout_tty);
+        return false;
+    }
+    return true;
+}
+
+#define MMML_PARSE_AND_BUILD_BOILERPLATE(...)                                                      \
     std::optional<Actual_Document> parsed = parse_and_build_file(__VA_ARGS__, &memory);            \
     ASSERT_TRUE(parsed);                                                                           \
     const auto actual = parsed->to_expected();                                                     \
     ASSERT_EQ(expected, actual)
+
+TEST(Parse, empty)
+{
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 0 },
+        { AST_Instruction_Type::pop_document, 0 },
+    };
+    ASSERT_TRUE(run_parse_test("empty.mmml", expected));
+}
 
 TEST(Parse_And_Build, empty)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected { &memory };
 
-    PARSING_TEST_BOILERPLATE("empty.mmml");
+    MMML_PARSE_AND_BUILD_BOILERPLATE("empty.mmml");
+}
+
+TEST(Parse, hello_code)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_block, 1 },
+        { AST_Instruction_Type::text, 10 },
+        { AST_Instruction_Type::pop_block },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_document, 0 },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test("hello_code.mmml", expected));
 }
 
 TEST(Parse_And_Build, hello_code)
@@ -264,14 +376,51 @@ TEST(Parse_And_Build, hello_code)
         &memory
     };
 
-    PARSING_TEST_BOILERPLATE("hello_code.mmml");
+    MMML_PARSE_AND_BUILD_BOILERPLATE("hello_code.mmml");
+}
+
+TEST(Parse, hello_directive)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_arguments, 2 },
+
+        { AST_Instruction_Type::push_argument, 1 },
+        { AST_Instruction_Type::argument_name, 5 }, // "hello"
+        { AST_Instruction_Type::skip, 2 },          // " ="
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::text, 5 },          // "world"
+        { AST_Instruction_Type::pop_argument },
+
+        { AST_Instruction_Type::skip, 1 },          // ,
+
+        { AST_Instruction_Type::push_argument, 1 },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::argument_name, 1 }, // "x"
+        { AST_Instruction_Type::skip, 2 },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::text, 1 },          // "0"
+        { AST_Instruction_Type::pop_argument },
+
+        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::push_block, 1 },    // {
+        { AST_Instruction_Type::text, 4 },          // "test"
+        { AST_Instruction_Type::pop_block },     // }
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },          // \n
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test("hello_directive.mmml", expected));
 }
 
 TEST(Parse_And_Build, hello_directive)
 {
     static std::pmr::monotonic_buffer_resource memory;
-    static const Expected_Argument arg0 { "hello", { Expected_Content::text(" world") } };
-    static const Expected_Argument arg1 { "x", { Expected_Content::text(" 0") } };
+    static const Expected_Argument arg0 { "hello", { Expected_Content::text("world") } };
+    static const Expected_Argument arg1 { "x", { Expected_Content::text("0") } };
 
     static const std::pmr::vector<Expected_Content> expected {
         { Expected_Content::directive("b", { arg0, arg1 }, { Expected_Content::text("test") }),
@@ -279,7 +428,7 @@ TEST(Parse_And_Build, hello_directive)
         &memory
     };
 
-    PARSING_TEST_BOILERPLATE("hello_directive.mmml");
+    MMML_PARSE_AND_BUILD_BOILERPLATE("hello_directive.mmml");
 }
 
 TEST(Parse_And_Build, directive_arg_balanced_braces)
@@ -292,7 +441,7 @@ TEST(Parse_And_Build, directive_arg_balanced_braces)
         { Expected_Content::directive("d", { arg0, arg1 }), Expected_Content::text("\n") }, &memory
     };
 
-    PARSING_TEST_BOILERPLATE("directive_arg_balanced_braces.mmml");
+    MMML_PARSE_AND_BUILD_BOILERPLATE("directive_arg_balanced_braces.mmml");
 }
 
 TEST(Parse_And_Build, directive_arg_unbalanced_brace)
@@ -302,7 +451,7 @@ TEST(Parse_And_Build, directive_arg_unbalanced_brace)
         { Expected_Content::directive("d"), Expected_Content::text("[}]\n") }, &memory
     };
 
-    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_brace.mmml");
+    MMML_PARSE_AND_BUILD_BOILERPLATE("directive_arg_unbalanced_brace.mmml");
 }
 
 TEST(Parse_And_Build, directive_arg_unbalanced_brace_2)
@@ -316,27 +465,31 @@ TEST(Parse_And_Build, directive_arg_unbalanced_brace_2)
         &memory
     };
 
-    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_brace_2.mmml");
+    MMML_PARSE_AND_BUILD_BOILERPLATE("directive_arg_unbalanced_brace_2.mmml");
 }
 
 TEST(Parse_And_Build, directive_arg_unbalanced_through_brace_escape)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
-        { Expected_Content::directive("d"), Expected_Content::text("[\\{}]\n") }, &memory
+        { Expected_Content::directive("d"), Expected_Content::text("["),
+          Expected_Content::escape("\\{"), Expected_Content::text("}]\n") },
+        &memory
     };
 
-    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_through_brace_escape.mmml");
+    MMML_PARSE_AND_BUILD_BOILERPLATE("directive_arg_unbalanced_through_brace_escape.mmml");
 }
 
 TEST(Parse_And_Build, directive_brace_escape)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
-        { Expected_Content::directive("d"), Expected_Content::text("[\\{}]\n") }, &memory
+        { Expected_Content::directive("d"), Expected_Content::text("["),
+          Expected_Content::escape("\\{"), Expected_Content::text("}]\n") },
+        &memory
     };
 
-    PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_through_brace_escape.mmml");
+    MMML_PARSE_AND_BUILD_BOILERPLATE("directive_arg_unbalanced_through_brace_escape.mmml");
 }
 
 } // namespace

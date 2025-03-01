@@ -5,24 +5,24 @@
 namespace mmml {
 namespace {
 
-TEST(Valid_BMD, empty)
+TEST(Valid, empty)
 {
-    EXPECT_TRUE(test_for_success("empty.bmd"));
+    EXPECT_TRUE(test_for_success("empty.mmml"));
 }
 
-TEST(Valid_BMD, hello_code)
+TEST(Valid, hello_code)
 {
-    EXPECT_TRUE(test_for_success("hello_code.bmd"));
+    EXPECT_TRUE(test_for_success("hello_code.mmml"));
 }
 
-TEST(Valid_BMD, hello_directive)
+TEST(Valid, hello_directive)
 {
-    EXPECT_TRUE(test_for_success("hello_directive.bmd"));
+    EXPECT_TRUE(test_for_success("hello_directive.mmml"));
 }
 
-TEST(Valid_BMD, hello_world)
+TEST(Valid, hello_world)
 {
-    EXPECT_TRUE(test_for_success("hello_world.bmd"));
+    EXPECT_TRUE(test_for_success("hello_world.mmml"));
 }
 
 } // namespace
