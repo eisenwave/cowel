@@ -343,7 +343,7 @@ void print_cut_off(Code_String& out, std::string_view v, std::size_t limit)
 struct [[nodiscard]] AST_Printer : ast::Const_Visitor {
 private:
     Code_String& out;
-    const Parsed_Document& program;
+    std::string_view source;
     const AST_Formatting_Options options;
     int indent_level = 0;
 
@@ -365,13 +365,9 @@ private:
     };
 
 public:
-    AST_Printer(
-        Code_String& out,
-        const Parsed_Document& document,
-        const AST_Formatting_Options& options
-    )
+    AST_Printer(Code_String& out, std::string_view source, const AST_Formatting_Options& options)
         : out { out }
-        , program { document }
+        , source { source }
         , options { options }
     {
     }
@@ -379,7 +375,7 @@ public:
     void visit(const ast::Text& node) final
     {
         print_indent();
-        const std::string_view extracted = node.get_text(program.source);
+        const std::string_view extracted = node.get_text(source);
 
         out.append("Text", Code_Span_Type::diagnostic_tag);
         out.append('(', Code_Span_Type::diagnostic_punctuation);
@@ -391,7 +387,7 @@ public:
     void visit(const ast::Escaped& node) final
     {
         print_indent();
-        const std::string_view extracted = node.get_text(program.source);
+        const std::string_view extracted = node.get_text(source);
 
         out.append("Escaped", Code_Span_Type::diagnostic_tag);
         out.append('(', Code_Span_Type::diagnostic_punctuation);
@@ -404,9 +400,7 @@ public:
     {
         print_indent();
 
-        out.build(Code_Span_Type::diagnostic_tag)
-            .append('\\')
-            .append(directive.get_name(program.source));
+        out.build(Code_Span_Type::diagnostic_tag).append('\\').append(directive.get_name(source));
 
         if (!directive.get_arguments().empty()) {
             out.append('[', Code_Span_Type::diagnostic_punctuation);
@@ -446,7 +440,7 @@ public:
         if (arg.has_name()) {
             out.append("Named_Argument", Code_Span_Type::diagnostic_tag);
             out.append('(', Code_Span_Type::diagnostic_punctuation);
-            out.append(arg.get_name(program.source), Code_Span_Type::diagnostic_attribute);
+            out.append(arg.get_name(source), Code_Span_Type::diagnostic_attribute);
             out.append(')', Code_Span_Type::diagnostic_punctuation);
         }
         else {
@@ -482,11 +476,12 @@ private:
 
 void print_ast(
     Code_String& out,
-    [[maybe_unused]] const Parsed_Document& document,
-    [[maybe_unused]] AST_Formatting_Options options
+    std::string_view source,
+    std::span<const ast::Content> root_content,
+    AST_Formatting_Options options
 )
 {
-    AST_Printer { out, document, options }.visit_content_sequence(document.content);
+    AST_Printer { out, source, options }.visit_content_sequence(root_content);
 }
 
 void print_internal_error_notice(Code_String& out)

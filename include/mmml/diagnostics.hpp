@@ -60,7 +60,12 @@ struct AST_Formatting_Options {
     int max_node_text_length;
 };
 
-void print_ast(Code_String& out, const Parsed_Document& document, AST_Formatting_Options);
+void print_ast(
+    Code_String& out,
+    std::string_view source,
+    std::span<const ast::Content> root_content,
+    AST_Formatting_Options
+);
 
 void print_internal_error_notice(Code_String& out);
 

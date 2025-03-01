@@ -39,6 +39,8 @@ enum struct Argument_Status : Default_Underlying;
 struct Assertion_Error;
 enum struct Assertion_Error_Type : Default_Underlying;
 struct AST_Formatting_Options;
+struct AST_Instruction;
+enum struct AST_Instruction_Type : Default_Underlying;
 struct Attribute_Writer;
 struct Builtin_Directive_Set;
 template <std::size_t>
@@ -58,7 +60,6 @@ struct Function_Ref;
 struct HTML_Writer;
 enum struct IO_Error_Code : Default_Underlying;
 struct Name_Resolver;
-struct Parsed_Document;
 template <typename, typename>
 struct Result;
 enum struct Sign_Policy : Default_Underlying;

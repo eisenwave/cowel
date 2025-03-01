@@ -62,19 +62,6 @@ bool is_escapeable(char c)
     return c == '\\' || c == '}' || c == '{';
 }
 
-void advance(Local_Source_Position& pos, char c)
-{
-    switch (c) {
-    case '\r': pos.column = 0; break;
-    case '\n':
-        pos.column = 0;
-        pos.line += 1;
-        break;
-    default: pos.column += 1;
-    }
-    pos.begin += 1;
-}
-
 [[nodiscard]]
 bool is_digit(char c)
 {
@@ -111,46 +98,89 @@ bool is_directive_name_character(char c)
     return c == '-' || is_alphanumeric(c);
 }
 
-struct Blank {
-    std::size_t length;
-    bool is_paragraph_break;
-};
+enum struct Content_Context : Default_Underlying { document, argument_value, block };
+
+[[nodiscard]]
+constexpr bool is_terminated_by(Content_Context context, char c)
+{
+    switch (context) {
+    case Content_Context::argument_value: //
+        return c == ',' || c == ']' || c == '}';
+    case Content_Context::block: //
+        return c == '}';
+    default: //
+        return false;
+    }
+}
 
 struct [[nodiscard]] Parser {
 private:
-    std::string_view m_source;
-    std::pmr::memory_resource* m_memory;
-    Local_Source_Position m_pos = {};
+    struct [[nodiscard]] Scoped_Attempt {
+    private:
+        Parser* m_self;
+        const std::size_t m_initial_pos;
+        const std::size_t m_initial_size;
 
-    enum struct Blank_Type {
-        /// Blank space between words.
-        /// Whitespace or comment space which contains no empty line.
-        word_break,
-        /// Whitespace containing at least one empty line outside of block comments.
-        paragraph_break,
+    public:
+        Scoped_Attempt(Parser& self)
+            : m_self { &self }
+            , m_initial_pos { self.m_pos }
+            , m_initial_size { self.m_out.size() }
+        {
+        }
+
+        Scoped_Attempt(const Scoped_Attempt&) = delete;
+        Scoped_Attempt& operator=(const Scoped_Attempt&) = delete;
+
+        void commit()
+        {
+            MMML_ASSERT(m_self);
+            m_self = nullptr;
+        }
+
+        void abort()
+        {
+            MMML_ASSERT(m_self);
+            MMML_ASSERT(m_self->m_out.size() >= m_initial_size);
+
+            m_self->m_pos = m_initial_pos;
+            m_self->m_out.resize(m_initial_size);
+
+            m_self = nullptr;
+        }
+
+        ~Scoped_Attempt()
+        {
+            if (m_self) {
+                abort();
+            }
+        }
     };
 
+    std::pmr::vector<AST_Instruction>& m_out;
+    std::string_view m_source;
+    std::size_t m_pos = 0;
+
 public:
-    Parser(std::string_view source, std::pmr::memory_resource* memory)
-        : m_source(source)
-        , m_memory(memory)
+    Parser(std::pmr::vector<AST_Instruction>& out, std::string_view source)
+        : m_out { out }
+        , m_source { source }
     {
     }
 
-    Parsed_Document operator()()
+    void operator()()
     {
-        return { .source = m_source, .content = match_content_sequence(Content_Context::document) };
+        const std::size_t document_instruction_index = m_out.size();
+        m_out.push_back({ AST_Instruction_Type::push_document, 0 });
+        const std::size_t content_amount = match_content_sequence(Content_Context::document);
+        m_out[document_instruction_index].n = content_amount;
+        m_out.push_back({ AST_Instruction_Type::pop_document, 0 });
     }
 
 private:
-    // UTILITIES ===================================================================================
-
-    void advance_position_by(std::size_t length)
+    Scoped_Attempt attempt()
     {
-        MMML_ASSERT(m_pos.begin + length <= m_source.length());
-        for (std::size_t i = 0; i < length; ++i) {
-            advance(m_pos, m_source[m_pos.begin]);
-        }
+        return Scoped_Attempt { *this };
     }
 
     /// @brief Returns all remaining text as a `std::string_view`, from the current parsing
@@ -159,7 +189,7 @@ private:
     [[nodiscard]]
     std::string_view peek_all() const
     {
-        return m_source.substr(m_pos.begin);
+        return m_source.substr(m_pos);
     }
 
     /// @brief Returns the next character and advances the parser position.
@@ -168,7 +198,7 @@ private:
     char pop()
     {
         const char c = peek();
-        advance(m_pos, c);
+        ++m_pos;
         return c;
     }
 
@@ -178,13 +208,13 @@ private:
     char peek() const
     {
         MMML_ASSERT(!eof());
-        return m_source[m_pos.begin];
+        return m_source[m_pos];
     }
 
     /// @return `true` if the parser is at the end of the file, `false` otherwise.
     bool eof() const
     {
-        return m_pos.begin == m_source.length();
+        return m_pos == m_source.length();
     }
 
     /// @return `peek_all().starts_with(text)`.
@@ -201,7 +231,7 @@ private:
     [[nodiscard]]
     bool peek(char c) const
     {
-        return !eof() && m_source[m_pos.begin] == c;
+        return !eof() && m_source[m_pos] == c;
     }
 
     /// @brief Checks whether the parser is at the start of a directive.
@@ -227,7 +257,7 @@ private:
     [[nodiscard]]
     bool peek(bool predicate(char)) const
     {
-        return !eof() && predicate(m_source[m_pos.begin]);
+        return !eof() && predicate(m_source[m_pos]);
     }
 
     [[nodiscard]]
@@ -236,21 +266,21 @@ private:
         if (!peek(c)) {
             return false;
         }
-        advance(m_pos, c);
+        ++m_pos;
         return true;
     }
 
     [[nodiscard]]
     bool expect(bool predicate(char))
     {
-        if (m_pos.begin >= m_source.size()) {
+        if (eof()) {
             return false;
         }
-        const char c = m_source[m_pos.begin];
+        const char c = m_source[m_pos];
         if (!predicate(c)) {
             return false;
         }
-        advance(m_pos, c);
+        ++m_pos;
         return true;
     }
 
@@ -260,76 +290,55 @@ private:
         if (!peek(text)) {
             return false;
         }
-        advance_position_by(text.length());
+        m_pos += text.length();
         return true;
     }
 
     /// @brief Matches a (possibly empty) sequence of characters matching the predicate.
+    /// @return The amount of characters matched.
     [[nodiscard]]
-    Local_Source_Span match_char_sequence(bool predicate(char))
+    std::size_t match_char_sequence(bool predicate(char))
     {
-        const Local_Source_Position initial = m_pos;
-        while (m_pos.begin < m_source.size()) {
-            const char c = m_source[m_pos.begin];
-            if (!predicate(c)) {
-                break;
-            }
-            advance(m_pos, c);
-        }
-        const std::size_t length = m_pos.begin - initial.begin;
-        return { initial, length };
+        const std::size_t initial = m_pos;
+        while (expect(predicate)) { }
+        return m_pos - initial;
     }
 
     [[nodiscard]]
-    Local_Source_Span match_directive_name()
+    std::size_t match_directive_name()
     {
-        if (peek(is_digit)) {
-            return { m_pos, 0 };
-        }
-        return match_char_sequence(is_directive_name_character);
+        return peek(is_digit) ? 0 : match_char_sequence(is_directive_name_character);
     }
 
     [[nodiscard]]
-    Local_Source_Span match_argument_name()
+    std::size_t match_argument_name()
     {
-        if (peek(is_digit)) {
-            return { m_pos, 0 };
-        }
-        return match_char_sequence(is_argument_name_character);
+        return peek(is_digit) ? 0 : match_char_sequence(is_argument_name_character);
     }
 
-    Local_Source_Span match_whitespace()
+    std::size_t match_whitespace()
     {
         return match_char_sequence(is_whitespace);
     }
 
-    enum struct Content_Context { document, argument_value, block };
-
-    static bool is_terminated_by(Content_Context context, char c)
-    {
-        switch (context) {
-        case Content_Context::argument_value: //
-            return c == ',' || c == ']' || c == '}';
-        case Content_Context::block: //
-            return c == '}';
-        default: //
-            return false;
-        }
-    }
-
     [[nodiscard]]
-    std::pmr::vector<ast::Content> match_content_sequence(Content_Context context)
+    std::size_t match_content_sequence(Content_Context context)
     {
-        std::pmr::vector<ast::Content> result { m_memory };
         Bracket_Levels levels {};
+        std::size_t elements = 0;
 
-        while (!eof()) {
+        for (; !eof(); ++elements) {
             if (is_terminated_by(context, peek())) {
                 break;
             }
-            result.push_back(match_content(context, levels));
+            // TODO: perhaps we could simplify this by making try_match_content
+            //       the loop condition.
+            //       After all, that function also checks for termination and EOF.
+            const bool success = try_match_content(context, levels);
+            MMML_ASSERT(success);
         }
-        return result;
+
+        return elements;
     }
 
     struct Bracket_Levels {
@@ -337,28 +346,30 @@ private:
         std::size_t brace = 0;
     };
 
+    /// @brief Attempts to match the next piece of content,
+    /// which is an escape sequence, directive, or plaintext.
+    ///
+    /// Returns `false` if none of these could be matched.
+    /// This may happen because the parser is located at e.g. a `}` and the given `context`
+    /// is terminated by `}`.
+    /// It may also happen if the parser has already reached the EOF.
     [[nodiscard]]
-    ast::Content match_content(Content_Context context, Bracket_Levels& levels)
+    bool try_match_content(Content_Context context, Bracket_Levels& levels)
     {
-        if (peek('\\')) {
-            if (std::optional<ast::Escaped> e = try_match_escaped()) {
-                return std::move(*e);
-            }
-            if (std::optional<ast::Directive> d = try_match_directive()) {
-                return std::move(*d);
-            }
+        if (peek('\\') && (try_match_escaped() || try_match_directive())) {
+            return true;
         }
 
-        const Local_Source_Position start = m_pos;
+        const std::size_t initial_pos = m_pos;
 
-        for (; !eof(); advance_position_by(1)) {
-            const char c = m_source[m_pos.begin];
+        for (; !eof(); ++m_pos) {
+            const char c = m_source[m_pos];
             if (c == '\\') {
                 // Trailing \ at the end of the file
-                if (m_pos.begin + 1 == m_source.size()) {
+                if (initial_pos + 1 == m_source.size()) {
                     continue;
                 }
-                const char next = m_source[m_pos.begin + 1];
+                const char next = m_source[m_pos + 1];
                 // No matter what, a backslash followed by a directive name character forms a
                 // directive because the remaining arguments and the block are optional.
                 // Therefore, we must stop here because text content should not include directives.
@@ -391,160 +402,216 @@ private:
             }
         }
 
-        return ast::Text { Local_Source_Span { start, m_pos.begin - start.begin } };
+        MMML_ASSERT(m_pos >= initial_pos);
+        if (m_pos == initial_pos) {
+            return false;
+        }
+
+        m_out.push_back({ AST_Instruction_Type::text, m_pos - initial_pos });
+        return true;
     }
 
-    /// @brief Attempts to match a directive.
-    /// If this attempt fails, the parser position remains the same.
     [[nodiscard]]
-    std::optional<ast::Directive> try_match_directive()
+    bool try_match_directive()
     {
-        const Local_Source_Position initial = m_pos;
+        Scoped_Attempt a = attempt();
+
         if (!expect('\\')) {
             return {};
         }
-        const Local_Source_Span name = match_directive_name();
-        if (name.empty()) {
-            m_pos = initial;
-            return {};
+        const std::size_t name_length = match_directive_name();
+        if (name_length == 0) {
+            return false;
         }
 
-        std::optional<std::pmr::vector<ast::Argument>> arguments = try_match_argument_list();
-        std::optional<std::pmr::vector<ast::Content>> content = try_match_block();
-        const Local_Source_Span span { initial, m_pos.begin - initial.begin };
+        m_out.push_back({ AST_Instruction_Type::push_directive, name_length + 1 });
 
-        return ast::Directive {
-            span,
-            name.length,
-            arguments.value_or(std::pmr::vector<ast::Argument> {}),
-            content.value_or(std::pmr::vector<ast::Content> {}),
-        };
+        try_match_argument_list();
+        try_match_block();
+
+        m_out.push_back({ AST_Instruction_Type::pop_directive, 0 });
+
+        a.commit();
+        return true;
     }
 
-    [[nodiscard]]
-    std::optional<std::pmr::vector<ast::Argument>> try_match_argument_list()
+    // intentionally discardable
+    bool try_match_argument_list()
     {
-        const Local_Source_Position initial = m_pos;
+        Scoped_Attempt a = attempt();
 
         if (!expect('[')) {
             return {};
         }
+        m_out.push_back({ AST_Instruction_Type::push_arguments, 0 });
 
-        std::pmr::vector<ast::Argument> result { m_memory };
-        while (std::optional<ast::Argument> arg = try_match_argument()) {
-            result.push_back(std::move(*arg));
+        while (try_match_argument()) {
             if (expect(']')) {
-                return result;
+                a.commit();
+                return true;
             }
-            if (!expect(',')) {
-                MMML_ASSERT_UNREACHABLE(
-                    "Successfully matched arguments must be followed by ']' or ','"
-                );
+            if (expect(',')) {
+                m_out.push_back({ AST_Instruction_Type::skip, 1 });
+                continue;
             }
+            MMML_ASSERT_UNREACHABLE("Successfully matched arguments must be followed by ']' or ','"
+            );
         }
 
-        m_pos = initial;
-        return {};
+        m_out.push_back({ AST_Instruction_Type::pop_arguments, 0 });
+        return false;
     }
 
     [[nodiscard]]
-    std::optional<ast::Escaped> try_match_escaped()
+    bool try_match_escaped()
     {
-        if (m_pos.begin + 2 < m_source.size() //
-            && m_source[m_pos.begin] == '\\' //
-            && is_escapeable(m_source[m_pos.begin + 1])) {
-            const Local_Source_Span result = { m_pos, 2 };
-            m_pos.begin += 2;
-            m_pos.column += 2;
-            return ast::Escaped { result };
+        constexpr std::size_t sequence_length = 2;
+
+        if (m_pos + sequence_length < m_source.size() //
+            && m_source[m_pos] == '\\' //
+            && is_escapeable(m_source[m_pos + 1])) //
+        {
+            m_pos += sequence_length;
+            m_out.push_back({ AST_Instruction_Type::escape, sequence_length });
+            return true;
         }
-        return {};
+        return false;
     }
 
     [[nodiscard]]
-    std::optional<ast::Argument> try_match_argument()
+    bool try_match_argument()
     {
-        const Local_Source_Position initial = m_pos;
-
-        const auto skip_whitespace = [&]() {
-            while (m_pos.begin < m_source.size()) {
-                const char c = m_source[m_pos.begin];
-                if (!is_whitespace(c)) {
-                    break;
-                }
-                advance(m_pos, c);
-            }
-        };
-
-        // 1. We skip any leading whitespace because arguments lists are still considered
-        //    to use named arguments with surrounding whitespace.
-        //    For example, \awoo[ x = y ] provides a named argument for x.
-        skip_whitespace();
-
         if (eof()) {
-            m_pos = initial;
-            return {};
+            return false;
         }
+        Scoped_Attempt a = attempt();
 
-        // 2. We match the name of the argument, assuming that the argument is named.
-        const Local_Source_Span name = match_argument_name();
+        const std::size_t argument_instruction_index = m_out.size();
+        m_out.push_back({ AST_Instruction_Type::push_argument, 0 });
 
-        // 3. If the name couldn't be matched, we have a positional argument.
-        if (name.empty()) {
-            m_pos = initial;
-            return try_match_argument_value();
-        }
+        try_match_argument_name();
 
-        // 4. We skip additional whitespace after the name, which may precede a '=' character.
-        skip_whitespace();
-        if (eof()) {
-            m_pos = initial;
-            return {};
-        }
-
-        // 5. Once again, if there is no '=', this is not a named argument.
-        if (!expect('=')) {
-            m_pos = initial;
-            return try_match_argument_value();
-        }
-
-        // 6. Match the remaining content as if it was a positional argument.
-        std::optional<ast::Argument> result = try_match_argument_value();
+        const std::optional<std::size_t> result = try_match_trimmed_argument_value();
         if (!result) {
-            return result;
+            return false;
         }
 
-        // 7. Convert the positional argument into a named argument.
-        return ast::Argument { Local_Source_Span { initial, m_pos.begin - initial.begin }, name,
-                               std::move(*result).get_content() };
+        m_out[argument_instruction_index].n = *result;
+        m_out.push_back({ AST_Instruction_Type::pop_argument, 0 });
+
+        a.commit();
+        return true;
+    }
+
+    /// @brief Matches the name of an argument, including any surrounding whitespace and the `=`
+    /// character following it.
+    /// If the argument couldn't be matched, returns `false` and keeps the parser state unchanged.
+    bool try_match_argument_name()
+    {
+        Scoped_Attempt a = attempt();
+
+        const std::size_t leading_whitespace = match_whitespace();
+        if (leading_whitespace != 0) {
+            m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
+        }
+
+        if (eof()) {
+            return false;
+        }
+
+        const std::size_t name_length = match_argument_name();
+        m_out.push_back({ AST_Instruction_Type::argument_name, name_length });
+
+        if (name_length == 0) {
+            a.abort();
+            return false;
+        }
+
+        const std::size_t trailing_whitespace = match_whitespace();
+        if (eof()) {
+            a.abort();
+            return false;
+        }
+
+        if (!expect('=')) {
+            a.abort();
+            return false;
+        }
+
+        m_out.push_back({ AST_Instruction_Type::skip, trailing_whitespace + 1 });
+        a.commit();
+        return true;
     }
 
     [[nodiscard]]
-    std::optional<ast::Argument> try_match_argument_value()
+    std::optional<std::size_t> try_match_trimmed_argument_value()
     {
-        const Local_Source_Position initial = m_pos;
+        Scoped_Attempt a = attempt();
 
-        std::pmr::vector<ast::Content> content
-            = match_content_sequence(Content_Context::argument_value);
-        if (eof() || peek('}')) {
-            m_pos = initial;
-            return {};
+        const std::size_t leading_whitespace = match_whitespace();
+        if (leading_whitespace != 0) {
+            m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
         }
 
+        const std::size_t content_amount = match_content_sequence(Content_Context::argument_value);
+        if (eof() || peek('}')) {
+            return {};
+        }
         // match_content_sequence is very aggressive, so I think at this point,
         // we have to be at the end of an argument due to a comma separator or closing square.
-        const char c = m_source[m_pos.begin];
+        const char c = m_source[m_pos];
         MMML_ASSERT(c == ',' || c == ']');
 
-        const Local_Source_Span span = { initial, m_pos.begin - initial.begin };
-        return ast::Argument { span, std::move(content) };
+        trim_trailing_whitespace_in_matched_content();
+
+        return content_amount;
     }
 
-    std::optional<std::pmr::vector<ast::Content>> try_match_block()
+    /// @brief Trims trailing whitespace in just matched content.
+    ///
+    /// This is done by splitting the most recently written instruction
+    /// into `text` and `skip` if that instruction is `text`.
+    /// If the most recent instruction is entirely made of whitespace,
+    /// it is simply replaced with `skip`.
+    void trim_trailing_whitespace_in_matched_content()
+    {
+        MMML_ASSERT(!m_out.empty());
+
+        AST_Instruction& latest = m_out.back();
+        if (latest.type != AST_Instruction_Type::text) {
+            return;
+        }
+        const std::size_t total_length = latest.n;
+        MMML_ASSERT(total_length != 0);
+
+        const std::size_t text_begin = m_pos - total_length;
+
+        const std::string_view last_text = m_source.substr(text_begin, total_length);
+        const std::size_t last_non_white = last_text.find_last_not_of(" \t\r\n");
+        const std::size_t non_white_length = last_non_white + 1;
+
+        if (last_non_white == std::string_view::npos) {
+            latest.type = AST_Instruction_Type::skip;
+        }
+        else if (non_white_length < total_length) {
+            latest.n = non_white_length;
+            m_out.push_back({ AST_Instruction_Type::skip, total_length - non_white_length });
+        }
+        else {
+            MMML_ASSERT(non_white_length == total_length);
+        }
+    }
+
+    bool try_match_block()
     {
         if (!expect('{')) {
             return {};
         }
+
+        Scoped_Attempt a = attempt();
+
+        const std::size_t block_instruction_index = m_out.size();
+        m_out.push_back({ AST_Instruction_Type::push_block, 0 });
 
         // A possible optimization should be to find the closing brace and then run the parser
         // on the brace-enclosed block.
@@ -552,21 +619,26 @@ private:
         //
         // I suspect we only have to discard if we reach the EOF unexpectedly,
         // and that seems like a broken file anyway.
-        std::pmr::vector<ast::Content> content = match_content_sequence(Content_Context::block);
+        const std::size_t elements = match_content_sequence(Content_Context::block);
 
         if (!expect('}')) {
             return {};
         }
+        MMML_ASSERT(eof());
 
-        return content;
+        m_out[block_instruction_index].n = elements;
+        m_out.push_back({ AST_Instruction_Type::pop_block, 0 });
+
+        a.commit();
+        return elements;
     }
 };
 
 } // namespace
 
-Parsed_Document parse(std::string_view source, std::pmr::memory_resource* memory)
+void parse(std::pmr::vector<AST_Instruction>& out, std::string_view source)
 {
-    return Parser { source, memory }();
+    return Parser { out, source }();
 }
 
 } // namespace mmml

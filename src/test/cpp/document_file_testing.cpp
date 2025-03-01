@@ -41,7 +41,7 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     const std::string_view source { source_data.data(), source_data.size() };
     policy.source = source;
 
-    Parsed_Document doc = parse(source, &memory);
+    auto doc = parse_and_build(source, &memory);
     MMML_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
 
 // FIXME reimplement

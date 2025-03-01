@@ -34,6 +34,7 @@ add_library(mmml STATIC
     include/mmml/directive_arguments.hpp
     include/mmml/directives.hpp
 
+    src/main/cpp/build_ast.cpp
     src/main/cpp/diagnostics.cpp
     src/main/cpp/directives.cpp
     src/main/cpp/html_writer.cpp

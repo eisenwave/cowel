@@ -204,11 +204,18 @@ struct [[nodiscard]] Actual_Document {
     }
 };
 
+struct Parsed_File {
+    std::pmr::vector<char> source;
+    std::pmr::vector<AST_Instruction> instructions;
+};
+
 [[nodiscard]]
-std::optional<Actual_Document> parse_file(std::string_view file, std::pmr::memory_resource* memory)
+std::optional<Parsed_File> parse_file(std::string_view file, std::pmr::memory_resource* memory)
 {
     std::pmr::string full_file { "test/", memory };
     full_file += file;
+
+    Parsed_File result { .source { memory }, .instructions { memory } };
 
     std::pmr::vector<char> source { memory };
     if (Result<void, mmml::IO_Error_Code> r = file_to_bytes(source, full_file); !r) {
@@ -219,17 +226,28 @@ std::optional<Actual_Document> parse_file(std::string_view file, std::pmr::memor
     }
     const std::string_view source_string { source.data(), source.size() };
 
-    auto [_, content] = parse(source_string, memory);
-    return Actual_Document { std::move(source), std::move(content) };
+    parse(result.instructions, source_string);
+    return result;
+}
+
+[[nodiscard]]
+std::optional<Actual_Document>
+parse_and_build_file(std::string_view file, std::pmr::memory_resource* memory)
+{
+    std::optional<Parsed_File> parsed = parse_file(file, memory);
+    const std::string_view source_string { parsed->source.data(), parsed->source.size() };
+
+    std::pmr::vector<ast::Content> content = build_ast(source_string, parsed->instructions, memory);
+    return Actual_Document { std::move(parsed->source), std::move(content) };
 }
 
 #define PARSING_TEST_BOILERPLATE(...)                                                              \
-    std::optional<Actual_Document> parsed = parse_file(__VA_ARGS__, &memory);                      \
+    std::optional<Actual_Document> parsed = parse_and_build_file(__VA_ARGS__, &memory);            \
     ASSERT_TRUE(parsed);                                                                           \
     const auto actual = parsed->to_expected();                                                     \
     ASSERT_EQ(expected, actual)
 
-TEST(Parse, empty)
+TEST(Parse_And_Build, empty)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected { &memory };
@@ -237,7 +255,7 @@ TEST(Parse, empty)
     PARSING_TEST_BOILERPLATE("empty.mmml");
 }
 
-TEST(Parse, hello_code)
+TEST(Parse_And_Build, hello_code)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
@@ -249,7 +267,7 @@ TEST(Parse, hello_code)
     PARSING_TEST_BOILERPLATE("hello_code.mmml");
 }
 
-TEST(Parse, hello_directive)
+TEST(Parse_And_Build, hello_directive)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const Expected_Argument arg0 { "hello", { Expected_Content::text(" world") } };
@@ -264,7 +282,7 @@ TEST(Parse, hello_directive)
     PARSING_TEST_BOILERPLATE("hello_directive.mmml");
 }
 
-TEST(Parse, directive_arg_balanced_braces)
+TEST(Parse_And_Build, directive_arg_balanced_braces)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const Expected_Argument arg0 { "x", { Expected_Content::text("{}") } };
@@ -277,7 +295,7 @@ TEST(Parse, directive_arg_balanced_braces)
     PARSING_TEST_BOILERPLATE("directive_arg_balanced_braces.mmml");
 }
 
-TEST(Parse, directive_arg_unbalanced_brace)
+TEST(Parse_And_Build, directive_arg_unbalanced_brace)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
@@ -287,7 +305,7 @@ TEST(Parse, directive_arg_unbalanced_brace)
     PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_brace.mmml");
 }
 
-TEST(Parse, directive_arg_unbalanced_brace_2)
+TEST(Parse_And_Build, directive_arg_unbalanced_brace_2)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
@@ -301,7 +319,7 @@ TEST(Parse, directive_arg_unbalanced_brace_2)
     PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_brace_2.mmml");
 }
 
-TEST(Parse, directive_arg_unbalanced_through_brace_escape)
+TEST(Parse_And_Build, directive_arg_unbalanced_through_brace_escape)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
@@ -311,7 +329,7 @@ TEST(Parse, directive_arg_unbalanced_through_brace_escape)
     PARSING_TEST_BOILERPLATE("directive_arg_unbalanced_through_brace_escape.mmml");
 }
 
-TEST(Parse, directive_brace_escape)
+TEST(Parse_And_Build, directive_brace_escape)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected {
