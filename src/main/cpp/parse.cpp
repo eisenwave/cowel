@@ -1,6 +1,7 @@
 #include <optional>
 
-#include "mmml/assert.hpp"
+#include "mmml/util/assert.hpp"
+
 #include "mmml/ast.hpp"
 #include "mmml/parse.hpp"
 

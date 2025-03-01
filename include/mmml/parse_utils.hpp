@@ -5,8 +5,9 @@
 #include <optional>
 #include <string_view>
 
+#include "mmml/util/result.hpp"
+
 #include "mmml/fwd.hpp"
-#include "mmml/result.hpp"
 
 namespace mmml {
 

@@ -7,9 +7,10 @@
 #include <variant>
 #include <vector>
 
+#include "mmml/util/meta.hpp"
+#include "mmml/util/source_position.hpp"
+
 #include "mmml/fwd.hpp"
-#include "mmml/meta.hpp"
-#include "mmml/source_position.hpp"
 
 namespace mmml::ast {
 

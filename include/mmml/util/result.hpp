@@ -4,7 +4,7 @@
 #include <concepts>
 #include <utility>
 
-#include "mmml/assert.hpp"
+#include "mmml/util/assert.hpp"
 
 namespace mmml {
 

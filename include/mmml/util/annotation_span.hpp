@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#include "mmml/annotation_type.hpp"
+#include "mmml/util/annotation_type.hpp"
 
 namespace mmml {
 

@@ -1,7 +1,8 @@
 #include <charconv>
 #include <optional>
 
-#include "mmml/assert.hpp"
+#include "mmml/util/assert.hpp"
+
 #include "mmml/parse_utils.hpp"
 
 namespace mmml {

@@ -1,7 +1,8 @@
+#include "mmml/util/annotated_string.hpp"
+#include "mmml/util/source_position.hpp"
+
 #include "mmml/html_writer.hpp"
-#include "mmml/annotated_string.hpp"
 #include "mmml/parse_utils.hpp"
-#include "mmml/source_position.hpp"
 
 namespace mmml {
 namespace {

@@ -1,9 +1,10 @@
 #include <cstdio>
 #include <cstring>
 
-#include "mmml/assert.hpp"
+#include "mmml/util/assert.hpp"
+#include "mmml/util/io.hpp"
+
 #include "mmml/fwd.hpp"
-#include "mmml/io.hpp"
 
 namespace mmml {
 

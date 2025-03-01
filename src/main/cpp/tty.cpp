@@ -4,7 +4,7 @@
 #include <unistd.h>
 #endif
 
-#include "mmml/tty.hpp"
+#include "mmml/util/tty.hpp"
 
 namespace mmml {
 

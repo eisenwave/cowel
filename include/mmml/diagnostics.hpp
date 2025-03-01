@@ -9,10 +9,11 @@
 #include <string>
 #include <string_view>
 
-#include "mmml/assert.hpp"
+#include "mmml/util/assert.hpp"
+#include "mmml/util/io.hpp"
+#include "mmml/util/source_position.hpp"
+
 #include "mmml/fwd.hpp"
-#include "mmml/io.hpp"
-#include "mmml/source_position.hpp"
 
 namespace mmml {
 

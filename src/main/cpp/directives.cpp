@@ -1,9 +1,10 @@
 #include <ranges>
 #include <span>
 
-#include "mmml/annotated_string.hpp"
+#include "mmml/util/annotated_string.hpp"
+#include "mmml/util/code_language.hpp"
+
 #include "mmml/ast.hpp"
-#include "mmml/code_language.hpp"
 #include "mmml/directive_arguments.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"

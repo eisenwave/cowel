@@ -2,11 +2,12 @@
 #include <iostream>
 #include <memory_resource>
 
-#include "mmml/annotated_string.hpp"
+#include "mmml/util/annotated_string.hpp"
+#include "mmml/util/io.hpp"
+#include "mmml/util/tty.hpp"
+
 #include "mmml/diagnostics.hpp"
-#include "mmml/io.hpp"
 #include "mmml/parse.hpp"
-#include "mmml/tty.hpp"
 
 #include "diagnostic_policy.hpp"
 #include "document_file_testing.hpp"

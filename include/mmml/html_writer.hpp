@@ -1,7 +1,8 @@
 #ifndef MMML_HTML_WRITER_HPP
 #define MMML_HTML_WRITER_HPP
 
-#include "mmml/assert.hpp"
+#include "mmml/util/assert.hpp"
+
 #include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
 

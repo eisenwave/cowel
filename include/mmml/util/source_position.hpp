@@ -3,7 +3,8 @@
 
 #include <string_view>
 
-#include "mmml/assert.hpp"
+#include "mmml/util/assert.hpp"
+
 #include "mmml/fwd.hpp"
 
 namespace mmml {

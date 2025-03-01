@@ -6,8 +6,7 @@
 #include <limits>
 #include <type_traits>
 
-#include "mmml/assert.hpp"
-#include "mmml/fwd.hpp"
+#include "mmml/util/assert.hpp"
 
 namespace mmml {
 

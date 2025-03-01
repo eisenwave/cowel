@@ -6,10 +6,10 @@
 #include <utility>
 #include <vector>
 
-#include "mmml/annotation_span.hpp"
-#include "mmml/annotation_type.hpp"
-#include "mmml/source_position.hpp"
-#include "mmml/to_chars.hpp"
+#include "mmml/util/annotation_span.hpp"
+#include "mmml/util/annotation_type.hpp"
+#include "mmml/util/source_position.hpp"
+#include "mmml/util/to_chars.hpp"
 
 namespace mmml {
 

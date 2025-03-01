@@ -30,10 +30,6 @@ set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
 include_directories(${INCLUDE_DIRS})
 
 add_library(mmml STATIC
-    include/mmml/code_language.hpp
-    include/mmml/directive_arguments.hpp
-    include/mmml/directives.hpp
-
     src/main/cpp/argument_matching.cpp
     src/main/cpp/build_ast.cpp
     src/main/cpp/diagnostics.cpp

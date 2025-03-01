@@ -1,16 +1,17 @@
 #include <optional>
 #include <string_view>
 
-#include "mmml/annotated_string.hpp"
-#include "mmml/annotation_type.hpp"
-#include "mmml/ansi.hpp"
-#include "mmml/assert.hpp"
+#include "mmml/util/annotated_string.hpp"
+#include "mmml/util/annotation_type.hpp"
+#include "mmml/util/ansi.hpp"
+#include "mmml/util/assert.hpp"
+#include "mmml/util/io_error.hpp"
+#include "mmml/util/source_position.hpp"
+#include "mmml/util/to_chars.hpp"
+
 #include "mmml/ast.hpp"
 #include "mmml/diagnostics.hpp"
-#include "mmml/io_error.hpp"
 #include "mmml/parse.hpp"
-#include "mmml/source_position.hpp"
-#include "mmml/to_chars.hpp"
 
 namespace mmml {
 

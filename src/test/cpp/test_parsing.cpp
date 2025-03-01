@@ -4,13 +4,14 @@
 
 #include <gtest/gtest.h>
 
-#include "mmml/annotated_string.hpp"
+#include "mmml/util/annotated_string.hpp"
+#include "mmml/util/io.hpp"
+#include "mmml/util/io_error.hpp"
+#include "mmml/util/tty.hpp"
+
 #include "mmml/ast.hpp"
 #include "mmml/diagnostics.hpp"
-#include "mmml/io.hpp"
-#include "mmml/io_error.hpp"
 #include "mmml/parse.hpp"
-#include "mmml/tty.hpp"
 
 namespace mmml {
 namespace {

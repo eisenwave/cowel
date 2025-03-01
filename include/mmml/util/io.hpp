@@ -5,8 +5,8 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/io_error.hpp"
-#include "mmml/result.hpp"
+#include "mmml/util/io_error.hpp"
+#include "mmml/util/result.hpp"
 
 namespace mmml {
 
