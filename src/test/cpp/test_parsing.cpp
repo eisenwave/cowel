@@ -6,7 +6,6 @@
 
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/io.hpp"
-#include "mmml/util/io_error.hpp"
 #include "mmml/util/tty.hpp"
 
 #include "mmml/ast.hpp"

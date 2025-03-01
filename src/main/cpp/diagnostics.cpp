@@ -5,7 +5,6 @@
 #include "mmml/util/annotation_type.hpp"
 #include "mmml/util/ansi.hpp"
 #include "mmml/util/assert.hpp"
-#include "mmml/util/io_error.hpp"
 #include "mmml/util/source_position.hpp"
 #include "mmml/util/to_chars.hpp"
 

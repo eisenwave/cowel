@@ -3,8 +3,6 @@
 
 #include <string_view>
 
-#include "mmml/util/io_error.hpp"
-
 #include "mmml/fwd.hpp"
 
 #include "compilation_stage.hpp"
