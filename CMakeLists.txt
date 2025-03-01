@@ -37,6 +37,7 @@ add_library(mmml STATIC
     src/main/cpp/argument_matching.cpp
     src/main/cpp/build_ast.cpp
     src/main/cpp/diagnostics.cpp
+    src/main/cpp/directive_processing.cpp
     src/main/cpp/directives.cpp
     src/main/cpp/html_writer.cpp
     src/main/cpp/io.cpp
