@@ -52,7 +52,7 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     if (!result) {
         MMML_SWITCH_ON_POLICY_ACTION(policy.error(result.error()));
     }
-    MMML_SWITCH_ON_POLICY_ACTION(policy.done(BMD_Stage::process));
+    MMML_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::process));
 
     return policy.is_success();
 #endif

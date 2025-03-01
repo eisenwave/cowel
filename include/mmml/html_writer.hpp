@@ -1,5 +1,5 @@
-#ifndef BIT_MANIPULATION_BMD_HTML_WRITER_HPP
-#define BIT_MANIPULATION_BMD_HTML_WRITER_HPP
+#ifndef MMML_HTML_WRITER_HPP
+#define MMML_HTML_WRITER_HPP
 
 #include "mmml/assert.hpp"
 #include "mmml/fwd.hpp"

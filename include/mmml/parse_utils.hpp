@@ -135,14 +135,6 @@ inline bool is_identifier(std::string_view str, std::string_view characters) noe
 
 } // namespace detail
 
-/// @brief Returns `true` if `str` is an identifier in the BMD and BMS languages, `false` otherwise.
-/// @param str the string to test
-[[nodiscard]]
-inline bool is_identifier(std::string_view str) noexcept
-{
-    return detail::is_identifier(str, identifier_characters);
-}
-
 /// @brief Returns `true` if `str` is an HTML identifier, `false` otherwise.
 /// @param str the string to test
 [[nodiscard]]

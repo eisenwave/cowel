@@ -1,5 +1,5 @@
-#ifndef MMML_BMD_TOKENS_HPP
-#define MMML_BMD_TOKENS_HPP
+#ifndef MMML_TOKENS_HPP
+#define MMML_TOKENS_HPP
 
 #include <span>
 #include <string_view>

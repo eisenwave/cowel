@@ -1,5 +1,5 @@
-#ifndef MMML_BMD_AST_HPP
-#define MMML_BMD_AST_HPP
+#ifndef MMML_AST_HPP
+#define MMML_AST_HPP
 
 #include <memory_resource>
 #include <span>
