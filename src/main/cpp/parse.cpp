@@ -443,10 +443,13 @@ private:
         if (!expect('[')) {
             return {};
         }
+        const std::size_t arguments_instruction_index = m_out.size();
         m_out.push_back({ AST_Instruction_Type::push_arguments, 0 });
 
-        while (try_match_argument()) {
+        for (std::size_t i = 0; try_match_argument(); ++i) {
             if (expect(']')) {
+                m_out[arguments_instruction_index].n = i + 1;
+                m_out.push_back({ AST_Instruction_Type::pop_arguments, 0 });
                 a.commit();
                 return true;
             }
@@ -458,7 +461,6 @@ private:
             );
         }
 
-        m_out.push_back({ AST_Instruction_Type::pop_arguments, 0 });
         return false;
     }
 
@@ -523,18 +525,15 @@ private:
         m_out.push_back({ AST_Instruction_Type::argument_name, name_length });
 
         if (name_length == 0) {
-            a.abort();
             return false;
         }
 
         const std::size_t trailing_whitespace = match_whitespace();
         if (eof()) {
-            a.abort();
             return false;
         }
 
         if (!expect('=')) {
-            a.abort();
             return false;
         }
 
@@ -564,6 +563,7 @@ private:
 
         trim_trailing_whitespace_in_matched_content();
 
+        a.commit();
         return content_amount;
     }
 
@@ -624,7 +624,6 @@ private:
         if (!expect('}')) {
             return {};
         }
-        MMML_ASSERT(eof());
 
         m_out[block_instruction_index].n = elements;
         m_out.push_back({ AST_Instruction_Type::pop_block, 0 });
