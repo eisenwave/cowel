@@ -99,9 +99,9 @@ constexpr Result<void, Error_Code> is_valid(std::array<char8_t, 4> str, int leng
 {
     MMML_ASSERT(length >= 1 && length <= 4);
 
-    std::uint32_t str32 = std::bit_cast<std::uint32_t>(str);
-    std::uint32_t mask = std::bit_cast<std::uint32_t>(detail::expectation_masks[length - 1]);
-    std::uint32_t expected = std::bit_cast<std::uint32_t>(detail::expectation_values[length - 1]);
+    const auto str32 = std::bit_cast<std::uint32_t>(str);
+    const auto mask = std::bit_cast<std::uint32_t>(detail::expectation_masks[length - 1]);
+    const auto expected = std::bit_cast<std::uint32_t>(detail::expectation_values[length - 1]);
 
     // https://nrk.neocities.org/articles/utf8-pext
     if ((str32 & mask) != expected) {
