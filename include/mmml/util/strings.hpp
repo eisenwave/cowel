@@ -14,11 +14,11 @@ namespace mmml {
 constexpr bool is_html_tag_name(std::string_view str)
 {
     // https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name
-    if (str.empty() || !is_ascii_alphanumeric(str[0])) {
+    if (str.empty() || !is_ascii_alphanumeric(char8_t(str[0]))) {
         return false;
     }
     for (char c : str) {
-        if (!is_html_tag_name_character(c)) {
+        if (!is_html_tag_name_character(char8_t(c))) {
             return false;
         }
     }
@@ -33,7 +33,7 @@ constexpr bool is_html_attribute_name(std::string_view str)
         return false;
     }
     for (char c : str) {
-        if (!is_html_attribute_name_character(c)) {
+        if (!is_html_attribute_name_character(char8_t(c))) {
             return false;
         }
     }

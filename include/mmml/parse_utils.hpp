@@ -82,15 +82,6 @@ std::optional<Text_Match> match_string_literal(std::string_view str) noexcept;
 [[nodiscard]]
 std::size_t match_digits(std::string_view str, int base);
 
-/// @brief Matches leading whitespace.
-/// @param str the string
-/// @return The number of leading whitespace characters.
-[[nodiscard]]
-inline std::size_t match_whitespace(std::string_view str) noexcept
-{
-    return std::min(str.find_first_not_of(" \t\r\n"), str.length());
-}
-
 /// @brief Matches a literal at the beginning of the given string.
 /// This includes any prefix such as `0x`, `0b`, or `0` and all the following digits.
 /// @param str the string which may contain a literal at the start

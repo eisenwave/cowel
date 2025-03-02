@@ -5,16 +5,16 @@ namespace mmml {
 
 /// @brief Returns `true` if the `c` is a decimal digit (`0` through `9`).
 [[nodiscard]]
-constexpr bool is_decimal_digit(char8_t c)
+constexpr bool is_ascii_digit(char8_t c)
 {
     return c >= u8'0' && c <= u8'9';
 }
 
 /// @brief Returns `true` if the `c` is whitespace.
 [[nodiscard]]
-constexpr bool is_space(char8_t c)
+constexpr bool is_ascii_whitespace(char8_t c)
 {
-    return c == u8' ' || c == u8'\n' || c == u8'\t' || c == u8'\r';
+    return c == u8' ' || c == u8'\n' || c == u8'\t' || c == u8'\r' || c == u8'\f' || c == u8'\v';
 }
 
 /// @brief Returns `true` if `c` is a latin character (`[a-zA-Z]`).
@@ -28,7 +28,7 @@ constexpr bool is_ascii_alphabetic(char8_t c)
 [[nodiscard]]
 constexpr bool is_ascii_alphanumeric(char8_t c)
 {
-    return is_decimal_digit(c) || is_ascii_alphanumeric(c);
+    return is_ascii_digit(c) || is_ascii_alphanumeric(c);
 }
 
 /// @brief Returns `true` if `c` is an escapable MMML character.

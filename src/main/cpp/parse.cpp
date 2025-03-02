@@ -292,18 +292,18 @@ private:
     [[nodiscard]]
     std::size_t match_directive_name()
     {
-        return peek(is_decimal_digit) ? 0 : match_char_sequence(is_mmml_directive_name_character);
+        return peek(is_ascii_digit) ? 0 : match_char_sequence(is_mmml_directive_name_character);
     }
 
     [[nodiscard]]
     std::size_t match_argument_name()
     {
-        return peek(is_decimal_digit) ? 0 : match_char_sequence(is_mmml_argument_name_character);
+        return peek(is_ascii_digit) ? 0 : match_char_sequence(is_mmml_argument_name_character);
     }
 
     std::size_t match_whitespace()
     {
-        return match_char_sequence(is_space);
+        return match_char_sequence(is_ascii_whitespace);
     }
 
     [[nodiscard]]
@@ -573,7 +573,7 @@ private:
         const std::size_t text_begin = m_pos - total_length;
 
         const std::string_view last_text = m_source.substr(text_begin, total_length);
-        const std::size_t last_non_white = last_text.find_last_not_of(" \t\r\n");
+        const std::size_t last_non_white = last_text.find_last_not_of(" \t\r\n\f\v");
         const std::size_t non_white_length = last_non_white + 1;
 
         if (last_non_white == std::string_view::npos) {
