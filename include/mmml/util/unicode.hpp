@@ -1,22 +1,29 @@
 #ifndef MMML_UNICODE_HPP
 #define MMML_UNICODE_HPP
 
+#include <array>
 #include <bit>
 #include <stdexcept>
 #include <string_view>
 
 #include "mmml/util/assert.hpp"
+#include "mmml/util/result.hpp"
+
+#include "mmml/fwd.hpp"
 
 namespace mmml::utf8 {
 
 /// @brief Returns the length of the UTF-8 unit sequence (including `c`)
 /// that is encoded when `c` is the first unit in that sequence.
+///
+/// Returns `0` if `c` is not a valid leading code unit,
+/// such as if it begins with `10` or `111110`.
 [[nodiscard]]
-constexpr int sequence_length(char8_t c)
+constexpr int sequence_length(char8_t c) noexcept
 {
-    constexpr auto lookup = 0x43201;
+    constexpr unsigned long lookup = 0b100'011'010'000'001;
     const int leading_ones = std::countl_one(static_cast<unsigned char>(c));
-    return leading_ones > 4 ? 0 : (lookup >> (leading_ones * 4)) & 0xf;
+    return leading_ones > 4 ? 0 : (lookup >> (leading_ones * 3)) & 0x7;
 }
 
 struct Code_Point_And_Length {
@@ -24,15 +31,29 @@ struct Code_Point_And_Length {
     int length;
 };
 
+enum struct Error_Code : Default_Underlying {
+    /// @brief Attempted to obtain unicode data from an empty string.
+    no_data,
+    /// @brief The bits in the initial unit would require there to be more subsequent units
+    /// than actually exist.
+    missing_units,
+    /// @brief The bit pattern is not a valid sequence of UTF-8 code units.
+    /// For example, the trailing code units don't have `10` continuation bits.
+    illegal_bits
+};
+
 /// @brief Extracts the next code point from UTF-8 data,
-/// given a known `length` in range `[0, 4]`.
-///
-/// The behavior is undefined if `length` is not in that range,
-/// or if `str` is not a valid range containing at least `length` characters.
+/// given a known `length`.
+/// No checks for the validity of the UTF-8 data are performed,
+/// such as whether continuation bits are present.
+/// @param str The UTF-8 units.
+/// Only the first `length` units are used for decoding.
+/// @param length The amount of UTF-8 units stored in `str`,
+/// in range `[1, 4]`.
 [[nodiscard]]
-constexpr char32_t decode_unchecked(const char8_t* str, int length)
+constexpr char32_t decode_unchecked(std::array<char8_t, 4> str, int length)
 {
-    MMML_ASSERT(length <= 4);
+    MMML_ASSERT(length >= 1 && length <= 4);
     // TODO: this could be optimized using bit_compress (i.e. PEXT instruction)
     // clang-format off
     switch (length) {
@@ -56,11 +77,64 @@ constexpr char32_t decode_unchecked(const char8_t* str, int length)
     // clang-format on
 }
 
+namespace detail {
+
+inline constexpr char8_t expectation_masks[][4] = {
+    { 0x80, 0x00, 0x00, 0x00 },
+    { 0xE0, 0xC0, 0x00, 0x00 },
+    { 0xF0, 0xC0, 0xC0, 0x00 },
+    { 0xF8, 0xC0, 0xC0, 0xC0 },
+};
+
+inline constexpr char8_t expectation_values[][4] = {
+    { 0x00, 0x00, 0x00, 0x00 },
+    { 0xC0, 0x80, 0x00, 0x00 },
+    { 0xE0, 0x80, 0x80, 0x00 },
+    { 0xF0, 0x80, 0x80, 0x80 },
+};
+
+} // namespace detail
+
+constexpr Result<void, Error_Code> is_valid(std::array<char8_t, 4> str, int length)
+{
+    MMML_ASSERT(length >= 1 && length <= 4);
+
+    std::uint32_t str32 = std::bit_cast<std::uint32_t>(str);
+    std::uint32_t mask = std::bit_cast<std::uint32_t>(detail::expectation_masks[length - 1]);
+    std::uint32_t expected = std::bit_cast<std::uint32_t>(detail::expectation_values[length - 1]);
+
+    // https://nrk.neocities.org/articles/utf8-pext
+    if ((str32 & mask) != expected) {
+        return Error_Code::illegal_bits;
+    }
+
+    return {};
+}
+
+/// @brief Like `decode_unchecked`,
+/// but checks the integrity of the given UTF-8 data,
+/// such as that continuation bits are present and have their expected value.
+/// @param str The UTF-8 units.
+/// Only the first `length` units are used for decoding.
+/// @param length The amount of UTF-8 units stored in `str`,
+/// in range `[1, 4]`.
+constexpr Result<char32_t, Error_Code> decode(std::array<char8_t, 4> str, int length)
+{
+    MMML_ASSERT(length >= 1 && length <= 4);
+    if (!is_valid(str, length)) {
+        return Error_Code::illegal_bits;
+    }
+
+    return decode_unchecked(str, length);
+}
+
 [[nodiscard]]
 constexpr Code_Point_And_Length decode_and_length_unchecked(const char8_t* str)
 {
     const int length = sequence_length(*str);
-    return { .code_point = decode_unchecked(str, length), .length = length };
+    std::array<char8_t, 4> padded {};
+    std::copy(str, str + length, padded.data());
+    return { .code_point = decode_unchecked(padded, length), .length = length };
 }
 
 [[nodiscard]]
@@ -70,29 +144,40 @@ constexpr char32_t decode_unchecked(const char8_t* str)
 }
 
 [[nodiscard]]
-constexpr Code_Point_And_Length decode_and_length(std::u8string_view str) noexcept
+constexpr Result<Code_Point_And_Length, Error_Code> //
+decode_and_length(std::u8string_view str) noexcept
 {
     if (str.empty()) {
-        return { 0, 0 };
+        return Error_Code::no_data;
     }
     const int length = sequence_length(str[0]);
-    if (str.size() < std::size_t(length)) {
-        return { 0, 0 };
+    if (length == 0) {
+        return Error_Code::illegal_bits;
     }
-    return { .code_point = decode_unchecked(str.data(), length), .length = length };
+    if (str.size() < std::size_t(length)) {
+        return Error_Code::missing_units;
+    }
+    std::array<char8_t, 4> padded {};
+    std::copy(str.data(), str.data() + length, padded.data());
+    Result<char32_t, Error_Code> result = decode(padded, length);
+    if (!result) {
+        return result.error();
+    }
+
+    return Code_Point_And_Length { .code_point = *result, .length = length };
 }
 
 [[nodiscard]]
-constexpr bool is_valid(std::u8string_view str) noexcept
+constexpr Result<void, Error_Code> is_valid(std::u8string_view str) noexcept
 {
     while (!str.empty()) {
-        const auto [code_point, length] = decode_and_length(str);
-        if (length == 0) {
-            return false;
+        const Result<Code_Point_And_Length, Error_Code> next = decode_and_length(str);
+        if (!next) {
+            return next.error();
         }
-        str.remove_prefix(std::size_t(length));
+        str.remove_prefix(std::size_t(next->length));
     }
-    return true;
+    return {};
 }
 
 /// @brief Thrown when decoding unicode strings fails.
@@ -149,15 +234,15 @@ public:
     [[nodiscard]]
     char32_t operator*() const
     {
-        const auto [code_point, length] = next();
-        if (length == 0) {
+        const Result<Code_Point_And_Length, Error_Code> result = next();
+        if (!result) {
             throw Unicode_Error { "Corrupted UTF-8 string or past the end." };
         }
-        return code_point;
+        return result->code_point;
     }
 
     [[nodiscard]]
-    Code_Point_And_Length next() const noexcept
+    Result<Code_Point_And_Length, Error_Code> next() const noexcept
     {
         const std::u8string_view str { m_pointer, m_end };
         return decode_and_length(str);
