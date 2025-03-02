@@ -1,9 +1,10 @@
 #include <span>
 #include <vector>
 
+#include "mmml/util/html_writer.hpp"
+
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
-#include "mmml/html_writer.hpp"
 
 namespace mmml {
 

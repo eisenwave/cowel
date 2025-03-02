@@ -1,8 +1,8 @@
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/source_position.hpp"
 
-#include "mmml/html_writer.hpp"
-#include "mmml/parse_utils.hpp"
+#include "mmml/util/html_writer.hpp"
+#include "mmml/util/strings.hpp"
 
 namespace mmml {
 namespace {
@@ -66,7 +66,7 @@ HTML_Writer& HTML_Writer::write_preamble()
 HTML_Writer& HTML_Writer::write_empty_tag(std::string_view id)
 {
     MMML_ASSERT(!m_in_attributes);
-    MMML_ASSERT(is_html_identifier(id));
+    MMML_ASSERT(is_html_tag_name(id));
 
     m_out.append('<', Annotation_Type::html_tag_bracket);
     m_out.append(id, Annotation_Type::html_tag_identifier);
@@ -78,7 +78,7 @@ HTML_Writer& HTML_Writer::write_empty_tag(std::string_view id)
 HTML_Writer& HTML_Writer::open_tag(std::string_view id)
 {
     MMML_ASSERT(!m_in_attributes);
-    MMML_ASSERT(is_html_identifier(id));
+    MMML_ASSERT(is_html_tag_name(id));
 
     m_out.append('<', Annotation_Type::html_tag_bracket);
     m_out.append(id, Annotation_Type::html_tag_identifier);
@@ -91,7 +91,7 @@ HTML_Writer& HTML_Writer::open_tag(std::string_view id)
 Attribute_Writer HTML_Writer::open_tag_with_attributes(std::string_view id)
 {
     MMML_ASSERT(!m_in_attributes);
-    MMML_ASSERT(is_html_identifier(id));
+    MMML_ASSERT(is_html_tag_name(id));
 
     m_out.append('<', Annotation_Type::html_tag_bracket);
     m_out.append(id, Annotation_Type::html_tag_identifier);
@@ -102,7 +102,7 @@ Attribute_Writer HTML_Writer::open_tag_with_attributes(std::string_view id)
 HTML_Writer& HTML_Writer::close_tag(std::string_view id)
 {
     MMML_ASSERT(!m_in_attributes);
-    MMML_ASSERT(is_html_identifier(id));
+    MMML_ASSERT(is_html_tag_name(id));
     MMML_ASSERT(m_depth != 0);
 
     --m_depth;
@@ -126,7 +126,7 @@ HTML_Writer& HTML_Writer::write_comment(std::string_view comment)
 HTML_Writer& HTML_Writer::write_attribute(std::string_view key, std::string_view value)
 {
     MMML_ASSERT(m_in_attributes);
-    MMML_ASSERT(is_html_identifier(key));
+    MMML_ASSERT(is_html_attribute_name(key));
 
     m_out.append(' ');
     m_out.append(key, Annotation_Type::html_attribute_key);

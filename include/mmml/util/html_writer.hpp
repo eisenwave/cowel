@@ -4,7 +4,6 @@
 #include "mmml/util/assert.hpp"
 
 #include "mmml/fwd.hpp"
-#include "mmml/parse.hpp"
 
 namespace mmml {
 

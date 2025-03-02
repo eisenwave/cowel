@@ -5,6 +5,7 @@
 #include <optional>
 #include <string_view>
 
+#include "mmml/util/chars.hpp"
 #include "mmml/util/result.hpp"
 
 #include "mmml/fwd.hpp"
@@ -52,24 +53,6 @@ struct Text_Match {
     bool is_terminated;
 };
 
-/// @brief Returns `true` if the given character is a decimal digit (`0` through `9`).
-/// @param c the character
-/// @return `true` if `c` is a decimal digit, `false` otherwise.
-[[nodiscard]]
-constexpr bool is_decimal_digit(char c)
-{
-    return c >= '0' && c <= '9';
-}
-
-/// @brief Returns true if the given character is whitespace.
-/// @param c the character
-/// @return `true` if `c` is whitespace, `false` otherwise.
-[[nodiscard]]
-constexpr bool is_space(char c)
-{
-    return c == ' ' || c == '\n' || c == '\t' || c == '\r';
-}
-
 /// @brief Matches a C99-style line-comment.
 /// @param str the string
 /// @return The match or `std::nullopt`.
@@ -106,52 +89,6 @@ std::size_t match_digits(std::string_view str, int base);
 inline std::size_t match_whitespace(std::string_view str) noexcept
 {
     return std::min(str.find_first_not_of(" \t\r\n"), str.length());
-}
-
-/// @brief A string containing all possible identifier characters.
-inline constexpr std::string_view html_identifier_characters = "abcdefghijklmnopqrstuvwxyz"
-                                                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                                               "0123456789_-";
-
-/// @brief A string containing all possible identifier characters.
-inline constexpr std::string_view identifier_characters
-    = html_identifier_characters.substr(0, html_identifier_characters.length() - 1);
-
-/// @brief Matches an identifier.
-/// This function matches the regex /[_a-zA-Z][_a-zA-Z0-9]*/
-/// @param str the string, possibly containing an identifier at the start
-/// @return The length of the identifier if it could be matched, zero otherwise.
-[[nodiscard]]
-std::size_t match_identifier(std::string_view str) noexcept;
-
-namespace detail {
-
-[[nodiscard]]
-inline bool is_identifier(std::string_view str, std::string_view characters) noexcept
-{
-    return !str.empty() //
-        && !is_decimal_digit(str[0]) //
-        && str.find_first_not_of(characters) == std::string_view::npos;
-}
-
-} // namespace detail
-
-/// @brief Returns `true` if `str` is an HTML identifier, `false` otherwise.
-/// @param str the string to test
-[[nodiscard]]
-inline bool is_html_identifier(std::string_view str)
-{
-    return detail::is_identifier(str, html_identifier_characters);
-}
-
-/// @brief Returns `true` if the given string requires wrapping in quotes when it
-/// appears as the value in an attribute.
-/// For example, `id=123` is a valid HTML attribute with a value and requires
-/// no wrapping, but `id="<x>"` requires `<x>` to be surrounded by quotes.
-[[nodiscard]]
-inline bool requires_quotes_in_html_attribute(std::string_view value)
-{
-    return value.find_first_of("\"/'`=<> ") != std::string_view::npos;
 }
 
 /// @brief Matches a literal at the beginning of the given string.

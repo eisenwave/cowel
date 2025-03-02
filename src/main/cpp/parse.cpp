@@ -1,6 +1,7 @@
 #include <optional>
 
 #include "mmml/util/assert.hpp"
+#include "mmml/util/chars.hpp"
 
 #include "mmml/ast.hpp"
 #include "mmml/parse.hpp"
@@ -56,48 +57,6 @@ Escaped::Escaped(const Local_Source_Span& pos)
 } // namespace ast
 
 namespace {
-
-[[nodiscard]]
-bool is_escapeable(char c)
-{
-    return c == '\\' || c == '}' || c == '{';
-}
-
-[[nodiscard]]
-bool is_digit(char c)
-{
-    return c >= '0' && c <= '9';
-}
-
-[[nodiscard]]
-bool is_latin(char c)
-{
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-}
-
-[[nodiscard]]
-bool is_whitespace(char c)
-{
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
-}
-
-[[nodiscard]]
-bool is_alphanumeric(char c)
-{
-    return is_digit(c) || is_latin(c);
-}
-
-[[nodiscard]]
-bool is_argument_name_character(char c)
-{
-    return c == '-' || c == '_' || is_alphanumeric(c);
-}
-
-[[nodiscard]]
-bool is_directive_name_character(char c)
-{
-    return c == '-' || is_alphanumeric(c);
-}
 
 enum struct Content_Context : Default_Underlying { document, argument_value, block };
 
@@ -248,7 +207,7 @@ private:
         const std::string_view rest = peek_all();
         return !rest.empty() //
             && rest[0] == '\\' //
-            && (rest.length() <= 1 || !is_escapeable(rest[1]));
+            && (rest.length() <= 1 || !is_mmml_escapeable(char8_t(rest[1])));
     }
 
     /// @brief Checks whether the next character satisfies a predicate without advancing
@@ -259,6 +218,11 @@ private:
     bool peek(bool predicate(char)) const
     {
         return !eof() && predicate(m_source[m_pos]);
+    }
+
+    bool peek(bool predicate(char8_t)) const
+    {
+        return !eof() && predicate(char8_t(m_source[m_pos]));
     }
 
     [[nodiscard]]
@@ -285,6 +249,19 @@ private:
         return true;
     }
 
+    bool expect(bool predicate(char8_t))
+    {
+        if (eof()) {
+            return false;
+        }
+        const char c = m_source[m_pos];
+        if (!predicate(char8_t(c))) {
+            return false;
+        }
+        ++m_pos;
+        return true;
+    }
+
     [[nodiscard]]
     bool expect_literal(std::string_view text)
     {
@@ -305,21 +282,28 @@ private:
         return m_pos - initial;
     }
 
+    std::size_t match_char_sequence(bool predicate(char8_t))
+    {
+        const std::size_t initial = m_pos;
+        while (expect(predicate)) { }
+        return m_pos - initial;
+    }
+
     [[nodiscard]]
     std::size_t match_directive_name()
     {
-        return peek(is_digit) ? 0 : match_char_sequence(is_directive_name_character);
+        return peek(is_decimal_digit) ? 0 : match_char_sequence(is_mmml_directive_name_character);
     }
 
     [[nodiscard]]
     std::size_t match_argument_name()
     {
-        return peek(is_digit) ? 0 : match_char_sequence(is_argument_name_character);
+        return peek(is_decimal_digit) ? 0 : match_char_sequence(is_mmml_argument_name_character);
     }
 
     std::size_t match_whitespace()
     {
-        return match_char_sequence(is_whitespace);
+        return match_char_sequence(is_space);
     }
 
     [[nodiscard]]
@@ -374,7 +358,8 @@ private:
                 // No matter what, a backslash followed by a directive name character forms a
                 // directive because the remaining arguments and the block are optional.
                 // Therefore, we must stop here because text content should not include directives.
-                if (is_escapeable(next) || is_directive_name_character(next)) {
+                if (is_mmml_escapeable(char8_t(next))
+                    || is_mmml_directive_name_character(char8_t(next))) {
                     break;
                 }
                 continue;
@@ -472,7 +457,7 @@ private:
 
         if (m_pos + sequence_length < m_source.size() //
             && m_source[m_pos] == '\\' //
-            && is_escapeable(m_source[m_pos + 1])) //
+            && is_mmml_escapeable(char8_t(m_source[m_pos + 1]))) //
         {
             m_pos += sequence_length;
             m_out.push_back({ AST_Instruction_Type::escape, sequence_length });

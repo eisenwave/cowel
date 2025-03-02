@@ -30,15 +30,16 @@ set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
 include_directories(${INCLUDE_DIRS})
 
 add_library(mmml STATIC
+    src/main/cpp/util/html_writer.cpp
+    src/main/cpp/util/io.cpp
+    src/main/cpp/util/tty.cpp
+
     src/main/cpp/argument_matching.cpp
     src/main/cpp/build_ast.cpp
     src/main/cpp/diagnostics.cpp
     src/main/cpp/directive_processing.cpp
     src/main/cpp/directives.cpp
-    src/main/cpp/html_writer.cpp
-    src/main/cpp/io.cpp
     src/main/cpp/parse.cpp
-    src/main/cpp/tty.cpp
 )
 
 target_compile_options(mmml PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})

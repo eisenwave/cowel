@@ -78,15 +78,6 @@ std::size_t match_digits(std::string_view str, int base)
     return std::min(str.find_first_not_of(digits), str.size());
 }
 
-std::size_t match_identifier(std::string_view str) noexcept
-{
-    if (str.empty() || is_decimal_digit(str[0])) {
-        return 0;
-    }
-    const std::size_t result = str.find_first_not_of(identifier_characters);
-    return std::min(result, str.length());
-}
-
 Literal_Match_Result match_integer_literal(std::string_view s) noexcept
 {
     if (s.empty() || !is_decimal_digit(s[0])) {

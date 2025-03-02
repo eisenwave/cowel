@@ -3,12 +3,12 @@
 
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/code_language.hpp"
+#include "mmml/util/html_writer.hpp"
 
 #include "mmml/ast.hpp"
 #include "mmml/directive_arguments.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
-#include "mmml/html_writer.hpp"
 
 namespace mmml {
 
