@@ -23,9 +23,11 @@ struct HTML_Writer {
 public:
     friend struct Attribute_Writer;
     using Self = HTML_Writer;
+    using char_type = char8_t;
+    using string_view_type = std::u8string_view;
 
 private:
-    Annotated_String& m_out;
+    Annotated_String8& m_out;
 
     std::size_t m_depth = 0;
     bool m_in_attributes = false;
@@ -35,7 +37,7 @@ public:
     /// Writes nothing to the stream.
     /// `out.fail()` shall be true.
     /// @param out the output stream
-    explicit HTML_Writer(Annotated_String& out);
+    explicit HTML_Writer(Annotated_String8& out);
 
     HTML_Writer(const HTML_Writer&) = delete;
     HTML_Writer& operator=(const HTML_Writer&) = delete;
@@ -58,13 +60,13 @@ public:
     Self& write_preamble();
 
     /// @brief Writes an empty tag such as `<br/>` or `<hr/>`.
-    Self& write_empty_tag(std::string_view id);
+    Self& write_empty_tag(string_view_type id);
 
     /// @brief Writes an HTML comment with the given contents.
-    Self& write_comment(std::string_view comment);
+    Self& write_comment(string_view_type comment);
 
     /// @brief Writes an opening tag such as `<div>`.
-    Self& open_tag(std::string_view id);
+    Self& open_tag(string_view_type id);
 
     /// @brief Writes an incomplete opening tag such as `<div`.
     /// Returns an `Attribute_Writer` which must be used to write attributes (if any)
@@ -72,25 +74,25 @@ public:
     /// @param properties the tag properties
     /// @return `*this`
     [[nodiscard]]
-    Attribute_Writer open_tag_with_attributes(std::string_view id);
+    Attribute_Writer open_tag_with_attributes(string_view_type id);
 
     /// @brief Writes a closing tag, such as `</div>`.
     /// The most recent call to `open_tag` or `open_tag_with_attributes` shall have been made with
     /// the same arguments.
-    Self& close_tag(std::string_view id);
+    Self& close_tag(string_view_type id);
 
     /// @brief Writes text between tags.
     /// Text characters such as `<` or `>` which interfere with HTML are converted to entities.
-    void write_inner_text(std::string_view text);
+    void write_inner_text(string_view_type text);
 
     /// @brief Writes HTML content between tags.
     /// Unlike `write_inner_text`, does not escape any entities.
     ///
     /// WARNING: Improper use of this function can easily result in incorrect HTML output.
-    void write_inner_html(std::string_view text);
+    void write_inner_html(string_view_type text);
 
 private:
-    Self& write_attribute(std::string_view key, std::string_view value);
+    Self& write_attribute(string_view_type key, string_view_type value);
     Self& end_attributes();
     Self& end_empty_tag_attributes();
 
@@ -99,13 +101,15 @@ private:
     /// If the string contains no such entities, this function is equivalent to writing `text` to
     /// the writer directly.
     /// @param text the text to write
-    void write_escaped_text(std::string_view text);
+    void write_escaped_text(string_view_type text);
 };
 
 /// @brief RAII helper class which lets us write attributes more conveniently.
 /// This class is not intended to be used directly, but with the help of `HTML_Writer`.
 struct Attribute_Writer {
 private:
+    using string_view_type = HTML_Writer::string_view_type;
+
     HTML_Writer& m_writer;
 
 public:
@@ -124,7 +128,7 @@ public:
     /// @param key the attribute key; `is_identifier(key)` shall be `true`.
     /// @param value the attribute value, or an empty string
     /// @return `*this`
-    Attribute_Writer& write_attribute(std::string_view key, std::string_view value = "")
+    Attribute_Writer& write_attribute(string_view_type key, string_view_type value = {})
     {
         m_writer.write_attribute(key, value);
         return *this;
