@@ -11,14 +11,14 @@ namespace mmml {
 /// This includes both builtin tag names (which are purely alphabetic)
 /// and custom tag names.
 [[nodiscard]]
-constexpr bool is_html_tag_name(std::string_view str)
+constexpr bool is_html_tag_name(std::u8string_view str)
 {
     // https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name
-    if (str.empty() || !is_ascii_alphanumeric(char8_t(str[0]))) {
+    if (str.empty() || !is_ascii_alphanumeric(str[0])) {
         return false;
     }
     for (char c : str) {
-        if (!is_html_tag_name_character(char8_t(c))) {
+        if (!is_html_tag_name_character(c)) {
             return false;
         }
     }
@@ -26,14 +26,14 @@ constexpr bool is_html_tag_name(std::string_view str)
 }
 
 [[nodiscard]]
-constexpr bool is_html_attribute_name(std::string_view str)
+constexpr bool is_html_attribute_name(std::u8string_view str)
 {
     // https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name
     if (str.empty()) {
         return false;
     }
     for (char c : str) {
-        if (!is_html_attribute_name_character(char8_t(c))) {
+        if (!is_html_attribute_name_character(c)) {
             return false;
         }
     }
@@ -45,9 +45,9 @@ constexpr bool is_html_attribute_name(std::string_view str)
 /// For example, `id=123` is a valid HTML attribute with a value and requires
 /// no wrapping, but `id="<x>"` requires `<x>` to be surrounded by quotes.
 [[nodiscard]]
-constexpr bool requires_quotes_in_html_attribute(std::string_view value)
+constexpr bool requires_quotes_in_html_attribute(std::u8string_view value)
 {
-    return value.find_first_of("\"/'`=<> ") != std::string_view::npos;
+    return value.find_first_of(u8"\"/'`=<> ") != std::u8string_view::npos;
 }
 
 } // namespace mmml
