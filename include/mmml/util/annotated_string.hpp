@@ -22,30 +22,35 @@ enum struct Sign_Policy : Default_Underlying {
     nonzero
 };
 
-struct Annotated_String {
-public:
-    struct Length {
-        std::size_t text_length;
-        std::size_t span_count;
-    };
+struct Annotated_String_Length {
+    std::size_t text_length;
+    std::size_t span_count;
+};
 
+template <typename Char>
+struct Basic_Annotated_String {
+public:
     using iterator = Annotation_Span*;
     using const_iterator = const Annotation_Span*;
+    using char_type = Char;
+    using string_view_type = std::basic_string_view<Char>;
 
 private:
-    std::pmr::vector<char> m_text;
+    std::pmr::vector<Char> m_text;
     std::pmr::vector<Annotation_Span> m_spans;
 
 public:
     [[nodiscard]]
-    explicit Annotated_String(std::pmr::memory_resource* memory = std::pmr::get_default_resource())
+    explicit Basic_Annotated_String(
+        std::pmr::memory_resource* memory = std::pmr::get_default_resource()
+    )
         : m_text(memory)
         , m_spans(memory)
     {
     }
 
     [[nodiscard]]
-    Length get_length() const
+    Annotated_String_Length get_length() const
     {
         return { .text_length = m_text.size(), .span_count = m_spans.size() };
     }
@@ -63,18 +68,18 @@ public:
     }
 
     [[nodiscard]]
-    std::string_view get_text() const
+    std::u8string_view get_text() const
     {
         return { m_text.data(), m_text.size() };
     }
 
     [[nodiscard]]
-    std::string_view get_text(const Annotation_Span& span) const
+    std::u8string_view get_text(const Annotation_Span& span) const
     {
         return get_text().substr(span.begin, span.length);
     }
 
-    void resize(Length length)
+    void resize(Annotated_String_Length length)
     {
         m_text.resize(length.text_length);
         m_spans.resize(length.span_count);
@@ -88,33 +93,33 @@ public:
 
     /// @brief Appends a raw range of text to the string.
     /// This is typically useful for e.g. whitespace between pieces of code.
-    void append(std::string_view text)
+    void append(string_view_type text)
     {
         m_text.insert(m_text.end(), text.begin(), text.end());
     }
 
     /// @brief Appends a raw character of text to the string.
     /// This is typically useful for e.g. whitespace between pieces of code.
-    void append(char c)
+    void append(char_type c)
     {
         m_text.push_back(c);
     }
 
     /// @brief Appends a raw character of text multiple times to the string.
     /// This is typically useful for e.g. whitespace between pieces of code.
-    void append(std::size_t amount, char c)
+    void append(std::size_t amount, char_type c)
     {
         m_text.insert(m_text.end(), amount, c);
     }
 
-    void append(std::string_view text, Annotation_Type type)
+    void append(string_view_type t, Annotation_Type type)
     {
         MMML_ASSERT(!text.empty());
         m_spans.push_back({ .begin = m_text.size(), .length = text.size(), .type = type });
         m_text.insert(m_text.end(), text.begin(), text.end());
     }
 
-    void append(char c, Annotation_Type type)
+    void append(char_type c, Annotation_Type type)
     {
         m_spans.push_back({ .begin = m_text.size(), .length = 1, .type = type });
         m_text.push_back(c);
@@ -125,7 +130,7 @@ public:
     {
         const bool plus
             = (signs == Sign_Policy::always && x >= 0) || (signs == Sign_Policy::nonzero && x > 0);
-        const Characters chars = to_characters(x);
+        const Characters chars = to_characters<char_type>(x);
         append_digits(chars.as_string(), plus);
     }
 
@@ -135,14 +140,14 @@ public:
     {
         const bool plus
             = (signs == Sign_Policy::always && x >= 0) || (signs == Sign_Policy::nonzero && x > 0);
-        const Characters chars = to_characters(x);
+        const Characters chars = to_characters<char_type>(x);
         append_digits(chars.as_string(), plus, &type);
     }
 
 private:
     // using std::optional would obviously be more idiomatic, but we can avoid
     // #include <optional> for this file by using a pointer
-    void append_digits(std::string_view digits, bool plus, const Annotation_Type* type = nullptr)
+    void append_digits(string_view_type digits, bool plus, const Annotation_Type* type = nullptr)
     {
         const std::size_t begin = m_text.size();
         std::size_t prefix_length = 0;
@@ -170,7 +175,10 @@ public:
     ///     .append(name);
     /// ```
     /// @param type the type of the appended span as a whole
-    Scoped_Builder build(Annotation_Type type) &;
+    Scoped_Builder build(Annotation_Type type) &
+    {
+        return { *this, type };
+    }
 
     [[nodiscard]]
     iterator begin()
@@ -209,14 +217,19 @@ public:
     }
 };
 
-struct [[nodiscard]] Annotated_String::Scoped_Builder {
+template <typename Char>
+struct [[nodiscard]] Basic_Annotated_String<Char>::Scoped_Builder {
 private:
-    Annotated_String& self;
+    using owner_type = Basic_Annotated_String<Char>;
+    using char_type = owner_type::char_type;
+    using string_view_type = owner_type::string_view_type;
+
+    owner_type& self;
     std::size_t initial_size;
     Annotation_Type type;
 
 public:
-    Scoped_Builder(Annotated_String& self, Annotation_Type type)
+    Scoped_Builder(owner_type& self, Annotation_Type type)
         : self { self }
         , initial_size { self.m_text.size() }
         , type { type }
@@ -226,7 +239,7 @@ public:
     ~Scoped_Builder() noexcept(false)
     {
         MMML_ASSERT(self.m_text.size() >= initial_size);
-        std::size_t length = self.m_text.size() - initial_size;
+        const std::size_t length = self.m_text.size() - initial_size;
         if (length != 0) {
             self.m_spans.push_back(
                 { .begin = initial_size, .length = self.m_text.size() - initial_size, .type = type }
@@ -237,19 +250,19 @@ public:
     Scoped_Builder(const Scoped_Builder&) = delete;
     Scoped_Builder& operator=(const Scoped_Builder&) = delete;
 
-    Scoped_Builder& append(char c)
+    Scoped_Builder& append(char_type c)
     {
         self.append(c);
         return *this;
     }
 
-    Scoped_Builder& append(std::size_t n, char c)
+    Scoped_Builder& append(std::size_t n, char_type c)
     {
         self.append(n, c);
         return *this;
     }
 
-    Scoped_Builder& append(std::string_view text)
+    Scoped_Builder& append(string_view_type text)
     {
         self.append(text);
         return *this;
@@ -262,11 +275,6 @@ public:
         return *this;
     }
 };
-
-inline Annotated_String::Scoped_Builder Annotated_String::build(Annotation_Type type) &
-{
-    return { *this, type };
-}
 
 } // namespace mmml
 

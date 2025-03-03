@@ -34,8 +34,7 @@ using Default_Underlying = unsigned char;
 #define MMML_ENUM_STRING_CASE(...)                                                                 \
     case __VA_ARGS__: return #__VA_ARGS__
 
-struct Annotated_String;
-struct Annotated_String_Iterator;
+struct Annotated_String_Length;
 struct Annotation_Span;
 enum struct Annotation_Type : Default_Underlying;
 struct Argument_Matcher;
@@ -47,12 +46,10 @@ struct AST_Instruction;
 enum struct AST_Instruction_Type : Default_Underlying;
 struct Attribute_Writer;
 struct Builtin_Directive_Set;
+template <typename Char>
+struct Basic_Annotated_String;
 template <typename Char, std::size_t>
 struct Basic_Characters;
-template <std::size_t capacity>
-using Characters = Basic_Characters<char, capacity>;
-template <std::size_t capacity>
-using Characters8 = Basic_Characters<char8_t, capacity>;
 enum struct Code_Language : Default_Underlying;
 enum struct Annotation_Type : Default_Underlying;
 struct Content;
@@ -82,6 +79,14 @@ struct Escaped;
 struct Text;
 
 } // namespace ast
+
+using Annotated_String = Basic_Annotated_String<char>;
+using Annotated_String8 = Basic_Annotated_String<char8_t>;
+
+template <std::size_t capacity>
+using Characters = Basic_Characters<char, capacity>;
+template <std::size_t capacity>
+using Characters8 = Basic_Characters<char8_t, capacity>;
 
 } // namespace mmml
 
