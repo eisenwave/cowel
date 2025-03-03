@@ -28,7 +28,7 @@ struct Basic_Characters {
     std::size_t length;
 
     [[nodiscard]]
-    std::string_view as_string() const
+    std::basic_string_view<Char> as_string() const
     {
         return { buffer.data(), length };
     }
