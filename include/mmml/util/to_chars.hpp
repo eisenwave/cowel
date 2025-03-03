@@ -22,9 +22,9 @@ concept to_chars_able = requires(char* p, T x) { std::to_chars(p, p, x); };
 template <typename T>
 concept character_convertible = digit_sequence<T> && to_chars_able<T>;
 
-template <std::size_t capacity>
-struct Characters {
-    std::array<char, capacity> buffer;
+template <typename Char, std::size_t capacity>
+struct Basic_Characters {
+    std::array<Char, capacity> buffer;
     std::size_t length;
 
     [[nodiscard]]
@@ -38,15 +38,22 @@ template <typename T>
 constexpr int approximate_to_chars_decimal_digits_v
     = (std::numeric_limits<T>::digits * 100 / 310) + 1 + std::is_signed_v<T>;
 
-template <character_convertible T>
+template <typename Char = char, character_convertible T>
 [[nodiscard]]
-constexpr Characters<approximate_to_chars_decimal_digits_v<T>> to_characters(T x)
+constexpr Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_characters(const T& x)
 {
-    Characters<approximate_to_chars_decimal_digits_v<T>> chars {};
+    Characters<Char, approximate_to_chars_decimal_digits_v<T>> chars {};
     auto result = std::to_chars(chars.buffer.data(), chars.buffer.data() + chars.buffer.size(), x);
     MMML_ASSERT(result.ec == std::errc {});
     chars.length = std::size_t(result.ptr - chars.buffer.data());
     return chars;
+}
+
+template <character_convertible T>
+[[nodiscard]]
+constexpr Characters8<approximate_to_chars_decimal_digits_v<T>> to_characters8(const T& x)
+{
+    return to_characters<char8_t>(x);
 }
 
 } // namespace mmml

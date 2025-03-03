@@ -47,8 +47,12 @@ struct AST_Instruction;
 enum struct AST_Instruction_Type : Default_Underlying;
 struct Attribute_Writer;
 struct Builtin_Directive_Set;
-template <std::size_t>
-struct Characters;
+template <typename Char, std::size_t>
+struct Basic_Characters;
+template <std::size_t capacity>
+using Characters = Basic_Characters<char, capacity>;
+template <std::size_t capacity>
+using Characters8 = Basic_Characters<char8_t, capacity>;
 enum struct Code_Language : Default_Underlying;
 enum struct Annotation_Type : Default_Underlying;
 struct Content;
