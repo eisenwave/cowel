@@ -262,7 +262,7 @@ std::optional<Parsed_File> parse_file(std::u8string_view file, std::pmr::memory_
     Parsed_File result { .source = std::pmr::vector<char8_t> { memory },
                          .instructions = std::pmr::vector<AST_Instruction> { memory } };
 
-    Result<void, mmml::IO_Error_Code> r = file_to_bytes(result.source, full_file_name);
+    Result<void, mmml::IO_Error_Code> r = load_utf8_file(result.source, full_file_name);
     if (!r) {
         Annotated_String8 out { memory };
         print_io_error(out, full_file_name, r.error());

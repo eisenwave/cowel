@@ -34,7 +34,7 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     policy.file = full_path;
 
     std::pmr::vector<char8_t> source_data { &memory };
-    if (Result<void, IO_Error_Code> r = file_to_bytes(source_data, full_path); !r) {
+    if (Result<void, IO_Error_Code> r = load_utf8_file(source_data, full_path); !r) {
         return policy.error(r.error()) == Policy_Action::success;
     }
     MMML_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::load_file));
