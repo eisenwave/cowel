@@ -1,3 +1,5 @@
+#ifndef MMML_EMSCRIPTEN
+
 #include <cstdio>
 #include <cstring>
 
@@ -9,29 +11,41 @@
 namespace mmml {
 
 [[nodiscard]]
-Result<void, IO_Error_Code> file_to_bytes(std::pmr::vector<char>& out, std::string_view path)
+Result<void, IO_Error_Code> file_to_bytes_chunked(
+    Function_Ref<void(std::span<const std::byte>)> consume_chunk,
+    std::string_view path
+)
 {
-    constexpr std::size_t block_size = 4096;
+    constexpr std::size_t block_size = BUFSIZ;
     char buffer[block_size] {};
 
-    MMML_ASSERT(path.size() < block_size);
+    if (path.size() > block_size) {
+        return IO_Error_Code::cannot_open;
+    }
     std::memcpy(buffer, path.data(), path.size());
 
-    auto stream = std::fopen(buffer, "rb");
+    Unique_File stream = fopen_unique(buffer, "rb");
     if (!stream) {
         return IO_Error_Code::cannot_open;
     }
 
     std::size_t read_size;
     do {
-        read_size = std::fread(buffer, 1, block_size, stream);
-        if (std::ferror(stream)) {
+        read_size = std::fread(buffer, 1, block_size, stream.get());
+        if (std::ferror(stream.get())) {
             return IO_Error_Code::read_error;
         }
-        out.insert(out.end(), buffer, buffer + read_size);
+        std::span<std::byte> chunk { reinterpret_cast<std::byte*>(buffer), read_size };
+        consume_chunk(chunk);
     } while (read_size == block_size);
 
     return {};
 }
 
+template Result<void, IO_Error_Code> file_to_bytes(
+    std::vector<char8_t, std::pmr::polymorphic_allocator<char8_t>>& out,
+    std::string_view
+);
+
 } // namespace mmml
+#endif
