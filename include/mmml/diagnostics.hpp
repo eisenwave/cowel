@@ -76,12 +76,6 @@ void print_ast(
 
 void print_internal_error_notice(Annotated_String8& out);
 
-[[nodiscard]]
-inline std::string_view as_string_view(std::u8string_view str)
-{
-    return { reinterpret_cast<const char*>(str.data()), str.size() };
-}
-
 #ifndef MMML_EMSCRIPTEN
 std::ostream& operator<<(std::ostream& out, std::u8string_view str);
 #endif

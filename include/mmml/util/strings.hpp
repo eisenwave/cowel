@@ -7,6 +7,12 @@
 
 namespace mmml {
 
+[[nodiscard]]
+inline std::string_view as_string_view(std::u8string_view str)
+{
+    return { reinterpret_cast<const char*>(str.data()), str.size() };
+}
+
 /// @brief Returns `true` if `str` is a valid HTML tag identifier.
 /// This includes both builtin tag names (which are purely alphabetic)
 /// and custom tag names.
