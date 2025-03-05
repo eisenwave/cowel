@@ -17,7 +17,7 @@ namespace {
 
 struct Printing_Diagnostic_Policy : Diagnostic_Policy {
     std::string_view file;
-    std::string_view source;
+    std::u8string_view source;
 };
 
 bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
@@ -33,12 +33,12 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     const auto full_path = "test/" + std::pmr::string { file, &memory };
     policy.file = full_path;
 
-    std::pmr::vector<char> source_data { &memory };
+    std::pmr::vector<char8_t> source_data { &memory };
     if (Result<void, IO_Error_Code> r = file_to_bytes(source_data, full_path); !r) {
         return policy.error(r.error()) == Policy_Action::success;
     }
     MMML_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::load_file));
-    const std::string_view source { source_data.data(), source_data.size() };
+    const std::u8string_view source { source_data.data(), source_data.size() };
     policy.source = source;
 
     auto doc = parse_and_build(source, &memory);
@@ -71,7 +71,7 @@ public:
 
     Policy_Action error(IO_Error_Code e) final
     {
-        Annotated_String out;
+        Annotated_String8 out;
         print_io_error(out, file, e);
         print_code_string(std::cout, out, is_stdout_tty);
         return m_action = Policy_Action::failure;

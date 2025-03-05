@@ -14,44 +14,44 @@ namespace mmml {
 /// For directives, this runs `generate_plaintext` using the behavior of that directive,
 /// looked up via context.
 /// @param context the current processing context
-void to_plaintext(std::pmr::vector<char>& out, const ast::Content& c, Context& context);
+void to_plaintext(std::pmr::vector<char8_t>& out, const ast::Content& c, Context& context);
 
 void to_plaintext(
-    std::pmr::vector<char>& out,
+    std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
     Context& context
 );
 
 void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char>& out,
+    std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
     const ast::Content& c,
     Context& context
 );
 
 void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char>& out,
+    std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
     const ast::Text& t,
     Context& context
 );
 
 void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char>& out,
+    std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
     const ast::Directive& d,
     Context& context
 );
 
 void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char>& out,
+    std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
     std::span<const ast::Content> content,
     Context& context
 );
 
 void contents_to_html(
-    Annotated_String& out,
+    Annotated_String8& out,
     std::span<const ast::Content> content,
     Context& context
 );

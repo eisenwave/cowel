@@ -12,22 +12,22 @@
 namespace mmml {
 
 struct Name_Resolver {
-    virtual Directive_Behavior* operator()(std::string_view name) const = 0;
+    virtual Directive_Behavior* operator()(std::u8string_view name) const = 0;
 };
 
 struct Transparent_String_View_Hash {
     using is_transparent = void;
 
-    std::size_t operator()(std::string_view v) const
+    std::size_t operator()(std::u8string_view v) const
     {
-        return std::hash<std::string_view> {}(v);
+        return std::hash<std::u8string_view> {}(v);
     }
 };
 
 struct Transparent_String_View_Equals {
     using is_transparent = void;
 
-    bool operator()(std::string_view x, std::string_view y) const
+    bool operator()(std::u8string_view x, std::u8string_view y) const
     {
         return x == y;
     }
@@ -38,8 +38,8 @@ struct Transparent_String_View_Equals {
 struct Context {
 public:
     using Variable_Map = std::pmr::unordered_map<
-        std::pmr::string,
-        std::pmr::string,
+        std::pmr::u8string,
+        std::pmr::u8string,
         Transparent_String_View_Hash,
         Transparent_String_View_Equals>;
 
@@ -50,7 +50,7 @@ private:
     std::pmr::memory_resource* m_memory;
     mutable std::pmr::unsynchronized_pool_resource m_transient_memory { m_memory };
     /// @brief Source code of the document.
-    std::string_view m_source;
+    std::u8string_view m_source;
     /// @brief A list of (non-null) name resolvers.
     /// Whenever directives have to be looked up,
     /// these are processed from
@@ -63,7 +63,7 @@ public:
 
     explicit Context(
         std::filesystem::path path,
-        std::string_view source,
+        std::u8string_view source,
         std::pmr::memory_resource* memory
     )
         : m_document_path { path }
@@ -99,7 +99,7 @@ public:
     }
 
     [[nodiscard]]
-    std::string_view get_source() const
+    std::u8string_view get_source() const
     {
         return m_source;
     }
@@ -113,7 +113,7 @@ public:
     /// @param name the name of the directive
     /// @return the behavior for the given name, or `nullptr` if none could be found
     [[nodiscard]]
-    Directive_Behavior* find_directive(std::string_view name) const;
+    Directive_Behavior* find_directive(std::u8string_view name) const;
 
     /// @brief Equivalent to `find_directive(directive.get_name(source))`.
     [[nodiscard]]
@@ -189,7 +189,7 @@ struct Directive_Behavior {
     virtual void preprocess(ast::Directive& d, Context&) = 0;
 
     virtual void
-    generate_plaintext(std::pmr::vector<char>& out, const ast::Directive& d, Context&) const
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context&) const
         = 0;
 
     virtual void generate_html(HTML_Writer& out, const ast::Directive& d, Context&) const = 0;
@@ -209,7 +209,7 @@ public:
     ~Builtin_Directive_Set();
 
     [[nodiscard]]
-    Directive_Behavior* operator()(std::string_view name) const override;
+    Directive_Behavior* operator()(std::u8string_view name) const override;
 };
 
 } // namespace mmml

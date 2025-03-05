@@ -26,7 +26,7 @@ struct Base {
     }
 
     [[nodiscard]]
-    std::string_view get_source(std::string_view source) const
+    std::u8string_view get_source(std::u8string_view source) const
     {
         MMML_ASSERT(m_pos.begin + m_pos.length <= source.size());
         return source.substr(m_pos.begin, m_pos.length);
@@ -61,7 +61,7 @@ public:
     [[nodiscard]]
     Local_Source_Span get_name_span() const;
     [[nodiscard]]
-    std::string_view get_name(std::string_view source) const
+    std::u8string_view get_name(std::u8string_view source) const
     {
         MMML_ASSERT(m_name.begin + m_name.length <= source.size());
         return source.substr(m_name.begin, m_name.length);
@@ -94,7 +94,7 @@ public:
     ~Directive();
 
     [[nodiscard]]
-    std::string_view get_name(std::string_view source) const
+    std::u8string_view get_name(std::u8string_view source) const
     {
         return source.substr(m_pos.begin + 1, m_name_length);
     }
@@ -115,7 +115,7 @@ struct Text final : detail::Base {
     Text(const Local_Source_Span& pos);
 
     [[nodiscard]]
-    std::string_view get_text(std::string_view source) const
+    std::u8string_view get_text(std::u8string_view source) const
     {
         return source.substr(m_pos.begin, m_pos.length);
     }
@@ -129,7 +129,7 @@ struct Escaped final : detail::Base {
 
     /// @brief Returns the escaped character.
     [[nodiscard]]
-    char get_char(std::string_view source) const
+    char8_t get_char(std::u8string_view source) const
     {
         return source[get_char_index()];
     }
@@ -145,7 +145,7 @@ struct Escaped final : detail::Base {
     /// where the first character is the escaping backslash,
     /// and the second character is the escaped character.
     [[nodiscard]]
-    std::string_view get_text(std::string_view source) const
+    std::u8string_view get_text(std::u8string_view source) const
     {
         return source.substr(m_pos.begin, m_pos.length);
     }
@@ -199,7 +199,7 @@ inline Local_Source_Span get_source_span(const Content& node)
 }
 
 [[nodiscard]]
-inline std::string_view get_source(const Content& node, std::string_view source)
+inline std::u8string_view get_source(const Content& node, std::u8string_view source)
 {
     return visit([]<typename T>(const T& v) -> const detail::Base& { return v; }, node)
         .get_source(source);

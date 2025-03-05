@@ -32,9 +32,9 @@ enum struct Argument_Status : Default_Underlying {
 void match_parameters_and_arguments(
     std::span<int> out_indices,
     std::span<Argument_Status> out_status,
-    std::span<const std::string_view> parameters,
+    std::span<const std::u8string_view> parameters,
     std::span<const ast::Argument> arguments,
-    std::string_view source
+    std::u8string_view source
 );
 
 /// @brief Makes parameter/argument matching convenient for a fixed sequence of arguments.
@@ -42,11 +42,11 @@ struct [[nodiscard]] Argument_Matcher {
 private:
     std::pmr::vector<Argument_Status> m_statuses;
     std::pmr::vector<int> m_indices;
-    std::span<const std::string_view> m_parameters;
+    std::span<const std::u8string_view> m_parameters;
 
 public:
     Argument_Matcher(
-        std::span<const std::string_view> parameters,
+        std::span<const std::u8string_view> parameters,
         std::pmr::memory_resource* memory
     )
         : m_statuses { memory }
@@ -57,7 +57,7 @@ public:
 
     /// @brief Matches a sequence of arguments using `match_parameters_and_arguments`.
     /// Other member function can subsequently access the results.
-    void match(std::span<const ast::Argument> arguments, std::string_view source)
+    void match(std::span<const ast::Argument> arguments, std::u8string_view source)
     {
         m_statuses.resize(arguments.size());
         match_parameters_and_arguments(m_indices, m_statuses, m_parameters, arguments, source);
@@ -67,14 +67,14 @@ public:
     /// or `-1` if no argument matches.
     /// The parameter name shall be one of the `parameters` passed into the constructor.
     [[nodiscard]]
-    int get_argument_index(std::string_view parameter_name) const
+    int get_argument_index(std::u8string_view parameter_name) const
     {
         for (std::size_t i = 0; i < m_parameters.size(); ++i) {
             if (m_parameters[i] == parameter_name) {
                 return m_indices[i];
             }
         }
-        MMML_ASSERT_UNREACHABLE("Invalid parameter name");
+        MMML_ASSERT_UNREACHABLE(u8"Invalid parameter name");
     }
 
     /// @brief Returns the indices of the argument for each parameter,

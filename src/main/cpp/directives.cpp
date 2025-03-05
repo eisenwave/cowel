@@ -12,7 +12,7 @@
 
 namespace mmml {
 
-Directive_Behavior* Context::find_directive(std::string_view name) const
+Directive_Behavior* Context::find_directive(std::u8string_view name) const
 {
     for (Name_Resolver* const resolver : std::views::reverse(m_name_resolvers)) {
         if (Directive_Behavior* result = (*resolver)(name)) {
@@ -36,7 +36,8 @@ struct Pure_HTML_Behavior : Directive_Behavior {
     {
     }
 
-    void generate_plaintext(std::pmr::vector<char>&, const ast::Directive&, Context&) const final {
+    void generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive&, Context&) const final
+    {
     }
 };
 
@@ -50,7 +51,8 @@ struct Do_Nothing_Behavior : Directive_Behavior {
 
     void preprocess(ast::Directive&, Context&) override { }
 
-    void generate_plaintext(std::pmr::vector<char>&, const ast::Directive&, Context&) const override
+    void
+    generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive&, Context&) const override
     {
     }
 
@@ -62,7 +64,7 @@ struct Do_Nothing_Behavior : Directive_Behavior {
 /// Generates no plaintext.
 /// Generates HTML with the source code of the contents wrapped in an `<error->` custom tag.
 struct Error_Behavior : Do_Nothing_Behavior {
-    static constexpr std::string_view id = "error-";
+    static constexpr std::u8string_view id = u8"error-";
 
     Error_Behavior()
         : Do_Nothing_Behavior { Directive_Category::pure_html, Directive_Display::in_line }
@@ -91,7 +93,8 @@ struct Passthrough_Behavior : Directive_Behavior {
         preprocess_arguments(d, context);
     }
 
-    void generate_plaintext(std::pmr::vector<char>& out, const ast::Directive& d, Context& context)
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
         const override
     {
         to_plaintext(out, d.get_content(), context);
@@ -99,7 +102,7 @@ struct Passthrough_Behavior : Directive_Behavior {
 
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override
     {
-        const std::string_view name = get_name(d, context);
+        const std::u8string_view name = get_name(d, context);
         if (d.get_arguments().empty()) {
             out.open_tag(name);
         }
@@ -111,11 +114,11 @@ struct Passthrough_Behavior : Directive_Behavior {
     }
 
     [[nodiscard]]
-    virtual std::string_view get_name(const ast::Directive& d, Context& context) const
+    virtual std::u8string_view get_name(const ast::Directive& d, Context& context) const
         = 0;
 };
 
-constexpr char builtin_directive_prefix = '-';
+constexpr char8_t builtin_directive_prefix = u8'-';
 
 /// @brief Behavior for any formatting tags that are mapped onto HTML with the same name.
 /// This includes `\\i{...}`, `\\strong`, and many more.
@@ -128,13 +131,13 @@ constexpr char builtin_directive_prefix = '-';
 /// For example, `\\i[id = 123]{...}` generates `<i id=123>...</i>`.
 struct Directive_Name_Passthrough_Behavior : Passthrough_Behavior {
 private:
-    const std::string_view m_name_prefix;
+    const std::u8string_view m_name_prefix;
 
 public:
     Directive_Name_Passthrough_Behavior(
         Directive_Category category,
         Directive_Display display,
-        const std::string_view name_prefix = ""
+        const std::u8string_view name_prefix = u8""
     )
         : Passthrough_Behavior { category, display }
         , m_name_prefix { name_prefix }
@@ -142,10 +145,10 @@ public:
     }
 
     [[nodiscard]]
-    std::string_view get_name(const ast::Directive& d, Context& context) const override
+    std::u8string_view get_name(const ast::Directive& d, Context& context) const override
     {
-        const std::string_view raw_name = d.get_name(context.get_source());
-        const std::string_view name
+        const std::u8string_view raw_name = d.get_name(context.get_source());
+        const std::u8string_view name
             = raw_name.starts_with(builtin_directive_prefix) ? raw_name.substr(1) : raw_name;
         return name.substr(m_name_prefix.size());
     }
@@ -153,13 +156,13 @@ public:
 
 struct Fixed_Name_Passthrough_Behavior : Passthrough_Behavior {
 private:
-    const std::string_view m_name;
+    const std::u8string_view m_name;
 
 public:
     explicit Fixed_Name_Passthrough_Behavior(
         Directive_Category category,
         Directive_Display display,
-        std::string_view name
+        std::u8string_view name
     )
         : Passthrough_Behavior { category, display }
         , m_name { name }
@@ -167,7 +170,7 @@ public:
     }
 
     [[nodiscard]]
-    std::string_view get_name(const ast::Directive&, Context&) const override
+    std::u8string_view get_name(const ast::Directive&, Context&) const override
     {
         return m_name;
     }
@@ -195,20 +198,20 @@ struct HTML_Literal_Behavior : Pure_HTML_Behavior {
 
     void generate_html(HTML_Writer&, const ast::Directive& d, Context& context) const override
     {
-        Annotated_String buffer { context.get_transient_memory() };
+        Annotated_String8 buffer { context.get_transient_memory() };
         contents_to_html(buffer, d.get_content(), context);
     }
 };
 
 struct Parametric_Behavior : Directive_Behavior {
 protected:
-    const std::span<const std::string_view> m_parameters;
+    const std::span<const std::u8string_view> m_parameters;
 
 public:
     Parametric_Behavior(
         Directive_Category c,
         Directive_Display d,
-        std::span<const std::string_view> parameters
+        std::span<const std::u8string_view> parameters
     )
         : Directive_Behavior { c, d }
         , m_parameters { parameters }
@@ -222,7 +225,8 @@ public:
         preprocess(d, args, context);
     }
 
-    void generate_plaintext(std::pmr::vector<char>& out, const ast::Directive& d, Context& context)
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
         const override
     {
         Argument_Matcher args { m_parameters, context.get_transient_memory() };
@@ -240,7 +244,7 @@ public:
 protected:
     virtual void preprocess(ast::Directive& d, const Argument_Matcher& args, Context& context) = 0;
     virtual void generate_plaintext(
-        std::pmr::vector<char>& out,
+        std::pmr::vector<char8_t>& out,
         const ast::Directive& d,
         const Argument_Matcher& args,
         Context& context
@@ -269,8 +273,8 @@ void preprocess_matched_arguments(
 }
 
 struct Variable_Behavior : Parametric_Behavior {
-    static constexpr std::string_view var_parameter = "var";
-    static constexpr std::string_view parameters[] { var_parameter };
+    static constexpr std::u8string_view var_parameter = u8"var";
+    static constexpr std::u8string_view parameters[] { var_parameter };
 
     Variable_Behavior(Directive_Category c, Directive_Display d)
         : Parametric_Behavior { c, d, parameters }
@@ -284,14 +288,14 @@ struct Variable_Behavior : Parametric_Behavior {
     }
 
     void generate_plaintext(
-        std::pmr::vector<char>& out,
+        std::pmr::vector<char8_t>& out,
         const ast::Directive& d,
         const Argument_Matcher& args,
         Context& context
     ) const override
     {
-        std::pmr::vector<char> data;
-        const std::string_view name = get_variable_name(data, d, args, context);
+        std::pmr::vector<char8_t> data;
+        const std::u8string_view name = get_variable_name(data, d, args, context);
         generate_var_plaintext(out, d, name, context);
     }
 
@@ -302,16 +306,16 @@ struct Variable_Behavior : Parametric_Behavior {
         Context& context
     ) const override
     {
-        std::pmr::vector<char> data;
-        const std::string_view name = get_variable_name(data, d, args, context);
+        std::pmr::vector<char8_t> data;
+        const std::u8string_view name = get_variable_name(data, d, args, context);
         generate_var_html(out, d, name, context);
     }
 
 protected:
     virtual void generate_var_plaintext(
-        std::pmr::vector<char>& out,
+        std::pmr::vector<char8_t>& out,
         const ast::Directive& d,
-        std::string_view var,
+        std::u8string_view var,
         Context& context
     ) const
         = 0;
@@ -319,14 +323,14 @@ protected:
     virtual void generate_var_html(
         HTML_Writer& out,
         const ast::Directive& d,
-        std::string_view var,
+        std::u8string_view var,
         Context& context
     ) const
         = 0;
 
 private:
-    static std::string_view get_variable_name(
-        std::pmr::vector<char>& out,
+    static std::u8string_view get_variable_name(
+        std::pmr::vector<char8_t>& out,
         const ast::Directive& d,
         const Argument_Matcher& args,
         Context& context
@@ -352,9 +356,9 @@ struct Get_Variable_Behavior final : Variable_Behavior {
     }
 
     void generate_var_plaintext(
-        std::pmr::vector<char>& out,
+        std::pmr::vector<char8_t>& out,
         const ast::Directive&,
-        std::string_view var,
+        std::u8string_view var,
         Context& context
     ) const final
     {
@@ -367,7 +371,7 @@ struct Get_Variable_Behavior final : Variable_Behavior {
     void generate_var_html(
         HTML_Writer& out,
         const ast::Directive&,
-        std::string_view var,
+        std::u8string_view var,
         Context& context
     ) const final
     {
@@ -400,17 +404,17 @@ public:
     {
     }
 
-    void process(const ast::Directive& d, std::string_view var, Context& context) const
+    void process(const ast::Directive& d, std::u8string_view var, Context& context) const
     {
-        std::pmr::vector<char> body_string { context.get_transient_memory() };
+        std::pmr::vector<char8_t> body_string { context.get_transient_memory() };
         to_plaintext(body_string, d.get_content(), context);
 
         const auto it = context.m_variables.find(var);
         if (m_op == Variable_Operation::set) {
-            std::pmr::string value { body_string.data(), body_string.size(),
-                                     context.get_persistent_memory() };
+            std::pmr::u8string value { body_string.data(), body_string.size(),
+                                       context.get_persistent_memory() };
             if (it == context.m_variables.end()) {
-                std::pmr::string key { var.data(), var.size(), context.get_persistent_memory() };
+                std::pmr::u8string key { var.data(), var.size(), context.get_persistent_memory() };
                 context.m_variables.emplace(std::move(key), std::move(value));
             }
             else {
@@ -420,24 +424,27 @@ public:
     }
 
     void generate_var_plaintext(
-        std::pmr::vector<char>&,
+        std::pmr::vector<char8_t>&,
         const ast::Directive& d,
-        std::string_view var,
+        std::u8string_view var,
         Context& context
     ) const final
     {
         process(d, var, context);
     }
 
-    void
-    generate_var_html(HTML_Writer&, const ast::Directive& d, std::string_view var, Context& context)
-        const final
+    void generate_var_html(
+        HTML_Writer&,
+        const ast::Directive& d,
+        std::u8string_view var,
+        Context& context
+    ) const final
     {
         process(d, var, context);
     }
 };
 
-constexpr std::string_view html_tag_prefix = "html-";
+constexpr std::u8string_view html_tag_prefix = u8"html-";
 
 } // namespace
 
@@ -448,7 +455,7 @@ struct Builtin_Directive_Set::Impl {
     Directive_Name_Passthrough_Behavior direct_formatting { Directive_Category::formatting,
                                                             Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior tt_formatting { Directive_Category::formatting,
-                                                    Directive_Display::in_line, "tt-" };
+                                                    Directive_Display::in_line, u8"tt-" };
     Directive_Name_Passthrough_Behavior direct_html { Directive_Category::pure_html,
                                                       Directive_Display::in_line };
     Directive_Name_Passthrough_Behavior html_tags { Directive_Category::pure_html,
@@ -458,7 +465,7 @@ struct Builtin_Directive_Set::Impl {
 Builtin_Directive_Set::Builtin_Directive_Set() = default;
 Builtin_Directive_Set::~Builtin_Directive_Set() = default;
 
-Directive_Behavior* Builtin_Directive_Set::operator()(std::string_view name) const
+Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) const
 {
     // Any builtin names should be found with both `\\-directive` and `\\directive`.
     // `\\def` does not permit defining directives with a hyphen prefix,
@@ -470,70 +477,71 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::string_view name) con
         return nullptr;
     }
     switch (name[0]) {
-    case 'b':
-        if (name == "b")
+    case u8'b':
+        if (name == u8"b")
             return &m_impl->direct_formatting;
         break;
 
-    case 'c':
-        if (name == "comment")
+    case u8'c':
+        if (name == u8"comment")
             return &m_impl->do_nothing;
         break;
 
-    case 'd':
-        if (name == "dd" || name == "dl" || name == "dt")
+    case u8'd':
+        if (name == u8"dd" || name == u8"dl" || name == u8"dt")
             return &m_impl->direct_html;
         break;
 
-    case 'e':
-        if (name == "em")
+    case u8'e':
+        if (name == u8"em")
             return &m_impl->direct_formatting;
-        if (name == "error")
+        if (name == u8"error")
             return &m_impl->error;
         break;
 
-    case 'h':
-        if (name == "html")
+    case u8'h':
+        if (name == u8"html")
             return &m_impl->html;
         static_assert(html_tag_prefix[0] == 'h');
         if (name.starts_with(html_tag_prefix))
             return &m_impl->html_tags;
         break;
 
-    case 'i':
-        if (name == "i" || name == "ins")
+    case u8'i':
+        if (name == u8"i" || name == u8"ins")
             return &m_impl->direct_formatting;
         break;
 
-    case 'k':
-        if (name == "kbd")
+    case u8'k':
+        if (name == u8"kbd")
             return &m_impl->direct_formatting;
         break;
 
-    case 'm':
-        if (name == "mark")
+    case u8'm':
+        if (name == u8"mark")
             return &m_impl->direct_formatting;
         break;
 
-    case 'o':
-        if (name == "ol")
+    case u8'o':
+        if (name == u8"ol")
             return &m_impl->direct_html;
         break;
 
-    case 's':
-        if (name == "s" || name == "small" || name == "strong" || name == "sub" || name == "sup")
+    case u8's':
+        if (name == u8"s" || name == u8"small" || name == u8"strong" || name == u8"sub"
+            || name == u8"sup")
             return &m_impl->direct_formatting;
         break;
 
-    case 't':
-        if (name == "tt")
+    case u8't':
+        if (name == u8"tt")
             return &m_impl->tt_formatting;
         break;
 
-    case 'u':
-        if (name == "u")
+    case u8'u':
+        if (name == u8"u")
             return &m_impl->direct_formatting;
-        if (name == "ul")
+        if (name == u8"ul")
             return &m_impl->direct_html;
         break;
     }

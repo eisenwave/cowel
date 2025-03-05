@@ -7,7 +7,7 @@ namespace mmml {
 
 namespace {
 
-void advance(Local_Source_Position& pos, char c)
+void advance(Local_Source_Position& pos, char8_t c)
 {
     switch (c) {
     case '\r': pos.column = 0; break;
@@ -22,7 +22,10 @@ void advance(Local_Source_Position& pos, char c)
 
 struct [[nodiscard]] AST_Builder {
 private:
-    const std::string_view m_source;
+    using char_type = char8_t;
+    using string_view_type = std::u8string_view;
+
+    const string_view_type m_source;
     const std::span<const AST_Instruction> m_instructions;
     std::pmr::memory_resource* const m_memory;
 
@@ -31,7 +34,7 @@ private:
 
 public:
     AST_Builder(
-        std::string_view source,
+        string_view_type source,
         std::span<const AST_Instruction> instructions,
         std::pmr::memory_resource* memory
     )
@@ -103,7 +106,7 @@ public:
             out.push_back(build_directive());
             break;
 
-        default: MMML_ASSERT_UNREACHABLE("Invalid content creating instruction.");
+        default: MMML_ASSERT_UNREACHABLE(u8"Invalid content creating instruction.");
         }
     }
 
@@ -241,7 +244,7 @@ public:
 } // namespace
 
 std::pmr::vector<ast::Content> build_ast(
-    std::string_view source,
+    std::u8string_view source,
     std::span<const AST_Instruction> instructions,
     std::pmr::memory_resource* memory
 )
@@ -251,7 +254,7 @@ std::pmr::vector<ast::Content> build_ast(
 
 /// @brief Parses a document and runs `build_ast` on the results.
 std::pmr::vector<ast::Content>
-parse_and_build(std::string_view source, std::pmr::memory_resource* memory)
+parse_and_build(std::u8string_view source, std::pmr::memory_resource* memory)
 {
     std::pmr::vector<AST_Instruction> instructions { memory };
     parse(instructions, source);

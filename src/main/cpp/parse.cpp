@@ -61,13 +61,13 @@ namespace {
 enum struct Content_Context : Default_Underlying { document, argument_value, block };
 
 [[nodiscard]]
-constexpr bool is_terminated_by(Content_Context context, char c)
+constexpr bool is_terminated_by(Content_Context context, char8_t c)
 {
     switch (context) {
     case Content_Context::argument_value: //
-        return c == ',' || c == ']' || c == '}';
+        return c == u8',' || c == u8']' || c == u8'}';
     case Content_Context::block: //
-        return c == '}';
+        return c == u8'}';
     default: //
         return false;
     }
@@ -75,6 +75,9 @@ constexpr bool is_terminated_by(Content_Context context, char c)
 
 struct [[nodiscard]] Parser {
 private:
+    using char_type = char8_t;
+    using string_view_type = std::u8string_view;
+
     struct [[nodiscard]] Scoped_Attempt {
     private:
         Parser* m_self;
@@ -118,11 +121,11 @@ private:
     };
 
     std::pmr::vector<AST_Instruction>& m_out;
-    std::string_view m_source;
+    string_view_type m_source;
     std::size_t m_pos = 0;
 
 public:
-    Parser(std::pmr::vector<AST_Instruction>& out, std::string_view source)
+    Parser(std::pmr::vector<AST_Instruction>& out, string_view_type source)
         : m_out { out }
         , m_source { source }
     {
@@ -143,11 +146,11 @@ private:
         return Scoped_Attempt { *this };
     }
 
-    /// @brief Returns all remaining text as a `std::string_view`, from the current parsing
+    /// @brief Returns all remaining text as a `std::string_view_type`, from the current parsing
     /// position to the end of the file.
     /// @return All remaining text.
     [[nodiscard]]
-    std::string_view peek_all() const
+    string_view_type peek_all() const
     {
         return m_source.substr(m_pos);
     }
@@ -155,9 +158,9 @@ private:
     /// @brief Returns the next character and advances the parser position.
     /// @return The popped character.
     /// @throws Throws if `eof()`.
-    char pop()
+    char_type pop()
     {
-        const char c = peek();
+        const char_type c = peek();
         ++m_pos;
         return c;
     }
@@ -165,7 +168,7 @@ private:
     /// @brief Returns the next character.
     /// @return The next character.
     /// @throws Throws if `eof()`.
-    char peek() const
+    char_type peek() const
     {
         MMML_ASSERT(!eof());
         return m_source[m_pos];
@@ -179,7 +182,7 @@ private:
 
     /// @return `peek_all().starts_with(text)`.
     [[nodiscard]]
-    bool peek(std::string_view text) const
+    bool peek(string_view_type text) const
     {
         return peek_all().starts_with(text);
     }
@@ -189,7 +192,7 @@ private:
     /// @param c the character to test
     /// @return `true` if the next character equals `c`, `false` otherwise.
     [[nodiscard]]
-    bool peek(char c) const
+    bool peek(char_type c) const
     {
         return !eof() && m_source[m_pos] == c;
     }
@@ -204,7 +207,7 @@ private:
     [[nodiscard]]
     bool peek_possible_directive() const
     {
-        const std::string_view rest = peek_all();
+        const string_view_type rest = peek_all();
         return !rest.empty() //
             && rest[0] == '\\' //
             && (rest.length() <= 1 || !is_mmml_escapeable(char8_t(rest[1])));
@@ -214,19 +217,13 @@ private:
     /// the parser.
     /// @param predicate the predicate to test
     /// @return `true` if the next character satisfies `predicate`, `false` otherwise.
-    [[nodiscard]]
-    bool peek(bool predicate(char)) const
+    bool peek(bool predicate(char_type)) const
     {
         return !eof() && predicate(m_source[m_pos]);
     }
 
-    bool peek(bool predicate(char8_t)) const
-    {
-        return !eof() && predicate(char8_t(m_source[m_pos]));
-    }
-
     [[nodiscard]]
-    bool expect(char c)
+    bool expect(char_type c)
     {
         if (!peek(c)) {
             return false;
@@ -236,12 +233,12 @@ private:
     }
 
     [[nodiscard]]
-    bool expect(bool predicate(char))
+    bool expect(bool predicate(char_type))
     {
         if (eof()) {
             return false;
         }
-        const char c = m_source[m_pos];
+        const char_type c = m_source[m_pos];
         if (!predicate(c)) {
             return false;
         }
@@ -249,21 +246,8 @@ private:
         return true;
     }
 
-    bool expect(bool predicate(char8_t))
-    {
-        if (eof()) {
-            return false;
-        }
-        const char c = m_source[m_pos];
-        if (!predicate(char8_t(c))) {
-            return false;
-        }
-        ++m_pos;
-        return true;
-    }
-
     [[nodiscard]]
-    bool expect_literal(std::string_view text)
+    bool expect_literal(string_view_type text)
     {
         if (!peek(text)) {
             return false;
@@ -275,14 +259,7 @@ private:
     /// @brief Matches a (possibly empty) sequence of characters matching the predicate.
     /// @return The amount of characters matched.
     [[nodiscard]]
-    std::size_t match_char_sequence(bool predicate(char))
-    {
-        const std::size_t initial = m_pos;
-        while (expect(predicate)) { }
-        return m_pos - initial;
-    }
-
-    std::size_t match_char_sequence(bool predicate(char8_t))
+    std::size_t match_char_sequence(bool predicate(char_type))
     {
         const std::size_t initial = m_pos;
         while (expect(predicate)) { }
@@ -348,13 +325,13 @@ private:
         const std::size_t initial_pos = m_pos;
 
         for (; !eof(); ++m_pos) {
-            const char c = m_source[m_pos];
+            const char_type c = m_source[m_pos];
             if (c == '\\') {
                 // Trailing \ at the end of the file
                 if (initial_pos + 1 == m_source.size()) {
                     continue;
                 }
-                const char next = m_source[m_pos + 1];
+                const char_type next = m_source[m_pos + 1];
                 // No matter what, a backslash followed by a directive name character forms a
                 // directive because the remaining arguments and the block are optional.
                 // Therefore, we must stop here because text content should not include directives.
@@ -443,7 +420,8 @@ private:
                 m_out.push_back({ AST_Instruction_Type::skip, 1 });
                 continue;
             }
-            MMML_ASSERT_UNREACHABLE("Successfully matched arguments must be followed by ']' or ','"
+            MMML_ASSERT_UNREACHABLE(
+                u8"Successfully matched arguments must be followed by ']' or ','"
             );
         }
 
@@ -539,13 +517,13 @@ private:
         }
 
         const std::size_t content_amount = match_content_sequence(Content_Context::argument_value);
-        if (eof() || peek('}')) {
+        if (eof() || peek(u8'}')) {
             return {};
         }
         // match_content_sequence is very aggressive, so I think at this point,
         // we have to be at the end of an argument due to a comma separator or closing square.
-        const char c = m_source[m_pos];
-        MMML_ASSERT(c == ',' || c == ']');
+        const char_type c = m_source[m_pos];
+        MMML_ASSERT(c == u8',' || c == u8']');
 
         trim_trailing_whitespace_in_matched_content();
 
@@ -572,11 +550,11 @@ private:
 
         const std::size_t text_begin = m_pos - total_length;
 
-        const std::string_view last_text = m_source.substr(text_begin, total_length);
-        const std::size_t last_non_white = last_text.find_last_not_of(" \t\r\n\f\v");
+        const string_view_type last_text = m_source.substr(text_begin, total_length);
+        const std::size_t last_non_white = last_text.find_last_not_of(u8" \t\r\n\f");
         const std::size_t non_white_length = last_non_white + 1;
 
-        if (last_non_white == std::string_view::npos) {
+        if (last_non_white == string_view_type::npos) {
             latest.type = AST_Instruction_Type::skip;
         }
         else if (non_white_length < total_length) {
@@ -621,7 +599,29 @@ private:
 
 } // namespace
 
-void parse(std::pmr::vector<AST_Instruction>& out, std::string_view source)
+std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
+{
+    using enum AST_Instruction_Type;
+    switch (type) {
+        MMML_ENUM_STRING_CASE8(skip);
+        MMML_ENUM_STRING_CASE8(escape);
+        MMML_ENUM_STRING_CASE8(text);
+        MMML_ENUM_STRING_CASE8(argument_name);
+        MMML_ENUM_STRING_CASE8(push_document);
+        MMML_ENUM_STRING_CASE8(pop_document);
+        MMML_ENUM_STRING_CASE8(push_directive);
+        MMML_ENUM_STRING_CASE8(pop_directive);
+        MMML_ENUM_STRING_CASE8(push_arguments);
+        MMML_ENUM_STRING_CASE8(pop_arguments);
+        MMML_ENUM_STRING_CASE8(push_argument);
+        MMML_ENUM_STRING_CASE8(pop_argument);
+        MMML_ENUM_STRING_CASE8(push_block);
+        MMML_ENUM_STRING_CASE8(pop_block);
+    }
+    MMML_ASSERT_UNREACHABLE(u8"Invalid type.");
+}
+
+void parse(std::pmr::vector<AST_Instruction>& out, std::u8string_view source)
 {
     return Parser { out, source }();
 }

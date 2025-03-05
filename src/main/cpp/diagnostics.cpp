@@ -17,7 +17,7 @@ namespace mmml {
 namespace {
 
 [[nodiscard]]
-std::string_view highlight_color_of(Annotation_Type type)
+std::u8string_view highlight_color_of(Annotation_Type type)
 {
     using enum Annotation_Type;
     switch (type) {
@@ -83,39 +83,56 @@ std::string_view highlight_color_of(Annotation_Type type)
     case html_attribute_value: return ansi::h_green;
     case html_inner_text: return ansi::reset;
     }
-    MMML_ASSERT_UNREACHABLE("Unknown code span type.");
+    MMML_ASSERT_UNREACHABLE(u8"Unknown code span type.");
 }
 
 enum struct Error_Line_Type : Default_Underlying { note, error };
 
 struct Error_Line {
     std::optional<Source_Position> pos {};
-    std::string_view message;
+    std::u8string_view message;
     bool omit_affected_line = false;
 };
 
-constexpr std::string_view error_prefix = "error:";
-constexpr std::string_view note_prefix = "note:";
+constexpr std::u8string_view error_prefix = u8"error:";
+constexpr std::u8string_view note_prefix = u8"note:";
 
 [[nodiscard]]
-std::string_view to_prose(IO_Error_Code e)
+std::u8string_view to_prose(IO_Error_Code e)
 {
     using enum IO_Error_Code;
     switch (e) {
     case cannot_open: //
-        return "Failed to open file.";
+        return u8"Failed to open file.";
     case read_error: //
-        return "I/O error occurred when reading from file.";
+        return u8"I/O error occurred when reading from file.";
     case write_error: //
-        return "I/O error occurred when writing to file.";
+        return u8"I/O error occurred when writing to file.";
     }
-    MMML_ASSERT_UNREACHABLE("invalid error code");
+    MMML_ASSERT_UNREACHABLE(u8"invalid error code");
 }
 
-void print_source_position(Annotated_String& out, const std::optional<Source_Position>& pos)
+void file_name_to_utf8(std::pmr::u8string& out, std::string_view name)
+{
+    // Technically, we're making the (not always correct) assumption that file name encoding
+    // is UTF-8, which is not guaranteed.
+    // However, the process of converting this properly in a portable way would be somewhat
+    // complex, and I don't care about correct non-ASCII file names for now.
+    out.resize(name.size());
+    std::memcpy(out.data(), name.data(), name.size());
+}
+
+std::pmr::u8string file_name_to_utf8(std::string_view name, std::pmr::memory_resource* memory)
+{
+    std::pmr::u8string result { memory };
+    file_name_to_utf8(result, name);
+    return result;
+}
+
+void print_source_position(Annotated_String8& out, const std::optional<Source_Position>& pos)
 {
     if (!pos) {
-        out.append("(internal):", Annotation_Type::diagnostic_code_position);
+        out.append(u8"(internal):", Annotation_Type::diagnostic_code_position);
     }
     else {
         print_file_position(out, pos->file_name, Local_Source_Position { *pos });
@@ -123,7 +140,7 @@ void print_source_position(Annotated_String& out, const std::optional<Source_Pos
 }
 
 void print_diagnostic_prefix(
-    Annotated_String& out,
+    Annotated_String8& out,
     Error_Line_Type type,
     std::optional<Source_Position> pos
 )
@@ -141,37 +158,37 @@ void print_diagnostic_prefix(
 }
 
 void print_diagnostic_line(
-    Annotated_String& out,
+    Annotated_String8& out,
     Error_Line_Type type,
     const Error_Line& line,
-    std::string_view source
+    std::u8string_view source
 )
 {
     print_diagnostic_prefix(out, type, line.pos);
-    out.append(' ');
+    out.append(u8' ');
     out.append(line.message, Annotation_Type::diagnostic_text);
 
-    out.append('\n');
+    out.append(u8'\n');
     if (line.pos && !line.omit_affected_line) {
         print_affected_line(out, source, *line.pos);
     }
 }
 
 [[maybe_unused]]
-void print_error_line(Annotated_String& out, const Error_Line& line, std::string_view source)
+void print_error_line(Annotated_String8& out, const Error_Line& line, std::u8string_view source)
 {
     return print_diagnostic_line(out, Error_Line_Type::error, line, source);
 }
 
 [[maybe_unused]]
-void print_note_line(Annotated_String& out, const Error_Line& line, std::string_view source)
+void print_note_line(Annotated_String8& out, const Error_Line& line, std::u8string_view source)
 {
     return print_diagnostic_line(out, Error_Line_Type::note, line, source);
 }
 
 void do_print_affected_line(
-    Annotated_String& out,
-    std::string_view source,
+    Annotated_String8& out,
+    std::u8string_view source,
     std::size_t begin,
     std::size_t length,
     std::size_t line,
@@ -182,51 +199,53 @@ void do_print_affected_line(
 
     {
         // Sorry, multi-line printing is not supported yet.
-        const std::string_view snippet = source.substr(begin, length);
+        const std::u8string_view snippet = source.substr(begin, length);
         MMML_ASSERT(length <= 1 || snippet.find('\n') == std::string_view::npos);
     }
 
-    const std::string_view cited_code = find_line(source, begin);
+    const std::u8string_view cited_code = find_line(source, begin);
 
-    const Characters line_chars = to_characters(line + 1);
+    const auto line_chars = to_characters<char8_t>(line + 1);
     constexpr std::size_t pad_max = 6;
     const std::size_t pad_length
         = pad_max - std::min(line_chars.length, std::size_t { pad_max - 1 });
-    out.append(pad_length, ' ');
+    out.append(pad_length, u8' ');
     out.append_integer(line + 1, Annotation_Type::diagnostic_line_number);
-    out.append(' ');
-    out.append('|', Annotation_Type::diagnostic_punctuation);
-    out.append(' ');
+    out.append(u8' ');
+    out.append(u8'|', Annotation_Type::diagnostic_punctuation);
+    out.append(u8' ');
     out.append(cited_code, Annotation_Type::diagnostic_code_citation);
-    out.append('\n');
+    out.append(u8'\n');
 
     const std::size_t align_length = std::max(pad_max, line_chars.length + 1);
-    out.append(align_length, ' ');
-    out.append(' ');
-    out.append('|', Annotation_Type::diagnostic_punctuation);
-    out.append(' ');
-    out.append(column, ' ');
+    out.append(align_length, u8' ');
+    out.append(u8' ');
+    out.append(u8'|', Annotation_Type::diagnostic_punctuation);
+    out.append(u8' ');
+    out.append(column, u8' ');
     {
         auto position = out.build(Annotation_Type::diagnostic_position_indicator);
-        position.append('^');
+        position.append(u8'^');
         if (length > 1) {
-            position.append(length - 1, '~');
+            position.append(length - 1, u8'~');
         }
     }
-    out.append('\n');
+    out.append(u8'\n');
 }
 
 } // namespace
 
 void print_file_position(
-    Annotated_String& out,
+    Annotated_String8& out,
     std::string_view file,
     const Local_Source_Position& pos,
     bool suffix_colon
 )
 {
+    std::pmr::u8string file8 = file_name_to_utf8(file, out.get_memory());
+
     auto builder = out.build(Annotation_Type::diagnostic_code_position);
-    builder.append(file)
+    builder.append(file8)
         .append(':')
         .append_integer(pos.line + 1)
         .append(':')
@@ -237,8 +256,8 @@ void print_file_position(
 }
 
 void print_affected_line(
-    Annotated_String& out,
-    std::string_view source,
+    Annotated_String8& out,
+    std::u8string_view source,
     const Local_Source_Position& pos
 )
 {
@@ -246,8 +265,8 @@ void print_affected_line(
 }
 
 void print_affected_line(
-    Annotated_String& out,
-    std::string_view source,
+    Annotated_String8& out,
+    std::u8string_view source,
     const Local_Source_Span& pos
 )
 {
@@ -255,7 +274,7 @@ void print_affected_line(
     do_print_affected_line(out, source, pos.begin, pos.length, pos.line, pos.column);
 }
 
-std::string_view find_line(std::string_view source, std::size_t index)
+std::u8string_view find_line(std::u8string_view source, std::size_t index)
 {
     MMML_ASSERT(index <= source.size());
 
@@ -267,76 +286,77 @@ std::string_view find_line(std::string_view source, std::size_t index)
     }
 
     std::size_t begin = source.rfind('\n', index);
-    begin = begin != std::string_view::npos ? begin + 1 : 0;
+    begin = begin != std::u8string_view::npos ? begin + 1 : 0;
 
     std::size_t end = std::min(source.find('\n', index + 1), source.size());
 
     return source.substr(begin, end - begin);
 }
 
-void print_location_of_file(Annotated_String& out, std::string_view file)
+void print_location_of_file(Annotated_String8& out, std::string_view file)
 {
-    out.build(Annotation_Type::diagnostic_code_position).append(file).append(':');
+    std::pmr::u8string file8 = file_name_to_utf8(file, out.get_memory());
+    out.build(Annotation_Type::diagnostic_code_position).append(file8).append(u8':');
 }
 
-void print_assertion_error(Annotated_String& out, const Assertion_Error& error)
+void print_assertion_error(Annotated_String8& out, const Assertion_Error& error)
 {
-    out.append("Assertion failed! ", Annotation_Type::diagnostic_error);
+    out.append(u8"Assertion failed! ", Annotation_Type::diagnostic_error);
 
-    const std::string_view message = error.type == Assertion_Error_Type::expression
-        ? "The following expression evaluated to 'false', but was expected to be 'true':"
-        : "Code which must be unreachable has been reached.";
+    const std::u8string_view message = error.type == Assertion_Error_Type::expression
+        ? u8"The following expression evaluated to 'false', but was expected to be 'true':"
+        : u8"Code which must be unreachable has been reached.";
     out.append(message, Annotation_Type::diagnostic_text);
-    out.append("\n\n");
+    out.append(u8"\n\n");
 
     Local_Source_Position pos { .line = error.location.line(),
                                 .column = error.location.column(),
                                 .begin = {} };
     print_file_position(out, error.location.file_name(), pos);
-    out.append(' ');
+    out.append(u8' ');
     out.append(error.message, Annotation_Type::diagnostic_error_text);
-    out.append("\n\n");
+    out.append(u8"\n\n");
     print_internal_error_notice(out);
 }
 
-void print_io_error(Annotated_String& out, std::string_view file, IO_Error_Code error)
+void print_io_error(Annotated_String8& out, std::string_view file, IO_Error_Code error)
 {
     print_location_of_file(out, file);
-    out.append(' ');
+    out.append(u8' ');
     out.append(to_prose(error), Annotation_Type::diagnostic_text);
-    out.append('\n');
+    out.append(u8'\n');
 }
 
 namespace {
 
-void print_cut_off(Annotated_String& out, std::string_view v, std::size_t limit)
+void print_cut_off(Annotated_String8& out, std::u8string_view v, std::size_t limit)
 {
     std::size_t visual_length = 0;
 
     for (std::size_t i = 0; i < v.length();) {
         if (visual_length >= limit) {
-            out.append("...", Annotation_Type::diagnostic_punctuation);
+            out.append(u8"...", Annotation_Type::diagnostic_punctuation);
             break;
         }
 
         if (v[i] == '\r') {
-            out.append("\\r", Annotation_Type::diagnostic_escape);
+            out.append(u8"\\r", Annotation_Type::diagnostic_escape);
             visual_length += 2;
             ++i;
         }
         else if (v[i] == '\t') {
-            out.append("\\t", Annotation_Type::diagnostic_escape);
+            out.append(u8"\\t", Annotation_Type::diagnostic_escape);
             visual_length += 2;
             ++i;
         }
         else if (v[i] == '\n') {
-            out.append("\\n", Annotation_Type::diagnostic_escape);
+            out.append(u8"\\n", Annotation_Type::diagnostic_escape);
             visual_length += 2;
             ++i;
         }
         else {
             const auto remainder = v.substr(i, limit - visual_length);
-            const auto part = remainder.substr(0, remainder.find_first_of("\r\t\n"));
+            const auto part = remainder.substr(0, remainder.find_first_of(u8"\r\t\n"));
             out.append(part, Annotation_Type::diagnostic_code_citation);
             visual_length += part.size();
             i += part.size();
@@ -348,8 +368,12 @@ void print_cut_off(Annotated_String& out, std::string_view v, std::size_t limit)
 
 struct [[nodiscard]] AST_Printer : ast::Const_Visitor {
 private:
-    Annotated_String& out;
-    std::string_view source;
+    using char_type = char8_t;
+    using string_view_type = std::u8string_view;
+    using annotated_string_type = Annotated_String8;
+
+    annotated_string_type& out;
+    string_view_type source;
     const AST_Formatting_Options options;
     int indent_level = 0;
 
@@ -372,8 +396,8 @@ private:
 
 public:
     AST_Printer(
-        Annotated_String& out,
-        std::string_view source,
+        annotated_string_type& out,
+        string_view_type source,
         const AST_Formatting_Options& options
     )
         : out { out }
@@ -385,62 +409,64 @@ public:
     void visit(const ast::Text& node) final
     {
         print_indent();
-        const std::string_view extracted = node.get_text(source);
+        const string_view_type extracted = node.get_text(source);
 
-        out.append("Text", Annotation_Type::diagnostic_tag);
-        out.append('(', Annotation_Type::diagnostic_punctuation);
+        out.append(u8"Text", Annotation_Type::diagnostic_tag);
+        out.append(u8'(', Annotation_Type::diagnostic_punctuation);
         print_cut_off(out, extracted, std::size_t(options.max_node_text_length));
-        out.append(')', Annotation_Type::diagnostic_punctuation);
-        out.append('\n');
+        out.append(u8')', Annotation_Type::diagnostic_punctuation);
+        out.append(u8'\n');
     }
 
     void visit(const ast::Escaped& node) final
     {
         print_indent();
-        const std::string_view extracted = node.get_text(source);
+        const string_view_type extracted = node.get_text(source);
 
-        out.append("Escaped", Annotation_Type::diagnostic_tag);
-        out.append('(', Annotation_Type::diagnostic_punctuation);
+        out.append(u8"Escaped", Annotation_Type::diagnostic_tag);
+        out.append(u8'(', Annotation_Type::diagnostic_punctuation);
         print_cut_off(out, extracted, std::size_t(options.max_node_text_length));
-        out.append(')', Annotation_Type::diagnostic_punctuation);
-        out.append('\n');
+        out.append(u8')', Annotation_Type::diagnostic_punctuation);
+        out.append(u8'\n');
     }
 
     void visit(const ast::Directive& directive) final
     {
         print_indent();
 
-        out.build(Annotation_Type::diagnostic_tag).append('\\').append(directive.get_name(source));
+        out.build(Annotation_Type::diagnostic_tag)
+            .append(u8'\\')
+            .append(directive.get_name(source));
 
         if (!directive.get_arguments().empty()) {
-            out.append('[', Annotation_Type::diagnostic_punctuation);
-            out.append('\n');
+            out.append(u8'[', Annotation_Type::diagnostic_punctuation);
+            out.append(u8'\n');
             {
                 Scoped_Indent i = indented();
                 visit_arguments(directive);
             }
             print_indent();
-            out.append(']', Annotation_Type::diagnostic_punctuation);
+            out.append(u8']', Annotation_Type::diagnostic_punctuation);
         }
         else {
-            out.append("[]", Annotation_Type::diagnostic_punctuation);
+            out.append(u8"[]", Annotation_Type::diagnostic_punctuation);
         }
 
         if (!directive.get_content().empty()) {
-            out.append('{', Annotation_Type::diagnostic_punctuation);
-            out.append('\n');
+            out.append(u8'{', Annotation_Type::diagnostic_punctuation);
+            out.append(u8'\n');
             {
                 Scoped_Indent i = indented();
                 visit_content_sequence(directive.get_content());
             }
             print_indent();
-            out.append('}', Annotation_Type::diagnostic_punctuation);
+            out.append(u8'}', Annotation_Type::diagnostic_punctuation);
         }
         else {
-            out.append("{}", Annotation_Type::diagnostic_punctuation);
+            out.append(u8"{}", Annotation_Type::diagnostic_punctuation);
         }
 
-        out.append('\n');
+        out.append(u8'\n');
     }
 
     void visit(const ast::Argument& arg) final
@@ -448,23 +474,23 @@ public:
         print_indent();
 
         if (arg.has_name()) {
-            out.append("Named_Argument", Annotation_Type::diagnostic_tag);
-            out.append('(', Annotation_Type::diagnostic_punctuation);
+            out.append(u8"Named_Argument", Annotation_Type::diagnostic_tag);
+            out.append(u8'(', Annotation_Type::diagnostic_punctuation);
             out.append(arg.get_name(source), Annotation_Type::diagnostic_attribute);
-            out.append(')', Annotation_Type::diagnostic_punctuation);
+            out.append(u8')', Annotation_Type::diagnostic_punctuation);
         }
         else {
-            out.append("Positional_Argument", Annotation_Type::diagnostic_tag);
+            out.append(u8"Positional_Argument", Annotation_Type::diagnostic_tag);
         }
 
         if (!arg.get_content().empty()) {
-            out.append('\n');
+            out.append(u8'\n');
             Scoped_Indent i = indented();
             visit_content_sequence(arg.get_content());
         }
         else {
-            out.append(" (empty value)", Annotation_Type::diagnostic_internal);
-            out.append('\n');
+            out.append(u8" (empty value)", Annotation_Type::diagnostic_internal);
+            out.append(u8'\n');
         }
     }
 
@@ -480,13 +506,13 @@ private:
         MMML_ASSERT(options.indent_width >= 0);
 
         const auto indent = std::size_t(options.indent_width * indent_level);
-        out.append(indent, ' ');
+        out.append(indent, u8' ');
     }
 };
 
 void print_ast(
-    Annotated_String& out,
-    std::string_view source,
+    Annotated_String8& out,
+    std::u8string_view source,
     std::span<const ast::Content> root_content,
     AST_Formatting_Options options
 )
@@ -494,17 +520,24 @@ void print_ast(
     AST_Printer { out, source, options }.visit_content_sequence(root_content);
 }
 
-void print_internal_error_notice(Annotated_String& out)
+void print_internal_error_notice(Annotated_String8& out)
 {
-    constexpr std::string_view notice = "This is an internal error. Please report this bug at:\n"
-                                        "https://github.com/Eisenwave/bit-manipulation/issues\n";
+    constexpr std::u8string_view notice
+        = u8"This is an internal error. Please report this bug at:\n"
+          u8"https://github.com/Eisenwave/bit-manipulation/issues\n";
     out.append(notice, Annotation_Type::diagnostic_internal_error_notice);
 }
 
 #ifndef MMML_EMSCRIPTEN
-std::ostream& print_code_string(std::ostream& out, const Annotated_String& string, bool colors)
+
+std::ostream& operator<<(std::ostream& out, std::u8string_view str)
 {
-    const std::string_view text = string.get_text();
+    return out << mmml::as_string_view(str);
+}
+
+std::ostream& print_code_string(std::ostream& out, const Annotated_String8& string, bool colors)
+{
+    const std::u8string_view text = string.get_text();
     if (!colors) {
         return out << text;
     }

@@ -57,13 +57,13 @@ struct Text_Match {
 /// @param str the string
 /// @return The match or `std::nullopt`.
 [[nodiscard]]
-std::optional<Text_Match> match_line_comment(std::string_view str) noexcept;
+std::optional<Text_Match> match_line_comment(std::u8string_view str) noexcept;
 
 /// @brief Matches a C89-style block comment.
 /// @param str the string
 /// @return The match or `std::nullopt`.
 [[nodiscard]]
-std::optional<Text_Match> match_block_comment(std::string_view str) noexcept;
+std::optional<Text_Match> match_block_comment(std::u8string_view str) noexcept;
 
 /// @brief Matches a simple string literal, which is a sequence of characters beginning and ending
 /// with `"`.
@@ -72,7 +72,7 @@ std::optional<Text_Match> match_block_comment(std::string_view str) noexcept;
 /// @param str the string
 /// @return The match or `std::nullopt`.
 [[nodiscard]]
-std::optional<Text_Match> match_string_literal(std::string_view str) noexcept;
+std::optional<Text_Match> match_string_literal(std::u8string_view str) noexcept;
 
 /// @brief Matches as many digits as possible, in a base of choice.
 /// For bases above 10, lower and upper case characters are permitted.
@@ -80,21 +80,21 @@ std::optional<Text_Match> match_string_literal(std::string_view str) noexcept;
 /// @param base in range [2, 16]
 /// @return The number of digits that belong to a numeric literal of the given base.
 [[nodiscard]]
-std::size_t match_digits(std::string_view str, int base);
+std::size_t match_digits(std::u8string_view str, int base);
 
 /// @brief Matches a literal at the beginning of the given string.
 /// This includes any prefix such as `0x`, `0b`, or `0` and all the following digits.
 /// @param str the string which may contain a literal at the start
 /// @return The match or an error.
 [[nodiscard]]
-Literal_Match_Result match_integer_literal(std::string_view str) noexcept;
+Literal_Match_Result match_integer_literal(std::u8string_view str) noexcept;
 
 /// @brief Like `parse_integer_literal`, but does not permit negative numbers and results
 /// in an unsigned integer.
 /// @param str the string containing the prefix and literal digits
 /// @return The parsed number.
 [[nodiscard]]
-std::optional<unsigned long long> parse_uinteger_literal(std::string_view str) noexcept;
+std::optional<unsigned long long> parse_uinteger_literal(std::u8string_view str) noexcept;
 
 /// @brief Converts a literal string to an signed integer.
 /// The sign of the integer is based on a leading `-` character.
@@ -106,7 +106,7 @@ std::optional<unsigned long long> parse_uinteger_literal(std::string_view str) n
 /// @param str the string containing the prefix and literal digits
 /// @return The parsed number.
 [[nodiscard]]
-std::optional<long long> parse_integer_literal(std::string_view str) noexcept;
+std::optional<long long> parse_integer_literal(std::u8string_view str) noexcept;
 
 } // namespace mmml
 

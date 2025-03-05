@@ -12,7 +12,7 @@ enum struct Assertion_Error_Type : Default_Underlying { expression, unreachable 
 
 struct Assertion_Error {
     Assertion_Error_Type type;
-    std::string_view message;
+    std::u8string_view message;
     std::source_location location;
 };
 
@@ -28,14 +28,14 @@ struct Assertion_Error {
 #define MMML_ASSERT(...)                                                                           \
     ((__VA_ARGS__) ? void()                                                                        \
                    : MMML_RAISE_ASSERTION_ERROR(::mmml::Assertion_Error {                          \
-                         ::mmml::Assertion_Error_Type::expression, (#__VA_ARGS__),                 \
+                         ::mmml::Assertion_Error_Type::expression, u8## #__VA_ARGS__,              \
                          ::std::source_location::current() }))
 
 /// Expects a string literal.
 /// Unconditionally throws `Assertion_Error` of type `unreachable`.
 #define MMML_ASSERT_UNREACHABLE(...)                                                               \
     MMML_RAISE_ASSERTION_ERROR(::mmml::Assertion_Error {                                           \
-        ::mmml::Assertion_Error_Type::unreachable, ::std::string_view(__VA_ARGS__),                \
+        ::mmml::Assertion_Error_Type::unreachable, ::std::u8string_view(__VA_ARGS__),              \
         ::std::source_location::current() })
 
 #if __cplusplus >= 202302L

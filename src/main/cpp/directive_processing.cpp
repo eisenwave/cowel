@@ -14,10 +14,10 @@ namespace mmml {
 /// For directives, this runs `generate_plaintext` using the behavior of that directive,
 /// looked up via context.
 /// @param context the current processing context
-void to_plaintext(std::pmr::vector<char>& out, const ast::Content& c, Context& context)
+void to_plaintext(std::pmr::vector<char8_t>& out, const ast::Content& c, Context& context)
 {
     if (const auto* const t = get_if<ast::Text>(&c)) {
-        const std::string_view text = t->get_text(context.get_source());
+        const std::u8string_view text = t->get_text(context.get_source());
         out.insert(out.end(), text.begin(), text.end());
     }
     if (const auto* const e = get_if<ast::Escaped>(&c)) {
@@ -32,7 +32,7 @@ void to_plaintext(std::pmr::vector<char>& out, const ast::Content& c, Context& c
 }
 
 void to_plaintext(
-    std::pmr::vector<char>& out,
+    std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
     Context& context
 )
@@ -43,7 +43,7 @@ void to_plaintext(
 }
 
 void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char>& out,
+    std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
     const ast::Content& c,
     Context& context
@@ -62,7 +62,7 @@ void to_plaintext_mapped_for_highlighting(
 }
 
 void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char>& out,
+    std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
     std::span<const ast::Content> content,
     Context& context
@@ -74,7 +74,7 @@ void to_plaintext_mapped_for_highlighting(
 }
 
 void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char>& out,
+    std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
     const ast::Text& t,
     Context& context
@@ -83,7 +83,7 @@ void to_plaintext_mapped_for_highlighting(
     // TODO: to be accurate, we would have to process HTML entities here so that syntax highlighting
     //       sees them as a character rather than attempting to highlight the original entity.
     //       For example, `&lt;` should be highlighted like a `<` operator.
-    const std::string_view text = t.get_text(context.get_source());
+    const std::u8string_view text = t.get_text(context.get_source());
     out.insert(out.end(), text.begin(), text.end());
 
     const Local_Source_Span pos = t.get_source_position();
@@ -94,7 +94,7 @@ void to_plaintext_mapped_for_highlighting(
 }
 
 void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char>& out,
+    std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
     const ast::Directive& d,
     Context& context
@@ -142,7 +142,7 @@ void to_plaintext_mapped_for_highlighting(
 }
 
 void contents_to_html(
-    Annotated_String& out,
+    Annotated_String8& out,
     std::span<const ast::Content> content,
     Context& context
 )
@@ -150,7 +150,7 @@ void contents_to_html(
     HTML_Writer nested_writer { out };
     for (const ast::Content& c : content) {
         if (const auto* const e = get_if<ast::Escaped>(&c)) {
-            const char c = e->get_char(context.get_source());
+            const char8_t c = e->get_char(context.get_source());
             nested_writer.write_inner_html({ &c, 1 });
         }
         if (const auto* const t = get_if<ast::Text>(&c)) {
@@ -189,12 +189,12 @@ void preprocess_arguments(ast::Directive& d, Context& context)
 
 void arguments_to_attributes(Attribute_Writer& out, const ast::Directive& d, Context& context)
 {
-    std::pmr::vector<char> value { context.get_transient_memory() };
+    std::pmr::vector<char8_t> value { context.get_transient_memory() };
     for (const ast::Argument& a : d.get_arguments()) {
         // TODO: error handling
         value.clear();
         to_plaintext(value, a.get_content(), context);
-        const std::string_view value_string { value.data(), value.size() };
+        const std::u8string_view value_string { value.data(), value.size() };
         if (a.has_name()) {
             out.write_attribute(a.get_name(context.get_source()), value_string);
         }

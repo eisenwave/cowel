@@ -22,12 +22,12 @@ namespace mmml {
 /// @param index the index within the source string, in range `[0, source.size())`
 /// @return A line which contains the given `index`.
 [[nodiscard]]
-std::string_view find_line(std::string_view source, std::size_t index);
+std::u8string_view find_line(std::u8string_view source, std::size_t index);
 
 /// @brief Prints the location of the file nicely formatted.
 /// @param out the string to write to
 /// @param file the file
-void print_location_of_file(Annotated_String& out, std::string_view file);
+void print_location_of_file(Annotated_String8& out, std::string_view file);
 
 /// @brief Prints a position within a file, consisting of the file name and line/column.
 /// @param out the string to write to
@@ -35,7 +35,7 @@ void print_location_of_file(Annotated_String& out, std::string_view file);
 /// @param pos the position within the file
 /// @param colon_suffix if `true`, appends a `:` to the string as part of the same token
 void print_file_position(
-    Annotated_String& out,
+    Annotated_String8& out,
     std::string_view file,
     const Local_Source_Position& pos,
     bool colon_suffix = true
@@ -47,20 +47,20 @@ void print_file_position(
 /// @param source the program source
 /// @param pos the position within the source
 void print_affected_line(
-    Annotated_String& out,
-    std::string_view source,
+    Annotated_String8& out,
+    std::u8string_view source,
     const Local_Source_Position& pos
 );
 
 void print_affected_line(
-    Annotated_String& out,
-    std::string_view source,
+    Annotated_String8& out,
+    std::u8string_view source,
     const Local_Source_Span& pos
 );
 
-void print_assertion_error(Annotated_String& out, const Assertion_Error& error);
+void print_assertion_error(Annotated_String8& out, const Assertion_Error& error);
 
-void print_io_error(Annotated_String& out, std::string_view file, IO_Error_Code error);
+void print_io_error(Annotated_String8& out, std::string_view file, IO_Error_Code error);
 
 struct AST_Formatting_Options {
     int indent_width;
@@ -68,16 +68,26 @@ struct AST_Formatting_Options {
 };
 
 void print_ast(
-    Annotated_String& out,
-    std::string_view source,
+    Annotated_String8& out,
+    std::u8string_view source,
     std::span<const ast::Content> root_content,
     AST_Formatting_Options
 );
 
-void print_internal_error_notice(Annotated_String& out);
+void print_internal_error_notice(Annotated_String8& out);
+
+[[nodiscard]]
+inline std::string_view as_string_view(std::u8string_view str)
+{
+    return { reinterpret_cast<const char*>(str.data()), str.size() };
+}
 
 #ifndef MMML_EMSCRIPTEN
-std::ostream& print_code_string(std::ostream& out, const Annotated_String& string, bool colors);
+std::ostream& operator<<(std::ostream& out, std::u8string_view str);
+#endif
+
+#ifndef MMML_EMSCRIPTEN
+std::ostream& print_code_string(std::ostream& out, const Annotated_String8& string, bool colors);
 #endif
 
 } // namespace mmml

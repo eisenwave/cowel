@@ -7,9 +7,9 @@ namespace mmml {
 inline void match_parameters_and_arguments(
     std::span<int> out_indices,
     std::span<Argument_Status> out_status,
-    std::span<const std::string_view> parameters,
+    std::span<const std::u8string_view> parameters,
     std::span<const ast::Argument> arguments,
-    std::string_view source
+    std::u8string_view source
 )
 {
     MMML_ASSERT(out_indices.size() == parameters.size());
@@ -28,7 +28,7 @@ inline void match_parameters_and_arguments(
         if (!arguments[arg_index].has_name()) {
             continue;
         }
-        const std::string_view arg_name = arguments[arg_index].get_name(source);
+        const std::u8string_view arg_name = arguments[arg_index].get_name(source);
         for (std::size_t i = 0; i < parameters.size(); ++i) {
             if (arg_name == parameters[i]) {
                 if (out_indices[i] == -1) {

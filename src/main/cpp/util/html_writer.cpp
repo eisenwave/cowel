@@ -23,7 +23,7 @@ void append_escaped_text(Annotated_String8::Scoped_Builder& builder, std::u8stri
             builder.append(u8"&gt;");
         }
         else {
-            MMML_ASSERT_UNREACHABLE("Logical mistake.");
+            MMML_ASSERT_UNREACHABLE(u8"Logical mistake.");
         }
 
         text = text.substr(bracket_pos + 1);
