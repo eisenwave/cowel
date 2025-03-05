@@ -62,19 +62,25 @@ public:
     }
 
     [[nodiscard]]
+    std::pmr::memory_resource* get_memory() const
+    {
+        return m_text.get_allocator().resource();
+    }
+
+    [[nodiscard]]
     std::size_t get_span_count() const
     {
         return m_spans.size();
     }
 
     [[nodiscard]]
-    std::u8string_view get_text() const
+    string_view_type get_text() const
     {
         return { m_text.data(), m_text.size() };
     }
 
     [[nodiscard]]
-    std::u8string_view get_text(const Annotation_Span& span) const
+    string_view_type get_text(const Annotation_Span& span) const
     {
         return get_text().substr(span.begin, span.length);
     }
