@@ -34,6 +34,9 @@ using Default_Underlying = unsigned char;
 #define MMML_ENUM_STRING_CASE(...)                                                                 \
     case __VA_ARGS__: return #__VA_ARGS__
 
+#define MMML_ENUM_STRING_CASE8(...)                                                                \
+    case __VA_ARGS__: return u8## #__VA_ARGS__
+
 struct Annotated_String_Length;
 struct Annotation_Span;
 enum struct Annotation_Type : Default_Underlying;
