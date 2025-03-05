@@ -7,6 +7,7 @@
 #include <type_traits>
 
 #include "mmml/util/assert.hpp"
+#include "mmml/util/meta.hpp"
 
 namespace mmml {
 
@@ -38,14 +39,15 @@ template <typename T>
 constexpr int approximate_to_chars_decimal_digits_v
     = (std::numeric_limits<T>::digits * 100 / 310) + 1 + std::is_signed_v<T>;
 
-template <typename Char = char, character_convertible T>
+template <one_of<char, char8_t> Char = char, character_convertible T>
 [[nodiscard]]
 constexpr Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_characters(const T& x)
 {
     Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> chars {};
-    auto result = std::to_chars(chars.buffer.data(), chars.buffer.data() + chars.buffer.size(), x);
+    const auto buffer_start = reinterpret_cast<char*>(chars.buffer.data());
+    auto result = std::to_chars(buffer_start, buffer_start + chars.buffer.size(), x);
     MMML_ASSERT(result.ec == std::errc {});
-    chars.length = std::size_t(result.ptr - chars.buffer.data());
+    chars.length = std::size_t(result.ptr - buffer_start);
     return chars;
 }
 
