@@ -22,6 +22,9 @@ enum struct IO_Error_Code : Default_Underlying {
     read_error,
     /// @brief An error occurred while writing a file.
     write_error,
+    /// @brief The file is not properly encoded.
+    /// For example, if an attempt is made to read a text file as UTF-8 that is not encoded as such.
+    corrupted,
 };
 
 struct [[nodiscard]] Unique_File {
@@ -123,6 +126,9 @@ Result<void, IO_Error_Code> file_to_bytes(std::vector<Byte, Alloc>& out, std::st
         path
     );
 }
+
+[[nodiscard]]
+Result<void, IO_Error_Code> load_utf8_file(std::pmr::vector<char8_t>& out, std::string_view path);
 
 } // namespace mmml
 #endif

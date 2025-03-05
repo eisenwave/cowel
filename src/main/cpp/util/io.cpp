@@ -5,6 +5,7 @@
 
 #include "mmml/util/assert.hpp"
 #include "mmml/util/io.hpp"
+#include "mmml/util/unicode.hpp"
 
 #include "mmml/fwd.hpp"
 
@@ -39,6 +40,20 @@ Result<void, IO_Error_Code> file_to_bytes_chunked(
         consume_chunk(chunk);
     } while (read_size == block_size);
 
+    return {};
+}
+
+Result<void, IO_Error_Code> load_utf8_file(std::pmr::vector<char8_t>& out, std::string_view path)
+{
+    const std::size_t initial_size = out.size();
+    Result<void, IO_Error_Code> r = file_to_bytes(out, path);
+    if (!r) {
+        return r;
+    }
+    const std::u8string_view str { out.data() + initial_size, out.size() - initial_size };
+    if (!utf8::is_valid(str)) {
+        return IO_Error_Code::corrupted;
+    }
     return {};
 }
 
