@@ -85,6 +85,7 @@ else(NOT DEFINED EMSCRIPTEN)
 
     add_executable(mmml-test ${HEADERS}
         src/test/cpp/document_file_testing.cpp
+        src/test/cpp/main.cpp
         src/test/cpp/test_parsing.cpp
         src/test/cpp/test_valid.cpp
     )
