@@ -6,6 +6,7 @@
 
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/io.hpp"
+#include "mmml/util/strings.hpp"
 #include "mmml/util/tty.hpp"
 
 #include "mmml/ast.hpp"
@@ -24,7 +25,7 @@ struct Expected_Content;
 
 struct Expected_Argument {
     std::vector<Expected_Content> content;
-    std::u8string_view name = u8"";
+    std::u8string_view name {};
 
     Expected_Argument(std::u8string_view name, std::vector<Expected_Content>&& content);
 
