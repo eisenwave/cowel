@@ -46,6 +46,9 @@ struct Constant {
 template <auto X>
 inline constexpr Constant<X> constant_v {};
 
+template <typename T, typename... Us>
+concept one_of = (std::same_as<T, Us> || ...);
+
 } // namespace mmml
 
 #endif
