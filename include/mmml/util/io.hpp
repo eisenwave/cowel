@@ -130,6 +130,14 @@ Result<void, IO_Error_Code> file_to_bytes(std::vector<Byte, Alloc>& out, std::st
 [[nodiscard]]
 Result<void, IO_Error_Code> load_utf8_file(std::pmr::vector<char8_t>& out, std::string_view path);
 
+[[nodiscard]]
+Result<std::pmr::vector<char8_t>, IO_Error_Code>
+load_utf8_file(std::string_view path, std::pmr::memory_resource* memory);
+
+[[nodiscard]]
+Result<std::pmr::vector<char32_t>, IO_Error_Code>
+load_utf32le_file(std::string_view path, std::pmr::memory_resource* memory);
+
 } // namespace mmml
 #endif
 

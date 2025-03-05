@@ -57,5 +57,37 @@ Result<void, IO_Error_Code> load_utf8_file(std::pmr::vector<char8_t>& out, std::
     return {};
 }
 
+Result<std::pmr::vector<char8_t>, IO_Error_Code>
+load_utf8_file(std::string_view path, std::pmr::memory_resource* memory)
+{
+    std::pmr::vector<char8_t> result { memory };
+    if (auto r = load_utf8_file(result, path); !r) {
+        return r.error();
+    }
+    return result;
+}
+
+[[nodiscard]]
+Result<std::pmr::vector<char32_t>, IO_Error_Code>
+load_utf32le_file(std::string_view path, std::pmr::memory_resource* memory)
+{
+    std::pmr::vector<std::byte> bytes { memory };
+
+    Result<void, IO_Error_Code> r = file_to_bytes(bytes, path);
+    if (!r) {
+        return r.error();
+    }
+    if (bytes.size() % sizeof(char32_t) != 0) {
+        return IO_Error_Code::corrupted;
+    }
+
+    // We could make this code more portable in the long run, but I don't care for now.
+    static_assert(std::endian::native == std::endian::little);
+    std::pmr::vector<char32_t> result { bytes.size() / 4, memory };
+    std::memcpy(result.data(), bytes.data(), bytes.size());
+
+    return result;
+}
+
 } // namespace mmml
 #endif
