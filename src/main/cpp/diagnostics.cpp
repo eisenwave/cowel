@@ -6,6 +6,7 @@
 #include "mmml/util/ansi.hpp"
 #include "mmml/util/assert.hpp"
 #include "mmml/util/source_position.hpp"
+#include "mmml/util/strings.hpp"
 #include "mmml/util/to_chars.hpp"
 
 #include "mmml/ast.hpp"
@@ -108,6 +109,8 @@ std::u8string_view to_prose(IO_Error_Code e)
         return u8"I/O error occurred when reading from file.";
     case write_error: //
         return u8"I/O error occurred when writing to file.";
+    case corrupted: //
+        return u8"Data in the file is corrupted (not properly encoded).";
     }
     MMML_ASSERT_UNREACHABLE(u8"invalid error code");
 }
@@ -532,7 +535,7 @@ void print_internal_error_notice(Annotated_String8& out)
 
 std::ostream& operator<<(std::ostream& out, std::u8string_view str)
 {
-    return out << mmml::as_string_view(str);
+    return out << as_string_view(str);
 }
 
 std::ostream& print_code_string(std::ostream& out, const Annotated_String8& string, bool colors)
