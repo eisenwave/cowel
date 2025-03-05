@@ -39,6 +39,7 @@ add_library(mmml STATIC
     src/main/cpp/diagnostics.cpp
     src/main/cpp/directive_processing.cpp
     src/main/cpp/directives.cpp
+    src/main/cpp/parse_utils.cpp
     src/main/cpp/parse.cpp
 )
 
