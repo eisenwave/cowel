@@ -17,7 +17,8 @@ constexpr bool is_html_tag_name(std::u8string_view str)
     if (str.empty() || !is_ascii_alphanumeric(str[0])) {
         return false;
     }
-    for (char c : str) {
+    // FIXME: this should be using the UTF-32 variant
+    for (char8_t c : str) {
         if (!is_html_tag_name_character(c)) {
             return false;
         }
@@ -32,7 +33,8 @@ constexpr bool is_html_attribute_name(std::u8string_view str)
     if (str.empty()) {
         return false;
     }
-    for (char c : str) {
+    // FIXME: this should be using the UTF-32 variant
+    for (char8_t c : str) {
         if (!is_html_attribute_name_character(c)) {
             return false;
         }
