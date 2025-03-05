@@ -222,6 +222,7 @@ public:
             throw Unicode_Error { "Corrupted UTF-8 string or past the end." };
         }
         m_pointer += length;
+        return *this;
     }
 
     Code_Point_Iterator operator++(int)
