@@ -286,21 +286,6 @@ struct Code_Point_View {
 
 static_assert(std::ranges::forward_range<Code_Point_View>);
 
-// TODO: put into test file
-
-// https://en.wikipedia.org/wiki/UTF-8
-static_assert(sequence_length(0b0000'0000) == 1);
-static_assert(sequence_length(0b1000'0000) == 0);
-static_assert(sequence_length(0b1100'0000) == 2);
-static_assert(sequence_length(0b1110'0000) == 3);
-static_assert(sequence_length(0b1111'0000) == 4);
-static_assert(sequence_length(0b1111'1000) == 0);
-
-static_assert(decode_unchecked(u8"a") == U'a');
-static_assert(decode_unchecked(u8"\u00E9") == U'\u00E9');
-static_assert(decode_unchecked(u8"\u0905") == U'\u0905');
-static_assert(decode_unchecked(u8"\U0001F600") == U'\U0001F600');
-
 } // namespace mmml::utf8
 
 #endif
