@@ -212,7 +212,7 @@ public:
     [[nodiscard]]
     friend bool operator==(Code_Point_Iterator i, Code_Point_Iterator_Sentinel) noexcept
     {
-        return i.m_pointer != i.m_end;
+        return i.m_pointer == i.m_end;
     }
 
     Code_Point_Iterator& operator++()
