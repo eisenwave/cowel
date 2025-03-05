@@ -42,7 +42,7 @@ template <typename Char = char, character_convertible T>
 [[nodiscard]]
 constexpr Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_characters(const T& x)
 {
-    Characters<Char, approximate_to_chars_decimal_digits_v<T>> chars {};
+    Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> chars {};
     auto result = std::to_chars(chars.buffer.data(), chars.buffer.data() + chars.buffer.size(), x);
     MMML_ASSERT(result.ec == std::errc {});
     chars.length = std::size_t(result.ptr - chars.buffer.data());

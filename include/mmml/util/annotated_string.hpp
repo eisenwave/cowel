@@ -112,7 +112,7 @@ public:
         m_text.insert(m_text.end(), amount, c);
     }
 
-    void append(string_view_type t, Annotation_Type type)
+    void append(string_view_type text, Annotation_Type type)
     {
         MMML_ASSERT(!text.empty());
         m_spans.push_back({ .begin = m_text.size(), .length = text.size(), .type = type });
@@ -130,7 +130,7 @@ public:
     {
         const bool plus
             = (signs == Sign_Policy::always && x >= 0) || (signs == Sign_Policy::nonzero && x > 0);
-        const Characters chars = to_characters<char_type>(x);
+        const Basic_Characters chars = to_characters<char_type>(x);
         append_digits(chars.as_string(), plus);
     }
 
@@ -140,7 +140,7 @@ public:
     {
         const bool plus
             = (signs == Sign_Policy::always && x >= 0) || (signs == Sign_Policy::nonzero && x > 0);
-        const Characters chars = to_characters<char_type>(x);
+        const Basic_Characters chars = to_characters<char_type>(x);
         append_digits(chars.as_string(), plus, &type);
     }
 
