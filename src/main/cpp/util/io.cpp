@@ -42,10 +42,5 @@ Result<void, IO_Error_Code> file_to_bytes_chunked(
     return {};
 }
 
-template Result<void, IO_Error_Code> file_to_bytes(
-    std::vector<char8_t, std::pmr::polymorphic_allocator<char8_t>>& out,
-    std::string_view
-);
-
 } // namespace mmml
 #endif
