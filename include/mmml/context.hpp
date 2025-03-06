@@ -9,7 +9,9 @@
 
 #include "mmml/util/transparent_comparison.hpp"
 
+#include "mmml/diagnostic.hpp"
 #include "mmml/fwd.hpp"
+#include "mmml/util/function_ref.hpp"
 
 namespace mmml {
 
@@ -47,16 +49,31 @@ private:
     std::pmr::vector<Name_Resolver*> m_name_resolvers { &m_transient_memory };
 
 public:
-    Variable_Map m_variables;
+    Variable_Map m_variables { m_memory };
 
+private:
+    Function_Ref<void(Diagnostic&&)> m_emit_diagnostic;
+    Diagnostic_Type m_min_diagnostic;
+
+public:
+    /// @brief Constructs a new context.
+    /// @param path The file path of the current document.
+    /// @param source The source code.
+    /// @param emit_diagnostic Called when a diagnostic is emitted.
+    /// @param min_diagnostic_level The minimum level of diagnostics that are emitted.
+    /// @param memory Additional memory.
     explicit Context(
         std::filesystem::path path,
         string_view_type source,
+        Function_Ref<void(Diagnostic&&)> emit_diagnostic,
+        Diagnostic_Type min_diagnostic_level,
         std::pmr::memory_resource* memory
     )
         : m_document_path { path }
         , m_memory { memory }
         , m_source { source }
+        , m_emit_diagnostic { emit_diagnostic }
+        , m_min_diagnostic { min_diagnostic_level }
     {
     }
 
@@ -90,6 +107,58 @@ public:
     string_view_type get_source() const
     {
         return m_source;
+    }
+
+    /// @brief Returns the inclusive minimum level of diagnostics that are currently emitted.
+    /// This may be `none`, in which case no diagnostic are emitted.
+    [[nodiscard]]
+    Diagnostic_Type get_min_diagnostic_level() const
+    {
+        return m_min_diagnostic;
+    }
+
+    /// @brief Equivalent to `get_min_diagnostic_level() >= type`.
+    [[nodiscard]]
+    bool emits(Diagnostic_Type type) const
+    {
+        return type >= m_min_diagnostic;
+    }
+
+    void emit(Diagnostic&& diagnostic)
+    {
+        MMML_ASSERT(emits(diagnostic.type));
+        m_emit_diagnostic(std::move(diagnostic));
+    }
+
+    /// @brief Equivalent to `emit(make_diagnostic(type, location, message))`.
+    void emit(Diagnostic_Type type, Source_Span location, string_view_type message)
+    {
+        MMML_ASSERT(emits(type));
+        m_emit_diagnostic(make_diagnostic(type, location, message));
+    }
+
+    /// @brief Returns a diagnostic with the given `type` and using `get_persistent_memory()`
+    /// as a memory resource for the message.
+    /// The message is empty.
+    /// @param type The diagnostic type. `emits(type)` shall be `true`.
+    /// @param location The location within the file where the diagnostic was generated.
+    [[nodiscard]]
+    Diagnostic make_diagnostic(Diagnostic_Type type, Source_Span location) const
+    {
+        MMML_ASSERT(emits(type));
+        return { .type = type, .location = location, .message { get_persistent_memory() } };
+    }
+
+    /// @brief Like `make_diagnostic(type)`,
+    /// but initializes the result's message using the given `message`.
+    [[nodiscard]]
+    Diagnostic
+    make_diagnostic(Diagnostic_Type type, Source_Span location, string_view_type message) const
+    {
+        MMML_ASSERT(emits(type));
+        return { .type = type,
+                 .location = location,
+                 .message { message, get_persistent_memory() } };
     }
 
     void add_resolver(Name_Resolver& resolver)
