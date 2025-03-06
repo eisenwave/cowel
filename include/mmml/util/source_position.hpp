@@ -10,7 +10,7 @@
 namespace mmml {
 
 /// Represents a position in a source file.
-struct Local_Source_Position {
+struct Source_Position {
     /// Line number.
     std::size_t line;
     /// Column number.
@@ -19,17 +19,17 @@ struct Local_Source_Position {
     std::size_t begin;
 
     [[nodiscard]]
-    friend constexpr auto operator<=>(Local_Source_Position, Local_Source_Position)
+    friend constexpr auto operator<=>(Source_Position, Source_Position)
         = default;
 
     [[nodiscard]]
-    constexpr Local_Source_Position to_right(std::size_t offset) const
+    constexpr Source_Position to_right(std::size_t offset) const
     {
         return { .line = line, .column = column + offset, .begin = begin + offset };
     }
 
     [[nodiscard]]
-    constexpr Local_Source_Position to_left(std::size_t offset) const
+    constexpr Source_Position to_left(std::size_t offset) const
     {
         MMML_ASSERT(column >= offset);
         MMML_ASSERT(begin >= offset);
@@ -38,24 +38,24 @@ struct Local_Source_Position {
 };
 
 /// Represents a position in a source file.
-struct Local_Source_Span : Local_Source_Position {
+struct Source_Span : Source_Position {
     std::size_t length;
 
     [[nodiscard]]
-    friend constexpr auto operator<=>(Local_Source_Span, Local_Source_Span)
+    friend constexpr auto operator<=>(Source_Span, Source_Span)
         = default;
 
     /// @brief Returns a span with the same properties except that the length is `l`.
     [[nodiscard]]
-    constexpr Local_Source_Span with_length(std::size_t l) const
+    constexpr Source_Span with_length(std::size_t l) const
     {
-        return { Local_Source_Position { *this }, l };
+        return { Source_Position { *this }, l };
     }
 
     /// @brief Returns a span on the same line and with the same length, shifted to the right
     /// by `offset` characters.
     [[nodiscard]]
-    constexpr Local_Source_Span to_right(std::size_t offset) const
+    constexpr Source_Span to_right(std::size_t offset) const
     {
         return { { .line = line, .column = column + offset, .begin = begin + offset }, length };
     }
@@ -65,7 +65,7 @@ struct Local_Source_Span : Local_Source_Position {
     /// The `offset` shall not be greater than `this->column` or `this->begin`
     /// (which would correspond to flowing off the beginning of the column or source).
     [[nodiscard]]
-    constexpr Local_Source_Span to_left(std::size_t offset) const
+    constexpr Source_Span to_left(std::size_t offset) const
     {
         MMML_ASSERT(column >= offset);
         MMML_ASSERT(begin >= offset);
@@ -95,26 +95,26 @@ struct Local_Source_Span : Local_Source_Position {
     /// @brief Returns the one-past-the-end position as a `Local_Source_Position`.
     /// This position is assumed to be on the same line and one column past this span.
     [[nodiscard]]
-    constexpr Local_Source_Position end_pos() const
+    constexpr Source_Position end_pos() const
     {
         return { .line = line, .column = column + length, .begin = begin + length };
     }
 };
 
 /// Represents the location of a file, combined with the position within that file.
-struct Source_Span : Local_Source_Span {
+struct File_Source_Span : Source_Span {
     /// File name.
     std::string_view file_name;
 
     [[nodiscard]]
-    constexpr Source_Span(Local_Source_Span local, std::string_view file)
-        : Local_Source_Span(local)
+    constexpr File_Source_Span(Source_Span local, std::string_view file)
+        : Source_Span(local)
         , file_name(file)
     {
     }
 
     [[nodiscard]]
-    friend constexpr auto operator<=>(Source_Span, Source_Span)
+    friend constexpr auto operator<=>(File_Source_Span, File_Source_Span)
         = default;
 
     [[nodiscard]]
@@ -125,26 +125,26 @@ struct Source_Span : Local_Source_Span {
 };
 
 /// Represents the location of a file, combined with the position within that file.
-struct Source_Position : Local_Source_Position {
+struct File_Source_Position : Source_Position {
     /// File name.
     std::string_view file_name;
 
     [[nodiscard]]
-    constexpr Source_Position(const Source_Span& span)
-        : Local_Source_Position(span)
+    constexpr File_Source_Position(const File_Source_Span& span)
+        : Source_Position(span)
         , file_name(span.file_name)
     {
     }
 
     [[nodiscard]]
-    constexpr Source_Position(Local_Source_Position local, std::string_view file)
-        : Local_Source_Position(local)
+    constexpr File_Source_Position(Source_Position local, std::string_view file)
+        : Source_Position(local)
         , file_name(file)
     {
     }
 
     [[nodiscard]]
-    friend constexpr auto operator<=>(Source_Position, Source_Position)
+    friend constexpr auto operator<=>(File_Source_Position, File_Source_Position)
         = default;
 };
 

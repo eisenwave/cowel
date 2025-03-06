@@ -16,11 +16,11 @@ namespace mmml::ast {
 
 namespace detail {
 struct Base {
-    Local_Source_Span m_pos;
+    Source_Span m_pos;
 
     // TODO: rename to get_source_span
     [[nodiscard]]
-    Local_Source_Span get_source_position() const
+    Source_Span get_source_position() const
     {
         return m_pos;
     }
@@ -38,18 +38,18 @@ struct Base {
 struct Argument final : detail::Base {
 private:
     std::pmr::vector<Content> m_content;
-    Local_Source_Span m_name;
+    Source_Span m_name;
 
 public:
     [[nodiscard]]
     Argument(
-        const Local_Source_Span& pos,
-        const Local_Source_Span& name,
+        const Source_Span& pos,
+        const Source_Span& name,
         std::pmr::vector<ast::Content>&& children
     );
 
     [[nodiscard]]
-    Argument(const Local_Source_Span& pos, std::pmr::vector<ast::Content>&& children);
+    Argument(const Source_Span& pos, std::pmr::vector<ast::Content>&& children);
 
     ~Argument();
 
@@ -59,7 +59,7 @@ public:
         return !m_name.empty();
     }
     [[nodiscard]]
-    Local_Source_Span get_name_span() const;
+    Source_Span get_name_span() const;
     [[nodiscard]]
     std::u8string_view get_name(std::u8string_view source) const
     {
@@ -85,7 +85,7 @@ private:
 public:
     [[nodiscard]]
     Directive(
-        const Local_Source_Span& pos,
+        const Source_Span& pos,
         std::size_t name_length,
         std::pmr::vector<Argument>&& args,
         std::pmr::vector<Content>&& block
@@ -112,7 +112,7 @@ public:
 struct Text final : detail::Base {
 
     [[nodiscard]]
-    Text(const Local_Source_Span& pos);
+    Text(const Source_Span& pos);
 
     [[nodiscard]]
     std::u8string_view get_text(std::u8string_view source) const
@@ -125,7 +125,7 @@ struct Text final : detail::Base {
 struct Escaped final : detail::Base {
 
     [[nodiscard]]
-    Escaped(const Local_Source_Span& pos);
+    Escaped(const Source_Span& pos);
 
     /// @brief Returns the escaped character.
     [[nodiscard]]
@@ -192,7 +192,7 @@ inline std::span<Content const> Directive::get_content() const
 }
 
 [[nodiscard]]
-inline Local_Source_Span get_source_span(const Content& node)
+inline Source_Span get_source_span(const Content& node)
 {
     return visit([]<typename T>(const T& v) -> const detail::Base& { return v; }, node)
         .get_source_position();

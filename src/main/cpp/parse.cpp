@@ -10,8 +10,8 @@ namespace mmml {
 namespace ast {
 
 Argument::Argument(
-    const Local_Source_Span& pos,
-    const Local_Source_Span& name,
+    const Source_Span& pos,
+    const Source_Span& name,
     std::pmr::vector<ast::Content>&& children
 )
     : detail::Base { pos }
@@ -21,7 +21,7 @@ Argument::Argument(
 }
 
 [[nodiscard]]
-Argument::Argument(const Local_Source_Span& pos, std::pmr::vector<ast::Content>&& children)
+Argument::Argument(const Source_Span& pos, std::pmr::vector<ast::Content>&& children)
     : detail::Base { pos }
     , m_content { std::move(children) }
     , m_name { pos, 0 }
@@ -29,7 +29,7 @@ Argument::Argument(const Local_Source_Span& pos, std::pmr::vector<ast::Content>&
 }
 
 Directive::Directive(
-    const Local_Source_Span& pos,
+    const Source_Span& pos,
     std::size_t name_length,
     std::pmr::vector<Argument>&& args,
     std::pmr::vector<Content>&& block
@@ -42,13 +42,13 @@ Directive::Directive(
     MMML_ASSERT(m_name_length != 0);
 }
 
-Text::Text(const Local_Source_Span& pos)
+Text::Text(const Source_Span& pos)
     : detail::Base { pos }
 {
     MMML_ASSERT(!pos.empty());
 }
 
-Escaped::Escaped(const Local_Source_Span& pos)
+Escaped::Escaped(const Source_Span& pos)
     : detail::Base { pos }
 {
     MMML_ASSERT(pos.length == 2);

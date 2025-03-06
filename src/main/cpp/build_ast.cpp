@@ -7,7 +7,7 @@ namespace mmml {
 
 namespace {
 
-void advance(Local_Source_Position& pos, char8_t c)
+void advance(Source_Position& pos, char8_t c)
 {
     switch (c) {
     case '\r': pos.column = 0; break;
@@ -30,7 +30,7 @@ private:
     std::pmr::memory_resource* const m_memory;
 
     std::size_t m_index = 0;
-    Local_Source_Position m_pos {};
+    Source_Position m_pos {};
 
 public:
     AST_Builder(
@@ -116,7 +116,7 @@ public:
         const AST_Instruction instruction = pop();
         MMML_ASSERT(instruction.type == AST_Instruction_Type::escape);
 
-        ast::Escaped result { Local_Source_Span { m_pos, instruction.n } };
+        ast::Escaped result { Source_Span { m_pos, instruction.n } };
         advance_by(instruction.n);
         return result;
     }
@@ -127,7 +127,7 @@ public:
         const AST_Instruction instruction = pop();
         MMML_ASSERT(instruction.type == AST_Instruction_Type::text);
 
-        ast::Text result { Local_Source_Span { m_pos, instruction.n } };
+        ast::Text result { Source_Span { m_pos, instruction.n } };
         advance_by(instruction.n);
         return result;
     }
@@ -139,7 +139,7 @@ public:
         MMML_ASSERT(instruction.type == AST_Instruction_Type::push_directive);
         MMML_ASSERT(instruction.n >= 2);
 
-        const Local_Source_Position initial_pos = m_pos;
+        const Source_Position initial_pos = m_pos;
         const std::size_t name_length = instruction.n - 1;
         advance_by(instruction.n);
 
@@ -152,7 +152,7 @@ public:
         const AST_Instruction pop_instruction = pop();
         MMML_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_directive);
 
-        const Local_Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
+        const Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
         return { span, name_length, std::move(arguments), std::move(block) };
     }
 
@@ -189,8 +189,8 @@ public:
         const AST_Instruction instruction = pop();
         MMML_ASSERT(instruction.type == AST_Instruction_Type::push_argument);
 
-        const Local_Source_Position initial_pos = m_pos;
-        std::optional<Local_Source_Span> name;
+        const Source_Position initial_pos = m_pos;
+        std::optional<Source_Span> name;
 
         std::pmr::vector<ast::Content> children { m_memory };
         children.reserve(instruction.n);
@@ -210,7 +210,7 @@ public:
             append_content(children);
         }
 
-        Local_Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
+        Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
         out.push_back(
             name ? ast::Argument { span, *name, std::move(children) }
                  : ast::Argument { span, std::move(children) }

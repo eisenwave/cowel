@@ -90,7 +90,7 @@ std::u8string_view highlight_color_of(Annotation_Type type)
 enum struct Error_Line_Type : Default_Underlying { note, error };
 
 struct Error_Line {
-    std::optional<Source_Position> pos {};
+    std::optional<File_Source_Position> pos {};
     std::u8string_view message;
     bool omit_affected_line = false;
 };
@@ -132,20 +132,20 @@ std::pmr::u8string file_name_to_utf8(std::string_view name, std::pmr::memory_res
     return result;
 }
 
-void print_source_position(Annotated_String8& out, const std::optional<Source_Position>& pos)
+void print_source_position(Annotated_String8& out, const std::optional<File_Source_Position>& pos)
 {
     if (!pos) {
         out.append(u8"(internal):", Annotation_Type::diagnostic_code_position);
     }
     else {
-        print_file_position(out, pos->file_name, Local_Source_Position { *pos });
+        print_file_position(out, pos->file_name, Source_Position { *pos });
     }
 }
 
 void print_diagnostic_prefix(
     Annotated_String8& out,
     Error_Line_Type type,
-    std::optional<Source_Position> pos
+    std::optional<File_Source_Position> pos
 )
 {
     print_source_position(out, pos);
@@ -241,7 +241,7 @@ void do_print_affected_line(
 void print_file_position(
     Annotated_String8& out,
     std::string_view file,
-    const Local_Source_Position& pos,
+    const Source_Position& pos,
     bool suffix_colon
 )
 {
@@ -261,17 +261,13 @@ void print_file_position(
 void print_affected_line(
     Annotated_String8& out,
     std::u8string_view source,
-    const Local_Source_Position& pos
+    const Source_Position& pos
 )
 {
     do_print_affected_line(out, source, pos.begin, 1, pos.line, pos.column);
 }
 
-void print_affected_line(
-    Annotated_String8& out,
-    std::u8string_view source,
-    const Local_Source_Span& pos
-)
+void print_affected_line(Annotated_String8& out, std::u8string_view source, const Source_Span& pos)
 {
     MMML_ASSERT(!pos.empty());
     do_print_affected_line(out, source, pos.begin, pos.length, pos.line, pos.column);
@@ -312,9 +308,9 @@ void print_assertion_error(Annotated_String8& out, const Assertion_Error& error)
     out.append(message, Annotation_Type::diagnostic_text);
     out.append(u8"\n\n");
 
-    Local_Source_Position pos { .line = error.location.line(),
-                                .column = error.location.column(),
-                                .begin = {} };
+    Source_Position pos { .line = error.location.line(),
+                          .column = error.location.column(),
+                          .begin = {} };
     print_file_position(out, error.location.file_name(), pos);
     out.append(u8' ');
     out.append(error.message, Annotation_Type::diagnostic_error_text);

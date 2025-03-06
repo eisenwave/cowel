@@ -37,7 +37,7 @@ void print_location_of_file(Annotated_String8& out, std::string_view file);
 void print_file_position(
     Annotated_String8& out,
     std::string_view file,
-    const Local_Source_Position& pos,
+    const Source_Position& pos,
     bool colon_suffix = true
 );
 
@@ -49,14 +49,10 @@ void print_file_position(
 void print_affected_line(
     Annotated_String8& out,
     std::u8string_view source,
-    const Local_Source_Position& pos
+    const Source_Position& pos
 );
 
-void print_affected_line(
-    Annotated_String8& out,
-    std::u8string_view source,
-    const Local_Source_Span& pos
-);
+void print_affected_line(Annotated_String8& out, std::u8string_view source, const Source_Span& pos);
 
 void print_assertion_error(Annotated_String8& out, const Assertion_Error& error);
 
