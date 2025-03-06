@@ -1,124 +1,12 @@
 #ifndef MMML_PROCESSING_HPP
 #define MMML_PROCESSING_HPP
 
-#include <filesystem>
-#include <memory_resource>
-#include <string_view>
-#include <unordered_map>
-#include <vector>
+#include <memory>
 
+#include "mmml/context.hpp"
 #include "mmml/fwd.hpp"
 
 namespace mmml {
-
-struct Name_Resolver {
-    virtual Directive_Behavior* operator()(std::u8string_view name) const = 0;
-};
-
-struct Transparent_String_View_Hash {
-    using is_transparent = void;
-
-    std::size_t operator()(std::u8string_view v) const
-    {
-        return std::hash<std::u8string_view> {}(v);
-    }
-};
-
-struct Transparent_String_View_Equals {
-    using is_transparent = void;
-
-    bool operator()(std::u8string_view x, std::u8string_view y) const
-    {
-        return x == y;
-    }
-};
-
-/// @brief Stores contextual information during document processing.
-/// Such an object is created once per processing phase.
-struct Context {
-public:
-    using Variable_Map = std::pmr::unordered_map<
-        std::pmr::u8string,
-        std::pmr::u8string,
-        Transparent_String_View_Hash,
-        Transparent_String_View_Equals>;
-
-private:
-    /// @brief The path at which the document is located.
-    std::filesystem::path m_document_path;
-    /// @brief Additional memory used during processing.
-    std::pmr::memory_resource* m_memory;
-    mutable std::pmr::unsynchronized_pool_resource m_transient_memory { m_memory };
-    /// @brief Source code of the document.
-    std::u8string_view m_source;
-    /// @brief A list of (non-null) name resolvers.
-    /// Whenever directives have to be looked up,
-    /// these are processed from
-    /// last to first (i.e. from most recently added) to determine which
-    /// `Directive_Behavior` should handle a given directive.
-    std::pmr::vector<Name_Resolver*> m_name_resolvers { &m_transient_memory };
-
-public:
-    Variable_Map m_variables;
-
-    explicit Context(
-        std::filesystem::path path,
-        std::u8string_view source,
-        std::pmr::memory_resource* memory
-    )
-        : m_document_path { path }
-        , m_memory { memory }
-        , m_source { source }
-    {
-    }
-
-    [[nodiscard]]
-    const std::filesystem::path& get_document_path() const
-    {
-        return m_document_path;
-    }
-
-    /// @brief Returns a memory resource that the `Context` has been constructed with.
-    /// This may possibly persist beyond the destruction of the context.
-    ///
-    /// Note that the context is destroyed after the preprocessing pass,
-    /// so this may be useful to retain some information between passes (e.g. caches).
-    [[nodiscard]]
-    std::pmr::memory_resource* get_persistent_memory() const
-    {
-        return m_memory;
-    }
-
-    /// @brief Returns a memory resource that is destroyed with this object.
-    /// Note that contexts are destroyed after each pass, so this should only be used for
-    /// temporary memory.
-    [[nodiscard]]
-    std::pmr::memory_resource* get_transient_memory() const
-    {
-        return &m_transient_memory;
-    }
-
-    [[nodiscard]]
-    std::u8string_view get_source() const
-    {
-        return m_source;
-    }
-
-    void add_resolver(Name_Resolver& resolver)
-    {
-        m_name_resolvers.push_back(&resolver);
-    }
-
-    /// @brief Finds a directive behavior using `name_resolvers` in reverse order.
-    /// @param name the name of the directive
-    /// @return the behavior for the given name, or `nullptr` if none could be found
-    [[nodiscard]]
-    Directive_Behavior* find_directive(std::u8string_view name) const;
-
-    /// @brief Equivalent to `find_directive(directive.get_name(source))`.
-    [[nodiscard]]
-    Directive_Behavior* find_directive(const ast::Directive& directive) const;
-};
 
 /// @brief A category which applies to a directive behavior generally,
 /// regardless of the specific directive processed at the time.

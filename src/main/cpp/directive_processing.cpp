@@ -1,12 +1,29 @@
+#include <ranges>
 #include <span>
 #include <vector>
 
 #include "mmml/util/html_writer.hpp"
 
+#include "mmml/context.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
 
 namespace mmml {
+
+Directive_Behavior* Context::find_directive(std::u8string_view name) const
+{
+    for (Name_Resolver* const resolver : std::views::reverse(m_name_resolvers)) {
+        if (Directive_Behavior* result = (*resolver)(name)) {
+            return result;
+        }
+    }
+    return nullptr;
+}
+
+Directive_Behavior* Context::find_directive(const ast::Directive& directive) const
+{
+    return find_directive(directive.get_name(m_source));
+}
 
 /// @brief Converts content to plaintext.
 /// For text, this outputs that text literally.
@@ -86,7 +103,7 @@ void to_plaintext_mapped_for_highlighting(
     const std::u8string_view text = t.get_text(context.get_source());
     out.insert(out.end(), text.begin(), text.end());
 
-    const Local_Source_Span pos = t.get_source_position();
+    const Source_Span pos = t.get_source_position();
     out_mapping.reserve(out_mapping.size() + pos.length);
     for (std::size_t i = pos.begin; i < pos.length; ++i) {
         out_mapping.push_back(i);

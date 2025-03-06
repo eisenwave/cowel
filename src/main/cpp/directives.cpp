@@ -12,21 +12,6 @@
 
 namespace mmml {
 
-Directive_Behavior* Context::find_directive(std::u8string_view name) const
-{
-    for (Name_Resolver* const resolver : std::views::reverse(m_name_resolvers)) {
-        if (Directive_Behavior* result = (*resolver)(name)) {
-            return result;
-        }
-    }
-    return nullptr;
-}
-
-Directive_Behavior* Context::find_directive(const ast::Directive& directive) const
-{
-    return find_directive(directive.get_name(m_source));
-}
-
 namespace {
 
 struct Pure_HTML_Behavior : Directive_Behavior {

@@ -53,10 +53,16 @@ template <typename Char>
 struct Basic_Annotated_String;
 template <typename Char, std::size_t>
 struct Basic_Characters;
+template <typename>
+struct Basic_Transparent_String_View_Hash;
+template <typename>
+struct Basic_Transparent_String_View_Equals;
 enum struct Code_Language : Default_Underlying;
 enum struct Annotation_Type : Default_Underlying;
 struct Content;
 struct Context;
+struct Diagnostic;
+enum struct Diagnostic_Type : Default_Underlying;
 struct Directive_Behavior;
 enum struct Directive_Category : Default_Underlying;
 enum struct Directive_Display : Default_Underlying;
@@ -70,8 +76,6 @@ template <typename, typename>
 struct Result;
 enum struct Sign_Policy : Default_Underlying;
 struct Success_Tag;
-struct Transparent_String_View_Equals;
-struct Transparent_String_View_Hash;
 
 namespace ast {
 
@@ -90,6 +94,11 @@ template <std::size_t capacity>
 using Characters = Basic_Characters<char, capacity>;
 template <std::size_t capacity>
 using Characters8 = Basic_Characters<char8_t, capacity>;
+
+using Transparent_String_View_Hash = Basic_Transparent_String_View_Hash<char>;
+using Transparent_String_View_Hash8 = Basic_Transparent_String_View_Hash<char8_t>;
+using Transparent_String_View_Equals = Basic_Transparent_String_View_Equals<char>;
+using Transparent_String_View_Equals8 = Basic_Transparent_String_View_Equals<char8_t>;
 
 } // namespace mmml
 
