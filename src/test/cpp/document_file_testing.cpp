@@ -6,8 +6,8 @@
 #include "mmml/util/io.hpp"
 #include "mmml/util/tty.hpp"
 
-#include "mmml/diagnostics.hpp"
 #include "mmml/parse.hpp"
+#include "mmml/print.hpp"
 
 #include "diagnostic_policy.hpp"
 #include "document_file_testing.hpp"

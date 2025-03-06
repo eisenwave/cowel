@@ -10,8 +10,8 @@
 #include "mmml/util/tty.hpp"
 
 #include "mmml/ast.hpp"
-#include "mmml/diagnostics.hpp"
 #include "mmml/parse.hpp"
+#include "mmml/print.hpp"
 
 namespace mmml {
 namespace {

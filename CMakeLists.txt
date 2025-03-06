@@ -36,11 +36,11 @@ add_library(mmml STATIC
 
     src/main/cpp/argument_matching.cpp
     src/main/cpp/build_ast.cpp
-    src/main/cpp/diagnostics.cpp
     src/main/cpp/directive_processing.cpp
     src/main/cpp/directives.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/parse.cpp
+    src/main/cpp/print.cpp
 )
 
 target_compile_options(mmml PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
