@@ -67,6 +67,8 @@ struct Directive_Behavior;
 enum struct Directive_Category : Default_Underlying;
 enum struct Directive_Display : Default_Underlying;
 struct Error_Tag;
+struct File_Source_Position;
+struct File_Source_Span;
 template <typename>
 struct Function_Ref;
 struct HTML_Writer;
@@ -75,6 +77,8 @@ struct Name_Resolver;
 template <typename, typename>
 struct Result;
 enum struct Sign_Policy : Default_Underlying;
+struct Source_Position;
+struct Source_Span;
 struct Success_Tag;
 
 namespace ast {
