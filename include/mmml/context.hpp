@@ -121,7 +121,7 @@ public:
     [[nodiscard]]
     bool emits(Diagnostic_Type type) const
     {
-        return type >= m_min_diagnostic;
+        return type < Diagnostic_Type::all && type >= m_min_diagnostic;
     }
 
     void emit(Diagnostic&& diagnostic)
