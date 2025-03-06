@@ -122,9 +122,9 @@ constexpr bool is_noncharacter(char32_t c)
 ///
 /// WARNING: This function is pessimistic compared to the UTF-32 overload.
 [[nodiscard]]
-constexpr bool is_html_tag_name_character(char8_t c)
+constexpr bool is_ascii_html_tag_name_character(char8_t c)
 {
-    return c == u8'-' || c == u8'.' || c == u8'_' || (c >= u8'a' && c <= u8'z');
+    return c == u8'-' || c == u8'.' || c == u8'_' || is_ascii_alphanumeric(c);
 }
 
 [[nodiscard]]
@@ -159,7 +159,7 @@ constexpr bool is_html_tag_name_character(char32_t c)
 }
 
 [[nodiscard]]
-constexpr bool is_control(char8_t c)
+constexpr bool is_ascii_control(char8_t c)
 {
     // https://infra.spec.whatwg.org/#control
     return (c >= u8'\u0000' && c <= u8'\u001F') || c == u8'\u007F';
@@ -173,7 +173,7 @@ constexpr bool is_control(char32_t c)
 }
 
 [[nodiscard]]
-constexpr bool is_html_attribute_name_character(char8_t c)
+constexpr bool is_ascii_html_attribute_name_character(char8_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
     // clang-format off
@@ -232,7 +232,7 @@ constexpr bool is_html_unquoted_attribute_value_character(char8_t c)
 constexpr bool is_html_unquoted_attribute_value_character(char32_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
-    return !is_ascii(c) || is_html_attribute_name_character(char8_t(c));
+    return !is_ascii(c) || is_html_unquoted_attribute_value_character(char8_t(c));
 }
 
 /// @brief Returns `true` if `c` is an escapable MMML character.
