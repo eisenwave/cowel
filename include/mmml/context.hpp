@@ -124,17 +124,41 @@ public:
         return type < Diagnostic_Type::all && type >= m_min_diagnostic;
     }
 
-    void emit(Diagnostic&& diagnostic)
+    void emit(Diagnostic&& diagnostic) const
     {
         MMML_ASSERT(emits(diagnostic.type));
         m_emit_diagnostic(std::move(diagnostic));
     }
 
     /// @brief Equivalent to `emit(make_diagnostic(type, location, message))`.
-    void emit(Diagnostic_Type type, Source_Span location, string_view_type message)
+    void emit(Diagnostic_Type type, Source_Span location, string_view_type message) const
     {
         MMML_ASSERT(emits(type));
-        m_emit_diagnostic(make_diagnostic(type, location, message));
+        emit(make_diagnostic(type, location, message));
+    }
+
+    /// @brief Equivalent to `emit(Diagnostic_Type::debug, location, message)`.
+    void emit_debug(Source_Span location, string_view_type message) const
+    {
+        emit(Diagnostic_Type::debug, location, message);
+    }
+
+    /// @brief Equivalent to `emit(Diagnostic_Type::soft_warning, location, message)`.
+    void emit_soft_warning(Source_Span location, string_view_type message) const
+    {
+        emit(Diagnostic_Type::soft_warning, location, message);
+    }
+
+    /// @brief Equivalent to `emit(Diagnostic_Type::warning, location, message)`.
+    void emit_warning(Source_Span location, string_view_type message) const
+    {
+        emit(Diagnostic_Type::warning, location, message);
+    }
+
+    /// @brief Equivalent to `emit(Diagnostic_Type::error, location, message)`.
+    void emit_error(Source_Span location, string_view_type message) const
+    {
+        emit(Diagnostic_Type::error, location, message);
     }
 
     /// @brief Returns a diagnostic with the given `type` and using `get_persistent_memory()`
