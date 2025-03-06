@@ -145,13 +145,13 @@ HTML_Writer& HTML_Writer::write_attribute(string_view_type key, string_view_type
 
     if (!value.empty()) {
         do_write(u8'=');
-        if (requires_quotes_in_html_attribute(value)) {
-            do_write(u8'"');
+        if (is_html_unquoted_attribute_value(value)) {
             do_write(value);
-            do_write(u8'"');
         }
         else {
+            do_write(u8'"');
             do_write(value);
+            do_write(u8'"');
         }
     }
 

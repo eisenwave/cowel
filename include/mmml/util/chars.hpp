@@ -207,6 +207,7 @@ constexpr bool is_html_unquoted_attribute_value_character(char8_t c)
 [[nodiscard]]
 constexpr bool is_html_unquoted_attribute_value_character(char32_t c)
 {
+    // https://html.spec.whatwg.org/dev/syntax.html#unquoted
     return !is_ascii(c) || is_html_attribute_name_character(char8_t(c));
 }
 
