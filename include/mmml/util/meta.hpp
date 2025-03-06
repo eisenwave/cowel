@@ -46,8 +46,20 @@ struct Constant {
 template <auto X>
 inline constexpr Constant<X> constant_v {};
 
+template <typename T>
+concept trivial = std::is_trivially_copyable_v<T> && std::is_trivially_default_constructible_v<T>;
+
+template <typename T>
+concept byte_sized = sizeof(T) == 1;
+
+template <typename T>
+concept byte_like = byte_sized<T> && trivial<T>;
+
 template <typename T, typename... Us>
 concept one_of = (std::same_as<T, Us> || ...);
+
+template <typename T>
+concept char_like = byte_like<T> && one_of<T, char, char8_t>;
 
 } // namespace mmml
 

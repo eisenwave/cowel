@@ -8,7 +8,6 @@
 
 #include "mmml/util/annotation_span.hpp"
 #include "mmml/util/annotation_type.hpp"
-#include "mmml/util/source_position.hpp"
 #include "mmml/util/to_chars.hpp"
 
 namespace mmml {
@@ -274,7 +273,7 @@ public:
         return *this;
     }
 
-    template <typename Integer>
+    template <character_convertible Integer>
     Scoped_Builder& append_integer(Integer x, Sign_Policy signs = Sign_Policy::negative_only)
     {
         self.append_integer(x, signs);

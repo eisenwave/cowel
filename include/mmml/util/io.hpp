@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "mmml/util/function_ref.hpp"
+#include "mmml/util/meta.hpp"
 #include "mmml/util/result.hpp"
 
 namespace mmml {
@@ -93,12 +94,6 @@ inline Unique_File fopen_unique(const char* path, const char* mode) noexcept
 {
     return std::fopen(path, mode);
 }
-
-template <typename T>
-concept trivial = std::is_trivially_copyable_v<T> && std::is_trivially_default_constructible_v<T>;
-
-template <typename T>
-concept byte_like = sizeof(T) == 1 && trivial<T>;
 
 /// @brief Reads all bytes from a file and calls a given consumer with them, chunk by chunk.
 /// @param consume_chunk Invoked repeatedly with temporary chunks of bytes.
