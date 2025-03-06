@@ -12,8 +12,7 @@ bool is_html_tag_name(std::u8string_view str)
 
     // https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name
     return !str.empty() //
-        && is_ascii_alphabetic(str[0])
-        && std::ranges::all_of(utf8::Code_Point_View { str }, predicate);
+        && is_ascii_alpha(str[0]) && std::ranges::all_of(utf8::Code_Point_View { str }, predicate);
 }
 
 [[nodiscard]]

@@ -32,44 +32,62 @@ constexpr bool is_ascii_whitespace(char32_t c)
     return c == U'\t' || c == U'\n' || c == U'\f' || c == U'\r' || c == U' ';
 }
 
-/// @brief Returns `true` if `c` is a latin character (`[a-zA-Z]`).
 [[nodiscard]]
-constexpr bool is_ascii_alphabetic(char8_t c)
+constexpr bool is_ascii_upper_alpha(char8_t c)
 {
-    return (c >= u8'a' && c <= u8'z') || (c >= u8'A' && c <= u8'Z');
+    // https://infra.spec.whatwg.org/#ascii-upper-alpha
+    return c >= u8'A' && c <= u8'Z';
+}
+
+[[nodiscard]]
+constexpr bool is_ascii_upper_alpha(char32_t c)
+{
+    // https://infra.spec.whatwg.org/#ascii-upper-alpha
+    return c >= U'A' && c <= U'Z';
+}
+
+[[nodiscard]]
+constexpr bool is_ascii_lower_alpha(char8_t c)
+{
+    // https://infra.spec.whatwg.org/#ascii-lower-alpha
+    return c >= u8'a' && c <= u8'a';
+}
+
+[[nodiscard]]
+constexpr bool is_ascii_lower_alpha(char32_t c)
+{
+    // https://infra.spec.whatwg.org/#ascii-lower-alpha
+    return c >= U'a' && c <= U'a';
 }
 
 /// @brief Returns `true` if `c` is a latin character (`[a-zA-Z]`).
 [[nodiscard]]
-constexpr bool is_ascii_alphabetic(char32_t c)
+constexpr bool is_ascii_alpha(char8_t c)
 {
-    return (c >= U'a' && c <= U'z') || (c >= U'A' && c <= U'Z');
+    // https://infra.spec.whatwg.org/#ascii-alpha
+    return is_ascii_lower_alpha(c) || is_ascii_upper_alpha(c);
+}
+
+/// @brief Returns `true` if `c` is a latin character (`[a-zA-Z]`).
+[[nodiscard]]
+constexpr bool is_ascii_alpha(char32_t c)
+{
+    // https://infra.spec.whatwg.org/#ascii-alpha
+    return is_ascii_lower_alpha(c) || is_ascii_upper_alpha(c);
 }
 
 [[nodiscard]]
 constexpr bool is_ascii_alphanumeric(char8_t c)
 {
-    return is_ascii_digit(c) || is_ascii_alphabetic(c);
+    // https://infra.spec.whatwg.org/#ascii-alphanumeric
+    return is_ascii_digit(c) || is_ascii_alpha(c);
 }
 
 [[nodiscard]]
 constexpr bool is_ascii_alphanumeric(char32_t c)
 {
+    // https://infra.spec.whatwg.org/#ascii-alphanumeric
     return is_ascii_digit(c) || is_ascii_alphanumeric(c);
-}
-
-/// @brief Returns `true` if `c` is an escapable MMML character.
-/// That is, if `\\c` would corresponds to the literal character `c`,
-/// rather than starting a directive or being treated as literal text.
-[[nodiscard]]
-constexpr bool is_mmml_escapeable(char8_t c)
-{
-    return c == u8'\\' || c == u8'}' || c == u8'{';
-}
-
-constexpr bool is_mmml_escapeable(char32_t c)
-{
-    return c == U'\\' || c == U'}' || c == U'{';
 }
 
 [[nodiscard]]
@@ -112,17 +130,18 @@ constexpr bool is_html_tag_name_character(char8_t c)
 [[nodiscard]]
 constexpr bool is_html_tag_name_character(char32_t c)
 {
-    if (c <= U'\u007F') [[likely]] {
-        return is_html_tag_name_character(char8_t(c));
-    }
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-tag-name
     // https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name
+    // Note that the EBNF grammar on the page above does not include upper-case characters.
+    // That is simply because HTML is case-insensitive,
+    // not because upper-case tag names are malformed.
+    // We accept them here.
+
     // clang-format off
-    return  c == U'-'
+    return is_ascii_alphanumeric(c)
+        ||  c == U'-'
         ||  c == U'.'
-        || (c >= U'0' && c <= U'9')
         ||  c == U'_'
-        || (c >= U'a' && c <= U'z')
         ||  c == U'\u00B7'
         || (c >= U'\u00C0' && c <= U'\u00D6')
         || (c >= U'\u00D8' && c <= U'\u00F6')
@@ -150,7 +169,7 @@ constexpr bool is_control(char8_t c)
 constexpr bool is_control(char32_t c)
 {
     // https://infra.spec.whatwg.org/#control
-    return (c >= U'\u0000' && c <= U'\u001F') || (c >= U'\u007F' || c <= U'\u009F');
+    return (c >= U'\u0000' && c <= U'\u001F') || (c >= U'\u007F' && c <= U'\u009F');
 }
 
 [[nodiscard]]
@@ -174,12 +193,12 @@ constexpr bool is_html_attribute_name_character(char32_t c)
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
     // clang-format off
     return !is_control(c)
-        && c != u8' '
-        && c != u8'"'
-        && c != u8'\''
-        && c != u8'>'
-        && c != u8'/'
-        && c != u8'='
+        && c != U' '
+        && c != U'"'
+        && c != U'\''
+        && c != U'>'
+        && c != U'/'
+        && c != U'='
         && !is_noncharacter(c);
     // clang-format on
 }
@@ -216,20 +235,46 @@ constexpr bool is_html_unquoted_attribute_value_character(char32_t c)
     return !is_ascii(c) || is_html_attribute_name_character(char8_t(c));
 }
 
+/// @brief Returns `true` if `c` is an escapable MMML character.
+/// That is, if `\\c` would corresponds to the literal character `c`,
+/// rather than starting a directive or being treated as literal text.
+[[nodiscard]]
+constexpr bool is_mmml_escapeable(char8_t c)
+{
+    return c == u8'\\' || c == u8'}' || c == u8'{';
+}
+
+constexpr bool is_mmml_escapeable(char32_t c)
+{
+    return c == U'\\' || c == U'}' || c == U'{';
+}
+
+[[nodiscard]]
+constexpr bool is_mmml_special_character(char8_t c)
+{
+    return c == u8'{' || c == u8'}' || c == u8'\\' || c == u8'[' || c == u8']';
+}
+
+[[nodiscard]]
+constexpr bool is_mmml_special_character(char32_t c)
+{
+    return c == U'{' || c == U'}' || c == U'\\' || c == U'[' || c == U']';
+}
+
 /// @brief Returns `true` if `c` can legally appear
 /// in the name of an MMML directive argument.
 [[nodiscard]]
-constexpr bool is_mmml_argument_name_character(char8_t c)
+constexpr bool is_mmml_argument_name_character(char32_t c)
 {
-    return c == u8'-' || c == u8'_' || is_ascii_alphanumeric(c);
+    return !is_mmml_special_character(c) && is_html_attribute_name_character(c);
 }
 
 /// @brief Returns `true` if `c` can legally appear
 /// in the name of an MMML directive.
 [[nodiscard]]
-constexpr bool is_mmml_directive_name_character(char8_t c)
+constexpr bool is_mmml_directive_name_character(char32_t c)
 {
-    return c == u8'-' || is_ascii_alphanumeric(c);
+    return is_html_tag_name_character(c);
 }
 
 } // namespace mmml
