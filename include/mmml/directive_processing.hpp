@@ -51,7 +51,7 @@ void to_plaintext_mapped_for_highlighting(
 );
 
 void contents_to_html(
-    Annotated_String8& out,
+    std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
     Context& context
 );

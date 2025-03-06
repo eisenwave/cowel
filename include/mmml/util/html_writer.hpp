@@ -1,11 +1,24 @@
 #ifndef MMML_HTML_WRITER_HPP
 #define MMML_HTML_WRITER_HPP
 
+#include <vector>
+
 #include "mmml/util/assert.hpp"
 
 #include "mmml/fwd.hpp"
 
 namespace mmml {
+
+/// @brief Appends text to a vector without any processing.
+void append(std::pmr::vector<char8_t>& out, std::u8string_view text);
+
+/// @brief Appends text to the vector where "problematic characters" are replaced
+/// with HTML entities.
+/// That is, `&` is replaced with `&amp;`, `<` with `&lt;`, and `>` with `&gt;`.
+///
+/// The appended text can be safely inserted between enclosing HTML tags without
+/// the structure of the HTML document being compromised.
+void append_html_escaped(std::pmr::vector<char8_t>& out, std::u8string_view text);
 
 /// @brief A class which provides member functions for writing HTML content to a stream
 /// correctly.
@@ -27,7 +40,7 @@ public:
     using string_view_type = std::u8string_view;
 
 private:
-    Annotated_String8& m_out;
+    std::pmr::vector<char_type>& m_out;
 
     std::size_t m_depth = 0;
     bool m_in_attributes = false;
@@ -37,7 +50,7 @@ public:
     /// Writes nothing to the stream.
     /// `out.fail()` shall be true.
     /// @param out the output stream
-    explicit HTML_Writer(Annotated_String8& out);
+    explicit HTML_Writer(std::pmr::vector<char_type>& out);
 
     HTML_Writer(const HTML_Writer&) = delete;
     HTML_Writer& operator=(const HTML_Writer&) = delete;
@@ -96,12 +109,8 @@ private:
     Self& end_attributes();
     Self& end_empty_tag_attributes();
 
-    /// @brief Passes any text directly through to the writer, however, characters which interfere
-    /// with HTML such as `<` or `>` are written as HTML entities instead.
-    /// If the string contains no such entities, this function is equivalent to writing `text` to
-    /// the writer directly.
-    /// @param text the text to write
-    void write_escaped_text(string_view_type text);
+    void do_write(char_type);
+    void do_write(string_view_type);
 };
 
 /// @brief RAII helper class which lets us write attributes more conveniently.

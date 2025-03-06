@@ -71,6 +71,7 @@ struct File_Source_Position;
 struct File_Source_Span;
 template <typename>
 struct Function_Ref;
+struct Generation_Options;
 struct HTML_Writer;
 enum struct IO_Error_Code : Default_Underlying;
 struct Name_Resolver;

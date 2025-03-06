@@ -38,7 +38,7 @@ private:
     std::filesystem::path m_document_path;
     /// @brief Additional memory used during processing.
     std::pmr::memory_resource* m_memory;
-    mutable std::pmr::unsynchronized_pool_resource m_transient_memory { m_memory };
+    std::pmr::memory_resource* m_transient_memory;
     /// @brief Source code of the document.
     string_view_type m_source;
     /// @brief A list of (non-null) name resolvers.
@@ -46,7 +46,7 @@ private:
     /// these are processed from
     /// last to first (i.e. from most recently added) to determine which
     /// `Directive_Behavior` should handle a given directive.
-    std::pmr::vector<Name_Resolver*> m_name_resolvers { &m_transient_memory };
+    std::pmr::vector<const Name_Resolver*> m_name_resolvers { m_transient_memory };
 
 public:
     Variable_Map m_variables { m_memory };
@@ -61,16 +61,23 @@ public:
     /// @param source The source code.
     /// @param emit_diagnostic Called when a diagnostic is emitted.
     /// @param min_diagnostic_level The minimum level of diagnostics that are emitted.
-    /// @param memory Additional memory.
+    /// @param persistent_memory Additional memory which persists beyond the destruction
+    /// of the context.
+    /// This is used e.g. for the creation of diagnostic messages,
+    /// for directive behavior that requires storing information between passes, etc.
+    /// @param transient_memory Additional memory which does not persist beyond the
+    /// destruction of the context.
     explicit Context(
         std::filesystem::path path,
         string_view_type source,
         Function_Ref<void(Diagnostic&&)> emit_diagnostic,
         Diagnostic_Type min_diagnostic_level,
-        std::pmr::memory_resource* memory
+        std::pmr::memory_resource* persistent_memory,
+        std::pmr::memory_resource* transient_memory
     )
         : m_document_path { path }
-        , m_memory { memory }
+        , m_memory { persistent_memory }
+        , m_transient_memory { transient_memory }
         , m_source { source }
         , m_emit_diagnostic { emit_diagnostic }
         , m_min_diagnostic { min_diagnostic_level }
@@ -100,7 +107,7 @@ public:
     [[nodiscard]]
     std::pmr::memory_resource* get_transient_memory() const
     {
-        return &m_transient_memory;
+        return m_transient_memory;
     }
 
     [[nodiscard]]
@@ -185,7 +192,7 @@ public:
                  .message { message, get_persistent_memory() } };
     }
 
-    void add_resolver(Name_Resolver& resolver)
+    void add_resolver(const Name_Resolver& resolver)
     {
         m_name_resolvers.push_back(&resolver);
     }

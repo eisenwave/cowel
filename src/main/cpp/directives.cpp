@@ -1,7 +1,6 @@
 #include <ranges>
 #include <span>
 
-#include "mmml/util/annotated_string.hpp"
 #include "mmml/util/code_language.hpp"
 #include "mmml/util/html_writer.hpp"
 
@@ -181,10 +180,12 @@ struct HTML_Literal_Behavior : Pure_HTML_Behavior {
         }
     }
 
-    void generate_html(HTML_Writer&, const ast::Directive& d, Context& context) const override
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override
     {
-        Annotated_String8 buffer { context.get_transient_memory() };
+        std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
         contents_to_html(buffer, d.get_content(), context);
+        const std::u8string_view buffer_string { buffer.data(), buffer.size() };
+        out.write_inner_html(buffer_string);
     }
 };
 

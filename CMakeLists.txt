@@ -38,6 +38,7 @@ add_library(mmml STATIC
     src/main/cpp/build_ast.cpp
     src/main/cpp/directive_processing.cpp
     src/main/cpp/directives.cpp
+    src/main/cpp/document_generation.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/parse.cpp
     src/main/cpp/print.cpp

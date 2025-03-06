@@ -12,7 +12,7 @@ namespace mmml {
 
 Directive_Behavior* Context::find_directive(std::u8string_view name) const
 {
-    for (Name_Resolver* const resolver : std::views::reverse(m_name_resolvers)) {
+    for (const Name_Resolver* const resolver : std::views::reverse(m_name_resolvers)) {
         if (Directive_Behavior* result = (*resolver)(name)) {
             return result;
         }
@@ -158,8 +158,10 @@ void to_plaintext_mapped_for_highlighting(
     }
 }
 
+// TODO: since this is taking the directive source code literally,
+//       a better name might be something like dump_source, idk.
 void contents_to_html(
-    Annotated_String8& out,
+    std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
     Context& context
 )
