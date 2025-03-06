@@ -79,6 +79,13 @@ constexpr char32_t decode_unchecked(std::array<char8_t, 4> str, int length)
 
 namespace detail {
 
+/// @brief For any sequence length minus one,
+/// contains a mask where a bits is `1` if the corresponding bits in the code units
+/// are expected to have a constant value.
+///
+/// For example, for a sequence length of `1`,
+/// the uppermost bit in the first byte is expected to be zero,
+/// so the mask at `[0]` contains a `1`-bit in that position and a `0`-bit everywhere else.
 inline constexpr char8_t expectation_masks[][4] = {
     { 0x80, 0x00, 0x00, 0x00 },
     { 0xE0, 0xC0, 0x00, 0x00 },
@@ -86,6 +93,8 @@ inline constexpr char8_t expectation_masks[][4] = {
     { 0xF8, 0xC0, 0xC0, 0xC0 },
 };
 
+/// @brief For any sequence length minus one,
+/// contains the bit patterns of any constant bits in the code units.
 inline constexpr char8_t expectation_values[][4] = {
     { 0x00, 0x00, 0x00, 0x00 },
     { 0xC0, 0x80, 0x00, 0x00 },
@@ -95,7 +104,12 @@ inline constexpr char8_t expectation_values[][4] = {
 
 } // namespace detail
 
-constexpr Result<void, Error_Code> is_valid(std::array<char8_t, 4> str, int length)
+/// @brief Returns `true` if `str` contains a valid (padded) UTF-8-encoded code point
+/// for a known sequence length.
+/// @param str The UTF-8 code units. Paddings bits need not be zero.
+/// @param length The length of the code unit sequence, in `[1, 4]`.
+[[nodiscard]]
+constexpr bool is_valid(std::array<char8_t, 4> str, int length)
 {
     MMML_ASSERT(length >= 1 && length <= 4);
 
@@ -104,30 +118,11 @@ constexpr Result<void, Error_Code> is_valid(std::array<char8_t, 4> str, int leng
     const auto expected = std::bit_cast<std::uint32_t>(detail::expectation_values[length - 1]);
 
     // https://nrk.neocities.org/articles/utf8-pext
-    if ((str32 & mask) != expected) {
-        return Error_Code::illegal_bits;
-    }
-
-    return {};
+    return (str32 & mask) == expected;
 }
 
-/// @brief Like `decode_unchecked`,
-/// but checks the integrity of the given UTF-8 data,
-/// such as that continuation bits are present and have their expected value.
-/// @param str The UTF-8 units.
-/// Only the first `length` units are used for decoding.
-/// @param length The amount of UTF-8 units stored in `str`,
-/// in range `[1, 4]`.
-constexpr Result<char32_t, Error_Code> decode(std::array<char8_t, 4> str, int length)
-{
-    MMML_ASSERT(length >= 1 && length <= 4);
-    if (!is_valid(str, length)) {
-        return Error_Code::illegal_bits;
-    }
-
-    return decode_unchecked(str, length);
-}
-
+/// @brief Returns the UTF-8-encoded code point within the units pointed to by `str`,
+/// as well as the amount of UTF-8 units encoding that code point.
 [[nodiscard]]
 constexpr Code_Point_And_Length decode_and_length_unchecked(const char8_t* str)
 {
@@ -137,10 +132,30 @@ constexpr Code_Point_And_Length decode_and_length_unchecked(const char8_t* str)
     return { .code_point = decode_unchecked(padded, length), .length = length };
 }
 
+/// @brief Returns the UTF-8-encoded code point within the units pointed to by `str`.
+/// No bounds checks are performed.
 [[nodiscard]]
 constexpr char32_t decode_unchecked(const char8_t* str)
 {
     return decode_and_length_unchecked(str).code_point;
+}
+
+/// @brief Like `decode_unchecked`,
+/// but checks the integrity of the given UTF-8 data,
+/// such as that continuation bits are present and have their expected value.
+/// @param str The UTF-8 units.
+/// Only the first `length` units are used for decoding.
+/// @param length The amount of UTF-8 units stored in `str`,
+/// in range `[1, 4]`.
+[[nodiscard]]
+constexpr Result<char32_t, Error_Code> decode(std::array<char8_t, 4> str, int length)
+{
+    MMML_ASSERT(length >= 1 && length <= 4);
+    if (!is_valid(str, length)) {
+        return Error_Code::illegal_bits;
+    }
+
+    return decode_unchecked(str, length);
 }
 
 [[nodiscard]]
