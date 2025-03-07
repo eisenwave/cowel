@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "mmml/util/assert.hpp"
+#include "mmml/util/chars.hpp"
 
 #include "mmml/fwd.hpp"
 
@@ -98,11 +99,23 @@ public:
     /// Text characters such as `<` or `>` which interfere with HTML are converted to entities.
     void write_inner_text(string_view_type text);
 
+    void write_inner_text(char_type c)
+    {
+        MMML_ASSERT(is_ascii(c));
+        write_inner_text({ &c, 1 });
+    }
+
     /// @brief Writes HTML content between tags.
     /// Unlike `write_inner_text`, does not escape any entities.
     ///
     /// WARNING: Improper use of this function can easily result in incorrect HTML output.
     void write_inner_html(string_view_type text);
+
+    void write_inner_html(char_type c)
+    {
+        MMML_ASSERT(is_ascii(c));
+        write_inner_html({ &c, 1 });
+    }
 
 private:
     Self& write_attribute(string_view_type key, string_view_type value);
