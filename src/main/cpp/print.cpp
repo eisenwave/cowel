@@ -365,7 +365,8 @@ void print_cut_off(Annotated_String8& out, std::u8string_view v, std::size_t lim
 
 } // namespace
 
-struct [[nodiscard]] AST_Printer : ast::Const_Visitor {
+struct [[nodiscard]]
+AST_Printer final : ast::Const_Visitor {
 private:
     using char_type = char8_t;
     using string_view_type = std::u8string_view;
@@ -450,6 +451,29 @@ public:
         else {
             out.append(u8"[]", Annotation_Type::diagnostic_punctuation);
         }
+
+        if (!directive.get_content().empty()) {
+            out.append(u8'{', Annotation_Type::diagnostic_punctuation);
+            out.append(u8'\n');
+            {
+                Scoped_Indent i = indented();
+                visit_content_sequence(directive.get_content());
+            }
+            print_indent();
+            out.append(u8'}', Annotation_Type::diagnostic_punctuation);
+        }
+        else {
+            out.append(u8"{}", Annotation_Type::diagnostic_punctuation);
+        }
+
+        out.append(u8'\n');
+    }
+
+    void visit(const ast::Behaved_Content& directive) final
+    {
+        print_indent();
+
+        out.append(u8"BehavedContent", Annotation_Type::diagnostic_tag);
 
         if (!directive.get_content().empty()) {
             out.append(u8'{', Annotation_Type::diagnostic_punctuation);

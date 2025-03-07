@@ -14,29 +14,9 @@
 
 namespace mmml::ast {
 
-namespace detail {
-struct Base {
-    Source_Span m_pos;
-
-    // TODO: rename to get_source_span
-    [[nodiscard]]
-    Source_Span get_source_position() const
-    {
-        return m_pos;
-    }
-
-    [[nodiscard]]
-    std::u8string_view get_source(std::u8string_view source) const
-    {
-        MMML_ASSERT(m_pos.begin + m_pos.length <= source.size());
-        return source.substr(m_pos.begin, m_pos.length);
-    }
-};
-
-} // namespace detail
-
-struct Argument final : detail::Base {
+struct Argument final {
 private:
+    Source_Span m_pos;
     std::pmr::vector<Content> m_content;
     Source_Span m_name;
 
@@ -52,6 +32,19 @@ public:
     Argument(const Source_Span& pos, std::pmr::vector<ast::Content>&& children);
 
     ~Argument();
+
+    [[nodiscard]]
+    Source_Span get_source_span() const
+    {
+        return m_pos;
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source(std::u8string_view source) const
+    {
+        MMML_ASSERT(m_pos.begin + m_pos.length <= source.size());
+        return source.substr(m_pos.begin, m_pos.length);
+    }
 
     [[nodiscard]]
     bool has_name() const
@@ -75,8 +68,9 @@ public:
     std::pmr::vector<Content>&& get_content() &&;
 };
 
-struct Directive final : detail::Base {
+struct Directive final {
 private:
+    Source_Span m_pos;
     std::size_t m_name_length;
 
     std::pmr::vector<Argument> m_arguments;
@@ -94,6 +88,19 @@ public:
     ~Directive();
 
     [[nodiscard]]
+    Source_Span get_source_span() const
+    {
+        return m_pos;
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source(std::u8string_view source) const
+    {
+        MMML_ASSERT(m_pos.begin + m_pos.length <= source.size());
+        return source.substr(m_pos.begin, m_pos.length);
+    }
+
+    [[nodiscard]]
     std::u8string_view get_name(std::u8string_view source) const
     {
         return source.substr(m_pos.begin + 1, m_name_length);
@@ -109,10 +116,49 @@ public:
     std::span<Content const> get_content() const;
 };
 
-struct Text final : detail::Base {
+struct Behaved_Content final {
+private:
+    Content_Behavior& m_behavior;
+    std::pmr::vector<Content> m_content;
+
+public:
+    [[nodiscard]]
+    Behaved_Content(Content_Behavior& behavior, std::pmr::vector<Content>&& block);
+
+    ~Behaved_Content();
 
     [[nodiscard]]
+    Content_Behavior& get_behavior() const
+    {
+        return m_behavior;
+    }
+
+    [[nodiscard]]
+    std::span<Content> get_content();
+    [[nodiscard]]
+    std::span<Content const> get_content() const;
+};
+
+struct Text final {
+private:
+    Source_Span m_pos;
+
+public:
+    [[nodiscard]]
     Text(const Source_Span& pos);
+
+    [[nodiscard]]
+    Source_Span get_source_span() const
+    {
+        return m_pos;
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source(std::u8string_view source) const
+    {
+        MMML_ASSERT(m_pos.begin + m_pos.length <= source.size());
+        return source.substr(m_pos.begin, m_pos.length);
+    }
 
     [[nodiscard]]
     std::u8string_view get_text(std::u8string_view source) const
@@ -122,10 +168,26 @@ struct Text final : detail::Base {
 };
 
 /// @brief An escape sequence, such as `\\{`, `\\}`, or `\\\\`.
-struct Escaped final : detail::Base {
+struct Escaped final {
+private:
+    Source_Span m_pos;
 
+public:
     [[nodiscard]]
     Escaped(const Source_Span& pos);
+
+    [[nodiscard]]
+    Source_Span get_source_span() const
+    {
+        return m_pos;
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source(std::u8string_view source) const
+    {
+        MMML_ASSERT(m_pos.begin + m_pos.length <= source.size());
+        return source.substr(m_pos.begin, m_pos.length);
+    }
 
     /// @brief Returns the escaped character.
     [[nodiscard]]
@@ -151,7 +213,7 @@ struct Escaped final : detail::Base {
     }
 };
 
-using Content_Variant = std::variant<Directive, Text, Escaped>;
+using Content_Variant = std::variant<Directive, Behaved_Content, Text, Escaped>;
 
 struct Content : Content_Variant {
     using Content_Variant::variant;
@@ -159,6 +221,7 @@ struct Content : Content_Variant {
 
 inline Argument::~Argument() = default;
 inline Directive::~Directive() = default;
+inline Behaved_Content::~Behaved_Content() = default;
 
 inline std::span<Content> Argument::get_content() &
 {
@@ -191,18 +254,45 @@ inline std::span<Content const> Directive::get_content() const
     return m_content;
 }
 
+inline std::span<Content> Behaved_Content::get_content()
+{
+    return m_content;
+}
+inline std::span<Content const> Behaved_Content::get_content() const
+{
+    return m_content;
+}
+
 [[nodiscard]]
 inline Source_Span get_source_span(const Content& node)
 {
-    return visit([]<typename T>(const T& v) -> const detail::Base& { return v; }, node)
-        .get_source_position();
+    return visit(
+        []<typename T>(const T& v) -> Source_Span {
+            if constexpr (!std::is_same_v<T, Behaved_Content>) {
+                return v.get_source_span();
+            }
+            else {
+                return {};
+            }
+        },
+        node
+    );
 }
 
 [[nodiscard]]
 inline std::u8string_view get_source(const Content& node, std::u8string_view source)
 {
-    return visit([]<typename T>(const T& v) -> const detail::Base& { return v; }, node)
-        .get_source(source);
+    return visit(
+        [source]<typename T>(const T& v) -> std::u8string_view {
+            if constexpr (!std::is_same_v<T, Behaved_Content>) {
+                return v.get_source(source);
+            }
+            else {
+                return {};
+            }
+        },
+        node
+    );
 }
 
 template <bool constant>
@@ -211,6 +301,7 @@ struct Visitor_Impl {
     using Text_Type = const_if_t<Text, constant>;
     using Escaped_Type = const_if_t<Escaped, constant>;
     using Directive_Type = const_if_t<Directive, constant>;
+    using Behaved_Content_Type = const_if_t<Behaved_Content, constant>;
     using Content_Type = const_if_t<Content, constant>;
 
     void visit_arguments(Directive_Type& directive)
@@ -243,10 +334,11 @@ struct Visitor_Impl {
         }
     }
 
+    virtual void visit(Argument_Type& argument) = 0;
     virtual void visit(Directive_Type& directive) = 0;
+    virtual void visit(Behaved_Content_Type& behaved_content) = 0;
     virtual void visit(Text_Type& text) = 0;
     virtual void visit(Escaped_Type& text) = 0;
-    virtual void visit(Argument_Type& argument) = 0;
 };
 
 using Visitor = Visitor_Impl<false>;

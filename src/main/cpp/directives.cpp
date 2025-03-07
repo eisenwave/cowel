@@ -176,14 +176,15 @@ struct HTML_Literal_Behavior : Pure_HTML_Behavior {
     {
         // TODO: warn for ignored (unprocessed) arguments
         for (ast::Content& c : d.get_content()) {
-            preprocess_content(c, context);
+            mmml::preprocess(c, context);
         }
     }
 
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override
     {
         std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
-        contents_to_html(buffer, d.get_content(), context);
+        HTML_Writer buffer_writer { buffer };
+        to_html_literally(buffer_writer, d.get_content(), context);
         const std::u8string_view buffer_string { buffer.data(), buffer.size() };
         out.write_inner_html(buffer_string);
     }
@@ -253,7 +254,7 @@ void preprocess_matched_arguments(
 {
     for (std::size_t i = 0; i < statuses.size(); ++i) {
         if (statuses[i] == Argument_Status::ok) {
-            preprocess_contents(d.get_arguments()[i].get_content(), context);
+            preprocess(d.get_arguments()[i].get_content(), context);
         }
     }
 }

@@ -16,12 +16,22 @@ namespace mmml {
 /// @param context the current processing context
 void to_plaintext(std::pmr::vector<char8_t>& out, const ast::Content& c, Context& context);
 
+/// @brief Calls `to_plaintext` for each piece of content.
 void to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
     Context& context
 );
 
+/// @brief Like `to_plaintext`,
+/// but ignores directives other than `pure_plaintext` and `formatting`, and
+/// also appends the source code index of the piece of content that is responsible for each
+/// character.
+/// When performing syntax highlighting,
+/// this subsequently allows to wrap text in synthesized directives.
+///
+/// Note that for directives with `Directive_Category::pure_html` or `Directive_Category::mixed`,
+/// no plaintext is generated in general.
 void to_plaintext_mapped_for_highlighting(
     std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
@@ -43,6 +53,7 @@ void to_plaintext_mapped_for_highlighting(
     Context& context
 );
 
+/// @brief Calls `to_plaintext_mapped_for_highlighting` for each piece of content.
 void to_plaintext_mapped_for_highlighting(
     std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
@@ -50,15 +61,14 @@ void to_plaintext_mapped_for_highlighting(
     Context& context
 );
 
-void contents_to_html(
-    std::pmr::vector<char8_t>& out,
-    std::span<const ast::Content> content,
-    Context& context
-);
+/// @brief Converts the source code of the content to HTML without any processing.
+void to_html_literally(HTML_Writer& out, const ast::Content& content, Context& context);
 
-void preprocess_content(ast::Content& c, Context& context);
+void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, Context& context);
 
-void preprocess_contents(std::span<ast::Content> contents, Context& context);
+void preprocess(ast::Content& c, Context& context);
+
+void preprocess(std::span<ast::Content> contents, Context& context);
 
 void preprocess_arguments(ast::Directive& d, Context& context);
 

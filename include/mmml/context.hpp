@@ -47,6 +47,7 @@ private:
     /// last to first (i.e. from most recently added) to determine which
     /// `Directive_Behavior` should handle a given directive.
     std::pmr::vector<const Name_Resolver*> m_name_resolvers { m_transient_memory };
+    Directive_Behavior* m_error_behavior;
 
 public:
     Variable_Map m_variables { m_memory };
@@ -61,6 +62,8 @@ public:
     /// @param source The source code.
     /// @param emit_diagnostic Called when a diagnostic is emitted.
     /// @param min_diagnostic_level The minimum level of diagnostics that are emitted.
+    /// @param error_behavior The behavior to be used when directive processing encounters an error.
+    /// May be null.
     /// @param persistent_memory Additional memory which persists beyond the destruction
     /// of the context.
     /// This is used e.g. for the creation of diagnostic messages,
@@ -72,6 +75,7 @@ public:
         string_view_type source,
         Function_Ref<void(Diagnostic&&)> emit_diagnostic,
         Diagnostic_Type min_diagnostic_level,
+        Directive_Behavior* error_behavior,
         std::pmr::memory_resource* persistent_memory,
         std::pmr::memory_resource* transient_memory
     )
@@ -79,6 +83,7 @@ public:
         , m_memory { persistent_memory }
         , m_transient_memory { transient_memory }
         , m_source { source }
+        , m_error_behavior { error_behavior }
         , m_emit_diagnostic { emit_diagnostic }
         , m_min_diagnostic { min_diagnostic_level }
     {
@@ -108,6 +113,12 @@ public:
     std::pmr::memory_resource* get_transient_memory() const
     {
         return m_transient_memory;
+    }
+
+    [[nodiscard]]
+    Directive_Behavior* get_error_behavior() const
+    {
+        return m_error_behavior;
     }
 
     [[nodiscard]]

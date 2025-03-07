@@ -2,6 +2,8 @@
 #define MMML_PROCESSING_HPP
 
 #include <memory>
+#include <span>
+#include <vector>
 
 #include "mmml/context.hpp"
 #include "mmml/fwd.hpp"
@@ -81,6 +83,25 @@ struct Directive_Behavior {
         = 0;
 
     virtual void generate_html(HTML_Writer& out, const ast::Directive& d, Context&) const = 0;
+};
+
+struct Content_Behavior {
+    const Directive_Category category;
+    const Directive_Display display;
+
+    [[nodiscard]]
+    Content_Behavior(Directive_Category c, Directive_Display d)
+        : category { c }
+        , display { d }
+    {
+    }
+
+    virtual void preprocess(std::span<ast::Content>, Context&) = 0;
+    virtual void
+    generate_plaintext(std::pmr::vector<char8_t>& out, std::span<const ast::Content>, Context&)
+        const
+        = 0;
+    virtual void generate_html(HTML_Writer& out, std::span<const ast::Content>, Context&) const = 0;
 };
 
 struct [[nodiscard]] Builtin_Directive_Set : Name_Resolver {

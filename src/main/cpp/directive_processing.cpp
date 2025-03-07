@@ -36,16 +36,26 @@ void to_plaintext(std::pmr::vector<char8_t>& out, const ast::Content& c, Context
     if (const auto* const t = get_if<ast::Text>(&c)) {
         const std::u8string_view text = t->get_text(context.get_source());
         out.insert(out.end(), text.begin(), text.end());
+        return;
     }
     if (const auto* const e = get_if<ast::Escaped>(&c)) {
         out.push_back(e->get_char(context.get_source()));
+        return;
     }
-
-    auto& d = get<ast::Directive>(c);
-    if (Directive_Behavior* behavior = context.find_directive(d)) {
-        behavior->generate_plaintext(out, d, context);
+    if (const auto* const b = get_if<ast::Behaved_Content>(&c)) {
+        b->get_behavior().generate_plaintext(out, b->get_content(), context);
+        return;
     }
-    // TODO: else error handling; possibly replace with error directive
+    if (const auto* const d = get_if<ast::Directive>(&c)) {
+        if (Directive_Behavior* behavior = context.find_directive(*d)) {
+            behavior->generate_plaintext(out, *d, context);
+        }
+        else if (Directive_Behavior* eb = context.get_error_behavior()) {
+            eb->generate_plaintext(out, *d, context);
+        }
+        return;
+    }
+    MMML_ASSERT_UNREACHABLE(u8"Invalid form of content.");
 }
 
 void to_plaintext(
@@ -68,14 +78,22 @@ void to_plaintext_mapped_for_highlighting(
 {
     if (const auto* const t = get_if<ast::Text>(&c)) {
         to_plaintext_mapped_for_highlighting(out, out_mapping, *t, context);
+        return;
     }
     if (const auto* const e = get_if<ast::Escaped>(&c)) {
         out.push_back(e->get_char(context.get_source()));
         out_mapping.push_back(e->get_char_index());
+        return;
     }
-
-    auto& d = get<ast::Directive>(c);
-    to_plaintext_mapped_for_highlighting(out, out_mapping, d, context);
+    if (const auto* const b = get_if<ast::Behaved_Content>(&c)) {
+        MMML_ASSERT_UNREACHABLE(u8"Behaved content during syntax highlighting?!");
+        b->get_behavior().generate_plaintext(out, b->get_content(), context);
+        return;
+    }
+    if (const auto* const d = get_if<ast::Directive>(&c)) {
+        to_plaintext_mapped_for_highlighting(out, out_mapping, *d, context);
+        return;
+    }
 }
 
 void to_plaintext_mapped_for_highlighting(
@@ -103,7 +121,7 @@ void to_plaintext_mapped_for_highlighting(
     const std::u8string_view text = t.get_text(context.get_source());
     out.insert(out.end(), text.begin(), text.end());
 
-    const Source_Span pos = t.get_source_position();
+    const Source_Span pos = t.get_source_span();
     out_mapping.reserve(out_mapping.size() + pos.length);
     for (std::size_t i = pos.begin; i < pos.length; ++i) {
         out_mapping.push_back(i);
@@ -158,51 +176,54 @@ void to_plaintext_mapped_for_highlighting(
     }
 }
 
-// TODO: since this is taking the directive source code literally,
-//       a better name might be something like dump_source, idk.
-void contents_to_html(
-    std::pmr::vector<char8_t>& out,
-    std::span<const ast::Content> content,
-    Context& context
-)
+void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
 {
-    HTML_Writer nested_writer { out };
     for (const ast::Content& c : content) {
         if (const auto* const e = get_if<ast::Escaped>(&c)) {
             const char8_t c = e->get_char(context.get_source());
-            nested_writer.write_inner_html({ &c, 1 });
+            out.write_inner_html({ &c, 1 });
         }
         if (const auto* const t = get_if<ast::Text>(&c)) {
-            nested_writer.write_inner_html(t->get_text(context.get_source()));
+            out.write_inner_html(t->get_text(context.get_source()));
         }
-        const auto& d = get<ast::Directive>(c);
-        if (Directive_Behavior* behavior = context.find_directive(d)) {
-            behavior->generate_html(nested_writer, d, context);
+        if (const auto* const b = get_if<ast::Behaved_Content>(&c)) {
+            MMML_ASSERT_UNREACHABLE(u8"Attempting to generate literal HTML from Behaved_Content");
+            return;
+        }
+        if (const auto* const d = get_if<ast::Directive>(&c)) {
+            out.write_inner_text(d->get_source(context.get_source()));
         }
     }
 }
 
-void preprocess_content(ast::Content& c, Context& context)
+void preprocess(ast::Content& c, Context& context)
 {
+    if (auto* const b = get_if<ast::Behaved_Content>(&c)) {
+        b->get_behavior().preprocess(b->get_content(), context);
+        return;
+    }
     if (auto* const d = get_if<ast::Directive>(&c)) {
         if (Directive_Behavior* behavior = context.find_directive(*d)) {
             behavior->preprocess(*d, context);
         }
-        // TODO: handle lookup failure
+        else if (Directive_Behavior* eb = context.get_error_behavior()) {
+            behavior->preprocess(*d, context);
+        }
+        return;
     }
 }
 
-void preprocess_contents(std::span<ast::Content> contents, Context& context)
+void preprocess(std::span<ast::Content> contents, Context& context)
 {
     for (ast::Content& c : contents) {
-        preprocess_content(c, context);
+        preprocess(c, context);
     }
 }
 
 void preprocess_arguments(ast::Directive& d, Context& context)
 {
     for (ast::Argument& a : d.get_arguments()) {
-        preprocess_contents(a.get_content(), context);
+        preprocess(a.get_content(), context);
     }
 }
 

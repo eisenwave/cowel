@@ -15,7 +15,7 @@ Argument::Argument(
     const Source_Span& name,
     std::pmr::vector<ast::Content>&& children
 )
-    : detail::Base { pos }
+    : m_pos { pos }
     , m_content { std::move(children) }
     , m_name { name }
 {
@@ -23,7 +23,7 @@ Argument::Argument(
 
 [[nodiscard]]
 Argument::Argument(const Source_Span& pos, std::pmr::vector<ast::Content>&& children)
-    : detail::Base { pos }
+    : m_pos { pos }
     , m_content { std::move(children) }
     , m_name { pos, 0 }
 {
@@ -35,7 +35,7 @@ Directive::Directive(
     std::pmr::vector<Argument>&& args,
     std::pmr::vector<Content>&& block
 )
-    : detail::Base { pos }
+    : m_pos { pos }
     , m_name_length { name_length }
     , m_arguments { std::move(args) }
     , m_content { std::move(block) }
@@ -43,14 +43,20 @@ Directive::Directive(
     MMML_ASSERT(m_name_length != 0);
 }
 
+Behaved_Content::Behaved_Content(Content_Behavior& behavior, std::pmr::vector<Content>&& block)
+    : m_behavior { behavior }
+    , m_content { std::move(block) }
+{
+}
+
 Text::Text(const Source_Span& pos)
-    : detail::Base { pos }
+    : m_pos { pos }
 {
     MMML_ASSERT(!pos.empty());
 }
 
 Escaped::Escaped(const Source_Span& pos)
-    : detail::Base { pos }
+    : m_pos { pos }
 {
     MMML_ASSERT(pos.length == 2);
 }

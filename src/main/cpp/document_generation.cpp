@@ -26,8 +26,9 @@ void generate_document(const Generation_Options& options)
     HTML_Writer writer { options.output };
 
     const auto make_context = [&]() {
-        Context result { options.path,     options.source, options.emit_diagnostic,
-                         diagnostic_level, options.memory, &transient_memory };
+        Context result { options.path,     options.source,         options.emit_diagnostic,
+                         diagnostic_level, options.error_behavior, options.memory,
+                         &transient_memory };
         result.add_resolver(options.builtin_behavior);
         return result;
     };
