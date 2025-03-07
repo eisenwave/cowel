@@ -14,9 +14,10 @@ namespace mmml {
 
 struct Generation_Options {
     std::pmr::vector<char8_t>& output;
-    /// @brief The root directive.
-    /// Documents are typically wrapped in a synthetic root directive.
-    ast::Directive& root;
+
+    Content_Behavior& root_behavior;
+    std::pmr::vector<ast::Content>& root_content;
+
     /// @brief Name resolver for builtin behavior (without macro definitions, etc.).
     const Name_Resolver& builtin_behavior;
     /// @brief To be used for generating error content within the document

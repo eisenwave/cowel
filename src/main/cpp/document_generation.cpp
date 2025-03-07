@@ -36,14 +36,11 @@ void generate_document(const Generation_Options& options)
     for (const auto pass : { Pass::preprocess, Pass::generate }) {
         auto context = make_context();
 
-        Directive_Behavior* const root_behavior = context.find_directive(options.root);
-        MMML_ASSERT(root_behavior != nullptr);
-
         if (pass == Pass::preprocess) {
-            root_behavior->preprocess(options.root, context);
+            options.root_behavior.preprocess(options.root_content, context);
         }
         else {
-            root_behavior->generate_html(writer, options.root, context);
+            options.root_behavior.generate_html(writer, options.root_content, context);
         }
 
         transient_memory.release();
