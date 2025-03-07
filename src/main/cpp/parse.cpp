@@ -2,6 +2,7 @@
 
 #include "mmml/util/assert.hpp"
 #include "mmml/util/chars.hpp"
+#include "mmml/util/unicode.hpp"
 
 #include "mmml/ast.hpp"
 #include "mmml/parse.hpp"
@@ -75,9 +76,6 @@ constexpr bool is_terminated_by(Content_Context context, char8_t c)
 
 struct [[nodiscard]] Parser {
 private:
-    using char_type = char8_t;
-    using string_view_type = std::u8string_view;
-
     struct [[nodiscard]] Scoped_Attempt {
     private:
         Parser* m_self;
@@ -121,11 +119,11 @@ private:
     };
 
     std::pmr::vector<AST_Instruction>& m_out;
-    string_view_type m_source;
+    std::u8string_view m_source;
     std::size_t m_pos = 0;
 
 public:
-    Parser(std::pmr::vector<AST_Instruction>& out, string_view_type source)
+    Parser(std::pmr::vector<AST_Instruction>& out, std::u8string_view source)
         : m_out { out }
         , m_source { source }
     {
@@ -150,7 +148,7 @@ private:
     /// position to the end of the file.
     /// @return All remaining text.
     [[nodiscard]]
-    string_view_type peek_all() const
+    std::u8string_view peek_all() const
     {
         return m_source.substr(m_pos);
     }
@@ -158,20 +156,39 @@ private:
     /// @brief Returns the next character and advances the parser position.
     /// @return The popped character.
     /// @throws Throws if `eof()`.
-    char_type pop()
+    char8_t pop()
     {
-        const char_type c = peek();
+        const char8_t c = peek();
         ++m_pos;
         return c;
+    }
+
+    char32_t pop_code_point()
+    {
+        const auto [code_point, length] = peek_code_point();
+        m_pos += std::size_t(length);
+        return code_point;
     }
 
     /// @brief Returns the next character.
     /// @return The next character.
     /// @throws Throws if `eof()`.
-    char_type peek() const
+    [[nodiscard]]
+    char8_t peek() const
     {
         MMML_ASSERT(!eof());
         return m_source[m_pos];
+    }
+
+    [[nodiscard]]
+    utf8::Code_Point_And_Length peek_code_point() const
+    {
+        MMML_ASSERT(!eof());
+        std::u8string_view remainder { m_source.substr(m_pos) };
+        const Result<utf8::Code_Point_And_Length, utf8::Error_Code> result
+            = utf8::decode_and_length(remainder);
+        MMML_ASSERT(result);
+        return *result;
     }
 
     /// @return `true` if the parser is at the end of the file, `false` otherwise.
@@ -182,7 +199,7 @@ private:
 
     /// @return `peek_all().starts_with(text)`.
     [[nodiscard]]
-    bool peek(string_view_type text) const
+    bool peek(std::u8string_view text) const
     {
         return peek_all().starts_with(text);
     }
@@ -192,22 +209,21 @@ private:
     /// @param c the character to test
     /// @return `true` if the next character equals `c`, `false` otherwise.
     [[nodiscard]]
-    bool peek(char_type c) const
+    bool peek(char8_t c) const
     {
         return !eof() && m_source[m_pos] == c;
     }
 
     /// @brief Checks whether the parser is at the start of a directive.
-    /// Namely, has to be `\\` and not be the start of an escape sequence such as `\\\\` for this
-    /// to be the case.
-    /// This function can have false positives in the sense that if the subsequent directive is
-    /// ill-formed, the guess was optimistic, and there isn't actually a directive there.
-    /// However, it has no false negatives.
+    /// Namely, has to be `\\` and not be the start of an escape sequence such as `\\\\` for
+    /// this to be the case. This function can have false positives in the sense that if the
+    /// subsequent directive is ill-formed, the guess was optimistic, and there isn't actually a
+    /// directive there. However, it has no false negatives.
     /// @return `true` if the parser is at the start of a directive, `false` otherwise.
     [[nodiscard]]
     bool peek_possible_directive() const
     {
-        const string_view_type rest = peek_all();
+        const std::u8string_view rest = peek_all();
         return !rest.empty() //
             && rest[0] == '\\' //
             && (rest.length() <= 1 || !is_mmml_escapeable(char8_t(rest[1])));
@@ -217,13 +233,13 @@ private:
     /// the parser.
     /// @param predicate the predicate to test
     /// @return `true` if the next character satisfies `predicate`, `false` otherwise.
-    bool peek(bool predicate(char_type)) const
+    bool peek(bool predicate(char8_t)) const
     {
         return !eof() && predicate(m_source[m_pos]);
     }
 
     [[nodiscard]]
-    bool expect(char_type c)
+    bool expect(char8_t c)
     {
         if (!peek(c)) {
             return false;
@@ -233,21 +249,38 @@ private:
     }
 
     [[nodiscard]]
-    bool expect(bool predicate(char_type))
+    bool expect(bool predicate(char8_t))
     {
         if (eof()) {
             return false;
         }
-        const char_type c = m_source[m_pos];
+        const char8_t c = m_source[m_pos];
         if (!predicate(c)) {
             return false;
         }
+        // This function is only safe to call when we have expectations towards ASCII characters.
+        // Any non-ASCII character should have already been rejected.
+        MMML_ASSERT(is_ascii(c));
         ++m_pos;
         return true;
     }
 
     [[nodiscard]]
-    bool expect_literal(string_view_type text)
+    bool expect(bool predicate(char32_t))
+    {
+        if (eof()) {
+            return false;
+        }
+        const auto [code_point, length] = peek_code_point();
+        if (!predicate(code_point)) {
+            return false;
+        }
+        m_pos += std::size_t(length);
+        return true;
+    }
+
+    [[nodiscard]]
+    bool expect_literal(std::u8string_view text)
     {
         if (!peek(text)) {
             return false;
@@ -259,7 +292,15 @@ private:
     /// @brief Matches a (possibly empty) sequence of characters matching the predicate.
     /// @return The amount of characters matched.
     [[nodiscard]]
-    std::size_t match_char_sequence(bool predicate(char_type))
+    std::size_t match_char_sequence(bool predicate(char8_t))
+    {
+        const std::size_t initial = m_pos;
+        while (expect(predicate)) { }
+        return m_pos - initial;
+    }
+
+    [[nodiscard]]
+    std::size_t match_char_sequence(bool predicate(char32_t))
     {
         const std::size_t initial = m_pos;
         while (expect(predicate)) { }
@@ -269,18 +310,21 @@ private:
     [[nodiscard]]
     std::size_t match_directive_name()
     {
-        return peek(is_ascii_digit) ? 0 : match_char_sequence(is_mmml_directive_name_character);
+        constexpr bool (*predicate)(char32_t) = is_mmml_directive_name_character;
+        return peek(is_ascii_digit) ? 0 : match_char_sequence(predicate);
     }
 
     [[nodiscard]]
     std::size_t match_argument_name()
     {
-        return peek(is_ascii_digit) ? 0 : match_char_sequence(is_mmml_argument_name_character);
+        constexpr bool (*predicate)(char32_t) = is_mmml_argument_name_character;
+        return peek(is_ascii_digit) ? 0 : match_char_sequence(predicate);
     }
 
     std::size_t match_whitespace()
     {
-        return match_char_sequence(is_ascii_whitespace);
+        constexpr bool (*predicate)(char8_t) = is_ascii_whitespace;
+        return match_char_sequence(predicate);
     }
 
     [[nodiscard]]
@@ -318,25 +362,35 @@ private:
     [[nodiscard]]
     bool try_match_content(Content_Context context, Bracket_Levels& levels)
     {
-        if (peek('\\') && (try_match_escaped() || try_match_directive())) {
+        if (peek(u8'\\') && (try_match_escaped() || try_match_directive())) {
             return true;
         }
 
         const std::size_t initial_pos = m_pos;
 
         for (; !eof(); ++m_pos) {
-            const char_type c = m_source[m_pos];
-            if (c == '\\') {
-                // Trailing \ at the end of the file
-                if (initial_pos + 1 == m_source.size()) {
+            const char8_t c = m_source[m_pos];
+            if (c == u8'\\') {
+                const std::u8string_view remainder { m_source.substr(m_pos + 1) };
+
+                // Trailing \ at the end of the file.
+                // No need to break, we'll just run into it next iteration.
+                if (remainder.empty()) {
                     continue;
                 }
-                const char_type next = m_source[m_pos + 1];
+                // Escape sequence such as `\{`.
+                // We treat these as separate in the AST, not as content.
+                if (is_mmml_escapeable(remainder.front())) {
+                    break;
+                }
+                // Directive names; also not part of content.
                 // No matter what, a backslash followed by a directive name character forms a
                 // directive because the remaining arguments and the block are optional.
-                // Therefore, we must stop here because text content should not include directives.
-                if (is_mmml_escapeable(char8_t(next))
-                    || is_mmml_directive_name_character(char8_t(next))) {
+                // I.e. we can break with certainty despite only having examined one character.
+                const Result<utf8::Code_Point_And_Length, utf8::Error_Code> next_point
+                    = utf8::decode_and_length(remainder);
+                MMML_ASSERT(next_point);
+                if (is_mmml_directive_name_character(next_point->code_point)) {
                     break;
                 }
                 continue;
@@ -347,20 +401,20 @@ private:
                 continue;
             }
             if (context == Content_Context::argument_value) {
-                if (c == ',') {
+                if (c == u8',') {
                     break;
                 }
-                if (c == '[') {
+                if (c == u8'[') {
                     ++levels.square;
                 }
-                if (c == ']' && levels.square-- == 0) {
+                if (c == u8']' && levels.square-- == 0) {
                     break;
                 }
             }
-            if (c == '{') {
+            if (c == u8'{') {
                 ++levels.brace;
             }
-            if (c == '}' && levels.brace-- == 0) {
+            if (c == u8'}' && levels.brace-- == 0) {
                 break;
             }
         }
@@ -403,20 +457,20 @@ private:
     {
         Scoped_Attempt a = attempt();
 
-        if (!expect('[')) {
+        if (!expect(u8'[')) {
             return {};
         }
         const std::size_t arguments_instruction_index = m_out.size();
         m_out.push_back({ AST_Instruction_Type::push_arguments, 0 });
 
         for (std::size_t i = 0; try_match_argument(); ++i) {
-            if (expect(']')) {
+            if (expect(u8']')) {
                 m_out[arguments_instruction_index].n = i + 1;
                 m_out.push_back({ AST_Instruction_Type::pop_arguments, 0 });
                 a.commit();
                 return true;
             }
-            if (expect(',')) {
+            if (expect(u8',')) {
                 m_out.push_back({ AST_Instruction_Type::skip, 1 });
                 continue;
             }
@@ -434,7 +488,7 @@ private:
         constexpr std::size_t sequence_length = 2;
 
         if (m_pos + sequence_length < m_source.size() //
-            && m_source[m_pos] == '\\' //
+            && m_source[m_pos] == u8'\\' //
             && is_mmml_escapeable(char8_t(m_source[m_pos + 1]))) //
         {
             m_pos += sequence_length;
@@ -497,7 +551,7 @@ private:
             return false;
         }
 
-        if (!expect('=')) {
+        if (!expect(u8'=')) {
             return false;
         }
 
@@ -522,7 +576,7 @@ private:
         }
         // match_content_sequence is very aggressive, so I think at this point,
         // we have to be at the end of an argument due to a comma separator or closing square.
-        const char_type c = m_source[m_pos];
+        const char8_t c = m_source[m_pos];
         MMML_ASSERT(c == u8',' || c == u8']');
 
         trim_trailing_whitespace_in_matched_content();
@@ -550,11 +604,11 @@ private:
 
         const std::size_t text_begin = m_pos - total_length;
 
-        const string_view_type last_text = m_source.substr(text_begin, total_length);
+        const std::u8string_view last_text = m_source.substr(text_begin, total_length);
         const std::size_t last_non_white = last_text.find_last_not_of(u8" \t\r\n\f");
         const std::size_t non_white_length = last_non_white + 1;
 
-        if (last_non_white == string_view_type::npos) {
+        if (last_non_white == std::u8string_view::npos) {
             latest.type = AST_Instruction_Type::skip;
         }
         else if (non_white_length < total_length) {
@@ -568,7 +622,7 @@ private:
 
     bool try_match_block()
     {
-        if (!expect('{')) {
+        if (!expect(u8'{')) {
             return {};
         }
 
@@ -585,7 +639,7 @@ private:
         // and that seems like a broken file anyway.
         const std::size_t elements = match_content_sequence(Content_Context::block);
 
-        if (!expect('}')) {
+        if (!expect(u8'}')) {
             return {};
         }
 
