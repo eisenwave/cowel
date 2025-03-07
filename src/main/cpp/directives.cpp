@@ -94,6 +94,7 @@ struct Passthrough_Behavior : Directive_Behavior {
             Attribute_Writer attributes = out.open_tag_with_attributes(name);
             arguments_to_attributes(attributes, d, context);
         }
+        to_html(out, d.get_content(), context);
         out.close_tag(name);
     }
 
