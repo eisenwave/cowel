@@ -242,6 +242,7 @@ constexpr bool is_mmml_escapeable(char8_t c)
     return c == u8'\\' || c == u8'}' || c == u8'{';
 }
 
+[[nodiscard]]
 constexpr bool is_mmml_escapeable(char32_t c)
 {
     return c == U'\\' || c == U'}' || c == U'{';
