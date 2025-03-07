@@ -61,6 +61,10 @@ void to_plaintext_mapped_for_highlighting(
     Context& context
 );
 
+void to_html(HTML_Writer& out, const ast::Content& content, Context& context);
+
+void to_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context);
+
 /// @brief Converts the source code of the content to HTML without any processing.
 void to_html_literally(HTML_Writer& out, const ast::Content& content, Context& context);
 

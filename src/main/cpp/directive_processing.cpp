@@ -25,6 +25,18 @@ Directive_Behavior* Context::find_directive(const ast::Directive& directive) con
     return find_directive(directive.get_name(m_source));
 }
 
+namespace {
+
+void try_lookup_error(const ast::Directive& directive, Context& context)
+{
+    context.try_error(
+        u8"directive_lookup.unresolved", directive.get_source_span(),
+        u8"No directive with this name exists."
+    );
+}
+
+} // namespace
+
 /// @brief Converts content to plaintext.
 /// For text, this outputs that text literally.
 /// For escaped characters, this outputs the escaped character.
@@ -51,10 +63,7 @@ void to_plaintext(std::pmr::vector<char8_t>& out, const ast::Content& c, Context
             behavior->generate_plaintext(out, *d, context);
             return;
         }
-        context.try_error(
-            u8"directive_lookup.unresolved", d->get_source_span(),
-            u8"No directive with this name exists."
-        );
+        try_lookup_error(*d, context);
         if (Directive_Behavior* eb = context.get_error_behavior()) {
             eb->generate_plaintext(out, *d, context);
         }
@@ -181,12 +190,49 @@ void to_plaintext_mapped_for_highlighting(
     }
 }
 
+void to_html(HTML_Writer& out, const ast::Content& c, Context& context)
+{
+    if (const auto* const t = get_if<ast::Text>(&c)) {
+        const std::u8string_view text = t->get_text(context.get_source());
+        out.write_inner_text(text);
+        return;
+    }
+    if (const auto* const e = get_if<ast::Escaped>(&c)) {
+        const char8_t c = e->get_char(context.get_source());
+        out.write_inner_text(c);
+        return;
+    }
+    if (const auto* const b = get_if<ast::Behaved_Content>(&c)) {
+        b->get_behavior().generate_html(out, b->get_content(), context);
+        return;
+    }
+    if (const auto* const d = get_if<ast::Directive>(&c)) {
+        if (Directive_Behavior* behavior = context.find_directive(*d)) {
+            behavior->generate_html(out, *d, context);
+            return;
+        }
+        try_lookup_error(*d, context);
+        if (Directive_Behavior* eb = context.get_error_behavior()) {
+            eb->generate_html(out, *d, context);
+        }
+        return;
+    }
+    MMML_ASSERT_UNREACHABLE(u8"Invalid form of content.");
+}
+
+void to_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
+{
+    for (const auto& c : content) {
+        to_html(out, c, context);
+    }
+}
+
 void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
 {
     for (const ast::Content& c : content) {
         if (const auto* const e = get_if<ast::Escaped>(&c)) {
             const char8_t c = e->get_char(context.get_source());
-            out.write_inner_html({ &c, 1 });
+            out.write_inner_html(c);
         }
         if (const auto* const t = get_if<ast::Text>(&c)) {
             out.write_inner_html(t->get_text(context.get_source()));
@@ -212,10 +258,7 @@ void preprocess(ast::Content& c, Context& context)
             behavior->preprocess(*d, context);
             return;
         }
-        context.try_error(
-            u8"directive_lookup.unresolved", d->get_source_span(),
-            u8"No directive with this name exists."
-        );
+        try_lookup_error(*d, context);
         if (Directive_Behavior* eb = context.get_error_behavior()) {
             eb->preprocess(*d, context);
         }
