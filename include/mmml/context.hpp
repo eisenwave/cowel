@@ -54,7 +54,7 @@ public:
 
 private:
     Function_Ref<void(Diagnostic&&)> m_emit_diagnostic;
-    Diagnostic_Type m_min_diagnostic;
+    Severity m_min_diagnostic;
 
 public:
     /// @brief Constructs a new context.
@@ -74,7 +74,7 @@ public:
         std::filesystem::path path,
         string_view_type source,
         Function_Ref<void(Diagnostic&&)> emit_diagnostic,
-        Diagnostic_Type min_diagnostic_level,
+        Severity min_diagnostic_level,
         Directive_Behavior* error_behavior,
         std::pmr::memory_resource* persistent_memory,
         std::pmr::memory_resource* transient_memory
@@ -130,16 +130,16 @@ public:
     /// @brief Returns the inclusive minimum level of diagnostics that are currently emitted.
     /// This may be `none`, in which case no diagnostic are emitted.
     [[nodiscard]]
-    Diagnostic_Type get_min_diagnostic_level() const
+    Severity get_min_diagnostic_level() const
     {
         return m_min_diagnostic;
     }
 
     /// @brief Equivalent to `get_min_diagnostic_level() >= type`.
     [[nodiscard]]
-    bool emits(Diagnostic_Type type) const
+    bool emits(Severity type) const
     {
-        return type < Diagnostic_Type::all && type >= m_min_diagnostic;
+        return type < Severity::all && type >= m_min_diagnostic;
     }
 
     void emit(Diagnostic&& diagnostic) const
@@ -149,34 +149,34 @@ public:
     }
 
     /// @brief Equivalent to `emit(make_diagnostic(type, location, message))`.
-    void emit(Diagnostic_Type type, Source_Span location, string_view_type message) const
+    void emit(Severity type, Source_Span location, string_view_type message) const
     {
         MMML_ASSERT(emits(type));
         emit(make_diagnostic(type, location, message));
     }
 
-    /// @brief Equivalent to `emit(Diagnostic_Type::debug, location, message)`.
+    /// @brief Equivalent to `emit(Severity::debug, location, message)`.
     void emit_debug(Source_Span location, string_view_type message) const
     {
-        emit(Diagnostic_Type::debug, location, message);
+        emit(Severity::debug, location, message);
     }
 
-    /// @brief Equivalent to `emit(Diagnostic_Type::soft_warning, location, message)`.
+    /// @brief Equivalent to `emit(Severity::soft_warning, location, message)`.
     void emit_soft_warning(Source_Span location, string_view_type message) const
     {
-        emit(Diagnostic_Type::soft_warning, location, message);
+        emit(Severity::soft_warning, location, message);
     }
 
-    /// @brief Equivalent to `emit(Diagnostic_Type::warning, location, message)`.
+    /// @brief Equivalent to `emit(Severity::warning, location, message)`.
     void emit_warning(Source_Span location, string_view_type message) const
     {
-        emit(Diagnostic_Type::warning, location, message);
+        emit(Severity::warning, location, message);
     }
 
-    /// @brief Equivalent to `emit(Diagnostic_Type::error, location, message)`.
+    /// @brief Equivalent to `emit(Severity::error, location, message)`.
     void emit_error(Source_Span location, string_view_type message) const
     {
-        emit(Diagnostic_Type::error, location, message);
+        emit(Severity::error, location, message);
     }
 
     /// @brief Returns a diagnostic with the given `type` and using `get_persistent_memory()`
@@ -185,7 +185,7 @@ public:
     /// @param type The diagnostic type. `emits(type)` shall be `true`.
     /// @param location The location within the file where the diagnostic was generated.
     [[nodiscard]]
-    Diagnostic make_diagnostic(Diagnostic_Type type, Source_Span location) const
+    Diagnostic make_diagnostic(Severity type, Source_Span location) const
     {
         MMML_ASSERT(emits(type));
         return { .type = type, .location = location, .message { get_persistent_memory() } };
@@ -194,8 +194,7 @@ public:
     /// @brief Like `make_diagnostic(type)`,
     /// but initializes the result's message using the given `message`.
     [[nodiscard]]
-    Diagnostic
-    make_diagnostic(Diagnostic_Type type, Source_Span location, string_view_type message) const
+    Diagnostic make_diagnostic(Severity type, Source_Span location, string_view_type message) const
     {
         MMML_ASSERT(emits(type));
         return { .type = type,

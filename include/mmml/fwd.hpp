@@ -63,7 +63,7 @@ struct Content;
 struct Content_Behavior;
 struct Context;
 struct Diagnostic;
-enum struct Diagnostic_Type : Default_Underlying;
+enum struct Severity : Default_Underlying;
 struct Directive_Behavior;
 struct Directive_Content_Behavior;
 enum struct Directive_Category : Default_Underlying;

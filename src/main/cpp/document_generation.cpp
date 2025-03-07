@@ -16,10 +16,10 @@ enum struct Pass : Default_Underlying { preprocess, generate };
 void generate_document(const Generation_Options& options)
 {
     MMML_ASSERT(options.memory != nullptr);
-    MMML_ASSERT(options.min_diagnostic_level <= Diagnostic_Type::none);
+    MMML_ASSERT(options.min_diagnostic_level <= Severity::none);
 
     const auto diagnostic_level
-        = options.emit_diagnostic ? options.min_diagnostic_level : Diagnostic_Type::none;
+        = options.emit_diagnostic ? options.min_diagnostic_level : Severity::none;
 
     std::pmr::unsynchronized_pool_resource transient_memory { options.memory };
 

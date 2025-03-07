@@ -10,7 +10,7 @@
 
 namespace mmml {
 
-enum struct Diagnostic_Type : Default_Underlying {
+enum struct Severity : Default_Underlying {
     /// @brief Alias for `debug`.
     all = 0,
     /// @brief Debugging messages.
@@ -30,13 +30,13 @@ enum struct Diagnostic_Type : Default_Underlying {
 };
 
 [[nodiscard]]
-constexpr std::strong_ordering operator<=>(Diagnostic_Type x, Diagnostic_Type y) noexcept
+constexpr std::strong_ordering operator<=>(Severity x, Severity y) noexcept
 {
     return Default_Underlying(x) <=> Default_Underlying(y);
 }
 
 struct Diagnostic {
-    Diagnostic_Type type;
+    Severity type;
     Source_Span location;
     std::pmr::u8string message;
 };
