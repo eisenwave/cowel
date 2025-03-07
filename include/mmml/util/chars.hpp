@@ -87,7 +87,7 @@ constexpr bool is_ascii_alphanumeric(char8_t c)
 constexpr bool is_ascii_alphanumeric(char32_t c)
 {
     // https://infra.spec.whatwg.org/#ascii-alphanumeric
-    return is_ascii_digit(c) || is_ascii_alphanumeric(c);
+    return is_ascii_digit(c) || is_ascii_alpha(c);
 }
 
 [[nodiscard]]
@@ -117,12 +117,10 @@ constexpr bool is_noncharacter(char32_t c)
     return lower >= 0xfffe && lower <= 0xffff;
 }
 
-/// @brief Returns `true` if `c` can legally appear
-/// in the name of an HTML tag.
-///
-/// WARNING: This function is pessimistic compared to the UTF-32 overload.
+/// @brief Returns `true` if `c` is an ASCII character
+/// that can legally appear in the name of an HTML tag.
 [[nodiscard]]
-constexpr bool is_ascii_html_tag_name_character(char8_t c)
+constexpr bool is_html_ascii_tag_name_character(char8_t c)
 {
     return c == u8'-' || c == u8'.' || c == u8'_' || is_ascii_alphanumeric(c);
 }
@@ -173,7 +171,7 @@ constexpr bool is_control(char32_t c)
 }
 
 [[nodiscard]]
-constexpr bool is_ascii_html_attribute_name_character(char8_t c)
+constexpr bool is_html_ascii_attribute_name_character(char8_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
     // clang-format off
@@ -261,12 +259,24 @@ constexpr bool is_mmml_special_character(char32_t c)
     return c == U'{' || c == U'}' || c == U'\\' || c == U'[' || c == U']';
 }
 
+[[nodiscard]]
+constexpr bool is_mmml_ascii_argument_name_character(char8_t c)
+{
+    return !is_mmml_special_character(c) && is_html_ascii_attribute_name_character(c);
+}
+
 /// @brief Returns `true` if `c` can legally appear
 /// in the name of an MMML directive argument.
 [[nodiscard]]
 constexpr bool is_mmml_argument_name_character(char32_t c)
 {
     return !is_mmml_special_character(c) && is_html_attribute_name_character(c);
+}
+
+[[nodiscard]]
+constexpr bool is_mmml_ascii_directive_name_character(char8_t c)
+{
+    return is_html_ascii_tag_name_character(c);
 }
 
 /// @brief Returns `true` if `c` can legally appear
