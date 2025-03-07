@@ -19,6 +19,7 @@ inline std::string_view as_string_view(std::u8string_view str)
 [[nodiscard]]
 bool is_html_tag_name(std::u8string_view str);
 
+/// @brief Returns `true` if `str` is a valid HTML attribute name.
 [[nodiscard]]
 bool is_html_attribute_name(std::u8string_view str);
 
