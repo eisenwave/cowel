@@ -49,8 +49,13 @@ void to_plaintext(std::pmr::vector<char8_t>& out, const ast::Content& c, Context
     if (const auto* const d = get_if<ast::Directive>(&c)) {
         if (Directive_Behavior* behavior = context.find_directive(*d)) {
             behavior->generate_plaintext(out, *d, context);
+            return;
         }
-        else if (Directive_Behavior* eb = context.get_error_behavior()) {
+        context.try_error(
+            u8"directive_lookup.unresolved", d->get_source_span(),
+            u8"No directive with this name exists."
+        );
+        if (Directive_Behavior* eb = context.get_error_behavior()) {
             eb->generate_plaintext(out, *d, context);
         }
         return;
@@ -205,9 +210,14 @@ void preprocess(ast::Content& c, Context& context)
     if (auto* const d = get_if<ast::Directive>(&c)) {
         if (Directive_Behavior* behavior = context.find_directive(*d)) {
             behavior->preprocess(*d, context);
+            return;
         }
-        else if (Directive_Behavior* eb = context.get_error_behavior()) {
-            behavior->preprocess(*d, context);
+        context.try_error(
+            u8"directive_lookup.unresolved", d->get_source_span(),
+            u8"No directive with this name exists."
+        );
+        if (Directive_Behavior* eb = context.get_error_behavior()) {
+            eb->preprocess(*d, context);
         }
         return;
     }

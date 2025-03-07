@@ -148,38 +148,34 @@ public:
         m_emit_diagnostic(std::move(diagnostic));
     }
 
-    /// @brief Equivalent to `emit(make_diagnostic(severity, location, message))`.
+    /// @brief Equivalent to `emit(make_diagnostic(severity, id, location, message))`.
     void
-    emit(Severity severity, string_view_type id, Source_Span location, string_view_type message)
+    try_emit(Severity severity, string_view_type id, Source_Span location, string_view_type message)
         const
     {
-        MMML_ASSERT(emits(severity));
-        emit(make_diagnostic(severity, id, location, message));
+        if (emits(severity)) {
+            emit(make_diagnostic(severity, id, location, message));
+        }
     }
 
-    /// @brief Equivalent to `emit(Severity::debug, location, message)`.
-    void emit_debug(string_view_type id, Source_Span location, string_view_type message) const
+    void try_debug(string_view_type id, Source_Span location, string_view_type message) const
     {
-        emit(Severity::debug, id, location, message);
+        try_emit(Severity::debug, id, location, message);
     }
 
-    /// @brief Equivalent to `emit(Severity::soft_warning, location, message)`.
-    void
-    emit_soft_warning(string_view_type id, Source_Span location, string_view_type message) const
+    void try_soft_warning(string_view_type id, Source_Span location, string_view_type message) const
     {
-        emit(Severity::soft_warning, id, location, message);
+        try_emit(Severity::soft_warning, id, location, message);
     }
 
-    /// @brief Equivalent to `emit(Severity::warning, location, message)`.
-    void emit_warning(string_view_type id, Source_Span location, string_view_type message) const
+    void try_warning(string_view_type id, Source_Span location, string_view_type message) const
     {
-        emit(Severity::warning, id, location, message);
+        try_emit(Severity::warning, id, location, message);
     }
 
-    /// @brief Equivalent to `emit(Severity::error, location, message)`.
-    void emit_error(string_view_type id, Source_Span location, string_view_type message) const
+    void try_error(string_view_type id, Source_Span location, string_view_type message) const
     {
-        emit(Severity::error, id, location, message);
+        try_emit(Severity::error, id, location, message);
     }
 
     /// @brief Returns a diagnostic with the given `severity` and using `get_persistent_memory()`
