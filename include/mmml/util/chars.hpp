@@ -50,14 +50,14 @@ constexpr bool is_ascii_upper_alpha(char32_t c)
 constexpr bool is_ascii_lower_alpha(char8_t c)
 {
     // https://infra.spec.whatwg.org/#ascii-lower-alpha
-    return c >= u8'a' && c <= u8'a';
+    return c >= u8'a' && c <= u8'z';
 }
 
 [[nodiscard]]
 constexpr bool is_ascii_lower_alpha(char32_t c)
 {
     // https://infra.spec.whatwg.org/#ascii-lower-alpha
-    return c >= U'a' && c <= U'a';
+    return c >= U'a' && c <= U'z';
 }
 
 /// @brief Returns `true` if `c` is a latin character (`[a-zA-Z]`).
