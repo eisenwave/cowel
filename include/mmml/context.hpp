@@ -135,24 +135,24 @@ public:
         return m_min_diagnostic;
     }
 
-    /// @brief Equivalent to `get_min_diagnostic_level() >= type`.
+    /// @brief Equivalent to `get_min_diagnostic_level() >= severity`.
     [[nodiscard]]
-    bool emits(Severity type) const
+    bool emits(Severity severity) const
     {
-        return type < Severity::all && type >= m_min_diagnostic;
+        return severity < Severity::min && severity >= m_min_diagnostic;
     }
 
     void emit(Diagnostic&& diagnostic) const
     {
-        MMML_ASSERT(emits(diagnostic.type));
+        MMML_ASSERT(emits(diagnostic.severity));
         m_emit_diagnostic(std::move(diagnostic));
     }
 
-    /// @brief Equivalent to `emit(make_diagnostic(type, location, message))`.
-    void emit(Severity type, Source_Span location, string_view_type message) const
+    /// @brief Equivalent to `emit(make_diagnostic(severity, location, message))`.
+    void emit(Severity severity, Source_Span location, string_view_type message) const
     {
-        MMML_ASSERT(emits(type));
-        emit(make_diagnostic(type, location, message));
+        MMML_ASSERT(emits(severity));
+        emit(make_diagnostic(severity, location, message));
     }
 
     /// @brief Equivalent to `emit(Severity::debug, location, message)`.
@@ -179,25 +179,25 @@ public:
         emit(Severity::error, location, message);
     }
 
-    /// @brief Returns a diagnostic with the given `type` and using `get_persistent_memory()`
+    /// @brief Returns a diagnostic with the given `severity` and using `get_persistent_memory()`
     /// as a memory resource for the message.
     /// The message is empty.
-    /// @param type The diagnostic type. `emits(type)` shall be `true`.
+    /// @param severity The diagnostic severity. `emits(severity)` shall be `true`.
     /// @param location The location within the file where the diagnostic was generated.
     [[nodiscard]]
-    Diagnostic make_diagnostic(Severity type, Source_Span location) const
+    Diagnostic make_diagnostic(Severity severity, Source_Span location) const
     {
-        MMML_ASSERT(emits(type));
-        return { .type = type, .location = location, .message { get_persistent_memory() } };
+        MMML_ASSERT(emits(severity));
+        return { .severity = severity, .location = location, .message { get_persistent_memory() } };
     }
 
-    /// @brief Like `make_diagnostic(type)`,
+    /// @brief Like `make_diagnostic(severity)`,
     /// but initializes the result's message using the given `message`.
     [[nodiscard]]
-    Diagnostic make_diagnostic(Severity type, Source_Span location, string_view_type message) const
+    Diagnostic make_diagnostic(Severity severity, Source_Span location, string_view_type message) const
     {
-        MMML_ASSERT(emits(type));
-        return { .type = type,
+        MMML_ASSERT(emits(severity));
+        return { .severity = severity,
                  .location = location,
                  .message { message, get_persistent_memory() } };
     }
