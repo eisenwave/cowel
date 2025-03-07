@@ -149,34 +149,37 @@ public:
     }
 
     /// @brief Equivalent to `emit(make_diagnostic(severity, location, message))`.
-    void emit(Severity severity, Source_Span location, string_view_type message) const
+    void
+    emit(Severity severity, string_view_type id, Source_Span location, string_view_type message)
+        const
     {
         MMML_ASSERT(emits(severity));
-        emit(make_diagnostic(severity, location, message));
+        emit(make_diagnostic(severity, id, location, message));
     }
 
     /// @brief Equivalent to `emit(Severity::debug, location, message)`.
-    void emit_debug(Source_Span location, string_view_type message) const
+    void emit_debug(string_view_type id, Source_Span location, string_view_type message) const
     {
-        emit(Severity::debug, location, message);
+        emit(Severity::debug, id, location, message);
     }
 
     /// @brief Equivalent to `emit(Severity::soft_warning, location, message)`.
-    void emit_soft_warning(Source_Span location, string_view_type message) const
+    void
+    emit_soft_warning(string_view_type id, Source_Span location, string_view_type message) const
     {
-        emit(Severity::soft_warning, location, message);
+        emit(Severity::soft_warning, id, location, message);
     }
 
     /// @brief Equivalent to `emit(Severity::warning, location, message)`.
-    void emit_warning(Source_Span location, string_view_type message) const
+    void emit_warning(string_view_type id, Source_Span location, string_view_type message) const
     {
-        emit(Severity::warning, location, message);
+        emit(Severity::warning, id, location, message);
     }
 
     /// @brief Equivalent to `emit(Severity::error, location, message)`.
-    void emit_error(Source_Span location, string_view_type message) const
+    void emit_error(string_view_type id, Source_Span location, string_view_type message) const
     {
-        emit(Severity::error, location, message);
+        emit(Severity::error, id, location, message);
     }
 
     /// @brief Returns a diagnostic with the given `severity` and using `get_persistent_memory()`
@@ -185,19 +188,28 @@ public:
     /// @param severity The diagnostic severity. `emits(severity)` shall be `true`.
     /// @param location The location within the file where the diagnostic was generated.
     [[nodiscard]]
-    Diagnostic make_diagnostic(Severity severity, Source_Span location) const
+    Diagnostic make_diagnostic(Severity severity, std::u8string_view id, Source_Span location) const
     {
         MMML_ASSERT(emits(severity));
-        return { .severity = severity, .location = location, .message { get_persistent_memory() } };
+        return { .severity = severity,
+                 .id = id,
+                 .location = location,
+                 .message { get_persistent_memory() } };
     }
 
     /// @brief Like `make_diagnostic(severity)`,
     /// but initializes the result's message using the given `message`.
     [[nodiscard]]
-    Diagnostic make_diagnostic(Severity severity, Source_Span location, string_view_type message) const
+    Diagnostic make_diagnostic(
+        Severity severity,
+        std::u8string_view id,
+        Source_Span location,
+        string_view_type message
+    ) const
     {
         MMML_ASSERT(emits(severity));
         return { .severity = severity,
+                 .id = id,
                  .location = location,
                  .message { message, get_persistent_memory() } };
     }

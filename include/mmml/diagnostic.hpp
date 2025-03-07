@@ -37,9 +37,23 @@ constexpr std::strong_ordering operator<=>(Severity x, Severity y) noexcept
     return Default_Underlying(x) <=> Default_Underlying(y);
 }
 
+[[nodiscard]]
+constexpr bool severity_is_emittable(Severity x) noexcept
+{
+    return x >= Severity::min && x <= Severity::max;
+}
+
 struct Diagnostic {
+    /// @brief The severity of the diagnostic.
+    /// `severity_is_emittable(severity)` shall be `true`.
     Severity severity;
+    /// @brief The id of the diagnostic,
+    /// which is a non-empty string containing a
+    /// dot-separated sequence of identifier for this diagnostic.
+    std::u8string_view id;
+    /// @brief The span of code that is responsible for this diagnostic.
     Source_Span location;
+    /// @brief The diagnostic message.
     std::pmr::u8string message;
 };
 
