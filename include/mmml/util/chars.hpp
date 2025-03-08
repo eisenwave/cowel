@@ -251,13 +251,13 @@ constexpr bool is_mmml_escapeable(char32_t c)
 [[nodiscard]]
 constexpr bool is_mmml_special_character(char8_t c)
 {
-    return c == u8'{' || c == u8'}' || c == u8'\\' || c == u8'[' || c == u8']';
+    return c == u8'{' || c == u8'}' || c == u8'\\' || c == u8'[' || c == u8']' || c == u8',';
 }
 
 [[nodiscard]]
 constexpr bool is_mmml_special_character(char32_t c)
 {
-    return c == U'{' || c == U'}' || c == U'\\' || c == U'[' || c == U']';
+    return c == U'{' || c == U'}' || c == U'\\' || c == U'[' || c == U']' || c == U',';
 }
 
 [[nodiscard]]
