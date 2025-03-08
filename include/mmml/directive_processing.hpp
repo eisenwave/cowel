@@ -49,6 +49,13 @@ void to_plaintext_mapped_for_highlighting(
 void to_plaintext_mapped_for_highlighting(
     std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
+    const ast::Escaped& t,
+    Context& context
+);
+
+void to_plaintext_mapped_for_highlighting(
+    std::pmr::vector<char8_t>& out,
+    std::pmr::vector<std::size_t>& out_mapping,
     const ast::Directive& d,
     Context& context
 );
@@ -61,9 +68,15 @@ void to_plaintext_mapped_for_highlighting(
     Context& context
 );
 
-void to_html(HTML_Writer& out, const ast::Content& content, Context& context);
+void to_html(HTML_Writer& out, const ast::Content&, Context&);
+void to_html(HTML_Writer& out, const ast::Escaped&, Context&);
+void to_html(HTML_Writer& out, const ast::Text&, Context&);
+void to_html(HTML_Writer& out, const ast::Directive&, Context&);
+void to_html(HTML_Writer& out, const ast::Behaved_Content&, Context&);
 
 void to_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context);
+
+void to_html_paragraphs(HTML_Writer& out, std::span<const ast::Content> content, Context& context);
 
 /// @brief Converts the source code of the content to HTML without any processing.
 void to_html_literally(HTML_Writer& out, const ast::Content& content, Context& context);

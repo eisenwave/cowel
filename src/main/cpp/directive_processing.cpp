@@ -90,36 +90,17 @@ void to_plaintext_mapped_for_highlighting(
     Context& context
 )
 {
-    if (const auto* const t = get_if<ast::Text>(&c)) {
-        to_plaintext_mapped_for_highlighting(out, out_mapping, *t, context);
-        return;
-    }
-    if (const auto* const e = get_if<ast::Escaped>(&c)) {
-        out.push_back(e->get_char(context.get_source()));
-        out_mapping.push_back(e->get_char_index());
-        return;
-    }
-    if (const auto* const b = get_if<ast::Behaved_Content>(&c)) {
-        MMML_ASSERT_UNREACHABLE(u8"Behaved content during syntax highlighting?!");
-        b->get_behavior().generate_plaintext(out, b->get_content(), context);
-        return;
-    }
-    if (const auto* const d = get_if<ast::Directive>(&c)) {
-        to_plaintext_mapped_for_highlighting(out, out_mapping, *d, context);
-        return;
-    }
-}
-
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    std::span<const ast::Content> content,
-    Context& context
-)
-{
-    for (const ast::Content& c : content) {
-        to_plaintext_mapped_for_highlighting(out, out_mapping, c, context);
-    }
+    std::visit(
+        [&]<typename T>(const T& x) {
+            if constexpr (std::is_same_v<T, ast::Behaved_Content>) {
+                MMML_ASSERT_UNREACHABLE(u8"Behaved content during syntax highlighting?!");
+            }
+            else {
+                to_plaintext_mapped_for_highlighting(out, out_mapping, x, context);
+            }
+        },
+        c
+    );
 }
 
 void to_plaintext_mapped_for_highlighting(
@@ -140,6 +121,17 @@ void to_plaintext_mapped_for_highlighting(
     for (std::size_t i = pos.begin; i < pos.length; ++i) {
         out_mapping.push_back(i);
     }
+}
+
+void to_plaintext_mapped_for_highlighting(
+    std::pmr::vector<char8_t>& out,
+    std::pmr::vector<std::size_t>& out_mapping,
+    const ast::Escaped& escaped,
+    Context& context
+)
+{
+    out.push_back(escaped.get_char(context.get_source()));
+    out_mapping.push_back(escaped.get_char_index());
 }
 
 void to_plaintext_mapped_for_highlighting(
@@ -190,40 +182,132 @@ void to_plaintext_mapped_for_highlighting(
     }
 }
 
+void to_plaintext_mapped_for_highlighting(
+    std::pmr::vector<char8_t>& out,
+    std::pmr::vector<std::size_t>& out_mapping,
+    std::span<const ast::Content> content,
+    Context& context
+)
+{
+    for (const ast::Content& c : content) {
+        to_plaintext_mapped_for_highlighting(out, out_mapping, c, context);
+    }
+}
+
 void to_html(HTML_Writer& out, const ast::Content& c, Context& context)
 {
-    if (const auto* const t = get_if<ast::Text>(&c)) {
-        const std::u8string_view text = t->get_text(context.get_source());
-        out.write_inner_text(text);
+    std::visit([&](const auto& x) { to_html(out, x, context); }, c);
+}
+
+void to_html(HTML_Writer& out, const ast::Text& text, Context& context)
+{
+    const std::u8string_view output = text.get_text(context.get_source());
+    out.write_inner_text(output);
+}
+
+void to_html(HTML_Writer& out, const ast::Escaped& escaped, Context& context)
+{
+    const char8_t c = escaped.get_char(context.get_source());
+    out.write_inner_text(c);
+}
+
+void to_html(HTML_Writer& out, const ast::Behaved_Content& content, Context& context)
+{
+    content.get_behavior().generate_html(out, content.get_content(), context);
+}
+
+void to_html(HTML_Writer& out, const ast::Directive& directive, Context& context)
+{
+    if (Directive_Behavior* behavior = context.find_directive(directive)) {
+        behavior->generate_html(out, directive, context);
         return;
     }
-    if (const auto* const e = get_if<ast::Escaped>(&c)) {
-        const char8_t c = e->get_char(context.get_source());
-        out.write_inner_text(c);
-        return;
+    try_lookup_error(directive, context);
+    if (Directive_Behavior* eb = context.get_error_behavior()) {
+        eb->generate_html(out, directive, context);
     }
-    if (const auto* const b = get_if<ast::Behaved_Content>(&c)) {
-        b->get_behavior().generate_html(out, b->get_content(), context);
-        return;
-    }
-    if (const auto* const d = get_if<ast::Directive>(&c)) {
-        if (Directive_Behavior* behavior = context.find_directive(*d)) {
-            behavior->generate_html(out, *d, context);
-            return;
-        }
-        try_lookup_error(*d, context);
-        if (Directive_Behavior* eb = context.get_error_behavior()) {
-            eb->generate_html(out, *d, context);
-        }
-        return;
-    }
-    MMML_ASSERT_UNREACHABLE(u8"Invalid form of content.");
 }
 
 void to_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
 {
     for (const auto& c : content) {
         to_html(out, c, context);
+    }
+}
+
+namespace {
+
+struct To_HTML_Paragraphs {
+    HTML_Writer& out;
+    Context& context;
+    bool in_paragraph = false;
+
+    void transition(Directive_Display display)
+    {
+        if (display == Directive_Display::none) {
+            return;
+        }
+        if (!in_paragraph && display == Directive_Display::in_line) {
+            out.open_tag(u8"p");
+            in_paragraph = true;
+            return;
+        }
+        if (in_paragraph && display == Directive_Display::block) {
+            out.close_tag(u8"p");
+            in_paragraph = true;
+        }
+    }
+
+    void on_directive(Directive_Behavior& b, const ast::Directive& d)
+    {
+        transition(b.display);
+        b.generate_html(out, d, context);
+    };
+
+    //  Some directives split paragraphs, and some are inline.
+    //  For example, `\\b{...}` gets displayed inline,
+    //  but `\\blockquote` is block content.
+    void operator()(const ast::Directive& d)
+    {
+        if (Directive_Behavior* behavior = context.find_directive(d)) {
+            on_directive(*behavior, d);
+        }
+        try_lookup_error(d, context);
+        if (Directive_Behavior* eb = context.get_error_behavior()) {
+            on_directive(*eb, d);
+        }
+    }
+
+    // Behaved content can also be inline or block.
+    void operator()(const ast::Behaved_Content& b)
+    {
+        transition(b.get_behavior().display);
+        b.get_behavior().generate_html(out, b.get_content(), context);
+    }
+
+    // Text is never block content in itself,
+    // but blank lines can act as separators between paragraphs.
+    void operator()(const ast::Text& t)
+    {
+        // TODO: split paragraphs at blank lines
+    }
+
+    // Escape sequences are always inline; they're just a single character.
+    void operator()(const ast::Escaped& e)
+    {
+        transition(Directive_Display::in_line);
+        to_html(out, e, context);
+    }
+};
+
+} // namespace
+
+void to_html_paragraphs(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
+{
+    To_HTML_Paragraphs impl { out, context };
+
+    for (const auto& c : content) {
+        std::visit(impl, c);
     }
 }
 

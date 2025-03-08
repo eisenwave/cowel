@@ -32,7 +32,6 @@ include_directories(${INCLUDE_DIRS})
 add_library(mmml STATIC
     src/main/cpp/util/html_writer.cpp
     src/main/cpp/util/io.cpp
-    src/main/cpp/util/strings.cpp
     src/main/cpp/util/tty.cpp
 
     src/main/cpp/argument_matching.cpp

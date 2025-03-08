@@ -7,6 +7,55 @@
 #include "mmml/parse_utils.hpp"
 
 namespace mmml {
+
+Blank_Line find_blank_line(std::u8string_view str) noexcept
+{
+    enum struct State {
+        normal,
+        maybe_blank,
+        blank,
+    };
+    State state = State::normal;
+
+    std::size_t blank_begin;
+    std::size_t blank_end;
+
+    for (std::size_t i = 0; i < str.size(); ++i) {
+        switch (state) {
+        case State::normal: {
+            if (str[i] == u8'\n') {
+                state = State::maybe_blank;
+                blank_begin = i + 1;
+            }
+            continue;
+        }
+        case State::maybe_blank: {
+            if (str[i] == u8'\n') {
+                state = State::blank;
+                blank_end = i;
+            }
+            else if (!is_ascii_whitespace(str[i])) {
+                state = State::normal;
+            }
+            continue;
+        }
+        case State::blank: {
+            if (str[i] == u8'\n') {
+                blank_end = i;
+            }
+            else if (!is_ascii_whitespace(str[i])) {
+                return { .begin = blank_begin, .length = blank_end - blank_begin };
+            }
+            continue;
+        }
+        }
+        MMML_ASSERT_UNREACHABLE(u8"Invalid state");
+    }
+
+    static_assert(!Blank_Line {}, "A value-initialized Blank_Line should be falsy");
+    return {};
+}
+
 namespace {
 
 std::optional<unsigned long long> parse_uinteger_digits(std::u8string_view text, int base)
