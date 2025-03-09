@@ -66,23 +66,11 @@ struct Directive_Behavior {
     {
     }
 
-    /// @brief Performs any preprocessing (first pass) on the document.
-    /// This typically includes registering IDs that can be referenced by other directives,
-    /// registering meta-information etc.
-    ///
-    /// This function shall only be invoked during preprocessing.
-    ///
-    /// Note that preprocessing can rewrite the AST.
-    /// A classic example of that is `\\code{\\b{void}}`,
-    /// which may apply syntax highlighting so to produce
-    /// `\\code{\\b{\\hl-keyword{void}}}`.
-    virtual void preprocess(ast::Directive& d, Context&) = 0;
-
     virtual void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context&) const
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context&) const
         = 0;
 
-    virtual void generate_html(HTML_Writer& out, const ast::Directive& d, Context&) const = 0;
+    virtual void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const = 0;
 };
 
 struct Content_Behavior {
@@ -96,7 +84,6 @@ struct Content_Behavior {
     {
     }
 
-    virtual void preprocess(std::span<ast::Content>, Context&) = 0;
     virtual void
     generate_plaintext(std::pmr::vector<char8_t>& out, std::span<const ast::Content>, Context&)
         const

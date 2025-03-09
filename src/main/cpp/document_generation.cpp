@@ -7,12 +7,6 @@
 
 namespace mmml {
 
-namespace {
-
-enum struct Pass : Default_Underlying { preprocess, generate };
-
-} // namespace
-
 void generate_document(const Generation_Options& options)
 {
     MMML_ASSERT(options.memory != nullptr);
@@ -25,26 +19,12 @@ void generate_document(const Generation_Options& options)
 
     HTML_Writer writer { options.output };
 
-    const auto make_context = [&]() {
-        Context result { options.path,     options.source,         options.emit_diagnostic,
-                         diagnostic_level, options.error_behavior, options.memory,
-                         &transient_memory };
-        result.add_resolver(options.builtin_behavior);
-        return result;
-    };
+    Context context { options.path,     options.source,         options.emit_diagnostic,
+                      diagnostic_level, options.error_behavior, options.memory,
+                      &transient_memory };
+    context.add_resolver(options.builtin_behavior);
 
-    for (const auto pass : { Pass::preprocess, Pass::generate }) {
-        auto context = make_context();
-
-        if (pass == Pass::preprocess) {
-            options.root_behavior.preprocess(options.root_content, context);
-        }
-        else {
-            options.root_behavior.generate_html(writer, options.root_content, context);
-        }
-
-        transient_memory.release();
-    }
+    options.root_behavior.generate_html(writer, options.root_content, context);
 }
 
 } // namespace mmml

@@ -107,12 +107,6 @@ void to_html_literally(HTML_Writer& out, const ast::Content& content, Context& c
 
 void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, Context& context);
 
-void preprocess(ast::Content& c, Context& context);
-
-void preprocess(std::span<ast::Content> contents, Context& context);
-
-void preprocess_arguments(ast::Directive& d, Context& context);
-
 void arguments_to_attributes(Attribute_Writer& out, const ast::Directive& d, Context& context);
 
 } // namespace mmml

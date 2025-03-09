@@ -451,39 +451,6 @@ void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, 
     }
 }
 
-void preprocess(ast::Content& c, Context& context)
-{
-    if (auto* const b = get_if<ast::Behaved_Content>(&c)) {
-        b->get_behavior().preprocess(b->get_content(), context);
-        return;
-    }
-    if (auto* const d = get_if<ast::Directive>(&c)) {
-        if (Directive_Behavior* behavior = context.find_directive(*d)) {
-            behavior->preprocess(*d, context);
-            return;
-        }
-        try_lookup_error(*d, context);
-        if (Directive_Behavior* eb = context.get_error_behavior()) {
-            eb->preprocess(*d, context);
-        }
-        return;
-    }
-}
-
-void preprocess(std::span<ast::Content> contents, Context& context)
-{
-    for (ast::Content& c : contents) {
-        preprocess(c, context);
-    }
-}
-
-void preprocess_arguments(ast::Directive& d, Context& context)
-{
-    for (ast::Argument& a : d.get_arguments()) {
-        preprocess(a.get_content(), context);
-    }
-}
-
 void arguments_to_attributes(Attribute_Writer& out, const ast::Directive& d, Context& context)
 {
     std::pmr::vector<char8_t> value { context.get_transient_memory() };

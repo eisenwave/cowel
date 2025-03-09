@@ -33,8 +33,6 @@ struct Do_Nothing_Behavior : Directive_Behavior {
     {
     }
 
-    void preprocess(ast::Directive&, Context&) override { }
-
     void
     generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive&, Context&) const override
     {
@@ -70,11 +68,6 @@ struct Passthrough_Behavior : Directive_Behavior {
     Passthrough_Behavior(Directive_Category category, Directive_Display display)
         : Directive_Behavior { category, display }
     {
-    }
-
-    void preprocess(ast::Directive& d, Context& context) override
-    {
-        preprocess_arguments(d, context);
     }
 
     void
@@ -173,14 +166,6 @@ struct HTML_Literal_Behavior : Pure_HTML_Behavior {
     {
     }
 
-    void preprocess(ast::Directive& d, Context& context) override
-    {
-        // TODO: warn for ignored (unprocessed) arguments
-        for (ast::Content& c : d.get_content()) {
-            mmml::preprocess(c, context);
-        }
-    }
-
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override
     {
         std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
@@ -206,13 +191,6 @@ public:
     {
     }
 
-    void preprocess(ast::Directive& d, Context& context) final
-    {
-        Argument_Matcher args { m_parameters, context.get_transient_memory() };
-        args.match(d.get_arguments(), context.get_source());
-        preprocess(d, args, context);
-    }
-
     void
     generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
         const override
@@ -230,7 +208,6 @@ public:
     }
 
 protected:
-    virtual void preprocess(ast::Directive& d, const Argument_Matcher& args, Context& context) = 0;
     virtual void generate_plaintext(
         std::pmr::vector<char8_t>& out,
         const ast::Directive& d,
@@ -247,19 +224,6 @@ protected:
         = 0;
 };
 
-void preprocess_matched_arguments(
-    ast::Directive& d,
-    std::span<const Argument_Status> statuses,
-    Context& context
-)
-{
-    for (std::size_t i = 0; i < statuses.size(); ++i) {
-        if (statuses[i] == Argument_Status::ok) {
-            preprocess(d.get_arguments()[i].get_content(), context);
-        }
-    }
-}
-
 struct Variable_Behavior : Parametric_Behavior {
     static constexpr std::u8string_view var_parameter = u8"var";
     static constexpr std::u8string_view parameters[] { var_parameter };
@@ -267,12 +231,6 @@ struct Variable_Behavior : Parametric_Behavior {
     Variable_Behavior(Directive_Category c, Directive_Display d)
         : Parametric_Behavior { c, d, parameters }
     {
-    }
-
-    void preprocess(ast::Directive& d, const Argument_Matcher& args, Context& context) override
-    {
-        preprocess_matched_arguments(d, args.argument_statuses(), context);
-        // TODO: warn unmatched arguments
     }
 
     void generate_plaintext(
