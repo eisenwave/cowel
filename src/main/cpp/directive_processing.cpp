@@ -2,7 +2,9 @@
 #include <span>
 #include <vector>
 
+#include "mmml/parse_utils.hpp"
 #include "mmml/util/html_writer.hpp"
+#include "mmml/util/strings.hpp"
 
 #include "mmml/context.hpp"
 #include "mmml/directive_processing.hpp"
@@ -289,7 +291,18 @@ struct To_HTML_Paragraphs {
     // but blank lines can act as separators between paragraphs.
     void operator()(const ast::Text& t)
     {
-        // TODO: split paragraphs at blank lines
+        std::u8string_view text = t.get_text(context.get_source());
+        while (!text.empty()) {
+            const Blank_Line blank = find_blank_line_sequence(text);
+            if (blank.begin != 0) {
+                transition(Directive_Display::in_line);
+                out.write_inner_text(text.substr(0, blank.begin));
+                text.remove_prefix(blank.begin);
+            }
+            if (blank.length != 0) {
+                transition(Directive_Display::block);
+            }
+        }
     }
 
     // Escape sequences are always inline; they're just a single character.
