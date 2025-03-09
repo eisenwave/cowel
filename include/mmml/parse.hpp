@@ -14,6 +14,8 @@ namespace mmml {
 
 enum struct AST_Instruction_Type : Default_Underlying {
     /// @brief Ignore the next `n` characters.
+    /// This is used only within directive arguments,
+    /// where leading and trailing whitespace generally doesn't matter.
     skip,
     /// @brief The next `n` characters are an escape sequence (e.g. `\\{`).
     escape,
@@ -21,6 +23,10 @@ enum struct AST_Instruction_Type : Default_Underlying {
     text,
     /// @brief The next `n` characters are an argument name.
     argument_name,
+    /// @brief Advance past `=` following an argument name.
+    argument_equal,
+    /// @brief Advance past `,` between arguments.
+    argument_comma,
     /// @brief Begins the document.
     /// Always the first instruction.
     /// The operand is the amount of pieces that comprise the argument content,
@@ -35,8 +41,9 @@ enum struct AST_Instruction_Type : Default_Underlying {
     /// @brief Begin directive arguments.
     /// The operand is the amount of arguments.
     ///
-    /// One leading `{` and one trailing `}` are implicitly skipped.
+    /// Advance past `[`.
     push_arguments,
+    /// @brief Advance past `]`.
     pop_arguments,
     /// @brief Begin argument.
     /// The operand is the amount of pieces that comprise the argument content,
@@ -47,8 +54,9 @@ enum struct AST_Instruction_Type : Default_Underlying {
     /// The operand is the amount of pieces that comprise the argument content,
     /// where a piece is an escape sequence, text, or a directive.
     ///
-    /// One leading `{` and one trailing `}` are implicitly skipped.
+    /// Advance past `{`.
     push_block,
+    /// @brief Advance past `}`.
     pop_block
 };
 
@@ -61,7 +69,9 @@ constexpr bool ast_instruction_type_has_operand(AST_Instruction_Type type)
     case pop_directive:
     case pop_arguments:
     case pop_argument:
-    case pop_block: return false;
+    case pop_block:
+    case argument_comma:
+    case argument_equal: return false;
     default: return true;
     }
 }
@@ -94,9 +104,12 @@ std::pmr::vector<ast::Content> build_ast(
     std::pmr::memory_resource* memory
 );
 
+/// @brief Uses the AST instructions to create syntax highlighting information.
+/// A sequence of `Annotation_Span`s is appended to `out`,
+/// where gaps between spans represent non-highlighted content such as plaintext or whitespace.
 void build_highlight(
-    std::pmr::vector<Annotation_Span<HLJS_Scope>>,
-    std::span<const AST_Instruction> instruction
+    std::pmr::vector<Annotation_Span<HLJS_Scope>>& out,
+    std::span<const AST_Instruction> instructions
 );
 
 /// @brief Parses a document and runs `build_ast` on the results.

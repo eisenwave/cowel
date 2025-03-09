@@ -402,17 +402,19 @@ TEST(Parse, hello_directive)
 
         { AST_Instruction_Type::push_argument, 1 },
         { AST_Instruction_Type::argument_name, 5 }, // "hello"
-        { AST_Instruction_Type::skip, 2 },          // " ="
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::argument_equal },
         { AST_Instruction_Type::skip, 1 },
         { AST_Instruction_Type::text, 5 },          // "world"
         { AST_Instruction_Type::pop_argument },
 
-        { AST_Instruction_Type::skip, 1 },          // ,
+        { AST_Instruction_Type::argument_comma },
 
         { AST_Instruction_Type::push_argument, 1 },
         { AST_Instruction_Type::skip, 1 },
         { AST_Instruction_Type::argument_name, 1 }, // "x"
-        { AST_Instruction_Type::skip, 2 },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::argument_equal },
         { AST_Instruction_Type::skip, 1 },
         { AST_Instruction_Type::text, 1 },          // "0"
         { AST_Instruction_Type::pop_argument },
@@ -420,7 +422,7 @@ TEST(Parse, hello_directive)
         { AST_Instruction_Type::pop_arguments },
         { AST_Instruction_Type::push_block, 1 },    // {
         { AST_Instruction_Type::text, 4 },          // "test"
-        { AST_Instruction_Type::pop_block },     // }
+        { AST_Instruction_Type::pop_block },        // }
         { AST_Instruction_Type::pop_directive },
         { AST_Instruction_Type::text, 1 },          // \n
         { AST_Instruction_Type::pop_document },

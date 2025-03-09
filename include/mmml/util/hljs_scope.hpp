@@ -87,13 +87,13 @@ inline constexpr std::u8string_view hljs_scope_selectors[]
 /// Note that this does not work properly for `meta_keyword`,
 /// which is selected by `.hljs-meta .hljs-keyword`.
 /// In that case, `hljs-keyword` is returned.
-constexpr std::u8string_view hljs_scope_css_class(HLJS_Scope scope)
+constexpr std::u8string_view hljs_scope_css_classes(HLJS_Scope scope)
 {
     return detail::hljs_scope_class_names[Default_Underlying(scope)];
 }
 
 /// @brief Returns the CSS selector for the highlight.js scope.
-constexpr std::u8string_view hljs_scope_css_class(HLJS_Scope scope)
+constexpr std::u8string_view hljs_scope_css_selector(HLJS_Scope scope)
 {
     return detail::hljs_scope_selectors[Default_Underlying(scope)];
 }

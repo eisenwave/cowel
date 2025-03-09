@@ -472,12 +472,12 @@ private:
         for (std::size_t i = 0; try_match_argument(); ++i) {
             if (expect(u8']')) {
                 m_out[arguments_instruction_index].n = i + 1;
-                m_out.push_back({ AST_Instruction_Type::pop_arguments, 0 });
+                m_out.push_back({ AST_Instruction_Type::pop_arguments });
                 a.commit();
                 return true;
             }
             if (expect(u8',')) {
-                m_out.push_back({ AST_Instruction_Type::skip, 1 });
+                m_out.push_back({ AST_Instruction_Type::argument_comma });
                 continue;
             }
             MMML_ASSERT_UNREACHABLE(
@@ -513,7 +513,7 @@ private:
         Scoped_Attempt a = attempt();
 
         const std::size_t argument_instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type::push_argument, 0 });
+        m_out.push_back({ AST_Instruction_Type::push_argument });
 
         try_match_argument_name();
 
@@ -523,7 +523,7 @@ private:
         }
 
         m_out[argument_instruction_index].n = *result;
-        m_out.push_back({ AST_Instruction_Type::pop_argument, 0 });
+        m_out.push_back({ AST_Instruction_Type::pop_argument });
 
         a.commit();
         return true;
@@ -561,7 +561,8 @@ private:
             return false;
         }
 
-        m_out.push_back({ AST_Instruction_Type::skip, trailing_whitespace + 1 });
+        m_out.push_back({ AST_Instruction_Type::skip, trailing_whitespace });
+        m_out.push_back({ AST_Instruction_Type::argument_equal });
         a.commit();
         return true;
     }
@@ -635,7 +636,7 @@ private:
         Scoped_Attempt a = attempt();
 
         const std::size_t block_instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type::push_block, 0 });
+        m_out.push_back({ AST_Instruction_Type::push_block });
 
         // A possible optimization should be to find the closing brace and then run the parser
         // on the brace-enclosed block.
@@ -650,7 +651,7 @@ private:
         }
 
         m_out[block_instruction_index].n = elements;
-        m_out.push_back({ AST_Instruction_Type::pop_block, 0 });
+        m_out.push_back({ AST_Instruction_Type::pop_block });
 
         a.commit();
         return elements;
@@ -667,6 +668,8 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         MMML_ENUM_STRING_CASE8(escape);
         MMML_ENUM_STRING_CASE8(text);
         MMML_ENUM_STRING_CASE8(argument_name);
+        MMML_ENUM_STRING_CASE8(argument_equal);
+        MMML_ENUM_STRING_CASE8(argument_comma);
         MMML_ENUM_STRING_CASE8(push_document);
         MMML_ENUM_STRING_CASE8(pop_document);
         MMML_ENUM_STRING_CASE8(push_directive);

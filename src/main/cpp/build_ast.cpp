@@ -1,6 +1,9 @@
 #include <optional>
 #include <string_view>
 
+#include "mmml/util/annotation_span.hpp"
+#include "mmml/util/hljs_scope.hpp"
+
 #include "mmml/parse.hpp"
 
 namespace mmml {
@@ -92,17 +95,23 @@ public:
     {
         const AST_Instruction instruction = peek();
         switch (instruction.type) {
-        case AST_Instruction_Type::skip: //
+            using enum AST_Instruction_Type;
+        case skip: //
             advance_by(instruction.n);
             pop();
             break;
-        case AST_Instruction_Type::escape: //
+        case argument_comma:
+        case argument_equal: //
+            advance_by(1);
+            pop();
+            break;
+        case escape: //
             out.push_back(build_escape());
             break;
-        case AST_Instruction_Type::text: //
+        case text: //
             out.push_back(build_text());
             break;
-        case AST_Instruction_Type::push_directive: //
+        case push_directive: //
             out.push_back(build_directive());
             break;
 
@@ -170,8 +179,14 @@ public:
 
         while (!eof()) {
             const AST_Instruction next = peek();
-            if (next.type == AST_Instruction_Type::skip) { // ,
+            if (next.type == AST_Instruction_Type::skip) {
                 advance_by(next.n);
+                pop();
+                continue;
+            }
+            if (next.type == AST_Instruction_Type::argument_comma
+                || next.type == AST_Instruction_Type::argument_equal) {
+                advance_by(1);
                 pop();
                 continue;
             }
@@ -250,6 +265,54 @@ std::pmr::vector<ast::Content> build_ast(
 )
 {
     return AST_Builder { source, instructions, memory }.build_document();
+}
+
+void build_highlight(
+    std::pmr::vector<Annotation_Span<HLJS_Scope>>& out,
+    std::span<const AST_Instruction> instructions
+)
+{
+    std::size_t index = 0;
+    const auto emit = [&](std::size_t length, HLJS_Scope scope) {
+        out.push_back({ .begin = index, .length = length, .value = scope });
+        index += length;
+    };
+
+    for (const auto& i : instructions) {
+        switch (i.type) {
+            using enum AST_Instruction_Type;
+        case skip: //
+            index += i.n;
+            break;
+        case escape: //
+            emit(i.n, HLJS_Scope::char_escape);
+            break;
+        case text: //
+            index += i.n;
+            break;
+        case argument_name: //
+            emit(i.n, HLJS_Scope::attribute);
+            break;
+        case push_directive: //
+            emit(i.n, HLJS_Scope::tag);
+            break;
+
+        case argument_equal: // =
+        case argument_comma: // ,
+        case push_arguments: // [
+        case pop_arguments: // ]
+        case push_block: // {
+        case pop_block: // }
+            emit(i.n, HLJS_Scope::punctuation);
+            break;
+
+        case push_document:
+        case pop_document:
+        case pop_directive:
+        case push_argument:
+        case pop_argument: break;
+        }
+    }
 }
 
 /// @brief Parses a document and runs `build_ast` on the results.
