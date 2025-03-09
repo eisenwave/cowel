@@ -79,7 +79,7 @@ constexpr bool is_ascii(std::u8string_view str)
 /// This includes both builtin tag names (which are purely alphabetic)
 /// and custom tag names.
 [[nodiscard]]
-bool is_html_tag_name(std::u8string_view str)
+constexpr bool is_html_tag_name(std::u8string_view str)
 {
     constexpr auto predicate = [](char32_t x) { return is_html_tag_name_character(x); };
 
@@ -90,7 +90,7 @@ bool is_html_tag_name(std::u8string_view str)
 
 /// @brief Returns `true` if `str` is a valid HTML attribute name.
 [[nodiscard]]
-bool is_html_attribute_name(std::u8string_view str)
+constexpr bool is_html_attribute_name(std::u8string_view str)
 {
     constexpr auto predicate = [](char32_t x) { return is_html_attribute_name_character(x); };
 
@@ -104,7 +104,7 @@ bool is_html_attribute_name(std::u8string_view str)
 /// For example, `id=123` is a valid HTML attribute with a value and requires
 /// no wrapping, but `id="<x>"` requires `<x>` to be surrounded by quotes.
 [[nodiscard]]
-bool is_html_unquoted_attribute_value(std::u8string_view str)
+constexpr bool is_html_unquoted_attribute_value(std::u8string_view str)
 {
     constexpr auto predicate
         = [](char8_t x) { return is_html_unquoted_attribute_value_character(x); };
