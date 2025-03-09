@@ -60,7 +60,7 @@ struct Directive_Behavior {
     const Directive_Category category;
     const Directive_Display display;
 
-    Directive_Behavior(Directive_Category c, Directive_Display d)
+    constexpr Directive_Behavior(Directive_Category c, Directive_Display d)
         : category { c }
         , display { d }
     {
@@ -78,7 +78,7 @@ struct Content_Behavior {
     const Directive_Display display;
 
     [[nodiscard]]
-    Content_Behavior(Directive_Category c, Directive_Display d)
+    constexpr Content_Behavior(Directive_Category c, Directive_Display d)
         : category { c }
         , display { d }
     {
