@@ -391,7 +391,7 @@ private:
 
 } // namespace
 
-void to_html_paragraphs(
+void to_html(
     HTML_Writer& out,
     std::span<const ast::Content> content,
     Context& context,
@@ -453,6 +453,8 @@ void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, 
 
 void arguments_to_attributes(Attribute_Writer& out, const ast::Directive& d, Context& context)
 {
+    constexpr auto style = Attribute_Style::double_if_needed;
+
     std::pmr::vector<char8_t> value { context.get_transient_memory() };
     for (const ast::Argument& a : d.get_arguments()) {
         // TODO: error handling
@@ -460,11 +462,11 @@ void arguments_to_attributes(Attribute_Writer& out, const ast::Directive& d, Con
         to_plaintext(value, a.get_content(), context);
         const std::u8string_view value_string { value.data(), value.size() };
         if (a.has_name()) {
-            out.write_attribute(a.get_name(context.get_source()), value_string);
+            out.write_attribute(a.get_name(context.get_source()), value_string, style);
         }
         // TODO: what if the positional argument cannot be used as an attribute name
         else {
-            out.write_attribute(value_string);
+            out.write_empty_attribute(value_string, style);
         }
     }
 }
