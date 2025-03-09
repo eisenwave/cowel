@@ -1,0 +1,102 @@
+#include <memory_resource>
+#include <vector>
+
+#include <gtest/gtest.h>
+
+#include "mmml/util/io.hpp"
+
+#include "mmml/directive_processing.hpp"
+#include "mmml/directives.hpp"
+#include "mmml/document_generation.hpp"
+#include "mmml/parse.hpp"
+
+namespace mmml {
+namespace {
+
+struct Trivial_Content_Behavior final : Content_Behavior {
+    constexpr Trivial_Content_Behavior()
+        : Content_Behavior { Directive_Category::mixed, Directive_Display::block }
+    {
+    }
+
+    void generate_plaintext(
+        std::pmr::vector<char8_t>& out,
+        std::span<const ast::Content> content,
+        Context& context
+    ) const final
+    {
+        to_plaintext(out, content, context);
+    }
+
+    void generate_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
+        const final
+    {
+        to_html(out, content, context);
+    }
+};
+
+constinit Trivial_Content_Behavior trivial_behavior {};
+
+struct Doc_Gen_Test : testing::Test {
+    std::pmr::monotonic_buffer_resource memory;
+    std::pmr::vector<char8_t> out { &memory };
+    Builtin_Directive_Set builtin_directives {};
+    std::filesystem::path file_path;
+    std::pmr::vector<char8_t> source { &memory };
+    std::pmr::vector<ast::Content> content;
+
+    Function_Ref<void(Diagnostic&&)> emit_diagnostic = {};
+    Severity min_severity = Severity::none;
+    std::pmr::vector<Diagnostic> caught_diagnostics { &memory };
+
+    Content_Behavior* root_behavior = &trivial_behavior;
+    Directive_Behavior* error_behavior = nullptr;
+
+    [[nodiscard]]
+    std::u8string_view source_string() const
+    {
+        return { source.data(), source.size() };
+    }
+
+    void load_document(std::filesystem::path path)
+    {
+        file_path = "test" / path;
+        Result<void, IO_Error_Code> result = load_utf8_file(source, file_path.c_str());
+        MMML_ASSERT(result);
+        content = parse_and_build(source_string(), &memory);
+    }
+
+    void listen_for_diagnostics(Severity min_severity)
+    {
+        this->min_severity = min_severity;
+        emit_diagnostic = [&](Diagnostic&& d) { caught_diagnostics.push_back(std::move(d)); };
+    }
+
+    std::u8string_view generate()
+    {
+        MMML_ASSERT(root_behavior);
+        const Generation_Options options { .output = out,
+                                           .root_behavior = *root_behavior,
+                                           .root_content = content,
+                                           .builtin_behavior = builtin_directives,
+                                           .error_behavior = error_behavior,
+                                           .path = file_path,
+                                           .source = source_string(),
+                                           .emit_diagnostic = emit_diagnostic,
+                                           .min_severity = min_severity,
+                                           .memory = &memory };
+        generate_document(options);
+        return { out.data(), out.size() };
+    }
+};
+
+TEST_F(Doc_Gen_Test, empty)
+{
+    constexpr std::u8string_view expected = u8"";
+    load_document("empty.mmml");
+    std::u8string_view actual = generate();
+    EXPECT_EQ(expected, actual);
+}
+
+} // namespace
+} // namespace mmml
