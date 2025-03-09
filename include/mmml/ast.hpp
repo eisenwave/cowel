@@ -118,7 +118,7 @@ public:
 
 struct Behaved_Content final {
 private:
-    Content_Behavior& m_behavior;
+    Content_Behavior* m_behavior;
     std::pmr::vector<Content> m_content;
 
 public:
@@ -130,7 +130,7 @@ public:
     [[nodiscard]]
     Content_Behavior& get_behavior() const
     {
-        return m_behavior;
+        return *m_behavior;
     }
 
     [[nodiscard]]
@@ -218,6 +218,11 @@ using Content_Variant = std::variant<Directive, Behaved_Content, Text, Escaped>;
 struct Content : Content_Variant {
     using Content_Variant::variant;
 };
+
+static_assert(std::is_move_constructible_v<Content>);
+static_assert(std::is_move_constructible_v<Content>);
+static_assert(std::is_copy_assignable_v<Content>);
+static_assert(std::is_move_assignable_v<Content>);
 
 inline Argument::~Argument() = default;
 inline Directive::~Directive() = default;
