@@ -3,12 +3,14 @@
 
 #include <gtest/gtest.h>
 
+#include "mmml/util/annotated_string.hpp"
 #include "mmml/util/io.hpp"
 
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
 #include "mmml/document_generation.hpp"
 #include "mmml/parse.hpp"
+#include "mmml/print.hpp"
 
 namespace mmml {
 namespace {
@@ -35,7 +37,27 @@ struct Trivial_Content_Behavior final : Content_Behavior {
     }
 };
 
+struct Paragraphs_Behavior final : Content_Behavior {
+    constexpr Paragraphs_Behavior()
+        : Content_Behavior { Directive_Category::mixed, Directive_Display::block }
+    {
+    }
+
+    void generate_plaintext(std::pmr::vector<char8_t>&, std::span<const ast::Content>, Context&)
+        const final
+    {
+        MMML_ASSERT_UNREACHABLE(u8"Unimplemented, not needed.");
+    }
+
+    void generate_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
+        const final
+    {
+        to_html(out, content, context, To_HTML_Mode::paragraphs);
+    }
+};
+
 constinit Trivial_Content_Behavior trivial_behavior {};
+constinit Paragraphs_Behavior paragraphs_behavior {};
 
 struct Doc_Gen_Test : testing::Test {
     std::pmr::monotonic_buffer_resource memory;
@@ -58,12 +80,20 @@ struct Doc_Gen_Test : testing::Test {
         return { source.data(), source.size() };
     }
 
-    void load_document(std::filesystem::path path)
+    [[nodiscard]]
+    bool load_document(std::filesystem::path path)
     {
         file_path = "test" / path;
         Result<void, IO_Error_Code> result = load_utf8_file(source, file_path.c_str());
-        MMML_ASSERT(result);
+
+        if (!result) {
+            Diagnostic_String error { &memory };
+            print_io_error(error, file_path.c_str(), result.error());
+            print_code_string_stdout(error);
+            return false;
+        }
         content = parse_and_build(source_string(), &memory);
+        return true;
     }
 
     void listen_for_diagnostics(Severity min_severity)
@@ -93,7 +123,31 @@ struct Doc_Gen_Test : testing::Test {
 TEST_F(Doc_Gen_Test, empty)
 {
     constexpr std::u8string_view expected = u8"";
-    load_document("empty.mmml");
+    ASSERT_TRUE(load_document("empty.mmml"));
+    std::u8string_view actual = generate();
+    EXPECT_EQ(expected, actual);
+}
+
+TEST_F(Doc_Gen_Test, text)
+{
+    constexpr std::u8string_view expected = u8"Hello, world!\n";
+    ASSERT_TRUE(load_document("text.mmml"));
+    std::u8string_view actual = generate();
+    EXPECT_EQ(expected, actual);
+}
+
+TEST_F(Doc_Gen_Test, paragraphs)
+{
+    constexpr std::u8string_view expected = u8R"(<p>
+This is
+a paragraph.
+</p>
+<p>
+This is another paragraph.
+</p>
+)";
+    ASSERT_TRUE(load_document("paragraphs.mmml"));
+    root_behavior = &paragraphs_behavior;
     std::u8string_view actual = generate();
     EXPECT_EQ(expected, actual);
 }
