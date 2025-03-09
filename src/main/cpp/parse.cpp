@@ -44,7 +44,7 @@ Directive::Directive(
 }
 
 Behaved_Content::Behaved_Content(Content_Behavior& behavior, std::pmr::vector<Content>&& block)
-    : m_behavior { behavior }
+    : m_behavior { &behavior }
     , m_content { std::move(block) }
 {
 }
