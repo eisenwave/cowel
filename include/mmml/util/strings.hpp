@@ -36,6 +36,10 @@ inline constexpr std::u8string_view all_ascii_alphanumeric8
 inline constexpr std::u32string_view all_ascii_whitespace = U"\t\n\f\r ";
 inline constexpr std::u8string_view all_ascii_whitespace8 = u8"\t\n\f\r ";
 
+// see is_ascii_blank
+inline constexpr std::u32string_view all_ascii_blank = U"\t\n\f\r\v ";
+inline constexpr std::u8string_view all_ascii_blank8 = u8"\t\n\f\r\v ";
+
 // see is_mmml_escapeable
 inline constexpr std::u32string_view all_mmml_escapeable = U"\\{}";
 inline constexpr std::u8string_view all_mmml_escapeable8 = u8"\\{}";
@@ -48,6 +52,18 @@ inline constexpr std::u8string_view all_mmml_special8 = u8"\\{}[],";
 inline std::string_view as_string_view(std::u8string_view str)
 {
     return { reinterpret_cast<const char*>(str.data()), str.size() };
+}
+
+[[nodiscard]]
+constexpr bool contains(std::u8string_view str, char8_t c)
+{
+    return str.find(c) != std::u8string_view::npos;
+}
+
+[[nodiscard]]
+constexpr bool contains(std::u32string_view str, char32_t c)
+{
+    return str.find(c) != std::u32string_view::npos;
 }
 
 namespace detail {
