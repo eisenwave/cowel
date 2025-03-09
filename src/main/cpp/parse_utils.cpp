@@ -8,7 +8,7 @@
 
 namespace mmml {
 
-Blank_Line find_blank_line(std::u8string_view str) noexcept
+Blank_Line find_blank_line_sequence(std::u8string_view str) noexcept
 {
     enum struct State {
         normal,
