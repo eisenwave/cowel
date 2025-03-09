@@ -75,6 +75,44 @@ constexpr bool is_ascii(std::u8string_view str)
     return detail::all_of(str, predicate);
 }
 
+/// @brief Returns `true` if `str` is a possibly empty ASCII string comprised
+/// entirely of blank ASCII characters (`is_ascii_blank`).
+[[nodiscard]]
+constexpr bool is_ascii_blank(std::u8string_view str)
+{
+    constexpr auto predicate = [](char8_t x) { return is_ascii_blank(x); };
+    return detail::all_of(str, predicate);
+}
+
+[[nodiscard]]
+constexpr std::u8string_view trim_ascii_blank_left(std::u8string_view str)
+{
+    for (std::size_t i = 0; i < str.size(); ++i) {
+        if (!is_ascii_blank(str[i])) {
+            return str.substr(i);
+        }
+    }
+    return {};
+}
+
+[[nodiscard]]
+constexpr std::u8string_view trim_ascii_blank_right(std::u8string_view str)
+{
+    for (std::size_t length = str.size(); length > 0; --length) {
+        if (!is_ascii_blank(str[length - 1])) {
+            return str.substr(0, length);
+        }
+    }
+    return {};
+}
+
+/// @brief Equivalent to `trim_ascii_blank_right(trim_ascii_blank_left(str))`.
+[[nodiscard]]
+constexpr std::u8string_view trim_ascii_blank(std::u8string_view str)
+{
+    return trim_ascii_blank_right(trim_ascii_blank_left(str));
+}
+
 /// @brief Returns `true` if `str` is a valid HTML tag identifier.
 /// This includes both builtin tag names (which are purely alphabetic)
 /// and custom tag names.

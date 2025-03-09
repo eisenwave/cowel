@@ -17,19 +17,46 @@ constexpr bool is_ascii_digit(char32_t c)
     return c >= U'0' && c <= U'9';
 }
 
-/// @brief Returns `true` if the `c` is whitespace.
+/// @brief Returns `true` if `c` is whitespace.
+/// Note that "whitespace" matches the HTML standard definition here,
+/// and unlike the C locale,
+/// vertical tabs are not included.
 [[nodiscard]]
 constexpr bool is_ascii_whitespace(char8_t c)
 {
+    // https://infra.spec.whatwg.org/#ascii-whitespace
     return c == u8'\t' || c == u8'\n' || c == u8'\f' || c == u8'\r' || c == u8' ';
 }
 
-/// @brief Returns `true` if the `c` is whitespace.
+/// @brief Returns `true` if `c` is whitespace.
+/// Note that "whitespace" matches the HTML standard definition here,
+/// and unlike the C locale,
+/// vertical tabs are not included.
 [[nodiscard]]
 constexpr bool is_ascii_whitespace(char32_t c)
 {
     // https://infra.spec.whatwg.org/#ascii-whitespace
     return c == U'\t' || c == U'\n' || c == U'\f' || c == U'\r' || c == U' ';
+}
+
+/// @brief Returns true if `c` is a blank character.
+/// This matches the C locale definition,
+/// and includes vertical tabs,
+/// unlike `is_ascii_whitespace`.
+[[nodiscard]]
+constexpr bool is_ascii_blank(char8_t c)
+{
+    return is_ascii_whitespace(c) || c == u8'\v';
+}
+
+/// @brief Returns true if `c` is a blank character.
+/// This matches the C locale definition,
+/// and includes vertical tabs,
+/// unlike `is_ascii_whitespace`.
+[[nodiscard]]
+constexpr bool is_ascii_blank(char32_t c)
+{
+    return is_ascii_whitespace(c) || c == U'\v';
 }
 
 [[nodiscard]]
