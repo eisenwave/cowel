@@ -1,3 +1,4 @@
+#include <iostream>
 #include <optional>
 #include <string_view>
 
@@ -7,6 +8,7 @@
 #include "mmml/util/source_position.hpp"
 #include "mmml/util/strings.hpp"
 #include "mmml/util/to_chars.hpp"
+#include "mmml/util/tty.hpp"
 
 #include "mmml/ast.hpp"
 #include "mmml/diagnostic_highlight.hpp"
@@ -547,6 +549,11 @@ std::ostream& print_code_string(std::ostream& out, const Diagnostic_String& stri
     }
 
     return out;
+}
+
+void print_code_string_stdout(const Diagnostic_String& string)
+{
+    print_code_string(std::cout, string, is_stdout_tty);
 }
 #endif
 
