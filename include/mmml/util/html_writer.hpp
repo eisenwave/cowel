@@ -13,13 +13,45 @@ namespace mmml {
 /// @brief Appends text to a vector without any processing.
 void append(std::pmr::vector<char8_t>& out, std::u8string_view text);
 
-/// @brief Appends text to the vector where "problematic characters" are replaced
-/// with HTML entities.
-/// That is, `&` is replaced with `&amp;`, `<` with `&lt;`, and `>` with `&gt;`.
+/// @brief Appends text to the vector where characters in `charset`
+/// are replaced with their corresponding HTML entities.
+/// For example, if `charset` includes `&`, `&amp;` is appended in its stead.
 ///
-/// The appended text can be safely inserted between enclosing HTML tags without
-/// the structure of the HTML document being compromised.
-void append_html_escaped(std::pmr::vector<char8_t>& out, std::u8string_view text);
+/// Currently, `charset` must be a subset of `&`, `<`, `>`, `'`, `"`.
+void append_html_escaped(
+    std::pmr::vector<char8_t>& out,
+    std::u8string_view text,
+    std::u8string_view charset
+);
+
+enum struct Attribute_Style : Default_Underlying {
+    /// @brief Always use double quotes, like `id="name" class="a b" hidden=""`.
+    always_double,
+    /// @brief Always use single quotes, like `id='name' class='a b' hidden=''`.
+    always_single,
+    /// @brief Use single quotes when needed, like `id=name class="a b" hidden`.
+    double_if_needed,
+    /// @brief Use single quotes when needed, like `id=name class='a b' hidden`.
+    single_if_needed,
+};
+
+[[nodiscard]]
+constexpr bool attribute_style_demands_quotes(Attribute_Style style)
+{
+    return style == Attribute_Style::always_double || style == Attribute_Style::always_single;
+}
+
+[[nodiscard]]
+constexpr char8_t attribute_style_quote_char(Attribute_Style style)
+{
+    switch (style) {
+    case Attribute_Style::always_double:
+    case Attribute_Style::double_if_needed: return '"';
+    case Attribute_Style::always_single:
+    case Attribute_Style::single_if_needed: return '\'';
+    }
+    MMML_ASSERT_UNREACHABLE(u8"Invalid attribute style.");
+}
 
 /// @brief A class which provides member functions for writing HTML content to a stream
 /// correctly.
@@ -118,7 +150,8 @@ public:
     }
 
 private:
-    Self& write_attribute(string_view_type key, string_view_type value);
+    Self& write_attribute(string_view_type key, string_view_type value, Attribute_Style style);
+    Self& write_empty_attribute(string_view_type key, Attribute_Style style);
     Self& end_attributes();
     Self& end_empty_tag_attributes();
 
@@ -138,6 +171,7 @@ public:
     explicit Attribute_Writer(HTML_Writer& writer)
         : m_writer(writer)
     {
+        m_writer.m_in_attributes = true;
     }
 
     Attribute_Writer(const Attribute_Writer&) = delete;
@@ -150,9 +184,16 @@ public:
     /// @param key the attribute key; `is_identifier(key)` shall be `true`.
     /// @param value the attribute value, or an empty string
     /// @return `*this`
-    Attribute_Writer& write_attribute(string_view_type key, string_view_type value = {})
+    Attribute_Writer&
+    write_attribute(string_view_type key, string_view_type value, Attribute_Style style)
     {
-        m_writer.write_attribute(key, value);
+        m_writer.write_attribute(key, value, style);
+        return *this;
+    }
+
+    Attribute_Writer& write_empty_attribute(string_view_type key, Attribute_Style style)
+    {
+        m_writer.write_empty_attribute(key, style);
         return *this;
     }
 
@@ -179,7 +220,7 @@ public:
     ~Attribute_Writer() noexcept(false)
     {
         // This indicates that end() or end_empty() weren't called.
-        MMML_ASSERT(m_writer.m_in_attributes);
+        MMML_ASSERT(!m_writer.m_in_attributes);
     }
 };
 
