@@ -11,37 +11,40 @@ namespace mmml {
 Blank_Line find_blank_line_sequence(std::u8string_view str) noexcept
 {
     enum struct State {
-        normal,
+        /// @brief We are at the start of a line.
         maybe_blank,
+        /// @brief There are non-whitespace characters on this line.
+        not_blank,
+        /// @brief At least one line is blank.
         blank,
     };
-    State state = State::normal;
+    State state = State::maybe_blank;
 
-    std::size_t blank_begin;
+    std::size_t blank_begin = 0;
     std::size_t blank_end;
 
     for (std::size_t i = 0; i < str.size(); ++i) {
         switch (state) {
-        case State::normal: {
+        case State::maybe_blank: {
+            if (str[i] == u8'\n') {
+                state = State::blank;
+                blank_end = i + 1;
+            }
+            else if (!is_ascii_whitespace(str[i])) {
+                state = State::not_blank;
+            }
+            continue;
+        }
+        case State::not_blank: {
             if (str[i] == u8'\n') {
                 state = State::maybe_blank;
                 blank_begin = i + 1;
             }
             continue;
         }
-        case State::maybe_blank: {
-            if (str[i] == u8'\n') {
-                state = State::blank;
-                blank_end = i;
-            }
-            else if (!is_ascii_whitespace(str[i])) {
-                state = State::normal;
-            }
-            continue;
-        }
         case State::blank: {
             if (str[i] == u8'\n') {
-                blank_end = i;
+                blank_end = i + 1;
             }
             else if (!is_ascii_whitespace(str[i])) {
                 return { .begin = blank_begin, .length = blank_end - blank_begin };
@@ -53,6 +56,9 @@ Blank_Line find_blank_line_sequence(std::u8string_view str) noexcept
     }
 
     static_assert(!Blank_Line {}, "A value-initialized Blank_Line should be falsy");
+    if (state == State::blank) {
+        return { .begin = blank_begin, .length = str.size() - blank_begin };
+    }
     return {};
 }
 
