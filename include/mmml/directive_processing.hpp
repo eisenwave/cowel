@@ -8,6 +8,15 @@
 
 namespace mmml {
 
+[[nodiscard]]
+std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content>, Context&);
+[[nodiscard]]
+std::span<const ast::Content> trim_blank_text_right(std::span<const ast::Content>, Context&);
+
+/// @brief Trims leading and trailing completely blank text content.
+[[nodiscard]]
+std::span<const ast::Content> trim_blank_text(std::span<const ast::Content>, Context&);
+
 /// @brief Converts content to plaintext.
 /// For text, this outputs that text literally.
 /// For escaped characters, this outputs the escaped character.
@@ -74,9 +83,24 @@ void to_html(HTML_Writer& out, const ast::Text&, Context&);
 void to_html(HTML_Writer& out, const ast::Directive&, Context&);
 void to_html(HTML_Writer& out, const ast::Behaved_Content&, Context&);
 
-void to_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context);
+enum struct To_HTML_Mode : Default_Underlying {
+    direct,
+    in_paragraphs,
+    trimmed,
+    in_paragraphs_trimmed,
+};
 
-void to_html_paragraphs(HTML_Writer& out, std::span<const ast::Content> content, Context& context);
+constexpr bool to_html_mode_is_trimmed(To_HTML_Mode mode)
+{
+    return mode == To_HTML_Mode::trimmed || mode == To_HTML_Mode::in_paragraphs_trimmed;
+}
+
+void to_html(
+    HTML_Writer& out,
+    std::span<const ast::Content> content,
+    Context& context,
+    To_HTML_Mode mode = To_HTML_Mode::direct
+);
 
 /// @brief Converts the source code of the content to HTML without any processing.
 void to_html_literally(HTML_Writer& out, const ast::Content& content, Context& context);

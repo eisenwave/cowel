@@ -27,6 +27,42 @@ Directive_Behavior* Context::find_directive(const ast::Directive& directive) con
     return find_directive(directive.get_name(m_source));
 }
 
+std::span<const ast::Content>
+trim_blank_text_left(std::span<const ast::Content> content, Context& context)
+{
+    while (!content.empty()) {
+        if (const auto* const text = std::get_if<ast::Text>(&content.front())) {
+            if (is_ascii_blank(text->get_text(context.get_source()))) {
+                content = content.subspan(1);
+                continue;
+            }
+        }
+        break;
+    }
+    return content;
+}
+
+std::span<const ast::Content>
+trim_blank_text_right(std::span<const ast::Content> content, Context& context)
+{
+    while (!content.empty()) {
+        if (const auto* const text = std::get_if<ast::Text>(&content.back())) {
+            if (is_ascii_blank(text->get_text(context.get_source()))) {
+                content = content.subspan(0, content.size() - 1);
+                continue;
+            }
+        }
+        break;
+    }
+    return content;
+}
+
+std::span<const ast::Content>
+trim_blank_text(std::span<const ast::Content> content, Context& context)
+{
+    return trim_blank_text_right(trim_blank_text_left(content, context), context);
+}
+
 namespace {
 
 void try_lookup_error(const ast::Directive& directive, Context& context)
@@ -230,52 +266,62 @@ void to_html(HTML_Writer& out, const ast::Directive& directive, Context& context
     }
 }
 
-void to_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
+namespace {
+
+void to_html_direct(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
 {
     for (const auto& c : content) {
         to_html(out, c, context);
     }
 }
 
-namespace {
-
-struct To_HTML_Paragraphs {
-    HTML_Writer& out;
-    Context& context;
-    bool in_paragraph = false;
-
-    void transition(Directive_Display display)
-    {
-        if (display == Directive_Display::none) {
-            return;
+void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
+{
+    for (std::size_t i = 0; i < content.size(); ++i) {
+        if (const auto* const text = std::get_if<ast::Text>(&content[i])) {
+            std::u8string_view str = text->get_text(context.get_source());
+            // Note that the following two conditions are not mutually exclusive
+            // when content contains just one element.
+            if (i == 0) {
+                str = trim_ascii_blank_left(str);
+            }
+            if (i + 1 == content.size()) {
+                str = trim_ascii_blank_right(str);
+            }
+            // Other trimming mechanisms should have eliminated completely blank strings.
+            MMML_ASSERT(!str.empty());
+            out.write_inner_html(str);
         }
-        if (!in_paragraph && display == Directive_Display::in_line) {
-            out.open_tag(u8"p");
-            in_paragraph = true;
-            return;
-        }
-        if (in_paragraph && display == Directive_Display::block) {
-            out.close_tag(u8"p");
-            in_paragraph = true;
+        else {
+            to_html(out, content[i], context);
         }
     }
+}
 
-    void on_directive(Directive_Behavior& b, const ast::Directive& d)
+struct To_HTML_Paragraphs {
+    HTML_Writer& m_out;
+    Context& m_context;
+
+private:
+    bool m_in_paragraph = false;
+
+public:
+    To_HTML_Paragraphs(HTML_Writer& out, Context& context)
+        : m_out { out }
+        , m_context { context }
     {
-        transition(b.display);
-        b.generate_html(out, d, context);
-    };
+    }
 
     //  Some directives split paragraphs, and some are inline.
     //  For example, `\\b{...}` gets displayed inline,
     //  but `\\blockquote` is block content.
     void operator()(const ast::Directive& d)
     {
-        if (Directive_Behavior* behavior = context.find_directive(d)) {
+        if (Directive_Behavior* behavior = m_context.find_directive(d)) {
             on_directive(*behavior, d);
         }
-        try_lookup_error(d, context);
-        if (Directive_Behavior* eb = context.get_error_behavior()) {
+        try_lookup_error(d, m_context);
+        if (Directive_Behavior* eb = m_context.get_error_behavior()) {
             on_directive(*eb, d);
         }
     }
@@ -284,19 +330,26 @@ struct To_HTML_Paragraphs {
     void operator()(const ast::Behaved_Content& b)
     {
         transition(b.get_behavior().display);
-        b.get_behavior().generate_html(out, b.get_content(), context);
+        b.get_behavior().generate_html(m_out, b.get_content(), m_context);
     }
 
     // Text is never block content in itself,
     // but blank lines can act as separators between paragraphs.
-    void operator()(const ast::Text& t)
+    void operator()(const ast::Text& t, bool trim_left = false, bool trim_right = false)
     {
-        std::u8string_view text = t.get_text(context.get_source());
+        std::u8string_view text = t.get_text(m_context.get_source());
+        if (trim_left) {
+            text = trim_ascii_blank_left(text);
+        }
+        if (trim_right) {
+            text = trim_ascii_blank_left(text);
+        }
+
         while (!text.empty()) {
             const Blank_Line blank = find_blank_line_sequence(text);
             if (blank.begin != 0) {
                 transition(Directive_Display::in_line);
-                out.write_inner_text(text.substr(0, blank.begin));
+                m_out.write_inner_text(text.substr(0, blank.begin));
                 text.remove_prefix(blank.begin);
             }
             if (blank.length != 0) {
@@ -309,18 +362,72 @@ struct To_HTML_Paragraphs {
     void operator()(const ast::Escaped& e)
     {
         transition(Directive_Display::in_line);
-        to_html(out, e, context);
+        to_html(m_out, e, m_context);
+    }
+
+private:
+    void transition(Directive_Display display)
+    {
+        if (display == Directive_Display::none) {
+            return;
+        }
+        if (!m_in_paragraph && display == Directive_Display::in_line) {
+            m_out.open_tag(u8"p");
+            m_in_paragraph = true;
+            return;
+        }
+        if (m_in_paragraph && display == Directive_Display::block) {
+            m_out.close_tag(u8"p");
+            m_in_paragraph = true;
+        }
+    }
+
+    void on_directive(Directive_Behavior& b, const ast::Directive& d)
+    {
+        transition(b.display);
+        b.generate_html(m_out, d, m_context);
     }
 };
 
 } // namespace
 
-void to_html_paragraphs(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
+void to_html_paragraphs(
+    HTML_Writer& out,
+    std::span<const ast::Content> content,
+    Context& context,
+    To_HTML_Mode mode
+)
 {
-    To_HTML_Paragraphs impl { out, context };
+    if (to_html_mode_is_trimmed(mode)) {
+        content = trim_blank_text(content, context);
+    }
 
-    for (const auto& c : content) {
-        std::visit(impl, c);
+    switch (mode) {
+    case To_HTML_Mode::direct: //
+        to_html_direct(out, content, context);
+        break;
+
+    case To_HTML_Mode::trimmed: //
+        to_html_trimmed(out, content, context);
+        break;
+
+    case To_HTML_Mode::in_paragraphs:
+    case To_HTML_Mode::in_paragraphs_trimmed: {
+        To_HTML_Paragraphs impl { out, context };
+
+        for (std::size_t i = 0; i < content.size(); ++i) {
+            if (mode == To_HTML_Mode::in_paragraphs_trimmed) {
+                if (const auto* const text = std::get_if<ast::Text>(&content[i])) {
+                    bool first = i == 0;
+                    bool last = i + 1 == content.size();
+                    impl(*text, first, last);
+                    continue;
+                }
+            }
+            std::visit(impl, content[i]);
+        }
+        break;
+    }
     }
 }
 
