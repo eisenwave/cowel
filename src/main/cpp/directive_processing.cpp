@@ -346,14 +346,20 @@ public:
         }
 
         while (!text.empty()) {
-            const Blank_Line blank = find_blank_line_sequence(text);
-            if (blank.begin != 0) {
-                transition(Directive_Display::in_line);
-                m_out.write_inner_text(text.substr(0, blank.begin));
-                text.remove_prefix(blank.begin);
-            }
-            if (blank.length != 0) {
+            if (const Blank_Line blank = find_blank_line_sequence(text)) {
+                if (blank.begin != 0) {
+                    transition(Directive_Display::in_line);
+                    m_out.write_inner_text(text.substr(0, blank.begin));
+                    text.remove_prefix(blank.begin);
+                }
                 transition(Directive_Display::block);
+                text.remove_prefix(blank.length);
+            }
+            else {
+                MMML_ASSERT(blank.begin == 0);
+                transition(Directive_Display::in_line);
+                m_out.write_inner_text(text);
+                break;
             }
         }
     }
@@ -365,21 +371,34 @@ public:
         to_html(m_out, e, m_context);
     }
 
+    void flush()
+    {
+        transition(Directive_Display::block);
+    }
+
 private:
     void transition(Directive_Display display)
     {
-        if (display == Directive_Display::none) {
+        switch (display) {
+        case Directive_Display::none: return;
+
+        case Directive_Display::in_line:
+            if (!m_in_paragraph && display == Directive_Display::in_line) {
+                m_out.open_tag(u8"p");
+                m_out.write_inner_html(u8'\n');
+                m_in_paragraph = true;
+            }
+            return;
+
+        case Directive_Display::block:
+            if (m_in_paragraph && display == Directive_Display::block) {
+                m_out.close_tag(u8"p");
+                m_out.write_inner_html(u8'\n');
+                m_in_paragraph = false;
+            }
             return;
         }
-        if (!m_in_paragraph && display == Directive_Display::in_line) {
-            m_out.open_tag(u8"p");
-            m_in_paragraph = true;
-            return;
-        }
-        if (m_in_paragraph && display == Directive_Display::block) {
-            m_out.close_tag(u8"p");
-            m_in_paragraph = true;
-        }
+        MMML_ASSERT_UNREACHABLE(u8"Invalid display value.");
     }
 
     void on_directive(Directive_Behavior& b, const ast::Directive& d)
@@ -411,12 +430,12 @@ void to_html(
         to_html_trimmed(out, content, context);
         break;
 
-    case To_HTML_Mode::in_paragraphs:
-    case To_HTML_Mode::in_paragraphs_trimmed: {
+    case To_HTML_Mode::paragraphs:
+    case To_HTML_Mode::paragraphs_trimmed: {
         To_HTML_Paragraphs impl { out, context };
 
         for (std::size_t i = 0; i < content.size(); ++i) {
-            if (mode == To_HTML_Mode::in_paragraphs_trimmed) {
+            if (mode == To_HTML_Mode::paragraphs_trimmed) {
                 if (const auto* const text = std::get_if<ast::Text>(&content[i])) {
                     bool first = i == 0;
                     bool last = i + 1 == content.size();
@@ -426,6 +445,7 @@ void to_html(
             }
             std::visit(impl, content[i]);
         }
+        impl.flush();
         break;
     }
     }
