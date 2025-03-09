@@ -85,14 +85,14 @@ void to_html(HTML_Writer& out, const ast::Behaved_Content&, Context&);
 
 enum struct To_HTML_Mode : Default_Underlying {
     direct,
-    in_paragraphs,
+    paragraphs,
     trimmed,
-    in_paragraphs_trimmed,
+    paragraphs_trimmed,
 };
 
 constexpr bool to_html_mode_is_trimmed(To_HTML_Mode mode)
 {
-    return mode == To_HTML_Mode::trimmed || mode == To_HTML_Mode::in_paragraphs_trimmed;
+    return mode == To_HTML_Mode::trimmed || mode == To_HTML_Mode::paragraphs_trimmed;
 }
 
 void to_html(
