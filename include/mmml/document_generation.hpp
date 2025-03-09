@@ -33,7 +33,7 @@ struct Generation_Options {
     /// @brief The minimum level of diagnostics that are emitted.
     /// This option is ignored if `emit_diagnostic` is empty;
     /// in that case, the level is implicitly `none`.
-    Severity min_diagnostic_level = Severity::none;
+    Severity min_severity = Severity::none;
     /// @brief A source of memory to be used throughout generation,
     /// emitting diagnostics, etc.
     std::pmr::memory_resource* memory;

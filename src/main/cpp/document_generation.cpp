@@ -10,10 +10,9 @@ namespace mmml {
 void generate_document(const Generation_Options& options)
 {
     MMML_ASSERT(options.memory != nullptr);
-    MMML_ASSERT(options.min_diagnostic_level <= Severity::none);
+    MMML_ASSERT(options.min_severity <= Severity::none);
 
-    const auto diagnostic_level
-        = options.emit_diagnostic ? options.min_diagnostic_level : Severity::none;
+    const auto diagnostic_level = options.emit_diagnostic ? options.min_severity : Severity::none;
 
     std::pmr::unsynchronized_pool_resource transient_memory { options.memory };
 
