@@ -61,6 +61,10 @@ struct Blank_Line {
     {
         return length != 0;
     }
+
+    [[nodiscard]]
+    friend constexpr bool operator==(Blank_Line, Blank_Line)
+        = default;
 };
 
 /// @brief Returns a `Blank_Line` where `begin` is the index of the first whitespace character
