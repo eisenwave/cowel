@@ -1,9 +1,18 @@
+#include <iostream>
+
 #include <gtest/gtest.h>
 
+#include "mmml/parse_utils.hpp"
 #include "mmml/util/chars.hpp"
 #include "mmml/util/strings.hpp"
 
 namespace mmml {
+
+std::ostream& operator<<(std::ostream& out, Blank_Line blank)
+{
+    return out << "Blank_Line{.begin = " << blank.begin << ", .length = " << blank.length << "}";
+}
+
 namespace {
 
 using namespace std::literals;
@@ -267,6 +276,17 @@ TEST(Strings, is_html_unquoted_attribute_value)
     EXPECT_FALSE(is_html_unquoted_attribute_value(u8"at>tr"));
     EXPECT_FALSE(is_html_unquoted_attribute_value(u8"'val'"));
     EXPECT_FALSE(is_html_unquoted_attribute_value(u8"\"val\""));
+}
+
+TEST(Parse_Utils, find_blank_line_sequence)
+{
+    EXPECT_EQ(find_blank_line_sequence(u8""), (Blank_Line { 0, 0 }));
+    EXPECT_EQ(find_blank_line_sequence(u8"awoo"), (Blank_Line { 0, 0 }));
+    EXPECT_EQ(find_blank_line_sequence(u8"a\nw\no\no"), (Blank_Line { 0, 0 }));
+
+    EXPECT_EQ(find_blank_line_sequence(u8"\nawoo"), (Blank_Line { 0, 1 }));
+    EXPECT_EQ(find_blank_line_sequence(u8"awoo\n  \n"), (Blank_Line { 5, 3 }));
+    EXPECT_EQ(find_blank_line_sequence(u8"aw\n\noo"), (Blank_Line { 3, 1 }));
 }
 
 } // namespace
