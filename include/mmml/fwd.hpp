@@ -38,8 +38,9 @@ using Default_Underlying = unsigned char;
     case __VA_ARGS__: return u8## #__VA_ARGS__
 
 struct Annotated_String_Length;
+template <typename>
 struct Annotation_Span;
-enum struct Annotation_Type : Default_Underlying;
+enum struct Diagnostic_Highlight : Default_Underlying;
 struct Argument_Matcher;
 enum struct Argument_Status : Default_Underlying;
 struct Assertion_Error;
@@ -49,7 +50,7 @@ struct AST_Instruction;
 enum struct AST_Instruction_Type : Default_Underlying;
 struct Attribute_Writer;
 struct Builtin_Directive_Set;
-template <typename Char>
+template <typename, typename>
 struct Basic_Annotated_String;
 template <typename Char, std::size_t>
 struct Basic_Characters;
@@ -58,7 +59,7 @@ struct Basic_Transparent_String_View_Hash;
 template <typename>
 struct Basic_Transparent_String_View_Equals;
 enum struct Code_Language : Default_Underlying;
-enum struct Annotation_Type : Default_Underlying;
+enum struct Diagnostic_Highlight : Default_Underlying;
 struct Content;
 struct Content_Behavior;
 struct Context;
@@ -74,6 +75,7 @@ struct File_Source_Span;
 template <typename>
 struct Function_Ref;
 struct Generation_Options;
+enum struct HLJS_Scope : Default_Underlying;
 struct HTML_Writer;
 enum struct IO_Error_Code : Default_Underlying;
 struct Name_Resolver;
@@ -94,13 +96,17 @@ struct Text;
 
 } // namespace ast
 
-using Annotated_String = Basic_Annotated_String<char>;
-using Annotated_String8 = Basic_Annotated_String<char8_t>;
+template <typename T>
+using Annotated_String = Basic_Annotated_String<char, T>;
+template <typename T>
+using Annotated_String8 = Basic_Annotated_String<char8_t, T>;
 
 template <std::size_t capacity>
 using Characters = Basic_Characters<char, capacity>;
 template <std::size_t capacity>
 using Characters8 = Basic_Characters<char8_t, capacity>;
+
+using Diagnostic_String = Annotated_String8<Diagnostic_Highlight>;
 
 using Transparent_String_View_Hash = Basic_Transparent_String_View_Hash<char>;
 using Transparent_String_View_Hash8 = Basic_Transparent_String_View_Hash<char8_t>;

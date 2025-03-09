@@ -10,6 +10,7 @@
 #include "mmml/util/tty.hpp"
 
 #include "mmml/ast.hpp"
+#include "mmml/diagnostic_highlight.hpp"
 #include "mmml/parse.hpp"
 #include "mmml/print.hpp"
 
@@ -264,7 +265,7 @@ std::optional<Parsed_File> parse_file(std::u8string_view file, std::pmr::memory_
 
     Result<void, mmml::IO_Error_Code> r = load_utf8_file(result.source, full_file_name);
     if (!r) {
-        Annotated_String8 out { memory };
+        Diagnostic_String out { memory };
         print_io_error(out, full_file_name, r.error());
         print_code_string(std::cout, out, is_stdout_tty);
         return {};
@@ -288,20 +289,20 @@ parse_and_build_file(std::u8string_view file, std::pmr::memory_resource* memory)
     return Actual_Document { std::move(parsed->source), std::move(content) };
 }
 
-void append_instruction(Annotated_String8& out, const AST_Instruction& ins)
+void append_instruction(Diagnostic_String& out, const AST_Instruction& ins)
 {
-    out.append(ast_instruction_type_name(ins.type), Annotation_Type::diagnostic_tag);
+    out.append(ast_instruction_type_name(ins.type), Diagnostic_Highlight::tag);
     if (ast_instruction_type_has_operand(ins.type)) {
         out.append(u8' ');
         out.append_integer(ins.n);
     }
     else if (ins.n != 0) {
         out.append(u8' ');
-        out.append_integer(ins.n, Annotation_Type::diagnostic_error_text);
+        out.append_integer(ins.n, Diagnostic_Highlight::error_text);
     }
 }
 
-void dump_instructions(Annotated_String8& out, std::span<const AST_Instruction> instructions)
+void dump_instructions(Diagnostic_String& out, std::span<const AST_Instruction> instructions)
 {
     for (const auto& i : instructions) {
         out.append(u8"    ");
@@ -315,23 +316,23 @@ bool run_parse_test(std::u8string_view file, std::span<const AST_Instruction> ex
     std::pmr::monotonic_buffer_resource memory;
     std::optional<Parsed_File> actual = parse_file(file, &memory);
     if (!actual) {
-        Annotated_String8 error;
+        Diagnostic_String error;
         error.append(
             u8"Test failed because file couldn't be loaded and parsed.\n",
-            Annotation_Type::diagnostic_error_text
+            Diagnostic_Highlight::error_text
         );
         print_code_string(std::cout, error, is_stdout_tty);
         return false;
     }
     if (!std::ranges::equal(expected, actual->instructions)) {
-        Annotated_String8 error;
+        Diagnostic_String error;
         error.append(
             u8"Test failed because expected parser output isn't matched.\n",
-            Annotation_Type::diagnostic_error_text
+            Diagnostic_Highlight::error_text
         );
-        error.append(u8"Expected:\n", Annotation_Type::diagnostic_text);
+        error.append(u8"Expected:\n", Diagnostic_Highlight::text);
         dump_instructions(error, expected);
-        error.append(u8"Actual:\n", Annotation_Type::diagnostic_text);
+        error.append(u8"Actual:\n", Diagnostic_Highlight::text);
         dump_instructions(error, actual->instructions);
         print_code_string(std::cout, error, is_stdout_tty);
         return false;

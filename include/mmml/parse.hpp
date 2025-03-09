@@ -94,6 +94,11 @@ std::pmr::vector<ast::Content> build_ast(
     std::pmr::memory_resource* memory
 );
 
+void build_highlight(
+    std::pmr::vector<Annotation_Span<HLJS_Scope>>,
+    std::span<const AST_Instruction> instruction
+);
+
 /// @brief Parses a document and runs `build_ast` on the results.
 std::pmr::vector<ast::Content>
 parse_and_build(std::u8string_view source, std::pmr::memory_resource* memory);

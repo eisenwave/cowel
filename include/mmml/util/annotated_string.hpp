@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "mmml/util/annotation_span.hpp"
-#include "mmml/util/annotation_type.hpp"
 #include "mmml/util/to_chars.hpp"
 
 namespace mmml {
@@ -26,17 +25,18 @@ struct Annotated_String_Length {
     std::size_t span_count;
 };
 
-template <typename Char>
+template <typename Char, typename T>
 struct Basic_Annotated_String {
 public:
-    using iterator = Annotation_Span*;
-    using const_iterator = const Annotation_Span*;
+    using span_type = Annotation_Span<T>;
+    using iterator = span_type*;
+    using const_iterator = const span_type*;
     using char_type = Char;
     using string_view_type = std::basic_string_view<Char>;
 
 private:
     std::pmr::vector<Char> m_text;
-    std::pmr::vector<Annotation_Span> m_spans;
+    std::pmr::vector<span_type> m_spans;
 
 public:
     [[nodiscard]]
@@ -79,7 +79,7 @@ public:
     }
 
     [[nodiscard]]
-    string_view_type get_text(const Annotation_Span& span) const
+    string_view_type get_text(const span_type& span) const
     {
         return get_text().substr(span.begin, span.length);
     }
@@ -117,16 +117,16 @@ public:
         m_text.insert(m_text.end(), amount, c);
     }
 
-    void append(string_view_type text, Annotation_Type type)
+    void append(string_view_type text, T value)
     {
         MMML_ASSERT(!text.empty());
-        m_spans.push_back({ .begin = m_text.size(), .length = text.size(), .type = type });
+        m_spans.push_back({ .begin = m_text.size(), .length = text.size(), .value = value });
         m_text.insert(m_text.end(), text.begin(), text.end());
     }
 
-    void append(char_type c, Annotation_Type type)
+    void append(char_type c, T value)
     {
-        m_spans.push_back({ .begin = m_text.size(), .length = 1, .type = type });
+        m_spans.push_back({ .begin = m_text.size(), .length = 1, .value = value });
         m_text.push_back(c);
     }
 
@@ -140,19 +140,18 @@ public:
     }
 
     template <character_convertible Integer>
-    void
-    append_integer(Integer x, Annotation_Type type, Sign_Policy signs = Sign_Policy::negative_only)
+    void append_integer(Integer x, T value, Sign_Policy signs = Sign_Policy::negative_only)
     {
         const bool plus
             = (signs == Sign_Policy::always && x >= 0) || (signs == Sign_Policy::nonzero && x > 0);
         const Basic_Characters chars = to_characters<char_type>(x);
-        append_digits(chars.as_string(), plus, &type);
+        append_digits(chars.as_string(), plus, &value);
     }
 
 private:
     // using std::optional would obviously be more idiomatic, but we can avoid
     // #include <optional> for this file by using a pointer
-    void append_digits(string_view_type digits, bool plus, const Annotation_Type* type = nullptr)
+    void append_digits(string_view_type digits, bool plus, const T* value = nullptr)
     {
         const std::size_t begin = m_text.size();
         std::size_t prefix_length = 0;
@@ -161,9 +160,9 @@ private:
             prefix_length = 1;
         }
         append(digits);
-        if (type) {
+        if (value) {
             m_spans.push_back(
-                { .begin = begin, .length = digits.length() + prefix_length, .type = *type }
+                { .begin = begin, .length = digits.length() + prefix_length, .value = *value }
             );
         }
     }
@@ -180,7 +179,7 @@ public:
     ///     .append(name);
     /// ```
     /// @param type the type of the appended span as a whole
-    Scoped_Builder build(Annotation_Type type) &
+    Scoped_Builder build(Diagnostic_Highlight type) &
     {
         return { *this, type };
     }
@@ -222,33 +221,33 @@ public:
     }
 };
 
-template <typename Char>
-struct [[nodiscard]] Basic_Annotated_String<Char>::Scoped_Builder {
+template <typename Char, typename T>
+struct [[nodiscard]] Basic_Annotated_String<Char, T>::Scoped_Builder {
 private:
-    using owner_type = Basic_Annotated_String<Char>;
+    using owner_type = Basic_Annotated_String<Char, T>;
     using char_type = owner_type::char_type;
     using string_view_type = owner_type::string_view_type;
 
-    owner_type& self;
-    std::size_t initial_size;
-    Annotation_Type type;
+    owner_type& m_self;
+    std::size_t m_initial_size;
+    T m_value;
 
 public:
-    Scoped_Builder(owner_type& self, Annotation_Type type)
-        : self { self }
-        , initial_size { self.m_text.size() }
-        , type { type }
+    Scoped_Builder(owner_type& self, T value)
+        : m_self { self }
+        , m_initial_size { self.m_text.size() }
+        , m_value { std::move(value) }
     {
     }
 
     ~Scoped_Builder() noexcept(false)
     {
-        MMML_ASSERT(self.m_text.size() >= initial_size);
-        const std::size_t length = self.m_text.size() - initial_size;
+        MMML_ASSERT(m_self.m_text.size() >= m_initial_size);
+        const std::size_t length = m_self.m_text.size() - m_initial_size;
         if (length != 0) {
-            self.m_spans.push_back(
-                { .begin = initial_size, .length = self.m_text.size() - initial_size, .type = type }
-            );
+            m_self.m_spans.push_back({ .begin = m_initial_size,
+                                       .length = m_self.m_text.size() - m_initial_size,
+                                       .value = m_value });
         }
     }
 
@@ -257,26 +256,26 @@ public:
 
     Scoped_Builder& append(char_type c)
     {
-        self.append(c);
+        m_self.append(c);
         return *this;
     }
 
     Scoped_Builder& append(std::size_t n, char_type c)
     {
-        self.append(n, c);
+        m_self.append(n, c);
         return *this;
     }
 
     Scoped_Builder& append(string_view_type text)
     {
-        self.append(text);
+        m_self.append(text);
         return *this;
     }
 
     template <character_convertible Integer>
     Scoped_Builder& append_integer(Integer x, Sign_Policy signs = Sign_Policy::negative_only)
     {
-        self.append_integer(x, signs);
+        m_self.append_integer(x, signs);
         return *this;
     }
 };

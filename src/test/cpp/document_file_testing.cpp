@@ -71,7 +71,7 @@ public:
 
     Policy_Action error(IO_Error_Code e) final
     {
-        Annotated_String8 out;
+        Diagnostic_String out;
         print_io_error(out, file, e);
         print_code_string(std::cout, out, is_stdout_tty);
         return m_action = Policy_Action::failure;

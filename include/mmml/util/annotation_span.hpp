@@ -3,14 +3,15 @@
 
 #include <cstddef>
 
-#include "mmml/util/annotation_type.hpp"
+#include "mmml/fwd.hpp"
 
 namespace mmml {
 
+template <typename T>
 struct Annotation_Span {
     std::size_t begin;
     std::size_t length;
-    Annotation_Type type;
+    T value;
 
     [[nodiscard]]
     constexpr std::size_t end() const
