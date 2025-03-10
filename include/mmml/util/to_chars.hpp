@@ -29,19 +29,25 @@ struct Basic_Characters {
     std::size_t length;
 
     [[nodiscard]]
-    std::basic_string_view<Char> as_string() const
+    constexpr std::basic_string_view<Char> as_string() const
     {
         return { buffer.data(), length };
+    }
+
+    [[nodiscard]]
+    constexpr operator std::basic_string_view<Char>() const
+    {
+        return as_string();
     }
 };
 
 template <typename T>
-constexpr int approximate_to_chars_decimal_digits_v
+inline constexpr int approximate_to_chars_decimal_digits_v
     = (std::numeric_limits<T>::digits * 100 / 310) + 1 + std::is_signed_v<T>;
 
 template <char_like Char = char, character_convertible T>
 [[nodiscard]]
-constexpr Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_characters(const T& x)
+Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_characters(const T& x)
 {
     Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> chars {};
     const auto buffer_start = reinterpret_cast<char*>(chars.buffer.data());
@@ -53,7 +59,7 @@ constexpr Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_ch
 
 template <character_convertible T>
 [[nodiscard]]
-constexpr Characters8<approximate_to_chars_decimal_digits_v<T>> to_characters8(const T& x)
+Characters8<approximate_to_chars_decimal_digits_v<T>> to_characters8(const T& x)
 {
     return to_characters<char8_t>(x);
 }
