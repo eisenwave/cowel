@@ -55,7 +55,6 @@ template <char_like Char = char, character_convertible T>
 [[nodiscard]]
 constexpr Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_characters(const T& x)
 {
-    using result_type = Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>>;
     Basic_Characters<char, approximate_to_chars_decimal_digits_v<T>> chars {};
     auto* const buffer_start = chars.buffer.data();
     const auto result = std::to_chars(buffer_start, buffer_start + chars.buffer.size(), x);
@@ -65,6 +64,7 @@ constexpr Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_ch
         return chars;
     }
     else {
+        using result_type = Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>>;
         return std::bit_cast<result_type>(chars);
     }
 }
