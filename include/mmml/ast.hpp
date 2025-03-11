@@ -1,7 +1,6 @@
 #ifndef MMML_AST_HPP
 #define MMML_AST_HPP
 
-#include <memory_resource>
 #include <span>
 #include <string_view>
 #include <variant>
@@ -30,6 +29,12 @@ public:
 
     [[nodiscard]]
     Argument(const Source_Span& pos, std::pmr::vector<ast::Content>&& children);
+
+    Argument(Argument&&) noexcept;
+    Argument(const Argument&);
+
+    Argument& operator=(Argument&&) noexcept;
+    Argument& operator=(const Argument&);
 
     ~Argument();
 
@@ -85,6 +90,12 @@ public:
         std::pmr::vector<Content>&& block
     );
 
+    Directive(Directive&&) noexcept;
+    Directive(const Directive&);
+
+    Directive& operator=(Directive&&) noexcept;
+    Directive& operator=(const Directive&);
+
     ~Directive();
 
     [[nodiscard]]
@@ -124,6 +135,12 @@ private:
 public:
     [[nodiscard]]
     Behaved_Content(Content_Behavior& behavior, std::pmr::vector<Content>&& block);
+
+    Behaved_Content(Behaved_Content&&) noexcept;
+    Behaved_Content(const Behaved_Content&);
+
+    Behaved_Content& operator=(Behaved_Content&&) noexcept;
+    Behaved_Content& operator=(const Behaved_Content&);
 
     ~Behaved_Content();
 
@@ -224,9 +241,26 @@ static_assert(std::is_move_constructible_v<Content>);
 static_assert(std::is_copy_assignable_v<Content>);
 static_assert(std::is_move_assignable_v<Content>);
 
+// Suppress false positive: https://github.com/llvm/llvm-project/issues/130745
+// NOLINTBEGIN(readability-redundant-inline-specifier)
+inline Argument::Argument(Argument&&) noexcept = default;
+inline Argument::Argument(const Argument&) = default;
+inline Argument& Argument::operator=(Argument&&) noexcept = default;
+inline Argument& Argument::operator=(const Argument&) = default;
 inline Argument::~Argument() = default;
+
+inline Directive::Directive(Directive&&) noexcept = default;
+inline Directive::Directive(const Directive&) = default;
+inline Directive& Directive::operator=(Directive&&) noexcept = default;
+inline Directive& Directive::operator=(const Directive&) = default;
 inline Directive::~Directive() = default;
+
+inline Behaved_Content::Behaved_Content(Behaved_Content&&) noexcept = default;
+inline Behaved_Content::Behaved_Content(const Behaved_Content&) = default;
+inline Behaved_Content& Behaved_Content::operator=(Behaved_Content&&) noexcept = default;
+inline Behaved_Content& Behaved_Content::operator=(const Behaved_Content&) = default;
 inline Behaved_Content::~Behaved_Content() = default;
+// NOLINTEND(readability-redundant-inline-specifier)
 
 inline std::span<Content> Argument::get_content() &
 {

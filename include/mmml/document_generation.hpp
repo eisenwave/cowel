@@ -2,12 +2,12 @@
 #define MMML_DOCUMENT_GENERATION_HPP
 
 #include <filesystem>
-#include <span>
 #include <vector>
 
 #include "mmml/util/function_ref.hpp"
 
 #include "mmml/ast.hpp"
+#include "mmml/diagnostic.hpp"
 #include "mmml/fwd.hpp"
 
 namespace mmml {

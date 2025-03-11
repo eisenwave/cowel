@@ -1,4 +1,3 @@
-#include <functional>
 #include <iostream>
 #include <memory_resource>
 
@@ -14,6 +13,8 @@
 
 namespace mmml {
 namespace {
+
+using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
 
 struct Printing_Diagnostic_Policy : Diagnostic_Policy {
     std::string_view file;

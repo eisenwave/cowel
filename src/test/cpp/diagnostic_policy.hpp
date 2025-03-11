@@ -1,15 +1,13 @@
 #ifndef MMML_DIAGNOSTIC_POLICY_HPP
 #define MMML_DIAGNOSTIC_POLICY_HPP
 
-#include <string_view>
-
 #include "mmml/fwd.hpp"
 
 #include "compilation_stage.hpp"
 
 namespace mmml {
 
-enum struct Policy_Action {
+enum struct Policy_Action : Default_Underlying {
     /// @brief Immediate success.
     success,
     /// @brief Immediate failure.

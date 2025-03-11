@@ -3,6 +3,7 @@
 
 #include <array>
 #include <bit>
+#include <cstdint>
 #include <stdexcept>
 #include <string_view>
 
@@ -23,7 +24,7 @@ constexpr int sequence_length(char8_t c) noexcept
 {
     constexpr unsigned long lookup = 0b100'011'010'000'001;
     const int leading_ones = std::countl_one(static_cast<unsigned char>(c));
-    return leading_ones > 4 ? 0 : (lookup >> (leading_ones * 3)) & 0x7;
+    return leading_ones > 4 ? 0 : int((lookup >> (leading_ones * 3)) & 0x7);
 }
 
 struct Code_Point_And_Length {
@@ -160,7 +161,7 @@ constexpr Result<char32_t, Error_Code> decode(std::array<char8_t, 4> str, int le
 
 [[nodiscard]]
 constexpr Result<Code_Point_And_Length, Error_Code> //
-decode_and_length(std::u8string_view str) noexcept
+decode_and_length(std::u8string_view str) noexcept // NOLINT(bugprone-exception-escape)
 {
     if (str.empty()) {
         return Error_Code::no_data;

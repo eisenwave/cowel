@@ -6,7 +6,6 @@
 #endif
 
 #include <span>
-#include <string>
 #include <string_view>
 
 #include "mmml/util/assert.hpp"

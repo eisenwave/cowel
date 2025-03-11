@@ -18,8 +18,8 @@ void generate_document(const Generation_Options& options)
 
     HTML_Writer writer { options.output };
 
-    Context context { options.path,     options.source,         options.emit_diagnostic,
-                      diagnostic_level, options.error_behavior, options.memory,
+    Context context { auto(options.path), options.source,         options.emit_diagnostic,
+                      diagnostic_level,   options.error_behavior, options.memory,
                       &transient_memory };
     context.add_resolver(options.builtin_behavior);
 

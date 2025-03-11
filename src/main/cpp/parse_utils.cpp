@@ -1,6 +1,7 @@
 #include <charconv>
 #include <optional>
 
+#include "mmml/fwd.hpp"
 #include "mmml/util/assert.hpp"
 #include "mmml/util/strings.hpp"
 
@@ -8,9 +9,10 @@
 
 namespace mmml {
 
-Blank_Line find_blank_line_sequence(std::u8string_view str) noexcept
+Blank_Line find_blank_line_sequence // NOLINT(bugprone-exception-escape)
+    (std::u8string_view str) noexcept
 {
-    enum struct State {
+    enum struct State : Default_Underlying {
         /// @brief We are at the start of a line.
         maybe_blank,
         /// @brief There are non-whitespace characters on this line.
@@ -89,7 +91,8 @@ std::size_t match_digits(std::u8string_view str, int base)
     return std::min(str.find_first_not_of(digits), str.size());
 }
 
-Literal_Match_Result match_integer_literal(std::u8string_view s) noexcept
+Literal_Match_Result match_integer_literal // NOLINT(bugprone-exception-escape)
+    (std::u8string_view s) noexcept
 {
     if (s.empty() || !is_ascii_digit(s[0])) {
         return { Literal_Match_Status::no_digits, 0, {} };

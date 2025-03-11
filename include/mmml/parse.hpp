@@ -5,8 +5,6 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/util/source_position.hpp"
-
 #include "mmml/ast.hpp"
 #include "mmml/fwd.hpp"
 

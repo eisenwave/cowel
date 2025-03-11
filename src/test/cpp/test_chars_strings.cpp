@@ -8,7 +8,7 @@
 
 namespace mmml {
 
-std::ostream& operator<<(std::ostream& out, Blank_Line blank)
+std::ostream& operator<<(std::ostream& out, Blank_Line blank) // NOLINT(misc-use-internal-linkage)
 {
     return out << "Blank_Line{.begin = " << blank.begin << ", .length = " << blank.length << "}";
 }

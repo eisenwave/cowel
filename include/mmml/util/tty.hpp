@@ -1,8 +1,6 @@
 #ifndef MMML_TTY_HPP
 #define MMML_TTY_HPP
 
-#include "mmml/fwd.hpp"
-
 #ifndef MMML_EMSCRIPTEN
 #include <cstdio>
 

@@ -88,6 +88,8 @@ public:
     HTML_Writer(const HTML_Writer&) = delete;
     HTML_Writer& operator=(const HTML_Writer&) = delete;
 
+    ~HTML_Writer() = default;
+
     /// @brief Validates whether the HTML document is complete.
     /// Namely, `write_preamble()` must have taken place and any opened tags must have
     /// been closed.

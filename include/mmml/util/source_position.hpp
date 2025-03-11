@@ -49,7 +49,7 @@ struct Source_Span : Source_Position {
     [[nodiscard]]
     constexpr Source_Span with_length(std::size_t l) const
     {
-        return { Source_Position { *this }, l };
+        return { Source_Position { *this }, l }; // NOLINT(cppcoreguidelines-slicing)
     }
 
     /// @brief Returns a span on the same line and with the same length, shifted to the right
@@ -131,7 +131,7 @@ struct File_Source_Position : Source_Position {
 
     [[nodiscard]]
     constexpr File_Source_Position(const File_Source_Span& span)
-        : Source_Position(span)
+        : Source_Position { span } // NOLINT(cppcoreguidelines-slicing)
         , file_name(span.file_name)
     {
     }

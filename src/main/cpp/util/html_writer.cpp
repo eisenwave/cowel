@@ -1,8 +1,5 @@
 #include "mmml/util/html_writer.hpp"
-#include "mmml/util/annotated_string.hpp"
-#include "mmml/util/source_position.hpp"
 #include "mmml/util/strings.hpp"
-#include "mmml/util/unicode.hpp"
 
 namespace mmml {
 

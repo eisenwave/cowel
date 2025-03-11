@@ -5,7 +5,6 @@
 #include <gtest/gtest.h>
 
 #include "mmml/util/html_writer.hpp"
-#include "mmml/util/strings.hpp"
 
 namespace mmml {
 namespace {
@@ -24,7 +23,7 @@ struct HTML_Writer_Test : testing::Test {
 
 TEST_F(HTML_Writer_Test, empty)
 {
-    constexpr std::u8string_view expected = u8"";
+    constexpr std::u8string_view expected;
     EXPECT_EQ(expected, as_view(out));
 }
 

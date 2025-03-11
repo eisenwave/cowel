@@ -2,10 +2,8 @@
 #ifndef MMML_BIT_PERMUTATIONS_HPP
 #define MMML_BIT_PERMUTATIONS_HPP
 
-#include <array>
 #include <bit>
 #include <concepts>
-#include <cstdint>
 #include <limits>
 #include <version>
 
@@ -174,18 +172,6 @@
 #else
 #define MMML_ALWAYS_INLINE inline
 #define MMML_AGGRESSIVE_UNROLL
-#endif
-
-// C++ VERSION-SPECIFIC FEATURES
-// =============================
-
-#ifdef __cpp_if_consteval
-#define MMML_CONSTANT_EVALUATED consteval
-#define MMML_NOT_CONSTANT_EVALUATED !consteval
-#else
-// all vendors use the same builtin
-#define MMML_CONSTANT_EVALUATED (__builtin_is_constant_evaluated())
-#define MMML_NOT_CONSTANT_EVALUATED (!__builtin_is_constant_evaluated())
 #endif
 
 // =================================================================================================

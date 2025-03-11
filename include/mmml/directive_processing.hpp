@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "mmml/ast.hpp"
-#include "mmml/directives.hpp"
 
 namespace mmml {
 
@@ -58,7 +57,7 @@ void to_plaintext_mapped_for_highlighting(
 void to_plaintext_mapped_for_highlighting(
     std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
-    const ast::Escaped& t,
+    const ast::Escaped& e,
     Context& context
 );
 

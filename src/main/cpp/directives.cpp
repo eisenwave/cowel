@@ -1,6 +1,7 @@
 #include <ranges>
 #include <span>
 
+#include "mmml/fwd.hpp"
 #include "mmml/util/code_language.hpp"
 #include "mmml/util/html_writer.hpp"
 
@@ -328,7 +329,7 @@ struct Get_Variable_Behavior final : Variable_Behavior {
     }
 };
 
-enum struct Variable_Operation {
+enum struct Variable_Operation : Default_Underlying {
     // TODO: add more operations
     set
 };
@@ -422,6 +423,7 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     if (name.empty()) {
         return nullptr;
     }
+    // NOLINTBEGIN(readability-braces-around-statements)
     switch (name[0]) {
     case u8'b':
         if (name == u8"b")
@@ -490,7 +492,10 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         if (name == u8"ul")
             return &m_impl->direct_html;
         break;
+
+    default: break;
     }
+    // NOLINTEND(readability-braces-around-statements)
 
     return nullptr;
 }

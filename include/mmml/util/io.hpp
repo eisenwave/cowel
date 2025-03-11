@@ -45,6 +45,9 @@ public:
     {
     }
 
+    Unique_File(const Unique_File&) = delete;
+    Unique_File& operator=(const Unique_File&) = delete;
+
     constexpr Unique_File& operator=(Unique_File&& other) noexcept
     {
         swap(*this, other);

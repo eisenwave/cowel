@@ -84,7 +84,7 @@ public:
     template <typename F>
         requires(!std::same_as<std::remove_cvref_t<F>, Function_Ref_Base> && invocable_n_r<follow_ref_const_if_t<F, constant>, nothrow, R, Args...>)
     [[nodiscard]]
-    constexpr Function_Ref_Base(F&& f) noexcept
+    constexpr Function_Ref_Base(F&& f) noexcept // NOLINT(cppcoreguidelines-missing-std-forward)
     {
         using Entity = std::remove_reference_t<F>;
 

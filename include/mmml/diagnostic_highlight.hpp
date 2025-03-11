@@ -1,8 +1,6 @@
 #ifndef MMML_CODE_SPAN_TYPE_HPP
 #define MMML_CODE_SPAN_TYPE_HPP
 
-#include "mmml/util/assert.hpp"
-
 #include "mmml/fwd.hpp"
 
 namespace mmml {

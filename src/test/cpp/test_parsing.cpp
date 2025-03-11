@@ -39,7 +39,9 @@ struct Expected_Argument {
     [[nodiscard]]
     bool matches(const ast::Argument& actual, std::u8string_view source) const;
 
-    friend bool operator==(const Expected_Argument&, const Expected_Argument&) = default;
+    [[maybe_unused]]
+    friend bool operator==(const Expected_Argument&, const Expected_Argument&)
+        = default;
 };
 
 enum struct Expected_Content_Type : Default_Underlying {
@@ -129,7 +131,9 @@ struct Expected_Content {
     [[nodiscard]]
     bool matches(const ast::Directive& actual, std::u8string_view source) const;
 
-    friend bool operator==(const Expected_Content&, const Expected_Content&) = default;
+    [[maybe_unused]]
+    friend bool operator==(const Expected_Content&, const Expected_Content&)
+        = default;
 };
 
 Expected_Argument::Expected_Argument(
@@ -164,8 +168,9 @@ template <typename T, typename Alloc>
 std::ostream& operator<<(std::ostream& os, const std::vector<T, Alloc>& vec)
 {
     for (size_t i = 0; i < vec.size(); ++i) {
-        if (i > 0)
+        if (i > 0) {
             os << ", ";
+        }
         os << vec[i]; // Uses operator<< of T
     }
     return os;

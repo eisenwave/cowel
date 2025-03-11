@@ -15,6 +15,14 @@
 
 namespace mmml {
 
+namespace detail {
+
+// We only use the aliases from fwd.hpp, but we need the definition of
+// `Basic_Transparent_String_View_Equals` to actually make this usable.
+using Suppress_Unused_Include_Transparent_Comparison = Basic_Transparent_String_View_Equals<void>;
+
+} // namespace detail
+
 struct Name_Resolver {
     virtual Directive_Behavior* operator()(std::u8string_view name) const = 0;
 };
@@ -71,7 +79,7 @@ public:
     /// @param transient_memory Additional memory which does not persist beyond the
     /// destruction of the context.
     explicit Context(
-        std::filesystem::path path,
+        std::filesystem::path&& path,
         string_view_type source,
         Function_Ref<void(Diagnostic&&)> emit_diagnostic,
         Severity min_diagnostic_level,
@@ -79,7 +87,7 @@ public:
         std::pmr::memory_resource* persistent_memory,
         std::pmr::memory_resource* transient_memory
     )
-        : m_document_path { path }
+        : m_document_path { std::move(path) }
         , m_memory { persistent_memory }
         , m_transient_memory { transient_memory }
         , m_source { source }

@@ -12,7 +12,6 @@
 
 #include "mmml/ast.hpp"
 #include "mmml/diagnostic_highlight.hpp"
-#include "mmml/parse.hpp"
 #include "mmml/print.hpp"
 
 namespace mmml {
@@ -149,13 +148,13 @@ void print_diagnostic_line(
 [[maybe_unused]]
 void print_error_line(Diagnostic_String& out, const Error_Line& line, std::u8string_view source)
 {
-    return print_diagnostic_line(out, Error_Line_Type::error, line, source);
+    print_diagnostic_line(out, Error_Line_Type::error, line, source);
 }
 
 [[maybe_unused]]
 void print_note_line(Diagnostic_String& out, const Error_Line& line, std::u8string_view source)
 {
-    return print_diagnostic_line(out, Error_Line_Type::note, line, source);
+    print_diagnostic_line(out, Error_Line_Type::note, line, source);
 }
 
 void do_print_affected_line(

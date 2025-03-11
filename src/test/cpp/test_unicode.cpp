@@ -1,5 +1,4 @@
 #include <memory_resource>
-#include <ranges>
 
 #include <gtest/gtest.h>
 

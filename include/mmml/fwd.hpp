@@ -2,7 +2,6 @@
 #define MMML_CONFIG_HPP
 
 #include <cstddef>
-#include <cstdint>
 
 #ifndef NDEBUG // debug builds
 #define MMML_DEBUG 1
@@ -60,7 +59,6 @@ template <typename>
 struct Basic_Transparent_String_View_Equals;
 enum struct Code_Language : Default_Underlying;
 enum struct Diagnostic_Highlight : Default_Underlying;
-struct Content;
 struct Content_Behavior;
 struct Context;
 struct Diagnostic;

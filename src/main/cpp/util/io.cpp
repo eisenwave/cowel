@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <cstring>
 
-#include "mmml/util/assert.hpp"
 #include "mmml/util/io.hpp"
 #include "mmml/util/unicode.hpp"
 

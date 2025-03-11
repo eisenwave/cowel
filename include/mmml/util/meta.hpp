@@ -1,6 +1,7 @@
 #ifndef MMML_META_HPP
 #define MMML_META_HPP
 
+#include <concepts>
 #include <type_traits>
 
 namespace mmml {

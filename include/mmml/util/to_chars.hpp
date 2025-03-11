@@ -50,7 +50,7 @@ template <char_like Char = char, character_convertible T>
 Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_characters(const T& x)
 {
     Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> chars {};
-    const auto buffer_start = reinterpret_cast<char*>(chars.buffer.data());
+    auto* const buffer_start = reinterpret_cast<char*>(chars.buffer.data());
     auto result = std::to_chars(buffer_start, buffer_start + chars.buffer.size(), x);
     MMML_ASSERT(result.ec == std::errc {});
     chars.length = std::size_t(result.ptr - buffer_start);

@@ -1,7 +1,6 @@
 #ifndef MMML_RESULT_HPP
 #define MMML_RESULT_HPP
 
-#include <concepts>
 #include <utility>
 
 #include "mmml/util/assert.hpp"
@@ -337,6 +336,7 @@ public:
         }
     }
 
+    // NOLINTBEGIN(bugprone-branch-clone)
     constexpr Result& operator=(const Result& other) noexcept
         requires(std::is_nothrow_copy_assignable_v<Error>)
     {
@@ -370,10 +370,10 @@ public:
             // do nothing
         }
         else if (!m_has_value && !other.m_has_value) {
-            m_error = other.m_error;
+            m_error = std::move(other.m_error);
         }
         else if (m_has_value && !other.m_has_value) {
-            std::construct_at(std::addressof(m_error), other.m_error);
+            std::construct_at(std::addressof(m_error), std::move(other.m_error));
             m_has_value = false;
         }
         else {
@@ -382,6 +382,7 @@ public:
         }
         return *this;
     }
+    // NOLINTEND(bugprone-branch-clone)
 
     constexpr ~Result() noexcept(std::is_nothrow_destructible_v<Error>)
     {

@@ -71,9 +71,9 @@ namespace detail {
 /// @brief Rudimentary version of `std::ranges::all_of` to avoid including all of `<algorithm>`
 template <typename R, typename Predicate>
 [[nodiscard]]
-constexpr bool all_of(R&& r, Predicate predicate)
+constexpr bool all_of(R&& r, Predicate predicate) // NOLINT(cppcoreguidelines-missing-std-forward)
 {
-    for (const auto& e : r) {
+    for (const auto& e : r) { // NOLINT(readability-use-anyofallof)
         if (!predicate(e)) {
             return false;
         }

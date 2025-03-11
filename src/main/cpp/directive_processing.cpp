@@ -164,12 +164,12 @@ void to_plaintext_mapped_for_highlighting(
 void to_plaintext_mapped_for_highlighting(
     std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
-    const ast::Escaped& escaped,
+    const ast::Escaped& e,
     Context& context
 )
 {
-    out.push_back(escaped.get_char(context.get_source()));
-    out_mapping.push_back(escaped.get_char_index());
+    out.push_back(e.get_char(context.get_source()));
+    out_mapping.push_back(e.get_char_index());
 }
 
 void to_plaintext_mapped_for_highlighting(
@@ -461,7 +461,7 @@ void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, 
         if (const auto* const t = get_if<ast::Text>(&c)) {
             out.write_inner_html(t->get_text(context.get_source()));
         }
-        if (const auto* const b = get_if<ast::Behaved_Content>(&c)) {
+        if (const auto* const _ = get_if<ast::Behaved_Content>(&c)) {
             MMML_ASSERT_UNREACHABLE(u8"Attempting to generate literal HTML from Behaved_Content");
             return;
         }

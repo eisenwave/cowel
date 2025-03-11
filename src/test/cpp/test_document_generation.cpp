@@ -15,6 +15,8 @@
 namespace mmml {
 namespace {
 
+using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
+
 struct Trivial_Content_Behavior final : Content_Behavior {
     constexpr Trivial_Content_Behavior()
         : Content_Behavior { Directive_Category::mixed, Directive_Display::block }
@@ -81,7 +83,7 @@ struct Doc_Gen_Test : testing::Test {
     }
 
     [[nodiscard]]
-    bool load_document(std::filesystem::path path)
+    bool load_document(const std::filesystem::path& path)
     {
         file_path = "test" / path;
         Result<void, IO_Error_Code> result = load_utf8_file(source, file_path.c_str());
@@ -122,7 +124,7 @@ struct Doc_Gen_Test : testing::Test {
 
 TEST_F(Doc_Gen_Test, empty)
 {
-    constexpr std::u8string_view expected = u8"";
+    constexpr std::u8string_view expected;
     ASSERT_TRUE(load_document("empty.mmml"));
     std::u8string_view actual = generate();
     EXPECT_EQ(expected, actual);

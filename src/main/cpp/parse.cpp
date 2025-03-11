@@ -116,7 +116,7 @@ private:
             m_self = nullptr;
         }
 
-        ~Scoped_Attempt()
+        ~Scoped_Attempt() // NOLINT(bugprone-exception-escape)
         {
             if (m_self) {
                 abort();
@@ -686,7 +686,7 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
 
 void parse(std::pmr::vector<AST_Instruction>& out, std::u8string_view source)
 {
-    return Parser { out, source }();
+    Parser { out, source }();
 }
 
 } // namespace mmml
