@@ -12,7 +12,7 @@ using namespace std::literals;
 
 TEST(To_Chars, zero)
 {
-    Basic_Characters zero = to_characters8(0);
+    constexpr Basic_Characters zero = to_characters8(0);
     ASSERT_EQ(zero, u8"0"sv);
 }
 

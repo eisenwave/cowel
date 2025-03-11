@@ -54,7 +54,7 @@ TEST(Unicode, decode_file)
 
     const std::u8string_view u8view { utf8->data(), utf8->size() };
 
-    std::pmr::vector<char32_t> actual = to_utf32(u8view, &memory);
+    const std::pmr::vector<char32_t> actual = to_utf32(u8view, &memory);
 
     ASSERT_EQ(*expected, actual);
 }

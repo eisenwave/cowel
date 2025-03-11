@@ -33,76 +33,76 @@ TEST(Chars, is_ascii_digit)
 
 TEST(Chars, is_ascii_lower_alpha)
 {
-    for (char8_t c : all_ascii_lower_alpha8) {
+    for (const char8_t c : all_ascii_lower_alpha8) {
         EXPECT_TRUE(is_ascii_lower_alpha(c));
     }
-    for (char8_t c : all_ascii_upper_alpha8) {
+    for (const char8_t c : all_ascii_upper_alpha8) {
         EXPECT_FALSE(is_ascii_lower_alpha(c));
     }
-    for (char8_t c : all_ascii_digit8) {
+    for (const char8_t c : all_ascii_digit8) {
         EXPECT_FALSE(is_ascii_lower_alpha(c));
     }
 
-    for (char32_t c : all_ascii_lower_alpha) {
+    for (const char32_t c : all_ascii_lower_alpha) {
         EXPECT_TRUE(is_ascii_lower_alpha(c));
     }
-    for (char32_t c : all_ascii_upper_alpha) {
+    for (const char32_t c : all_ascii_upper_alpha) {
         EXPECT_FALSE(is_ascii_lower_alpha(c));
     }
-    for (char32_t c : all_ascii_digit) {
+    for (const char32_t c : all_ascii_digit) {
         EXPECT_FALSE(is_ascii_lower_alpha(c));
     }
 }
 
 TEST(Chars, is_ascii_upper_alpha)
 {
-    for (char8_t c : all_ascii_lower_alpha8) {
+    for (const char8_t c : all_ascii_lower_alpha8) {
         EXPECT_FALSE(is_ascii_upper_alpha(c));
     }
-    for (char8_t c : all_ascii_upper_alpha8) {
+    for (const char8_t c : all_ascii_upper_alpha8) {
         EXPECT_TRUE(is_ascii_upper_alpha(c));
     }
-    for (char8_t c : all_ascii_digit8) {
+    for (const char8_t c : all_ascii_digit8) {
         EXPECT_FALSE(is_ascii_upper_alpha(c));
     }
 
-    for (char32_t c : all_ascii_lower_alpha) {
+    for (const char32_t c : all_ascii_lower_alpha) {
         EXPECT_FALSE(is_ascii_upper_alpha(c));
     }
-    for (char32_t c : all_ascii_upper_alpha) {
+    for (const char32_t c : all_ascii_upper_alpha) {
         EXPECT_TRUE(is_ascii_upper_alpha(c));
     }
-    for (char32_t c : all_ascii_digit) {
+    for (const char32_t c : all_ascii_digit) {
         EXPECT_FALSE(is_ascii_upper_alpha(c));
     }
 }
 
 TEST(Chars, is_ascii_alpha)
 {
-    for (char8_t c : all_ascii_alpha8) {
+    for (const char8_t c : all_ascii_alpha8) {
         EXPECT_TRUE(is_ascii_alpha(c));
     }
-    for (char8_t c : all_ascii_digit8) {
+    for (const char8_t c : all_ascii_digit8) {
         EXPECT_FALSE(is_ascii_upper_alpha(c));
     }
 
-    for (char32_t c : all_ascii_alpha) {
+    for (const char32_t c : all_ascii_alpha) {
         EXPECT_TRUE(is_ascii_alpha(c));
     }
-    for (char32_t c : all_ascii_digit) {
+    for (const char32_t c : all_ascii_digit) {
         EXPECT_FALSE(is_ascii_upper_alpha(c));
     }
 }
 
 TEST(Chars, is_mmml_directive_name_character)
 {
-    for (char32_t c : all_mmml_special) {
+    for (const char32_t c : all_mmml_special) {
         EXPECT_FALSE(is_mmml_directive_name_character(c));
     }
-    for (char32_t c : all_ascii_alpha) {
+    for (const char32_t c : all_ascii_alpha) {
         EXPECT_TRUE(is_mmml_directive_name_character(c));
     }
-    for (char32_t c : all_ascii_digit) {
+    for (const char32_t c : all_ascii_digit) {
         EXPECT_TRUE(is_mmml_directive_name_character(c));
     }
 }

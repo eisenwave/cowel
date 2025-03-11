@@ -233,7 +233,7 @@ public:
             append_content(children);
         }
 
-        Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
+        const Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
         out.push_back(
             name ? ast::Argument { span, *name, std::move(children) }
                  : ast::Argument { span, std::move(children) }

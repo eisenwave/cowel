@@ -223,7 +223,7 @@ void print_file_position(
     bool colon_suffix
 )
 {
-    std::pmr::u8string file8 = file_name_to_utf8(file, out.get_memory());
+    const std::pmr::u8string file8 = file_name_to_utf8(file, out.get_memory());
 
     auto builder = out.build(Diagnostic_Highlight::code_position);
     builder.append(file8)
@@ -265,14 +265,14 @@ std::u8string_view find_line(std::u8string_view source, std::size_t index)
     std::size_t begin = source.rfind('\n', index);
     begin = begin != std::u8string_view::npos ? begin + 1 : 0;
 
-    std::size_t end = std::min(source.find('\n', index + 1), source.size());
+    const std::size_t end = std::min(source.find('\n', index + 1), source.size());
 
     return source.substr(begin, end - begin);
 }
 
 void print_location_of_file(Diagnostic_String& out, std::string_view file)
 {
-    std::pmr::u8string file8 = file_name_to_utf8(file, out.get_memory());
+    const std::pmr::u8string file8 = file_name_to_utf8(file, out.get_memory());
     out.build(Diagnostic_Highlight::code_position).append(file8).append(u8':');
 }
 
@@ -286,9 +286,9 @@ void print_assertion_error(Diagnostic_String& out, const Assertion_Error& error)
     out.append(message, Diagnostic_Highlight::text);
     out.append(u8"\n\n");
 
-    Source_Position pos { .line = error.location.line(),
-                          .column = error.location.column(),
-                          .begin = {} };
+    const Source_Position pos { .line = error.location.line(),
+                                .column = error.location.column(),
+                                .begin = {} };
     print_file_position(out, error.location.file_name(), pos);
     out.append(u8' ');
     out.append(error.message, Diagnostic_Highlight::error_text);
@@ -418,7 +418,7 @@ public:
             out.append(u8'[', Diagnostic_Highlight::punctuation);
             out.append(u8'\n');
             {
-                Scoped_Indent i = indented();
+                const Scoped_Indent i = indented();
                 visit_arguments(directive);
             }
             print_indent();
@@ -432,7 +432,7 @@ public:
             out.append(u8'{', Diagnostic_Highlight::punctuation);
             out.append(u8'\n');
             {
-                Scoped_Indent i = indented();
+                const Scoped_Indent i = indented();
                 visit_content_sequence(directive.get_content());
             }
             print_indent();
@@ -455,7 +455,7 @@ public:
             out.append(u8'{', Diagnostic_Highlight::punctuation);
             out.append(u8'\n');
             {
-                Scoped_Indent i = indented();
+                const Scoped_Indent i = indented();
                 visit_content_sequence(directive.get_content());
             }
             print_indent();
@@ -484,7 +484,7 @@ public:
 
         if (!arg.get_content().empty()) {
             out.append(u8'\n');
-            Scoped_Indent i = indented();
+            const Scoped_Indent i = indented();
             visit_content_sequence(arg.get_content());
         }
         else {
@@ -542,7 +542,7 @@ std::ostream& print_code_string(std::ostream& out, const Diagnostic_String& stri
     }
 
     Annotation_Span<Diagnostic_Highlight> previous {};
-    for (Annotation_Span<Diagnostic_Highlight> span : string) {
+    for (const Annotation_Span<Diagnostic_Highlight> span : string) {
         const std::size_t previous_end = previous.begin + previous.length;
         MMML_ASSERT(span.begin >= previous_end);
         if (previous_end != span.begin) {

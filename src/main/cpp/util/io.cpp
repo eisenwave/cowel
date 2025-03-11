@@ -32,7 +32,7 @@ Result<void, IO_Error_Code> file_to_bytes_chunked(
     }
     std::memcpy(buffer, path.data(), path.size());
 
-    Unique_File stream = fopen_unique(buffer, "rb");
+    const Unique_File stream = fopen_unique(buffer, "rb");
     if (!stream) {
         return IO_Error_Code::cannot_open;
     }
@@ -43,7 +43,7 @@ Result<void, IO_Error_Code> file_to_bytes_chunked(
         if (std::ferror(stream.get())) {
             return IO_Error_Code::read_error;
         }
-        std::span<std::byte> chunk { reinterpret_cast<std::byte*>(buffer), read_size };
+        const std::span<std::byte> chunk { reinterpret_cast<std::byte*>(buffer), read_size };
         consume_chunk(chunk);
     } while (read_size == block_size);
 

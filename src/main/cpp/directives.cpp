@@ -286,7 +286,7 @@ private:
         Context& context
     )
     {
-        int i = args.get_argument_index(var_parameter);
+        const int i = args.get_argument_index(var_parameter);
         if (i < 0) {
             // TODO: error when no variable was specified
             return {};
@@ -364,7 +364,8 @@ public:
             std::pmr::u8string value { body_string.data(), body_string.size(),
                                        context.get_persistent_memory() };
             if (it == context.m_variables.end()) {
-                std::pmr::u8string key { var.data(), var.size(), context.get_persistent_memory() };
+                std::pmr::u8string key // NOLINT(misc-const-correctness)
+                    { var.data(), var.size(), context.get_persistent_memory() };
                 context.m_variables.emplace(std::move(key), std::move(value));
             }
             else {

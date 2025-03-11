@@ -229,7 +229,7 @@ std::ostream& operator<<(std::ostream& out, const Expected_Content& content)
 
     case Expected_Content_Type::text: {
         out << "Text(";
-        for (char8_t c : content.name_or_text) {
+        for (const char8_t c : content.name_or_text) {
             write_special_escaped(out, c);
         }
         out << ')';

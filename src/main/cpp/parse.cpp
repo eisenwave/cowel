@@ -196,7 +196,7 @@ private:
     utf8::Code_Point_And_Length peek_code_point() const
     {
         MMML_ASSERT(!eof());
-        std::u8string_view remainder { m_source.substr(m_pos) };
+        const std::u8string_view remainder { m_source.substr(m_pos) };
         const Result<utf8::Code_Point_And_Length, utf8::Error_Code> result
             = utf8::decode_and_length(remainder);
         MMML_ASSERT(result);

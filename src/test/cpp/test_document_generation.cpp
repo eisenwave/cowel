@@ -136,7 +136,7 @@ TEST_F(Doc_Gen_Test, empty)
 {
     constexpr std::u8string_view expected;
     ASSERT_TRUE(load_document("empty.mmml"));
-    std::u8string_view actual = generate();
+    const std::u8string_view actual = generate();
     EXPECT_EQ(expected, actual);
 }
 
@@ -144,7 +144,7 @@ TEST_F(Doc_Gen_Test, text)
 {
     constexpr std::u8string_view expected = u8"Hello, world!\n";
     ASSERT_TRUE(load_document("text.mmml"));
-    std::u8string_view actual = generate();
+    const std::u8string_view actual = generate();
     EXPECT_EQ(expected, actual);
 }
 
@@ -160,7 +160,7 @@ This is another paragraph.
 )";
     ASSERT_TRUE(load_document("paragraphs.mmml"));
     root_behavior = &paragraphs_behavior;
-    std::u8string_view actual = generate();
+    const std::u8string_view actual = generate();
     EXPECT_EQ(expected, actual);
 }
 

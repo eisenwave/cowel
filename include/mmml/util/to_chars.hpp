@@ -2,6 +2,7 @@
 #define MMML_TO_CHARS_HPP
 
 #include <array>
+#include <bit>
 #include <charconv>
 #include <cstddef>
 #include <limits>
@@ -52,19 +53,25 @@ inline constexpr int approximate_to_chars_decimal_digits_v
 
 template <char_like Char = char, character_convertible T>
 [[nodiscard]]
-Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_characters(const T& x)
+constexpr Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_characters(const T& x)
 {
-    Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> chars {};
-    auto* const buffer_start = reinterpret_cast<char*>(chars.buffer.data());
-    auto result = std::to_chars(buffer_start, buffer_start + chars.buffer.size(), x);
+    using result_type = Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>>;
+    Basic_Characters<char, approximate_to_chars_decimal_digits_v<T>> chars {};
+    auto* const buffer_start = chars.buffer.data();
+    const auto result = std::to_chars(buffer_start, buffer_start + chars.buffer.size(), x);
     MMML_ASSERT(result.ec == std::errc {});
     chars.length = std::size_t(result.ptr - buffer_start);
-    return chars;
+    if constexpr (std::is_same_v<Char, char>) {
+        return chars;
+    }
+    else {
+        return std::bit_cast<result_type>(chars);
+    }
 }
 
 template <character_convertible T>
 [[nodiscard]]
-Characters8<approximate_to_chars_decimal_digits_v<T>> to_characters8(const T& x)
+constexpr Characters8<approximate_to_chars_decimal_digits_v<T>> to_characters8(const T& x)
 {
     return to_characters<char8_t>(x);
 }

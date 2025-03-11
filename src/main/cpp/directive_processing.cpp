@@ -21,7 +21,7 @@ namespace mmml {
 Directive_Behavior* Context::find_directive(std::u8string_view name) const
 {
     for (const Name_Resolver* const resolver : std::views::reverse(m_name_resolvers)) {
-        if (Directive_Behavior* result = (*resolver)(name)) {
+        if (Directive_Behavior* const result = (*resolver)(name)) {
             return result;
         }
     }
@@ -103,12 +103,12 @@ void to_plaintext(std::pmr::vector<char8_t>& out, const ast::Content& c, Context
         return;
     }
     if (const auto* const d = get_if<ast::Directive>(&c)) {
-        if (Directive_Behavior* behavior = context.find_directive(*d)) {
+        if (Directive_Behavior* const behavior = context.find_directive(*d)) {
             behavior->generate_plaintext(out, *d, context);
             return;
         }
         try_lookup_error(*d, context);
-        if (Directive_Behavior* eb = context.get_error_behavior()) {
+        if (Directive_Behavior* const eb = context.get_error_behavior()) {
             eb->generate_plaintext(out, *d, context);
         }
         return;
@@ -185,7 +185,7 @@ void to_plaintext_mapped_for_highlighting(
     Context& context
 )
 {
-    Directive_Behavior* behavior = context.find_directive(d);
+    Directive_Behavior* const behavior = context.find_directive(d);
     if (!behavior) {
         return;
     }
@@ -262,12 +262,12 @@ void to_html(HTML_Writer& out, const ast::Behaved_Content& content, Context& con
 
 void to_html(HTML_Writer& out, const ast::Directive& directive, Context& context)
 {
-    if (Directive_Behavior* behavior = context.find_directive(directive)) {
+    if (Directive_Behavior* const behavior = context.find_directive(directive)) {
         behavior->generate_html(out, directive, context);
         return;
     }
     try_lookup_error(directive, context);
-    if (Directive_Behavior* eb = context.get_error_behavior()) {
+    if (Directive_Behavior* const eb = context.get_error_behavior()) {
         eb->generate_html(out, directive, context);
     }
 }
@@ -323,11 +323,11 @@ public:
     //  but `\\blockquote` is block content.
     void operator()(const ast::Directive& d)
     {
-        if (Directive_Behavior* behavior = m_context.find_directive(d)) {
+        if (Directive_Behavior* const behavior = m_context.find_directive(d)) {
             on_directive(*behavior, d);
         }
         try_lookup_error(d, m_context);
-        if (Directive_Behavior* eb = m_context.get_error_behavior()) {
+        if (Directive_Behavior* const eb = m_context.get_error_behavior()) {
             on_directive(*eb, d);
         }
     }
@@ -443,8 +443,8 @@ void to_html(
         for (std::size_t i = 0; i < content.size(); ++i) {
             if (mode == To_HTML_Mode::paragraphs_trimmed) {
                 if (const auto* const text = std::get_if<ast::Text>(&content[i])) {
-                    bool first = i == 0;
-                    bool last = i + 1 == content.size();
+                    const bool first = i == 0;
+                    const bool last = i + 1 == content.size();
                     impl(*text, first, last);
                     continue;
                 }
