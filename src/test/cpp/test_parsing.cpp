@@ -32,6 +32,10 @@ struct Expected_Argument {
 
     Expected_Argument(std::vector<Expected_Content>&& content);
 
+    Expected_Argument(Expected_Argument&&) noexcept;
+    Expected_Argument(const Expected_Argument&);
+    Expected_Argument& operator=(Expected_Argument&&) noexcept;
+    Expected_Argument& operator=(const Expected_Argument&);
     ~Expected_Argument();
 
     static Expected_Argument from(const ast::Argument& arg, std::u8string_view source);
@@ -150,6 +154,10 @@ Expected_Argument::Expected_Argument(std::vector<Expected_Content>&& content)
 {
 }
 
+Expected_Argument::Expected_Argument(Expected_Argument&&) noexcept = default;
+Expected_Argument::Expected_Argument(const Expected_Argument&) = default;
+Expected_Argument& Expected_Argument::operator=(Expected_Argument&&) noexcept = default;
+Expected_Argument& Expected_Argument::operator=(const Expected_Argument&) = default;
 Expected_Argument::~Expected_Argument() = default;
 
 Expected_Argument Expected_Argument::from(const ast::Argument& arg, std::u8string_view source)

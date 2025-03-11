@@ -106,7 +106,10 @@ void print_source_position(Diagnostic_String& out, const std::optional<File_Sour
         out.append(u8"(internal):", Diagnostic_Highlight::code_position);
     }
     else {
-        print_file_position(out, pos->file_name, Source_Position { *pos });
+        print_file_position(
+            out, pos->file_name, //
+            Source_Position { *pos } // NOLINT(cppcoreguidelines-slicing)
+        );
     }
 }
 
@@ -210,7 +213,7 @@ void print_file_position(
     Diagnostic_String& out,
     std::string_view file,
     const Source_Position& pos,
-    bool suffix_colon
+    bool colon_suffix
 )
 {
     std::pmr::u8string file8 = file_name_to_utf8(file, out.get_memory());
@@ -221,7 +224,7 @@ void print_file_position(
         .append_integer(pos.line + 1)
         .append(':')
         .append_integer(pos.column + 1);
-    if (suffix_colon) {
+    if (colon_suffix) {
         builder.append(':');
     }
 }

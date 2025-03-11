@@ -58,6 +58,7 @@ struct Paragraphs_Behavior final : Content_Behavior {
     }
 };
 
+[[maybe_unused]]
 constinit Trivial_Content_Behavior trivial_behavior {};
 constinit Paragraphs_Behavior paragraphs_behavior {};
 

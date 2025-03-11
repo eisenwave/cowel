@@ -25,7 +25,7 @@ Argument::Argument(
 Argument::Argument(const Source_Span& pos, std::pmr::vector<ast::Content>&& children)
     : m_pos { pos }
     , m_content { std::move(children) }
-    , m_name { pos, 0 }
+    , m_name { pos, 0 } // NOLINT(cppcoreguidelines-slicing)
 {
 }
 
