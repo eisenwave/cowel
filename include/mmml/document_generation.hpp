@@ -2,6 +2,8 @@
 #define MMML_DOCUMENT_GENERATION_HPP
 
 #include <filesystem>
+#include <memory_resource>
+#include <string_view>
 #include <vector>
 
 #include "mmml/util/function_ref.hpp"

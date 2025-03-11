@@ -1,11 +1,17 @@
+#include <cstddef>
 #include <ranges>
 #include <span>
+#include <string_view>
+#include <variant>
 #include <vector>
 
 #include "mmml/parse_utils.hpp"
+#include "mmml/util/assert.hpp"
 #include "mmml/util/html_writer.hpp"
+#include "mmml/util/source_position.hpp"
 #include "mmml/util/strings.hpp"
 
+#include "mmml/ast.hpp"
 #include "mmml/context.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"

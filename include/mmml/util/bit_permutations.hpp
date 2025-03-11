@@ -5,7 +5,6 @@
 #include <bit>
 #include <concepts>
 #include <limits>
-#include <version>
 
 // DETECT GNU COMPILERS AND BUILTINS
 // =================================

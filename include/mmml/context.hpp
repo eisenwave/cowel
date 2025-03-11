@@ -3,10 +3,13 @@
 
 #include <filesystem>
 #include <memory_resource>
+#include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
+#include "mmml/util/assert.hpp"
 #include "mmml/util/transparent_comparison.hpp"
 
 #include "mmml/diagnostic.hpp"

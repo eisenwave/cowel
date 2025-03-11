@@ -3,6 +3,7 @@
 
 #include <compare>
 #include <string>
+#include <string_view>
 
 #include "mmml/util/source_position.hpp"
 

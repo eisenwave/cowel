@@ -1,7 +1,13 @@
 #ifndef MMML_DIRECTIVE_ARGUMENTS_HPP
 #define MMML_DIRECTIVE_ARGUMENTS_HPP
 
+#include <cstddef>
+#include <memory_resource>
 #include <span>
+#include <string_view>
+#include <vector>
+
+#include "mmml/util/assert.hpp"
 
 #include "mmml/ast.hpp"
 #include "mmml/fwd.hpp"

@@ -1,6 +1,7 @@
 #ifndef MMML_STRINGS_HPP
 #define MMML_STRINGS_HPP
 
+#include <cstddef>
 #include <string_view>
 
 #include "mmml/util/chars.hpp"

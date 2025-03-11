@@ -1,8 +1,13 @@
+#include <algorithm>
+#include <iterator>
 #include <memory_resource>
+#include <string_view>
+#include <vector>
 
 #include <gtest/gtest.h>
 
 #include "mmml/util/io.hpp"
+#include "mmml/util/result.hpp"
 #include "mmml/util/unicode.hpp"
 
 namespace mmml::utf8 {

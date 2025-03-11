@@ -2,6 +2,7 @@
 #define MMML_FUNCTION_REF_HPP
 
 #include <concepts>
+#include <type_traits>
 #include <utility>
 
 #include "mmml/util/assert.hpp"

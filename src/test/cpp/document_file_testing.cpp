@@ -1,13 +1,19 @@
 #include <iostream>
 #include <memory_resource>
+#include <string_view>
+#include <vector>
 
 #include "mmml/util/annotated_string.hpp"
+#include "mmml/util/assert.hpp"
 #include "mmml/util/io.hpp"
+#include "mmml/util/result.hpp"
 #include "mmml/util/tty.hpp"
 
+#include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
 #include "mmml/print.hpp"
 
+#include "compilation_stage.hpp"
 #include "diagnostic_policy.hpp"
 #include "document_file_testing.hpp"
 
@@ -46,7 +52,7 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     MMML_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
 
 // FIXME reimplement
-#if 0
+#if 0 // NOLINT(readability-avoid-unconditional-preprocessor-if)
     Ignoring_HTML_Token_Consumer consumer;
     Result<void, bmd::Document_Error> result
         = bmd::doc_to_html(consumer, *doc, { .indent_width = 4 }, &memory);
@@ -65,7 +71,8 @@ private:
     Policy_Action m_action = Policy_Action::keep_going;
 
 public:
-    virtual bool is_success() const
+    [[nodiscard]]
+    bool is_success() const final
     {
         return m_action == Policy_Action::success;
     }
@@ -78,7 +85,7 @@ public:
         return m_action = Policy_Action::failure;
     }
 
-    Policy_Action done(Compilation_Stage stage)
+    Policy_Action done(Compilation_Stage stage) final
     {
         if (stage < Compilation_Stage::process) {
             return Policy_Action::keep_going;

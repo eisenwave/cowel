@@ -5,6 +5,7 @@
 #include <iosfwd>
 #endif
 
+#include <cstddef>
 #include <span>
 #include <string_view>
 

@@ -1,8 +1,13 @@
+#include <algorithm>
 #include <charconv>
+#include <cstddef>
 #include <optional>
+#include <string_view>
+#include <system_error>
 
 #include "mmml/fwd.hpp"
 #include "mmml/util/assert.hpp"
+#include "mmml/util/chars.hpp"
 #include "mmml/util/strings.hpp"
 
 #include "mmml/parse_utils.hpp"

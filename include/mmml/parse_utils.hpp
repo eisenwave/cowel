@@ -1,6 +1,7 @@
 #ifndef BIT_MANIPULATION_PARSE_HPP
 #define BIT_MANIPULATION_PARSE_HPP
 
+#include <cstddef>
 #include <optional>
 #include <string_view>
 

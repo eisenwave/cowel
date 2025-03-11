@@ -1,13 +1,17 @@
 #ifndef MMML_CODE_STRING_HPP
 #define MMML_CODE_STRING_HPP
 
+#include <cstddef>
 #include <memory_resource>
 #include <string_view>
 #include <utility>
 #include <vector>
 
 #include "mmml/util/annotation_span.hpp"
+#include "mmml/util/assert.hpp"
 #include "mmml/util/to_chars.hpp"
+
+#include "mmml/fwd.hpp"
 
 namespace mmml {
 

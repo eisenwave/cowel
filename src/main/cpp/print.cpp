@@ -1,5 +1,11 @@
+#include <algorithm>
+#include <cstddef>
+#include <cstring>
 #include <iostream>
+#include <memory_resource>
 #include <optional>
+#include <span>
+#include <string>
 #include <string_view>
 
 #include "mmml/util/annotated_string.hpp"
@@ -12,6 +18,7 @@
 
 #include "mmml/ast.hpp"
 #include "mmml/diagnostic_highlight.hpp"
+#include "mmml/fwd.hpp"
 #include "mmml/print.hpp"
 
 namespace mmml {

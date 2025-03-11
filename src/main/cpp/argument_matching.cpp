@@ -1,5 +1,10 @@
+#include <cstddef>
 #include <span>
+#include <string_view>
 
+#include "mmml/util/assert.hpp"
+
+#include "mmml/ast.hpp"
 #include "mmml/directive_arguments.hpp"
 
 namespace mmml {

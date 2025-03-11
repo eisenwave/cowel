@@ -1,6 +1,7 @@
 #ifndef MMML_TRANSPARENT_COMPARISON_HPP
 #define MMML_TRANSPARENT_COMPARISON_HPP
 
+#include <cstddef>
 #include <string_view>
 
 namespace mmml {
@@ -14,7 +15,7 @@ struct Basic_Transparent_String_View_Hash {
     [[nodiscard]]
     std::size_t operator()(string_view_type v) const
     {
-        return std::hash<string_view_type> {}(v);
+        return std::hash<string_view_type> {}(v); // NOLINT(misc-include-cleaner)
     }
 };
 

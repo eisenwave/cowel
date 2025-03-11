@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <span>
+#include <string_view>
 #include <vector>
 
 #include "mmml/context.hpp"

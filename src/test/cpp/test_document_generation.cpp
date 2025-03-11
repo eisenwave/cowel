@@ -1,14 +1,23 @@
+#include <filesystem>
 #include <memory_resource>
+#include <span>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 #include "mmml/util/annotated_string.hpp"
+#include "mmml/util/assert.hpp"
+#include "mmml/util/function_ref.hpp"
 #include "mmml/util/io.hpp"
+#include "mmml/util/result.hpp"
 
+#include "mmml/diagnostic.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
 #include "mmml/document_generation.hpp"
+#include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
 #include "mmml/print.hpp"
 

@@ -1,16 +1,26 @@
+#include <algorithm>
+#include <cstddef>
 #include <iostream>
 #include <memory_resource>
+#include <optional>
+#include <span>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <variant>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/io.hpp"
+#include "mmml/util/result.hpp"
 #include "mmml/util/strings.hpp"
 #include "mmml/util/tty.hpp"
 
 #include "mmml/ast.hpp"
 #include "mmml/diagnostic_highlight.hpp"
+#include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
 #include "mmml/print.hpp"
 
@@ -169,13 +179,13 @@ Expected_Argument Expected_Argument::from(const ast::Argument& arg, std::u8strin
     if (arg.has_name()) {
         return Expected_Argument { arg.get_name(source), std::move(content) };
     }
-    return Expected_Argument(std::move(content));
+    return auto(std::move(content));
 }
 
 template <typename T, typename Alloc>
 std::ostream& operator<<(std::ostream& os, const std::vector<T, Alloc>& vec)
 {
-    for (size_t i = 0; i < vec.size(); ++i) {
+    for (std::size_t i = 0; i < vec.size(); ++i) {
         if (i > 0) {
             os << ", ";
         }
@@ -244,6 +254,7 @@ struct [[nodiscard]] Actual_Document {
         return { source.data(), source.size() };
     }
 
+    [[nodiscard]]
     std::pmr::vector<Expected_Content> to_expected() const
     {
         std::pmr::vector<Expected_Content> result { content.get_allocator() };
@@ -353,11 +364,13 @@ bool run_parse_test(std::u8string_view file, std::span<const AST_Instruction> ex
     return true;
 }
 
+// NOLINTBEGIN(bugprone-unchecked-optional-access)
 #define MMML_PARSE_AND_BUILD_BOILERPLATE(...)                                                      \
     std::optional<Actual_Document> parsed = parse_and_build_file(__VA_ARGS__, &memory);            \
     ASSERT_TRUE(parsed);                                                                           \
     const auto actual = parsed->to_expected();                                                     \
     ASSERT_EQ(expected, actual)
+// NOLINTEND(bugprone-unchecked-optional-access)
 
 TEST(Parse, empty)
 {

@@ -23,7 +23,9 @@ constexpr bool is_exit(Policy_Action action)
 }
 
 struct Diagnostic_Policy {
-    virtual bool is_success() const = 0;
+    [[nodiscard]]
+    virtual bool is_success() const
+        = 0;
 
     virtual Policy_Action error(IO_Error_Code) = 0;
 

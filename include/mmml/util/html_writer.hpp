@@ -1,6 +1,8 @@
 #ifndef MMML_HTML_WRITER_HPP
 #define MMML_HTML_WRITER_HPP
 
+#include <cstddef>
+#include <string_view>
 #include <vector>
 
 #include "mmml/util/assert.hpp"

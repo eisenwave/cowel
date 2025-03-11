@@ -1,5 +1,6 @@
 #include <memory_resource>
 #include <span>
+#include <string_view>
 #include <vector>
 
 #include <gtest/gtest.h>

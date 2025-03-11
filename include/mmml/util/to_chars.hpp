@@ -3,11 +3,16 @@
 
 #include <array>
 #include <charconv>
+#include <cstddef>
 #include <limits>
+#include <string_view>
+#include <system_error>
 #include <type_traits>
 
 #include "mmml/util/assert.hpp"
 #include "mmml/util/meta.hpp"
+
+#include "mmml/fwd.hpp"
 
 namespace mmml {
 

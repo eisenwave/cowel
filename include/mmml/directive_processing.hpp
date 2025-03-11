@@ -1,9 +1,12 @@
 #ifndef MMML_DIRECTIVE_PROCESSING_HPP
 #define MMML_DIRECTIVE_PROCESSING_HPP
 
+#include <cstddef>
+#include <span>
 #include <vector>
 
 #include "mmml/ast.hpp"
+#include "mmml/fwd.hpp"
 
 namespace mmml {
 

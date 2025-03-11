@@ -1,6 +1,9 @@
 #ifndef MMML_TOKENS_HPP
 #define MMML_TOKENS_HPP
 
+#include <compare>
+#include <cstddef>
+#include <memory_resource>
 #include <span>
 #include <string_view>
 #include <vector>

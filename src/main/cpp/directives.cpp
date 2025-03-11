@@ -1,4 +1,9 @@
+#include <cstddef>
 #include <span>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 #include "mmml/fwd.hpp"
 #include "mmml/util/html_writer.hpp"
@@ -52,7 +57,7 @@ struct Error_Behavior : Do_Nothing_Behavior {
     {
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override
     {
         out.open_tag(id);
         for (const ast::Content& c : d.get_content()) {

@@ -1,9 +1,17 @@
+#include <cstddef>
+#include <memory_resource>
 #include <optional>
+#include <span>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 #include "mmml/util/annotation_span.hpp"
+#include "mmml/util/assert.hpp"
 #include "mmml/util/hljs_scope.hpp"
+#include "mmml/util/source_position.hpp"
 
+#include "mmml/ast.hpp"
 #include "mmml/parse.hpp"
 
 namespace mmml {

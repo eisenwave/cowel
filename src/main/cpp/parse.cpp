@@ -1,10 +1,16 @@
+#include <cstddef>
 #include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 #include "mmml/util/assert.hpp"
 #include "mmml/util/chars.hpp"
+#include "mmml/util/result.hpp"
 #include "mmml/util/unicode.hpp"
 
 #include "mmml/ast.hpp"
+#include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
 
 namespace mmml {
@@ -198,6 +204,7 @@ private:
     }
 
     /// @return `true` if the parser is at the end of the file, `false` otherwise.
+    [[nodiscard]]
     bool eof() const
     {
         return m_pos == m_source.length();

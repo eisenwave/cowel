@@ -1,9 +1,13 @@
 #ifndef MMML_UNICODE_HPP
 #define MMML_UNICODE_HPP
 
+#include <algorithm>
 #include <array>
 #include <bit>
+#include <cstddef>
 #include <cstdint>
+#include <iterator>
+#include <ranges>
 #include <stdexcept>
 #include <string_view>
 

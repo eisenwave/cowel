@@ -1,11 +1,15 @@
 #ifndef MMML_AST_HPP
 #define MMML_AST_HPP
 
+#include <cstddef>
 #include <span>
 #include <string_view>
+#include <type_traits>
+#include <utility>
 #include <variant>
 #include <vector>
 
+#include "mmml/util/assert.hpp"
 #include "mmml/util/meta.hpp"
 #include "mmml/util/source_position.hpp"
 

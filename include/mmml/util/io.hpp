@@ -2,16 +2,20 @@
 #define MMML_IO_HPP
 
 #ifndef MMML_EMSCRIPTEN
+#include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <memory_resource>
 #include <span>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "mmml/util/function_ref.hpp"
 #include "mmml/util/meta.hpp"
 #include "mmml/util/result.hpp"
+
+#include "mmml/fwd.hpp"
 
 namespace mmml {
 

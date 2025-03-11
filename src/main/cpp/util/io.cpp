@@ -1,9 +1,17 @@
 #ifndef MMML_EMSCRIPTEN
 
+#include <bit>
+#include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <memory_resource>
+#include <span>
+#include <string_view>
+#include <vector>
 
+#include "mmml/util/function_ref.hpp"
 #include "mmml/util/io.hpp"
+#include "mmml/util/result.hpp"
 #include "mmml/util/unicode.hpp"
 
 #include "mmml/fwd.hpp"

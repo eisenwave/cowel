@@ -1,6 +1,8 @@
 #ifndef MMML_EMSCRIPTEN
 
 #ifdef __unix__
+#include "stdio.h" // NOLINT for fileno
+#include <cstdio>
 #include <unistd.h>
 #endif
 

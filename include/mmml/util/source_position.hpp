@@ -1,6 +1,7 @@
 #ifndef MMML_SOURCE_POSITION_HPP
 #define MMML_SOURCE_POSITION_HPP
 
+#include <cstddef>
 #include <string_view>
 
 #include "mmml/util/assert.hpp"
