@@ -1,9 +1,9 @@
 #!/bin/bash
 
+SOURCES=$(find src -type f \( -name "*.cpp" -o -name "*.hpp" \))
+INCLUDES=$(find include -type f \( -name "*.hpp" \))
 
-# -o -name "*.hpp" would also process headers
-FILES=$(find src -type f \( -name "*.cpp" \))
-COMMAND="clang-tidy-19 $FILES -p build"
+COMMAND="clang-tidy-19 $SOURCES $INCLUDES -p build"
 
 echo $COMMAND
 $COMMAND

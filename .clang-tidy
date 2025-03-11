@@ -38,7 +38,10 @@ Checks:
   - -misc-non-private-member-variables-in-classes
   - -misc-no-recursion
   - -modernize-avoid-c-arrays
+  - -modernize-use-emplace
 WarningsAsErrors: ''
 CheckOptions:
  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
    value: true
+ - key: misc-const-correctness.AnalyzeValues
+   value: false
