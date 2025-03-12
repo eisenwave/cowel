@@ -33,6 +33,7 @@ add_library(mmml STATIC
     src/main/cpp/util/html_writer.cpp
     src/main/cpp/util/io.cpp
     src/main/cpp/util/tty.cpp
+    src/main/cpp/util/typo.cpp
 
     src/main/cpp/argument_matching.cpp
     src/main/cpp/build_ast.cpp
@@ -94,6 +95,7 @@ else(NOT DEFINED EMSCRIPTEN)
         src/test/cpp/test_levenshtein.cpp
         src/test/cpp/test_parsing.cpp
         src/test/cpp/test_to_chars.cpp
+        src/test/cpp/test_typo.cpp
         src/test/cpp/test_unicode.cpp
         src/test/cpp/test_valid.cpp
     )
