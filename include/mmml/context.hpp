@@ -11,6 +11,7 @@
 
 #include "mmml/util/assert.hpp"
 #include "mmml/util/transparent_comparison.hpp"
+#include "mmml/util/typo.hpp"
 
 #include "mmml/diagnostic.hpp"
 #include "mmml/fwd.hpp"
@@ -27,7 +28,13 @@ using Suppress_Unused_Include_Transparent_Comparison = Basic_Transparent_String_
 } // namespace detail
 
 struct Name_Resolver {
-    virtual Directive_Behavior* operator()(std::u8string_view name) const = 0;
+    [[nodiscard]]
+    virtual Typo_Result fuzzy_lookup_name(std::u8string_view name) const
+        = 0;
+
+    [[nodiscard]]
+    virtual Directive_Behavior* operator()(std::u8string_view name) const
+        = 0;
 };
 
 /// @brief Stores contextual information during document processing.

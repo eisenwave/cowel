@@ -8,6 +8,7 @@
 
 #include "mmml/context.hpp"
 #include "mmml/fwd.hpp"
+#include "mmml/util/typo.hpp"
 
 namespace mmml {
 
@@ -92,7 +93,8 @@ struct Content_Behavior {
     virtual void generate_html(HTML_Writer& out, std::span<const ast::Content>, Context&) const = 0;
 };
 
-struct [[nodiscard]] Builtin_Directive_Set : Name_Resolver {
+struct [[nodiscard]]
+Builtin_Directive_Set final : Name_Resolver {
 private:
     struct Impl;
     std::unique_ptr<Impl> m_impl;
@@ -106,7 +108,10 @@ public:
     ~Builtin_Directive_Set();
 
     [[nodiscard]]
-    Directive_Behavior* operator()(std::u8string_view name) const override;
+    Typo_Result fuzzy_lookup_name(std::u8string_view name) const final;
+
+    [[nodiscard]]
+    Directive_Behavior* operator()(std::u8string_view name) const final;
 };
 
 } // namespace mmml

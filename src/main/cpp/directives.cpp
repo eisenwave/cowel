@@ -416,6 +416,12 @@ struct Builtin_Directive_Set::Impl {
 Builtin_Directive_Set::Builtin_Directive_Set() = default;
 Builtin_Directive_Set::~Builtin_Directive_Set() = default;
 
+Typo_Result Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view) const
+{
+    // TODO: implement
+    return {};
+}
+
 Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) const
 {
     // Any builtin names should be found with both `\\-directive` and `\\directive`.
