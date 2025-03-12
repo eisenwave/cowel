@@ -48,6 +48,7 @@ struct AST_Formatting_Options;
 struct AST_Instruction;
 enum struct AST_Instruction_Type : Default_Underlying;
 struct Attribute_Writer;
+struct Author_Info;
 struct Builtin_Directive_Set;
 template <typename, typename>
 struct Basic_Annotated_String;
@@ -62,7 +63,8 @@ enum struct Diagnostic_Highlight : Default_Underlying;
 struct Content_Behavior;
 struct Context;
 struct Diagnostic;
-enum struct Severity : Default_Underlying;
+struct Document_Finder;
+struct Document_Info;
 struct Directive_Behavior;
 struct Directive_Content_Behavior;
 enum struct Directive_Category : Default_Underlying;
@@ -75,14 +77,20 @@ struct Function_Ref;
 struct Generation_Options;
 enum struct HLJS_Scope : Default_Underlying;
 struct HTML_Writer;
+struct Ignorant_Logger;
 enum struct IO_Error_Code : Default_Underlying;
+struct Logger;
 struct Name_Resolver;
+struct No_Support_Document_Finder;
+struct No_Support_Syntax_Highlighter;
 template <typename, typename>
 struct Result;
+enum struct Severity : Default_Underlying;
 enum struct Sign_Policy : Default_Underlying;
 struct Source_Position;
 struct Source_Span;
 struct Success_Tag;
+struct Syntax_Highlighter;
 
 namespace ast {
 
@@ -105,6 +113,8 @@ template <std::size_t capacity>
 using Characters8 = Basic_Characters<char8_t, capacity>;
 
 using Diagnostic_String = Annotated_String8<Diagnostic_Highlight>;
+
+using HLJS_Annotation_Span = Annotation_Span<HLJS_Scope>;
 
 using Transparent_String_View_Hash = Basic_Transparent_String_View_Hash<char>;
 using Transparent_String_View_Hash8 = Basic_Transparent_String_View_Hash<char8_t>;

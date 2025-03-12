@@ -3,14 +3,13 @@
 
 #include <filesystem>
 #include <memory_resource>
+#include <span>
 #include <string_view>
 #include <vector>
 
-#include "mmml/util/function_ref.hpp"
-
 #include "mmml/ast.hpp"
-#include "mmml/diagnostic.hpp"
 #include "mmml/fwd.hpp"
+#include "mmml/services.hpp"
 
 namespace mmml {
 
@@ -18,7 +17,7 @@ struct Generation_Options {
     std::pmr::vector<char8_t>& output;
 
     Content_Behavior& root_behavior;
-    std::pmr::vector<ast::Content>& root_content;
+    std::span<const ast::Content> root_content;
 
     /// @brief Name resolver for builtin behavior (without macro definitions, etc.).
     const Name_Resolver& builtin_behavior;
@@ -27,15 +26,14 @@ struct Generation_Options {
     Directive_Behavior* error_behavior = nullptr;
 
     /// @brief The path of the source file.
-    std::filesystem::path path;
+    const std::filesystem::path& path;
     /// @brief The document source code.
     std::u8string_view source;
-    /// @brief Invoked when diagnostics are emitted.
-    Function_Ref<void(Diagnostic&&)> emit_diagnostic = {};
-    /// @brief The minimum level of diagnostics that are emitted.
-    /// This option is ignored if `emit_diagnostic` is empty;
-    /// in that case, the level is implicitly `none`.
-    Severity min_severity = Severity::none;
+
+    const Logger& logger = ignorant_logger;
+    const Syntax_Highlighter& highlighter = no_support_syntax_highlighter;
+    const Document_Finder& document_finder = no_support_document_finder;
+
     /// @brief A source of memory to be used throughout generation,
     /// emitting diagnostics, etc.
     std::pmr::memory_resource* memory;

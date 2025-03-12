@@ -312,8 +312,8 @@ struct Get_Variable_Behavior final : Variable_Behavior {
         Context& context
     ) const final
     {
-        const auto it = context.m_variables.find(var);
-        if (it != context.m_variables.end()) {
+        const auto it = context.get_variables().find(var);
+        if (it != context.get_variables().end()) {
             out.insert(out.end(), it->second.begin(), it->second.end());
         }
     }
@@ -325,8 +325,8 @@ struct Get_Variable_Behavior final : Variable_Behavior {
         Context& context
     ) const final
     {
-        const auto it = context.m_variables.find(var);
-        if (it != context.m_variables.end()) {
+        const auto it = context.get_variables().find(var);
+        if (it != context.get_variables().end()) {
             out.write_inner_html(it->second);
         }
     }
@@ -359,14 +359,14 @@ public:
         std::pmr::vector<char8_t> body_string { context.get_transient_memory() };
         to_plaintext(body_string, d.get_content(), context);
 
-        const auto it = context.m_variables.find(var);
+        const auto it = context.get_variables().find(var);
         if (m_op == Variable_Operation::set) {
             std::pmr::u8string value { body_string.data(), body_string.size(),
                                        context.get_persistent_memory() };
-            if (it == context.m_variables.end()) {
+            if (it == context.get_variables().end()) {
                 std::pmr::u8string key // NOLINT(misc-const-correctness)
                     { var.data(), var.size(), context.get_persistent_memory() };
-                context.m_variables.emplace(std::move(key), std::move(value));
+                context.get_variables().emplace(std::move(key), std::move(value));
             }
             else {
                 it->second = std::move(value);

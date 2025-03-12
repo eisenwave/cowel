@@ -9,7 +9,6 @@
 
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/assert.hpp"
-#include "mmml/util/function_ref.hpp"
 #include "mmml/util/io.hpp"
 #include "mmml/util/result.hpp"
 
@@ -71,17 +70,31 @@ struct Paragraphs_Behavior final : Content_Behavior {
 constinit Trivial_Content_Behavior trivial_behavior {};
 constinit Paragraphs_Behavior paragraphs_behavior {};
 
+struct Collecting_Logger final : Logger {
+    mutable std::pmr::vector<Diagnostic> diagnostics;
+
+    [[nodiscard]]
+    Collecting_Logger(std::pmr::memory_resource* memory)
+        : Logger { Severity::min }
+        , diagnostics { memory }
+    {
+    }
+
+    void operator()(Diagnostic&& diagnostic) const final
+    {
+        diagnostics.push_back(std::move(diagnostic));
+    }
+};
+
 struct Doc_Gen_Test : testing::Test {
     std::pmr::monotonic_buffer_resource memory;
     std::pmr::vector<char8_t> out { &memory };
     Builtin_Directive_Set builtin_directives {};
     std::filesystem::path file_path;
     std::pmr::vector<char8_t> source { &memory };
-    std::pmr::vector<ast::Content> content;
+    std::pmr::vector<ast::Content> content { &memory };
 
-    Function_Ref<void(Diagnostic&&)> emit_diagnostic = {};
-    Severity min_severity = Severity::none;
-    std::pmr::vector<Diagnostic> caught_diagnostics { &memory };
+    Collecting_Logger logger { &memory };
 
     Content_Behavior* root_behavior = &trivial_behavior;
     Directive_Behavior* error_behavior = nullptr;
@@ -108,12 +121,6 @@ struct Doc_Gen_Test : testing::Test {
         return true;
     }
 
-    void listen_for_diagnostics(Severity min_severity)
-    {
-        this->min_severity = min_severity;
-        emit_diagnostic = [&](Diagnostic&& d) { caught_diagnostics.push_back(std::move(d)); };
-    }
-
     std::u8string_view generate()
     {
         MMML_ASSERT(root_behavior);
@@ -124,8 +131,7 @@ struct Doc_Gen_Test : testing::Test {
                                            .error_behavior = error_behavior,
                                            .path = file_path,
                                            .source = source_string(),
-                                           .emit_diagnostic = emit_diagnostic,
-                                           .min_severity = min_severity,
+                                           .logger = logger,
                                            .memory = &memory };
         generate_document(options);
         return { out.data(), out.size() };

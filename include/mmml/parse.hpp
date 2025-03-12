@@ -109,7 +109,7 @@ std::pmr::vector<ast::Content> build_ast(
 /// A sequence of `Annotation_Span`s is appended to `out`,
 /// where gaps between spans represent non-highlighted content such as plaintext or whitespace.
 void build_highlight(
-    std::pmr::vector<Annotation_Span<HLJS_Scope>>& out,
+    std::pmr::vector<HLJS_Annotation_Span>& out,
     std::span<const AST_Instruction> instructions
 );
 

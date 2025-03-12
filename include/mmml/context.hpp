@@ -14,7 +14,7 @@
 
 #include "mmml/diagnostic.hpp"
 #include "mmml/fwd.hpp"
-#include "mmml/util/function_ref.hpp"
+#include "mmml/services.hpp"
 
 namespace mmml {
 
@@ -31,7 +31,6 @@ struct Name_Resolver {
 };
 
 /// @brief Stores contextual information during document processing.
-/// Such an object is created once per processing phase.
 struct Context {
 public:
     using char_type = char8_t;
@@ -46,7 +45,7 @@ public:
 
 private:
     /// @brief The path at which the document is located.
-    std::filesystem::path m_document_path;
+    const std::filesystem::path& m_document_path;
     /// @brief Additional memory used during processing.
     std::pmr::memory_resource* m_memory;
     std::pmr::memory_resource* m_transient_memory;
@@ -60,12 +59,11 @@ private:
     std::pmr::vector<const Name_Resolver*> m_name_resolvers { m_transient_memory };
     Directive_Behavior* m_error_behavior;
 
-public:
-    Variable_Map m_variables { m_memory };
+    const Logger& m_logger;
+    const Syntax_Highlighter& m_syntax_highlighter;
+    const Document_Finder& m_document_finder;
 
-private:
-    Function_Ref<void(Diagnostic&&)> m_emit_diagnostic;
-    Severity m_min_diagnostic;
+    Variable_Map m_variables { m_memory };
 
 public:
     /// @brief Constructs a new context.
@@ -82,28 +80,64 @@ public:
     /// @param transient_memory Additional memory which does not persist beyond the
     /// destruction of the context.
     explicit Context(
-        std::filesystem::path&& path,
+        const std::filesystem::path& path,
         string_view_type source,
-        Function_Ref<void(Diagnostic&&)> emit_diagnostic,
-        Severity min_diagnostic_level,
         Directive_Behavior* error_behavior,
+        const Logger& logger,
+        const Syntax_Highlighter& highlighter,
+        const Document_Finder& finder,
         std::pmr::memory_resource* persistent_memory,
         std::pmr::memory_resource* transient_memory
     )
-        : m_document_path { std::move(path) }
+        : m_document_path { path }
         , m_memory { persistent_memory }
         , m_transient_memory { transient_memory }
         , m_source { source }
         , m_error_behavior { error_behavior }
-        , m_emit_diagnostic { emit_diagnostic }
-        , m_min_diagnostic { min_diagnostic_level }
+        , m_logger { logger }
+        , m_syntax_highlighter { highlighter }
+        , m_document_finder { finder }
     {
     }
+
+    Context(const Context&) = delete;
+    Context& operator=(const Context&) = delete;
+    ~Context() = default;
 
     [[nodiscard]]
     const std::filesystem::path& get_document_path() const
     {
         return m_document_path;
+    }
+
+    [[nodiscard]]
+    const Logger& get_logger() const
+    {
+        return m_logger;
+    }
+
+    [[nodiscard]]
+    const Syntax_Highlighter& get_highlighter() const
+    {
+        return m_syntax_highlighter;
+    }
+
+    [[nodiscard]]
+    const Document_Finder& get_document_finder() const
+    {
+        return m_document_finder;
+    }
+
+    [[nodiscard]]
+    Variable_Map& get_variables()
+    {
+        return m_variables;
+    }
+
+    [[nodiscard]]
+    const Variable_Map& get_variables() const
+    {
+        return m_variables;
     }
 
     /// @brief Returns a memory resource that the `Context` has been constructed with.
@@ -143,20 +177,20 @@ public:
     [[nodiscard]]
     Severity get_min_diagnostic_level() const
     {
-        return m_min_diagnostic;
+        return m_logger.get_min_severity();
     }
 
     /// @brief Equivalent to `get_min_diagnostic_level() >= severity`.
     [[nodiscard]]
     bool emits(Severity severity) const
     {
-        return severity < Severity::min && severity >= m_min_diagnostic;
+        return m_logger.can_log(severity);
     }
 
     void emit(Diagnostic&& diagnostic) const
     {
         MMML_ASSERT(emits(diagnostic.severity));
-        m_emit_diagnostic(std::move(diagnostic));
+        m_logger(std::move(diagnostic));
     }
 
     /// @brief Equivalent to `emit(make_diagnostic(severity, id, location, message))`.
