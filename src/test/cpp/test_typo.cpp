@@ -14,10 +14,10 @@ TEST(Typo, empty)
 
     std::pmr::monotonic_buffer_resource memory;
 
-    constexpr Typo_Result expected {};
+    constexpr Distant<std::size_t> expected {};
     EXPECT_FALSE(expected);
 
-    const Typo_Result actual = closest_match(haystack, needle, &memory);
+    const Distant actual = closest_match(haystack, needle, &memory);
     EXPECT_FALSE(expected);
 
     EXPECT_EQ(expected, actual);
@@ -30,8 +30,8 @@ TEST(Typo, exact_match)
 
     std::pmr::monotonic_buffer_resource memory;
 
-    constexpr Typo_Result expected { .index = 1, .distance = 0 };
-    const Typo_Result actual = closest_match(haystack, needle, &memory);
+    constexpr Distant<std::size_t> expected { .value = 1, .distance = 0 };
+    const Distant<std::size_t> actual = closest_match(haystack, needle, &memory);
     EXPECT_EQ(expected, actual);
 }
 
@@ -42,8 +42,8 @@ TEST(Typo, fuzzy_match)
 
     std::pmr::monotonic_buffer_resource memory;
 
-    constexpr Typo_Result expected { .index = 1, .distance = 1 };
-    const Typo_Result actual = closest_match(haystack, needle, &memory);
+    constexpr Distant<std::size_t> expected { .value = 1, .distance = 1 };
+    const Distant<std::size_t> actual = closest_match(haystack, needle, &memory);
     EXPECT_EQ(expected, actual);
 }
 

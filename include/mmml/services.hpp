@@ -10,6 +10,7 @@
 #include "mmml/util/annotation_span.hpp"
 #include "mmml/util/assert.hpp"
 #include "mmml/util/result.hpp"
+#include "mmml/util/typo.hpp"
 
 #include "mmml/diagnostic.hpp"
 #include "mmml/fwd.hpp"
@@ -37,6 +38,13 @@ struct Syntax_Highlighter {
     virtual std::span<const std::u8string_view> get_supported_languages() const
         = 0;
 
+    /// @brief Matches `language` against the set of supported language of the syntax highlighter.
+    ///
+    // This member function is useful for typo detection.
+    [[nodiscard]]
+    virtual Distant<std::u8string_view> match_supported_language(std::u8string_view language) const
+        = 0;
+
     /// @brief Applies syntax highlighting to the given `code`.
     /// Spans of highlighted source code are appended to `out`.
     /// If a failed result is returned,
@@ -59,6 +67,12 @@ struct No_Support_Syntax_Highlighter final : Syntax_Highlighter {
 
     [[nodiscard]]
     std::span<const std::u8string_view> get_supported_languages() const final
+    {
+        return {};
+    }
+
+    [[nodiscard]]
+    Distant<std::u8string_view> match_supported_language(std::u8string_view) const final
     {
         return {};
     }

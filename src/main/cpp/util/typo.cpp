@@ -18,7 +18,7 @@ namespace mmml {
 namespace {
 
 [[nodiscard]]
-Typo_Result closest_match_ascii(
+Distant<std::size_t> closest_match_ascii(
     std::span<const std::u8string_view> haystack,
     std::u8string_view needle,
     std::pmr::memory_resource* memory
@@ -27,7 +27,7 @@ Typo_Result closest_match_ascii(
     std::pmr::u32string hay32 { memory };
     std::pmr::vector<std::size_t> matrix_data { memory };
 
-    Typo_Result best_match;
+    Distant<std::size_t> best_match;
 
     for (std::size_t i = 0; i < haystack.size(); ++i) {
         const std::u8string_view hay = haystack[i];
@@ -47,7 +47,7 @@ Typo_Result closest_match_ascii(
         }();
 
         if (distance < best_match.distance) {
-            best_match.index = i;
+            best_match.value = i;
             best_match.distance = distance;
         }
     }
@@ -57,7 +57,7 @@ Typo_Result closest_match_ascii(
 
 } // namespace
 
-Typo_Result closest_match(
+Distant<std::size_t> closest_match(
     std::span<const std::u8string_view> haystack,
     std::u8string_view needle,
     std::pmr::memory_resource* memory
@@ -71,7 +71,7 @@ Typo_Result closest_match(
     std::pmr::u32string hay32 { memory };
     std::pmr::vector<std::size_t> matrix_data { memory };
 
-    Typo_Result best_match;
+    Distant<std::size_t> best_match;
 
     for (std::size_t i = 0; i < haystack.size(); ++i) {
         const std::u8string_view hay = haystack[i];
@@ -84,7 +84,7 @@ Typo_Result closest_match(
         }();
 
         if (distance < best_match.distance) {
-            best_match.index = i;
+            best_match.value = i;
             best_match.distance = distance;
         }
     }

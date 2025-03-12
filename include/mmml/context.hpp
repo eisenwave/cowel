@@ -29,7 +29,7 @@ using Suppress_Unused_Include_Transparent_Comparison = Basic_Transparent_String_
 
 struct Name_Resolver {
     [[nodiscard]]
-    virtual Typo_Result fuzzy_lookup_name(std::u8string_view name) const
+    virtual Distant<std::u8string_view> fuzzy_lookup_name(std::u8string_view name) const
         = 0;
 
     [[nodiscard]]

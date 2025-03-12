@@ -9,8 +9,9 @@
 
 namespace mmml {
 
-struct Typo_Result {
-    std::size_t index = 0;
+template <typename T>
+struct Distant {
+    T value {};
     std::size_t distance = std::size_t(-1);
 
     [[nodiscard]]
@@ -20,12 +21,11 @@ struct Typo_Result {
     }
 
     [[nodiscard]]
-    friend constexpr bool operator==(const Typo_Result& x, const Typo_Result& y)
+    friend constexpr bool operator==(const Distant& x, const Distant& y)
         = default;
 
     [[nodiscard]]
-    friend constexpr std::strong_ordering
-    operator<=>(const Typo_Result& x, const Typo_Result& y) noexcept
+    friend constexpr std::strong_ordering operator<=>(const Distant& x, const Distant& y) noexcept
     {
         return x.distance <=> y.distance;
     }
@@ -35,7 +35,7 @@ struct Typo_Result {
 /// There may be multiple equally good matches,
 // in which case earlier elements are preferred over later elements in the `haystack`.
 [[nodiscard]]
-Typo_Result closest_match(
+Distant<std::size_t> closest_match(
     std::span<const std::u8string_view> haystack,
     std::u8string_view needle,
     std::pmr::memory_resource* memory
