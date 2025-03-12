@@ -38,6 +38,17 @@ struct Assertion_Error {
         ::mmml::Assertion_Error_Type::unreachable, ::std::u8string_view(__VA_ARGS__),              \
         ::std::source_location::current() })
 
+#define MMML_IS_CONTEXTUALLY_BOOL_CONVERTIBLE(...) requires { (__VA_ARGS__) ? 1 : 0; }
+
+#ifdef NDEBUG
+#define MMML_DEBUG_ASSERT(...) static_assert(MMML_IS_CONTEXTUALLY_BOOL_CONVERTIBLE(__VA_ARGS__))
+#define MMML_DEBUG_UNREACHABLE(...)                                                                \
+    static_assert(MMML_IS_CONTEXTUALLY_BOOL_CONVERTIBLE(__VA_ARGS__))
+#else
+#define MMML_DEBUG_ASSERT(...) MMML_ASSERT(__VA_ARGS__)
+#define MMML_DEBUG_ASSERT_UNREACHABLE(...) MMML_ASSERT_UNREACHABLE(__VA_ARGS__)
+#endif
+
 #if __cplusplus >= 202302L
 #define MMML_CPP23 1
 #endif
