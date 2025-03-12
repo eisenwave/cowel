@@ -91,6 +91,7 @@ else(NOT DEFINED EMSCRIPTEN)
         src/test/cpp/test_chars_strings.cpp
         src/test/cpp/test_document_generation.cpp
         src/test/cpp/test_html_writer.cpp
+        src/test/cpp/test_levenshtein.cpp
         src/test/cpp/test_parsing.cpp
         src/test/cpp/test_to_chars.cpp
         src/test/cpp/test_unicode.cpp
