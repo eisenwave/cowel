@@ -26,15 +26,13 @@ constexpr std::ranges::range_value_t<Matrix> levenshtein_distance(
     const R2& y,
     Matrix&& m // NOLINT(cppcoreguidelines-missing-std-forward)
 ) {
-    const auto x_size = std::ranges::size(x);
-    const auto y_size = std::ranges::size(y);
+    const auto x_size = std::size_t(std::ranges::size(x));
+    const auto y_size = std::size_t(std::ranges::size(y));
 
-    using x_size_type = decltype(+x_size);
-    using y_size_type = decltype(+y_size);
     using result_type = std::ranges::range_value_t<Matrix>;
 
-    const std::size_t required_matrix_size = std::size_t((x_size + 1) * (y_size + 1));
-    MMML_ASSERT(std::ranges::size(m) >= required_matrix_size);
+    const std::size_t required_matrix_size = (x_size + 1) * (y_size + 1);
+    MMML_ASSERT(std::size_t(std::ranges::size(m)) >= required_matrix_size);
 
     if (x_size == 0) {
         return result_type(y_size);
@@ -44,26 +42,31 @@ constexpr std::ranges::range_value_t<Matrix> levenshtein_distance(
     }
 
     const auto matrix = [=, m_begin = std::ranges::begin(m)]
-      (x_size_type i, y_size_type j) -> result_type& {
-        using diff_type = std::ranges::range_difference_t<Matrix>;
-        const auto index = ((diff_type(i) * diff_type(y_size + 1)) + diff_type(j));
-        MMML_DEBUG_ASSERT(std::size_t(index) < required_matrix_size);
-        return m_begin[index];
+      (std::size_t i, std::size_t j) -> result_type& {
+        const std::size_t index = (i * (y_size + 1)) + j;
+        MMML_DEBUG_ASSERT(index < required_matrix_size);
+        return m_begin[std::ranges::range_difference_t<Matrix>(index)];
     };
 
-    for (x_size_type i = 0; i <= x_size; ++i) {
+    for (std::size_t i = 0; i <= x_size; ++i) {
         matrix(i, 0) = result_type(i);
     }
-    for (y_size_type j = 0; j <= y_size; ++j) {
+    for (std::size_t j = 0; j <= y_size; ++j) {
         matrix(0, j) = result_type(j);
     }
 
-    for (x_size_type i = 1; i <= x_size; ++i) {
-        for (y_size_type j = 1; j <= y_size; ++j) {
+    const auto x_begin = std::ranges::begin(x);
+    const auto y_begin = std::ranges::begin(y);
+
+    for (std::size_t i = 1; i <= x_size; ++i) {
+        for (std::size_t j = 1; j <= y_size; ++j) {
+            const auto i_minus = std::ranges::range_difference_t<R1>(i - 1);
+            const auto j_minus = std::ranges::range_difference_t<R2>(j - 1);
+            const auto sub_cost = result_type(x_begin[i_minus] != y_begin[j_minus]);
             matrix(i, j) = std::min({
-                matrix(i - 1, j    ) + 1,                                // deletion
-                matrix(i,     j - 1) + 1,                                // insertion
-                matrix(i - 1, j - 1) + result_type(y[j - 1] != x[i - 1]) // substitution
+                matrix(i - 1, j    ) + 1,        // deletion
+                matrix(i,     j - 1) + 1,        // insertion
+                matrix(i - 1, j - 1) + sub_cost  // substitution
             });
         }
     }
