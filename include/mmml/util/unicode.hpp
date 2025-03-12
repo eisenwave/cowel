@@ -200,6 +200,20 @@ constexpr Result<void, Error_Code> is_valid(std::u8string_view str) noexcept
     return {};
 }
 
+/// @brief Returns the number of code points in `str`.
+/// The behavior is undefined if `str` is not a valid UTF-8 string.
+[[nodiscard]]
+constexpr std::size_t code_points_unchecked(std::u8string_view str) noexcept
+{
+    std::size_t result = 0;
+    while (!str.empty()) {
+        const auto unit_length = std::size_t(sequence_length(str.front()));
+        str.remove_prefix(unit_length);
+        ++result;
+    }
+    return result;
+}
+
 /// @brief Thrown when decoding unicode strings fails.
 struct Unicode_Error : std::runtime_error {
     using std::runtime_error::runtime_error;
