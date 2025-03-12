@@ -92,6 +92,7 @@ enum struct To_HTML_Mode : Default_Underlying {
     paragraphs_trimmed,
 };
 
+[[nodiscard]]
 constexpr bool to_html_mode_is_trimmed(To_HTML_Mode mode)
 {
     return mode == To_HTML_Mode::trimmed || mode == To_HTML_Mode::paragraphs_trimmed;

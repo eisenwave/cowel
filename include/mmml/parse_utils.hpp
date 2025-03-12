@@ -54,6 +54,7 @@ struct Blank_Line {
     std::size_t begin;
     std::size_t length;
 
+    [[nodiscard]]
     constexpr explicit operator bool() const
     {
         return length != 0;
