@@ -10,7 +10,7 @@
 namespace mmml {
 
 struct Typo_Result {
-    std::u8string_view best_match {};
+    std::size_t index = 0;
     std::size_t distance = std::size_t(-1);
 
     [[nodiscard]]

@@ -29,7 +29,8 @@ Typo_Result closest_match_ascii(
 
     Typo_Result best_match;
 
-    for (const std::u8string_view hay : haystack) {
+    for (std::size_t i = 0; i < haystack.size(); ++i) {
+        const std::u8string_view hay = haystack[i];
         const auto distance = [&] -> std::size_t {
             if (is_ascii(hay)) {
                 return code_unit_levenshtein_distance(hay, needle, memory);
@@ -46,7 +47,8 @@ Typo_Result closest_match_ascii(
         }();
 
         if (distance < best_match.distance) {
-            best_match = { hay, distance };
+            best_match.index = i;
+            best_match.distance = distance;
         }
     }
 
@@ -71,7 +73,8 @@ Typo_Result closest_match(
 
     Typo_Result best_match;
 
-    for (const std::u8string_view hay : haystack) {
+    for (std::size_t i = 0; i < haystack.size(); ++i) {
+        const std::u8string_view hay = haystack[i];
         const auto distance = [&] -> std::size_t {
             hay32.clear();
             hay32.reserve(hay.size());
@@ -81,7 +84,8 @@ Typo_Result closest_match(
         }();
 
         if (distance < best_match.distance) {
-            best_match = { hay, distance };
+            best_match.index = i;
+            best_match.distance = distance;
         }
     }
 
