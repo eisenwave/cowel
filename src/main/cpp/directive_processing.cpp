@@ -305,10 +305,9 @@ void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Co
 }
 
 struct To_HTML_Paragraphs {
+private:
     HTML_Writer& m_out;
     Context& m_context;
-
-private:
     bool m_in_paragraph = false;
 
 public:
