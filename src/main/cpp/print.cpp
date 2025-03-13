@@ -445,25 +445,15 @@ public:
         out.append(u8'\n');
     }
 
-    void visit(const ast::Behaved_Content& directive) final
+    void visit(const ast::Generated& generated) final
     {
         print_indent();
 
-        out.append(u8"BehavedContent", Diagnostic_Highlight::tag);
+        out.append(u8"Generated", Diagnostic_Highlight::tag);
 
-        if (!directive.get_content().empty()) {
-            out.append(u8'{', Diagnostic_Highlight::punctuation);
-            out.append(u8'\n');
-            {
-                const Scoped_Indent i = indented();
-                visit_content_sequence(directive.get_content());
-            }
-            print_indent();
-            out.append(u8'}', Diagnostic_Highlight::punctuation);
-        }
-        else {
-            out.append(u8"{}", Diagnostic_Highlight::punctuation);
-        }
+        out.append(u8'{', Diagnostic_Highlight::punctuation);
+        out.append(generated.as_string(), Diagnostic_Highlight::text);
+        out.append(u8'}', Diagnostic_Highlight::punctuation);
 
         out.append(u8'\n');
     }

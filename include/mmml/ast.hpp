@@ -109,6 +109,12 @@ public:
     }
 
     [[nodiscard]]
+    std::size_t get_name_length() const
+    {
+        return m_name_length;
+    }
+
+    [[nodiscard]]
     std::u8string_view get_source(std::u8string_view source) const
     {
         MMML_ASSERT(m_pos.begin + m_pos.length <= source.size());
@@ -125,35 +131,6 @@ public:
     std::span<Argument> get_arguments();
     [[nodiscard]]
     std::span<const Argument> get_arguments() const;
-    [[nodiscard]]
-    std::span<Content> get_content();
-    [[nodiscard]]
-    std::span<Content const> get_content() const;
-};
-
-struct Behaved_Content final {
-private:
-    Content_Behavior* m_behavior;
-    std::pmr::vector<Content> m_content;
-
-public:
-    [[nodiscard]]
-    Behaved_Content(Content_Behavior& behavior, std::pmr::vector<Content>&& block);
-
-    Behaved_Content(Behaved_Content&&) noexcept;
-    Behaved_Content(const Behaved_Content&);
-
-    Behaved_Content& operator=(Behaved_Content&&) noexcept;
-    Behaved_Content& operator=(const Behaved_Content&);
-
-    ~Behaved_Content();
-
-    [[nodiscard]]
-    Content_Behavior& get_behavior() const
-    {
-        return *m_behavior;
-    }
-
     [[nodiscard]]
     std::span<Content> get_content();
     [[nodiscard]]
@@ -234,7 +211,77 @@ public:
     }
 };
 
-using Content_Variant = std::variant<Directive, Behaved_Content, Text, Escaped>;
+enum struct Generated_Type : bool { plaintext, html };
+
+struct Generated final {
+private:
+    std::pmr::vector<char8_t> m_data;
+    Generated_Type m_type;
+    Directive_Display m_display;
+
+public:
+    [[nodiscard]]
+    explicit Generated(
+        std::pmr::vector<char8_t>&& data,
+        Generated_Type type,
+        Directive_Display display
+    )
+        : m_data { std::move(data) }
+        , m_type { type }
+        , m_display { display }
+    {
+    }
+
+    [[nodiscard]]
+    constexpr Generated_Type get_type() const
+    {
+        return m_type;
+    }
+
+    [[nodiscard]]
+    constexpr Directive_Display get_display() const
+    {
+        return m_display;
+    }
+
+    [[nodiscard]]
+    constexpr std::span<char8_t> as_span()
+    {
+        return m_data;
+    }
+
+    [[nodiscard]]
+    constexpr std::span<const char8_t> as_span() const
+    {
+        return m_data;
+    }
+
+    [[nodiscard]]
+    constexpr std::u8string_view as_string() const
+    {
+        return { m_data.data(), m_data.size() };
+    }
+
+    [[nodiscard]]
+    constexpr std::size_t size() const
+    {
+        return m_data.size();
+    }
+
+    [[nodiscard]]
+    constexpr bool emtpy() const
+    {
+        return m_data.empty();
+    }
+};
+
+template <typename T>
+concept node = one_of<T, Directive, Text, Escaped, Generated>;
+
+template <typename T>
+concept user_written = node<T> && !std::same_as<T, Generated>;
+
+using Content_Variant = std::variant<Directive, Text, Escaped, Generated>;
 
 struct Content : Content_Variant {
     using Content_Variant::variant;
@@ -258,12 +305,6 @@ inline Directive::Directive(const Directive&) = default;
 inline Directive& Directive::operator=(Directive&&) noexcept = default;
 inline Directive& Directive::operator=(const Directive&) = default;
 inline Directive::~Directive() = default;
-
-inline Behaved_Content::Behaved_Content(Behaved_Content&&) noexcept = default;
-inline Behaved_Content::Behaved_Content(const Behaved_Content&) = default;
-inline Behaved_Content& Behaved_Content::operator=(Behaved_Content&&) noexcept = default;
-inline Behaved_Content& Behaved_Content::operator=(const Behaved_Content&) = default;
-inline Behaved_Content::~Behaved_Content() = default;
 // NOLINTEND(readability-redundant-inline-specifier)
 
 inline std::span<Content> Argument::get_content() &
@@ -297,21 +338,12 @@ inline std::span<Content const> Directive::get_content() const
     return m_content;
 }
 
-inline std::span<Content> Behaved_Content::get_content()
-{
-    return m_content;
-}
-inline std::span<Content const> Behaved_Content::get_content() const
-{
-    return m_content;
-}
-
 [[nodiscard]]
 inline Source_Span get_source_span(const Content& node)
 {
     return visit(
         []<typename T>(const T& v) -> Source_Span {
-            if constexpr (!std::is_same_v<T, Behaved_Content>) {
+            if constexpr (one_of<T, Text, Escaped, Directive>) {
                 return v.get_source_span();
             }
             else {
@@ -327,7 +359,7 @@ inline std::u8string_view get_source(const Content& node, std::u8string_view sou
 {
     return visit(
         [source]<typename T>(const T& v) -> std::u8string_view {
-            if constexpr (!std::is_same_v<T, Behaved_Content>) {
+            if constexpr (user_written<T>) {
                 return v.get_source(source);
             }
             else {
@@ -344,7 +376,7 @@ struct Visitor_Impl {
     using Text_Type = const_if_t<Text, constant>;
     using Escaped_Type = const_if_t<Escaped, constant>;
     using Directive_Type = const_if_t<Directive, constant>;
-    using Behaved_Content_Type = const_if_t<Behaved_Content, constant>;
+    using Generated_Type = const_if_t<Generated, constant>;
     using Content_Type = const_if_t<Content, constant>;
 
     void visit_arguments(Directive_Type& directive)
@@ -379,7 +411,7 @@ struct Visitor_Impl {
 
     virtual void visit(Argument_Type& argument) = 0;
     virtual void visit(Directive_Type& directive) = 0;
-    virtual void visit(Behaved_Content_Type& behaved_content) = 0;
+    virtual void visit(Generated_Type& generated) = 0;
     virtual void visit(Text_Type& text) = 0;
     virtual void visit(Escaped_Type& text) = 0;
 };

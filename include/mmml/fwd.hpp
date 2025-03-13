@@ -91,6 +91,7 @@ struct Source_Position;
 struct Source_Span;
 struct Success_Tag;
 struct Syntax_Highlighter;
+enum struct Syntax_Highlight_Error : Default_Underlying;
 
 namespace ast {
 
@@ -98,6 +99,8 @@ struct Argument;
 struct Content;
 struct Directive;
 struct Escaped;
+struct Generated;
+enum struct Generated_Type : bool;
 struct Text;
 
 } // namespace ast

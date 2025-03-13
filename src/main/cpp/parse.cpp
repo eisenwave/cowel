@@ -49,12 +49,6 @@ Directive::Directive(
     MMML_ASSERT(m_name_length != 0);
 }
 
-Behaved_Content::Behaved_Content(Content_Behavior& behavior, std::pmr::vector<Content>&& block)
-    : m_behavior { &behavior }
-    , m_content { std::move(block) }
-{
-}
-
 Text::Text(const Source_Span& pos)
     : m_pos { pos }
 {
