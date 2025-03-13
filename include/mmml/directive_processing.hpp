@@ -3,7 +3,10 @@
 
 #include <cstddef>
 #include <span>
+#include <string_view>
 #include <vector>
+
+#include "mmml/util/result.hpp"
 
 #include "mmml/ast.hpp"
 #include "mmml/fwd.hpp"
@@ -83,7 +86,7 @@ void to_html(HTML_Writer& out, const ast::Content&, Context&);
 void to_html(HTML_Writer& out, const ast::Escaped&, Context&);
 void to_html(HTML_Writer& out, const ast::Text&, Context&);
 void to_html(HTML_Writer& out, const ast::Directive&, Context&);
-void to_html(HTML_Writer& out, const ast::Behaved_Content&, Context&);
+void to_html(HTML_Writer& out, const ast::Generated&, Context&);
 
 enum struct To_HTML_Mode : Default_Underlying {
     direct,
@@ -98,6 +101,12 @@ constexpr bool to_html_mode_is_trimmed(To_HTML_Mode mode)
     return mode == To_HTML_Mode::trimmed || mode == To_HTML_Mode::paragraphs_trimmed;
 }
 
+[[nodiscard]]
+constexpr bool to_html_mode_is_paragraphed(To_HTML_Mode mode)
+{
+    return mode == To_HTML_Mode::paragraphs || mode == To_HTML_Mode::paragraphs_trimmed;
+}
+
 void to_html(
     HTML_Writer& out,
     std::span<const ast::Content> content,
@@ -109,6 +118,14 @@ void to_html(
 void to_html_literally(HTML_Writer& out, const ast::Content& content, Context& context);
 
 void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, Context& context);
+
+Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
+    HTML_Writer& out,
+    std::span<const ast::Content> content,
+    std::u8string_view language,
+    Context& context,
+    To_HTML_Mode mode = To_HTML_Mode::direct
+);
 
 void arguments_to_attributes(Attribute_Writer& out, const ast::Directive& d, Context& context);
 
