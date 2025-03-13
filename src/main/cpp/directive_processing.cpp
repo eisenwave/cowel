@@ -11,7 +11,7 @@
 #include "mmml/util/assert.hpp"
 #include "mmml/util/hljs_scope.hpp"
 #include "mmml/util/html_writer.hpp"
-#include "mmml/util/result"
+#include "mmml/util/result.hpp"
 #include "mmml/util/source_position.hpp"
 #include "mmml/util/strings.hpp"
 
