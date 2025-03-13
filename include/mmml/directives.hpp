@@ -2,6 +2,7 @@
 #define MMML_PROCESSING_HPP
 
 #include <memory>
+#include <memory_resource>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -108,7 +109,8 @@ public:
     ~Builtin_Directive_Set();
 
     [[nodiscard]]
-    Distant<std::u8string_view> fuzzy_lookup_name(std::u8string_view name) const final;
+    Distant<std::u8string_view>
+    fuzzy_lookup_name(std::u8string_view name, std::pmr::memory_resource* memory) const final;
 
     [[nodiscard]]
     Directive_Behavior* operator()(std::u8string_view name) const final;

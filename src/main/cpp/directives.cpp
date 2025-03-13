@@ -1,4 +1,8 @@
+#include <algorithm>
+#include <array>
 #include <cstddef>
+#include <memory_resource>
+#include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
@@ -417,10 +421,52 @@ struct Builtin_Directive_Set::Impl {
 Builtin_Directive_Set::Builtin_Directive_Set() = default;
 Builtin_Directive_Set::~Builtin_Directive_Set() = default;
 
-Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view) const
+Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
+    std::u8string_view name,
+    std::pmr::memory_resource* memory
+) const
 {
-    // TODO: implement
-    return {};
+    // clang-format off
+    static constexpr std::u8string_view prefixed_names[] {
+        u8"-b",
+        u8"-c",
+        u8"-dd",
+        u8"-dl",
+        u8"-dt",
+        u8"-em",
+        u8"-error",
+        u8"-html",
+        u8"-html-",
+        u8"-i",
+        u8"-ins",
+        u8"-k",
+        u8"-kbd",
+        u8"-mark",
+        u8"-ol",
+        u8"-s",
+        u8"-small",
+        u8"-strong",
+        u8"-sub",
+        u8"-sup",
+        u8"-u",
+        u8"-ul",
+    };
+    // clang-format on
+    static constexpr auto all_names = [] {
+        std::array<std::u8string_view, std::size(prefixed_names) * 2> result;
+        std::ranges::copy(prefixed_names, result.data());
+        std::ranges::copy(
+            prefixed_names
+                | std::views::transform([](std::u8string_view n) { return n.substr(1); }),
+            result.data() + std::size(prefixed_names)
+        );
+        return result;
+    }();
+    const Distant<std::size_t> result = closest_match(all_names, name, memory);
+    if (!result) {
+        return {};
+    }
+    return { .value = all_names[result.value], .distance = result.distance };
 }
 
 Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) const

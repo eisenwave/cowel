@@ -29,8 +29,8 @@ using Suppress_Unused_Include_Transparent_Comparison = Basic_Transparent_String_
 
 struct Name_Resolver {
     [[nodiscard]]
-    virtual Distant<std::u8string_view> fuzzy_lookup_name(std::u8string_view name) const
-        = 0;
+    virtual Distant<std::u8string_view>
+    fuzzy_lookup_name(std::u8string_view name, std::pmr::memory_resource* memory) const = 0;
 
     [[nodiscard]]
     virtual Directive_Behavior* operator()(std::u8string_view name) const
