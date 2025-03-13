@@ -448,6 +448,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-strong",
         u8"-sub",
         u8"-sup",
+        u8"-tt",
         u8"-u",
         u8"-ul",
     };
