@@ -100,6 +100,12 @@ struct Source_Span : Source_Position {
     {
         return { .line = line, .column = column + length, .begin = begin + length };
     }
+
+    [[nodiscard]]
+    constexpr bool contains(std::size_t pos) const
+    {
+        return pos >= begin && pos < end();
+    }
 };
 
 /// Represents the location of a file, combined with the position within that file.
