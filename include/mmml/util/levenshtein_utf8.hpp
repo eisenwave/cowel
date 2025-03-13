@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <iterator>
 #include <memory_resource>
 #include <span>
 #include <string>

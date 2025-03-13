@@ -1,5 +1,7 @@
+#include <cstddef>
 #include <gtest/gtest.h>
 #include <memory_resource>
+#include <span>
 #include <string_view>
 
 #include "mmml/util/typo.hpp"

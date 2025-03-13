@@ -7,6 +7,7 @@
 
 #include "mmml/fwd.hpp"
 #include "mmml/util/html_writer.hpp"
+#include "mmml/util/typo.hpp"
 
 #include "mmml/ast.hpp"
 #include "mmml/directive_arguments.hpp"

@@ -1,6 +1,7 @@
 #ifndef MMML_AST_HPP
 #define MMML_AST_HPP
 
+#include <concepts>
 #include <cstddef>
 #include <span>
 #include <string_view>

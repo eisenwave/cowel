@@ -2,6 +2,7 @@
 #include <ranges>
 #include <span>
 #include <string_view>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -10,6 +11,7 @@
 #include "mmml/util/assert.hpp"
 #include "mmml/util/hljs_scope.hpp"
 #include "mmml/util/html_writer.hpp"
+#include "mmml/util/result"
 #include "mmml/util/source_position.hpp"
 #include "mmml/util/strings.hpp"
 
@@ -752,7 +754,7 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
 // that interleave with the highlighted content.
 // However, for the common case of highlighted content that contains no directives,
 // we could simplify and generate directly.
-#if 0
+#if 0 // NOLINT
 const HLJS_Annotation_Span* previous_span = nullptr;
 for (; index < to_source_index.size(); ++index) {
     const std::size_t source_index = to_source_index[index];
