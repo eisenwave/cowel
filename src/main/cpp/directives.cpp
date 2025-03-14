@@ -233,6 +233,56 @@ protected:
         = 0;
 };
 
+[[nodiscard]]
+std::u8string_view argument_to_plaintext_or(
+    std::pmr::vector<char8_t>& out,
+    std::u8string_view parameter_name,
+    std::u8string_view fallback,
+    const ast::Directive& directive,
+    const Argument_Matcher& args,
+    Context& context
+)
+{
+    const int index = args.get_argument_index(parameter_name);
+    if (index < 0) {
+        return fallback;
+    }
+    to_plaintext(out, directive.get_arguments()[std::size_t(index)].get_content(), context);
+    return { out.data(), out.size() };
+}
+
+struct [[nodiscard]] Syntax_Highlight_Behavior : Parametric_Behavior {
+    static constexpr std::u8string_view lang_parameter = u8"lang";
+    static constexpr std::u8string_view parameters[] { lang_parameter };
+
+    explicit Syntax_Highlight_Behavior(Directive_Display d)
+        : Parametric_Behavior { Directive_Category::pure_html, d, parameters }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive&, const Argument_Matcher&, Context&)
+        const override
+    {
+    }
+
+    void generate_html(
+        HTML_Writer& out,
+        const ast::Directive& d,
+        const Argument_Matcher& args,
+        Context& context
+    ) const override
+    {
+        std::pmr::vector<char8_t> lang_data { context.get_transient_memory() };
+        const std::u8string_view lang
+            = argument_to_plaintext_or(lang_data, lang_parameter, u8"", d, args, context);
+
+        const auto mode
+            = display == Directive_Display::block ? To_HTML_Mode::trimmed : To_HTML_Mode::direct;
+        to_html_syntax_highlighted(out, d.get_content(), lang, context, mode);
+    }
+};
+
 struct Variable_Behavior : Parametric_Behavior {
     static constexpr std::u8string_view var_parameter = u8"var";
     static constexpr std::u8string_view parameters[] { var_parameter };
@@ -249,7 +299,7 @@ struct Variable_Behavior : Parametric_Behavior {
         Context& context
     ) const override
     {
-        std::pmr::vector<char8_t> data;
+        std::pmr::vector<char8_t> data { context.get_transient_memory() };
         const std::u8string_view name = get_variable_name(data, d, args, context);
         generate_var_plaintext(out, d, name, context);
     }
@@ -261,7 +311,7 @@ struct Variable_Behavior : Parametric_Behavior {
         Context& context
     ) const override
     {
-        std::pmr::vector<char8_t> data;
+        std::pmr::vector<char8_t> data { context.get_transient_memory() };
         const std::u8string_view name = get_variable_name(data, d, args, context);
         generate_var_html(out, d, name, context);
     }
@@ -408,6 +458,8 @@ struct Builtin_Directive_Set::Impl {
     Do_Nothing_Behavior do_nothing;
     Error_Behavior error;
     HTML_Literal_Behavior html {};
+    Syntax_Highlight_Behavior inline_code { Directive_Display::in_line };
+    Syntax_Highlight_Behavior code_block { Directive_Display::block };
     Directive_Name_Passthrough_Behavior direct_formatting { Directive_Category::formatting,
                                                             Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior tt_formatting { Directive_Category::formatting,
@@ -430,6 +482,9 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
     static constexpr std::u8string_view prefixed_names[] {
         u8"-b",
         u8"-c",
+        u8"-code",
+        u8"-codeblock",
+        u8"-comment",
         u8"-dd",
         u8"-dl",
         u8"-dt",
@@ -453,6 +508,8 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-ul",
     };
     // clang-format on
+    static_assert(prefixed_names[0][0] == builtin_directive_prefix);
+
     static constexpr auto all_names = [] {
         std::array<std::u8string_view, std::size(prefixed_names) * 2> result;
         std::ranges::copy(prefixed_names, result.data());
@@ -489,6 +546,10 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'c':
+        if (name == u8"c" || name == u8"code")
+            return &m_impl->inline_code;
+        if (name == u8"codeblock")
+            return &m_impl->code_block;
         if (name == u8"comment")
             return &m_impl->do_nothing;
         break;
