@@ -71,9 +71,7 @@ struct Error_Behavior : Do_Nothing_Behavior {
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override
     {
         out.open_tag(id);
-        for (const ast::Content& c : d.get_content()) {
-            out.write_inner_text(get_source(c, context.get_source()));
-        }
+        out.write_inner_text(d.get_source(context.get_source()));
         out.close_tag(id);
     }
 };
@@ -309,7 +307,9 @@ HTML_Entity_Behavior final : Directive_Behavior {
             try_generate_error_html(out, d, context);
             return;
         }
+        out.write_inner_html(u8'&');
         out.write_inner_html(trimmed_text);
+        out.write_inner_html(u8';');
     }
 
 private:
@@ -330,7 +330,7 @@ private:
         if (!d.get_arguments().empty()) {
             const Source_Span pos = d.get_arguments().front().get_source_span();
             context.try_emit(
-                Severity::warning, u8"charref.args.ignored", pos,
+                Severity::warning, diagnostic::c_args_ignored, pos,
                 u8"Arguments to this directive are ignored."
             );
         }
@@ -343,7 +343,7 @@ private:
     {
         if (trimmed_text.empty()) {
             context.try_emit(
-                Severity::error, u8"charref.blank", d.get_source_span(),
+                Severity::error, diagnostic::c_blank, d.get_source_span(),
                 u8"Expected an HTML character reference, but got a blank string."
             );
             return {};
@@ -357,7 +357,7 @@ private:
             = code_points_by_character_reference_name(trimmed_text);
         if (result[0] == 0) {
             context.try_emit(
-                Severity::error, u8"charref.name", d.get_source_span(),
+                Severity::error, diagnostic::c_name, d.get_source_span(),
                 u8"Invalid named HTML character."
             );
         }
@@ -377,14 +377,14 @@ private:
             const std::u8string_view message = base == 10
                 ? u8"Expected a sequence of decimal digits."
                 : u8"Expected a sequence of hexadecimal digits.";
-            context.try_emit(Severity::error, u8"d.charref.digits", d.get_source_span(), message);
+            context.try_emit(Severity::error, diagnostic::c_digits, d.get_source_span(), message);
             return {};
         }
 
         const auto code_point = char32_t(*value);
         if (!is_scalar_value(code_point)) {
             context.try_emit(
-                Severity::error, u8"charref.nonscalar", d.get_source_span(),
+                Severity::error, diagnostic::c_nonscalar, d.get_source_span(),
                 u8"The given hex sequence is not a Unicode scalar value. "
                 u8"Therefore, it cannot be encoded as UTF-8."
             );
@@ -433,7 +433,7 @@ Code_Point_Behavior final : Directive_Behavior {
         if (!d.get_arguments().empty()) {
             const Source_Span pos = d.get_arguments().front().get_source_span();
             context.try_emit(
-                Severity::warning, u8"codepoint.args.ignored", pos,
+                Severity::warning, diagnostic::U_args_ignored, pos,
                 u8"Arguments to this directive are ignored."
             );
         }
@@ -442,7 +442,7 @@ Code_Point_Behavior final : Directive_Behavior {
         const std::u8string_view digits = trim_ascii_blank({ data.data(), data.size() });
         if (digits.empty()) {
             context.try_emit(
-                Severity::error, u8"codepoint.blank", d.get_source_span(),
+                Severity::error, diagnostic::U_blank, d.get_source_span(),
                 u8"Expected a sequence of hexadecimal digits, but got a blank string."
             );
             return error_point;
@@ -451,7 +451,7 @@ Code_Point_Behavior final : Directive_Behavior {
         std::optional<std::uint32_t> value = from_chars<std::uint32_t>(digits, 16);
         if (!value) {
             context.try_emit(
-                Severity::error, u8"codepoint.parse", d.get_source_span(),
+                Severity::error, diagnostic::U_digits, d.get_source_span(),
                 u8"Expected a sequence of hexadecimal digits."
             );
             return error_point;
@@ -460,7 +460,7 @@ Code_Point_Behavior final : Directive_Behavior {
         const auto code_point = char32_t(*value);
         if (!is_scalar_value(code_point)) {
             context.try_emit(
-                Severity::error, u8"codepoint.nonscalar", d.get_source_span(),
+                Severity::error, diagnostic::U_nonscalar, d.get_source_span(),
                 u8"The given hex sequence is not a Unicode scalar value. "
                 u8"Therefore, it cannot be encoded as UTF-8."
             );
@@ -699,6 +699,11 @@ Builtin_Directive_Set::Builtin_Directive_Set()
 
 Builtin_Directive_Set::~Builtin_Directive_Set() = default;
 
+Directive_Behavior& Builtin_Directive_Set::get_error_behavior() noexcept
+{
+    return m_impl->error;
+}
+
 Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
     std::u8string_view name,
     std::pmr::memory_resource* memory
@@ -774,7 +779,7 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
 
     case u8'c':
         if (name == u8"c")
-            return &m_impl->code_block;
+            return &m_impl->entity;
         if (name == u8"code")
             return &m_impl->inline_code;
         if (name == u8"codeblock")

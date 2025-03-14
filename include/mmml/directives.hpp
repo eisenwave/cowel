@@ -109,6 +109,9 @@ public:
     ~Builtin_Directive_Set();
 
     [[nodiscard]]
+    Directive_Behavior& get_error_behavior() noexcept;
+
+    [[nodiscard]]
     Distant<std::u8string_view>
     fuzzy_lookup_name(std::u8string_view name, std::pmr::memory_resource* memory) const final;
 

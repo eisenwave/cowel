@@ -58,6 +58,32 @@ struct Diagnostic {
     std::pmr::u8string message;
 };
 
+namespace diagnostic {
+
+/// @brief In `\\c`, arguments were ignored.
+inline constexpr std::u8string_view c_args_ignored = u8"c.args.ignored";
+/// @brief In `\\c`, the input is blank.
+inline constexpr std::u8string_view c_blank = u8"c.blank";
+/// @brief In `\\c`, the name is invalid, like `\\c{nonsense}`.
+inline constexpr std::u8string_view c_name = u8"c.name";
+/// @brief In `\\c`, parsing digits failed, like `\\c{#x1234abc}`.
+inline constexpr std::u8string_view c_digits = u8"c.digits";
+/// @brief In `\\c`, a nonscalar value would be encoded.
+/// @see is_scalar_value
+inline constexpr std::u8string_view c_nonscalar = u8"c.nonscalar";
+
+/// @brief In `\\U`, arguments were ignored.
+inline constexpr std::u8string_view U_args_ignored = u8"U.args.ignored";
+/// @brief In `\\U`, the input is blank.
+inline constexpr std::u8string_view U_blank = u8"U.blank";
+/// @brief In `\\U`, parsing digits failed, like `\\U{abc}`.
+inline constexpr std::u8string_view U_digits = u8"U.digits";
+/// @brief In `\\U`, a nonscalar value would be encoded.
+/// @see is_scalar_value
+inline constexpr std::u8string_view U_nonscalar = u8"charref.nonscalar";
+
+} // namespace diagnostic
+
 } // namespace mmml
 
 #endif
