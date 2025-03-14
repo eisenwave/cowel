@@ -1,3 +1,5 @@
+#include <array>
+#include <cstddef>
 #include <memory_resource>
 #include <span>
 #include <string_view>
@@ -5,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+#include "mmml/util/html_entities.hpp"
 #include "mmml/util/html_writer.hpp"
 
 namespace mmml {
@@ -126,6 +129,44 @@ TEST_F(HTML_Writer_Test, attributes_escape)
         .end_empty();
 
     EXPECT_EQ(expected, as_view(out));
+}
+
+TEST(HTML_Entities, empty)
+{
+    constexpr std::array<char32_t, 2> expected {};
+    const std::array<char32_t, 2> actual = code_points_by_character_reference_name(u8"");
+
+    EXPECT_EQ(expected, actual);
+}
+
+TEST(HTML_Entities, amp)
+{
+    constexpr std::array<char32_t, 2> expected { U'&' };
+    const std::array<char32_t, 2> actual = code_points_by_character_reference_name(u8"amp");
+
+    EXPECT_EQ(expected, actual);
+}
+
+TEST(HTML_Entities, bne)
+{
+    constexpr std::array<char32_t, 2> expected { U'\u003D', U'\u20E5' };
+    const std::array<char32_t, 2> actual = code_points_by_character_reference_name(u8"bne");
+
+    EXPECT_EQ(expected, actual);
+}
+
+TEST(HTML_Entities, all_found)
+{
+    constexpr std::array<char32_t, 2> unexpected {};
+
+    for (const std::u8string_view name : html_character_names) {
+        const std::array<char32_t, 2> result = code_points_by_character_reference_name(name);
+        EXPECT_NE(result, unexpected);
+        const std::size_t length = result[1] != 0 ? 2uz : 1uz;
+        const std::u32string_view other_string { result.data(), length };
+        const std::u32string_view result_string = string_by_character_reference_name(name);
+        EXPECT_EQ(result_string, other_string);
+    }
 }
 
 } // namespace
