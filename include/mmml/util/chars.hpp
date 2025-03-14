@@ -303,6 +303,34 @@ constexpr bool is_html_unquoted_attribute_value_character(char32_t c)
     return !is_ascii(c) || is_html_unquoted_attribute_value_character(char8_t(c));
 }
 
+/// @brief Returns `true` iff `c`
+/// is part of the minimal set of characters
+/// so that text comprised of such characters
+/// can be passed through into raw HTML text,
+/// without its meaning altered.
+///
+/// Specifically, `c` cannot be `'<'` or `'&'`
+/// because these could initiate an HTML tag or entity.
+[[nodiscard]]
+constexpr bool is_html_min_raw_passthrough_character(char8_t c)
+{
+    return c != u8'<' && c != u8'&';
+}
+
+/// @brief Returns `true` iff `c`
+/// is part of the minimal set of characters
+/// so that text comprised of such characters
+/// can be passed through into raw HTML text,
+/// without its meaning altered.
+///
+/// Specifically, `c` cannot be `'<'` or `'&'`
+/// because these could initiate an HTML tag or entity.
+[[nodiscard]]
+constexpr bool is_html_min_raw_passthrough_character(char32_t c)
+{
+    return c != U'<' && c != U'&';
+}
+
 /// @brief Returns `true` if `c` is an escapable MMML character.
 /// That is, if `\\c` would corresponds to the literal character `c`,
 /// rather than starting a directive or being treated as literal text.
