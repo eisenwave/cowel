@@ -675,8 +675,8 @@ constexpr std::u8string_view html_tag_prefix = u8"html-";
 } // namespace
 
 struct Builtin_Directive_Set::Impl {
-    Do_Nothing_Behavior do_nothing;
-    Error_Behavior error;
+    Do_Nothing_Behavior comment { Directive_Category::meta, Directive_Display::none };
+    Error_Behavior error {};
     HTML_Literal_Behavior html {};
     Code_Point_Behavior code_point {};
     HTML_Entity_Behavior entity {};
@@ -692,7 +692,11 @@ struct Builtin_Directive_Set::Impl {
                                                     Directive_Display::block, html_tag_prefix };
 };
 
-Builtin_Directive_Set::Builtin_Directive_Set() = default;
+Builtin_Directive_Set::Builtin_Directive_Set()
+    : m_impl(std::make_unique<Builtin_Directive_Set::Impl>())
+{
+}
+
 Builtin_Directive_Set::~Builtin_Directive_Set() = default;
 
 Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
@@ -776,7 +780,7 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         if (name == u8"codeblock")
             return &m_impl->code_block;
         if (name == u8"comment")
-            return &m_impl->do_nothing;
+            return &m_impl->comment;
         break;
 
     case u8'd':
