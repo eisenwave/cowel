@@ -3,6 +3,11 @@
 
 namespace mmml {
 
+/// @brief The greatest value for which `is_ascii` is `true`.
+inline constexpr char32_t code_point_max_ascii = U'\u007f';
+/// @brief The greatest value for which `is_code_point` is `true`.
+inline constexpr char32_t code_point_max = U'\U0010FFFF';
+
 /// @brief Returns `true` if the `c` is a decimal digit (`0` through `9`).
 [[nodiscard]]
 constexpr bool is_ascii_digit(char8_t c)
@@ -127,6 +132,44 @@ constexpr bool is_ascii(char8_t c)
 constexpr bool is_ascii(char32_t c)
 {
     return c <= U'\u007f';
+}
+
+[[nodiscard]]
+constexpr bool is_code_point(char32_t c)
+{
+    // https://infra.spec.whatwg.org/#code-point
+    return c <= code_point_max;
+}
+
+[[nodiscard]]
+constexpr bool is_leading_surrogate(char32_t c)
+{
+    // https://infra.spec.whatwg.org/#leading-surrogate
+    return c >= 0xD800 && c <= 0xDBFF;
+}
+
+[[nodiscard]]
+constexpr bool is_trailing_surrogate(char32_t c)
+{
+    // https://infra.spec.whatwg.org/#trailing-surrogate
+    return c >= 0xDC00 && c <= 0xDFFF;
+}
+
+[[nodiscard]]
+constexpr bool is_surrogate(char32_t c)
+{
+    // https://infra.spec.whatwg.org/#surrogate
+    return c >= 0xD800 && c <= 0xDFFF;
+}
+
+/// @brief Returns `true` iff `c` is a scalar value,
+/// i.e. a code point that is not a surrogate.
+/// Only scalar values can be encoded via UTF-8.
+[[nodiscard]]
+constexpr bool is_scalar_value(char32_t c)
+{
+    // https://infra.spec.whatwg.org/#scalar-value
+    return is_code_point(c) && !is_surrogate(c);
 }
 
 /// @brief Returns `true` if `c` is a noncharacter,
