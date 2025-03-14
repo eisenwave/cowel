@@ -4,8 +4,10 @@
 #include <vector>
 
 #include "mmml/util/assert.hpp"
+#include "mmml/util/chars.hpp"
 #include "mmml/util/html_writer.hpp"
 #include "mmml/util/strings.hpp"
+#include "mmml/util/unicode.hpp"
 
 namespace mmml {
 
@@ -22,6 +24,13 @@ std::u8string_view html_entity_of(char8_t c)
     case u8'"': return u8"&quot;";
     default: MMML_ASSERT_UNREACHABLE(u8"We only support a handful of characters.");
     }
+}
+
+[[nodiscard]]
+std::u8string_view html_entity_of(char32_t c)
+{
+    MMML_DEBUG_ASSERT(is_ascii(c));
+    return html_entity_of(char8_t(c));
 }
 
 } // namespace
@@ -70,10 +79,44 @@ void HTML_Writer::write_inner_text(string_view_type text)
     append_html_escaped(m_out, text, u8"&<>");
 }
 
-void HTML_Writer::write_inner_html(string_view_type text)
+void HTML_Writer::write_inner_text(char32_t c)
+{
+    MMML_DEBUG_ASSERT(!m_in_attributes);
+    MMML_DEBUG_ASSERT(is_scalar_value(c));
+    append(
+        m_out,
+        is_html_min_raw_passthrough_character(c) ? utf8::encode8_unchecked(c).as_string()
+                                                 : html_entity_of(c)
+    );
+}
+
+void HTML_Writer::write_inner_text(std::u32string_view text)
+{
+    MMML_ASSERT(!m_in_attributes);
+    for (const char32_t c : text) {
+        write_inner_text(c);
+    }
+}
+
+void HTML_Writer::write_inner_html(char32_t c)
+{
+    MMML_DEBUG_ASSERT(!m_in_attributes);
+    MMML_DEBUG_ASSERT(is_scalar_value(c));
+    append(m_out, utf8::encode8_unchecked(c).as_string());
+}
+
+void HTML_Writer::write_inner_html(std::u8string_view text)
 {
     MMML_ASSERT(!m_in_attributes);
     do_write(text);
+}
+
+void HTML_Writer::write_inner_html(std::u32string_view text)
+{
+    MMML_ASSERT(!m_in_attributes);
+    for (const char32_t c : text) {
+        write_inner_html(c);
+    }
 }
 
 HTML_Writer& HTML_Writer::write_preamble()
