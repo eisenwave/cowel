@@ -273,6 +273,66 @@ The following langauges are supported by default:
 The `\color` directive marks a range of text as having a different color.
 The specified `color` can be an RGB hex code, or a recognized CSS color name.
 
+## Special characters
+
+It is quite common that a text document should include special characters.
+While MMML is built on UTF-8,
+and in theory one could just write the character directly into the source code,
+not every text editor handles special characters well.
+
+To increase portability,
+MMML has the `\U` and `\c` directives.
+
+### `\U{...}` - Code point literal
+
+Inserts the code point specified by the hexadecimal number within `\U`.
+Leading and trailing whitespace around the digit sequence is ignored.
+The digit sequence has to denote a
+[Unicode scalar value](https://infra.spec.whatwg.org/#scalar-value),
+that is, a code point which UTF-8 permits to be encoded.
+
+For example,
+`\U{C6}` generates `U+00C6` ("Æ" LATIN CAPITAL LETTER AE)
+within the document.
+
+Note that directives within `\U` are allowed,
+and are processed into plaintext.
+
+### `\c{...}` - Character references
+
+HTML character references aka "HTML entities" denote
+up to two Unicode code points.
+MMML translates `\c{...}` into HTML literally: `\c{...}` becomes `&...;`.
+However, the validity of the character reference is still checked;
+the contents are not blindly passed through to HTML.
+
+For example, these are all possible ways to produce the `&` character:
+
+| MMML | Generated HTML |
+| --- | --- |
+| `&` | `&` (or `&amp;` if necessary)
+| `\U{26}` | `&` (or `&amp;` if necessary)
+| `\c{amp}` | `&amp;`
+| `\c{#38}` | `&#38;`
+| `\c{#x26}` | `&x26;`
+
+Furthermore, for the purpose of syntax-highlighting,
+the Unicode character is produced directly in a plaintext context,
+such as in code.
+For example:
+```tex
+\code{\c{Omega}}
+\c{Omega}
+```
+... generates (assuming no syntax highlighting):
+```html
+<code>Ω</code>
+&Omega;
+```
+
+Note that directives within `\c` are allowed,
+and are processed into plaintext.
+
 ## Counters
 
 It is often useful to have increasing numbers in text, such as for paragraph numbers.

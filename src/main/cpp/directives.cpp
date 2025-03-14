@@ -1,7 +1,9 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <memory_resource>
+#include <optional>
 #include <ranges>
 #include <span>
 #include <string>
@@ -9,14 +11,18 @@
 #include <utility>
 #include <vector>
 
-#include "mmml/fwd.hpp"
+#include "mmml/util/chars.hpp"
+#include "mmml/util/from_chars.hpp"
+#include "mmml/util/html_entities.hpp"
 #include "mmml/util/html_writer.hpp"
+#include "mmml/util/strings.hpp"
 #include "mmml/util/typo.hpp"
 
 #include "mmml/ast.hpp"
 #include "mmml/directive_arguments.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
+#include "mmml/fwd.hpp"
 
 namespace mmml {
 
@@ -251,6 +257,220 @@ std::u8string_view argument_to_plaintext_or(
     return { out.data(), out.size() };
 }
 
+void try_generate_error_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    Context& context
+)
+{
+    if (const Directive_Behavior* const behavior = context.get_error_behavior()) {
+        behavior->generate_plaintext(out, d, context);
+    }
+}
+
+void try_generate_error_html(HTML_Writer& out, const ast::Directive& d, Context& context)
+{
+    if (const Directive_Behavior* const behavior = context.get_error_behavior()) {
+        behavior->generate_html(out, d, context);
+    }
+}
+
+struct [[nodiscard]]
+HTML_Entity_Behavior final : Directive_Behavior {
+    HTML_Entity_Behavior()
+        : Directive_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
+        const override
+    {
+        check_arguments(d, context);
+        std::pmr::vector<char8_t> data { context.get_transient_memory() };
+        to_plaintext(data, d.get_content(), context);
+        const std::u8string_view trimmed_text = trim_ascii_blank({ data.data(), data.size() });
+        const std::array<char32_t, 2> code_points = get_code_points(trimmed_text, d, context);
+        if (code_points[0] == 0) {
+            try_generate_error_plaintext(out, d, context);
+            return;
+        }
+        HTML_Writer out_writer { out };
+        out_writer.write_inner_html(as_string_view(code_points));
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final
+    {
+        check_arguments(d, context);
+        std::pmr::vector<char8_t> data { context.get_transient_memory() };
+        to_plaintext(data, d.get_content(), context);
+        const std::u8string_view trimmed_text = trim_ascii_blank({ data.data(), data.size() });
+        if (get_code_points(trimmed_text, d, context)[0] == 0) {
+            try_generate_error_html(out, d, context);
+            return;
+        }
+        out.write_inner_html(trimmed_text);
+    }
+
+private:
+    [[nodiscard]]
+    static std::u32string_view as_string_view(const std::array<char32_t, 2>& array)
+    {
+        if (array[0] == 0) {
+            return { array.data(), 0uz };
+        }
+        if (array[1] == 0) {
+            return { array.data(), 1uz };
+        }
+        return { array.data(), 2uz };
+    }
+
+    void check_arguments(const ast::Directive& d, Context& context) const
+    {
+        if (!d.get_arguments().empty()) {
+            const Source_Span pos = d.get_arguments().front().get_source_span();
+            context.try_emit(
+                Severity::warning, u8"charref.args.ignored", pos,
+                u8"Arguments to this directive are ignored."
+            );
+        }
+    }
+
+    [[nodiscard]]
+    std::array<char32_t, 2>
+    get_code_points(std::u8string_view trimmed_text, const ast::Directive& d, Context& context)
+        const
+    {
+        if (trimmed_text.empty()) {
+            context.try_emit(
+                Severity::error, u8"charref.blank", d.get_source_span(),
+                u8"Expected an HTML character reference, but got a blank string."
+            );
+            return {};
+        }
+        if (trimmed_text[0] == u8'#') {
+            const int base
+                = trimmed_text.starts_with(u8"#x") || trimmed_text.starts_with(u8"#X") ? 16 : 10;
+            return get_code_points_from_digits(trimmed_text.substr(2), base, d, context);
+        }
+        const std::array<char32_t, 2> result
+            = code_points_by_character_reference_name(trimmed_text);
+        if (result[0] == 0) {
+            context.try_emit(
+                Severity::error, u8"charref.name", d.get_source_span(),
+                u8"Invalid named HTML character."
+            );
+        }
+        return result;
+    }
+
+    [[nodiscard]]
+    std::array<char32_t, 2> get_code_points_from_digits(
+        std::u8string_view digits,
+        int base,
+        const ast::Directive& d,
+        Context& context
+    ) const
+    {
+        std::optional<std::uint32_t> value = from_chars<std::uint32_t>(digits, base);
+        if (!value) {
+            const std::u8string_view message = base == 10
+                ? u8"Expected a sequence of decimal digits."
+                : u8"Expected a sequence of hexadecimal digits.";
+            context.try_emit(Severity::error, u8"d.charref.digits", d.get_source_span(), message);
+            return {};
+        }
+
+        const auto code_point = char32_t(*value);
+        if (!is_scalar_value(code_point)) {
+            context.try_emit(
+                Severity::error, u8"charref.nonscalar", d.get_source_span(),
+                u8"The given hex sequence is not a Unicode scalar value. "
+                u8"Therefore, it cannot be encoded as UTF-8."
+            );
+            return {};
+        }
+
+        return { code_point };
+    }
+};
+
+struct [[nodiscard]]
+Code_Point_Behavior final : Directive_Behavior {
+    static constexpr char32_t error_point = char32_t(-1);
+
+    Code_Point_Behavior()
+        : Directive_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
+        const override
+    {
+        const char32_t code_point = get_code_point(d, context);
+        if (code_point == error_point) {
+            try_generate_error_plaintext(out, d, context);
+            return;
+        }
+        HTML_Writer out_writer { out };
+        out_writer.write_inner_html(code_point);
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final
+    {
+        const char32_t code_point = get_code_point(d, context);
+        if (code_point == error_point) {
+            try_generate_error_html(out, d, context);
+            return;
+        }
+        out.write_inner_html(code_point);
+    }
+
+    [[nodiscard]]
+    char32_t get_code_point(const ast::Directive& d, Context& context) const
+    {
+        if (!d.get_arguments().empty()) {
+            const Source_Span pos = d.get_arguments().front().get_source_span();
+            context.try_emit(
+                Severity::warning, u8"codepoint.args.ignored", pos,
+                u8"Arguments to this directive are ignored."
+            );
+        }
+        std::pmr::vector<char8_t> data { context.get_transient_memory() };
+        to_plaintext(data, d.get_content(), context);
+        const std::u8string_view digits = trim_ascii_blank({ data.data(), data.size() });
+        if (digits.empty()) {
+            context.try_emit(
+                Severity::error, u8"codepoint.blank", d.get_source_span(),
+                u8"Expected a sequence of hexadecimal digits, but got a blank string."
+            );
+            return error_point;
+        }
+
+        std::optional<std::uint32_t> value = from_chars<std::uint32_t>(digits, 16);
+        if (!value) {
+            context.try_emit(
+                Severity::error, u8"codepoint.parse", d.get_source_span(),
+                u8"Expected a sequence of hexadecimal digits."
+            );
+            return error_point;
+        }
+
+        const auto code_point = char32_t(*value);
+        if (!is_scalar_value(code_point)) {
+            context.try_emit(
+                Severity::error, u8"codepoint.nonscalar", d.get_source_span(),
+                u8"The given hex sequence is not a Unicode scalar value. "
+                u8"Therefore, it cannot be encoded as UTF-8."
+            );
+            return error_point;
+        }
+
+        return code_point;
+    }
+};
+
 struct [[nodiscard]] Syntax_Highlight_Behavior : Parametric_Behavior {
     static constexpr std::u8string_view lang_parameter = u8"lang";
     static constexpr std::u8string_view parameters[] { lang_parameter };
@@ -458,6 +678,8 @@ struct Builtin_Directive_Set::Impl {
     Do_Nothing_Behavior do_nothing;
     Error_Behavior error;
     HTML_Literal_Behavior html {};
+    Code_Point_Behavior code_point {};
+    HTML_Entity_Behavior entity {};
     Syntax_Highlight_Behavior inline_code { Directive_Display::in_line };
     Syntax_Highlight_Behavior code_block { Directive_Display::block };
     Directive_Name_Passthrough_Behavior direct_formatting { Directive_Category::formatting,
@@ -504,6 +726,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-sub",
         u8"-sup",
         u8"-tt",
+        u8"-U",
         u8"-u",
         u8"-ul",
     };
@@ -546,7 +769,9 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'c':
-        if (name == u8"c" || name == u8"code")
+        if (name == u8"c")
+            return &m_impl->code_block;
+        if (name == u8"code")
             return &m_impl->inline_code;
         if (name == u8"codeblock")
             return &m_impl->code_block;
@@ -603,6 +828,11 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8't':
         if (name == u8"tt")
             return &m_impl->tt_formatting;
+        break;
+
+    case u8'U':
+        if (name == u8"U")
+            return &m_impl->code_point;
         break;
 
     case u8'u':
