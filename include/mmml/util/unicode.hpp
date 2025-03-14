@@ -320,6 +320,57 @@ struct Code_Point_View {
 
 static_assert(std::ranges::forward_range<Code_Point_View>);
 
+struct Code_Units_And_Length {
+    std::array<char8_t, 4> code_units;
+    int length;
+
+    [[nodiscard]]
+    std::u8string_view as_string() const
+    {
+        return { code_units.data(), std::size_t(length) };
+    }
+};
+
+/// @brief Encodes `code_point` as UTF-8.
+/// Note that the Unicode standard only permits scalar values to be encoded,
+/// but that is not verified by this function.
+///
+/// If `!is_code_point(code_point)` is `false`,
+/// the result is unspecified.
+/// If `is_surrogate(code_point)` is `true`,
+/// the contents of `code_units` in the result are unspecified,
+/// but the code point can be decoded using e.g. `decode_unchecked` again.
+[[nodiscard]]
+constexpr Code_Units_And_Length encode8_unchecked(char32_t code_point) noexcept
+{
+    Code_Units_And_Length result {};
+
+    if (code_point < 0x80) {
+        result.code_units[0] = char8_t(code_point);
+        result.length = 1;
+    }
+    else if (code_point < 0x800) {
+        result.code_units[0] = char8_t((code_point >> 6) | 0xc0);
+        result.code_units[1] = char8_t((code_point & 0x3f) | 0x80);
+        result.length = 2;
+    }
+    else if (code_point < 0x10000) {
+        result.code_units[0] = char8_t((code_point >> 12) | 0xe0);
+        result.code_units[1] = char8_t(((code_point >> 6) & 0x3f) | 0x80);
+        result.code_units[2] = char8_t((code_point & 0x3f) | 0x80);
+        result.length = 3;
+    }
+    else {
+        result.code_units[0] = char8_t((code_point >> 18) | 0xf0);
+        result.code_units[1] = char8_t(((code_point >> 12) & 0x3f) | 0x80);
+        result.code_units[2] = char8_t(((code_point >> 6) & 0x3f) | 0x80);
+        result.code_units[3] = char8_t((code_point & 0x3f) | 0x80);
+        result.length = 4;
+    }
+
+    return result;
+}
+
 } // namespace mmml::utf8
 
 #endif

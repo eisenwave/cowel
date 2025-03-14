@@ -1,11 +1,13 @@
 #include <algorithm>
 #include <iterator>
 #include <memory_resource>
+#include <random>
 #include <string_view>
 #include <vector>
 
 #include <gtest/gtest.h>
 
+#include "mmml/util/chars.hpp"
 #include "mmml/util/io.hpp"
 #include "mmml/util/result.hpp"
 #include "mmml/util/unicode.hpp"
@@ -57,6 +59,28 @@ TEST(Unicode, decode_file)
     const std::pmr::vector<char32_t> actual = to_utf32(u8view, &memory);
 
     ASSERT_EQ(*expected, actual);
+}
+
+TEST(Unicode, encode_decode_reversible_fuzzing)
+{
+    constexpr int iterations = 1'000'000;
+
+    std::default_random_engine rng { 12345 };
+    std::uniform_int_distribution<char32_t> distr { 0, code_point_max };
+
+    for (int i = 0; i < iterations; ++i) {
+        const char32_t code_point = distr(rng);
+        if (!is_scalar_value(code_point)) {
+            continue;
+        }
+
+        const Code_Units_And_Length encoded = encode8_unchecked(code_point);
+        const Result<Code_Point_And_Length, Error_Code> decoded
+            = decode_and_length(encoded.as_string());
+        ASSERT_TRUE(decoded);
+        EXPECT_EQ(decoded->length, encoded.length);
+        EXPECT_EQ(decoded->code_point, code_point);
+    }
 }
 
 } // namespace
