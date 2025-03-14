@@ -9,7 +9,7 @@
 
 namespace mmml {
 
-inline void match_parameters_and_arguments(
+void match_parameters_and_arguments(
     std::span<int> out_indices,
     std::span<Argument_Status> out_status,
     std::span<const std::u8string_view> parameters,
