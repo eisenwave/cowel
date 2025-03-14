@@ -84,6 +84,18 @@ struct Collecting_Logger final : Logger {
     {
         diagnostics.push_back(std::move(diagnostic));
     }
+
+    [[nodiscard]]
+    bool nothing_logged() const
+    {
+        return diagnostics.empty();
+    }
+
+    [[nodiscard]]
+    bool was_logged(std::u8string_view id) const
+    {
+        return std::ranges::find(diagnostics, id, &Diagnostic::id) != diagnostics.end();
+    }
 };
 
 struct Doc_Gen_Test : testing::Test {
@@ -97,7 +109,6 @@ struct Doc_Gen_Test : testing::Test {
     Collecting_Logger logger { &memory };
 
     Content_Behavior* root_behavior = &trivial_behavior;
-    Directive_Behavior* error_behavior = nullptr;
 
     [[nodiscard]]
     std::u8string_view source_string() const
@@ -124,17 +135,26 @@ struct Doc_Gen_Test : testing::Test {
     std::u8string_view generate()
     {
         MMML_ASSERT(root_behavior);
+        Directive_Behavior& error_behavior = builtin_directives.get_error_behavior();
         const Generation_Options options { .output = out,
                                            .root_behavior = *root_behavior,
                                            .root_content = content,
                                            .builtin_behavior = builtin_directives,
-                                           .error_behavior = error_behavior,
+                                           .error_behavior = &error_behavior,
                                            .path = file_path,
                                            .source = source_string(),
                                            .logger = logger,
                                            .memory = &memory };
         generate_document(options);
         return { out.data(), out.size() };
+    }
+
+    void clear()
+    {
+        out.clear();
+        source.clear();
+        content.clear();
+        logger.diagnostics.clear();
     }
 };
 
@@ -168,6 +188,56 @@ This is another paragraph.
     root_behavior = &paragraphs_behavior;
     const std::u8string_view actual = generate();
     EXPECT_EQ(expected, actual);
+}
+
+struct Basic_Test {
+    std::string_view path;
+    std::u8string_view expected_html;
+    std::initializer_list<std::u8string_view> expected_diagnostics;
+};
+
+// clang-format off
+constexpr Basic_Test basic_tests[] {
+    { "c/ascii.mmml", u8"&#x41;&#x42;&#x43;\n" , {} },
+    { "c/pilcrow.mmml", u8"&#x00B6;\n", {} },
+    { "c/empty.mmml", u8"<error->\\c{}</error->\n", { diagnostic::c_blank } },
+    { "c/blank.mmml", u8"<error->\\c{ }</error->\n", { diagnostic::c_blank } },
+    { "c/digits.mmml", u8"<error->\\c{#zzz}</error->\n", { diagnostic::c_digits } },
+    { "c/nonscalar.mmml", u8"<error->\\c{#xD800}</error->\n", {diagnostic::c_nonscalar} },
+    
+    { "U/ascii.mmml", u8"ABC\n", {} },
+    { "U/pilcrow.mmml", u8"¶\n", {} },
+    { "U/empty.mmml", u8"<error->\\U{}</error->\n", { diagnostic::U_blank } },
+    { "U/blank.mmml", u8"<error->\\U{ }</error->\n", { diagnostic::U_blank } },
+    { "U/digits.mmml", u8"<error->\\U{zzz}</error->\n", { diagnostic::U_digits } },
+    { "U/nonscalar.mmml", u8"<error->\\U{D800}</error->\n", {diagnostic::U_nonscalar} },
+};
+// clang-format on
+
+TEST_F(Doc_Gen_Test, basic_directive_tests)
+{
+    for (const Basic_Test& test : basic_tests) {
+        clear();
+        const bool load_success = load_document(test.path);
+        EXPECT_TRUE(load_success);
+        if (!load_success) {
+            continue;
+        }
+
+        const std::u8string_view actual = generate();
+        EXPECT_EQ(test.expected_html, actual);
+        if (test.expected_html != actual) {
+            __builtin_debugtrap();
+        }
+
+        if (test.expected_diagnostics.size() == 0) {
+            EXPECT_TRUE(logger.diagnostics.empty());
+            continue;
+        }
+        for (const std::u8string_view id : test.expected_diagnostics) {
+            EXPECT_TRUE(logger.was_logged(id));
+        }
+    }
 }
 
 } // namespace
