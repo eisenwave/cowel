@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstddef>
 #include <filesystem>
 #include <initializer_list>
 #include <memory_resource>
@@ -16,6 +17,7 @@
 #include "mmml/util/io.hpp"
 #include "mmml/util/levenshtein_utf8.hpp"
 #include "mmml/util/result.hpp"
+#include "mmml/util/typo.hpp"
 
 #include "mmml/diagnostic.hpp"
 #include "mmml/directive_processing.hpp"
@@ -165,6 +167,8 @@ struct X_Highlighter final : Syntax_Highlighter {
     }
 };
 
+constexpr X_Highlighter x_highlighter {};
+
 struct Doc_Gen_Test : testing::Test {
     std::pmr::monotonic_buffer_resource memory;
     std::pmr::vector<char8_t> out { &memory };
@@ -213,6 +217,7 @@ struct Doc_Gen_Test : testing::Test {
                                            .path = file_path,
                                            .source = source_string,
                                            .logger = logger,
+                                           .highlighter = x_highlighter,
                                            .memory = &memory };
         generate_document(options);
         return { out.data(), out.size() };
