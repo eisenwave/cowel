@@ -2,6 +2,7 @@
 #define MMML_SERVICES_HPP
 
 #include <cstddef>
+#include <memory_resource>
 #include <optional>
 #include <span>
 #include <string_view>
@@ -42,7 +43,8 @@ struct Syntax_Highlighter {
     ///
     // This member function is useful for typo detection.
     [[nodiscard]]
-    virtual Distant<std::u8string_view> match_supported_language(std::u8string_view language) const
+    virtual Distant<std::u8string_view>
+    match_supported_language(std::u8string_view language, std::pmr::memory_resource* memory) const
         = 0;
 
     /// @brief Applies syntax highlighting to the given `code`.
@@ -72,7 +74,8 @@ struct No_Support_Syntax_Highlighter final : Syntax_Highlighter {
     }
 
     [[nodiscard]]
-    Distant<std::u8string_view> match_supported_language(std::u8string_view) const final
+    Distant<std::u8string_view>
+    match_supported_language(std::u8string_view, std::pmr::memory_resource*) const final
     {
         return {};
     }
