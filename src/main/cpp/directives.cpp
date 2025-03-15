@@ -476,12 +476,18 @@ private:
     static constexpr std::u8string_view lang_parameter = u8"lang";
     static constexpr std::u8string_view parameters[] { lang_parameter };
 
-    const std::u8string_view tag_name;
+    const std::u8string_view m_tag_name;
+    const To_HTML_Mode m_to_html_mode;
 
 public:
-    explicit Syntax_Highlight_Behavior(std::u8string_view tag_name, Directive_Display d)
+    explicit Syntax_Highlight_Behavior(
+        std::u8string_view tag_name,
+        Directive_Display d,
+        To_HTML_Mode mode
+    )
         : Parametric_Behavior { Directive_Category::pure_html, d, parameters }
-        , tag_name { tag_name }
+        , m_tag_name { tag_name }
+        , m_to_html_mode { mode }
     {
     }
 
@@ -502,11 +508,9 @@ public:
         const std::u8string_view lang
             = argument_to_plaintext_or(lang_data, lang_parameter, u8"", d, args, context);
 
-        out.open_tag(tag_name);
-        const auto mode
-            = display == Directive_Display::block ? To_HTML_Mode::trimmed : To_HTML_Mode::direct;
-        to_html_syntax_highlighted(out, d.get_content(), lang, context, mode);
-        out.close_tag(tag_name);
+        out.open_tag(m_tag_name);
+        to_html_syntax_highlighted(out, d.get_content(), lang, context, m_to_html_mode);
+        out.close_tag(m_tag_name);
     }
 };
 
@@ -731,9 +735,9 @@ struct Builtin_Directive_Set::Impl {
     Fixed_Name_Passthrough_Behavior ul //
         { u8"ul", Directive_Category::pure_html, Directive_Display::block };
     Syntax_Highlight_Behavior code //
-        { u8"code", Directive_Display::in_line };
+        { u8"code", Directive_Display::in_line, To_HTML_Mode::direct };
     Syntax_Highlight_Behavior codeblock //
-        { u8"codeblock", Directive_Display::block };
+        { u8"codeblock", Directive_Display::block, To_HTML_Mode::trimmed };
 };
 
 Builtin_Directive_Set::Builtin_Directive_Set()
