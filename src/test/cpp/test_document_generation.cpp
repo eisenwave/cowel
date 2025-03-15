@@ -293,6 +293,10 @@ constexpr Basic_Test basic_tests[] {
     { Source { u8"\\U{ }\n" }, u8"<error->\\U{ }</error->\n", { diagnostic::U_blank } },
     { Source { u8"\\U{zzz}\n" }, u8"<error->\\U{zzz}</error->\n", { diagnostic::U_digits } },
     { Source { u8"\\U{D800}\n" }, u8"<error->\\U{D800}</error->\n", {diagnostic::U_nonscalar} },
+
+    { Source { u8"\\code{}\n" }, u8"<code></code>\n", {diagnostic::highlight_language} },
+    { Source { u8"\\code[x]{}\n" }, u8"<code></code>\n", {} },
+    { Source { u8"\\code[x]{ }\n" }, u8"<code> </code>\n", {} },
 };
 // clang-format on
 
