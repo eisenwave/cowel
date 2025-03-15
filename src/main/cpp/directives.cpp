@@ -19,6 +19,7 @@
 #include "mmml/util/typo.hpp"
 
 #include "mmml/ast.hpp"
+#include "mmml/diagnostic.hpp"
 #include "mmml/directive_arguments.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
