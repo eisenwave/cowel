@@ -743,6 +743,10 @@ struct Builtin_Directive_Set::Impl {
         { u8"b", Directive_Category::formatting, Directive_Display::in_line };
     HTML_Entity_Behavior c //
         {};
+    Syntax_Highlight_Behavior code //
+        { u8"code", Directive_Display::in_line, To_HTML_Mode::direct };
+    Syntax_Highlight_Behavior codeblock //
+        { u8"code-block", Directive_Display::block, To_HTML_Mode::trimmed };
     Fixed_Name_Passthrough_Behavior dd //
         { u8"dd", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dl //
@@ -785,10 +789,6 @@ struct Builtin_Directive_Set::Impl {
         { u8"u", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior ul //
         { u8"ul", Directive_Category::pure_html, Directive_Display::block };
-    Syntax_Highlight_Behavior code //
-        { u8"code", Directive_Display::in_line, To_HTML_Mode::direct };
-    Syntax_Highlight_Behavior codeblock //
-        { u8"codeblock", Directive_Display::block, To_HTML_Mode::trimmed };
 };
 
 Builtin_Directive_Set::Builtin_Directive_Set()
