@@ -682,52 +682,58 @@ constexpr std::u8string_view html_tag_prefix = u8"html-";
 } // namespace
 
 struct Builtin_Directive_Set::Impl {
-    // Specific directives.
-    Do_Nothing_Behavior comment { Directive_Category::meta, Directive_Display::none };
-    Fixed_Name_Passthrough_Behavior b { u8"b", Directive_Category::formatting,
-                                        Directive_Display::in_line };
-    HTML_Entity_Behavior c {};
-    Fixed_Name_Passthrough_Behavior dd { u8"dd", Directive_Category::pure_html,
-                                         Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior dl { u8"dl", Directive_Category::pure_html,
-                                         Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior dt { u8"dt", Directive_Category::pure_html,
-                                         Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior em { u8"em", Directive_Category::formatting,
-                                         Directive_Display::in_line };
-    Error_Behavior error {};
-    HTML_Literal_Behavior html {};
-    Directive_Name_Passthrough_Behavior html_tags { Directive_Category::pure_html,
-                                                    Directive_Display::block, html_tag_prefix };
-    Fixed_Name_Passthrough_Behavior i { u8"i", Directive_Category::formatting,
-                                        Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior ins { u8"ins", Directive_Category::formatting,
-                                          Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior kbd { u8"kbd", Directive_Category::formatting,
-                                          Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior mark { u8"mark", Directive_Category::formatting,
-                                           Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior ol { u8"ol", Directive_Category::pure_html,
-                                         Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior s { u8"s", Directive_Category::formatting,
-                                        Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior small { u8"s", Directive_Category::formatting,
-                                            Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior strong { u8"s", Directive_Category::formatting,
-                                             Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior sub { u8"s", Directive_Category::formatting,
-                                          Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior sup { u8"s", Directive_Category::formatting,
-                                          Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior tt { u8"tt-", Directive_Category::formatting,
-                                         Directive_Display::in_line };
-    Code_Point_Behavior U {};
-    Fixed_Name_Passthrough_Behavior u { u8"u", Directive_Category::pure_html,
-                                        Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior ul { u8"ul", Directive_Category::pure_html,
-                                         Directive_Display::block };
-    Syntax_Highlight_Behavior code { u8"code", Directive_Display::in_line };
-    Syntax_Highlight_Behavior codeblock { u8"codeblock", Directive_Display::block };
+    Do_Nothing_Behavior comment //
+        { Directive_Category::meta, Directive_Display::none };
+    Fixed_Name_Passthrough_Behavior b //
+        { u8"b", Directive_Category::formatting, Directive_Display::in_line };
+    HTML_Entity_Behavior c //
+        {};
+    Fixed_Name_Passthrough_Behavior dd //
+        { u8"dd", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior dl //
+        { u8"dl", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior dt //
+        { u8"dt", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior em //
+        { u8"em", Directive_Category::formatting, Directive_Display::in_line };
+    Error_Behavior error //
+        {};
+    HTML_Literal_Behavior html //
+        {};
+    Directive_Name_Passthrough_Behavior html_tags //
+        { Directive_Category::pure_html, Directive_Display::block, html_tag_prefix };
+    Fixed_Name_Passthrough_Behavior i //
+        { u8"i", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior ins //
+        { u8"ins", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior kbd //
+        { u8"kbd", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior mark //
+        { u8"mark", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior ol //
+        { u8"ol", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior s //
+        { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior small //
+        { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior strong //
+        { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior sub //
+        { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior sup //
+        { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior tt //
+        { u8"tt-", Directive_Category::formatting, Directive_Display::in_line };
+    Code_Point_Behavior U //
+        {};
+    Fixed_Name_Passthrough_Behavior u //
+        { u8"u", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior ul //
+        { u8"ul", Directive_Category::pure_html, Directive_Display::block };
+    Syntax_Highlight_Behavior code //
+        { u8"code", Directive_Display::in_line };
+    Syntax_Highlight_Behavior codeblock //
+        { u8"codeblock", Directive_Display::block };
 };
 
 Builtin_Directive_Set::Builtin_Directive_Set()
