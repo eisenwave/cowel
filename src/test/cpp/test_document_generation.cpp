@@ -1,15 +1,20 @@
+#include <algorithm>
 #include <filesystem>
+#include <initializer_list>
 #include <memory_resource>
 #include <span>
 #include <string_view>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/assert.hpp"
+#include "mmml/util/hljs_scope.hpp"
 #include "mmml/util/io.hpp"
+#include "mmml/util/levenshtein_utf8.hpp"
 #include "mmml/util/result.hpp"
 
 #include "mmml/diagnostic.hpp"
@@ -95,6 +100,68 @@ struct Collecting_Logger final : Logger {
     bool was_logged(std::u8string_view id) const
     {
         return std::ranges::find(diagnostics, id, &Diagnostic::id) != diagnostics.end();
+    }
+};
+
+/// @brief Runs syntax highlighting for code of a test-only language
+/// where sequences of the character `x` are considered keywords.
+/// Nothing else is highlighted.
+void syntax_highlight_x(std::pmr::vector<HLJS_Annotation_Span>& out, std::u8string_view code)
+{
+    char8_t prev = 0;
+    std::size_t begin = 0;
+    for (std::size_t i = 0; i < code.size(); ++i) {
+        if (code[i] == u8'x' && prev != u8'x') {
+            begin = i;
+        }
+        if (code[i] != u8'x' && prev == u8'x') {
+            const HLJS_Annotation_Span span { .begin = begin,
+                                              .length = i - begin,
+                                              .value = HLJS_Scope::keyword };
+            out.push_back(span);
+        }
+        prev = code[i];
+    }
+    if (prev == u8'x') {
+        const HLJS_Annotation_Span span { .begin = begin,
+                                          .length = code.size() - begin,
+                                          .value = HLJS_Scope::keyword };
+        out.push_back(span);
+    }
+}
+
+struct X_Highlighter final : Syntax_Highlighter {
+    static constexpr std::u8string_view language_name = u8"x";
+
+    [[nodiscard]]
+    std::span<const std::u8string_view> get_supported_languages() const final
+    {
+        static constexpr std::u8string_view supported[] { language_name };
+        return supported;
+    }
+
+    [[nodiscard]]
+    Distant<std::u8string_view>
+    match_supported_language(std::u8string_view language, std::pmr::memory_resource* memory)
+        const final
+    {
+        const std::size_t distance
+            = code_point_levenshtein_distance(language_name, language, memory);
+        return { language_name, distance };
+    }
+
+    [[nodiscard]]
+    Result<void, Syntax_Highlight_Error> operator()(
+        std::pmr::vector<HLJS_Annotation_Span>& out,
+        std::u8string_view code,
+        std::u8string_view language
+    ) const final
+    {
+        if (language != language_name) {
+            return Syntax_Highlight_Error::unsupported_language;
+        }
+        syntax_highlight_x(out, code);
+        return {};
     }
 };
 
