@@ -651,6 +651,7 @@ private:
         }
     }
 
+    [[nodiscard]]
     ast::Generated
     make_generated(std::u8string_view inner_text, const HLJS_Annotation_Span* span) const
     {
