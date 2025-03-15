@@ -1,0 +1,9 @@
+\codeblock[x]{abc}
+\codeblock[x]{
+abc
+}
+
+\codeblock[x]{xxx}
+\codeblock[x]{
+xxx
+}

@@ -11,6 +11,7 @@
 
 #include <gtest/gtest.h>
 
+#include "mmml/diagnostic_highlight.hpp"
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/assert.hpp"
 #include "mmml/util/hljs_scope.hpp"
@@ -169,6 +170,24 @@ struct X_Highlighter final : Syntax_Highlighter {
 
 constexpr X_Highlighter x_highlighter {};
 
+[[nodiscard]]
+bool load_utf8_file_or_error(
+    std::pmr::vector<char8_t>& out,
+    std::string_view path,
+    std::pmr::memory_resource* memory
+)
+{
+    const Result<void, IO_Error_Code> result = load_utf8_file(out, path);
+    if (result) {
+        return true;
+    }
+
+    Diagnostic_String error { memory };
+    print_io_error(error, path, result.error());
+    print_code_string_stdout(error);
+    return false;
+}
+
 struct Doc_Gen_Test : testing::Test {
     std::pmr::monotonic_buffer_resource memory;
     std::pmr::vector<char8_t> out { &memory };
@@ -186,12 +205,7 @@ struct Doc_Gen_Test : testing::Test {
     bool load_document(const std::filesystem::path& path)
     {
         file_path = "test" / path;
-        Result<void, IO_Error_Code> result = load_utf8_file(source, file_path.c_str());
-
-        if (!result) {
-            Diagnostic_String error { &memory };
-            print_io_error(error, file_path.c_str(), result.error());
-            print_code_string_stdout(error);
+        if (!load_utf8_file_or_error(source, file_path.c_str(), &memory)) {
             return false;
         }
         source_string = { source.data(), source.size() };
@@ -274,53 +288,148 @@ struct Source {
 
 struct Basic_Test {
     std::variant<Path, Source> document;
-    std::u8string_view expected_html;
+    std::variant<Path, Source> expected_html;
     std::initializer_list<std::u8string_view> expected_diagnostics;
 };
 
 // clang-format off
 constexpr Basic_Test basic_tests[] {
-    { Source {u8"\\c{#x41}\\c{#x42}\\c{#x43}\n"}, u8"&#x41;&#x42;&#x43;\n" , {} },
-    { Source{ u8"\\c{#x00B6}\n" }, u8"&#x00B6;\n", {} },
-    { Source{ u8"\\c{}\n" }, u8"<error->\\c{}</error->\n", { diagnostic::c_blank } },
-    { Source{ u8"\\c{ }\n" }, u8"<error->\\c{ }</error->\n", { diagnostic::c_blank } },
-    { Source{ u8"\\c{#zzz}\n" }, u8"<error->\\c{#zzz}</error->\n", { diagnostic::c_digits } },
-    { Source{ u8"\\c{#xD800}\n" }, u8"<error->\\c{#xD800}</error->\n", {diagnostic::c_nonscalar} },
+    { Source {u8"\\c{#x41}\\c{#x42}\\c{#x43}\n"},
+      Source{ u8"&#x41;&#x42;&#x43;\n" },
+      {} },
+    { Source{ u8"\\c{#x00B6}\n" },
+      Source { u8"&#x00B6;\n" },
+      {} },
+    { Source{ u8"\\c{}\n" },
+      Source { u8"<error->\\c{}</error->\n" },
+      { diagnostic::c_blank } },
+    { Source{ u8"\\c{ }\n" },
+      Source { u8"<error->\\c{ }</error->\n" },
+      { diagnostic::c_blank } },
+    { Source{ u8"\\c{#zzz}\n" },
+      Source { u8"<error->\\c{#zzz}</error->\n" },
+    { diagnostic::c_digits } },
+      { Source{ u8"\\c{#xD800}\n" },
+      Source { u8"<error->\\c{#xD800}</error->\n" },
+      { diagnostic::c_nonscalar } },
     
-    { Path { "U/ascii.mmml" }, u8"ABC\n", {} },
-    { Source { u8"\\U{00B6}\n" }, u8"¶\n", {} },
-    { Source { u8"\\U{}\n" }, u8"<error->\\U{}</error->\n", { diagnostic::U_blank } },
-    { Source { u8"\\U{ }\n" }, u8"<error->\\U{ }</error->\n", { diagnostic::U_blank } },
-    { Source { u8"\\U{zzz}\n" }, u8"<error->\\U{zzz}</error->\n", { diagnostic::U_digits } },
-    { Source { u8"\\U{D800}\n" }, u8"<error->\\U{D800}</error->\n", {diagnostic::U_nonscalar} },
+    { Path { "U/ascii.mmml" },
+      Source { u8"ABC\n" },
+      {} },
+    { Source { u8"\\U{00B6}\n" },
+      Source { u8"¶\n" },
+      {} },
+    { Source { u8"\\U{}\n" },
+      Source { u8"<error->\\U{}</error->\n" },
+      { diagnostic::U_blank } },
+    { Source { u8"\\U{ }\n" },
+      Source { u8"<error->\\U{ }</error->\n" },
+      { diagnostic::U_blank } },
+    { Source { u8"\\U{zzz}\n" },
+      Source { u8"<error->\\U{zzz}</error->\n" },
+      { diagnostic::U_digits } },
+    { Source { u8"\\U{D800}\n" },
+      Source { u8"<error->\\U{D800}</error->\n" },
+      { diagnostic::U_nonscalar } },
 
-    { Source { u8"\\code{}\n" }, u8"<code></code>\n", {diagnostic::highlight_language} },
-    { Source { u8"\\code[x]{}\n" }, u8"<code></code>\n", {} },
-    { Source { u8"\\code[x]{ }\n" }, u8"<code> </code>\n", {} },
+    { Source { u8"\\code{}\n" },
+      Source { u8"<code></code>\n" },
+      { diagnostic::highlight_language } },
+    { Source { u8"\\code[x]{}\n" },
+      Source { u8"<code></code>\n" },
+      {} },
+    { Source { u8"\\code[x]{ }\n" },
+      Source { u8"<code> </code>\n" },
+      {} },
+    { Source { u8"\\code[x]{xxx}\n" },
+      Source { u8"<code><h- class=\"hljs-keyword\">xxx</h-></code>\n" },
+      {} },
+    { Source { u8"\\code[x]{xxx123}\n" },
+      Source { u8"<code><h- class=\"hljs-keyword\">xxx</h->123</code>\n" },
+      {} },
+    { Source { u8"\\code[x]{ 123 }\n" },
+      Source { u8"<code> 123 </code>\n" },
+      {} },
+    { Source { u8"\\code[x]{ \\b{123} }\n" },
+      Source { u8"<code> <b>123</b> </code>\n" },
+      {} },
+    { Source { u8"\\code[x]{ \\b{xxx} }\n" },
+      Source { u8"<code> <b><h- class=\"hljs-keyword\">xxx</h-></b> </code>\n" },
+      {} },
+    { Source { u8"\\code[x]{ \\b{x}xx }\n" },
+      Source { u8"<code> <b><h- class=\"hljs-keyword\">x</h-></b><h- class=\"hljs-keyword\">xx</h-> </code>\n" },
+      {} },
+    { Path { "codeblock/trim.mmml" },
+      Path { "codeblock/trim.html" },
+      {} },
 };
 // clang-format on
+
+[[nodiscard]]
+bool load_basic_test_input(Doc_Gen_Test& fixture, const Basic_Test& test)
+{
+    if (const auto* const path = std::get_if<Path>(&test.document)) {
+        return fixture.load_document(path->value);
+    }
+    const auto& source = std::get<Source>(test.document);
+    fixture.load_source(source.contents);
+    return true;
+}
+
+[[nodiscard]]
+std::u8string_view load_basic_test_expectations(
+    std::pmr::vector<char8_t>& storage,
+    const Basic_Test& test,
+    std::pmr::memory_resource* memory
+)
+{
+    if (const auto* const path = std::get_if<Path>(&test.expected_html)) {
+        storage.clear();
+        std::pmr::string full_path { "test/", memory };
+        full_path += path->value;
+        if (!load_utf8_file_or_error(storage, full_path, memory)) {
+            return u8"";
+        }
+        return std::u8string_view { storage.data(), storage.size() };
+    }
+    return std::get<Source>(test.expected_html).contents;
+}
 
 TEST_F(Doc_Gen_Test, basic_directive_tests)
 {
     for (const Basic_Test& test : basic_tests) {
         clear();
-        if (const auto* const path = std::get_if<Path>(&test.document)) {
-            const bool load_success = load_document(path->value);
-            EXPECT_TRUE(load_success);
-            if (!load_success) {
-                continue;
-            }
+
+        const bool load_success = load_basic_test_input(*this, test);
+        EXPECT_TRUE(load_success);
+        if (!load_success) {
+            continue;
         }
-        else {
-            const auto& source = std::get<Source>(test.document);
-            load_source(source.contents);
+
+        std::pmr::vector<char8_t> expectation_storage { &memory };
+        const std::u8string_view expected
+            = load_basic_test_expectations(expectation_storage, test, &memory);
+        EXPECT_FALSE(expected.empty());
+        if (expected.empty()) {
+            continue;
         }
 
         const std::u8string_view actual = generate();
-        EXPECT_EQ(test.expected_html, actual);
-        if (test.expected_html != actual) {
-            __builtin_debugtrap();
+        if (expected != actual) {
+            Diagnostic_String error { &memory };
+            error.append(
+                u8"Test failed because generated HTML does not match expected HTML.\n",
+                Diagnostic_Highlight::error_text
+            );
+            error.append(u8"Expected:\n", Diagnostic_Highlight::error_text);
+            error.append(expected, Diagnostic_Highlight::code_citation);
+            error.append(u8'\n');
+            error.append(u8"Actual:\n", Diagnostic_Highlight::error_text);
+            error.append(actual, Diagnostic_Highlight::code_citation);
+            error.append(u8'\n');
+            print_code_string_stdout(error);
         }
+        EXPECT_EQ(expected, actual);
 
         if (test.expected_diagnostics.size() == 0) {
             EXPECT_TRUE(logger.diagnostics.empty());
