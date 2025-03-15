@@ -104,17 +104,12 @@ struct Doc_Gen_Test : testing::Test {
     Builtin_Directive_Set builtin_directives {};
     std::filesystem::path file_path;
     std::pmr::vector<char8_t> source { &memory };
+    std::u8string_view source_string {};
     std::pmr::vector<ast::Content> content { &memory };
 
     Collecting_Logger logger { &memory };
 
     Content_Behavior* root_behavior = &trivial_behavior;
-
-    [[nodiscard]]
-    std::u8string_view source_string() const
-    {
-        return { source.data(), source.size() };
-    }
 
     [[nodiscard]]
     bool load_document(const std::filesystem::path& path)
@@ -128,8 +123,15 @@ struct Doc_Gen_Test : testing::Test {
             print_code_string_stdout(error);
             return false;
         }
-        content = parse_and_build(source_string(), &memory);
+        source_string = { source.data(), source.size() };
+        content = parse_and_build(source_string, &memory);
         return true;
+    }
+
+    void load_source(std::u8string_view source)
+    {
+        source_string = source;
+        content = parse_and_build(source, &memory);
     }
 
     std::u8string_view generate()
@@ -142,7 +144,7 @@ struct Doc_Gen_Test : testing::Test {
                                            .builtin_behavior = builtin_directives,
                                            .error_behavior = &error_behavior,
                                            .path = file_path,
-                                           .source = source_string(),
+                                           .source = source_string,
                                            .logger = logger,
                                            .memory = &memory };
         generate_document(options);
@@ -190,27 +192,35 @@ This is another paragraph.
     EXPECT_EQ(expected, actual);
 }
 
+struct Path {
+    std::string_view value;
+};
+
+struct Source {
+    std::u8string_view contents;
+};
+
 struct Basic_Test {
-    std::string_view path;
+    std::variant<Path, Source> document;
     std::u8string_view expected_html;
     std::initializer_list<std::u8string_view> expected_diagnostics;
 };
 
 // clang-format off
 constexpr Basic_Test basic_tests[] {
-    { "c/ascii.mmml", u8"&#x41;&#x42;&#x43;\n" , {} },
-    { "c/pilcrow.mmml", u8"&#x00B6;\n", {} },
-    { "c/empty.mmml", u8"<error->\\c{}</error->\n", { diagnostic::c_blank } },
-    { "c/blank.mmml", u8"<error->\\c{ }</error->\n", { diagnostic::c_blank } },
-    { "c/digits.mmml", u8"<error->\\c{#zzz}</error->\n", { diagnostic::c_digits } },
-    { "c/nonscalar.mmml", u8"<error->\\c{#xD800}</error->\n", {diagnostic::c_nonscalar} },
+    { Source {u8"\\c{#x41}\\c{#x42}\\c{#x43}\n"}, u8"&#x41;&#x42;&#x43;\n" , {} },
+    { Source{ u8"\\c{#x00B6}\n" }, u8"&#x00B6;\n", {} },
+    { Source{ u8"\\c{}\n" }, u8"<error->\\c{}</error->\n", { diagnostic::c_blank } },
+    { Source{ u8"\\c{ }\n" }, u8"<error->\\c{ }</error->\n", { diagnostic::c_blank } },
+    { Source{ u8"\\c{#zzz}\n" }, u8"<error->\\c{#zzz}</error->\n", { diagnostic::c_digits } },
+    { Source{ u8"\\c{#xD800}\n" }, u8"<error->\\c{#xD800}</error->\n", {diagnostic::c_nonscalar} },
     
-    { "U/ascii.mmml", u8"ABC\n", {} },
-    { "U/pilcrow.mmml", u8"¶\n", {} },
-    { "U/empty.mmml", u8"<error->\\U{}</error->\n", { diagnostic::U_blank } },
-    { "U/blank.mmml", u8"<error->\\U{ }</error->\n", { diagnostic::U_blank } },
-    { "U/digits.mmml", u8"<error->\\U{zzz}</error->\n", { diagnostic::U_digits } },
-    { "U/nonscalar.mmml", u8"<error->\\U{D800}</error->\n", {diagnostic::U_nonscalar} },
+    { Path { "U/ascii.mmml" }, u8"ABC\n", {} },
+    { Source { u8"\\U{00B6}\n" }, u8"¶\n", {} },
+    { Source { u8"\\U{}\n" }, u8"<error->\\U{}</error->\n", { diagnostic::U_blank } },
+    { Source { u8"\\U{ }\n" }, u8"<error->\\U{ }</error->\n", { diagnostic::U_blank } },
+    { Source { u8"\\U{zzz}\n" }, u8"<error->\\U{zzz}</error->\n", { diagnostic::U_digits } },
+    { Source { u8"\\U{D800}\n" }, u8"<error->\\U{D800}</error->\n", {diagnostic::U_nonscalar} },
 };
 // clang-format on
 
@@ -218,10 +228,16 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
 {
     for (const Basic_Test& test : basic_tests) {
         clear();
-        const bool load_success = load_document(test.path);
-        EXPECT_TRUE(load_success);
-        if (!load_success) {
-            continue;
+        if (const auto* const path = std::get_if<Path>(&test.document)) {
+            const bool load_success = load_document(path->value);
+            EXPECT_TRUE(load_success);
+            if (!load_success) {
+                continue;
+            }
+        }
+        else {
+            const auto& source = std::get<Source>(test.document);
+            load_source(source.contents);
         }
 
         const std::u8string_view actual = generate();
