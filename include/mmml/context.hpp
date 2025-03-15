@@ -245,6 +245,30 @@ public:
                  .message { get_persistent_memory() } };
     }
 
+    [[nodiscard]]
+    Diagnostic make_debug(std::u8string_view id, Source_Span location) const
+    {
+        return make_diagnostic(Severity::debug, id, location);
+    }
+
+    [[nodiscard]]
+    Diagnostic make_soft_warning(std::u8string_view id, Source_Span location) const
+    {
+        return make_diagnostic(Severity::soft_warning, id, location);
+    }
+
+    [[nodiscard]]
+    Diagnostic make_warning(std::u8string_view id, Source_Span location) const
+    {
+        return make_diagnostic(Severity::warning, id, location);
+    }
+
+    [[nodiscard]]
+    Diagnostic make_error(std::u8string_view id, Source_Span location) const
+    {
+        return make_diagnostic(Severity::error, id, location);
+    }
+
     /// @brief Like `make_diagnostic(severity)`,
     /// but initializes the result's message using the given `message`.
     [[nodiscard]]
