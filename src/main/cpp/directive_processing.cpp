@@ -168,10 +168,14 @@ void to_plaintext_mapped_for_highlighting(
     out.insert(out.end(), text.begin(), text.end());
 
     const Source_Span pos = t.get_source_span();
-    out_mapping.reserve(out_mapping.size() + pos.length);
-    for (std::size_t i = pos.begin; i < pos.length; ++i) {
+    MMML_ASSERT(pos.length == text.length());
+
+    const std::size_t initial_size = out_mapping.size();
+    out_mapping.reserve(initial_size + pos.length);
+    for (std::size_t i = pos.begin; i < pos.end(); ++i) {
         out_mapping.push_back(i);
     }
+    MMML_ASSERT(out_mapping.size() - initial_size == text.size());
 }
 
 void to_plaintext_mapped_for_highlighting(
@@ -222,13 +226,18 @@ void to_plaintext_mapped_for_highlighting(
     // We never run HTML generation afterwards and substitute the plaintext directive
     // with various syntax-highlighted content.
     case Directive_Category::pure_plaintext:
-        const std::size_t initial_size = out.size();
+        const std::size_t initial_out_size = out.size();
+        const std::size_t initial_mapping_size = out_mapping.size();
         behavior->generate_plaintext(out, d, context);
-        MMML_ASSERT(out_mapping.size() >= initial_size);
-        out_mapping.reserve(out_mapping.size() - initial_size);
-        for (std::size_t i = initial_size; i < out.size(); ++i) {
-            out_mapping.push_back(i);
+        MMML_ASSERT(out.size() >= initial_out_size);
+        const std::size_t out_growth = out.size() - initial_out_size;
+        out_mapping.reserve(out_mapping.size() + out_growth);
+        const std::size_t d_begin = d.get_source_span().begin;
+        for (std::size_t i = initial_out_size; i < out.size(); ++i) {
+            out_mapping.push_back(d_begin);
         }
+        const std::size_t mapping_growth = out_mapping.size() - initial_mapping_size;
+        MMML_ASSERT(out_growth == mapping_growth);
         break;
     }
 }
@@ -721,8 +730,8 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
 
     std::pmr::vector<char8_t> plaintext { context.get_transient_memory() };
     std::pmr::vector<std::size_t> plaintext_to_source_index { context.get_transient_memory() };
-
     to_plaintext_mapped_for_highlighting(plaintext, plaintext_to_source_index, content, context);
+    MMML_ASSERT(plaintext.size() == plaintext_to_source_index.size());
 
     std::pmr::vector<HLJS_Annotation_Span> spans { context.get_transient_memory() };
     const std::u8string_view plaintext_str { plaintext.data(), plaintext.size() };
