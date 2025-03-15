@@ -82,6 +82,13 @@ inline constexpr std::u8string_view U_digits = u8"U.digits";
 /// @see is_scalar_value
 inline constexpr std::u8string_view U_nonscalar = u8"charref.nonscalar";
 
+/// @brief In syntax highlighting,
+/// the given language is not supported.
+inline constexpr std::u8string_view highlight_language = u8"highlight.language";
+/// @brief In syntax highlighting,
+/// the code could not be highlighted because it is malformed.
+inline constexpr std::u8string_view highlight_malformed = u8"highlight.malformed";
+
 } // namespace diagnostic
 
 } // namespace mmml
