@@ -151,9 +151,9 @@ private:
 
 public:
     explicit Fixed_Name_Passthrough_Behavior(
+        std::u8string_view name,
         Directive_Category category,
-        Directive_Display display,
-        std::u8string_view name
+        Directive_Display display
     )
         : Passthrough_Behavior { category, display }
         , m_name { name }
@@ -472,11 +472,16 @@ Code_Point_Behavior final : Directive_Behavior {
 };
 
 struct [[nodiscard]] Syntax_Highlight_Behavior : Parametric_Behavior {
+private:
     static constexpr std::u8string_view lang_parameter = u8"lang";
     static constexpr std::u8string_view parameters[] { lang_parameter };
 
-    explicit Syntax_Highlight_Behavior(Directive_Display d)
+    const std::u8string_view tag_name;
+
+public:
+    explicit Syntax_Highlight_Behavior(std::u8string_view tag_name, Directive_Display d)
         : Parametric_Behavior { Directive_Category::pure_html, d, parameters }
+        , tag_name { tag_name }
     {
     }
 
@@ -497,9 +502,11 @@ struct [[nodiscard]] Syntax_Highlight_Behavior : Parametric_Behavior {
         const std::u8string_view lang
             = argument_to_plaintext_or(lang_data, lang_parameter, u8"", d, args, context);
 
+        out.open_tag(tag_name);
         const auto mode
             = display == Directive_Display::block ? To_HTML_Mode::trimmed : To_HTML_Mode::direct;
         to_html_syntax_highlighted(out, d.get_content(), lang, context, mode);
+        out.close_tag(tag_name);
     }
 };
 
@@ -675,21 +682,52 @@ constexpr std::u8string_view html_tag_prefix = u8"html-";
 } // namespace
 
 struct Builtin_Directive_Set::Impl {
+    // Specific directives.
     Do_Nothing_Behavior comment { Directive_Category::meta, Directive_Display::none };
+    Fixed_Name_Passthrough_Behavior b { u8"b", Directive_Category::formatting,
+                                        Directive_Display::in_line };
+    HTML_Entity_Behavior c {};
+    Fixed_Name_Passthrough_Behavior dd { u8"dd", Directive_Category::pure_html,
+                                         Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior dl { u8"dl", Directive_Category::pure_html,
+                                         Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior dt { u8"dt", Directive_Category::pure_html,
+                                         Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior em { u8"em", Directive_Category::formatting,
+                                         Directive_Display::in_line };
     Error_Behavior error {};
     HTML_Literal_Behavior html {};
-    Code_Point_Behavior code_point {};
-    HTML_Entity_Behavior entity {};
-    Syntax_Highlight_Behavior inline_code { Directive_Display::in_line };
-    Syntax_Highlight_Behavior code_block { Directive_Display::block };
-    Directive_Name_Passthrough_Behavior direct_formatting { Directive_Category::formatting,
-                                                            Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior tt_formatting { Directive_Category::formatting,
-                                                    Directive_Display::in_line, u8"tt-" };
-    Directive_Name_Passthrough_Behavior direct_html { Directive_Category::pure_html,
-                                                      Directive_Display::in_line };
     Directive_Name_Passthrough_Behavior html_tags { Directive_Category::pure_html,
                                                     Directive_Display::block, html_tag_prefix };
+    Fixed_Name_Passthrough_Behavior i { u8"i", Directive_Category::formatting,
+                                        Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior ins { u8"ins", Directive_Category::formatting,
+                                          Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior kbd { u8"kbd", Directive_Category::formatting,
+                                          Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior mark { u8"mark", Directive_Category::formatting,
+                                           Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior ol { u8"ol", Directive_Category::pure_html,
+                                         Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior s { u8"s", Directive_Category::formatting,
+                                        Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior small { u8"s", Directive_Category::formatting,
+                                            Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior strong { u8"s", Directive_Category::formatting,
+                                             Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior sub { u8"s", Directive_Category::formatting,
+                                          Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior sup { u8"s", Directive_Category::formatting,
+                                          Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior tt { u8"tt-", Directive_Category::formatting,
+                                         Directive_Display::in_line };
+    Code_Point_Behavior U {};
+    Fixed_Name_Passthrough_Behavior u { u8"u", Directive_Category::pure_html,
+                                        Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior ul { u8"ul", Directive_Category::pure_html,
+                                         Directive_Display::block };
+    Syntax_Highlight_Behavior code { u8"code", Directive_Display::in_line };
+    Syntax_Highlight_Behavior codeblock { u8"codeblock", Directive_Display::block };
 };
 
 Builtin_Directive_Set::Builtin_Directive_Set()
@@ -774,28 +812,32 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     switch (name[0]) {
     case u8'b':
         if (name == u8"b")
-            return &m_impl->direct_formatting;
+            return &m_impl->b;
         break;
 
     case u8'c':
         if (name == u8"c")
-            return &m_impl->entity;
+            return &m_impl->c;
         if (name == u8"code")
-            return &m_impl->inline_code;
+            return &m_impl->code;
         if (name == u8"codeblock")
-            return &m_impl->code_block;
+            return &m_impl->codeblock;
         if (name == u8"comment")
             return &m_impl->comment;
         break;
 
     case u8'd':
-        if (name == u8"dd" || name == u8"dl" || name == u8"dt")
-            return &m_impl->direct_html;
+        if (name == u8"dd")
+            return &m_impl->dd;
+        if (name == u8"dl")
+            return &m_impl->dl;
+        if (name == u8"dt")
+            return &m_impl->dt;
         break;
 
     case u8'e':
         if (name == u8"em")
-            return &m_impl->direct_formatting;
+            return &m_impl->em;
         if (name == u8"error")
             return &m_impl->error;
         break;
@@ -809,46 +851,55 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'i':
-        if (name == u8"i" || name == u8"ins")
-            return &m_impl->direct_formatting;
+        if (name == u8"i")
+            return &m_impl->i;
+        if (name == u8"ins")
+            return &m_impl->ins;
         break;
 
     case u8'k':
         if (name == u8"kbd")
-            return &m_impl->direct_formatting;
+            return &m_impl->kbd;
         break;
 
     case u8'm':
         if (name == u8"mark")
-            return &m_impl->direct_formatting;
+            return &m_impl->mark;
         break;
 
     case u8'o':
         if (name == u8"ol")
-            return &m_impl->direct_html;
+            return &m_impl->ol;
         break;
 
     case u8's':
-        if (name == u8"s" || name == u8"small" || name == u8"strong" || name == u8"sub"
-            || name == u8"sup")
-            return &m_impl->direct_formatting;
+        if (name == u8"s")
+            return &m_impl->s;
+        if (name == u8"small")
+            return &m_impl->small;
+        if (name == u8"strong")
+            return &m_impl->strong;
+        if (name == u8"sub")
+            return &m_impl->sub;
+        if (name == u8"sup")
+            return &m_impl->sup;
         break;
 
     case u8't':
         if (name == u8"tt")
-            return &m_impl->tt_formatting;
+            return &m_impl->tt;
         break;
 
     case u8'U':
         if (name == u8"U")
-            return &m_impl->code_point;
+            return &m_impl->U;
         break;
 
     case u8'u':
         if (name == u8"u")
-            return &m_impl->direct_formatting;
+            return &m_impl->u;
         if (name == u8"ul")
-            return &m_impl->direct_html;
+            return &m_impl->ul;
         break;
 
     default: break;
