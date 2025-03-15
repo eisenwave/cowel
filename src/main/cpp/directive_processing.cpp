@@ -48,6 +48,12 @@ trim_blank_text_left(std::span<const ast::Content> content, Context& context)
                 continue;
             }
         }
+        if (const auto* const text = std::get_if<ast::Generated>(&content.front())) {
+            if (is_ascii_blank(text->as_string())) {
+                content = content.subspan(1);
+                continue;
+            }
+        }
         break;
     }
     return content;
@@ -59,6 +65,12 @@ trim_blank_text_right(std::span<const ast::Content> content, Context& context)
     while (!content.empty()) {
         if (const auto* const text = std::get_if<ast::Text>(&content.back())) {
             if (is_ascii_blank(text->get_text(context.get_source()))) {
+                content = content.subspan(0, content.size() - 1);
+                continue;
+            }
+        }
+        if (const auto* const text = std::get_if<ast::Generated>(&content.back())) {
+            if (is_ascii_blank(text->as_string())) {
                 content = content.subspan(0, content.size() - 1);
                 continue;
             }
@@ -306,9 +318,15 @@ void to_html_direct(HTML_Writer& out, std::span<const ast::Content> content, Con
 
 void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
 {
-    for (std::size_t i = 0; i < content.size(); ++i) {
-        if (const auto* const text = std::get_if<ast::Text>(&content[i])) {
-            std::u8string_view str = text->get_text(context.get_source());
+    struct Visitor {
+        HTML_Writer& out;
+        std::span<const ast::Content> content;
+        Context& context;
+        std::size_t i;
+
+        void operator()(const ast::Text& text) const
+        {
+            std::u8string_view str = text.get_text(context.get_source());
             // Note that the following two conditions are not mutually exclusive
             // when content contains just one element.
             if (i == 0) {
@@ -321,9 +339,34 @@ void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Co
             MMML_ASSERT(!str.empty());
             out.write_inner_html(str);
         }
-        else {
-            to_html(out, content[i], context);
+
+        void operator()(const ast::Generated& generated) const
+        {
+            std::u8string_view str = generated.as_string();
+            if (i == 0) {
+                str = trim_ascii_blank_left(str);
+            }
+            if (i + 1 == content.size()) {
+                str = trim_ascii_blank_right(str);
+            }
+            // Other trimming mechanisms should have eliminated completely blank strings.
+            MMML_ASSERT(!str.empty());
+            out.write_inner_html(str);
         }
+
+        void operator()(const ast::Escaped& e) const
+        {
+            out.write_inner_html(e.get_char(context.get_source()));
+        }
+
+        void operator()(const ast::Directive& e) const
+        {
+            to_html(out, e, context);
+        }
+    };
+
+    for (std::size_t i = 0; i < content.size(); ++i) {
+        std::visit(Visitor { out, content, context, i }, content[i]);
     }
 }
 
@@ -752,7 +795,7 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
         }
     }
 
-    std::pmr::vector<ast::Content> highlighted_content = copy_highlighted(
+    const std::pmr::vector<ast::Content> highlighted_content = copy_highlighted(
         content, plaintext_str, plaintext_to_source_index, plaintext_to_span, context
     );
     to_html(out, highlighted_content, context, mode);
