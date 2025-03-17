@@ -1,0 +1,277 @@
+:root {
+    --sans-serif-family: "Noto Sans", sans-serif;
+    --sans-serif-size: 11pt;
+    --serif-family: "Noto Serif", serif;
+    --serif-size: 11pt;
+    --monospace-family: "Fira Code", monospace;
+    --monospace-size: 11pt;
+
+    --dark-background-color: #1a1a1a;
+    --dark-deep-background-color: #141414;
+    --dark-text-color: #f0f0f0;
+}
+
+html {
+    margin: 0;
+    width: 100%;
+}
+
+body {
+    --margin: 2em;
+
+    margin: var(--margin);
+    width: calc(100% - var(--margin) * 2);
+    box-sizing: border-box;
+    font-family: var(--serif-family);
+    font-size: var(--serif-size);
+}
+
+code,
+code-block,
+pre,
+tt,
+tt- {
+    font-family: var(--monospace-family);
+    font-variant-ligatures: none;
+}
+
+code,
+tt,
+tt- {
+    font-size: var(--monospace-size);
+}
+
+code-block {
+    display: block;
+    padding: 0.5em;
+    border-radius: 0.25em;
+    box-sizing: border-box;
+}
+
+code-block,
+pre {
+    font-size: calc(var(--monospace-size) * 0.9);
+    width: 100%;
+}
+
+code-block,
+pre {
+    white-space: pre-wrap;
+}
+
+ins,
+ins-lines {
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+code-block ins,
+code-block ins-lines {
+    text-decoration: none;
+}
+
+code-block .comtext ins,
+code-block .comtext ins-lines {
+    text-decoration: underline;
+}
+
+del {
+    text-decoration: line-through;
+}
+
+ins-lines,
+del-lines {
+    display: inline-block;
+    width: 100%;
+}
+
+#settings {
+    z-index: 999;
+    position: absolute;
+    display: inline-block;
+    top: 1em;
+    right: 1em;
+    opacity: 0.25;
+}
+
+#settings:hover,
+#settings:focus {
+    opacity: 1;
+}
+
+#dark-theme-icon,
+#light-theme-icon {
+    width: 2em;
+    height: auto;
+    cursor: pointer;
+}
+
+.comtext {
+    font-family: var(--serif-family);
+    font-size: var(--serif-size);
+    font-style: italic;
+}
+
+code-block .comtext {
+    font-size: calc(var(--serif-size) * 0.85);
+}
+
+.para {
+    cursor: pointer;
+    font-weight: normal;
+    font-family: var(--monospace-family);
+    text-decoration: none;
+    opacity: 0.25;
+
+    position: absolute;
+    left: 0.5rem;
+}
+
+.para:hover,
+.para:focus {
+    opacity: 1;
+}
+
+.para::before {
+    content: "§";
+}
+
+/* BEGIN LIGHT THEME */
+
+html:not(.dark) {
+    background-color: white;
+    color: black;
+}
+
+html:not(.dark) #dark-theme-icon {
+    display: none;
+}
+
+html:not(.dark) #light-theme-icon {
+    display: block;
+}
+
+html:not(.dark) .para,
+html:not(.dark) .para::before {
+    color: rgb(10, 73, 136);
+}
+
+html:not(.dark) code-block {
+    background-color: #fafafa;
+    border: 1px solid #aaa;
+}
+
+html:not(.dark) ins,
+html:not(.dark) ins-lines {
+    color: #17752d;
+    background-color: #e4faea;
+}
+
+html:not(.dark) del,
+html:not(.dark) del-lines {
+    color: #be1621;
+    background-color: #fbe6e8;
+}
+
+/* END LIGHT THEME */
+/* BEGIN DARK THEME */
+
+html.dark {
+    background-color: var(--dark-background-color);
+    color: var(---dark-text-color);
+}
+
+html.dark #dark-theme-icon {
+    display: block;
+}
+
+html.dark #light-theme-icon {
+    display: none;
+}
+
+html.dark a {
+    color: #5bc0ff;
+}
+
+html.dark a:visited {
+    color: #c6a8ff;
+}
+
+html.dark .para,
+html.dark .para::before {
+    color: #5bc0ff;
+}
+
+html.dark a:hover,
+html.dark a:focus {
+    color: #afd7ff;
+}
+
+html.dark code-block {
+    background-color: var(--dark-deep-background-color);
+    border: 1px solid black;
+}
+
+html.dark del,
+html.dark del-lines {
+    background-color: #67060c;
+    color: #ffdcd7;
+}
+
+html.dark ins,
+html.dark ins-lines {
+    background-color: #033a16;
+    color: #aff5b4;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not(.light) {
+        background-color: var(--dark-background-color);
+        color: var(--dark-text-color);
+    }
+
+    html:not(.light) #dark-theme-icon {
+        display: block;
+    }
+
+    html:not(.light) #light-theme-icon {
+        display: none;
+    }
+
+    html:not(.light) a {
+        color: #5bc0ff;
+    }
+
+    html:not(.light) a:visited {
+        color: #c6a8ff;
+    }
+
+    html:not(.light) .para,
+    html:not(.light) .para::before {
+        color: #5bc0ff;
+    }
+
+    html:not(.light) a:hover,
+    html:not(.light) a:focus {
+        color: #afd7ff;
+    }
+
+    html:not(.light) code-block {
+        background-color: var(--dark-deep-background-color);
+        border: 1px solid black;
+    }
+
+    html:not(.light) del,
+    html:not(.light) del-lines {
+        background-color: #67060c;
+        color: #ffdcd7;
+    }
+
+    html:not(.light) ins,
+    html:not(.light) ins-lines {
+        background-color: #033a16;
+        color: #aff5b4;
+    }
+}
+
+/* END DARK THEME */
