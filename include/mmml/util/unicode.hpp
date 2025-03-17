@@ -329,6 +329,18 @@ struct Code_Units_And_Length {
     {
         return { code_units.data(), std::size_t(length) };
     }
+
+    [[nodiscard]]
+    const char8_t* begin() const
+    {
+        return code_units.data();
+    }
+
+    [[nodiscard]]
+    const char8_t* end() const
+    {
+        return code_units.data() + length;
+    }
 };
 
 /// @brief Encodes `code_point` as UTF-8.
