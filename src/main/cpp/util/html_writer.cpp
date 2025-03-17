@@ -58,11 +58,6 @@ void append_html_escaped(
     }
 }
 
-HTML_Writer::HTML_Writer(std::pmr::vector<char_type>& out)
-    : m_out(out)
-{
-}
-
 void HTML_Writer::do_write(char_type c)
 {
     m_out.push_back(c);

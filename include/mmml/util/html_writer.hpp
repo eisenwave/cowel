@@ -85,12 +85,24 @@ public:
     /// Writes nothing to the stream.
     /// `out.fail()` shall be true.
     /// @param out the output stream
-    explicit HTML_Writer(std::pmr::vector<char_type>& out);
+    [[nodiscard]]
+    explicit HTML_Writer(std::pmr::vector<char_type>& out) noexcept
+        : m_out { out }
+    {
+    }
 
     HTML_Writer(const HTML_Writer&) = delete;
     HTML_Writer& operator=(const HTML_Writer&) = delete;
 
     ~HTML_Writer() = default;
+
+    /// @brief Returns the output vector that this writers has been constructed with,
+    /// and to which all output is written.
+    [[nodiscard]]
+    std::pmr::vector<char_type>& get_output() const
+    {
+        return m_out;
+    }
 
     /// @brief Validates whether the HTML document is complete.
     /// Namely, `write_preamble()` must have taken place and any opened tags must have
