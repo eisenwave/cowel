@@ -55,9 +55,13 @@ struct Basic_Annotated_String;
 template <typename Char, std::size_t>
 struct Basic_Characters;
 template <typename>
+struct Basic_Transparent_String_View_Equals;
+template <typename>
+struct Basic_Transparent_String_View_Greater;
+template <typename>
 struct Basic_Transparent_String_View_Hash;
 template <typename>
-struct Basic_Transparent_String_View_Equals;
+struct Basic_Transparent_String_View_Less;
 enum struct Code_Language : Default_Underlying;
 enum struct Diagnostic_Highlight : Default_Underlying;
 struct Content_Behavior;
@@ -65,6 +69,7 @@ struct Context;
 struct Diagnostic;
 struct Document_Finder;
 struct Document_Info;
+struct Document_Sections;
 struct Directive_Behavior;
 struct Directive_Content_Behavior;
 enum struct Directive_Category : Default_Underlying;
@@ -119,10 +124,14 @@ using Diagnostic_String = Annotated_String8<Diagnostic_Highlight>;
 
 using HLJS_Annotation_Span = Annotation_Span<HLJS_Scope>;
 
-using Transparent_String_View_Hash = Basic_Transparent_String_View_Hash<char>;
-using Transparent_String_View_Hash8 = Basic_Transparent_String_View_Hash<char8_t>;
 using Transparent_String_View_Equals = Basic_Transparent_String_View_Equals<char>;
 using Transparent_String_View_Equals8 = Basic_Transparent_String_View_Equals<char8_t>;
+using Transparent_String_View_Greater = Basic_Transparent_String_View_Greater<char>;
+using Transparent_String_View_Greater8 = Basic_Transparent_String_View_Greater<char8_t>;
+using Transparent_String_View_Hash = Basic_Transparent_String_View_Hash<char>;
+using Transparent_String_View_Hash8 = Basic_Transparent_String_View_Hash<char8_t>;
+using Transparent_String_View_Less = Basic_Transparent_String_View_Less<char>;
+using Transparent_String_View_Less8 = Basic_Transparent_String_View_Less<char8_t>;
 
 } // namespace mmml
 
