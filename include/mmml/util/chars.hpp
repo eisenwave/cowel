@@ -187,6 +187,29 @@ constexpr bool is_noncharacter(char32_t c)
     return lower >= 0xfffe && lower <= 0xffff;
 }
 
+// https://unicode.org/charts/PDF/UE000.pdf
+inline constexpr char32_t private_use_area_min = U'\uE000';
+// https://unicode.org/charts/PDF/UE000.pdf
+inline constexpr char32_t private_use_area_max = U'\uF8FF';
+// https://unicode.org/charts/PDF/UF0000.pdf
+inline constexpr char32_t supplementary_pua_a_min = U'\U000F0000';
+// https://unicode.org/charts/PDF/UF0000.pdf
+inline constexpr char32_t supplementary_pua_a_max = U'\U000FFFFF';
+// https://unicode.org/charts/PDF/U100000.pdf
+inline constexpr char32_t supplementary_pua_b_min = U'\U00100000';
+// https://unicode.org/charts/PDF/UF0000.pdf
+inline constexpr char32_t supplementary_pua_b_max = U'\U0010FFFF';
+
+/// @brief Returns `true` iff `c` is a noncharacter,
+/// i.e. if it falls outside the range of valid code points.
+[[nodiscard]]
+constexpr bool is_private_use_area_character(char32_t c)
+{
+    return (c >= private_use_area_min && c <= private_use_area_max) //
+        || (c >= supplementary_pua_a_min && c <= supplementary_pua_a_max) //
+        || (c >= supplementary_pua_b_min && c <= supplementary_pua_b_max);
+}
+
 /// @brief Returns `true` if `c` is an ASCII character
 /// that can legally appear in the name of an HTML tag.
 [[nodiscard]]
