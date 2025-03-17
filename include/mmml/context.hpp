@@ -14,6 +14,7 @@
 #include "mmml/util/typo.hpp"
 
 #include "mmml/diagnostic.hpp"
+#include "mmml/document_sections.hpp"
 #include "mmml/fwd.hpp"
 #include "mmml/services.hpp"
 
@@ -23,7 +24,7 @@ namespace detail {
 
 // We only use the aliases from fwd.hpp, but we need the definition of
 // `Basic_Transparent_String_View_Equals` to actually make this usable.
-using Suppress_Unused_Include_Transparent_Comparison = Basic_Transparent_String_View_Equals<void>;
+using Suppress_Unused_Include_Transparent_Equals = Basic_Transparent_String_View_Equals<void>;
 
 } // namespace detail
 
@@ -70,6 +71,7 @@ private:
     const Syntax_Highlighter& m_syntax_highlighter;
     const Document_Finder& m_document_finder;
 
+    Document_Sections m_sections { m_memory };
     Variable_Map m_variables { m_memory };
 
 public:
@@ -145,6 +147,18 @@ public:
     const Variable_Map& get_variables() const
     {
         return m_variables;
+    }
+
+    [[nodiscard]]
+    Document_Sections& get_sections()
+    {
+        return m_sections;
+    }
+
+    [[nodiscard]]
+    const Document_Sections& get_sections() const
+    {
+        return m_sections;
     }
 
     /// @brief Returns a memory resource that the `Context` has been constructed with.
