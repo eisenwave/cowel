@@ -7,6 +7,12 @@
     <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap">
     <style>@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap');</style>
     <link rel=stylesheet href="main.css"/>
+    <script>
+        const theme = localStorage.getItem("mmml-theme");
+        if (theme !== null) {
+            document.documentElement.className = theme;
+        }
+    </script>
 </head>
 
 <body>
@@ -17,8 +23,14 @@
         const settings = document.getElementById("settings");
         const darkIcon = document.getElementById("dark-theme-icon");
         const lightIcon = document.getElementById("light-theme-icon");
-        darkIcon.onclick = () => { document.documentElement.className = "light"; };
-        lightIcon.onclick = () => { document.documentElement.className = "dark"; };
+        darkIcon.onclick = () => {
+            document.documentElement.className = "light";
+            localStorage.setItem("mmml-theme", "light");
+        };
+        lightIcon.onclick = () => {
+            document.documentElement.className = "dark";
+            localStorage.setItem("mmml-theme", "dark");
+        };
         settings.onkeydown = (e) => {
             if (e.key === "Enter" || e.key === " ") {
                 event.preventDefault();
@@ -26,6 +38,7 @@
                 (isDark ? darkIcon : lightIcon).onclick();
             }
         };
+        
     </script>
 </div>
 <main>
