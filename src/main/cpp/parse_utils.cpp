@@ -96,37 +96,6 @@ std::size_t match_digits(std::u8string_view str, int base)
     return std::min(str.find_first_not_of(digits), str.size());
 }
 
-Literal_Match_Result match_integer_literal // NOLINT(bugprone-exception-escape)
-    (std::u8string_view s) noexcept
-{
-    if (s.empty() || !is_ascii_digit(s[0])) {
-        return { Literal_Match_Status::no_digits, 0, {} };
-    }
-    if (s.starts_with(u8"0b")) {
-        const std::size_t digits = match_digits(s.substr(2), 2);
-        if (digits == 0) {
-            return { Literal_Match_Status::no_digits_following_prefix, 2, Literal_Type::binary };
-        }
-        return { Literal_Match_Status::ok, digits + 2, Literal_Type::binary };
-    }
-    if (s.starts_with(u8"0x")) {
-        const std::size_t digits = match_digits(s.substr(2), 16);
-        if (digits == 0) {
-            return { Literal_Match_Status::no_digits_following_prefix, 2,
-                     Literal_Type::hexadecimal };
-        }
-        return { Literal_Match_Status::ok, digits + 2, Literal_Type::hexadecimal };
-    }
-    if (s[0] == '0') {
-        const std::size_t digits = match_digits(s, 8);
-        return { Literal_Match_Status::ok, digits,
-                 digits == 1 ? Literal_Type::decimal : Literal_Type::octal };
-    }
-    const std::size_t digits = match_digits(s, 10);
-
-    return { Literal_Match_Status::ok, digits, Literal_Type::decimal };
-}
-
 std::optional<unsigned long long> parse_uinteger_literal(std::u8string_view str) noexcept
 {
     if (str.empty()) {
