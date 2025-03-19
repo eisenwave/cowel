@@ -18,6 +18,49 @@
 
 namespace mmml::utf8 {
 
+enum struct Error_Code : Default_Underlying {
+    /// @brief Attempted to obtain unicode data from an empty string.
+    no_data,
+    /// @brief The bits in the initial unit would require there to be more subsequent units
+    /// than actually exist.
+    missing_units,
+    /// @brief The bit pattern is not a valid sequence of UTF-8 code units.
+    /// For example, the trailing code units don't have `10` continuation bits.
+    illegal_bits
+};
+
+[[nodiscard]]
+constexpr std::string_view error_code_message(Error_Code code)
+{
+    switch (code) {
+        using enum Error_Code;
+    case no_data: return "No data to decode.";
+    case missing_units: return "The sequence of code units is incomplete.";
+    case illegal_bits: return "The bit pattern is not valid UTF-8.";
+    }
+    MMML_ASSERT_UNREACHABLE(u8"Invalid Error_Code");
+}
+
+/// @brief Thrown when decoding unicode strings fails.
+struct Unicode_Error : std::runtime_error {
+private:
+    Error_Code m_error;
+
+public:
+    [[nodiscard]]
+    Unicode_Error(Error_Code error, std::string_view message)
+        : std::runtime_error { std::string(message) }
+        , m_error { error }
+    {
+    }
+
+    [[nodiscard]]
+    Unicode_Error(Error_Code error)
+        : Unicode_Error { error, error_code_message(error) }
+    {
+    }
+};
+
 /// @brief Returns the length of the UTF-8 unit sequence (including `c`)
 /// that is encoded when `c` is the first unit in that sequence.
 ///
@@ -34,17 +77,6 @@ constexpr int sequence_length(char8_t c) noexcept
 struct Code_Point_And_Length {
     char32_t code_point;
     int length;
-};
-
-enum struct Error_Code : Default_Underlying {
-    /// @brief Attempted to obtain unicode data from an empty string.
-    no_data,
-    /// @brief The bits in the initial unit would require there to be more subsequent units
-    /// than actually exist.
-    missing_units,
-    /// @brief The bit pattern is not a valid sequence of UTF-8 code units.
-    /// For example, the trailing code units don't have `10` continuation bits.
-    illegal_bits
 };
 
 /// @brief Extracts the next code point from UTF-8 data,
@@ -188,6 +220,16 @@ decode_and_length(std::u8string_view str) noexcept // NOLINT(bugprone-exception-
 }
 
 [[nodiscard]]
+constexpr Code_Point_And_Length decode_and_length_or_throw(std::u8string_view str)
+{
+    const Result<Code_Point_And_Length, Error_Code> result = decode_and_length(str);
+    if (!result) {
+        throw Unicode_Error { result.error() };
+    }
+    return *result;
+}
+
+[[nodiscard]]
 constexpr Result<void, Error_Code> is_valid(std::u8string_view str) noexcept
 {
     while (!str.empty()) {
@@ -213,11 +255,6 @@ constexpr std::size_t code_points_unchecked(std::u8string_view str) noexcept
     }
     return result;
 }
-
-/// @brief Thrown when decoding unicode strings fails.
-struct Unicode_Error : std::runtime_error {
-    using std::runtime_error::runtime_error;
-};
 
 struct Code_Point_Iterator_Sentinel { };
 
@@ -253,7 +290,8 @@ public:
     {
         const int length = sequence_length(*m_pointer);
         if (length == 0 || length > m_end - m_pointer) {
-            throw Unicode_Error { "Corrupted UTF-8 string or past the end." };
+            throw Unicode_Error { Error_Code::illegal_bits,
+                                  "Corrupted UTF-8 string or past the end." };
         }
         m_pointer += length;
         return *this;
@@ -271,7 +309,7 @@ public:
     {
         const Result<Code_Point_And_Length, Error_Code> result = next();
         if (!result) {
-            throw Unicode_Error { "Corrupted UTF-8 string or past the end." };
+            throw Unicode_Error { result.error(), "Corrupted UTF-8 string or past the end." };
         }
         return result->code_point;
     }
