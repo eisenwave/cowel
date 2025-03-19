@@ -1,6 +1,7 @@
 #ifndef MMML_HIGHLIGHT_TOKEN_HPP
 #define MMML_HIGHLIGHT_TOKEN_HPP
 
+#include <memory_resource>
 #include <string_view>
 #include <vector>
 

@@ -9,6 +9,7 @@
 #include <iterator>
 #include <ranges>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 
 #include "mmml/util/assert.hpp"

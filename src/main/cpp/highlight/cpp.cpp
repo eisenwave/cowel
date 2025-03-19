@@ -1,5 +1,9 @@
 #include <algorithm>
+#include <cstddef>
+#include <memory_resource>
+#include <optional>
 #include <string_view>
+#include <vector>
 
 #include "mmml/util/annotation_span.hpp"
 #include "mmml/util/assert.hpp"
@@ -69,7 +73,7 @@ Comment_Result match_special_line(std::u8string_view s, Special_Line_Type type) 
         break;
     }
     case Special_Line_Type::preprocessing: {
-        std::optional<Cpp_Token_Type> first_token = match_preprocessing_op_or_punc(s);
+        const std::optional<Cpp_Token_Type> first_token = match_preprocessing_op_or_punc(s);
         if (first_token != Cpp_Token_Type::pound && first_token != Cpp_Token_Type::pound_alt) {
             return {};
         }
@@ -180,7 +184,7 @@ std::size_t match_pp_number(const std::u8string_view str)
         length += 2;
     }
     // digit
-    else if (str.length() >= 1 && is_ascii_digit(str[0])) {
+    else if (!str.empty() && is_ascii_digit(str[0])) {
         length += 1;
     }
     else {
@@ -638,7 +642,8 @@ static_assert(std::ranges::is_sorted(cpp_keyword_names));
 std::optional<Cpp_Keyword> keyword_by_identifier(std::u8string_view identifier)
 {
     const std::u8string_view* const result
-        = std::ranges::lower_bound(cpp_keyword_names, identifier);
+        = std::ranges::lower_bound // NOLINT(misc-include-cleaner)
+        (cpp_keyword_names, identifier);
     if (result == std::end(cpp_keyword_names) || *result != identifier) {
         return {};
     }

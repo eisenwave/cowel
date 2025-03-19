@@ -1,13 +1,16 @@
 #ifndef MMML_DOCUMENT_WRITER_HPP
 #define MMML_DOCUMENT_WRITER_HPP
 
+#include <cstddef>
 #include <map>
 #include <memory_resource>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "mmml/util/assert.hpp"
+#include "mmml/util/chars.hpp"
 #include "mmml/util/html_writer.hpp"
 #include "mmml/util/transparent_comparison.hpp"
 #include "mmml/util/unicode.hpp"
@@ -133,7 +136,7 @@ public:
     entry_type* try_go_to(std::u8string_view section)
     {
         const auto existing_iter = m_sections.find(section);
-        entry_type* result = existing_iter != m_sections.end() ? &*existing_iter : nullptr;
+        entry_type* const result = existing_iter != m_sections.end() ? &*existing_iter : nullptr;
         m_current = result;
         return result;
     }

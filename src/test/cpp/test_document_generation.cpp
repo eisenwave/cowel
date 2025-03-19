@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <memory_resource>
 #include <span>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <variant>

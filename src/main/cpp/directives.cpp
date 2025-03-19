@@ -16,6 +16,7 @@
 #include "mmml/util/from_chars.hpp"
 #include "mmml/util/html_entities.hpp"
 #include "mmml/util/html_writer.hpp"
+#include "mmml/util/result.hpp"
 #include "mmml/util/strings.hpp"
 #include "mmml/util/typo.hpp"
 
