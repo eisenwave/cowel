@@ -209,7 +209,7 @@ html.dark a:focus {
 
 html.dark code-block {
     background-color: var(--dark-deep-background-color);
-    border: 1px solid black;
+    border: 1px solid #303030;
 }
 
 html.dark del,
@@ -258,7 +258,7 @@ html.dark ins-lines {
 
     html:not(.light) code-block {
         background-color: var(--dark-deep-background-color);
-        border: 1px solid black;
+        border: 1px solid #303030;
     }
 
     html:not(.light) del,
