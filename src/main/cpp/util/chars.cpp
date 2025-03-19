@@ -307,7 +307,7 @@ void suppress_unused_include_algorithm()
 {
     // Necessary because clang-tidy does not register
     // std::ranges::binary_search as a use of <algorithm>.
-    std::max(0, 0); // NOLINT
+    void(std::max(0, 0)); // NOLINT
 }
 
 } // namespace
