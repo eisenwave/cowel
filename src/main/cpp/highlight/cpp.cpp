@@ -703,7 +703,10 @@ Highlight_Type cpp_token_type_highlight(cpp::Cpp_Token_Type type)
 
 } // namespace
 
-bool highlight_cpp(std::pmr::vector<Highlight_Span>& out, std::u8string_view in)
+bool highlight_cpp( //
+    std::pmr::vector<Highlight_Span>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource*)
 {
     const auto emit = [&out](std::size_t begin, std::size_t length, Highlight_Type type) {
         out.emplace_back(begin, length, type);
@@ -719,8 +722,8 @@ bool highlight_cpp(std::pmr::vector<Highlight_Span>& out, std::u8string_view in)
     // https://eel.is/c++draft/cpp#def:preprocessing_directive
     bool fresh_line = true;
 
-    while (index < in.size()) {
-        const std::u8string_view remainder = in.substr(index);
+    while (index < source.size()) {
+        const std::u8string_view remainder = source.substr(index);
         if (const std::size_t white_length = cpp::match_whitespace(remainder)) {
             fresh_line |= remainder.substr(0, white_length).contains(u8'\n');
             index += white_length;

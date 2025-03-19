@@ -12,6 +12,19 @@
 
 namespace mmml {
 
+//
+bool highlight_mmml(
+    std::pmr::vector<Annotation_Span<Highlight_Type>>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory
+)
+{
+    std::pmr::vector<AST_Instruction> instructions { memory };
+    parse(instructions, source);
+    highlight_mmml(out, source, instructions);
+    return true;
+}
+
 void highlight_mmml(
     std::pmr::vector<Annotation_Span<Highlight_Type>>& out,
     std::u8string_view source,

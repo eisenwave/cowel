@@ -49,8 +49,16 @@ enum struct Highlight_Type : Default_Underlying {
     tag,
 };
 
-bool highlight_mmml(std::pmr::vector<Highlight_Span>& out, std::u8string_view in);
-bool highlight_cpp(std::pmr::vector<Highlight_Span>& out, std::u8string_view in);
+bool highlight_mmml(
+    std::pmr::vector<Highlight_Span>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory
+);
+bool highlight_cpp(
+    std::pmr::vector<Highlight_Span>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory
+);
 
 } // namespace mmml
 
