@@ -27,6 +27,7 @@ Checks:
   - -cppcoreguidelines-virtual-class-destructor
   - -modernize-use-designated-initializers
   - -modernize-use-trailing-return-type
+  - -readability-avoid-nested-conditional-operator
   - -readability-convert-member-functions-to-static
   - -readability-function-cognitive-complexity
   - -readability-identifier-length
