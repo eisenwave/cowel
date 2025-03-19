@@ -103,8 +103,9 @@ public:
         if (entry_type* const existing = find(section)) {
             return *existing;
         }
-        const auto [iter, success]
-            = m_sections.emplace(std::pmr::u8string { section, get_memory() });
+        const auto [iter, success] = m_sections.emplace(
+            std::pmr::u8string { section, get_memory() }, std::pmr::vector<char8_t> { get_memory() }
+        );
         MMML_ASSERT(success);
         return *iter;
     }
@@ -117,7 +118,8 @@ public:
         if (entry_type* const existing = find(section)) {
             return *existing;
         }
-        const auto [iter, success] = m_sections.emplace(std::move(section));
+        const auto [iter, success]
+            = m_sections.emplace(std::move(section), std::pmr::vector<char8_t> { get_memory() });
         MMML_ASSERT(success);
         return *iter;
     }
