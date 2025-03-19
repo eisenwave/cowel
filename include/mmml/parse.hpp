@@ -105,14 +105,6 @@ std::pmr::vector<ast::Content> build_ast(
     std::pmr::memory_resource* memory
 );
 
-/// @brief Uses the AST instructions to create syntax highlighting information.
-/// A sequence of `Annotation_Span`s is appended to `out`,
-/// where gaps between spans represent non-highlighted content such as plaintext or whitespace.
-void build_highlight(
-    std::pmr::vector<HLJS_Annotation_Span>& out,
-    std::span<const AST_Instruction> instructions
-);
-
 /// @brief Parses a document and runs `build_ast` on the results.
 std::pmr::vector<ast::Content>
 parse_and_build(std::u8string_view source, std::pmr::memory_resource* memory);
