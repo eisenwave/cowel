@@ -409,6 +409,99 @@ constexpr bool is_mmml_directive_name_character(char32_t c)
     return is_html_tag_name_character(c);
 }
 
+/// @brief Equivalent to `is_ascii_alpha(c)`.
+[[nodiscard]]
+constexpr bool is_ascii_xid_start(char8_t c) noexcept
+{
+    return is_ascii_alpha(c);
+}
+
+/// @brief Equivalent to `is_ascii_alpha(c)`.
+[[nodiscard]]
+constexpr bool is_ascii_xid_start(char32_t c) noexcept
+{
+    return is_ascii_alpha(c);
+}
+
+/// @brief Returns `true` iff `c` has the XID_Start Unicode property.
+/// This property indicates whether the character can appear at the beginning
+/// of a Unicode identifier, such as a C++ *identifier*.
+[[nodiscard]]
+bool is_xid_start(char32_t c) noexcept;
+
+/// @brief Returns `true` iff `c` is in the set `[a-zA-Z0-9_]`.
+[[nodiscard]]
+constexpr bool is_ascii_xid_continue(char8_t c) noexcept
+{
+    return is_ascii_alphanumeric(c) || c == u8'_';
+}
+
+/// @brief Returns `true` iff `c` is in the set `[a-zA-Z0-9_]`.
+[[nodiscard]]
+constexpr bool is_ascii_xid_continue(char32_t c) noexcept
+{
+    return is_ascii_alphanumeric(c) || c == u8'_';
+}
+/// @brief Returns `true` iff `c` has the XID_Continue Unicode property.
+/// This property indicates whether the character can appear
+/// in a Unicode identifier, such as a C++ *identifier*.
+[[nodiscard]]
+bool is_xid_continue(char32_t c) noexcept;
+
+/// @brief Returns `true` iff `c` is in the set `[A-Za-z_]`.
+[[nodiscard]]
+constexpr bool is_cpp_ascii_identifier_start(char8_t c)
+{
+    return c == u8'_' || is_ascii_xid_start(c);
+}
+
+/// @brief Returns `true` iff `c` is in the set `[A-Za-z_]`.
+[[nodiscard]]
+constexpr bool is_cpp_ascii_identifier_start(char32_t c)
+{
+    return c == U'_' || is_ascii_xid_start(c);
+}
+
+[[nodiscard]]
+constexpr bool is_cpp_identifier_start(char32_t c)
+{
+    // https://eel.is/c++draft/lex.name#nt:identifier-start
+    return c == U'_' || is_xid_start(c);
+}
+
+/// @brief Returns `true` iff `c` is in the set `[A-Za-z0-9_]`.
+[[nodiscard]]
+constexpr bool is_cpp_ascii_identifier_continue(char8_t c)
+{
+    return is_ascii_xid_continue(c);
+}
+
+/// @brief Returns `true` iff `c` is in the set `[A-Za-z0-9_]`.
+[[nodiscard]]
+constexpr bool is_cpp_ascii_identifier_continue(char32_t c)
+{
+    return is_ascii_xid_continue(c);
+}
+
+[[nodiscard]]
+constexpr bool is_cpp_identifier_continue(char32_t c)
+{
+    // https://eel.is/c++draft/lex.name#nt:identifier-start
+    return c == U'_' || is_xid_continue(c);
+}
+
+[[nodiscard]]
+constexpr bool is_cpp_whitespace(char8_t c)
+{
+    return is_ascii_blank(c);
+}
+
+[[nodiscard]]
+constexpr bool is_cpp_whitespace(char32_t c)
+{
+    return is_ascii_blank(c);
+}
+
 } // namespace mmml
 
 #endif
