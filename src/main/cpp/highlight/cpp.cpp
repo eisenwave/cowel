@@ -711,10 +711,19 @@ Highlight_Type cpp_token_type_highlight(cpp::Cpp_Token_Type type)
 bool highlight_cpp( //
     std::pmr::vector<Highlight_Span>& out,
     std::u8string_view source,
-    std::pmr::memory_resource*)
+    std::pmr::memory_resource*,
+    const Highlight_Options& options
+)
 {
-    const auto emit = [&out](std::size_t begin, std::size_t length, Highlight_Type type) {
-        out.emplace_back(begin, length, type);
+    const auto emit = [&](std::size_t begin, std::size_t length, Highlight_Type type) {
+        const bool coalesce = options.coalescing && !out.empty() && out.back().value == type
+            && out.back().end() == begin;
+        if (coalesce) {
+            out.back().length += length;
+        }
+        else {
+            out.emplace_back(begin, length, type);
+        }
     };
     // Approximately implements highlighting based on C++ tokenization,
     // as described in:

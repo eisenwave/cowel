@@ -50,15 +50,23 @@ enum struct Highlight_Type : Default_Underlying {
     tag,
 };
 
+struct Highlight_Options {
+    /// @brief If `true`,
+    /// adjacent spans with the same `Highlight_Type` get merged into one.
+    bool coalescing = false;
+};
+
 bool highlight_mmml(
     std::pmr::vector<Highlight_Span>& out,
     std::u8string_view source,
-    std::pmr::memory_resource* memory
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options = {}
 );
 bool highlight_cpp(
     std::pmr::vector<Highlight_Span>& out,
     std::u8string_view source,
-    std::pmr::memory_resource* memory
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options = {}
 );
 
 } // namespace mmml

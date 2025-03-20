@@ -2,6 +2,8 @@
 #include <string_view>
 #include <vector>
 
+#include "mmml/highlight/highlight.hpp"
+
 #include "mmml/fwd.hpp"
 
 namespace mmml {
@@ -12,7 +14,8 @@ namespace mmml {
 void highlight_mmml(
     std::pmr::vector<Highlight_Span>& out,
     std::u8string_view source,
-    std::span<const AST_Instruction> instructions
+    std::span<const AST_Instruction> instructions,
+    const Highlight_Options& options = {}
 );
 
 } // namespace mmml

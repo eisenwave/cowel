@@ -14,35 +14,42 @@
 
 namespace mmml {
 
-//
 bool highlight_mmml(
     std::pmr::vector<Annotation_Span<Highlight_Type>>& out,
     std::u8string_view source,
-    std::pmr::memory_resource* memory
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options
 )
 {
     std::pmr::vector<AST_Instruction> instructions { memory };
     parse(instructions, source);
-    highlight_mmml(out, source, instructions);
+    highlight_mmml(out, source, instructions, options);
     return true;
 }
 
-void highlight_mmml(
+void highlight_mmml( //
     std::pmr::vector<Annotation_Span<Highlight_Type>>& out,
     std::u8string_view source,
-    std::span<const AST_Instruction> instructions
+    std::span<const AST_Instruction> instructions,
+    const Highlight_Options& options
 )
 {
     std::size_t index = 0;
-    [[maybe_unused]]
-    std::size_t in_comment
-        = 0;
     const auto emit = [&](std::size_t length, Highlight_Type type) {
-        out.push_back(Annotation_Span<Highlight_Type> {
-            .begin = index, .length = length, .value = type });
+        const bool coalesce = options.coalescing && !out.empty() && out.back().value == type
+            && out.back().end() == index;
+        if (coalesce) {
+            out.back().length += length;
+        }
+        else {
+            out.emplace_back(index, length, type);
+        }
         index += length;
     };
 
+    [[maybe_unused]]
+    std::size_t in_comment
+        = 0;
     for (const auto& i : instructions) {
         switch (i.type) {
             using enum AST_Instruction_Type;
