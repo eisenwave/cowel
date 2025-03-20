@@ -54,6 +54,12 @@ struct Highlight_Options {
     /// @brief If `true`,
     /// adjacent spans with the same `Highlight_Type` get merged into one.
     bool coalescing = false;
+    /// @brief If `true`,
+    /// does not highlight keywords and other features from technical specifications,
+    /// compiler extensions, from similar languages, and other "non-standard" sources.
+    ///
+    /// For example, if `false`, C++ highlighting also includes all C keywords.
+    bool strict = false;
 };
 
 bool highlight_mmml(
