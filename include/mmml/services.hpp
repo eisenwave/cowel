@@ -16,20 +16,13 @@
 #include "mmml/diagnostic.hpp"
 #include "mmml/fwd.hpp"
 
+#include "mmml/highlight/highlight_error.hpp"
+
 namespace mmml {
 
 namespace detail {
 using Suppress_Unused_Include_Annotation_Span = Annotation_Span<void>;
 } // namespace detail
-
-enum struct Syntax_Highlight_Error : Default_Underlying {
-    /// @brief A given language hint is not supported,
-    /// and the language couldn't be determined automatically.
-    unsupported_language,
-    /// @brief Code cannot be highlighted because it's ill-formed,
-    /// and the syntax highlighter does not tolerate ill-formed code.
-    bad_code,
-};
 
 struct Syntax_Highlighter {
 
@@ -53,13 +46,15 @@ struct Syntax_Highlighter {
     /// nothing is appended to `out`.
     /// @param out Where the spans are appended to.
     /// @param code The source code.
-    /// @param language A language hint (possibly an empty string).
+    /// @param language A language hint.
     /// This should be one of the languages returned by `get_supported_languages`.
+    /// @param memory Additional memory.
     [[nodiscard]]
     virtual Result<void, Syntax_Highlight_Error> operator()(
         std::pmr::vector<Highlight_Span>& out,
         std::u8string_view code,
-        std::u8string_view language = {}
+        std::u8string_view language,
+        std::pmr::memory_resource* memory
     ) const
         = 0;
 };
@@ -82,8 +77,12 @@ struct No_Support_Syntax_Highlighter final : Syntax_Highlighter {
 
     [[nodiscard]]
     Result<void, Syntax_Highlight_Error>
-    operator()(std::pmr::vector<Highlight_Span>&, std::u8string_view, std::u8string_view = {})
-        const final
+    operator()( //
+        std::pmr::vector<Highlight_Span>&,
+        std::u8string_view,
+        std::u8string_view,
+        std::pmr::memory_resource*
+    ) const final
     {
         return Syntax_Highlight_Error::unsupported_language;
     }
