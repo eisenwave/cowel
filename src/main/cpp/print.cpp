@@ -47,6 +47,7 @@ std::u8string_view diagnostic_highlight_ansi_sequence(Diagnostic_Highlight type)
 
     case note: return ansi::h_white;
 
+    case success:
     case position_indicator: return ansi::h_green;
 
     case internal_error_notice: return ansi::h_yellow;
