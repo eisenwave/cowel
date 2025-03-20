@@ -1,12 +1,9 @@
-#include <algorithm>
-#include <cstddef>
 #include <filesystem>
 #include <initializer_list>
 #include <memory_resource>
 #include <span>
 #include <string>
 #include <string_view>
-#include <utility>
 #include <variant>
 #include <vector>
 
@@ -14,10 +11,6 @@
 
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/assert.hpp"
-#include "mmml/util/io.hpp"
-#include "mmml/util/levenshtein_utf8.hpp"
-#include "mmml/util/result.hpp"
-#include "mmml/util/typo.hpp"
 
 #include "mmml/diagnostic.hpp"
 #include "mmml/diagnostic_highlight.hpp"
@@ -28,7 +21,9 @@
 #include "mmml/parse.hpp"
 #include "mmml/print.hpp"
 
-#include "mmml/highlight/highlight.hpp"
+#include "collecting_logger.hpp"
+#include "io.hpp"
+#include "test_highlighter.hpp"
 
 namespace mmml {
 namespace {
@@ -80,116 +75,6 @@ struct Paragraphs_Behavior final : Content_Behavior {
 constinit Trivial_Content_Behavior trivial_behavior {};
 constinit Paragraphs_Behavior paragraphs_behavior {};
 
-struct Collecting_Logger final : Logger {
-    mutable std::pmr::vector<Diagnostic> diagnostics;
-
-    [[nodiscard]]
-    Collecting_Logger(std::pmr::memory_resource* memory)
-        : Logger { Severity::min }
-        , diagnostics { memory }
-    {
-    }
-
-    void operator()(Diagnostic&& diagnostic) const final
-    {
-        diagnostics.push_back(std::move(diagnostic));
-    }
-
-    [[nodiscard]]
-    bool nothing_logged() const
-    {
-        return diagnostics.empty();
-    }
-
-    [[nodiscard]]
-    bool was_logged(std::u8string_view id) const
-    {
-        return std::ranges::find(diagnostics, id, &Diagnostic::id) != diagnostics.end();
-    }
-};
-
-/// @brief Runs syntax highlighting for code of a test-only language
-/// where sequences of the character `x` are considered keywords.
-/// Nothing else is highlighted.
-void syntax_highlight_x(std::pmr::vector<Highlight_Span>& out, std::u8string_view code)
-{
-    char8_t prev = 0;
-    std::size_t begin = 0;
-    for (std::size_t i = 0; i < code.size(); ++i) {
-        if (code[i] == u8'x' && prev != u8'x') {
-            begin = i;
-        }
-        if (code[i] != u8'x' && prev == u8'x') {
-            const Highlight_Span span { .begin = begin,
-                                        .length = i - begin,
-                                        .value = Highlight_Type::keyword };
-            out.push_back(span);
-        }
-        prev = code[i];
-    }
-    if (prev == u8'x') {
-        const Highlight_Span span { .begin = begin,
-                                    .length = code.size() - begin,
-                                    .value = Highlight_Type::keyword };
-        out.push_back(span);
-    }
-}
-
-struct X_Highlighter final : Syntax_Highlighter {
-    static constexpr std::u8string_view language_name = u8"x";
-
-    [[nodiscard]]
-    std::span<const std::u8string_view> get_supported_languages() const final
-    {
-        static constexpr std::u8string_view supported[] { language_name };
-        return supported;
-    }
-
-    [[nodiscard]]
-    Distant<std::u8string_view>
-    match_supported_language(std::u8string_view language, std::pmr::memory_resource* memory)
-        const final
-    {
-        const std::size_t distance
-            = code_point_levenshtein_distance(language_name, language, memory);
-        return { language_name, distance };
-    }
-
-    [[nodiscard]]
-    Result<void, Syntax_Highlight_Error> operator()(
-        std::pmr::vector<Highlight_Span>& out,
-        std::u8string_view code,
-        std::u8string_view language
-    ) const final
-    {
-        if (language != language_name) {
-            return Syntax_Highlight_Error::unsupported_language;
-        }
-        syntax_highlight_x(out, code);
-        return {};
-    }
-};
-
-constexpr X_Highlighter x_highlighter {};
-
-[[nodiscard]]
-bool load_utf8_file_or_error(
-    std::pmr::vector<char8_t>& out,
-    std::string_view path,
-    std::pmr::memory_resource* memory
-)
-{
-    const Result<void, IO_Error_Code> result = load_utf8_file(out, path);
-    if (result) {
-        return true;
-    }
-
-    Diagnostic_String error { memory };
-    print_io_error(error, path, result.error());
-    print_code_string_stdout(error);
-    return false;
-}
-
 struct Doc_Gen_Test : testing::Test {
     std::pmr::monotonic_buffer_resource memory;
     std::pmr::vector<char8_t> out { &memory };
@@ -233,7 +118,7 @@ struct Doc_Gen_Test : testing::Test {
                                            .path = file_path,
                                            .source = source_string,
                                            .logger = logger,
-                                           .highlighter = x_highlighter,
+                                           .highlighter = test_highlighter,
                                            .memory = &memory };
         generate_document(options);
         return { out.data(), out.size() };
