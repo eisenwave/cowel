@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "mmml/fwd.hpp"
+#include "mmml/highlight/highlight.hpp"
 #include "mmml/parse_utils.hpp"
 #include "mmml/util/assert.hpp"
-#include "mmml/util/hljs_scope.hpp"
 #include "mmml/util/html_writer.hpp"
 #include "mmml/util/result.hpp"
 #include "mmml/util/source_position.hpp"
@@ -580,7 +580,7 @@ std::pmr::vector<ast::Content> copy_highlighted(
     std::span<const ast::Content> content,
     std::u8string_view highlighted_source,
     std::span<const std::size_t> to_source_index,
-    std::span<const HLJS_Annotation_Span*> to_highlight_span,
+    std::span<const Highlight_Span*> to_highlight_span,
     Context& context
 );
 
@@ -589,7 +589,7 @@ struct [[nodiscard]] Highlighted_AST_Copier {
 
     std::u8string_view source;
     std::span<const std::size_t> to_source_index;
-    std::span<const HLJS_Annotation_Span*> to_span;
+    std::span<const Highlight_Span*> to_span;
     Context& context;
 
     std::size_t index = 0;
@@ -681,7 +681,7 @@ private:
             if (to_source_index[index] >= source_span.end()) {
                 break;
             }
-            const HLJS_Annotation_Span* const current_span = to_span[index];
+            const Highlight_Span* const current_span = to_span[index];
             const std::size_t snippet_begin = index++;
             for (; index < limit && to_source_index[index] < source_span.end(); ++index) {
                 if (to_span[index] != current_span) {
@@ -695,8 +695,7 @@ private:
     }
 
     [[nodiscard]]
-    ast::Generated
-    make_generated(std::u8string_view inner_text, const HLJS_Annotation_Span* span) const
+    ast::Generated make_generated(std::u8string_view inner_text, const Highlight_Span* span) const
     {
         std::pmr::vector<char8_t> span_data { context.get_transient_memory() };
         HTML_Writer span_writer { span_data };
@@ -704,7 +703,7 @@ private:
         if (span) {
             span_writer.open_tag_with_attributes(highlighting_tag)
                 .write_attribute(
-                    u8"class", hljs_scope_css_classes(span->value), Attribute_Style::always_double
+                    u8"data-h", highlight_type_css(span->value), Attribute_Style::double_if_needed
                 )
                 .end();
         }
@@ -737,7 +736,7 @@ std::pmr::vector<ast::Content> copy_highlighted(
     std::span<const ast::Content> content,
     std::u8string_view highlighted_source,
     std::span<const std::size_t> to_source_index,
-    std::span<const HLJS_Annotation_Span*> to_highlight_span,
+    std::span<const Highlight_Span*> to_highlight_span,
     Context& context
 )
 {
@@ -777,7 +776,7 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     to_plaintext_mapped_for_highlighting(plaintext, plaintext_to_source_index, content, context);
     MMML_ASSERT(plaintext.size() == plaintext_to_source_index.size());
 
-    std::pmr::vector<HLJS_Annotation_Span> spans { context.get_transient_memory() };
+    std::pmr::vector<Highlight_Span> spans { context.get_transient_memory() };
     const std::u8string_view plaintext_str { plaintext.data(), plaintext.size() };
 
     const Syntax_Highlighter& highlighter = context.get_highlighter();
@@ -786,10 +785,9 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
         return result.error();
     }
 
-    std::pmr::vector<const HLJS_Annotation_Span*> plaintext_to_span { context.get_transient_memory(
-    ) };
+    std::pmr::vector<const Highlight_Span*> plaintext_to_span { context.get_transient_memory() };
     plaintext_to_span.resize(plaintext.size());
-    for (const HLJS_Annotation_Span& span : spans) {
+    for (const Highlight_Span& span : spans) {
         for (std::size_t i = span.begin; i < span.end(); ++i) {
             plaintext_to_span[i] = &span;
         }

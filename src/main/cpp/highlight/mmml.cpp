@@ -85,7 +85,7 @@ void highlight_mmml( //
 
         case argument_equal: // =
         case argument_comma: // ,
-            emit(1, Highlight_Type::symbol_normal);
+            emit(1, Highlight_Type::symbol);
             break;
         case push_arguments: // [
         case pop_arguments: // ]

@@ -778,7 +778,7 @@ Highlight_Type cpp_token_type_highlight(cpp::Cpp_Token_Type type)
     case left_parens:
     case right_parens: return Highlight_Type::symbol_important;
 
-    default: return Highlight_Type::symbol_normal;
+    default: return Highlight_Type::symbol;
     }
 }
 

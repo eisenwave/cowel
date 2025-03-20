@@ -57,7 +57,7 @@ struct Syntax_Highlighter {
     /// This should be one of the languages returned by `get_supported_languages`.
     [[nodiscard]]
     virtual Result<void, Syntax_Highlight_Error> operator()(
-        std::pmr::vector<HLJS_Annotation_Span>& out,
+        std::pmr::vector<Highlight_Span>& out,
         std::u8string_view code,
         std::u8string_view language = {}
     ) const
@@ -82,7 +82,7 @@ struct No_Support_Syntax_Highlighter final : Syntax_Highlighter {
 
     [[nodiscard]]
     Result<void, Syntax_Highlight_Error>
-    operator()(std::pmr::vector<HLJS_Annotation_Span>&, std::u8string_view, std::u8string_view = {})
+    operator()(std::pmr::vector<Highlight_Span>&, std::u8string_view, std::u8string_view = {})
         const final
     {
         return Syntax_Highlight_Error::unsupported_language;

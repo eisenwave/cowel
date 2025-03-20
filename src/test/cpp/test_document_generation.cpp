@@ -12,22 +12,23 @@
 
 #include <gtest/gtest.h>
 
-#include "mmml/diagnostic_highlight.hpp"
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/assert.hpp"
-#include "mmml/util/hljs_scope.hpp"
 #include "mmml/util/io.hpp"
 #include "mmml/util/levenshtein_utf8.hpp"
 #include "mmml/util/result.hpp"
 #include "mmml/util/typo.hpp"
 
 #include "mmml/diagnostic.hpp"
+#include "mmml/diagnostic_highlight.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
 #include "mmml/document_generation.hpp"
 #include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
 #include "mmml/print.hpp"
+
+#include "mmml/highlight/highlight.hpp"
 
 namespace mmml {
 namespace {
@@ -110,7 +111,7 @@ struct Collecting_Logger final : Logger {
 /// @brief Runs syntax highlighting for code of a test-only language
 /// where sequences of the character `x` are considered keywords.
 /// Nothing else is highlighted.
-void syntax_highlight_x(std::pmr::vector<HLJS_Annotation_Span>& out, std::u8string_view code)
+void syntax_highlight_x(std::pmr::vector<Highlight_Span>& out, std::u8string_view code)
 {
     char8_t prev = 0;
     std::size_t begin = 0;
@@ -119,17 +120,17 @@ void syntax_highlight_x(std::pmr::vector<HLJS_Annotation_Span>& out, std::u8stri
             begin = i;
         }
         if (code[i] != u8'x' && prev == u8'x') {
-            const HLJS_Annotation_Span span { .begin = begin,
-                                              .length = i - begin,
-                                              .value = HLJS_Scope::keyword };
+            const Highlight_Span span { .begin = begin,
+                                        .length = i - begin,
+                                        .value = Highlight_Type::keyword };
             out.push_back(span);
         }
         prev = code[i];
     }
     if (prev == u8'x') {
-        const HLJS_Annotation_Span span { .begin = begin,
-                                          .length = code.size() - begin,
-                                          .value = HLJS_Scope::keyword };
+        const Highlight_Span span { .begin = begin,
+                                    .length = code.size() - begin,
+                                    .value = Highlight_Type::keyword };
         out.push_back(span);
     }
 }
@@ -156,7 +157,7 @@ struct X_Highlighter final : Syntax_Highlighter {
 
     [[nodiscard]]
     Result<void, Syntax_Highlight_Error> operator()(
-        std::pmr::vector<HLJS_Annotation_Span>& out,
+        std::pmr::vector<Highlight_Span>& out,
         std::u8string_view code,
         std::u8string_view language
     ) const final
@@ -343,10 +344,10 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<code> </code>\n" },
       {} },
     { Source { u8"\\code[x]{xxx}\n" },
-      Source { u8"<code><h- class=\"hljs-keyword\">xxx</h-></code>\n" },
+      Source { u8"<code><h- data-h=key>xxx</h-></code>\n" },
       {} },
     { Source { u8"\\code[x]{xxx123}\n" },
-      Source { u8"<code><h- class=\"hljs-keyword\">xxx</h->123</code>\n" },
+      Source { u8"<code><h- data-h=key>xxx</h->123</code>\n" },
       {} },
     { Source { u8"\\code[x]{ 123 }\n" },
       Source { u8"<code> 123 </code>\n" },
@@ -355,10 +356,10 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<code> <b>123</b> </code>\n" },
       {} },
     { Source { u8"\\code[x]{ \\b{xxx} }\n" },
-      Source { u8"<code> <b><h- class=\"hljs-keyword\">xxx</h-></b> </code>\n" },
+      Source { u8"<code> <b><h- data-h=key>xxx</h-></b> </code>\n" },
       {} },
     { Source { u8"\\code[x]{ \\b{x}xx }\n" },
-      Source { u8"<code> <b><h- class=\"hljs-keyword\">x</h-></b><h- class=\"hljs-keyword\">xx</h-> </code>\n" },
+      Source { u8"<code> <b><h- data-h=key>x</h-></b><h- data-h=key>xx</h-> </code>\n" },
       {} },
     { Path { "codeblock/trim.mmml" },
       Path { "codeblock/trim.html" },
