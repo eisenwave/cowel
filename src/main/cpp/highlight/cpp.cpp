@@ -883,8 +883,12 @@ bool highlight_cpp( //
             const bool possible_directive
                 = op == cpp::Cpp_Token_Type::pound || op == cpp::Cpp_Token_Type::pound_alt;
             if (fresh_line && possible_directive) {
-                if (const auto directive = cpp::match_preprocessing_line(remainder)) {
-                    fresh_line = false;
+                if (const cpp::Comment_Result directive
+                    = cpp::match_preprocessing_line(remainder)) {
+                    const std::size_t adjusted_length
+                        = directive.length - std::size_t(directive.is_terminated);
+                    emit(index, adjusted_length, Highlight_Type::meta);
+                    fresh_line = true;
                     index += directive.length;
                     continue;
                 }
