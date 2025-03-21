@@ -1,7 +1,6 @@
 #include <cstddef>
 #include <optional>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 #include "mmml/util/assert.hpp"
@@ -9,59 +8,10 @@
 #include "mmml/util/result.hpp"
 #include "mmml/util/unicode.hpp"
 
-#include "mmml/ast.hpp"
 #include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
 
 namespace mmml {
-namespace ast {
-
-Argument::Argument(
-    const Source_Span& pos,
-    const Source_Span& name,
-    std::pmr::vector<ast::Content>&& children
-)
-    : m_pos { pos }
-    , m_content { std::move(children) }
-    , m_name { name }
-{
-}
-
-[[nodiscard]]
-Argument::Argument(const Source_Span& pos, std::pmr::vector<ast::Content>&& children)
-    : m_pos { pos }
-    , m_content { std::move(children) }
-    , m_name { pos, 0 } // NOLINT(cppcoreguidelines-slicing)
-{
-}
-
-Directive::Directive(
-    const Source_Span& pos,
-    std::size_t name_length,
-    std::pmr::vector<Argument>&& args,
-    std::pmr::vector<Content>&& block
-)
-    : m_pos { pos }
-    , m_name_length { name_length }
-    , m_arguments { std::move(args) }
-    , m_content { std::move(block) }
-{
-    MMML_ASSERT(m_name_length != 0);
-}
-
-Text::Text(const Source_Span& pos)
-    : m_pos { pos }
-{
-    MMML_ASSERT(!pos.empty());
-}
-
-Escaped::Escaped(const Source_Span& pos)
-    : m_pos { pos }
-{
-    MMML_ASSERT(pos.length == 2);
-}
-
-} // namespace ast
 
 namespace {
 
