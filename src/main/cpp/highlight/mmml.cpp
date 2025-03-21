@@ -11,6 +11,7 @@
 #include "mmml/parse.hpp"
 
 #include "mmml/highlight/highlight.hpp"
+#include "mmml/highlight/highlight_type.hpp"
 #include "mmml/highlight/mmml.hpp"
 
 namespace mmml {

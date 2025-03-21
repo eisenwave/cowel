@@ -20,6 +20,7 @@
 #include "mmml/highlight/code_language.hpp"
 #include "mmml/highlight/highlight.hpp"
 #include "mmml/highlight/highlight_error.hpp"
+#include "mmml/highlight/highlight_type.hpp"
 
 namespace mmml {
 

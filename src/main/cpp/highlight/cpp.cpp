@@ -16,6 +16,7 @@
 
 #include "mmml/highlight/cpp.hpp"
 #include "mmml/highlight/highlight.hpp"
+#include "mmml/highlight/highlight_type.hpp"
 
 namespace mmml {
 

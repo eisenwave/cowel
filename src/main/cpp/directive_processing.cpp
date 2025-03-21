@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "mmml/fwd.hpp"
-#include "mmml/highlight/highlight.hpp"
 #include "mmml/parse_utils.hpp"
 #include "mmml/util/assert.hpp"
 #include "mmml/util/html_writer.hpp"
@@ -20,6 +19,8 @@
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
 #include "mmml/services.hpp"
+
+#include "mmml/highlight/highlight_type.hpp"
 
 namespace mmml {
 
