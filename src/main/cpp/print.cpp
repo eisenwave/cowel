@@ -37,10 +37,12 @@ std::u8string_view diagnostic_highlight_ansi_sequence(Diagnostic_Highlight type)
     case op: return ansi::reset;
 
     case code_position:
-    case internal: return ansi::h_black;
+    case internal:
+    case diff_common: return ansi::h_black;
 
     case error_text:
-    case error: return ansi::h_red;
+    case error:
+    case diff_del: return ansi::h_red;
 
     case warning:
     case line_number: return ansi::h_yellow;
@@ -48,7 +50,8 @@ std::u8string_view diagnostic_highlight_ansi_sequence(Diagnostic_Highlight type)
     case note: return ansi::h_white;
 
     case success:
-    case position_indicator: return ansi::h_green;
+    case position_indicator:
+    case diff_ins: return ansi::h_green;
 
     case internal_error_notice: return ansi::h_yellow;
 
