@@ -10,7 +10,7 @@
 /* block comment on next line */
 
 // comment line
-noncomment
+noncomment;
 
 // a
 // b
