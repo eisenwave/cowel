@@ -142,8 +142,17 @@ TEST_F(Highlight_Test, basic_directive_tests)
     static const std::filesystem::path directory { "test/highlight" };
     ASSERT_TRUE(std::filesystem::is_directory(directory));
 
-    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
-        const std::filesystem::path& path = entry.path();
+    // TODO: replace with std::from_range once supported
+    std::filesystem::directory_iterator iterator(directory);
+    std::pmr::vector<std::filesystem::path> paths { &memory };
+    const auto paths_view = iterator
+        | std::views::transform([](const std::filesystem::directory_entry& entry) -> auto& {
+                                return entry.path();
+                            });
+    std::ranges::copy(paths_view, std::back_inserter(paths));
+    std::ranges::sort(paths);
+
+    for (const auto& path : paths) {
         const std::u8string extension = path.extension().generic_u8string();
         ASSERT_TRUE(extension.size() > 1);
 
