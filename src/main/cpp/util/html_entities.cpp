@@ -32,6 +32,16 @@ constexpr Character_Reference references[] {
 
 static_assert(std::ranges::is_sorted(references, {}, &Character_Reference::name_as_string));
 
+const Character_Reference* character_reference_by_name(std::u8string_view name) noexcept
+{
+    const auto* const it = std::ranges::lower_bound // NOLINT(misc-include-cleaner)
+        (references, name, {}, &Character_Reference::name_as_string);
+    if (it == std::end(references) || it->name_as_string() != name) {
+        return nullptr;
+    }
+    return &*it;
+}
+
 } // namespace
 
 constinit const auto html_character_names = [] {
@@ -44,22 +54,18 @@ constinit const auto html_character_names = [] {
 
 std::array<char32_t, 2> code_points_by_character_reference_name(std::u8string_view name) noexcept
 {
-    const auto* const it = std::ranges::lower_bound // NOLINT(misc-include-cleaner)
-        (references, name, {}, &Character_Reference::name_as_string);
-    if (it == std::end(references) || it->name_as_string() != name) {
-        return {};
+    if (const auto* const result = character_reference_by_name(name)) {
+        return std::to_array(result->code_points);
     }
-    return std::to_array(it->code_points);
+    return {};
 }
 
 std::u32string_view string_by_character_reference_name(std::u8string_view name) noexcept
 {
-    const auto* const it
-        = std::ranges::lower_bound(references, name, {}, &Character_Reference::name_as_string);
-    if (it == std::end(references) || it->name_as_string() != name) {
-        return {};
+    if (const auto* const result = character_reference_by_name(name)) {
+        return result->code_points_as_string();
     }
-    return it->code_points_as_string();
+    return {};
 }
 
 } // namespace mmml
