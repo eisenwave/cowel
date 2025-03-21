@@ -775,13 +775,13 @@ struct Builtin_Directive_Set::Impl {
     Fixed_Name_Passthrough_Behavior s //
         { u8"s", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior small //
-        { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+        { u8"small", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior strong //
-        { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+        { u8"strong", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior sub //
-        { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+        { u8"sub", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior sup //
-        { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+        { u8"sup", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior tt //
         { u8"tt-", Directive_Category::formatting, Directive_Display::in_line };
     Code_Point_Behavior U //
