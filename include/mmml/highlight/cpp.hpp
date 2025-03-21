@@ -25,17 +25,19 @@ struct Comment_Result {
     }
 };
 
-/// @brief Returns a match for a C99-style line comment at the start of `str`, if any.
-/// If matched, the `length` of the result includes the terminating newline character.
-[[nodiscard]]
-Comment_Result match_line_comment(std::u8string_view str) noexcept;
-
 /// @brief Returns a match for a C89-style block comment at the start of `str`, if any.
 [[nodiscard]]
 Comment_Result match_block_comment(std::u8string_view str) noexcept;
 
+/// @brief Returns the length of a C99-style line comment at the start of `str`, if any.
+/// Returns zero if there is no line comment.
+/// In any case, the length does not include the terminating newline character,
+/// but it does include intermediate newlines "escaped" via backslash.
 [[nodiscard]]
-Comment_Result match_preprocessing_line(std::u8string_view str) noexcept;
+std::size_t match_line_comment(std::u8string_view str) noexcept;
+
+[[nodiscard]]
+std::size_t match_preprocessing_directive(std::u8string_view str) noexcept;
 
 /** @brief Type of https://eel.is/c++draft/lex.icon#nt:integer-literal */
 enum struct Integer_Literal_Type : Default_Underlying {

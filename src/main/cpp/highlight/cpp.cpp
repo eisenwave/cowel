@@ -59,50 +59,59 @@ std::size_t match_newline_escape(std::u8string_view str)
     return 0;
 }
 
-enum struct Special_Line_Type : Default_Underlying {
-    comment,
-    preprocessing,
-};
+} // namespace
 
-Comment_Result match_special_line(std::u8string_view s, Special_Line_Type type) noexcept
+std::size_t match_line_comment(std::u8string_view s) noexcept
 {
-    switch (type) {
-    case Special_Line_Type::comment: {
-        if (!s.starts_with(u8"//")) {
-            return {};
-        }
-        break;
-    }
-    case Special_Line_Type::preprocessing: {
-        const std::optional<Cpp_Token_Type> first_token = match_preprocessing_op_or_punc(s);
-        if (first_token != Cpp_Token_Type::pound && first_token != Cpp_Token_Type::pound_alt) {
-            return {};
-        }
-        break;
-    }
+    if (!s.starts_with(u8"//")) {
+        return {};
     }
 
     std::size_t length = 2;
 
     while (length < s.length()) {
-        if (s[length] == u8'\n') {
-            return Comment_Result { .length = length + 1, .is_terminated = true };
+        const auto remainder = s.substr(length);
+        const bool terminated = remainder.starts_with(u8'\n') || remainder.starts_with(u8"\r\n");
+        if (terminated) {
+            return length;
         }
-        if (const std::size_t escape = match_newline_escape(s.substr(length))) {
+        if (const std::size_t escape = match_newline_escape(remainder)) {
             length += escape;
         }
         else {
             ++length;
         }
     }
-    return Comment_Result { .length = length, .is_terminated = false };
+
+    return length;
 }
 
-} // namespace
-
-Comment_Result match_line_comment(std::u8string_view s) noexcept
+std::size_t match_preprocessing_directive(std::u8string_view s) noexcept
 {
-    return match_special_line(s, Special_Line_Type::comment);
+    const std::optional<Cpp_Token_Type> first_token = match_preprocessing_op_or_punc(s);
+    if (first_token != Cpp_Token_Type::pound && first_token != Cpp_Token_Type::pound_alt) {
+        return {};
+    }
+
+    std::size_t length = 2;
+
+    while (length < s.length()) {
+        const auto remainder = s.substr(length);
+        const bool terminated = remainder.starts_with(u8'\n') //
+            || remainder.starts_with(u8"\r\n") //
+            || remainder.starts_with(u8"//") //
+            || remainder.starts_with(u8"/*");
+        if (terminated) {
+            return length;
+        }
+        if (const std::size_t escape = match_newline_escape(remainder)) {
+            length += escape;
+        }
+        else {
+            ++length;
+        }
+    }
+    return length;
 }
 
 Comment_Result match_block_comment(std::u8string_view s) noexcept
@@ -116,11 +125,6 @@ Comment_Result match_block_comment(std::u8string_view s) noexcept
         return Comment_Result { .length = s.length(), .is_terminated = false };
     }
     return Comment_Result { .length = end + 2, .is_terminated = true };
-}
-
-Comment_Result match_preprocessing_line(std::u8string_view s) noexcept
-{
-    return match_special_line(s, Special_Line_Type::preprocessing);
 }
 
 Literal_Match_Result match_integer_literal // NOLINT(bugprone-exception-escape)
@@ -819,13 +823,11 @@ bool highlight_cpp( //
             index += white_length;
             continue;
         }
-        if (const cpp::Comment_Result line_comment = cpp::match_line_comment(remainder)) {
-            const std::size_t content_length
-                = line_comment.length - 2 - std::size_t(line_comment.is_terminated);
+        if (const std::size_t line_comment_length = cpp::match_line_comment(remainder)) {
             emit(index, 2, Highlight_Type::comment_delimiter);
-            emit(index + 2, content_length, Highlight_Type::comment);
+            emit(index + 2, line_comment_length - 2, Highlight_Type::comment);
             fresh_line = true;
-            index += line_comment.length;
+            index += line_comment_length;
             continue;
         }
         if (const cpp::Comment_Result block_comment = cpp::match_block_comment(remainder)) {
@@ -883,13 +885,11 @@ bool highlight_cpp( //
             const bool possible_directive
                 = op == cpp::Cpp_Token_Type::pound || op == cpp::Cpp_Token_Type::pound_alt;
             if (fresh_line && possible_directive) {
-                if (const cpp::Comment_Result directive
-                    = cpp::match_preprocessing_line(remainder)) {
-                    const std::size_t adjusted_length
-                        = directive.length - std::size_t(directive.is_terminated);
-                    emit(index, adjusted_length, Highlight_Type::meta);
+                if (const std::size_t directive_length
+                    = cpp::match_preprocessing_directive(remainder)) {
+                    emit(index, directive_length, Highlight_Type::meta);
                     fresh_line = true;
-                    index += directive.length;
+                    index += directive_length;
                     continue;
                 }
             }
