@@ -21,6 +21,73 @@ namespace mmml {
 
 namespace cpp {
 
+#define MMML_CPP_TOKEN_TYPE_U8_CODE(id, code, highlight, strict) u8##code,
+#define MMML_CPP_TOKEN_TYPE_LENGTH(id, code, highlight, strict) (sizeof(u8##code) - 1),
+#define MMML_CPP_TOKEN_HIGHLIGHT_TYPE(id, code, highlight, strict) (Highlight_Type::highlight),
+#define MMML_CPP_TOKEN_TYPE_STRICT_STRING(id, code, highlight, strict) #strict
+
+namespace {
+
+inline constexpr std::u8string_view token_type_codes[] {
+    MMML_CPP_TOKEN_ENUM_DATA(MMML_CPP_TOKEN_TYPE_U8_CODE)
+};
+
+static_assert(std::ranges::is_sorted(token_type_codes));
+
+inline constexpr unsigned char token_type_lengths[] {
+    MMML_CPP_TOKEN_ENUM_DATA(MMML_CPP_TOKEN_TYPE_LENGTH)
+};
+
+inline constexpr Highlight_Type token_type_highlights[] {
+    MMML_CPP_TOKEN_ENUM_DATA(MMML_CPP_TOKEN_HIGHLIGHT_TYPE)
+};
+
+inline constexpr std::bitset<cpp_token_type_count> token_type_strictness {
+    MMML_CPP_TOKEN_ENUM_DATA(MMML_CPP_TOKEN_TYPE_STRICT_STRING), cpp_token_type_count
+};
+
+} // namespace
+
+/// @brief Returns the in-code representation of `type`.
+/// For example, if `type` is `plus`, returns `"+"`.
+/// If `type` is invalid, returns an empty string.
+[[nodiscard]]
+std::u8string_view cpp_token_type_code(Cpp_Token_Type type) noexcept
+{
+    return token_type_codes[std::size_t(type)];
+}
+
+/// @brief Equivalent to `cpp_token_type_code(type).length()`.
+[[nodiscard]]
+std::size_t cpp_token_type_length(Cpp_Token_Type type) noexcept
+{
+    return token_type_lengths[std::size_t(type)];
+}
+
+[[nodiscard]]
+Highlight_Type cpp_token_type_highlight(Cpp_Token_Type type) noexcept
+{
+    return token_type_highlights[std::size_t(type)];
+}
+
+[[nodiscard]]
+bool cpp_token_type_is_strict(Cpp_Token_Type type) noexcept
+{
+    return token_type_strictness[std::size_t(type)];
+}
+
+[[nodiscard]]
+std::optional<Cpp_Token_Type> cpp_token_type_by_code(std::u8string_view code) noexcept
+{
+    const std::u8string_view* const result
+        = std::ranges::lower_bound // NOLINT(misc-include-cleaner)
+        (token_type_codes, code);
+    if (result == std::end(token_type_codes) || *result != code) {
+        return {};
+    }
+    return Cpp_Token_Type(result - token_type_codes);
+}
+
 std::size_t match_whitespace(std::u8string_view str)
 {
     constexpr auto predicate = [](char8_t c) { return is_cpp_whitespace(c); };
@@ -485,259 +552,40 @@ std::optional<Cpp_Token_Type> match_preprocessing_op_or_punc(std::u8string_view 
     case u8'=': return str.starts_with(u8"==") ? eq_eq : eq;
     case u8',': return comma;
     case u8'a':
-        return str.starts_with(u8"and_eq") ? keyword_and_eq
-            : str.starts_with(u8"and")     ? keyword_and
+        return str.starts_with(u8"and_eq") ? kw_and_eq
+            : str.starts_with(u8"and")     ? kw_and
                                            : std::optional<Cpp_Token_Type> {};
     case u8'o':
-        return str.starts_with(u8"or_eq") ? keyword_or_eq
-            : str.starts_with(u8"or")     ? keyword_or
+        return str.starts_with(u8"or_eq") ? kw_or_eq
+            : str.starts_with(u8"or")     ? kw_or
                                           : std::optional<Cpp_Token_Type> {};
     case u8'x':
-        return str.starts_with(u8"xor_eq") ? keyword_xor_eq
-            : str.starts_with(u8"xor")     ? keyword_xor
+        return str.starts_with(u8"xor_eq") ? kw_xor_eq
+            : str.starts_with(u8"xor")     ? kw_xor
                                            : std::optional<Cpp_Token_Type> {};
     case u8'n':
-        return str.starts_with(u8"not_eq") ? keyword_not_eq
-            : str.starts_with(u8"not")     ? keyword_not
+        return str.starts_with(u8"not_eq") ? kw_not_eq
+            : str.starts_with(u8"not")     ? kw_not
                                            : std::optional<Cpp_Token_Type> {};
     case u8'b':
-        return str.starts_with(u8"bitand") ? keyword_bitand
-            : str.starts_with(u8"bitor")   ? keyword_bitor
+        return str.starts_with(u8"bitand") ? kw_bitand
+            : str.starts_with(u8"bitor")   ? kw_bitor
                                            : std::optional<Cpp_Token_Type> {};
     case u8'c':
-        return str.starts_with(u8"compl") ? keyword_compl //
+        return str.starts_with(u8"compl") ? kw_compl //
                                           : std::optional<Cpp_Token_Type> {};
     default: return {};
     }
 }
 
-} // namespace cpp
-
 namespace {
-
-#define MMML_CPP_KEYWORD_ENUM_DATA(F)                                                              \
-    F(intr_alignas, "_Alignas", keyword, 0)                                                        \
-    F(intr_alignof, "_Alignof", keyword, 0)                                                        \
-    F(intr_atomic, "_Atomic", keyword, 0)                                                          \
-    F(intr_bitint, "_BitInt", keyword_type, 0)                                                     \
-    F(intr_bool, "_Bool", keyword_type, 0)                                                         \
-    F(intr_complex, "_Complex", keyword, 0)                                                        \
-    F(intr_decimal128, "_Decimal128", keyword_type, 0)                                             \
-    F(intr_decimal32, "_Decimal32", keyword_type, 0)                                               \
-    F(intr_decimal64, "_Decimal64", keyword_type, 0)                                               \
-    F(intr_float128, "_Float128", keyword_type, 0)                                                 \
-    F(intr_float128x, "_Float128x", keyword_type, 0)                                               \
-    F(intr_float16, "_Float16", keyword_type, 0)                                                   \
-    F(intr_float32, "_Float32", keyword_type, 0)                                                   \
-    F(intr_float32x, "_Float32x", keyword_type, 0)                                                 \
-    F(intr_float64, "_Float64", keyword_type, 0)                                                   \
-    F(intr_float64x, "_Float64x", keyword_type, 0)                                                 \
-    F(intr_generic, "_Generic", keyword, 0)                                                        \
-    F(intr_imaginary, "_Imaginary", keyword, 0)                                                    \
-    F(intr_noreturn, "_Noreturn", keyword, 0)                                                      \
-    F(intr_pragma, "_Pragma", keyword, 1)                                                          \
-    F(intr_static_assert, "_Static_assert", keyword, 0)                                            \
-    F(intr_thread_local, "_Thread_local", keyword, 0)                                              \
-    F(gnu_asm, "__asm__", keyword, 0)                                                              \
-    F(gnu_attribute, "__attribute__", keyword, 0)                                                  \
-    F(gnu_extension, "__extension__", keyword, 0)                                                  \
-    F(gnu_float128, "__float128", keyword_type, 0)                                                 \
-    F(gnu_float80, "__float80", keyword_type, 0)                                                   \
-    F(gnu_fp16, "__fp16", keyword_type, 0)                                                         \
-    F(gnu_ibm128, "__ibm128", keyword_type, 0)                                                     \
-    F(gnu_imag, "__imag__", keyword, 0)                                                            \
-    F(ext_int128, "__int128", keyword_type, 0)                                                     \
-    F(ext_int16, "__int16", keyword_type, 0)                                                       \
-    F(ext_int256, "__int256", keyword_type, 0)                                                     \
-    F(ext_int32, "__int32", keyword_type, 0)                                                       \
-    F(ext_int64, "__int64", keyword_type, 0)                                                       \
-    F(ext_int8, "__int8", keyword_type, 0)                                                         \
-    F(gnu_label, "__label__", keyword, 0)                                                          \
-    F(intel_m128, "__m128", keyword_type, 0)                                                       \
-    F(intel_m128d, "__m128d", keyword_type, 0)                                                     \
-    F(intel_m128i, "__m128i", keyword_type, 0)                                                     \
-    F(intel_m256, "__m256", keyword_type, 0)                                                       \
-    F(intel_m256d, "__m256d", keyword_type, 0)                                                     \
-    F(intel_m256i, "__m256i", keyword_type, 0)                                                     \
-    F(intel_m512, "__m512", keyword_type, 0)                                                       \
-    F(intel_m512d, "__m512d", keyword_type, 0)                                                     \
-    F(intel_m512i, "__m512i", keyword_type, 0)                                                     \
-    F(intel_m64, "__m64", keyword_type, 0)                                                         \
-    F(intel_mmask16, "__mmask16", keyword_type, 0)                                                 \
-    F(intel_mmask32, "__mmask32", keyword_type, 0)                                                 \
-    F(intel_mmask64, "__mmask64", keyword_type, 0)                                                 \
-    F(intel_mmask8, "__mmask8", keyword_type, 0)                                                   \
-    F(microsoft_ptr32, "__ptr32", keyword_type, 0)                                                 \
-    F(microsoft_ptr64, "__ptr64", keyword_type, 0)                                                 \
-    F(gnu_real, "__real__", keyword, 0)                                                            \
-    F(gnu_restrict, "__restrict", keyword, 0)                                                      \
-    F(kw_alignas, "alignas", keyword, 1)                                                           \
-    F(kw_alignof, "alignof", keyword, 1)                                                           \
-    F(kw_and, "and", keyword, 1)                                                                   \
-    F(kw_and_eq, "and_eq", keyword, 1)                                                             \
-    F(kw_asm, "asm", keyword_control, 1)                                                           \
-    F(kw_auto, "auto", keyword, 1)                                                                 \
-    F(kw_bitand, "bitand", keyword, 1)                                                             \
-    F(kw_bitor, "bitor", keyword, 1)                                                               \
-    F(kw_bool, "bool", keyword_constant, 1)                                                        \
-    F(kw_break, "break", keyword_control, 1)                                                       \
-    F(kw_case, "case", keyword_control, 1)                                                         \
-    F(kw_catch, "catch", keyword_control, 1)                                                       \
-    F(kw_char, "char", keyword_type, 1)                                                            \
-    F(kw_char16_t, "char16_t", keyword_type, 1)                                                    \
-    F(kw_char32_t, "char32_t", keyword_type, 1)                                                    \
-    F(kw_char8_t, "char8_t", keyword_type, 1)                                                      \
-    F(kw_class, "class", keyword, 1)                                                               \
-    F(kw_co_await, "co_await", keyword_control, 1)                                                 \
-    F(kw_co_return, "co_return", keyword_control, 1)                                               \
-    F(kw_compl, "compl", keyword, 1)                                                               \
-    F(kw_complex, "complex", keyword, 0)                                                           \
-    F(kw_concept, "concept", keyword, 1)                                                           \
-    F(kw_const, "const", keyword, 1)                                                               \
-    F(kw_const_cast, "const_cast", keyword, 1)                                                     \
-    F(kw_consteval, "consteval", keyword, 1)                                                       \
-    F(kw_constexpr, "constexpr", keyword, 1)                                                       \
-    F(kw_constinit, "constinit", keyword, 1)                                                       \
-    F(kw_continue, "continue", keyword_control, 1)                                                 \
-    F(kw_contract_assert, "contract_assert", keyword, 1)                                           \
-    F(kw_decltype, "decltype", keyword, 1)                                                         \
-    F(kw_default, "default", keyword, 1)                                                           \
-    F(kw_delete, "delete", keyword, 1)                                                             \
-    F(kw_do, "do", keyword_control, 1)                                                             \
-    F(kw_double, "double", keyword_type, 1)                                                        \
-    F(kw_dynamic_cast, "dynamic_cast", keyword, 1)                                                 \
-    F(kw_else, "else", keyword_control, 1)                                                         \
-    F(kw_enum, "enum", keyword, 1)                                                                 \
-    F(kw_explicit, "explicit", keyword, 1)                                                         \
-    F(kw_export, "export", keyword, 1)                                                             \
-    F(kw_extern, "extern", keyword, 1)                                                             \
-    F(kw_false, "false", keyword_boolean, 1)                                                       \
-    F(kw_final, "final", keyword, 1)                                                               \
-    F(kw_float, "float", keyword_type, 1)                                                          \
-    F(kw_for, "for", keyword_control, 1)                                                           \
-    F(kw_friend, "friend", keyword, 1)                                                             \
-    F(kw_goto, "goto", keyword_control, 1)                                                         \
-    F(kw_if, "if", keyword_control, 1)                                                             \
-    F(kw_imaginary, "imaginary", keyword, 0)                                                       \
-    F(kw_import, "import", keyword, 1)                                                             \
-    F(kw_inline, "inline", keyword, 1)                                                             \
-    F(kw_int, "int", keyword_type, 1)                                                              \
-    F(kw_long, "long", keyword_type, 1)                                                            \
-    F(kw_module, "module", keyword, 1)                                                             \
-    F(kw_mutable, "mutable", keyword, 1)                                                           \
-    F(kw_namespace, "namespace", keyword, 1)                                                       \
-    F(kw_new, "new", keyword, 1)                                                                   \
-    F(kw_noexcept, "noexcept", keyword, 1)                                                         \
-    F(kw_noreturn, "noreturn", keyword, 0)                                                         \
-    F(kw_not, "not", keyword, 1)                                                                   \
-    F(kw_not_eq, "not_eq", keyword, 1)                                                             \
-    F(kw_nullptr, "nullptr", keyword_constant, 1)                                                  \
-    F(kw_operator, "operator", keyword, 1)                                                         \
-    F(kw_or, "or", keyword, 1)                                                                     \
-    F(kw_or_eq, "or_eq", keyword, 1)                                                               \
-    F(kw_override, "override", keyword, 1)                                                         \
-    F(kw_post, "post", keyword, 1)                                                                 \
-    F(kw_pre, "pre", keyword, 1)                                                                   \
-    F(kw_private, "private", keyword, 1)                                                           \
-    F(kw_protected, "protected", keyword, 1)                                                       \
-    F(kw_public, "public", keyword, 1)                                                             \
-    F(kw_register, "register", keyword, 1)                                                         \
-    F(kw_reinterpret_cast, "reinterpret_cast", keyword, 1)                                         \
-    F(kw_replaceable_if_eligible, "replaceable_if_eligible", keyword, 1)                           \
-    F(kw_requires, "requires", keyword, 1)                                                         \
-    F(kw_restrict, "restrict", keyword, 0)                                                         \
-    F(kw_return, "return", keyword_control, 1)                                                     \
-    F(kw_short, "short", keyword_type, 1)                                                          \
-    F(kw_signed, "signed", keyword_type, 1)                                                        \
-    F(kw_sizeof, "sizeof", keyword, 1)                                                             \
-    F(kw_static, "static", keyword, 1)                                                             \
-    F(kw_static_assert, "static_assert", keyword, 1)                                               \
-    F(kw_static_cast, "static_cast", keyword, 1)                                                   \
-    F(kw_struct, "struct", keyword, 1)                                                             \
-    F(kw_template, "template", keyword, 1)                                                         \
-    F(kw_this, "this", keyword_constant, 1)                                                        \
-    F(kw_thread_local, "thread_local", keyword, 1)                                                 \
-    F(kw_throw, "throw", keyword, 1)                                                               \
-    F(kw_trivially_relocatable_if_eligible, "trivially_relocatable_if_eligible", keyword, 1)       \
-    F(kw_true, "true", keyword_boolean, 1)                                                         \
-    F(kw_try, "try", keyword, 1)                                                                   \
-    F(kw_typedef, "typedef", keyword, 1)                                                           \
-    F(kw_typeid, "typeid", keyword, 1)                                                             \
-    F(kw_typename, "typename", keyword, 1)                                                         \
-    F(kw_typeof, "typeof", keyword, 0)                                                             \
-    F(kw_typeof_unqual, "typeof_unqual", keyword, 0)                                               \
-    F(kw_union, "union", keyword, 1)                                                               \
-    F(kw_unsigned, "unsigned", keyword_type, 1)                                                    \
-    F(kw_using, "using", keyword, 1)                                                               \
-    F(kw_virtual, "virtual", keyword, 1)                                                           \
-    F(kw_void, "void", keyword_type, 1)                                                            \
-    F(kw_volatile, "volatile", keyword, 1)                                                         \
-    F(kw_wchar_t, "wchar_t", keyword_type, 1)                                                      \
-    F(kw_while, "while", keyword_control, 1)                                                       \
-    F(kw_xor, "xor", keyword, 1)                                                                   \
-    F(kw_xor_eq, "xor_eq", keyword, 1)
-
-#define MMML_CPP_KEYWORD_ENUMERATOR(id, code, highlight, strict) id,
-
-enum struct Cpp_Keyword : Default_Underlying {
-    MMML_CPP_KEYWORD_ENUM_DATA(MMML_CPP_KEYWORD_ENUMERATOR)
-};
-
-#define MMML_CPP_KEYWORD_U8_CODE(id, code, highlight, strict) u8##code,
-#define MMML_CPP_KEYWORD_HIGHLIGHT(id, code, highlight, strict) Highlight_Type::highlight,
-#define MMML_CPP_KEYWORD_STRICT_STRING(id, code, highlight, strict) #strict
-
-// clang-format off
-// https://eel.is/c++draft/lex.key#tab:lex.key
-// plus compiler extensions and alternative operator representations.
-constexpr std::u8string_view cpp_keyword_names[] {
-    MMML_CPP_KEYWORD_ENUM_DATA(MMML_CPP_KEYWORD_U8_CODE)
-};
-
-constexpr std::size_t cpp_keyword_count = std::size(cpp_keyword_names);
-
-constexpr Highlight_Type cpp_keyword_highlights[cpp_keyword_count] {
-    MMML_CPP_KEYWORD_ENUM_DATA(MMML_CPP_KEYWORD_HIGHLIGHT)
-};
-
-constexpr std::bitset<cpp_keyword_count> cpp_keyword_strict_set {
-    MMML_CPP_KEYWORD_ENUM_DATA(MMML_CPP_KEYWORD_STRICT_STRING),
-    cpp_keyword_count
-};
-// clang-format on
-
-static_assert(std::ranges::is_sorted(cpp_keyword_names));
-
-[[nodiscard]]
-constexpr std::optional<Cpp_Keyword> keyword_by_identifier(std::u8string_view identifier)
-{
-    const std::u8string_view* const result
-        = std::ranges::lower_bound // NOLINT(misc-include-cleaner)
-        (cpp_keyword_names, identifier);
-    if (result == std::end(cpp_keyword_names) || *result != identifier) {
-        return {};
-    }
-    return Cpp_Keyword(result - cpp_keyword_names);
-}
-
-[[nodiscard]]
-constexpr bool keyword_is_strict(Cpp_Keyword keyword)
-{
-    return cpp_keyword_strict_set[std::size_t(keyword)];
-}
-
-[[nodiscard]]
-constexpr Highlight_Type keyword_highlight(Cpp_Keyword keyword)
-{
-    return cpp_keyword_highlights[std::size_t(keyword)];
-}
 
 [[nodiscard]]
 std::size_t match_cpp_identifier_except_keywords(std::u8string_view str, bool strict_only)
 {
     if (const std::size_t result = cpp::match_identifier(str)) {
-        const std::optional<Cpp_Keyword> keyword = keyword_by_identifier(str.substr(0, result));
-        if (keyword && (!strict_only || keyword_is_strict(*keyword))) {
+        const std::optional<Cpp_Token_Type> keyword = cpp_token_type_by_code(str.substr(0, result));
+        if (keyword && (!strict_only || cpp_token_type_is_strict(*keyword))) {
             return 0;
         }
         return result;
@@ -745,48 +593,9 @@ std::size_t match_cpp_identifier_except_keywords(std::u8string_view str, bool st
     return 0;
 }
 
-[[nodiscard]]
-Highlight_Type cpp_token_type_highlight(cpp::Cpp_Token_Type type)
-{
-    switch (type) {
-        using enum cpp::Cpp_Token_Type;
-    case pound:
-    case pound_pound:
-    case pound_alt:
-    case pound_pound_alt: return Highlight_Type::meta;
-
-    case keyword_and:
-    case keyword_or:
-    case keyword_xor:
-    case keyword_not:
-    case keyword_bitand:
-    case keyword_bitor:
-    case keyword_compl:
-    case keyword_and_eq:
-    case keyword_or_eq:
-    case keyword_xor_eq:
-    case keyword_not_eq: return Highlight_Type::keyword;
-
-    case semicolon:
-    case colon:
-    case comma: return Highlight_Type::symbol_other;
-
-    case left_brace:
-    case left_brace_alt:
-    case right_brace:
-    case right_brace_alt:
-    case left_square:
-    case left_square_alt:
-    case right_square:
-    case right_square_alt:
-    case left_parens:
-    case right_parens: return Highlight_Type::symbol_important;
-
-    default: return Highlight_Type::symbol;
-    }
-}
-
 } // namespace
+
+} // namespace cpp
 
 bool highlight_cpp( //
     std::pmr::vector<Annotation_Span<Highlight_Type>>& out,
@@ -842,7 +651,7 @@ bool highlight_cpp( //
         }
         if (const cpp::String_Literal_Result literal = cpp::match_string_literal(remainder)) {
             const std::size_t suffix_length = literal.terminated
-                ? match_cpp_identifier_except_keywords(
+                ? cpp::match_cpp_identifier_except_keywords(
                       remainder.substr(literal.length), options.strict
                   )
                 : 0;
@@ -854,7 +663,7 @@ bool highlight_cpp( //
         }
         if (const cpp::Character_Literal_Result literal = cpp::match_character_literal(remainder)) {
             const std::size_t suffix_length = literal.terminated
-                ? match_cpp_identifier_except_keywords(
+                ? cpp::match_cpp_identifier_except_keywords(
                       remainder.substr(literal.length), options.strict
                   )
                 : 0;
@@ -871,10 +680,10 @@ bool highlight_cpp( //
             continue;
         }
         if (const std::size_t id_length = cpp::match_identifier(remainder)) {
-            const std::optional<Cpp_Keyword> keyword
-                = keyword_by_identifier(remainder.substr(0, id_length));
+            const std::optional<cpp::Cpp_Token_Type> keyword
+                = cpp::cpp_token_type_by_code(remainder.substr(0, id_length));
             const auto highlight
-                = keyword ? keyword_highlight(*keyword) : Highlight_Type::identifier;
+                = keyword ? cpp::cpp_token_type_highlight(*keyword) : Highlight_Type::identifier;
             emit(index, id_length, highlight);
             fresh_line = false;
             index += id_length;
