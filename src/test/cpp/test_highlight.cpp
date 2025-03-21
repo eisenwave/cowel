@@ -120,18 +120,21 @@ void print_different(Diagnostic_String& out, std::u8string_view str, std::u8stri
 {
     for (std::size_t i = 0; i < str.size(); ++i) {
         if (i > expected.size() || expected[i] != str[i]) {
-            out.append(str.substr(0, i), Diagnostic_Highlight::code_citation);
+            if (i != 0) {
+                out.append(str.substr(0, i), Diagnostic_Highlight::code_citation);
+            }
             out.append(str.substr(i), Diagnostic_Highlight::error);
             return;
         }
     }
+    MMML_ASSERT(expected.starts_with(str));
+    out.append(str, Diagnostic_Highlight::code_citation);
     if (expected.size() > str.size()) {
         out.build(Diagnostic_Highlight::error)
             .append(u8"(")
             .append_integer(expected.size() - str.size())
             .append(u8") missing");
     }
-    out.append(str, Diagnostic_Highlight::code_citation);
 }
 
 TEST_F(Highlight_Test, basic_directive_tests)
