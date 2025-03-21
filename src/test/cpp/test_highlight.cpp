@@ -170,12 +170,11 @@ TEST_F(Highlight_Test, basic_directive_tests)
         const bool test_succeeded = expected == actual;
         if (!test_succeeded) {
             Diagnostic_String error { &memory };
-            error.append(
-                u8"Test failed because generated HTML does not match expected HTML.\n",
-                Diagnostic_Highlight::error_text
-            );
+            error.append(u8"FAIL", Diagnostic_Highlight::error_text);
+            error.append(u8' ');
             error.build(Diagnostic_Highlight::text)
-                .append(u8"Actual (")
+                .append(path.generic_u8string())
+                .append(u8":\nActual (")
                 .append(path.generic_u8string())
                 .append(u8") -> expected (")
                 .append(expectations.generic_u8string())
