@@ -2,6 +2,7 @@
 #define MMML_CODE_LANGUAGE_HPP
 
 #include <algorithm>
+#include <cstddef>
 #include <optional>
 #include <string_view>
 

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory_resource>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -106,7 +107,7 @@ inline void split_lines(std::pmr::vector<std::u8string_view>& out, std::u8string
 {
     std::size_t pos = 0;
     std::size_t prev = 0;
-    while ((pos = str.find('\n', prev)) != std::string::npos) {
+    while ((pos = str.find('\n', prev)) != std::u8string_view::npos) {
         out.push_back(str.substr(prev, pos - prev));
         prev = pos + 1;
     }

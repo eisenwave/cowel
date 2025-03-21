@@ -314,15 +314,13 @@ void suppress_unused_include_algorithm()
 
 bool is_xid_start(char32_t c) noexcept
 {
-    return std::ranges::binary_search // NOLINT(misc-include-cleaner)
-        (XID_Start_Ranges, c, std::less<void> {});
+    return std::ranges::binary_search(XID_Start_Ranges, c, std::less<void> {});
 }
 
 bool is_xid_continue(char32_t c) noexcept
 {
     return is_xid_start(c)
-        || std::ranges::binary_search // NOLINT(misc-include-cleaner)
-        (XID_Continue_Minus_XID_Start, c, std::less<void> {});
+        || std::ranges::binary_search(XID_Continue_Minus_XID_Start, c, std::less<void> {});
 }
 
 } // namespace mmml

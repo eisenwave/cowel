@@ -1,14 +1,25 @@
 #ifndef MMML_TEST_HIGHLIGHTER_HPP
 #define MMML_TEST_HIGHLIGHTER_HPP
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <memory_resource>
+#include <optional>
+#include <span>
 #include <string_view>
 #include <vector>
 
 #include "mmml/util/annotation_span.hpp"
+#include "mmml/util/result.hpp"
+#include "mmml/util/typo.hpp"
 
+#include "mmml/fwd.hpp"
 #include "mmml/services.hpp"
 
+#include "mmml/highlight/code_language.hpp"
 #include "mmml/highlight/highlight.hpp"
+#include "mmml/highlight/highlight_error.hpp"
 
 namespace mmml {
 

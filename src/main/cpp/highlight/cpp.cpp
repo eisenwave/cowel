@@ -79,9 +79,7 @@ bool cpp_token_type_is_strict(Cpp_Token_Type type) noexcept
 [[nodiscard]]
 std::optional<Cpp_Token_Type> cpp_token_type_by_code(std::u8string_view code) noexcept
 {
-    const std::u8string_view* const result
-        = std::ranges::lower_bound // NOLINT(misc-include-cleaner)
-        (token_type_codes, code);
+    const std::u8string_view* const result = std::ranges::lower_bound(token_type_codes, code);
     if (result == std::end(token_type_codes) || *result != code) {
         return {};
     }

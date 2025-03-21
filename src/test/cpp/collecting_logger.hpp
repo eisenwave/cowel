@@ -3,6 +3,7 @@
 
 #include <memory_resource>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "mmml/diagnostic.hpp"

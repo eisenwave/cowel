@@ -9,6 +9,7 @@
 
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/assert.hpp"
+#include "mmml/util/result.hpp"
 
 #include "mmml/ast.hpp"
 #include "mmml/diagnostic_highlight.hpp"

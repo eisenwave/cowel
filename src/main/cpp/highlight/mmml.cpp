@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "mmml/util/annotation_span.hpp"
+#include "mmml/util/assert.hpp"
 
 #include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"

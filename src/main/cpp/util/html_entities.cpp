@@ -34,8 +34,8 @@ static_assert(std::ranges::is_sorted(references, {}, &Character_Reference::name_
 
 const Character_Reference* character_reference_by_name(std::u8string_view name) noexcept
 {
-    const auto* const it = std::ranges::lower_bound // NOLINT(misc-include-cleaner)
-        (references, name, {}, &Character_Reference::name_as_string);
+    const auto* const it
+        = std::ranges::lower_bound(references, name, {}, &Character_Reference::name_as_string);
     if (it == std::end(references) || it->name_as_string() != name) {
         return nullptr;
     }

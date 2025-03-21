@@ -7,7 +7,9 @@
 
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/io.hpp"
+#include "mmml/util/result.hpp"
 
+#include "mmml/fwd.hpp"
 #include "mmml/print.hpp"
 
 namespace mmml {
