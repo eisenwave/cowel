@@ -2,9 +2,9 @@
 #include <optional>
 #include <string_view>
 
-#include "mmml/highlight/highlight.hpp"
-
 #include "mmml/fwd.hpp"
+
+#include "mmml/highlight/highlight_type.hpp"
 
 namespace mmml::cpp {
 
