@@ -23,7 +23,10 @@ enum struct Diagnostic_Highlight : Default_Underlying {
     attribute,
     internal,
     escape,
-    success
+    success,
+    diff_common,
+    diff_del,
+    diff_ins,
 };
 
 } // namespace mmml
