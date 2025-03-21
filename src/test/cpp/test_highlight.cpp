@@ -10,12 +10,12 @@
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/assert.hpp"
 
+#include "mmml/ast.hpp"
 #include "mmml/diagnostic_highlight.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
 #include "mmml/document_generation.hpp"
 #include "mmml/fwd.hpp"
-#include "mmml/parse.hpp"
 #include "mmml/print.hpp"
 
 #include "collecting_logger.hpp"
@@ -75,7 +75,11 @@ struct Highlight_Test : testing::Test {
             return false;
         }
         source_string = { source.data(), source.size() };
-        content = parse_and_build(source_string, &memory);
+        // This essentially cheats and bypasses the parser.
+        // The entire file contents are treated as a text literal;
+        // even escape sequences like \{ are not processed.
+        const Source_Span whole_file_span { { 0, 0, 0 }, source.size() };
+        content = { ast::Text { whole_file_span } };
         return true;
     }
 
