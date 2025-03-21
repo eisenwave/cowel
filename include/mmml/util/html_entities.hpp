@@ -21,6 +21,9 @@ extern const std::array<std::u8string_view, 2231> html_character_names;
 [[nodiscard]]
 std::array<char32_t, 2> code_points_by_character_reference_name(std::u8string_view name) noexcept;
 
+/// @brief Like `code_points_by_character_reference_name`,
+/// but returns a string of one or two code points when the character reference is recognized,
+/// and an empty string otherwise.
 [[nodiscard]]
 std::u32string_view string_by_character_reference_name(std::u8string_view name) noexcept;
 
