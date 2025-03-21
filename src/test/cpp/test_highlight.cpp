@@ -19,6 +19,7 @@
 #include "mmml/print.hpp"
 
 #include "collecting_logger.hpp"
+#include "diff.hpp"
 #include "io.hpp"
 #include "test_highlighter.hpp"
 
@@ -116,27 +117,6 @@ struct Highlight_Test : testing::Test {
     }
 };
 
-void print_different(Diagnostic_String& out, std::u8string_view str, std::u8string_view expected)
-{
-    for (std::size_t i = 0; i < str.size(); ++i) {
-        if (i > expected.size() || expected[i] != str[i]) {
-            if (i != 0) {
-                out.append(str.substr(0, i), Diagnostic_Highlight::code_citation);
-            }
-            out.append(str.substr(i), Diagnostic_Highlight::error);
-            return;
-        }
-    }
-    MMML_ASSERT(expected.starts_with(str));
-    out.append(str, Diagnostic_Highlight::code_citation);
-    if (expected.size() > str.size()) {
-        out.build(Diagnostic_Highlight::error)
-            .append(u8"(")
-            .append_integer(expected.size() - str.size())
-            .append(u8") missing");
-    }
-}
-
 TEST_F(Highlight_Test, basic_directive_tests)
 {
     static const std::filesystem::path directory { "test/highlight" };
@@ -194,17 +174,13 @@ TEST_F(Highlight_Test, basic_directive_tests)
                 u8"Test failed because generated HTML does not match expected HTML.\n",
                 Diagnostic_Highlight::error_text
             );
-            error.build(Diagnostic_Highlight::error_text)
-                .append(u8"Expected: (")
-                .append(expectations.generic_u8string())
-                .append(u8"):\n");
-            print_different(error, expected, actual); // NOLINT
-            error.append(u8'\n');
-            error.build(Diagnostic_Highlight::error_text)
-                .append(u8"Actual: (")
+            error.build(Diagnostic_Highlight::text)
+                .append(u8"Actual (")
                 .append(path.generic_u8string())
-                .append(u8"):\n");
-            print_different(error, actual, expected);
+                .append(u8") -> expected (")
+                .append(expectations.generic_u8string())
+                .append(u8") difference:\n");
+            print_lines_diff(error, actual, expected);
             error.append(u8'\n');
             print_code_string_stdout(error);
         }
