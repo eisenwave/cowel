@@ -134,12 +134,16 @@ constexpr bool is_ascii(char32_t c)
     return c <= U'\u007f';
 }
 
+constexpr bool is_code_point(char8_t c) = delete;
+
 [[nodiscard]]
 constexpr bool is_code_point(char32_t c)
 {
     // https://infra.spec.whatwg.org/#code-point
     return c <= code_point_max;
 }
+
+constexpr bool is_leading_surrogate(char8_t c) = delete;
 
 [[nodiscard]]
 constexpr bool is_leading_surrogate(char32_t c)
@@ -148,6 +152,8 @@ constexpr bool is_leading_surrogate(char32_t c)
     return c >= 0xD800 && c <= 0xDBFF;
 }
 
+constexpr bool is_trailing_surrogate(char8_t c) = delete;
+
 [[nodiscard]]
 constexpr bool is_trailing_surrogate(char32_t c)
 {
@@ -155,12 +161,16 @@ constexpr bool is_trailing_surrogate(char32_t c)
     return c >= 0xDC00 && c <= 0xDFFF;
 }
 
+constexpr bool is_surrogate(char8_t c) = delete;
+
 [[nodiscard]]
 constexpr bool is_surrogate(char32_t c)
 {
     // https://infra.spec.whatwg.org/#surrogate
     return c >= 0xD800 && c <= 0xDFFF;
 }
+
+constexpr bool is_scalar_value(char8_t c) = delete;
 
 /// @brief Returns `true` iff `c` is a scalar value,
 /// i.e. a code point that is not a surrogate.
@@ -171,6 +181,8 @@ constexpr bool is_scalar_value(char32_t c)
     // https://infra.spec.whatwg.org/#scalar-value
     return is_code_point(c) && !is_surrogate(c);
 }
+
+constexpr bool is_noncharacter(char8_t c) = delete;
 
 /// @brief Returns `true` if `c` is a noncharacter,
 /// i.e. if it falls outside the range of valid code points.
@@ -200,6 +212,8 @@ inline constexpr char32_t supplementary_pua_b_min = U'\U00100000';
 // https://unicode.org/charts/PDF/UF0000.pdf
 inline constexpr char32_t supplementary_pua_b_max = U'\U0010FFFF';
 
+constexpr bool is_private_use_area_character(char8_t c) = delete;
+
 /// @brief Returns `true` iff `c` is a noncharacter,
 /// i.e. if it falls outside the range of valid code points.
 [[nodiscard]]
@@ -217,6 +231,8 @@ constexpr bool is_html_ascii_tag_name_character(char8_t c)
 {
     return c == u8'-' || c == u8'.' || c == u8'_' || is_ascii_alphanumeric(c);
 }
+
+constexpr bool is_html_tag_name_character(char8_t c) = delete;
 
 [[nodiscard]]
 constexpr bool is_html_tag_name_character(char32_t c)
@@ -256,6 +272,8 @@ constexpr bool is_ascii_control(char8_t c)
     return (c >= u8'\u0000' && c <= u8'\u001F') || c == u8'\u007F';
 }
 
+constexpr bool is_control(char8_t c) = delete;
+
 [[nodiscard]]
 constexpr bool is_control(char32_t c)
 {
@@ -268,7 +286,7 @@ constexpr bool is_html_ascii_attribute_name_character(char8_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
     // clang-format off
-    return !is_control(c)
+    return !is_ascii_control(c)
         && c != u8' '
         && c != u8'"'
         && c != u8'\''
@@ -277,6 +295,8 @@ constexpr bool is_html_ascii_attribute_name_character(char8_t c)
         && c != u8'=';
     // clang-format on
 }
+
+constexpr bool is_html_attribute_name_character(char8_t c) = delete;
 
 [[nodiscard]]
 constexpr bool is_html_attribute_name_character(char32_t c)
@@ -300,11 +320,12 @@ constexpr bool is_html_attribute_name_character(char32_t c)
 /// Note that the HTML standard also restricts that character references must be unambiguous,
 /// but this function has no way of verifying that.
 [[nodiscard]]
-constexpr bool is_html_unquoted_attribute_value_character(char8_t c)
+constexpr bool is_html_ascii_unquoted_attribute_value_character(char8_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
     // clang-format off
-    return !is_ascii_whitespace(c)
+    return is_ascii(c)
+        && !is_ascii_whitespace(c)
         && c != u8'"'
         && c != u8'\''
         && c != u8'='
@@ -313,6 +334,14 @@ constexpr bool is_html_unquoted_attribute_value_character(char8_t c)
         && c != u8'`';
     // clang-format on
 }
+
+[[nodiscard]]
+constexpr bool is_html_ascii_unquoted_attribute_value_character(char32_t c)
+{
+    return is_html_ascii_unquoted_attribute_value_character(char8_t(c));
+}
+
+constexpr bool is_html_unquoted_attribute_value_character(char8_t c) = delete;
 
 /// @brief Returns `true` if `c` can appear in an attribute value string with no
 /// surrounding quotes, such as in `<h2 id=heading>`.
@@ -323,7 +352,7 @@ constexpr bool is_html_unquoted_attribute_value_character(char8_t c)
 constexpr bool is_html_unquoted_attribute_value_character(char32_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
-    return !is_ascii(c) || is_html_unquoted_attribute_value_character(char8_t(c));
+    return !is_ascii(c) || is_html_ascii_unquoted_attribute_value_character(c);
 }
 
 /// @brief Returns `true` iff `c`
@@ -423,6 +452,8 @@ constexpr bool is_ascii_xid_start(char32_t c) noexcept
     return is_ascii_alpha(c);
 }
 
+bool is_xid_start(char8_t c) = delete;
+
 /// @brief Returns `true` iff `c` has the XID_Start Unicode property.
 /// This property indicates whether the character can appear at the beginning
 /// of a Unicode identifier, such as a C++ *identifier*.
@@ -442,6 +473,9 @@ constexpr bool is_ascii_xid_continue(char32_t c) noexcept
 {
     return is_ascii_alphanumeric(c) || c == u8'_';
 }
+
+bool is_xid_continue(char8_t c) = delete;
+
 /// @brief Returns `true` iff `c` has the XID_Continue Unicode property.
 /// This property indicates whether the character can appear
 /// in a Unicode identifier, such as a C++ *identifier*.
@@ -461,6 +495,8 @@ constexpr bool is_cpp_ascii_identifier_start(char32_t c)
 {
     return c == U'_' || is_ascii_xid_start(c);
 }
+
+constexpr bool is_cpp_identifier_start(char8_t c) = delete;
 
 [[nodiscard]]
 constexpr bool is_cpp_identifier_start(char32_t c)
@@ -482,6 +518,8 @@ constexpr bool is_cpp_ascii_identifier_continue(char32_t c)
 {
     return is_ascii_xid_continue(c);
 }
+
+constexpr bool is_cpp_identifier_continue(char8_t c) = delete;
 
 [[nodiscard]]
 constexpr bool is_cpp_identifier_continue(char32_t c)

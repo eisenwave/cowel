@@ -161,8 +161,9 @@ constexpr bool is_html_attribute_name(std::u8string_view str)
 [[nodiscard]]
 constexpr bool is_html_unquoted_attribute_value(std::u8string_view str)
 {
-    constexpr auto predicate
-        = [](char8_t x) { return is_html_unquoted_attribute_value_character(x); };
+    constexpr auto predicate = [](char8_t code_unit) {
+        return !is_ascii(code_unit) || is_html_ascii_unquoted_attribute_value_character(code_unit);
+    };
 
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
     return detail::all_of(str, predicate);
