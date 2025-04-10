@@ -22,6 +22,7 @@
 #include "mmml/print.hpp"
 
 #include "collecting_logger.hpp"
+#include "diff.hpp"
 #include "io.hpp"
 #include "test_highlighter.hpp"
 
@@ -229,10 +230,10 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<code> </code>\n" },
       {} },
     { Source { u8"\\code[x]{xxx}\n" },
-      Source { u8"<code><h- data-h=key>xxx</h-></code>\n" },
+      Source { u8"<code><h- data-h=kw>xxx</h-></code>\n" },
       {} },
     { Source { u8"\\code[x]{xxx123}\n" },
-      Source { u8"<code><h- data-h=key>xxx</h->123</code>\n" },
+      Source { u8"<code><h- data-h=kw>xxx</h->123</code>\n" },
       {} },
     { Source { u8"\\code[x]{ 123 }\n" },
       Source { u8"<code> 123 </code>\n" },
@@ -241,10 +242,10 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<code> <b>123</b> </code>\n" },
       {} },
     { Source { u8"\\code[x]{ \\b{xxx} }\n" },
-      Source { u8"<code> <b><h- data-h=key>xxx</h-></b> </code>\n" },
+      Source { u8"<code> <b><h- data-h=kw>xxx</h-></b> </code>\n" },
       {} },
     { Source { u8"\\code[x]{ \\b{x}xx }\n" },
-      Source { u8"<code> <b><h- data-h=key>x</h-></b><h- data-h=key>xx</h-> </code>\n" },
+      Source { u8"<code> <b><h- data-h=kw>x</h-></b><h- data-h=kw>xx</h-> </code>\n" },
       {} },
     { Path { "codeblock/trim.mmml" },
       Path { "codeblock/trim.html" },
@@ -308,15 +309,11 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
                 u8"Test failed because generated HTML does not match expected HTML.\n",
                 Diagnostic_Highlight::error_text
             );
-            error.append(u8"Expected:\n", Diagnostic_Highlight::error_text);
-            error.append(expected, Diagnostic_Highlight::code_citation);
-            error.append(u8'\n');
-            error.append(u8"Actual:\n", Diagnostic_Highlight::error_text);
-            error.append(actual, Diagnostic_Highlight::code_citation);
+            print_lines_diff(error, actual, expected);
             error.append(u8'\n');
             print_code_string_stdout(error);
         }
-        EXPECT_EQ(expected, actual);
+        EXPECT_TRUE(expected == actual);
 
         if (test.expected_diagnostics.size() == 0) {
             EXPECT_TRUE(logger.diagnostics.empty());
