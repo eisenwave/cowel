@@ -76,8 +76,6 @@ enum struct Directive_Display : Default_Underlying;
 struct Error_Tag;
 struct File_Source_Position;
 struct File_Source_Span;
-template <typename>
-struct Function_Ref;
 struct Generation_Options;
 enum struct HLJS_Scope : Default_Underlying;
 struct HTML_Writer;
