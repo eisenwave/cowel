@@ -180,14 +180,14 @@ TEST(Charsets, all_ascii_alphanumeric)
 TEST(Charsets, all_ascii_whitespace8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_whitespace8, c), is_ascii_whitespace(c));
+        EXPECT_EQ(contains(all_ascii_whitespace8, c), is_html_whitespace(c));
     }
 }
 
 TEST(Charsets, all_ascii_whitespace)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_whitespace, c), is_ascii_whitespace(c));
+        EXPECT_EQ(contains(all_ascii_whitespace, c), is_html_whitespace(c));
     }
 }
 
