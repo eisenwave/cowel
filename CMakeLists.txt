@@ -32,9 +32,6 @@ set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
 include_directories(${INCLUDE_DIRS})
 
 add_library(mmml STATIC
-    src/main/cpp/highlight/cpp.cpp
-    src/main/cpp/highlight/mmml.cpp
-
     src/main/cpp/util/chars.cpp
     src/main/cpp/util/html_writer.cpp
     src/main/cpp/util/html_entities.cpp
@@ -50,8 +47,10 @@ add_library(mmml STATIC
     src/main/cpp/parse_utils.cpp
     src/main/cpp/parse.cpp
     src/main/cpp/print.cpp
+    src/main/cpp/services.cpp
 )
 
+target_link_libraries(mmml ulight)
 target_compile_options(mmml PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
 target_link_options(mmml PUBLIC ${SANITIZER_OPTIONS})
 
@@ -92,13 +91,13 @@ else(NOT DEFINED EMSCRIPTEN)
     add_executable(mmml-cli ${HEADERS}
         src/main/cpp/cli.cpp
     )
+    target_link_libraries(mmml-cli mmml ulight)
 
     add_executable(mmml-test ${HEADERS}
         src/test/cpp/document_file_testing.cpp
         src/test/cpp/main.cpp
         src/test/cpp/test_chars_strings.cpp
         src/test/cpp/test_document_generation.cpp
-        src/test/cpp/test_highlight.cpp
         src/test/cpp/test_html_writer.cpp
         src/test/cpp/test_levenshtein.cpp
         src/test/cpp/test_parsing.cpp
@@ -107,7 +106,5 @@ else(NOT DEFINED EMSCRIPTEN)
         src/test/cpp/test_unicode.cpp
         src/test/cpp/test_valid.cpp
     )
-
-    target_link_libraries(mmml-cli mmml)
-    target_link_libraries(mmml-test mmml GTest::GTest GTest::Main)
+    target_link_libraries(mmml-test mmml ulight GTest::GTest GTest::Main)
 endif()

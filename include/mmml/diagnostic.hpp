@@ -88,6 +88,9 @@ inline constexpr std::u8string_view highlight_language = u8"highlight.language";
 /// @brief In syntax highlighting,
 /// the code could not be highlighted because it is malformed.
 inline constexpr std::u8string_view highlight_malformed = u8"highlight.malformed";
+/// @brief In syntax highlighting,
+/// something went wrong.
+inline constexpr std::u8string_view highlight_error = u8"highlight.error";
 
 } // namespace diagnostic
 

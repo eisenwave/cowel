@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include "ulight/ulight.h"
+
 int main(int argc, char** argv)
 {
     std::setlocale(LC_ALL, ".UTF8");

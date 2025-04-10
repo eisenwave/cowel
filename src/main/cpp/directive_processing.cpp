@@ -6,6 +6,8 @@
 #include <variant>
 #include <vector>
 
+#include "ulight/ulight.hpp"
+
 #include "mmml/fwd.hpp"
 #include "mmml/parse_utils.hpp"
 #include "mmml/util/assert.hpp"
@@ -19,8 +21,6 @@
 #include "mmml/directive_processing.hpp"
 #include "mmml/directives.hpp"
 #include "mmml/services.hpp"
-
-#include "mmml/highlight/highlight_type.hpp"
 
 namespace mmml {
 
@@ -702,10 +702,13 @@ private:
         HTML_Writer span_writer { span_data };
 
         if (span) {
+            const std::string_view raw_id
+                = ulight::highlight_type_id(ulight::Highlight_Type(span->type));
+            const std::u8string_view u8_id { reinterpret_cast<const char8_t*>(raw_id.data()),
+                                             raw_id.length() };
+
             span_writer.open_tag_with_attributes(highlighting_tag)
-                .write_attribute(
-                    u8"data-h", highlight_type_css(span->value), Attribute_Style::double_if_needed
-                )
+                .write_attribute(u8"data-h", u8_id, Attribute_Style::double_if_needed)
                 .end();
         }
         span_writer.write_inner_text(inner_text);
@@ -790,8 +793,8 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     std::pmr::vector<const Highlight_Span*> plaintext_to_span { context.get_transient_memory() };
     plaintext_to_span.resize(plaintext.size());
     for (const Highlight_Span& span : spans) {
-        for (std::size_t i = span.begin; i < span.end(); ++i) {
-            plaintext_to_span[i] = &span;
+        for (std::size_t i = 0; i < span.length; ++i) {
+            plaintext_to_span[i + span.begin] = &span;
         }
     }
 

@@ -562,6 +562,16 @@ public:
             context.emit(std::move(warning));
             break;
         }
+        case Syntax_Highlight_Error::other: {
+            Diagnostic warning
+                = context.make_warning(diagnostic::highlight_error, d.get_source_span());
+            warning.message
+                += u8"Unable to apply syntax highlighting because of an internal error.";
+            warning.message += lang;
+            warning.message += u8"\".";
+            context.emit(std::move(warning));
+            break;
+        }
         }
     }
 };

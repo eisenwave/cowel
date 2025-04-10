@@ -8,6 +8,8 @@
 #include <string_view>
 #include <vector>
 
+#include "ulight/ulight.hpp"
+
 #include "mmml/util/annotation_span.hpp"
 #include "mmml/util/assert.hpp"
 #include "mmml/util/result.hpp"
@@ -16,13 +18,21 @@
 #include "mmml/diagnostic.hpp"
 #include "mmml/fwd.hpp"
 
-#include "mmml/highlight/highlight_error.hpp"
-
 namespace mmml {
 
 namespace detail {
 using Suppress_Unused_Include_Annotation_Span = Annotation_Span<void>;
 } // namespace detail
+
+using Highlight_Span = ulight::Token;
+using ulight::Highlight_Type;
+using Highlight_Lang = ulight::Lang;
+
+enum struct Syntax_Highlight_Error : Default_Underlying {
+    unsupported_language,
+    bad_code,
+    other,
+};
 
 struct Syntax_Highlighter {
 
@@ -89,6 +99,28 @@ struct No_Support_Syntax_Highlighter final : Syntax_Highlighter {
 };
 
 inline constexpr No_Support_Syntax_Highlighter no_support_syntax_highlighter;
+
+/// @brief A `Syntax_Highlighter` that uses the µlight library.
+struct Ulight_Syntax_Highlighter final : Syntax_Highlighter {
+
+    [[nodiscard]]
+    std::span<const std::u8string_view> get_supported_languages() const final;
+
+    [[nodiscard]]
+    Distant<std::u8string_view>
+    match_supported_language(std::u8string_view language, std::pmr::memory_resource* memory)
+        const final;
+
+    [[nodiscard]]
+    Result<void, Syntax_Highlight_Error> operator()( //
+        std::pmr::vector<Highlight_Span>& out,
+        std::u8string_view code,
+        std::u8string_view language,
+        std::pmr::memory_resource* memory
+    ) const final;
+};
+
+inline constexpr Ulight_Syntax_Highlighter ulight_syntax_highlighter;
 
 struct Author_Info {
     /// @brief Full name. For example, `Donald Knuth`.

@@ -62,7 +62,6 @@ template <typename>
 struct Basic_Transparent_String_View_Hash;
 template <typename>
 struct Basic_Transparent_String_View_Less;
-enum struct Code_Language : Default_Underlying;
 enum struct Diagnostic_Highlight : Default_Underlying;
 struct Content_Behavior;
 struct Context;
@@ -80,7 +79,6 @@ struct File_Source_Span;
 template <typename>
 struct Function_Ref;
 struct Generation_Options;
-enum struct Highlight_Type : Default_Underlying;
 enum struct HLJS_Scope : Default_Underlying;
 struct HTML_Writer;
 struct Ignorant_Logger;
@@ -123,7 +121,6 @@ using Characters8 = Basic_Characters<char8_t, capacity>;
 
 using Diagnostic_String = Annotated_String8<Diagnostic_Highlight>;
 
-using Highlight_Span = Annotation_Span<Highlight_Type>;
 using HLJS_Annotation_Span = Annotation_Span<HLJS_Scope>;
 
 using Transparent_String_View_Equals = Basic_Transparent_String_View_Equals<char>;
