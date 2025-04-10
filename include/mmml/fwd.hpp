@@ -42,8 +42,6 @@ struct Annotation_Span;
 enum struct Diagnostic_Highlight : Default_Underlying;
 struct Argument_Matcher;
 enum struct Argument_Status : Default_Underlying;
-struct Assertion_Error;
-enum struct Assertion_Error_Type : Default_Underlying;
 struct AST_Formatting_Options;
 struct AST_Instruction;
 enum struct AST_Instruction_Type : Default_Underlying;
