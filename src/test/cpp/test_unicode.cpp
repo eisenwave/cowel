@@ -75,7 +75,7 @@ TEST(Unicode, encode_decode_reversible_fuzzing)
         }
 
         const Code_Units_And_Length encoded = encode8_unchecked(code_point);
-        const Result<Code_Point_And_Length, Error_Code> decoded
+        const std::expected<Code_Point_And_Length, Error_Code> decoded
             = decode_and_length(encoded.as_string());
         ASSERT_TRUE(decoded);
         EXPECT_EQ(decoded->length, encoded.length);

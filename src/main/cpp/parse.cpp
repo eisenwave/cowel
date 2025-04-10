@@ -1,11 +1,11 @@
 #include <cstddef>
+#include <expected>
 #include <optional>
 #include <string_view>
 #include <vector>
 
 #include "mmml/util/assert.hpp"
 #include "mmml/util/chars.hpp"
-#include "mmml/util/result.hpp"
 #include "mmml/util/unicode.hpp"
 
 #include "mmml/fwd.hpp"
@@ -141,7 +141,7 @@ private:
     {
         MMML_ASSERT(!eof());
         const std::u8string_view remainder { m_source.substr(m_pos) };
-        const Result<utf8::Code_Point_And_Length, utf8::Error_Code> result
+        const std::expected<utf8::Code_Point_And_Length, utf8::Error_Code> result
             = utf8::decode_and_length(remainder);
         MMML_ASSERT(result);
         return *result;
@@ -344,7 +344,7 @@ private:
                 // No matter what, a backslash followed by a directive name character forms a
                 // directive because the remaining arguments and the block are optional.
                 // I.e. we can break with certainty despite only having examined one character.
-                const Result<utf8::Code_Point_And_Length, utf8::Error_Code> next_point
+                const std::expected<utf8::Code_Point_And_Length, utf8::Error_Code> next_point
                     = utf8::decode_and_length(remainder);
                 MMML_ASSERT(next_point);
                 if (is_mmml_directive_name_character(next_point->code_point)) {
