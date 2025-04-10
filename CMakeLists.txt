@@ -32,7 +32,6 @@ set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
 include_directories(${INCLUDE_DIRS})
 
 add_library(mmml STATIC
-    src/main/cpp/util/chars.cpp
     src/main/cpp/util/html_writer.cpp
     src/main/cpp/util/html_entities.cpp
     src/main/cpp/util/io.cpp
