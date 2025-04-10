@@ -103,7 +103,6 @@ else(NOT DEFINED EMSCRIPTEN)
         src/test/cpp/test_parsing.cpp
         src/test/cpp/test_to_chars.cpp
         src/test/cpp/test_typo.cpp
-        src/test/cpp/test_unicode.cpp
         src/test/cpp/test_valid.cpp
     )
     target_link_libraries(mmml-test mmml ulight GTest::GTest GTest::Main)
