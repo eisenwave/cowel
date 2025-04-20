@@ -38,10 +38,17 @@ add_library(mmml STATIC
     src/main/cpp/util/tty.cpp
     src/main/cpp/util/typo.cpp
 
+    src/main/cpp/directives/code_point.cpp
+    src/main/cpp/directives/html_entity.cpp
+    src/main/cpp/directives/literal.cpp
+    src/main/cpp/directives/passthrough.cpp
+    src/main/cpp/directives/syntax_highlight.cpp
+    src/main/cpp/directives/variables.cpp
+
     src/main/cpp/argument_matching.cpp
     src/main/cpp/build_ast.cpp
     src/main/cpp/directive_processing.cpp
-    src/main/cpp/directives.cpp
+    src/main/cpp/builtin_directive_set.cpp
     src/main/cpp/document_generation.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/parse.cpp

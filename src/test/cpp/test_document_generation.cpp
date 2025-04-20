@@ -12,6 +12,7 @@
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/assert.hpp"
 
+#include "mmml/builtin_directive_set.hpp"
 #include "mmml/diagnostic.hpp"
 #include "mmml/diagnostic_highlight.hpp"
 #include "mmml/directive_processing.hpp"

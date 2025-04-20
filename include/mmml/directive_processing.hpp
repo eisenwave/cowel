@@ -129,6 +129,18 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
 
 void arguments_to_attributes(Attribute_Writer& out, const ast::Directive& d, Context& context);
 
+/// @brief If there is an error behavior in the `context`,
+/// uses that behavior's `generate_plaintext` on the directive.
+void try_generate_error_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    Context& context
+);
+
+/// @brief If there is an error behavior in the `context`,
+/// uses that behavior's `generate_html` on the directive.
+void try_generate_error_html(HTML_Writer& out, const ast::Directive& d, Context& context);
+
 } // namespace mmml
 
 #endif

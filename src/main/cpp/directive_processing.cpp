@@ -861,4 +861,22 @@ void arguments_to_attributes(Attribute_Writer& out, const ast::Directive& d, Con
     }
 }
 
+void try_generate_error_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    Context& context
+)
+{
+    if (const Directive_Behavior* const behavior = context.get_error_behavior()) {
+        behavior->generate_plaintext(out, d, context);
+    }
+}
+
+void try_generate_error_html(HTML_Writer& out, const ast::Directive& d, Context& context)
+{
+    if (const Directive_Behavior* const behavior = context.get_error_behavior()) {
+        behavior->generate_html(out, d, context);
+    }
+}
+
 } // namespace mmml
