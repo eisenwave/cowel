@@ -1,5 +1,5 @@
-#ifndef MMML_PROCESSING_HPP
-#define MMML_PROCESSING_HPP
+#ifndef MMML_DIRECTIVE_BEHAVIOR_HPP
+#define MMML_DIRECTIVE_BEHAVIOR_HPP
 
 #include <span>
 #include <vector>
@@ -70,24 +70,6 @@ struct Directive_Behavior {
         = 0;
 
     virtual void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const = 0;
-};
-
-struct Content_Behavior {
-    const Directive_Category category;
-    const Directive_Display display;
-
-    [[nodiscard]]
-    constexpr Content_Behavior(Directive_Category c, Directive_Display d)
-        : category { c }
-        , display { d }
-    {
-    }
-
-    virtual void
-    generate_plaintext(std::pmr::vector<char8_t>& out, std::span<const ast::Content>, Context&)
-        const
-        = 0;
-    virtual void generate_html(HTML_Writer& out, std::span<const ast::Content>, Context&) const = 0;
 };
 
 } // namespace mmml
