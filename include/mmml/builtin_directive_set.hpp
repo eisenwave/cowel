@@ -6,7 +6,7 @@
 #include "mmml/util/html_writer.hpp"
 
 #include "mmml/base_behaviors.hpp"
-#include "mmml/directives.hpp"
+#include "mmml/directive_behavior.hpp"
 
 namespace mmml {
 

@@ -13,8 +13,8 @@
 
 #include "mmml/base_behaviors.hpp"
 #include "mmml/builtin_directive_set.hpp"
+#include "mmml/directive_behavior.hpp"
 #include "mmml/directive_processing.hpp"
-#include "mmml/directives.hpp"
 #include "mmml/fwd.hpp"
 
 namespace mmml {

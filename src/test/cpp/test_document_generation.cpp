@@ -13,10 +13,11 @@
 #include "mmml/util/assert.hpp"
 
 #include "mmml/builtin_directive_set.hpp"
+#include "mmml/content_behavior.hpp"
 #include "mmml/diagnostic.hpp"
 #include "mmml/diagnostic_highlight.hpp"
+#include "mmml/directive_behavior.hpp"
 #include "mmml/directive_processing.hpp"
-#include "mmml/directives.hpp"
 #include "mmml/document_generation.hpp"
 #include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
@@ -33,10 +34,6 @@ namespace {
 using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
 
 struct Trivial_Content_Behavior final : Content_Behavior {
-    constexpr Trivial_Content_Behavior()
-        : Content_Behavior { Directive_Category::mixed, Directive_Display::block }
-    {
-    }
 
     void generate_plaintext(
         std::pmr::vector<char8_t>& out,
@@ -55,10 +52,6 @@ struct Trivial_Content_Behavior final : Content_Behavior {
 };
 
 struct Paragraphs_Behavior final : Content_Behavior {
-    constexpr Paragraphs_Behavior()
-        : Content_Behavior { Directive_Category::mixed, Directive_Display::block }
-    {
-    }
 
     void generate_plaintext(std::pmr::vector<char8_t>&, std::span<const ast::Content>, Context&)
         const final

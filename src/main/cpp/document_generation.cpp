@@ -3,8 +3,8 @@
 #include "mmml/util/assert.hpp"
 #include "mmml/util/html_writer.hpp"
 
+#include "mmml/content_behavior.hpp"
 #include "mmml/context.hpp"
-#include "mmml/directives.hpp"
 #include "mmml/document_generation.hpp"
 
 namespace mmml {

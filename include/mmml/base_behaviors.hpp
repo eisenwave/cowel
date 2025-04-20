@@ -6,7 +6,7 @@
 
 #include "mmml/ast.hpp"
 #include "mmml/directive_arguments.hpp"
-#include "mmml/directives.hpp"
+#include "mmml/directive_behavior.hpp"
 
 namespace mmml {
 
