@@ -18,8 +18,8 @@
 
 #include "mmml/ast.hpp"
 #include "mmml/context.hpp"
+#include "mmml/directive_behavior.hpp"
 #include "mmml/directive_processing.hpp"
-#include "mmml/directives.hpp"
 #include "mmml/services.hpp"
 
 namespace mmml {
@@ -546,36 +546,6 @@ void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, 
 namespace {
 
 constexpr std::u8string_view highlighting_tag = u8"h-";
-
-struct Highlighted_Content_Behavior final : Content_Behavior {
-    const std::u8string_view m_classes;
-
-    [[nodiscard]]
-    Highlighted_Content_Behavior(std::u8string_view classes)
-        : Content_Behavior(Directive_Category::formatting, Directive_Display::in_line)
-        , m_classes { classes }
-    {
-    }
-
-    void generate_plaintext(
-        std::pmr::vector<char8_t>& out,
-        std::span<const ast::Content> content,
-        Context& context
-    ) const final
-    {
-        to_plaintext(out, content, context);
-    }
-
-    void generate_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
-        const final
-    {
-        out.open_tag_with_attributes(highlighting_tag)
-            .write_attribute(u8"class", m_classes, Attribute_Style::always_double)
-            .end();
-        to_html(out, content, context);
-        out.close_tag(highlighting_tag);
-    }
-};
 
 std::pmr::vector<ast::Content> copy_highlighted(
     std::span<const ast::Content> content,
