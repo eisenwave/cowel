@@ -128,9 +128,7 @@ void to_plaintext(std::pmr::vector<char8_t>& out, const ast::Content& c, Context
             return;
         }
         try_lookup_error(*d, context);
-        if (Directive_Behavior* const eb = context.get_error_behavior()) {
-            eb->generate_plaintext(out, *d, context);
-        }
+        try_generate_error_plaintext(out, *d, context);
         return;
     }
     MMML_ASSERT_UNREACHABLE(u8"Invalid form of content.");
@@ -303,9 +301,7 @@ void to_html(HTML_Writer& out, const ast::Directive& directive, Context& context
         return;
     }
     try_lookup_error(directive, context);
-    if (Directive_Behavior* const eb = context.get_error_behavior()) {
-        eb->generate_html(out, directive, context);
-    }
+    try_generate_error_html(out, directive, context);
 }
 
 namespace {
