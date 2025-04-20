@@ -4,6 +4,8 @@
 #include <string_view>
 #include <vector>
 
+#include "ulight/impl/lang/mmml.hpp"
+
 #include "mmml/util/assert.hpp"
 #include "mmml/util/chars.hpp"
 #include "mmml/util/unicode.hpp"
@@ -119,13 +121,6 @@ private:
         return c;
     }
 
-    char32_t pop_code_point()
-    {
-        const auto [code_point, length] = peek_code_point();
-        m_pos += std::size_t(length);
-        return code_point;
-    }
-
     /// @brief Returns the next character.
     /// @return The next character.
     /// @throws Throws if `eof()`.
@@ -134,17 +129,6 @@ private:
     {
         MMML_ASSERT(!eof());
         return m_source[m_pos];
-    }
-
-    [[nodiscard]]
-    utf8::Code_Point_And_Length peek_code_point() const
-    {
-        MMML_ASSERT(!eof());
-        const std::u8string_view remainder { m_source.substr(m_pos) };
-        const std::expected<utf8::Code_Point_And_Length, utf8::Error_Code> result
-            = utf8::decode_and_length(remainder);
-        MMML_ASSERT(result);
-        return *result;
     }
 
     /// @return `true` if the parser is at the end of the file, `false` otherwise.
@@ -169,21 +153,6 @@ private:
     bool peek(char8_t c) const
     {
         return !eof() && m_source[m_pos] == c;
-    }
-
-    /// @brief Checks whether the parser is at the start of a directive.
-    /// Namely, has to be `\\` and not be the start of an escape sequence such as `\\\\` for
-    /// this to be the case. This function can have false positives in the sense that if the
-    /// subsequent directive is ill-formed, the guess was optimistic, and there isn't actually a
-    /// directive there. However, it has no false negatives.
-    /// @return `true` if the parser is at the start of a directive, `false` otherwise.
-    [[nodiscard]]
-    bool peek_possible_directive() const
-    {
-        const std::u8string_view rest = peek_all();
-        return !rest.empty() //
-            && rest[0] == '\\' //
-            && (rest.length() <= 1 || !is_mmml_escapeable(char8_t(rest[1])));
     }
 
     /// @brief Checks whether the next character satisfies a predicate without advancing
@@ -220,68 +189,6 @@ private:
         MMML_ASSERT(is_ascii(c));
         ++m_pos;
         return true;
-    }
-
-    [[nodiscard]]
-    bool expect(bool predicate(char32_t))
-    {
-        if (eof()) {
-            return false;
-        }
-        const auto [code_point, length] = peek_code_point();
-        if (!predicate(code_point)) {
-            return false;
-        }
-        m_pos += std::size_t(length);
-        return true;
-    }
-
-    [[nodiscard]]
-    bool expect_literal(std::u8string_view text)
-    {
-        if (!peek(text)) {
-            return false;
-        }
-        m_pos += text.length();
-        return true;
-    }
-
-    /// @brief Matches a (possibly empty) sequence of characters matching the predicate.
-    /// @return The amount of characters matched.
-    [[nodiscard]]
-    std::size_t match_char_sequence(bool predicate(char8_t))
-    {
-        const std::size_t initial = m_pos;
-        while (expect(predicate)) { }
-        return m_pos - initial;
-    }
-
-    [[nodiscard]]
-    std::size_t match_char_sequence(bool predicate(char32_t))
-    {
-        const std::size_t initial = m_pos;
-        while (expect(predicate)) { }
-        return m_pos - initial;
-    }
-
-    [[nodiscard]]
-    std::size_t match_directive_name()
-    {
-        constexpr bool (*predicate)(char32_t) = is_mmml_directive_name_character;
-        return peek(is_ascii_digit) ? 0 : match_char_sequence(predicate);
-    }
-
-    [[nodiscard]]
-    std::size_t match_argument_name()
-    {
-        constexpr bool (*predicate)(char32_t) = is_mmml_argument_name_character;
-        return peek(is_ascii_digit) ? 0 : match_char_sequence(predicate);
-    }
-
-    std::size_t match_whitespace()
-    {
-        constexpr bool (*predicate)(char8_t) = is_html_whitespace;
-        return match_char_sequence(predicate);
     }
 
     [[nodiscard]]
@@ -344,10 +251,8 @@ private:
                 // No matter what, a backslash followed by a directive name character forms a
                 // directive because the remaining arguments and the block are optional.
                 // I.e. we can break with certainty despite only having examined one character.
-                const std::expected<utf8::Code_Point_And_Length, utf8::Error_Code> next_point
-                    = utf8::decode_and_length(remainder);
-                MMML_ASSERT(next_point);
-                if (is_mmml_directive_name_character(next_point->code_point)) {
+                const auto [code_point, length] = utf8::decode_and_length_or_throw(remainder);
+                if (is_mmml_directive_name(code_point)) {
                     break;
                 }
                 continue;
@@ -393,10 +298,11 @@ private:
         if (!expect('\\')) {
             return {};
         }
-        const std::size_t name_length = match_directive_name();
+        const std::size_t name_length = ulight::mmml::match_directive_name(peek_all());
         if (name_length == 0) {
             return false;
         }
+        m_pos += name_length;
 
         m_out.push_back({ AST_Instruction_Type::push_directive, name_length + 1 });
 
@@ -487,23 +393,25 @@ private:
     {
         Scoped_Attempt a = attempt();
 
-        const std::size_t leading_whitespace = match_whitespace();
+        const std::size_t leading_whitespace = ulight::mmml::match_whitespace(peek_all());
         if (leading_whitespace != 0) {
             m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
         }
+        m_pos += leading_whitespace;
 
         if (eof()) {
             return false;
         }
 
-        const std::size_t name_length = match_argument_name();
+        const std::size_t name_length = ulight::mmml::match_argument_name(peek_all());
         m_out.push_back({ AST_Instruction_Type::argument_name, name_length });
-
         if (name_length == 0) {
             return false;
         }
+        m_pos += name_length;
 
-        const std::size_t trailing_whitespace = match_whitespace();
+        const std::size_t trailing_whitespace = ulight::mmml::match_whitespace(peek_all());
+        m_pos += trailing_whitespace;
         if (eof()) {
             return false;
         }
@@ -523,10 +431,11 @@ private:
     {
         Scoped_Attempt a = attempt();
 
-        const std::size_t leading_whitespace = match_whitespace();
+        const std::size_t leading_whitespace = ulight::mmml::match_whitespace(peek_all());
         if (leading_whitespace != 0) {
             m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
         }
+        m_pos += leading_whitespace;
 
         const std::size_t content_amount = match_content_sequence(Content_Context::argument_value);
         if (eof() || peek(u8'}')) {

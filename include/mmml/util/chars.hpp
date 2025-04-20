@@ -1,7 +1,10 @@
 #ifndef MMML_CHARS_HPP
 #define MMML_CHARS_HPP
 
-#include "ulight/impl/chars.hpp"
+#include "ulight/impl/ascii_chars.hpp"
+#include "ulight/impl/lang/html_chars.hpp"
+#include "ulight/impl/lang/mmml_chars.hpp"
+#include "ulight/impl/unicode_chars.hpp"
 
 namespace mmml {
 
@@ -19,12 +22,12 @@ using ulight::is_html_attribute_name_character;
 using ulight::is_html_min_raw_passthrough_character;
 using ulight::is_html_tag_name_character;
 using ulight::is_html_whitespace;
-using ulight::is_mmml_argument_name_character;
-using ulight::is_mmml_ascii_argument_name_character;
-using ulight::is_mmml_ascii_directive_name_character;
-using ulight::is_mmml_directive_name_character;
+using ulight::is_mmml_argument_name;
+using ulight::is_mmml_ascii_argument_name;
+using ulight::is_mmml_ascii_directive_name;
+using ulight::is_mmml_directive_name;
 using ulight::is_mmml_escapeable;
-using ulight::is_mmml_special_character;
+using ulight::is_mmml_special;
 using ulight::is_scalar_value;
 using ulight::private_use_area_max;
 using ulight::supplementary_pua_a_max;

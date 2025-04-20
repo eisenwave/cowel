@@ -703,7 +703,7 @@ private:
 
         if (span) {
             const std::string_view raw_id
-                = ulight::highlight_type_id(ulight::Highlight_Type(span->type));
+                = ulight::highlight_type_short_string(ulight::Highlight_Type(span->type));
             const std::u8string_view u8_id { reinterpret_cast<const char8_t*>(raw_id.data()),
                                              raw_id.length() };
 
