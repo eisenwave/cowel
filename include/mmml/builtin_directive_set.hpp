@@ -211,6 +211,24 @@ public:
     }
 };
 
+struct Passthrough_Behavior : Directive_Behavior {
+
+    Passthrough_Behavior(Directive_Category category, Directive_Display display)
+        : Directive_Behavior { category, display }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
+        const override;
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override;
+
+    [[nodiscard]]
+    virtual std::u8string_view get_name(const ast::Directive& d, Context& context) const
+        = 0;
+};
+
 /// @brief Behavior for any formatting tags that are mapped onto HTML with the same name.
 /// This includes `\\i{...}`, `\\strong`, and many more.
 ///
