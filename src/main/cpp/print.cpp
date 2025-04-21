@@ -558,6 +558,11 @@ void print_code_string_stdout(const Diagnostic_String& string)
 {
     print_code_string(std::cout, string, is_stdout_tty);
 }
+
+void print_code_string_stderr(const Diagnostic_String& string)
+{
+    print_code_string(std::cerr, string, is_stderr_tty);
+}
 #endif
 
 } // namespace mmml

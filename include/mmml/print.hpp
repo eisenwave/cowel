@@ -80,6 +80,7 @@ std::ostream& operator<<(std::ostream& out, std::u8string_view str);
 std::ostream& print_code_string(std::ostream& out, const Diagnostic_String& string, bool colors);
 
 void print_code_string_stdout(const Diagnostic_String&);
+void print_code_string_stderr(const Diagnostic_String&);
 #endif
 
 } // namespace mmml
