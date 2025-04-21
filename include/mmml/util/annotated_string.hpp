@@ -44,57 +44,57 @@ private:
 
 public:
     [[nodiscard]]
-    explicit Basic_Annotated_String(
+    constexpr explicit Basic_Annotated_String(
         std::pmr::memory_resource* memory = std::pmr::get_default_resource()
     )
-        : m_text(memory)
-        , m_spans(memory)
+        : m_text { memory }
+        , m_spans { memory }
     {
     }
 
     [[nodiscard]]
-    Annotated_String_Length get_length() const
+    constexpr Annotated_String_Length get_length() const
     {
         return { .text_length = m_text.size(), .span_count = m_spans.size() };
     }
 
     [[nodiscard]]
-    std::size_t get_text_length() const
+    constexpr std::size_t get_text_length() const
     {
         return m_text.size();
     }
 
     [[nodiscard]]
-    std::pmr::memory_resource* get_memory() const
+    constexpr std::pmr::memory_resource* get_memory() const
     {
         return m_text.get_allocator().resource();
     }
 
     [[nodiscard]]
-    std::size_t get_span_count() const
+    constexpr std::size_t get_span_count() const
     {
         return m_spans.size();
     }
 
     [[nodiscard]]
-    string_view_type get_text() const
+    constexpr string_view_type get_text() const
     {
         return { m_text.data(), m_text.size() };
     }
 
     [[nodiscard]]
-    string_view_type get_text(const span_type& span) const
+    constexpr string_view_type get_text(const span_type& span) const
     {
         return get_text().substr(span.begin, span.length);
     }
 
-    void resize(Annotated_String_Length length)
+    constexpr void resize(Annotated_String_Length length)
     {
         m_text.resize(length.text_length);
         m_spans.resize(length.span_count);
     }
 
-    void clear() noexcept
+    constexpr void clear() noexcept
     {
         m_text.clear();
         m_spans.clear();
@@ -102,40 +102,40 @@ public:
 
     /// @brief Appends a raw range of text to the string.
     /// This is typically useful for e.g. whitespace between pieces of code.
-    void append(string_view_type text)
+    constexpr void append(string_view_type text)
     {
         m_text.insert(m_text.end(), text.begin(), text.end());
     }
 
     /// @brief Appends a raw character of text to the string.
     /// This is typically useful for e.g. whitespace between pieces of code.
-    void append(char_type c)
+    constexpr void append(char_type c)
     {
         m_text.push_back(c);
     }
 
     /// @brief Appends a raw character of text multiple times to the string.
     /// This is typically useful for e.g. whitespace between pieces of code.
-    void append(std::size_t amount, char_type c)
+    constexpr void append(std::size_t amount, char_type c)
     {
         m_text.insert(m_text.end(), amount, c);
     }
 
-    void append(string_view_type text, T value)
+    constexpr void append(string_view_type text, T value)
     {
         MMML_ASSERT(!text.empty());
         m_spans.push_back({ .begin = m_text.size(), .length = text.size(), .value = value });
         m_text.insert(m_text.end(), text.begin(), text.end());
     }
 
-    void append(char_type c, T value)
+    constexpr void append(char_type c, T value)
     {
         m_spans.push_back({ .begin = m_text.size(), .length = 1, .value = value });
         m_text.push_back(c);
     }
 
     template <character_convertible Integer>
-    void append_integer(Integer x, Sign_Policy signs = Sign_Policy::negative_only)
+    constexpr void append_integer(Integer x, Sign_Policy signs = Sign_Policy::negative_only)
     {
         const bool plus
             = (signs == Sign_Policy::always && x >= 0) || (signs == Sign_Policy::nonzero && x > 0);
@@ -144,7 +144,8 @@ public:
     }
 
     template <character_convertible Integer>
-    void append_integer(Integer x, T value, Sign_Policy signs = Sign_Policy::negative_only)
+    constexpr void
+    append_integer(Integer x, T value, Sign_Policy signs = Sign_Policy::negative_only)
     {
         const bool plus
             = (signs == Sign_Policy::always && x >= 0) || (signs == Sign_Policy::nonzero && x > 0);
@@ -155,7 +156,7 @@ public:
 private:
     // using std::optional would obviously be more idiomatic, but we can avoid
     // #include <optional> for this file by using a pointer
-    void append_digits(string_view_type digits, bool plus, const T* value = nullptr)
+    constexpr void append_digits(string_view_type digits, bool plus, const T* value = nullptr)
     {
         const std::size_t begin = m_text.size();
         std::size_t prefix_length = 0;
@@ -183,43 +184,43 @@ public:
     ///     .append(name);
     /// ```
     /// @param type the type of the appended span as a whole
-    Scoped_Builder build(Diagnostic_Highlight type) &
+    constexpr Scoped_Builder build(Diagnostic_Highlight type) &
     {
         return { *this, type };
     }
 
     [[nodiscard]]
-    iterator begin()
+    constexpr iterator begin()
     {
         return m_spans.data();
     }
 
     [[nodiscard]]
-    iterator end()
+    constexpr iterator end()
     {
         return m_spans.data() + std::ptrdiff_t(m_spans.size());
     }
 
     [[nodiscard]]
-    const_iterator begin() const
+    constexpr const_iterator begin() const
     {
         return m_spans.data();
     }
 
     [[nodiscard]]
-    const_iterator end() const
+    constexpr const_iterator end() const
     {
         return m_spans.data() + std::ptrdiff_t(m_spans.size());
     }
 
     [[nodiscard]]
-    const_iterator cbegin() const
+    constexpr const_iterator cbegin() const
     {
         return begin();
     }
 
     [[nodiscard]]
-    const_iterator cend() const
+    constexpr const_iterator cend() const
     {
         return end();
     }
@@ -237,14 +238,14 @@ private:
     T m_value;
 
 public:
-    Scoped_Builder(owner_type& self, T value)
+    constexpr Scoped_Builder(owner_type& self, T value)
         : m_self { self }
         , m_initial_size { self.m_text.size() }
         , m_value { std::move(value) }
     {
     }
 
-    ~Scoped_Builder() noexcept(false)
+    constexpr ~Scoped_Builder() noexcept(false)
     {
         MMML_ASSERT(m_self.m_text.size() >= m_initial_size);
         const std::size_t length = m_self.m_text.size() - m_initial_size;
@@ -258,26 +259,27 @@ public:
     Scoped_Builder(const Scoped_Builder&) = delete;
     Scoped_Builder& operator=(const Scoped_Builder&) = delete;
 
-    Scoped_Builder& append(char_type c)
+    constexpr Scoped_Builder& append(char_type c)
     {
         m_self.append(c);
         return *this;
     }
 
-    Scoped_Builder& append(std::size_t n, char_type c)
+    constexpr Scoped_Builder& append(std::size_t n, char_type c)
     {
         m_self.append(n, c);
         return *this;
     }
 
-    Scoped_Builder& append(string_view_type text)
+    constexpr Scoped_Builder& append(string_view_type text)
     {
         m_self.append(text);
         return *this;
     }
 
     template <character_convertible Integer>
-    Scoped_Builder& append_integer(Integer x, Sign_Policy signs = Sign_Policy::negative_only)
+    constexpr Scoped_Builder&
+    append_integer(Integer x, Sign_Policy signs = Sign_Policy::negative_only)
     {
         m_self.append_integer(x, signs);
         return *this;
