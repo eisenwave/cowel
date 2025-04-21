@@ -117,12 +117,7 @@ void HTML_Writer::write_inner_html(std::u32string_view text)
 HTML_Writer& HTML_Writer::write_preamble()
 {
     MMML_ASSERT(!m_in_attributes);
-
-    do_write(u8"<!");
-    do_write(u8"DOCTYPE html");
-    do_write(u8">");
-    do_write('\n');
-
+    do_write(u8"<!DOCTYPE html>\n");
     return *this;
 }
 
