@@ -92,6 +92,14 @@ inline constexpr std::u8string_view highlight_malformed = u8"highlight.malformed
 /// something went wrong.
 inline constexpr std::u8string_view highlight_error = u8"highlight.error";
 
+/// @brief In document post-processing,
+/// a reference to a section was found that is not valid.
+inline constexpr std::u8string_view section_ref_not_found = u8"section_ref.not_found";
+
+/// @brief In document post-processing,
+/// a reference to a section forms a circular dependency.
+inline constexpr std::u8string_view section_ref_circular = u8"section_ref.circular";
+
 } // namespace diagnostic
 
 } // namespace mmml
