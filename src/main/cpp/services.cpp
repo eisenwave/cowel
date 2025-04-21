@@ -39,7 +39,7 @@ Result<void, Syntax_Highlight_Error> Ulight_Syntax_Highlighter::operator()( //
     std::u8string_view code,
     std::u8string_view language,
     std::pmr::memory_resource*
-) const
+)
 {
     // TODO: find a way to provide memory for dynamic allocations to ulight
     static ulight::Token token_buffer[1024];

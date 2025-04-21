@@ -14,7 +14,7 @@
 namespace mmml {
 
 struct Collecting_Logger final : Logger {
-    mutable std::pmr::vector<Diagnostic> diagnostics;
+    std::pmr::vector<Diagnostic> diagnostics;
 
     [[nodiscard]]
     Collecting_Logger(std::pmr::memory_resource* memory)
@@ -23,7 +23,7 @@ struct Collecting_Logger final : Logger {
     {
     }
 
-    void operator()(Diagnostic&& diagnostic) const final
+    void operator()(Diagnostic&& diagnostic) final
     {
         diagnostics.push_back(std::move(diagnostic));
     }

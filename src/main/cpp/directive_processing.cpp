@@ -749,7 +749,7 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     std::pmr::vector<Highlight_Span> spans { context.get_transient_memory() };
     const std::u8string_view plaintext_str { plaintext.data(), plaintext.size() };
 
-    const Syntax_Highlighter& highlighter = context.get_highlighter();
+    Syntax_Highlighter& highlighter = context.get_highlighter();
     const Result<void, Syntax_Highlight_Error> result
         = highlighter(spans, plaintext_str, language, context.get_transient_memory());
     if (!result) {

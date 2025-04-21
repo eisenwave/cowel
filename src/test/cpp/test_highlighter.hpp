@@ -75,7 +75,7 @@ Test_Highlighter final : Syntax_Highlighter {
         std::u8string_view code,
         std::u8string_view language,
         std::pmr::memory_resource* memory
-    ) const final
+    ) final
     {
         if (language == u8"x") {
             highlight_x(out, code);
@@ -85,7 +85,7 @@ Test_Highlighter final : Syntax_Highlighter {
     }
 };
 
-inline constexpr Test_Highlighter test_highlighter;
+inline constinit Test_Highlighter test_highlighter;
 
 } // namespace mmml
 

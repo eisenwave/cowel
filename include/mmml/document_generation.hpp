@@ -30,9 +30,9 @@ struct Generation_Options {
     /// @brief The document source code.
     std::u8string_view source;
 
-    const Logger& logger = ignorant_logger;
-    const Syntax_Highlighter& highlighter = no_support_syntax_highlighter;
-    const Document_Finder& document_finder = no_support_document_finder;
+    Logger& logger = ignorant_logger;
+    Syntax_Highlighter& highlighter = no_support_syntax_highlighter;
+    Document_Finder& document_finder = no_support_document_finder;
 
     /// @brief A source of memory to be used throughout generation,
     /// emitting diagnostics, etc.
