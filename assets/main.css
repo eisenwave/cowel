@@ -6,9 +6,28 @@
     --monospace-family: "Fira Code", monospace;
     --monospace-size: 11pt;
 
-    --dark-background-color: #1a1a1a;
-    --dark-deep-background-color: #141414;
+    --light-background-color: white;
+    --light-deep-background-color: #fafafa;
+    --light-text-color: black;
+    --light-border-color: #aaa;
+    --light-del-color: #be1621;
+    --light-del-background-color: #fbe6e8;
+    --light-ins-color: #17752d;
+    --light-ins-background-color: #e4faea;
+    --light-para-color: rgb(10, 73, 136);
+
+    --dark-background-color: #202020;
+    --dark-deep-background-color: #101010;
     --dark-text-color: #f0f0f0;
+    --dark-border-color: #505050;
+    --dark-del-background-color: #67060c;
+    --dark-del-color: #ffdcd7;
+    --dark-ins-background-color: #033a16;
+    --dark-ins-color: #aff5b4;
+    --dark-para-color: #5bc0ff;
+    --dark-a-color: #5bc0ff;
+    --dark-a-visited-color: #c6a8ff;
+    --dark-a-hover-color: #afd7ff;
 }
 
 html {
@@ -139,8 +158,8 @@ code-block .comtext {
 /* BEGIN LIGHT THEME */
 
 html:not(.dark) {
-    background-color: white;
-    color: black;
+    background-color: var(--light-background-color);
+    color: var(--light-text-color);
 }
 
 html:not(.dark) #dark-theme-icon {
@@ -153,24 +172,24 @@ html:not(.dark) #light-theme-icon {
 
 html:not(.dark) .para,
 html:not(.dark) .para::before {
-    color: rgb(10, 73, 136);
+    color: var(--light-para-color);
 }
 
 html:not(.dark) code-block {
-    background-color: #fafafa;
-    border: 1px solid #aaa;
+    background-color: var(--light-deep-background-color);
+    border: 1px solid var(--light-border-color);
 }
 
 html:not(.dark) ins,
 html:not(.dark) ins-lines {
-    color: #17752d;
-    background-color: #e4faea;
+    color: var(--light-ins-color);
+    background-color: var(--light-ins-background-color);
 }
 
 html:not(.dark) del,
 html:not(.dark) del-lines {
-    color: #be1621;
-    background-color: #fbe6e8;
+    color: var(--light-del-color);
+    background-color: var(--light-del-background-color);
 }
 
 /* END LIGHT THEME */
@@ -190,38 +209,38 @@ html.dark #light-theme-icon {
 }
 
 html.dark a {
-    color: #5bc0ff;
+    color: var(--dark-a-color);
 }
 
 html.dark a:visited {
-    color: #c6a8ff;
+    color: var(--dark-a-visited-color);
 }
 
 html.dark .para,
 html.dark .para::before {
-    color: #5bc0ff;
+    color: var(--dark-para-color);
 }
 
 html.dark a:hover,
 html.dark a:focus {
-    color: #afd7ff;
+    color: var(--dark-a-hover-color);
 }
 
 html.dark code-block {
     background-color: var(--dark-deep-background-color);
-    border: 1px solid #303030;
+    border: 1px solid var(--dark-border-color);
 }
 
 html.dark del,
 html.dark del-lines {
-    background-color: #67060c;
-    color: #ffdcd7;
+    background-color: var(--dark-del-background-color);
+    color: var(--dark-del-color);
 }
 
 html.dark ins,
 html.dark ins-lines {
-    background-color: #033a16;
-    color: #aff5b4;
+    background-color: var(--dark-ins-background-color);
+    color: var(--dark-ins-color);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -239,38 +258,38 @@ html.dark ins-lines {
     }
 
     html:not(.light) a {
-        color: #5bc0ff;
+        color: var(--dark-a-color);
     }
 
     html:not(.light) a:visited {
-        color: #c6a8ff;
+        color: var(--dark-a-visited-color);
     }
 
     html:not(.light) .para,
     html:not(.light) .para::before {
-        color: #5bc0ff;
+        color: var(--dark-para-color);
     }
 
     html:not(.light) a:hover,
     html:not(.light) a:focus {
-        color: #afd7ff;
+        color: var(--dark-a-hover-color);
     }
 
     html:not(.light) code-block {
         background-color: var(--dark-deep-background-color);
-        border: 1px solid #303030;
+        border: 1px solid var(--dark-border-color);
     }
 
     html:not(.light) del,
     html:not(.light) del-lines {
-        background-color: #67060c;
-        color: #ffdcd7;
+        background-color: var(--dark-del-background-color);
+        color: var(--dark-del-color);
     }
 
     html:not(.light) ins,
     html:not(.light) ins-lines {
-        background-color: #033a16;
-        color: #aff5b4;
+        background-color: var(--dark-ins-background-color);
+        color: var(--dark-ins-color);
     }
 }
 
