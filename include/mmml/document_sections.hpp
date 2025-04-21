@@ -220,11 +220,11 @@ public:
 /// Supplementary Private Use Area-A block,
 /// and encoding that as UTF-8.
 /// The given name is then appended as is.
-/// @returns `name.size() <= 65636`.
+/// @returns `name.size() <= 65635`.
 /// A name beyond that size cannot be encoded as a section reference.
 inline bool reference_section(std::pmr::vector<char8_t>& out, std::u8string_view name)
 {
-    constexpr std::size_t max_length = supplementary_pua_a_min - supplementary_pua_a_max;
+    constexpr std::size_t max_length = supplementary_pua_a_max - supplementary_pua_a_min;
     if (name.size() > max_length) {
         return false;
     }
@@ -232,6 +232,7 @@ inline bool reference_section(std::pmr::vector<char8_t>& out, std::u8string_view
     const utf8::Code_Units_And_Length units_and_length
         = utf8::encode8_unchecked(supplementary_pua_a_min + char32_t(name.size()));
     out.insert(out.end(), units_and_length.begin(), units_and_length.end());
+    out.insert(out.end(), name.begin(), name.end());
     return true;
 }
 
