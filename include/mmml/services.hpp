@@ -65,8 +65,7 @@ struct Syntax_Highlighter {
         std::u8string_view code,
         std::u8string_view language,
         std::pmr::memory_resource* memory
-    ) const
-        = 0;
+    ) = 0;
 };
 
 /// @brief A `Syntax_Highlighter` that supports no languages.
@@ -92,13 +91,13 @@ struct No_Support_Syntax_Highlighter final : Syntax_Highlighter {
         std::u8string_view,
         std::u8string_view,
         std::pmr::memory_resource*
-    ) const final
+    ) final
     {
         return Syntax_Highlight_Error::unsupported_language;
     }
 };
 
-inline constexpr No_Support_Syntax_Highlighter no_support_syntax_highlighter;
+inline constinit No_Support_Syntax_Highlighter no_support_syntax_highlighter;
 
 /// @brief A `Syntax_Highlighter` that uses the µlight library.
 struct Ulight_Syntax_Highlighter final : Syntax_Highlighter {
@@ -117,10 +116,10 @@ struct Ulight_Syntax_Highlighter final : Syntax_Highlighter {
         std::u8string_view code,
         std::u8string_view language,
         std::pmr::memory_resource* memory
-    ) const final;
+    ) final;
 };
 
-inline constexpr Ulight_Syntax_Highlighter ulight_syntax_highlighter;
+inline constinit Ulight_Syntax_Highlighter ulight_syntax_highlighter;
 
 struct Author_Info {
     /// @brief Full name. For example, `Donald Knuth`.
@@ -158,19 +157,19 @@ struct Stored_Document_Info {
 
 struct Document_Finder {
     [[nodiscard]]
-    virtual std::optional<Stored_Document_Info> operator()(std::u8string_view id) const
+    virtual std::optional<Stored_Document_Info> operator()(std::u8string_view id)
         = 0;
 };
 
 struct No_Support_Document_Finder final : Document_Finder {
     [[nodiscard]]
-    std::optional<Stored_Document_Info> operator()(std::u8string_view) const final
+    std::optional<Stored_Document_Info> operator()(std::u8string_view) final
     {
         return {};
     }
 };
 
-inline constexpr No_Support_Document_Finder no_support_document_finder;
+inline constinit No_Support_Document_Finder no_support_document_finder;
 
 struct Logger {
 private:
@@ -201,19 +200,17 @@ public:
         return severity >= m_min_severity;
     }
 
-    constexpr virtual void operator()(Diagnostic&& diagnostic) const = 0;
+    constexpr virtual void operator()(Diagnostic&& diagnostic) = 0;
 };
 
 struct Ignorant_Logger final : Logger {
     using Logger::Logger;
 
-    void operator()(Diagnostic&&) // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved)
-        const final
-    {
-    }
+    // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
+    void operator()(Diagnostic&&) final { }
 };
 
-inline constexpr Ignorant_Logger ignorant_logger { Severity::none };
+inline constinit Ignorant_Logger ignorant_logger { Severity::none };
 
 } // namespace mmml
 
