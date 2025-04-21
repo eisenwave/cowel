@@ -254,7 +254,7 @@ void Document_Content_Behavior::generate_body(
         = file_to_inner_html(out, u8"assets/settings-widget.html", context);
     MMML_ASSERT(r);
     out.open_tag(u8"main");
-    out.write_inner_html(newline_indent);
+    out.write_inner_html(u8'\n');
     to_html(out, content, context);
     out.close_tag(u8"main");
 }
