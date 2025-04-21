@@ -255,7 +255,7 @@ void Document_Content_Behavior::generate_body(
     MMML_ASSERT(r);
     out.open_tag(u8"main");
     out.write_inner_html(u8'\n');
-    to_html(out, content, context);
+    to_html(out, content, context, To_HTML_Mode::paragraphs);
     out.close_tag(u8"main");
 }
 
