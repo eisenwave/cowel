@@ -388,7 +388,9 @@ public:
         if (Directive_Behavior* const behavior = m_context.find_directive(d)) {
             on_directive(*behavior, d);
         }
-        try_lookup_error(d, m_context);
+        else {
+            try_lookup_error(d, m_context);
+        }
         if (Directive_Behavior* const eb = m_context.get_error_behavior()) {
             on_directive(*eb, d);
         }
