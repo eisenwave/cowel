@@ -40,6 +40,7 @@ add_library(mmml STATIC
     src/main/cpp/util/typo.cpp
 
     src/main/cpp/directives/code_point.cpp
+    src/main/cpp/directives/heading.cpp
     src/main/cpp/directives/html_entity.cpp
     src/main/cpp/directives/literal.cpp
     src/main/cpp/directives/passthrough.cpp

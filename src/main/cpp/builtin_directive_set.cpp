@@ -40,6 +40,18 @@ struct Builtin_Directive_Set::Impl {
         { u8"em", Directive_Category::formatting, Directive_Display::in_line };
     Error_Behavior error //
         {};
+    Heading_Behavior h1 //
+        { 1 };
+    Heading_Behavior h2 //
+        { 2 };
+    Heading_Behavior h3 //
+        { 3 };
+    Heading_Behavior h4 //
+        { 4 };
+    Heading_Behavior h5 //
+        { 5 };
+    Heading_Behavior h6 //
+        { 6 };
     HTML_Literal_Behavior html //
         {};
     Directive_Name_Passthrough_Behavior html_tags //
@@ -95,6 +107,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
 {
     // clang-format off
     static constexpr std::u8string_view prefixed_names[] {
+        u8"-U",
         u8"-b",
         u8"-c",
         u8"-code",
@@ -105,6 +118,12 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-dt",
         u8"-em",
         u8"-error",
+        u8"-h1",
+        u8"-h2",
+        u8"-h3",
+        u8"-h4",
+        u8"-h5",
+        u8"-h6",
         u8"-html",
         u8"-html-",
         u8"-i",
@@ -119,11 +138,11 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-sub",
         u8"-sup",
         u8"-tt",
-        u8"-U",
         u8"-u",
         u8"-ul",
     };
     // clang-format on
+    static_assert(std::ranges::is_sorted(prefixed_names));
     static_assert(prefixed_names[0][0] == builtin_directive_prefix);
 
     static constexpr auto all_names = [] {
@@ -189,6 +208,18 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'h':
+        if (name == u8"h1")
+            return &m_impl->h1;
+        if (name == u8"h2")
+            return &m_impl->h2;
+        if (name == u8"h3")
+            return &m_impl->h3;
+        if (name == u8"h4")
+            return &m_impl->h4;
+        if (name == u8"h5")
+            return &m_impl->h5;
+        if (name == u8"h6")
+            return &m_impl->h6;
         if (name == u8"html")
             return &m_impl->html;
         static_assert(html_tag_prefix[0] == 'h');

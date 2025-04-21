@@ -279,6 +279,21 @@ public:
     }
 };
 
+struct Heading_Behavior final : Pure_HTML_Behavior {
+private:
+    const int m_level;
+
+public:
+    Heading_Behavior(int level)
+        : Pure_HTML_Behavior { Directive_Display::block }
+        , m_level { level }
+    {
+        MMML_ASSERT(m_level >= 1 && level <= 6);
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
 struct [[nodiscard]]
 Builtin_Directive_Set final : Name_Resolver {
 private:
