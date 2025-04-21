@@ -1,16 +1,18 @@
 #include <memory_resource>
 #include <unordered_set>
 
-#include "mmml/diagnostic.hpp"
 #include "mmml/util/assert.hpp"
 #include "mmml/util/html_writer.hpp"
+#include "mmml/util/io.hpp"
 
 #include "mmml/content_behavior.hpp"
 #include "mmml/context.hpp"
+#include "mmml/diagnostic.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/document_content_behavior.hpp"
 #include "mmml/document_generation.hpp"
 #include "mmml/document_sections.hpp"
+#include "mmml/util/strings.hpp"
 
 namespace mmml {
 
@@ -31,6 +33,19 @@ void generate_document(const Generation_Options& options)
 }
 
 namespace {
+
+[[nodiscard]]
+Result<void, IO_Error_Code>
+file_to_inner_html(HTML_Writer& out, std::u8string_view path, Context& context)
+{
+    Result<std::pmr::vector<char8_t>, IO_Error_Code> result
+        = load_utf8_file(as_string_view(path), context.get_transient_memory());
+    if (!result) {
+        return result.error();
+    }
+    out.write_inner_html(std::u8string_view { result->data(), result->size() });
+    return {};
+}
 
 // See also `reference_section`.
 // The point of all this is that references to other sections are encoded using a section name,
@@ -145,6 +160,7 @@ void Head_Body_Content_Behavior::generate_html(
             current_out.write_inner_html(u8'\n');
         };
 
+        current_out.write_preamble();
         open_and_close(u8"html", [&] {
             open_and_close(u8"head", [&] { reference_section(current_out, u8"head"); });
             open_and_close(u8"body", [&] { reference_section(current_out, u8"body"); });
@@ -172,10 +188,60 @@ void Head_Body_Content_Behavior::generate_html(
     Reference_Resolver { out.get_output(), visited, context }(html_string);
 }
 
-void Document_Content_Behavior::generate_head(HTML_Writer&, std::span<const ast::Content>, Context&)
-    const
+constexpr std::u8string_view indent = u8"  ";
+constexpr std::u8string_view newline_indent = u8"\n  ";
+
+void Document_Content_Behavior::generate_head(
+    HTML_Writer& out,
+    std::span<const ast::Content>,
+    Context& context
+) const
 {
-    // TODO: implement
+    constexpr std::u8string_view google_fonts_url
+        = u8"https://fonts.googleapis.com/css2"
+          u8"?family=Fira+Code:wght@300..700"
+          u8"&family=Noto+Sans:ital,wght@0,100..900;1,100..900"
+          u8"&family=Noto+Serif:ital,wght@0,100..900;1,100..900"
+          u8"&display=swap";
+
+    out.write_inner_html(indent);
+    out.open_tag_with_attributes(u8"link") //
+        .write_rel(u8"preconnent")
+        .write_href(u8"https://fonts.googleapis.com")
+        .end_empty();
+    out.write_inner_html(newline_indent);
+    out.open_tag_with_attributes(u8"link") //
+        .write_rel(u8"preconnent")
+        .write_href(u8"https://fonts.gstatic.com")
+        .write_crossorigin()
+        .end_empty();
+    out.write_inner_html(newline_indent);
+    out.open_tag_with_attributes(u8"link") //
+        .write_rel(u8"stylesheet")
+        .write_href(google_fonts_url)
+        .end_empty();
+
+    {
+
+        out.write_inner_html(newline_indent);
+        out.open_tag(u8"style");
+        out.write_inner_html(u8'\n');
+        const Result<void, IO_Error_Code> r = file_to_inner_html(out, u8"assets/main.css", context);
+        MMML_ASSERT(r);
+        out.write_inner_html(indent);
+        out.close_tag(u8"style");
+    }
+    {
+        out.write_inner_html(newline_indent);
+        out.open_tag(u8"script");
+        out.write_inner_html(u8'\n');
+        const Result<void, IO_Error_Code> r
+            = file_to_inner_html(out, u8"assets/light-dark.js", context);
+        MMML_ASSERT(r);
+        out.write_inner_html(indent);
+        out.close_tag(u8"script");
+    }
+    out.write_inner_html(u8'\n');
 }
 
 void Document_Content_Behavior::generate_body(
@@ -184,7 +250,13 @@ void Document_Content_Behavior::generate_body(
     Context& context
 ) const
 {
+    const Result<void, IO_Error_Code> r
+        = file_to_inner_html(out, u8"assets/settings-widget.html", context);
+    MMML_ASSERT(r);
+    out.open_tag(u8"main");
+    out.write_inner_html(newline_indent);
     to_html(out, content, context);
+    out.close_tag(u8"main");
 }
 
 } // namespace mmml
