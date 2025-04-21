@@ -205,17 +205,58 @@ public:
     /// @param key the attribute key; `is_identifier(key)` shall be `true`.
     /// @param value the attribute value, or an empty string
     /// @return `*this`
-    Attribute_Writer&
-    write_attribute(string_view_type key, string_view_type value, Attribute_Style style)
+    Attribute_Writer& write_attribute(
+        string_view_type key,
+        string_view_type value,
+        Attribute_Style style = Attribute_Style::double_if_needed
+    )
     {
         m_writer.write_attribute(key, value, style);
         return *this;
     }
 
-    Attribute_Writer& write_empty_attribute(string_view_type key, Attribute_Style style)
+    Attribute_Writer& write_empty_attribute(
+        string_view_type key,
+        Attribute_Style style = Attribute_Style::double_if_needed
+    )
     {
         m_writer.write_empty_attribute(key, style);
         return *this;
+    }
+
+    Attribute_Writer&
+    write_class(string_view_type value, Attribute_Style style = Attribute_Style::double_if_needed)
+    {
+        return write_attribute(u8"class", value, style);
+    }
+
+    Attribute_Writer& write_crossorigin()
+    {
+        return write_empty_attribute(u8"crossorigin");
+    }
+
+    Attribute_Writer&
+    write_href(string_view_type value, Attribute_Style style = Attribute_Style::double_if_needed)
+    {
+        return write_attribute(u8"href", value, style);
+    }
+
+    Attribute_Writer&
+    write_id(string_view_type value, Attribute_Style style = Attribute_Style::double_if_needed)
+    {
+        return write_attribute(u8"id", value, style);
+    }
+
+    Attribute_Writer&
+    write_rel(string_view_type value, Attribute_Style style = Attribute_Style::double_if_needed)
+    {
+        return write_attribute(u8"rel", value, style);
+    }
+
+    Attribute_Writer&
+    write_src(string_view_type value, Attribute_Style style = Attribute_Style::double_if_needed)
+    {
+        return write_attribute(u8"src", value, style);
     }
 
     /// @brief Writes `>` and finishes writing attributes.
