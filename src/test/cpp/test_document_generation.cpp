@@ -9,6 +9,7 @@
 
 #include <gtest/gtest.h>
 
+#include "mmml/document_content_behavior.hpp"
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/assert.hpp"
 
@@ -66,9 +67,22 @@ struct Paragraphs_Behavior final : Content_Behavior {
     }
 };
 
-[[maybe_unused]]
+struct Empty_Head_Behavior final : Head_Body_Content_Behavior {
+
+    void generate_head(HTML_Writer&, std::span<const ast::Content>, Context&) const final { }
+
+    void generate_body(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
+        const final
+    {
+        to_html(out, content, context, To_HTML_Mode::paragraphs);
+    }
+};
+
 constinit Trivial_Content_Behavior trivial_behavior {};
 constinit Paragraphs_Behavior paragraphs_behavior {};
+constinit Empty_Head_Behavior empty_head_behavior {};
+[[maybe_unused]]
+constinit Document_Content_Behavior document_content_behavior {};
 
 struct Doc_Gen_Test : testing::Test {
     std::pmr::monotonic_buffer_resource memory;
@@ -80,8 +94,6 @@ struct Doc_Gen_Test : testing::Test {
     std::pmr::vector<ast::Content> content { &memory };
 
     Collecting_Logger logger { &memory };
-
-    Content_Behavior* root_behavior = &trivial_behavior;
 
     [[nodiscard]]
     bool load_document(const std::filesystem::path& path)
@@ -101,12 +113,11 @@ struct Doc_Gen_Test : testing::Test {
         content = parse_and_build(source, &memory);
     }
 
-    std::u8string_view generate()
+    std::u8string_view generate(Content_Behavior& root_behavior)
     {
-        MMML_ASSERT(root_behavior);
         Directive_Behavior& error_behavior = builtin_directives.get_error_behavior();
         const Generation_Options options { .output = out,
-                                           .root_behavior = *root_behavior,
+                                           .root_behavior = root_behavior,
                                            .root_content = content,
                                            .builtin_behavior = builtin_directives,
                                            .error_behavior = &error_behavior,
@@ -132,7 +143,7 @@ TEST_F(Doc_Gen_Test, empty)
 {
     constexpr std::u8string_view expected;
     ASSERT_TRUE(load_document("empty.mmml"));
-    const std::u8string_view actual = generate();
+    const std::u8string_view actual = generate(trivial_behavior);
     EXPECT_EQ(expected, actual);
 }
 
@@ -140,7 +151,7 @@ TEST_F(Doc_Gen_Test, text)
 {
     constexpr std::u8string_view expected = u8"Hello, world!\n";
     ASSERT_TRUE(load_document("text.mmml"));
-    const std::u8string_view actual = generate();
+    const std::u8string_view actual = generate(trivial_behavior);
     EXPECT_EQ(expected, actual);
 }
 
@@ -155,8 +166,7 @@ This is another paragraph.
 </p>
 )";
     ASSERT_TRUE(load_document("paragraphs.mmml"));
-    root_behavior = &paragraphs_behavior;
-    const std::u8string_view actual = generate();
+    const std::u8string_view actual = generate(paragraphs_behavior);
     EXPECT_EQ(expected, actual);
 }
 
@@ -171,17 +181,16 @@ struct Source {
 struct Basic_Test {
     std::variant<Path, Source> document;
     std::variant<Path, Source> expected_html;
-    std::initializer_list<std::u8string_view> expected_diagnostics;
+    std::initializer_list<std::u8string_view> expected_diagnostics = {};
+    Content_Behavior& behavior = trivial_behavior;
 };
 
 // clang-format off
 constexpr Basic_Test basic_tests[] {
     { Source {u8"\\c{#x41}\\c{#x42}\\c{#x43}\n"},
-      Source{ u8"&#x41;&#x42;&#x43;\n" },
-      {} },
+      Source{ u8"&#x41;&#x42;&#x43;\n" } },
     { Source{ u8"\\c{#x00B6}\n" },
-      Source { u8"&#x00B6;\n" },
-      {} },
+      Source { u8"&#x00B6;\n" } },
     { Source{ u8"\\c{}\n" },
       Source { u8"<error->\\c{}</error->\n" },
       { diagnostic::c_blank } },
@@ -196,11 +205,9 @@ constexpr Basic_Test basic_tests[] {
       { diagnostic::c_nonscalar } },
     
     { Path { "U/ascii.mmml" },
-      Source { u8"ABC\n" },
-      {} },
+      Source { u8"ABC\n" } },
     { Source { u8"\\U{00B6}\n" },
-      Source { u8"¶\n" },
-      {} },
+      Source { u8"¶\n" } },
     { Source { u8"\\U{}\n" },
       Source { u8"<error->\\U{}</error->\n" },
       { diagnostic::U_blank } },
@@ -218,32 +225,28 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<code></code>\n" },
       { diagnostic::highlight_language } },
     { Source { u8"\\code[x]{}\n" },
-      Source { u8"<code></code>\n" },
-      {} },
+      Source { u8"<code></code>\n" } },
     { Source { u8"\\code[x]{ }\n" },
-      Source { u8"<code> </code>\n" },
-      {} },
+      Source { u8"<code> </code>\n" } },
     { Source { u8"\\code[x]{xxx}\n" },
-      Source { u8"<code><h- data-h=kw>xxx</h-></code>\n" },
-      {} },
+      Source { u8"<code><h- data-h=kw>xxx</h-></code>\n" } },
     { Source { u8"\\code[x]{xxx123}\n" },
-      Source { u8"<code><h- data-h=kw>xxx</h->123</code>\n" },
-      {} },
+      Source { u8"<code><h- data-h=kw>xxx</h->123</code>\n" } },
     { Source { u8"\\code[x]{ 123 }\n" },
-      Source { u8"<code> 123 </code>\n" },
-      {} },
+      Source { u8"<code> 123 </code>\n" } },
     { Source { u8"\\code[x]{ \\b{123} }\n" },
-      Source { u8"<code> <b>123</b> </code>\n" },
-      {} },
+      Source { u8"<code> <b>123</b> </code>\n" } },
     { Source { u8"\\code[x]{ \\b{xxx} }\n" },
-      Source { u8"<code> <b><h- data-h=kw>xxx</h-></b> </code>\n" },
-      {} },
+      Source { u8"<code> <b><h- data-h=kw>xxx</h-></b> </code>\n" } },
     { Source { u8"\\code[x]{ \\b{x}xx }\n" },
-      Source { u8"<code> <b><h- data-h=kw>x</h-></b><h- data-h=kw>xx</h-> </code>\n" },
-      {} },
+      Source { u8"<code> <b><h- data-h=kw>x</h-></b><h- data-h=kw>xx</h-> </code>\n" } },
     { Path { "codeblock/trim.mmml" },
-      Path { "codeblock/trim.html" },
-      {} },
+      Path { "codeblock/trim.html" } },
+
+    { Source { u8"" },
+      Path { "document/empty.html" },
+      {},
+      empty_head_behavior }
 };
 // clang-format on
 
@@ -296,7 +299,7 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
             continue;
         }
 
-        const std::u8string_view actual = generate();
+        const std::u8string_view actual = generate(test.behavior);
         if (expected != actual) {
             Diagnostic_String error { &memory };
             error.append(
