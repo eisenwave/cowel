@@ -67,9 +67,9 @@ private:
     std::pmr::vector<const Name_Resolver*> m_name_resolvers { m_transient_memory };
     Directive_Behavior* m_error_behavior;
 
-    const Logger& m_logger;
-    const Syntax_Highlighter& m_syntax_highlighter;
-    const Document_Finder& m_document_finder;
+    Logger& m_logger;
+    Syntax_Highlighter& m_syntax_highlighter;
+    Document_Finder& m_document_finder;
 
     Document_Sections m_sections { m_memory };
     Variable_Map m_variables { m_memory };
@@ -92,9 +92,9 @@ public:
         const std::filesystem::path& path,
         string_view_type source,
         Directive_Behavior* error_behavior,
-        const Logger& logger,
-        const Syntax_Highlighter& highlighter,
-        const Document_Finder& finder,
+        Logger& logger,
+        Syntax_Highlighter& highlighter,
+        Document_Finder& finder,
         std::pmr::memory_resource* persistent_memory,
         std::pmr::memory_resource* transient_memory
     )
@@ -120,17 +120,32 @@ public:
     }
 
     [[nodiscard]]
+    Logger& get_logger()
+    {
+        return m_logger;
+    }
+    [[nodiscard]]
     const Logger& get_logger() const
     {
         return m_logger;
     }
 
     [[nodiscard]]
+    Syntax_Highlighter& get_highlighter()
+    {
+        return m_syntax_highlighter;
+    }
+    [[nodiscard]]
     const Syntax_Highlighter& get_highlighter() const
     {
         return m_syntax_highlighter;
     }
 
+    [[nodiscard]]
+    Document_Finder& get_document_finder()
+    {
+        return m_document_finder;
+    }
     [[nodiscard]]
     const Document_Finder& get_document_finder() const
     {
@@ -208,7 +223,7 @@ public:
         return m_logger.can_log(severity);
     }
 
-    void emit(Diagnostic&& diagnostic) const
+    void emit(Diagnostic&& diagnostic)
     {
         MMML_ASSERT(emits(diagnostic.severity));
         m_logger(std::move(diagnostic));
@@ -217,29 +232,28 @@ public:
     /// @brief Equivalent to `emit(make_diagnostic(severity, id, location, message))`.
     void
     try_emit(Severity severity, string_view_type id, Source_Span location, string_view_type message)
-        const
     {
         if (emits(severity)) {
             emit(make_diagnostic(severity, id, location, message));
         }
     }
 
-    void try_debug(string_view_type id, Source_Span location, string_view_type message) const
+    void try_debug(string_view_type id, Source_Span location, string_view_type message)
     {
         try_emit(Severity::debug, id, location, message);
     }
 
-    void try_soft_warning(string_view_type id, Source_Span location, string_view_type message) const
+    void try_soft_warning(string_view_type id, Source_Span location, string_view_type message)
     {
         try_emit(Severity::soft_warning, id, location, message);
     }
 
-    void try_warning(string_view_type id, Source_Span location, string_view_type message) const
+    void try_warning(string_view_type id, Source_Span location, string_view_type message)
     {
         try_emit(Severity::warning, id, location, message);
     }
 
-    void try_error(string_view_type id, Source_Span location, string_view_type message) const
+    void try_error(string_view_type id, Source_Span location, string_view_type message)
     {
         try_emit(Severity::error, id, location, message);
     }
