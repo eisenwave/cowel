@@ -221,6 +221,11 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<error->\\U{D800}</error->\n" },
       { diagnostic::U_nonscalar } },
 
+    { Source { u8"\\h1{Heading}\n" },
+      Source { u8"<h1 id=heading>Heading</h1>\n" } },
+    { Source { u8"\\h2{ }\n" },
+      Source { u8"<h2> </h2>\n" } },
+
     { Source { u8"\\code{}\n" },
       Source { u8"<code></code>\n" },
       { diagnostic::highlight_language } },
