@@ -115,25 +115,37 @@ constexpr bool is_ascii_blank(std::u8string_view str)
 }
 
 [[nodiscard]]
-constexpr std::u8string_view trim_ascii_blank_left(std::u8string_view str)
+constexpr std::size_t length_blank_left(std::u8string_view str)
 {
     for (std::size_t i = 0; i < str.size(); ++i) {
         if (!is_ascii_blank(str[i])) {
-            return str.substr(i);
+            return i;
         }
     }
-    return {};
+    return str.length();
+}
+
+[[nodiscard]]
+constexpr std::size_t length_blank_right(std::u8string_view str)
+{
+    for (std::size_t i = 0; i < str.size(); ++i) {
+        if (!is_ascii_blank(str[str.length() - i - 1])) {
+            return i;
+        }
+    }
+    return str.length();
+}
+
+[[nodiscard]]
+constexpr std::u8string_view trim_ascii_blank_left(std::u8string_view str)
+{
+    return str.substr(length_blank_left(str));
 }
 
 [[nodiscard]]
 constexpr std::u8string_view trim_ascii_blank_right(std::u8string_view str)
 {
-    for (std::size_t length = str.size(); length > 0; --length) {
-        if (!is_ascii_blank(str[length - 1])) {
-            return str.substr(0, length);
-        }
-    }
-    return {};
+    return str.substr(0, str.length() - length_blank_right(str));
 }
 
 /// @brief Equivalent to `trim_ascii_blank_right(trim_ascii_blank_left(str))`.
