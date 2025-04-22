@@ -18,6 +18,7 @@
 
 #include "mmml/ast.hpp"
 #include "mmml/context.hpp"
+#include "mmml/directive_arguments.hpp"
 #include "mmml/directive_behavior.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/services.hpp"
@@ -99,50 +100,87 @@ void try_lookup_error(const ast::Directive& directive, Context& context)
 
 } // namespace
 
-/// @brief Converts content to plaintext.
-/// For text, this outputs that text literally.
-/// For escaped characters, this outputs the escaped character.
-/// For directives, this runs `generate_plaintext` using the behavior of that directive,
-/// looked up via context.
-/// @param context the current processing context
-void to_plaintext(std::pmr::vector<char8_t>& out, const ast::Content& c, Context& context)
+To_Plaintext_Status to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Content& c,
+    Context& context,
+    To_Plaintext_Mode mode
+)
 {
     if (const auto* const t = get_if<ast::Text>(&c)) {
         const std::u8string_view text = t->get_text(context.get_source());
         out.insert(out.end(), text.begin(), text.end());
-        return;
+        return To_Plaintext_Status::ok;
     }
     if (const auto* const e = get_if<ast::Escaped>(&c)) {
         out.push_back(e->get_char(context.get_source()));
-        return;
+        return To_Plaintext_Status::ok;
     }
     if (const auto* const b = get_if<ast::Generated>(&c)) {
         if (b->get_type() == ast::Generated_Type::plaintext) {
             append(out, b->as_string());
+            return To_Plaintext_Status::ok;
         }
-        return;
+        return To_Plaintext_Status::some_ignored;
     }
     if (const auto* const d = get_if<ast::Directive>(&c)) {
-        if (Directive_Behavior* const behavior = context.find_directive(*d)) {
-            behavior->generate_plaintext(out, *d, context);
-            return;
-        }
-        try_lookup_error(*d, context);
-        try_generate_error_plaintext(out, *d, context);
-        return;
+        return to_plaintext(out, *d, context, mode);
     }
     MMML_ASSERT_UNREACHABLE(u8"Invalid form of content.");
 }
 
-void to_plaintext(
+To_Plaintext_Status to_plaintext(
     std::pmr::vector<char8_t>& out,
-    std::span<const ast::Content> content,
-    Context& context
+    const ast::Directive& d,
+    Context& context,
+    To_Plaintext_Mode mode
 )
 {
-    for (const ast::Content& c : content) {
-        to_plaintext(out, c, context);
+    Directive_Behavior* const behavior = context.find_directive(d);
+    if (!behavior) {
+        try_lookup_error(d, context);
+        try_generate_error_plaintext(out, d, context);
+        return To_Plaintext_Status::error;
     }
+
+    switch (behavior->category) {
+    case Directive_Category::pure_plaintext: {
+        behavior->generate_plaintext(out, d, context);
+        return To_Plaintext_Status::ok;
+    }
+    case Directive_Category::formatting: {
+        if (mode == To_Plaintext_Mode::no_side_effects) {
+            to_plaintext(out, d.get_content(), context, To_Plaintext_Mode::no_side_effects);
+        }
+        else {
+            behavior->generate_plaintext(out, d, context);
+        }
+        return To_Plaintext_Status::ok;
+    }
+    default: {
+        if (mode != To_Plaintext_Mode::no_side_effects) {
+            behavior->generate_plaintext(out, d, context);
+            return To_Plaintext_Status::ok;
+        }
+        return To_Plaintext_Status::some_ignored;
+    }
+    }
+    MMML_ASSERT_UNREACHABLE(u8"Should have returned in switch.");
+}
+
+To_Plaintext_Status to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    std::span<const ast::Content> content,
+    Context& context,
+    To_Plaintext_Mode mode
+)
+{
+    auto result = To_Plaintext_Status::ok;
+    for (const ast::Content& c : content) {
+        const auto c_result = to_plaintext(out, c, context, mode);
+        result = To_Plaintext_Status(std::max(int(result), int(c_result)));
+    }
+    return result;
 }
 
 void to_plaintext_mapped_for_highlighting(
@@ -809,24 +847,55 @@ if (previous_span != nullptr) {
 }
 #endif
 
-void arguments_to_attributes(Attribute_Writer& out, const ast::Directive& d, Context& context)
+void arguments_to_attributes(
+    Attribute_Writer& out,
+    const ast::Directive& d,
+    Context& context,
+    Attribute_Style style
+)
 {
-    constexpr auto style = Attribute_Style::double_if_needed;
-
-    std::pmr::vector<char8_t> value { context.get_transient_memory() };
     for (const ast::Argument& a : d.get_arguments()) {
-        // TODO: error handling
-        value.clear();
-        to_plaintext(value, a.get_content(), context);
-        const std::u8string_view value_string { value.data(), value.size() };
-        if (a.has_name()) {
-            out.write_attribute(a.get_name(context.get_source()), value_string, style);
-        }
-        // TODO: what if the positional argument cannot be used as an attribute name
-        else {
-            out.write_empty_attribute(value_string, style);
-        }
+        argument_to_attribute(out, a, context, style);
     }
+}
+
+void argument_to_attribute(
+    Attribute_Writer& out,
+    const ast::Argument& a,
+    Context& context,
+    Attribute_Style style
+)
+{
+    std::pmr::vector<char8_t> value { context.get_transient_memory() };
+    // TODO: error handling
+    value.clear();
+    to_plaintext(value, a.get_content(), context);
+    const std::u8string_view value_string { value.data(), value.size() };
+    if (a.has_name()) {
+        out.write_attribute(a.get_name(context.get_source()), value_string, style);
+    }
+    // TODO: what if the positional argument cannot be used as an attribute name
+    else {
+        out.write_empty_attribute(value_string, style);
+    }
+}
+
+bool argument_to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    const Argument_Matcher& args,
+    std::u8string_view parameter,
+    Context& context
+)
+{
+    const int i = args.get_argument_index(parameter);
+    if (i < 0) {
+        return false;
+    }
+    const ast::Argument& arg = d.get_arguments()[std::size_t(i)];
+    // TODO: warn when pure HTML argument was used as variable name
+    to_plaintext(out, arg.get_content(), context);
+    return true;
 }
 
 void try_generate_error_plaintext(

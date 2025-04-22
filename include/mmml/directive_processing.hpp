@@ -6,6 +6,7 @@
 #include <string_view>
 #include <vector>
 
+#include "mmml/util/html_writer.hpp"
 #include "mmml/util/result.hpp"
 
 #include "mmml/ast.hpp"
@@ -22,19 +23,43 @@ std::span<const ast::Content> trim_blank_text_right(std::span<const ast::Content
 [[nodiscard]]
 std::span<const ast::Content> trim_blank_text(std::span<const ast::Content>, Context&);
 
+enum struct To_Plaintext_Mode : bool { //
+    normal,
+    no_side_effects,
+};
+
+enum struct To_Plaintext_Status : Default_Underlying { //
+    ok,
+    some_ignored,
+    error
+};
+
 /// @brief Converts content to plaintext.
 /// For text, this outputs that text literally.
 /// For escaped characters, this outputs the escaped character.
 /// For directives, this runs `generate_plaintext` using the behavior of that directive,
 /// looked up via context.
 /// @param context the current processing context
-void to_plaintext(std::pmr::vector<char8_t>& out, const ast::Content& c, Context& context);
+To_Plaintext_Status to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Content& c,
+    Context& context,
+    To_Plaintext_Mode mode = To_Plaintext_Mode::normal
+);
+
+To_Plaintext_Status to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    Context& context,
+    To_Plaintext_Mode mode = To_Plaintext_Mode::normal
+);
 
 /// @brief Calls `to_plaintext` for each piece of content.
-void to_plaintext(
+To_Plaintext_Status to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
-    Context& context
+    Context& context,
+    To_Plaintext_Mode mode = To_Plaintext_Mode::normal
 );
 
 /// @brief Like `to_plaintext`,
@@ -127,7 +152,35 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     To_HTML_Mode mode = To_HTML_Mode::direct
 );
 
-void arguments_to_attributes(Attribute_Writer& out, const ast::Directive& d, Context& context);
+void arguments_to_attributes(
+    Attribute_Writer& out,
+    const ast::Directive& d,
+    Context& context,
+    Attribute_Style style = Attribute_Style::double_if_needed
+);
+
+void argument_to_attribute(
+    Attribute_Writer& out,
+    const ast::Argument& a,
+    Context& context,
+    Attribute_Style style = Attribute_Style::double_if_needed
+);
+
+/// @brief Converts a specified argument to plaintext.
+/// @param out The vector into which generated plaintext should be written.
+/// @param d The directive.
+/// @param args The arguments. Matching must have already taken place.
+/// @param parameter The name of the parameter to which the argument belongs.
+/// @param context The context.
+/// @returns `true` iff the argument was matched.
+[[nodiscard]]
+bool argument_to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    const Argument_Matcher& args,
+    std::u8string_view parameter,
+    Context& context
+);
 
 /// @brief If there is an error behavior in the `context`,
 /// uses that behavior's `generate_plaintext` on the directive.
