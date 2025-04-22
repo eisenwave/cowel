@@ -1,28 +1,11 @@
+#include "mmml/util/strings.hpp"
+
 #include "mmml/builtin_directive_set.hpp"
 #include "mmml/directive_processing.hpp"
 
 namespace mmml {
 
 namespace {
-
-std::u8string_view get_variable_name_from_argument(
-    std::pmr::vector<char8_t>& out,
-    const ast::Directive& d,
-    const Argument_Matcher& args,
-    std::u8string_view parameter,
-    Context& context
-)
-{
-    const int i = args.get_argument_index(parameter);
-    if (i < 0) {
-        // TODO: error when no variable was specified
-        return {};
-    }
-    const ast::Argument& arg = d.get_arguments()[std::size_t(i)];
-    // TODO: warn when pure HTML argument was used as variable name
-    to_plaintext(out, arg.get_content(), context);
-    return { out.data(), out.size() };
-}
 
 [[nodiscard]] [[maybe_unused]]
 std::pmr::string vec_to_string(const std::pmr::vector<char>& v)
@@ -40,9 +23,9 @@ void Variable_Behavior::generate_plaintext(
 ) const
 {
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    const std::u8string_view name
-        = get_variable_name_from_argument(data, d, args, var_parameter, context);
-    generate_var_plaintext(out, d, name, context);
+    if (argument_to_plaintext(data, d, args, var_parameter, context)) {
+        generate_var_plaintext(out, d, as_u8string_view(data), context);
+    }
 }
 
 void Variable_Behavior::generate_html(
@@ -53,9 +36,9 @@ void Variable_Behavior::generate_html(
 ) const
 {
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    const std::u8string_view name
-        = get_variable_name_from_argument(data, d, args, var_parameter, context);
-    generate_var_html(out, d, name, context);
+    if (argument_to_plaintext(data, d, args, var_parameter, context)) {
+        generate_var_html(out, d, as_u8string_view(data), context);
+    }
 }
 
 void Get_Variable_Behavior::generate_var_plaintext(
