@@ -45,6 +45,7 @@ enum struct Argument_Status : Default_Underlying;
 struct AST_Formatting_Options;
 struct AST_Instruction;
 enum struct AST_Instruction_Type : Default_Underlying;
+enum struct Attribute_Style : Default_Underlying;
 struct Attribute_Writer;
 struct Author_Info;
 struct Builtin_Directive_Set;
