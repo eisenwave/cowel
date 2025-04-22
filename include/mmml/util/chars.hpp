@@ -34,6 +34,8 @@ using ulight::supplementary_pua_a_max;
 using ulight::supplementary_pua_a_min;
 using ulight::supplementary_pua_b_max;
 using ulight::supplementary_pua_b_min;
+using ulight::to_ascii_lower;
+using ulight::to_ascii_upper;
 
 /// @brief Returns true if `c` is a blank character.
 /// This matches the C locale definition,
