@@ -2,6 +2,7 @@
 #define MMML_STRINGS_HPP
 
 #include <cstddef>
+#include <span>
 #include <string_view>
 
 #include "mmml/util/chars.hpp"
@@ -53,6 +54,18 @@ inline constexpr std::u8string_view all_mmml_special8 = u8"\\{}[],";
 inline std::string_view as_string_view(std::u8string_view str)
 {
     return { reinterpret_cast<const char*>(str.data()), str.size() };
+}
+
+[[nodiscard]]
+constexpr std::string_view as_string_view(std::span<const char> text)
+{
+    return { text.data(), text.size() };
+}
+
+[[nodiscard]]
+constexpr std::u8string_view as_u8string_view(std::span<const char8_t> text)
+{
+    return { text.data(), text.size() };
 }
 
 [[nodiscard]]
