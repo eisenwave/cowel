@@ -31,6 +31,19 @@ void trim(std::pmr::vector<char8_t>& text)
     trim_right(text);
 }
 
+void sanitize_id(std::pmr::vector<char8_t>& id)
+{
+    trim(id);
+    for (char8_t& c : id) {
+        if (is_ascii_upper_alpha(c)) {
+            c = to_ascii_lower(c);
+        }
+        else if (is_html_whitespace(c)) {
+            c = u8'-';
+        }
+    }
+}
+
 bool synthesize_id(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
@@ -43,15 +56,7 @@ bool synthesize_id(
     if (status == To_Plaintext_Status::error) {
         return false;
     }
-    trim(out);
-    for (char8_t& c : out) {
-        if (is_ascii_upper_alpha(c)) {
-            c = to_ascii_lower(c);
-        }
-        else if (is_html_whitespace(c)) {
-            c = u8'-';
-        }
-    }
+    sanitize_id(out);
     return true;
 }
 
@@ -70,20 +75,45 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
     args.match(d.get_arguments(), context.get_source(), Parameter_Match_Mode::only_named);
     const int id_index = args.get_argument_index(u8"id");
 
+    std::pmr::vector<char8_t> id_data { context.get_transient_memory() };
+    bool has_id = false;
+
+    // 1. Obtain or synthesize the id.
     Attribute_Writer attributes = out.open_tag_with_attributes(tag_name);
     if (id_index < 0) {
-        std::pmr::vector<char8_t> id_data { context.get_transient_memory() };
-        if (synthesize_id(id_data, d.get_content(), context)) {
-            const std::u8string_view synthesized = as_u8string_view(id_data);
-            if (!synthesized.empty()) {
-                attributes.write_id(synthesized);
-            }
+        if (synthesize_id(id_data, d.get_content(), context) && !id_data.empty()) {
+            attributes.write_id(as_u8string_view(id_data));
+            has_id = true;
         }
     }
-    arguments_to_attributes(attributes, d, context);
+    else {
+        const ast::Argument& id_arg = d.get_arguments()[std::size_t(id_index)];
+        const To_Plaintext_Status status = to_plaintext(id_data, id_arg.get_content(), context);
+        if (status != To_Plaintext_Status::error) {
+            attributes.write_id(as_u8string_view(id_data));
+            has_id = !id_data.empty();
+        }
+    }
+    for (std::size_t i = 0; i < d.get_arguments().size(); ++i) {
+        if (int(i) != id_index) {
+            argument_to_attribute(attributes, d.get_arguments()[i], context);
+        }
+    }
     attributes.end();
 
+    // 2. Generate a paragraph symbol with anchor link.
+    if (has_id) {
+        id_data.insert(id_data.begin(), u8'#');
+        out.open_tag_with_attributes(u8"a") //
+            .write_class(u8"para")
+            .write_href(as_u8string_view(id_data))
+            .end();
+        out.close_tag(u8"a");
+    }
+
+    // 3. Generate user content in the heading.
     to_html(out, d.get_content(), context);
+
     out.close_tag(tag_name);
 }
 
