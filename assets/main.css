@@ -118,8 +118,7 @@ del-lines {
     opacity: 1;
 }
 
-#dark-theme-icon,
-#light-theme-icon {
+#settings svg {
     width: 2em;
     height: auto;
     cursor: pointer;
@@ -155,19 +154,26 @@ code-block .comtext {
     content: "§";
 }
 
-/* BEGIN LIGHT THEME */
+/* THEME ICONS */
 
-html:not(.dark) {
-    background-color: var(--light-background-color);
-    color: var(--light-text-color);
+html.dark #sync-theme-icon,
+html.light #sync-theme-icon {
+    display: none;
 }
 
 html:not(.dark) #dark-theme-icon {
     display: none;
 }
 
-html:not(.dark) #light-theme-icon {
-    display: block;
+html:not(.light) #light-theme-icon {
+    display: none;
+}
+
+/* BEGIN LIGHT THEME */
+
+html:not(.dark) {
+    background-color: var(--light-background-color);
+    color: var(--light-text-color);
 }
 
 html:not(.dark) .para,
@@ -198,14 +204,6 @@ html:not(.dark) del-lines {
 html.dark {
     background-color: var(--dark-background-color);
     color: var(---dark-text-color);
-}
-
-html.dark #dark-theme-icon {
-    display: block;
-}
-
-html.dark #light-theme-icon {
-    display: none;
 }
 
 html.dark a {
@@ -247,14 +245,6 @@ html.dark ins-lines {
     html:not(.light) {
         background-color: var(--dark-background-color);
         color: var(--dark-text-color);
-    }
-
-    html:not(.light) #dark-theme-icon {
-        display: block;
-    }
-
-    html:not(.light) #light-theme-icon {
-        display: none;
     }
 
     html:not(.light) a {
