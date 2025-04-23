@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "mmml/util/annotated_string.hpp"
+#include "mmml/util/ansi.hpp"
 
 #include "mmml/builtin_directive_set.hpp"
 #include "mmml/diagnostic.hpp"
@@ -14,6 +15,32 @@
 
 namespace mmml {
 namespace {
+
+[[nodiscard]]
+std::u8string_view severity_highlight(Severity severity)
+{
+    using enum Severity;
+    switch (severity) {
+    case debug: return ansi::h_black;
+    case soft_warning: return ansi::green;
+    case warning: return ansi::h_yellow;
+    case error: return ansi::h_red;
+    default: return ansi::magenta;
+    }
+}
+
+[[nodiscard]]
+std::u8string_view severity_tag(Severity severity)
+{
+    using enum Severity;
+    switch (severity) {
+    case debug: return u8"DEBUG";
+    case soft_warning: return u8"SOFTWARN";
+    case warning: return u8"WARNING";
+    case error: return u8"ERROR";
+    default: return u8"???";
+    }
+}
 
 struct Stderr_Logger final : Logger {
     Diagnostic_String out;
@@ -33,6 +60,10 @@ struct Stderr_Logger final : Logger {
     {
         any_errors |= diagnostic.severity >= Severity::error;
 
+        out.append(severity_highlight(diagnostic.severity));
+        out.append(severity_tag(diagnostic.severity));
+        out.append(ansi::reset);
+        out.append(u8": ");
         // TODO: print more details
         print_file_position(out, file, diagnostic.location);
         out.append(u8' ');
