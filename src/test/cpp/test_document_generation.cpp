@@ -222,9 +222,13 @@ constexpr Basic_Test basic_tests[] {
       { diagnostic::U_nonscalar } },
 
     { Source { u8"\\h1{Heading}\n" },
-      Source { u8"<h1 id=heading>Heading</h1>\n" } },
+      Source { u8"<h1 id=heading><a class=para href=#heading></a>Heading</h1>\n" } },
     { Source { u8"\\h2{ }\n" },
       Source { u8"<h2> </h2>\n" } },
+    { Source { u8"\\h3[id=user id]{Heading}\n" },
+      Source { u8"<h3 id=\"user id\"><a class=para href=\"#user id\"></a>Heading</h3>\n" } },
+    { Source { u8"\\h4[id=user-id]{Heading}\n" },
+      Source { u8"<h3 id=user-id><a class=para href=#user-id></a>Heading</h3>\n" } },
 
     { Source { u8"\\code{}\n" },
       Source { u8"<code></code>\n" },
