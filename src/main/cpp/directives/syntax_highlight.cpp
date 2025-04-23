@@ -42,6 +42,7 @@ void diagnose(
                 u8"Please use \\tt{...} or \\pre{...} if you want a code (block) "
                 u8"without any syntax highlighting."
             );
+            break;
         }
         Diagnostic warning
             = context.make_warning(diagnostic::highlight_language, d.get_source_span());
