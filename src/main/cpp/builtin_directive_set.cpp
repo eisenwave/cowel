@@ -88,6 +88,10 @@ struct Builtin_Directive_Set::Impl {
         { u8"u", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior ul //
         { u8"ul", Directive_Category::pure_html, Directive_Display::block };
+    Get_Variable_Behavior vget //
+        {};
+    Modify_Variable_Behavior vset //
+        { Variable_Operation::set };
 
     Impl() = default;
 };
@@ -146,6 +150,8 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-tt",
         u8"-u",
         u8"-ul",
+        u8"-vget",
+        u8"-vset",
     };
     // clang-format on
     static_assert(std::ranges::is_sorted(prefixed_names));
@@ -287,6 +293,13 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->u;
         if (name == u8"ul")
             return &m_impl->ul;
+        break;
+
+    case u8'v':
+        if (name == u8"vget")
+            return &m_impl->vget;
+        if (name == u8"vset")
+            return &m_impl->vset;
         break;
 
     default: break;
