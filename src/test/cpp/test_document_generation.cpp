@@ -228,7 +228,7 @@ constexpr Basic_Test basic_tests[] {
     { Source { u8"\\h3[id=user id]{Heading}\n" },
       Source { u8"<h3 id=\"user id\"><a class=para href=\"#user id\"></a>Heading</h3>\n" } },
     { Source { u8"\\h4[id=user-id]{Heading}\n" },
-      Source { u8"<h3 id=user-id><a class=para href=#user-id></a>Heading</h3>\n" } },
+      Source { u8"<h4 id=user-id><a class=para href=#user-id></a>Heading</h4>\n" } },
 
     { Source { u8"\\code{}\n" },
       Source { u8"<code></code>\n" },
