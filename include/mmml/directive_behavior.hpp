@@ -1,7 +1,6 @@
 #ifndef MMML_DIRECTIVE_BEHAVIOR_HPP
 #define MMML_DIRECTIVE_BEHAVIOR_HPP
 
-#include <span>
 #include <vector>
 
 #include "mmml/context.hpp"
