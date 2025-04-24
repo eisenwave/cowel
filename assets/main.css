@@ -38,10 +38,12 @@ html {
 }
 
 body {
-    --margin: 2em;
+    --vertical-margin: 2rem;
+    --margin-left: 3rem;
+    --margin-right: 2rem;
 
-    margin: var(--margin);
-    width: calc(100% - var(--margin) * 2);
+    margin: var(--vertical-margin) var(--margin-right) var(--vertical-margin) var(--margin-left);
+    width: calc(100% - var(--margin-left) - var(--margin-right));
     box-sizing: border-box;
 }
 
@@ -161,7 +163,7 @@ h6 {
     opacity: 0.25;
 
     position: absolute;
-    left: -2rem;
+    left: -1.5rem;
 }
 
 .para:hover,
