@@ -68,10 +68,14 @@ struct Builtin_Directive_Set::Impl {
         { u8"ol", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior s //
         { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+    HTML_Raw_Text_Behavior script //
+        { u8"script" };
     Fixed_Name_Passthrough_Behavior small //
         { u8"small", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior strong //
         { u8"strong", Directive_Category::formatting, Directive_Display::in_line };
+    HTML_Raw_Text_Behavior style //
+        { u8"style" };
     Fixed_Name_Passthrough_Behavior sub //
         { u8"sub", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior sup //
@@ -133,8 +137,10 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-mark",
         u8"-ol",
         u8"-s",
+        u8"-script",
         u8"-small",
         u8"-strong",
+        u8"-style",
         u8"-sub",
         u8"-sup",
         u8"-tt",
@@ -252,10 +258,14 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8's':
         if (name == u8"s")
             return &m_impl->s;
+        if (name == u8"script")
+            return &m_impl->script;
         if (name == u8"small")
             return &m_impl->small;
         if (name == u8"strong")
             return &m_impl->strong;
+        if (name == u8"style")
+            return &m_impl->style;
         if (name == u8"sub")
             return &m_impl->sub;
         if (name == u8"sup")

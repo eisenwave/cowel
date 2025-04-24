@@ -230,6 +230,15 @@ constexpr Basic_Test basic_tests[] {
     { Source { u8"\\h4[id=user-id]{Heading}\n" },
       Source { u8"<h4 id=user-id><a class=para href=#user-id></a>Heading</h4>\n" } },
 
+    { Source { u8"\\html{<b>Bold</b>}\n" },
+      Source { u8"<b>Bold</b>\n" } },
+
+    { Source { u8"\\style{b { color: red; }}\n" },
+      Source { u8"<style>b { color: red; }</style>\n" } },
+    
+    { Source { u8"\\script{let x = 3 < 5; let y = true && false;}\n" },
+      Source { u8"<script>let x = 3 < 5; let y = true && false;</script>\n" } },
+
     { Source { u8"\\code{}\n" },
       Source { u8"<code></code>\n" },
       { diagnostic::highlight_language } },

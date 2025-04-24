@@ -104,6 +104,30 @@ struct HTML_Literal_Behavior : Pure_HTML_Behavior {
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override;
 };
 
+/// @brief Common behavior for generating `<script>` and `<style>` elements
+/// via `\script` and `\style`.
+///
+/// Note that this behavior is distinct from formatting directives like `\b`.
+/// Notably, this produces a pure HTML directive with `block` display.
+/// Also, character references (e.g. `&lt;`) have no special meaning in such tags,
+/// so the output is not escaped in the usual way but taken quite literally,
+/// similar to `HTML_Literal_Behavior`.
+struct [[nodiscard]]
+HTML_Raw_Text_Behavior final : Pure_HTML_Behavior {
+private:
+    const std::u8string_view m_tag_name;
+
+public:
+    explicit HTML_Raw_Text_Behavior(std::u8string_view tag_name)
+        : Pure_HTML_Behavior { Directive_Display::block }
+        , m_tag_name { tag_name }
+    {
+        MMML_ASSERT(tag_name == u8"style" || tag_name == u8"script");
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override;
+};
+
 struct Variable_Behavior : Parametric_Behavior {
     static constexpr std::u8string_view var_parameter = u8"var";
     static constexpr std::u8string_view parameters[] { var_parameter };
