@@ -157,14 +157,11 @@ TEST_F(Doc_Gen_Test, text)
 
 TEST_F(Doc_Gen_Test, paragraphs)
 {
-    constexpr std::u8string_view expected = u8R"(<p>
-This is
+    constexpr std::u8string_view expected = u8R"(<p>This is
 a paragraph.
 </p>
-<p>
-This is another paragraph.
-</p>
-)";
+<p>This is another paragraph.
+</p>)";
     ASSERT_TRUE(load_document("paragraphs.mmml"));
     const std::u8string_view actual = generate(paragraphs_behavior);
     EXPECT_EQ(expected, actual);

@@ -488,6 +488,7 @@ public:
                 MMML_ASSERT(text.length() >= blank.length);
             }
             transition(Directive_Display::block);
+            m_out.write_inner_text(text.substr(0, blank.length));
             text.remove_prefix(blank.length);
         }
     }
@@ -513,7 +514,6 @@ private:
         case Directive_Display::in_line:
             if (!m_in_paragraph && display == Directive_Display::in_line) {
                 m_out.open_tag(u8"p");
-                m_out.write_inner_html(u8'\n');
                 m_in_paragraph = true;
             }
             return;
@@ -521,7 +521,6 @@ private:
         case Directive_Display::block:
             if (m_in_paragraph && display == Directive_Display::block) {
                 m_out.close_tag(u8"p");
-                m_out.write_inner_html(u8'\n');
                 m_in_paragraph = false;
             }
             return;
