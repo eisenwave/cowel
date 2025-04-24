@@ -161,7 +161,8 @@ h6 {
 }
 
 .para:hover,
-.para:focus {
+.para:focus,
+:target .para {
     opacity: 1;
 }
 
