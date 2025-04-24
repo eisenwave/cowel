@@ -452,23 +452,43 @@ public:
         if (trim_right) {
             text = trim_ascii_blank_left(text);
         }
+        if (text.empty()) {
+            return;
+        }
+
+        // We need to consider the special case of a single leading `\n`.
+        // This is technically a blank line when it appears at the start of a string,
+        // but is irrelevant to forming paragraphs.
+        //
+        // For example, we could have two `\b{}` directives separated by a single newline.
+        // This is a blank line when looking at the contents of the `ast::Text` node,
+        // but isn't a blank line within the context of the document.
+        if (const Blank_Line blank = find_blank_line_sequence(text);
+            blank.begin == 0 && blank.length == 1) {
+            m_out.write_inner_text(text[0]);
+            text.remove_prefix(1);
+        }
 
         while (!text.empty()) {
-            if (const Blank_Line blank = find_blank_line_sequence(text)) {
-                if (blank.begin != 0) {
-                    transition(Directive_Display::in_line);
-                    m_out.write_inner_text(text.substr(0, blank.begin));
-                    text.remove_prefix(blank.begin);
-                }
-                transition(Directive_Display::block);
-                text.remove_prefix(blank.length);
-            }
-            else {
+            const Blank_Line blank = find_blank_line_sequence(text);
+            if (!blank) {
                 MMML_ASSERT(blank.begin == 0);
                 transition(Directive_Display::in_line);
                 m_out.write_inner_text(text);
                 break;
             }
+
+            // If the blank isn't at the start of the text,
+            // that means we have some plain character prior to the blank
+            // which we need write first.
+            if (blank.begin != 0) {
+                transition(Directive_Display::in_line);
+                m_out.write_inner_text(text.substr(0, blank.begin));
+                text.remove_prefix(blank.begin);
+                MMML_ASSERT(text.length() >= blank.length);
+            }
+            transition(Directive_Display::block);
+            text.remove_prefix(blank.length);
         }
     }
 
