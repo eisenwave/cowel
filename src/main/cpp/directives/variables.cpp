@@ -61,9 +61,8 @@ void Get_Variable_Behavior::generate_var_html(
     Context& context
 ) const
 {
-    const auto it = context.get_variables().find(var);
-    if (it != context.get_variables().end()) {
-        out.write_inner_html(it->second);
+    if (const std::pmr::u8string* const value = context.get_variable(var)) {
+        out.write_inner_html(*value);
     }
 }
 

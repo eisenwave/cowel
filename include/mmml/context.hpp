@@ -165,6 +165,19 @@ public:
     }
 
     [[nodiscard]]
+    string_type* get_variable(string_view_type key)
+    {
+        const auto it = m_variables.find(key);
+        return it == m_variables.end() ? nullptr : &it->second;
+    }
+    [[nodiscard]]
+    const string_type* get_variable(string_view_type key) const
+    {
+        const auto it = m_variables.find(key);
+        return it == m_variables.end() ? nullptr : &it->second;
+    }
+
+    [[nodiscard]]
     Document_Sections& get_sections()
     {
         return m_sections;
