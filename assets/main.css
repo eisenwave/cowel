@@ -110,6 +110,10 @@ del-lines {
     width: 100%;
 }
 
+#settings:not(.js) {
+    display: none;
+}
+
 #settings {
     z-index: 999;
     position: absolute;
