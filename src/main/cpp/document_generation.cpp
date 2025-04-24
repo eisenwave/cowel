@@ -221,26 +221,18 @@ void Document_Content_Behavior::generate_head(
         .write_href(google_fonts_url)
         .end_empty();
 
-    {
-
+    const auto include_css_or_js = [&](std::u8string_view tag, std::u8string_view path) {
         out.write_inner_html(newline_indent);
-        out.open_tag(u8"style");
+        out.open_tag(tag);
         out.write_inner_html(u8'\n');
-        const Result<void, IO_Error_Code> r = file_to_inner_html(out, u8"assets/main.css", context);
+        const Result<void, IO_Error_Code> r = file_to_inner_html(out, path, context);
         MMML_ASSERT(r);
         out.write_inner_html(indent);
-        out.close_tag(u8"style");
-    }
-    {
-        out.write_inner_html(newline_indent);
-        out.open_tag(u8"script");
-        out.write_inner_html(u8'\n');
-        const Result<void, IO_Error_Code> r
-            = file_to_inner_html(out, u8"assets/light-dark.js", context);
-        MMML_ASSERT(r);
-        out.write_inner_html(indent);
-        out.close_tag(u8"script");
-    }
+        out.close_tag(tag);
+    };
+    include_css_or_js(u8"style", u8"assets/main.css");
+    include_css_or_js(u8"style", u8"assets/code.css");
+    include_css_or_js(u8"script", u8"assets/light-dark.js");
     out.write_inner_html(u8'\n');
 }
 
