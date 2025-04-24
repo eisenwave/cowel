@@ -259,6 +259,14 @@ public:
         return write_attribute(u8"src", value, style);
     }
 
+    Attribute_Writer& write_tabindex(
+        string_view_type value,
+        Attribute_Style style = Attribute_Style::double_if_needed
+    )
+    {
+        return write_attribute(u8"tabindex", value, style);
+    }
+
     /// @brief Writes `>` and finishes writing attributes.
     /// This function or `end_empty()` shall be called exactly once prior to destruction of this
     /// writer.
