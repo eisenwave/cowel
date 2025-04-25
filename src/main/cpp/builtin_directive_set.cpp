@@ -279,6 +279,10 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'm':
         if (name == u8"mark")
             return &m_impl->mark;
+        if (name == u8"math")
+            return &m_impl->math;
+        if (name == u8"mathblock")
+            return &m_impl->mathblock;
         break;
 
     case u8'o':
