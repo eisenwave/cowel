@@ -20,7 +20,7 @@ inline constexpr std::u8string_view html_tag_prefix = u8"html-";
 struct Error_Behavior : Do_Nothing_Behavior {
     static constexpr std::u8string_view id = u8"error-";
 
-    Error_Behavior()
+    constexpr Error_Behavior()
         : Do_Nothing_Behavior { Directive_Category::pure_html, Directive_Display::in_line }
     {
     }
@@ -35,7 +35,7 @@ struct Error_Behavior : Do_Nothing_Behavior {
 
 struct [[nodiscard]]
 HTML_Entity_Behavior final : Directive_Behavior {
-    HTML_Entity_Behavior()
+    constexpr HTML_Entity_Behavior()
         : Directive_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
     {
     }
@@ -50,7 +50,7 @@ HTML_Entity_Behavior final : Directive_Behavior {
 struct [[nodiscard]]
 Code_Point_Behavior final : Directive_Behavior {
 
-    Code_Point_Behavior()
+    constexpr Code_Point_Behavior()
         : Directive_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
     {
     }
@@ -71,7 +71,7 @@ private:
     const To_HTML_Mode m_to_html_mode;
 
 public:
-    explicit Syntax_Highlight_Behavior(
+    constexpr explicit Syntax_Highlight_Behavior(
         std::u8string_view tag_name,
         Directive_Display d,
         To_HTML_Mode mode
@@ -96,7 +96,7 @@ public:
 
 struct HTML_Literal_Behavior : Pure_HTML_Behavior {
 
-    explicit HTML_Literal_Behavior(Directive_Display display)
+    constexpr explicit HTML_Literal_Behavior(Directive_Display display)
         : Pure_HTML_Behavior { display }
     {
     }
@@ -118,7 +118,7 @@ private:
     const std::u8string_view m_tag_name;
 
 public:
-    explicit HTML_Raw_Text_Behavior(std::u8string_view tag_name)
+    constexpr explicit HTML_Raw_Text_Behavior(std::u8string_view tag_name)
         : Pure_HTML_Behavior { Directive_Display::block }
         , m_tag_name { tag_name }
     {
@@ -132,7 +132,7 @@ struct Variable_Behavior : Parametric_Behavior {
     static constexpr std::u8string_view var_parameter = u8"var";
     static constexpr std::u8string_view parameters[] { var_parameter };
 
-    Variable_Behavior(Directive_Category c, Directive_Display d)
+    constexpr Variable_Behavior(Directive_Category c, Directive_Display d)
         : Parametric_Behavior { c, d, parameters }
     {
     }
@@ -171,7 +171,7 @@ protected:
 
 struct Get_Variable_Behavior final : Variable_Behavior {
 
-    Get_Variable_Behavior()
+    constexpr Get_Variable_Behavior()
         : Variable_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
     {
     }
@@ -208,7 +208,7 @@ private:
     const Variable_Operation m_op;
 
 public:
-    Modify_Variable_Behavior(Variable_Operation op)
+    constexpr Modify_Variable_Behavior(Variable_Operation op)
         : Variable_Behavior { Directive_Category::meta, Directive_Display::none }
         , m_op { op }
     {
@@ -237,7 +237,7 @@ public:
 
 struct Passthrough_Behavior : Directive_Behavior {
 
-    Passthrough_Behavior(Directive_Category category, Directive_Display display)
+    constexpr Passthrough_Behavior(Directive_Category category, Directive_Display display)
         : Directive_Behavior { category, display }
     {
     }
@@ -267,7 +267,7 @@ private:
     const std::u8string_view m_name_prefix;
 
 public:
-    Directive_Name_Passthrough_Behavior(
+    constexpr Directive_Name_Passthrough_Behavior(
         Directive_Category category,
         Directive_Display display,
         const std::u8string_view name_prefix = u8""
@@ -286,7 +286,7 @@ private:
     const std::u8string_view m_name;
 
 public:
-    explicit Fixed_Name_Passthrough_Behavior(
+    constexpr explicit Fixed_Name_Passthrough_Behavior(
         std::u8string_view name,
         Directive_Category category,
         Directive_Display display
@@ -308,7 +308,7 @@ private:
     const std::u8string_view m_tag_name;
 
 public:
-    explicit List_Behavior(std::u8string_view tag_name)
+    constexpr explicit List_Behavior(std::u8string_view tag_name)
         : Pure_HTML_Behavior { Directive_Display::block }
         , m_tag_name { tag_name }
     {
@@ -322,7 +322,7 @@ private:
     const int m_level;
 
 public:
-    Heading_Behavior(int level)
+    constexpr Heading_Behavior(int level)
         : Pure_HTML_Behavior { Directive_Display::block }
         , m_level { level }
     {
@@ -334,7 +334,7 @@ public:
 
 struct Math_Behavior final : Pure_HTML_Behavior {
 
-    Math_Behavior(Directive_Display display)
+    constexpr Math_Behavior(Directive_Display display)
         : Pure_HTML_Behavior { display }
     {
     }

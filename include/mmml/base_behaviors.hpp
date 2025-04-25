@@ -12,7 +12,7 @@ namespace mmml {
 
 struct Pure_HTML_Behavior : Directive_Behavior {
 
-    Pure_HTML_Behavior(Directive_Display display)
+    constexpr Pure_HTML_Behavior(Directive_Display display)
         : Directive_Behavior { Directive_Category::pure_html, display }
     {
     }
@@ -25,7 +25,7 @@ struct Pure_HTML_Behavior : Directive_Behavior {
 struct Do_Nothing_Behavior : Directive_Behavior {
     // TODO: diagnose ignored arguments
 
-    Do_Nothing_Behavior(Directive_Category category, Directive_Display display)
+    constexpr Do_Nothing_Behavior(Directive_Category category, Directive_Display display)
         : Directive_Behavior { category, display }
     {
     }
@@ -43,7 +43,7 @@ protected:
     const std::span<const std::u8string_view> m_parameters;
 
 public:
-    Parametric_Behavior(
+    constexpr Parametric_Behavior(
         Directive_Category c,
         Directive_Display d,
         std::span<const std::u8string_view> parameters
