@@ -57,7 +57,9 @@ struct Builtin_Directive_Set::Impl {
     Heading_Behavior h6 //
         { 6 };
     HTML_Literal_Behavior html //
-        {};
+        { Directive_Display::in_line };
+    HTML_Literal_Behavior htmlblock //
+        { Directive_Display::block };
     Directive_Name_Passthrough_Behavior html_tags //
         { Directive_Category::pure_html, Directive_Display::block, html_tag_prefix };
     Fixed_Name_Passthrough_Behavior i //
@@ -254,6 +256,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->h6;
         if (name == u8"html")
             return &m_impl->html;
+        if (name == u8"htmlblock")
+            return &m_impl->htmlblock;
         static_assert(html_tag_prefix[0] == 'h');
         if (name.starts_with(html_tag_prefix))
             return &m_impl->html_tags;

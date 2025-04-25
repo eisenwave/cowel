@@ -96,8 +96,8 @@ public:
 
 struct HTML_Literal_Behavior : Pure_HTML_Behavior {
 
-    HTML_Literal_Behavior()
-        : Pure_HTML_Behavior { Directive_Display::block }
+    explicit HTML_Literal_Behavior(Directive_Display display)
+        : Pure_HTML_Behavior { display }
     {
     }
 
