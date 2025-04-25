@@ -32,6 +32,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"code-block", Directive_Display::block, To_HTML_Mode::trimmed };
     Fixed_Name_Passthrough_Behavior dd //
         { u8"dd", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior del //
+        { u8"del", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior dl //
         { u8"dl", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dt //
@@ -122,6 +124,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-codeblock",
         u8"-comment",
         u8"-dd",
+        u8"-del",
         u8"-dl",
         u8"-dt",
         u8"-em",
@@ -206,6 +209,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'd':
         if (name == u8"dd")
             return &m_impl->dd;
+        if (name == u8"del")
+            return &m_impl->del;
         if (name == u8"dl")
             return &m_impl->dl;
         if (name == u8"dt")
