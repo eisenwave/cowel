@@ -43,6 +43,7 @@ add_library(mmml STATIC
     src/main/cpp/directives/heading.cpp
     src/main/cpp/directives/html_entity.cpp
     src/main/cpp/directives/literal.cpp
+    src/main/cpp/directives/math.cpp
     src/main/cpp/directives/passthrough.cpp
     src/main/cpp/directives/syntax_highlight.cpp
     src/main/cpp/directives/variables.cpp

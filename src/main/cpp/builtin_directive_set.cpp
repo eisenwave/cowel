@@ -68,6 +68,10 @@ struct Builtin_Directive_Set::Impl {
         { u8"kbd", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior mark //
         { u8"mark", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior math //
+        { u8"math", Directive_Category::pure_html, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior mathblock //
+        { u8"mathblock", Directive_Category::pure_html, Directive_Display::block };
     List_Behavior ol //
         { u8"ol" };
     Fixed_Name_Passthrough_Behavior q //
@@ -148,6 +152,8 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-k",
         u8"-kbd",
         u8"-mark",
+        u8"-math",
+        u8"-mathblock",
         u8"-ol",
         u8"-q",
         u8"-s",

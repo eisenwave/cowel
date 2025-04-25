@@ -332,6 +332,16 @@ public:
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
 };
 
+struct Math_Behavior final : Pure_HTML_Behavior {
+
+    Math_Behavior(Directive_Display display)
+        : Pure_HTML_Behavior { display }
+    {
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
 struct [[nodiscard]]
 Builtin_Directive_Set final : Name_Resolver {
 private:
