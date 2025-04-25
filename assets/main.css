@@ -16,7 +16,9 @@
     --light-ins-background-color: #e4faea;
     --light-para-color: rgb(10, 73, 136);
     --light-mark-background-color: #ffff85;
-    --light-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="black"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
+    --light-blockquote-border-color: #707070;
+    --light-blockquote-background-color: #f0f0f0;
+    --light-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23707070"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
 
     --dark-background-color: #202020;
     --dark-deep-background-color: #1a1a1a;
@@ -32,9 +34,12 @@
     --dark-a-hover-color: #afd7ff;
     --dark-mark-color: #ededa8;
     --dark-mark-background-color: #525230;
-    --dark-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23f0f0f0"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
+    --dark-blockquote-border-color: #707070;
+    --dark-blockquote-background-color: #303030;
+    --dark-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23707070"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
 
     --indent: 3em;
+    --border-radius: 0.25em;
 }
 
 html {
@@ -92,18 +97,21 @@ blockquote {
     --left-pad: 0.5em;
 
     position: relative;
-    padding: 0.25em 0 0.25em var(--left-pad);
+    width: 100%;
+    padding: 0.5em 0 0.5em var(--left-pad);
     margin-left: calc(var(--indent) - var(--border-thickness) - var(--left-pad));
+
+    border-top-right-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
 }
 
 blockquote::before {
     position: absolute;
     left: -2.5em;
-    top: -0.5em;
+    top: -0.25em;
     width: 2em;
     height: 2em;
 
-    opacity: 0.5;
     content: "";
     display: inline-block;
     background-size: contain;
@@ -128,7 +136,7 @@ tt- {
 code-block {
     display: block;
     padding: 0.5em;
-    border-radius: 0.25em;
+    border-radius: var(--border-radius);
     box-sizing: border-box;
 }
 
@@ -311,7 +319,8 @@ html:not(.dark) kbd {
 }
 
 html:not(.dark) blockquote {
-    border-left: var(--border-thickness) solid var(--dark-border-color);
+    background-color: var(--light-blockquote-background-color);
+    border-left: var(--border-thickness) solid var(--light-blockquote-border-color);
 }
 
 html:not(.dark) blockquote::before {
@@ -373,7 +382,8 @@ html.dark kbd {
 }
 
 html.dark blockquote {
-    border-left: var(--border-thickness) solid var(--dark-border-color);
+    background-color: var(--dark-blockquote-background-color);
+    border-left: var(--border-thickness) solid var(--dark-blockquote-border-color);
 }
 
 html.dark blockquote::before {
@@ -433,7 +443,8 @@ html.dark blockquote::before {
     }
 
     html:not(.light) blockquote {
-        border-left: var(--border-thickness) solid var(--dark-border-color);
+        background-color: var(--dark-blockquote-background-color);
+        border-left: var(--border-thickness) solid var(--dark-blockquote-border-color);
     }
 
     html:not(.light) blockquote::before {
