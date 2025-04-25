@@ -34,6 +34,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"code-block", Directive_Display::block, To_HTML_Mode::trimmed };
     Fixed_Name_Passthrough_Behavior dd //
         { u8"dd", Directive_Category::pure_html, Directive_Display::block };
+    Special_Block_Behavior decision //
+        { u8"decision-block" };
     Fixed_Name_Passthrough_Behavior del //
         { u8"del", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior dl //
@@ -227,6 +229,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'd':
         if (name == u8"dd")
             return &m_impl->dd;
+        if (name == u8"decision")
+            return &m_impl->decision;
         if (name == u8"del")
             return &m_impl->del;
         if (name == u8"dl")

@@ -40,6 +40,28 @@ Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d, Context& 
     return name.substr(m_name_prefix.size());
 }
 
+void Special_Block_Behavior::generate_html(
+    HTML_Writer& out,
+    const ast::Directive& d,
+    Context& context
+) const
+{
+    if (d.get_arguments().empty()) {
+        out.open_tag(m_name);
+    }
+    else {
+        Attribute_Writer attributes = out.open_tag_with_attributes(m_name);
+        arguments_to_attributes(attributes, d, context);
+    }
+    out.open_tag(u8"intro-");
+    out.close_tag(u8"intro-");
+    // This space ensures that even if the user writes say,
+    // \note{abc}, there is a space between </into> and abc.
+    out.write_inner_html(u8' ');
+    to_html(out, d.get_content(), context);
+    out.close_tag(m_name);
+}
+
 void List_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
 {
     static Fixed_Name_Passthrough_Behavior item_behavior { u8"li", Directive_Category::pure_html,
