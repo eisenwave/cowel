@@ -19,6 +19,9 @@
     --light-blockquote-border-color: #707070;
     --light-blockquote-background-color: #f0f0f0;
     --light-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23707070"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
+    --light-decision-block-border-color: #ab6fa2;
+    --light-decision-block-background-color: #f4e6f4;
+    --light-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
 
     --dark-background-color: #202020;
     --dark-deep-background-color: #1a1a1a;
@@ -37,6 +40,9 @@
     --dark-blockquote-border-color: #707070;
     --dark-blockquote-background-color: #303030;
     --dark-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23707070"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
+    --dark-decision-block-border-color: #ab6fa2;
+    --dark-decision-block-background-color: #30232d;
+    --dark-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
 
     --indent: 3em;
     --border-radius: 0.25em;
@@ -67,6 +73,7 @@ main {
 
 code-block,
 blockquote,
+decision-block,
 dl,
 ol,
 math[display=block],
@@ -93,7 +100,8 @@ dd {
     margin-bottom: 0.25em;
 }
 
-blockquote {
+blockquote,
+decision-block {
     --border-thickness: 0.25em;
     --left-pad: 0.5em;
 
@@ -106,10 +114,11 @@ blockquote {
     border-bottom-right-radius: var(--border-radius);
 }
 
-blockquote::before {
+blockquote::before,
+decision-block::before {
     position: absolute;
     left: -2.5em;
-    top: -0.25em;
+    top: 0em;
     width: 2em;
     height: 2em;
 
@@ -117,6 +126,10 @@ blockquote::before {
     display: inline-block;
     background-size: contain;
     background-repeat: no-repeat;
+}
+
+blockquote::before {
+    top: -0.25em;
 }
 
 code,
@@ -134,8 +147,12 @@ tt- {
     font-size: var(--monospace-size);
 }
 
-code-block {
+code-block,
+decision-block {
     display: block;
+}
+
+code-block {
     padding: 0.5em;
     border-radius: var(--border-radius);
     box-sizing: border-box;
@@ -233,6 +250,19 @@ h6 {
     content: "§";
 }
 
+intro- {
+    display: inline-block;
+
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: var(--sans-serif-size);
+    font-family: var(--sans-serif-family);
+}
+
+decision-block intro-::before {
+    content: "Decision Required:";
+}
+
 /* SETTINGS MENU */
 
 #settings:not(.js) {
@@ -328,6 +358,19 @@ html:not(.dark) blockquote::before {
     background-image: var(--light-blockquote-image);
 }
 
+html:not(.dark) decision-block {
+    background-color: var(--light-decision-block-background-color);
+    border-left: var(--border-thickness) solid var(--light-decision-block-border-color);
+}
+
+html:not(.dark) decision-block::before {
+    background-image: var(--light-decision-block-image);
+}
+
+html:not(.dark) decision-block intro-::before {
+    color: var(--light-decision-block-border-color);
+}
+
 /* END LIGHT THEME */
 /* BEGIN DARK THEME */
 
@@ -391,6 +434,19 @@ html.dark blockquote::before {
     background-image: var(--dark-blockquote-image);
 }
 
+html.dark decision-block {
+    background-color: var(--dark-decision-block-background-color);
+    border-left: var(--border-thickness) solid var(--dark-decision-block-border-color);
+}
+
+html.dark decision-block::before {
+    background-image: var(--dark-decision-block-image);
+}
+
+html.dark decision-block intro-::before {
+    color: var(--dark-decision-block-border-color);
+}
+
 @media (prefers-color-scheme: dark) {
     html:not(.light) {
         background-color: var(--dark-background-color);
@@ -450,6 +506,19 @@ html.dark blockquote::before {
 
     html:not(.light) blockquote::before {
         background-image: var(--dark-blockquote-image);
+    }
+
+    html:not(.light) decision-block {
+        background-color: var(--dark-decision-block-background-color);
+        border-left: var(--border-thickness) solid var(--dark-decision-block-border-color);
+    }
+
+    html:not(.light) decision-block::before {
+        background-image: var(--dark-decision-block-image);
+    }
+
+    html:not(.light) decision-block intro-::before {
+        color: var(--dark-decision-block-border-color);
     }
 }
 
