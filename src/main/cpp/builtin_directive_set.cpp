@@ -85,7 +85,7 @@ struct Builtin_Directive_Set::Impl {
     Code_Point_Behavior U //
         {};
     Fixed_Name_Passthrough_Behavior u //
-        { u8"u", Directive_Category::pure_html, Directive_Display::block };
+        { u8"u", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior ul //
         { u8"ul", Directive_Category::pure_html, Directive_Display::block };
     Get_Variable_Behavior vget //
