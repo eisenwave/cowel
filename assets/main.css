@@ -120,30 +120,6 @@ del-lines {
     width: 100%;
 }
 
-#settings:not(.js) {
-    display: none;
-}
-
-#settings {
-    z-index: 999;
-    position: absolute;
-    display: inline-block;
-    top: 1em;
-    right: 1em;
-    opacity: 0.25;
-}
-
-#settings:hover,
-#settings:focus {
-    opacity: 1;
-}
-
-#settings svg {
-    width: 2em;
-    height: auto;
-    cursor: pointer;
-}
-
 .comtext {
     font-family: var(--serif-family);
     font-size: var(--serif-size);
@@ -192,6 +168,30 @@ h6 {
 
 .para::before {
     content: "§";
+}
+
+#settings:not(.js) {
+    display: none;
+}
+
+#settings {
+    z-index: 999;
+    position: absolute;
+    display: inline-block;
+    top: 1em;
+    right: 1em;
+    opacity: 0.25;
+}
+
+#settings:hover,
+#settings:focus {
+    opacity: 1;
+}
+
+#settings svg {
+    width: 2em;
+    height: auto;
+    cursor: pointer;
 }
 
 /* THEME ICONS */
