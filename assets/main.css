@@ -17,7 +17,7 @@
     --light-para-color: rgb(10, 73, 136);
 
     --dark-background-color: #202020;
-    --dark-deep-background-color: #101010;
+    --dark-deep-background-color: #1a1a1a;
     --dark-text-color: #f0f0f0;
     --dark-border-color: #505050;
     --dark-del-background-color: #67060c;
@@ -76,14 +76,19 @@ code-block {
 }
 
 code-block,
-pre {
+pre,
+samp {
     font-size: calc(var(--monospace-size) * 0.9);
     width: 100%;
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
 
 code-block,
-pre {
-    white-space: pre-wrap;
+pre,
+samp {
+    white-space: pre;
+    overflow-x: auto;
 }
 
 ins,
