@@ -148,6 +148,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-h6",
         u8"-html",
         u8"-html-",
+        u8"-htmlblock",
         u8"-i",
         u8"-ins",
         u8"-item",
