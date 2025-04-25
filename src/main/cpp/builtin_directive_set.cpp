@@ -24,6 +24,8 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Category::meta, Directive_Display::none };
     Fixed_Name_Passthrough_Behavior b //
         { u8"b", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior blockquote //
+        { u8"blockquote", Directive_Category::pure_html, Directive_Display::block };
     HTML_Entity_Behavior c //
         {};
     Syntax_Highlight_Behavior code //
@@ -121,6 +123,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
     static constexpr std::u8string_view prefixed_names[] {
         u8"-U",
         u8"-b",
+        u8"-blockquote",
         u8"-c",
         u8"-code",
         u8"-codeblock",
@@ -197,6 +200,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'b':
         if (name == u8"b")
             return &m_impl->b;
+        if (name == u8"blockquote")
+            return &m_impl->blockquote;
         break;
 
     case u8'c':
