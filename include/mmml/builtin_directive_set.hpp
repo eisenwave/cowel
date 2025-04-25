@@ -303,6 +303,20 @@ public:
     }
 };
 
+struct List_Behavior final : Pure_HTML_Behavior {
+private:
+    const std::u8string_view m_tag_name;
+
+public:
+    explicit List_Behavior(std::u8string_view tag_name)
+        : Pure_HTML_Behavior { Directive_Display::block }
+        , m_tag_name { tag_name }
+    {
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
 struct Heading_Behavior final : Pure_HTML_Behavior {
 private:
     const int m_level;

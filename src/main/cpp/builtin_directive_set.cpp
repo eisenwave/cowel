@@ -66,8 +66,10 @@ struct Builtin_Directive_Set::Impl {
         { u8"kbd", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior mark //
         { u8"mark", Directive_Category::formatting, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior ol //
-        { u8"ol", Directive_Category::pure_html, Directive_Display::block };
+    List_Behavior ol //
+        { u8"ol" };
+    Fixed_Name_Passthrough_Behavior q //
+        { u8"q", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior s //
         { u8"s", Directive_Category::formatting, Directive_Display::in_line };
     HTML_Raw_Text_Behavior script //
@@ -88,8 +90,8 @@ struct Builtin_Directive_Set::Impl {
         {};
     Fixed_Name_Passthrough_Behavior u //
         { u8"u", Directive_Category::formatting, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior ul //
-        { u8"ul", Directive_Category::pure_html, Directive_Display::block };
+    List_Behavior ul //
+        { u8"ul" };
     Get_Variable_Behavior vget //
         {};
     Modify_Variable_Behavior vset //
@@ -139,10 +141,12 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-html-",
         u8"-i",
         u8"-ins",
+        u8"-item",
         u8"-k",
         u8"-kbd",
         u8"-mark",
         u8"-ol",
+        u8"-q",
         u8"-s",
         u8"-script",
         u8"-small",
@@ -264,6 +268,11 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'o':
         if (name == u8"ol")
             return &m_impl->ol;
+        break;
+
+    case u8'q':
+        if (name == u8"q")
+            return &m_impl->q;
         break;
 
     case u8's':
