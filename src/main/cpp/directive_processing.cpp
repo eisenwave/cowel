@@ -372,7 +372,7 @@ void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Co
             }
             // Other trimming mechanisms should have eliminated completely blank strings.
             MMML_ASSERT(!str.empty());
-            out.write_inner_html(str);
+            out.write_inner_text(str);
         }
 
         void operator()(const ast::Generated& generated) const
