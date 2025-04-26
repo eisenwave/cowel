@@ -1,4 +1,4 @@
-:root {
+html {
     --sans-serif-family: "Noto Sans", sans-serif;
     --sans-serif-size: 11pt;
     --serif-family: "Noto Serif", serif;
@@ -48,11 +48,99 @@
     --border-radius: 0.25em;
 }
 
+/* BEGIN LIGHT AND DARK THEME */
+
+@media (prefers-color-scheme: light) {
+    html {
+        --background-color: var(--light-background-color);
+        --deep-background-color: var(--light-deep-background-color);
+        --text-color: var(--light-text-color);
+        --border-color: var(--light-border-color);
+        --del-color: var(--light-del-color);
+        --del-background-color: var(--light-del-background-color);
+        --ins-color: var(--light-ins-color);
+        --ins-background-color: var(--light-ins-background-color);
+        --para-color: var(--light-para-color);
+        --mark-background-color: var(--light-mark-background-color);
+        --blockquote-border-color: var(--light-blockquote-border-color);
+        --blockquote-background-color: var(--light-blockquote-background-color);
+        --blockquote-image: var(--light-blockquote-image);
+        --decision-block-border-color: var(--light-decision-block-border-color);
+        --decision-block-background-color: var(--light-decision-block-background-color);
+        --decision-block-image: var(--light-decision-block-image);
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    html {
+        --background-color: var(--dark-background-color);
+        --deep-background-color: var(--dark-deep-background-color);
+        --text-color: var(--dark-text-color);
+        --border-color: var(--dark-border-color);
+        --del-color: var(--dark-del-color);
+        --del-background-color: var(--dark-del-background-color);
+        --ins-color: var(--dark-ins-color);
+        --ins-background-color: var(--dark-ins-background-color);
+        --para-color: var(--dark-para-color);
+        --mark-background-color: var(--dark-mark-background-color);
+        --blockquote-border-color: var(--dark-blockquote-border-color);
+        --blockquote-background-color: var(--dark-blockquote-background-color);
+        --blockquote-image: var(--dark-blockquote-image);
+        --decision-block-border-color: var(--dark-decision-block-border-color);
+        --decision-block-background-color: var(--dark-decision-block-background-color);
+        --decision-block-image: var(--dark-decision-block-image);
+    }
+}
+
+html.light {
+    --background-color: var(--light-background-color);
+    --deep-background-color: var(--light-deep-background-color);
+    --text-color: var(--light-text-color);
+    --border-color: var(--light-border-color);
+    --del-color: var(--light-del-color);
+    --del-background-color: var(--light-del-background-color);
+    --ins-color: var(--light-ins-color);
+    --ins-background-color: var(--light-ins-background-color);
+    --para-color: var(--light-para-color);
+    --mark-background-color: var(--light-mark-background-color);
+    --blockquote-border-color: var(--light-blockquote-border-color);
+    --blockquote-background-color: var(--light-blockquote-background-color);
+    --blockquote-image: var(--light-blockquote-image);
+    --decision-block-border-color: var(--light-decision-block-border-color);
+    --decision-block-background-color: var(--light-decision-block-background-color);
+    --decision-block-image: var(--light-decision-block-image);
+}
+
+html.dark {
+    --background-color: var(--dark-background-color);
+    --deep-background-color: var(--dark-deep-background-color);
+    --text-color: var(--dark-text-color);
+    --border-color: var(--dark-border-color);
+    --del-color: var(--dark-del-color);
+    --del-background-color: var(--dark-del-background-color);
+    --ins-color: var(--dark-ins-color);
+    --ins-background-color: var(--dark-ins-background-color);
+    --para-color: var(--dark-para-color);
+    --mark-background-color: var(--dark-mark-background-color);
+    --blockquote-border-color: var(--dark-blockquote-border-color);
+    --blockquote-background-color: var(--dark-blockquote-background-color);
+    --blockquote-image: var(--dark-blockquote-image);
+    --decision-block-border-color: var(--dark-decision-block-border-color);
+    --decision-block-background-color: var(--dark-decision-block-background-color);
+    --decision-block-image: var(--dark-decision-block-image);
+}
+
+/* END LIGHT AND DARK THEME */
+
 html {
     margin: 0;
     width: 100%;
     font-family: var(--serif-family);
     font-size: var(--serif-size);
+
+    border-left: var(--border-thickness) solid var(--border-color);
+    color: var(--text-color);
+    background-color: var(--background-color);
 }
 
 body {
@@ -85,6 +173,19 @@ ul {
     margin-bottom: 1em;
 }
 
+a {
+    color: var(--a-color);
+}
+
+a:visited {
+    color: var(--a-visited-color);
+}
+
+a:hover,
+a:focus {
+    color: var(--a-hover-color);
+}
+
 li {
     margin-top: 0.25em;
     margin-bottom: 0.25em;
@@ -112,6 +213,9 @@ decision-block {
 
     border-top-right-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
+
+    background-color: var(--blockquote-background-color);
+    border-left: var(--border-thickness) solid var(--blockquote-border-color);
 }
 
 blockquote::before,
@@ -126,9 +230,11 @@ decision-block::before {
     display: inline-block;
     background-size: contain;
     background-repeat: no-repeat;
+
 }
 
 blockquote::before {
+    background-image: var(--blockquote-image);
     top: -0.25em;
 }
 
@@ -156,6 +262,9 @@ code-block {
     padding: 0.5em;
     border-radius: var(--border-radius);
     box-sizing: border-box;
+
+    background-color: var(--deep-background-color);
+    border: 1px solid var(--border-color);
 }
 
 code-block,
@@ -176,6 +285,8 @@ ins,
 ins-lines {
     text-decoration: underline;
     font-weight: 600;
+    color: var(--ins-color);
+    background-color: var(--ins-background-color);
 }
 
 code-block ins,
@@ -190,6 +301,12 @@ code-block .comtext ins-lines {
 
 del {
     text-decoration: line-through;
+}
+
+del,
+del-lines {
+    color: var(--del-color);
+    background-color: var(--del-background-color);
 }
 
 ins-lines,
@@ -216,6 +333,14 @@ kbd {
     padding: 0 0.25em 0.15em 0.25em;
     border-radius: 0.25em;
     white-space: nowrap;
+
+    background-color: var(--deep-background-color);
+    border: 1px solid var(--border-color);
+    box-shadow: inset 0 -0.1em 0 var(--border-color);
+}
+
+mark {
+    background-color: var(--mark-background-color);
 }
 
 h1,
@@ -227,8 +352,6 @@ h6 {
     position: relative;
 }
 
-/* PARAGRAPHS ANCHORS */
-
 .para {
     cursor: pointer;
     font-weight: normal;
@@ -238,6 +361,11 @@ h6 {
 
     position: absolute;
     left: -1.5rem;
+}
+
+.para,
+.para::before {
+    color: var(--para-color);
 }
 
 .para:hover,
@@ -259,8 +387,18 @@ intro- {
     font-family: var(--sans-serif-family);
 }
 
+decision-block {
+    background-color: var(--decision-block-background-color);
+    border-left: var(--border-thickness) solid var(--decision-block-border-color);
+}
+
+decision-block::before {
+    background-image: var(--decision-block-image);
+}
+
 decision-block intro-::before {
     content: "Decision Required:";
+    color: var(--decision-block-border-color);
 }
 
 /* SETTINGS MENU */
@@ -303,223 +441,3 @@ html:not(.dark) #dark-theme-icon {
 html:not(.light) #light-theme-icon {
     display: none;
 }
-
-/* BEGIN LIGHT THEME */
-
-html:not(.dark) {
-    border-left: var(--border-thickness) solid var(--light-border-color);
-    background-color: var(--light-background-color);
-    color: var(--light-text-color);
-}
-
-html:not(.dark) .para,
-html:not(.dark) .para::before {
-    color: var(--light-para-color);
-}
-
-html:not(.dark) code-block {
-    background-color: var(--light-deep-background-color);
-    border: 1px solid var(--light-border-color);
-}
-
-html:not(.dark) ins,
-html:not(.dark) ins-lines {
-    color: var(--light-ins-color);
-    background-color: var(--light-ins-background-color);
-}
-
-html:not(.dark) del,
-html:not(.dark) del-lines {
-    color: var(--light-del-color);
-    background-color: var(--light-del-background-color);
-}
-
-html:not(.dark) kbd {
-    background-color: var(--light-deep-background-color);
-    border: 1px solid var(--light-border-color);
-}
-
-html:not(.dark) mark {
-    background-color: var(--light-mark-background-color);
-}
-
-html:not(.dark) kbd {
-    background-color: var(--light-deep-background-color);
-    border: 1px solid var(--light-border-color);
-    box-shadow: inset 0 -0.1em 0 var(--light-border-color);
-}
-
-html:not(.dark) blockquote {
-    background-color: var(--light-blockquote-background-color);
-    border-left: var(--border-thickness) solid var(--light-blockquote-border-color);
-}
-
-html:not(.dark) blockquote::before {
-    background-image: var(--light-blockquote-image);
-}
-
-html:not(.dark) decision-block {
-    background-color: var(--light-decision-block-background-color);
-    border-left: var(--border-thickness) solid var(--light-decision-block-border-color);
-}
-
-html:not(.dark) decision-block::before {
-    background-image: var(--light-decision-block-image);
-}
-
-html:not(.dark) decision-block intro-::before {
-    color: var(--light-decision-block-border-color);
-}
-
-/* END LIGHT THEME */
-/* BEGIN DARK THEME */
-
-html.dark {
-    background-color: var(--dark-background-color);
-    color: var(---dark-text-color);
-}
-
-html.dark a {
-    color: var(--dark-a-color);
-}
-
-html.dark a:visited {
-    color: var(--dark-a-visited-color);
-}
-
-html.dark .para,
-html.dark .para::before {
-    color: var(--dark-para-color);
-}
-
-html.dark a:hover,
-html.dark a:focus {
-    color: var(--dark-a-hover-color);
-}
-
-html.dark code-block {
-    background-color: var(--dark-deep-background-color);
-    border: 1px solid var(--dark-border-color);
-}
-
-html.dark del,
-html.dark del-lines {
-    background-color: var(--dark-del-background-color);
-    color: var(--dark-del-color);
-}
-
-html.dark ins,
-html.dark ins-lines {
-    background-color: var(--dark-ins-background-color);
-    color: var(--dark-ins-color);
-}
-
-html.dark mark {
-    color: var(--dark-mark-color);
-    background-color: var(--dark-mark-background-color);
-}
-
-html.dark kbd {
-    background-color: var(--dark-deep-background-color);
-    border: 1px solid var(--dark-border-color);
-    box-shadow: inset 0 -0.1em 0 var(--dark-border-color);
-}
-
-html.dark blockquote {
-    background-color: var(--dark-blockquote-background-color);
-    border-left: var(--border-thickness) solid var(--dark-blockquote-border-color);
-}
-
-html.dark blockquote::before {
-    background-image: var(--dark-blockquote-image);
-}
-
-html.dark decision-block {
-    background-color: var(--dark-decision-block-background-color);
-    border-left: var(--border-thickness) solid var(--dark-decision-block-border-color);
-}
-
-html.dark decision-block::before {
-    background-image: var(--dark-decision-block-image);
-}
-
-html.dark decision-block intro-::before {
-    color: var(--dark-decision-block-border-color);
-}
-
-@media (prefers-color-scheme: dark) {
-    html:not(.light) {
-        background-color: var(--dark-background-color);
-        color: var(--dark-text-color);
-    }
-
-    html:not(.light) a {
-        color: var(--dark-a-color);
-    }
-
-    html:not(.light) a:visited {
-        color: var(--dark-a-visited-color);
-    }
-
-    html:not(.light) .para,
-    html:not(.light) .para::before {
-        color: var(--dark-para-color);
-    }
-
-    html:not(.light) a:hover,
-    html:not(.light) a:focus {
-        color: var(--dark-a-hover-color);
-    }
-
-    html:not(.light) code-block {
-        background-color: var(--dark-deep-background-color);
-        border: 1px solid var(--dark-border-color);
-    }
-
-    html:not(.light) del,
-    html:not(.light) del-lines {
-        background-color: var(--dark-del-background-color);
-        color: var(--dark-del-color);
-    }
-
-    html:not(.light) ins,
-    html:not(.light) ins-lines {
-        background-color: var(--dark-ins-background-color);
-        color: var(--dark-ins-color);
-    }
-
-    html:not(.light) mark {
-        color: var(--dark-mark-color);
-        background-color: var(--dark-mark-background-color);
-    }
-
-    html:not(.light) kbd {
-        background-color: var(--dark-deep-background-color);
-        border: 1px solid var(--dark-border-color);
-        box-shadow: inset 0 -0.1em 0 var(--dark-border-color);
-    }
-
-    html:not(.light) blockquote {
-        background-color: var(--dark-blockquote-background-color);
-        border-left: var(--border-thickness) solid var(--dark-blockquote-border-color);
-    }
-
-    html:not(.light) blockquote::before {
-        background-image: var(--dark-blockquote-image);
-    }
-
-    html:not(.light) decision-block {
-        background-color: var(--dark-decision-block-background-color);
-        border-left: var(--border-thickness) solid var(--dark-decision-block-border-color);
-    }
-
-    html:not(.light) decision-block::before {
-        background-image: var(--dark-decision-block-image);
-    }
-
-    html:not(.light) decision-block intro-::before {
-        color: var(--dark-decision-block-border-color);
-    }
-}
-
-/* END DARK THEME */
