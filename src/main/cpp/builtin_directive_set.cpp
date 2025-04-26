@@ -46,6 +46,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"em", Directive_Category::formatting, Directive_Display::in_line };
     Error_Behavior error //
         {};
+    Special_Block_Behavior example //
+        { u8"example-block" };
     Heading_Behavior h1 //
         { 1 };
     Heading_Behavior h2 //
@@ -66,6 +68,8 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Category::pure_html, Directive_Display::block, html_tag_prefix };
     Fixed_Name_Passthrough_Behavior i //
         { u8"i", Directive_Category::formatting, Directive_Display::in_line };
+    Special_Block_Behavior important //
+        { u8"important-block" };
     Fixed_Name_Passthrough_Behavior ins //
         { u8"ins", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
@@ -76,6 +80,8 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::in_line };
     Math_Behavior mathblock //
         { Directive_Display::block };
+    Special_Block_Behavior note //
+        { u8"note-block" };
     List_Behavior ol //
         { u8"ol" };
     Fixed_Name_Passthrough_Behavior q //
@@ -106,6 +112,8 @@ struct Builtin_Directive_Set::Impl {
         {};
     Modify_Variable_Behavior vset //
         { Variable_Operation::set };
+    Special_Block_Behavior warning //
+        { u8"warning-block" };
 
     Impl() = default;
 };
@@ -137,11 +145,13 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-codeblock",
         u8"-comment",
         u8"-dd",
+        u8"-decision",
         u8"-del",
         u8"-dl",
         u8"-dt",
         u8"-em",
         u8"-error",
+        u8"-example",
         u8"-h1",
         u8"-h2",
         u8"-h3",
@@ -152,6 +162,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-html-",
         u8"-htmlblock",
         u8"-i",
+        u8"-important",
         u8"-ins",
         u8"-item",
         u8"-k",
@@ -159,6 +170,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-mark",
         u8"-math",
         u8"-mathblock",
+        u8"-note",
         u8"-ol",
         u8"-q",
         u8"-s",
@@ -173,6 +185,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-ul",
         u8"-vget",
         u8"-vset",
+        u8"-warning",
     };
     // clang-format on
     static_assert(std::ranges::is_sorted(prefixed_names));
@@ -244,6 +257,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->em;
         if (name == u8"error")
             return &m_impl->error;
+        if (name == u8"example")
+            return &m_impl->example;
         break;
 
     case u8'h':
@@ -271,6 +286,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'i':
         if (name == u8"i")
             return &m_impl->i;
+        if (name == u8"important")
+            return &m_impl->important;
         if (name == u8"ins")
             return &m_impl->ins;
         break;
@@ -287,6 +304,11 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->math;
         if (name == u8"mathblock")
             return &m_impl->mathblock;
+        break;
+
+    case u8'n':
+        if (name == u8"note")
+            return &m_impl->note;
         break;
 
     case u8'o':
@@ -338,6 +360,11 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->vget;
         if (name == u8"vset")
             return &m_impl->vset;
+        break;
+
+    case u8'w':
+        if (name == u8"warning")
+            return &m_impl->warning;
         break;
 
     default: break;

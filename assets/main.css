@@ -22,6 +22,18 @@ html {
     --light-decision-block-border-color: #ab6fa2;
     --light-decision-block-background-color: #f4e6f4;
     --light-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
+    --light-example-block-border-color: #6f8aab;
+    --light-example-block-background-color: #e6e9f4;
+    --light-example-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236f8aab"><path d="M300-80q-58 0-99-41t-41-99v-520q0-58 41-99t99-41h500v600q-25 0-42.5 17.5T740-220q0 25 17.5 42.5T800-160v80H300Zm-60-267q14-7 29-10t31-3h20v-440h-20q-25 0-42.5 17.5T240-740v393Zm160-13h320v-440H400v440Zm-160 13v-453 453Zm60 187h373q-6-14-9.5-28.5T660-220q0-16 3-31t10-29H300q-26 0-43 17.5T240-220q0 26 17 43t43 17Z"/></svg>');
+    --light-important-block-border-color: #b05252;
+    --light-important-block-background-color: #f4e6e6;
+    --light-important-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6f6f"><path d="M480-120q-33 0-56.5-23.5T400-200q0-33 23.5-56.5T480-280q33 0 56.5 23.5T560-200q0 33-23.5 56.5T480-120Zm-80-240v-480h160v480H400Z"/></svg>');
+    --light-note-block-border-color: #6fab6f;
+    --light-note-block-background-color: #e6f4e9;
+    --light-note-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236fab6f"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+    --light-warning-block-border-color: #af8141;
+    --light-warning-block-background-color: #f4eee6;
+    --light-warning-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23af8141"><path d="M109-120q-11 0-20-5.5T75-140q-5-9-5.5-19.5T75-180l370-640q6-10 15.5-15t19.5-5q10 0 19.5 5t15.5 15l370 640q6 10 5.5 20.5T885-140q-5 9-14 14.5t-20 5.5H109Zm69-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm0-120q17 0 28.5-11.5T520-400v-120q0-17-11.5-28.5T480-560q-17 0-28.5 11.5T440-520v120q0 17 11.5 28.5T480-360Zm0-100Z"/></svg>');
 
     --dark-background-color: #202020;
     --dark-deep-background-color: #1a1a1a;
@@ -38,11 +50,23 @@ html {
     --dark-mark-color: #ededa8;
     --dark-mark-background-color: #525230;
     --dark-blockquote-border-color: #707070;
-    --dark-blockquote-background-color: #303030;
+    --dark-blockquote-background-color: #2c2c2c;
     --dark-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23707070"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
     --dark-decision-block-border-color: #ab6fa2;
     --dark-decision-block-background-color: #30232d;
     --dark-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
+    --dark-example-block-border-color: #6f81ab;
+    --dark-example-block-background-color: #232630;
+    --dark-example-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236f81ab"><path d="M300-80q-58 0-99-41t-41-99v-520q0-58 41-99t99-41h500v600q-25 0-42.5 17.5T740-220q0 25 17.5 42.5T800-160v80H300Zm-60-267q14-7 29-10t31-3h20v-440h-20q-25 0-42.5 17.5T240-740v393Zm160-13h320v-440H400v440Zm-160 13v-453 453Zm60 187h373q-6-14-9.5-28.5T660-220q0-16 3-31t10-29H300q-26 0-43 17.5T240-220q0 26 17 43t43 17Z"/></svg>');
+    --dark-important-block-border-color: #b06262;
+    --dark-important-block-background-color: #302323;
+    --dark-important-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23b06262"><path d="M480-120q-33 0-56.5-23.5T400-200q0-33 23.5-56.5T480-280q33 0 56.5 23.5T560-200q0 33-23.5 56.5T480-120Zm-80-240v-480h160v480H400Z"/></svg>');
+    --dark-note-block-border-color: #6fab76;
+    --dark-note-block-background-color: #233025;
+    --dark-note-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236fab76"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+    --dark-warning-block-border-color: #ab9c6f;
+    --dark-warning-block-background-color: #302b23;
+    --dark-warning-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab9c6f"><path d="M109-120q-11 0-20-5.5T75-140q-5-9-5.5-19.5T75-180l370-640q6-10 15.5-15t19.5-5q10 0 19.5 5t15.5 15l370 640q6 10 5.5 20.5T885-140q-5 9-14 14.5t-20 5.5H109Zm69-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm0-120q17 0 28.5-11.5T520-400v-120q0-17-11.5-28.5T480-560q-17 0-28.5 11.5T440-520v120q0 17 11.5 28.5T480-360Zm0-100Z"/></svg>');
 
     --indent: 3em;
     --border-radius: 0.25em;
@@ -68,6 +92,18 @@ html {
         --decision-block-border-color: var(--light-decision-block-border-color);
         --decision-block-background-color: var(--light-decision-block-background-color);
         --decision-block-image: var(--light-decision-block-image);
+        --example-block-border-color: var(--light-example-block-border-color);
+        --example-block-background-color: var(--light-example-block-background-color);
+        --example-block-image: var(--light-example-block-image);
+        --important-block-border-color: var(--light-important-block-border-color);
+        --important-block-background-color: var(--light-important-block-background-color);
+        --important-block-image: var(--light-important-block-image);
+        --note-block-border-color: var(--light-note-block-border-color);
+        --note-block-background-color: var(--light-note-block-background-color);
+        --note-block-image: var(--light-note-block-image);
+        --warning-block-border-color: var(--light-warning-block-border-color);
+        --warning-block-background-color: var(--light-warning-block-background-color);
+        --warning-block-image: var(--light-warning-block-image);
     }
 }
 
@@ -89,6 +125,18 @@ html {
         --decision-block-border-color: var(--dark-decision-block-border-color);
         --decision-block-background-color: var(--dark-decision-block-background-color);
         --decision-block-image: var(--dark-decision-block-image);
+        --example-block-border-color: var(--dark-example-block-border-color);
+        --example-block-background-color: var(--dark-example-block-background-color);
+        --example-block-image: var(--dark-example-block-image);
+        --important-block-border-color: var(--dark-important-block-border-color);
+        --important-block-background-color: var(--dark-important-block-background-color);
+        --important-block-image: var(--dark-important-block-image);
+        --note-block-border-color: var(--dark-note-block-border-color);
+        --note-block-background-color: var(--dark-note-block-background-color);
+        --note-block-image: var(--dark-note-block-image);
+        --warning-block-border-color: var(--dark-warning-block-border-color);
+        --warning-block-background-color: var(--dark-warning-block-background-color);
+        --warning-block-image: var(--dark-warning-block-image);
     }
 }
 
@@ -109,6 +157,18 @@ html.light {
     --decision-block-border-color: var(--light-decision-block-border-color);
     --decision-block-background-color: var(--light-decision-block-background-color);
     --decision-block-image: var(--light-decision-block-image);
+    --example-block-border-color: var(--light-example-block-border-color);
+    --example-block-background-color: var(--light-example-block-background-color);
+    --example-block-image: var(--light-example-block-image);
+    --important-block-border-color: var(--light-important-block-border-color);
+    --important-block-background-color: var(--light-important-block-background-color);
+    --important-block-image: var(--light-important-block-image);
+    --note-block-border-color: var(--light-note-block-border-color);
+    --note-block-background-color: var(--light-note-block-background-color);
+    --note-block-image: var(--light-note-block-image);
+    --warning-block-border-color: var(--light-warning-block-border-color);
+    --warning-block-background-color: var(--light-warning-block-background-color);
+    --warning-block-image: var(--light-warning-block-image);
 }
 
 html.dark {
@@ -128,6 +188,18 @@ html.dark {
     --decision-block-border-color: var(--dark-decision-block-border-color);
     --decision-block-background-color: var(--dark-decision-block-background-color);
     --decision-block-image: var(--dark-decision-block-image);
+    --example-block-border-color: var(--dark-example-block-border-color);
+    --example-block-background-color: var(--dark-example-block-background-color);
+    --example-block-image: var(--dark-example-block-image);
+    --important-block-border-color: var(--dark-important-block-border-color);
+    --important-block-background-color: var(--dark-important-block-background-color);
+    --important-block-image: var(--dark-important-block-image);
+    --note-block-border-color: var(--dark-note-block-border-color);
+    --note-block-background-color: var(--dark-note-block-background-color);
+    --note-block-image: var(--dark-note-block-image);
+    --warning-block-border-color: var(--dark-warning-block-border-color);
+    --warning-block-background-color: var(--dark-warning-block-background-color);
+    --warning-block-image: var(--dark-warning-block-image);
 }
 
 /* END LIGHT AND DARK THEME */
@@ -163,12 +235,17 @@ code-block,
 blockquote,
 decision-block,
 dl,
+example-block,
 ol,
+important-block,
 math[display=block],
+note-block,
 p,
 pre,
 samp,
-ul {
+ul,
+warning-block {
+    display: block;
     margin-top: 1em;
     margin-bottom: 1em;
 }
@@ -202,7 +279,11 @@ dd {
 }
 
 blockquote,
-decision-block {
+decision-block,
+example-block,
+important-block,
+note-block,
+warning-block {
     --border-thickness: 0.25em;
     --left-pad: 0.5em;
 
@@ -213,16 +294,17 @@ decision-block {
 
     border-top-right-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
-
-    background-color: var(--blockquote-background-color);
-    border-left: var(--border-thickness) solid var(--blockquote-border-color);
 }
 
 blockquote::before,
-decision-block::before {
+decision-block::before,
+example-block::before,
+important-block::before,
+note-block::before,
+warning-block::before {
     position: absolute;
     left: -2.5em;
-    top: 0em;
+    top: 0.25em;
     width: 2em;
     height: 2em;
 
@@ -231,6 +313,11 @@ decision-block::before {
     background-size: contain;
     background-repeat: no-repeat;
 
+}
+
+blockquote {
+    background-color: var(--blockquote-background-color);
+    border-left: var(--border-thickness) solid var(--blockquote-border-color);
 }
 
 blockquote::before {
@@ -251,11 +338,6 @@ code,
 tt,
 tt- {
     font-size: var(--monospace-size);
-}
-
-code-block,
-decision-block {
-    display: block;
 }
 
 code-block {
@@ -397,8 +479,64 @@ decision-block::before {
 }
 
 decision-block intro-::before {
-    content: "Decision Required:";
+    content: "Decision:";
     color: var(--decision-block-border-color);
+}
+
+example-block {
+    background-color: var(--example-block-background-color);
+    border-left: var(--border-thickness) solid var(--example-block-border-color);
+}
+
+example-block::before {
+    background-image: var(--example-block-image);
+}
+
+example-block intro-::before {
+    content: "Example:";
+    color: var(--example-block-border-color);
+}
+
+note-block {
+    background-color: var(--note-block-background-color);
+    border-left: var(--border-thickness) solid var(--note-block-border-color);
+}
+
+note-block::before {
+    background-image: var(--note-block-image);
+}
+
+note-block intro-::before {
+    content: "Note:";
+    color: var(--note-block-border-color);
+}
+
+important-block {
+    background-color: var(--important-block-background-color);
+    border-left: var(--border-thickness) solid var(--important-block-border-color);
+}
+
+important-block::before {
+    background-image: var(--important-block-image);
+}
+
+important-block intro-::before {
+    content: "Important:";
+    color: var(--important-block-border-color);
+}
+
+warning-block {
+    background-color: var(--warning-block-background-color);
+    border-left: var(--border-thickness) solid var(--warning-block-border-color);
+}
+
+warning-block::before {
+    background-image: var(--warning-block-image);
+}
+
+warning-block intro-::before {
+    content: "Warning:";
+    color: var(--warning-block-border-color);
 }
 
 /* SETTINGS MENU */
