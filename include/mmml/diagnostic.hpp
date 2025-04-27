@@ -92,6 +92,11 @@ inline constexpr std::u8string_view highlight_malformed = u8"highlight.malformed
 /// something went wrong.
 inline constexpr std::u8string_view highlight_error = u8"highlight.error";
 
+/// @brief The content of a \br directive tag was ignored.
+inline constexpr std::u8string_view br_content_ignored = u8"br.content.ignored";
+/// @brief The content of a \hr directive tag was ignored.
+inline constexpr std::u8string_view hr_content_ignored = u8"hr.content.ignored";
+
 /// @brief In document post-processing,
 /// a reference to a section was found that is not valid.
 inline constexpr std::u8string_view section_ref_not_found = u8"section_ref.not_found";

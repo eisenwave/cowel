@@ -253,6 +253,27 @@ struct Passthrough_Behavior : Directive_Behavior {
         = 0;
 };
 
+/// @brief Behavior for self-closing tags, like `<br/>` and `<hr/>`.
+struct Self_Closing_Behavior final : Pure_HTML_Behavior {
+private:
+    const std::u8string_view m_tag_name;
+    const std::u8string_view m_content_ignored_diagnostic;
+
+public:
+    constexpr Self_Closing_Behavior(
+        std::u8string_view tag_name,
+        std::u8string_view content_ignored_diagnostic,
+        Directive_Display display
+    )
+        : Pure_HTML_Behavior { display }
+        , m_tag_name { tag_name }
+        , m_content_ignored_diagnostic { content_ignored_diagnostic }
+    {
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
 /// @brief Behavior for any formatting tags that are mapped onto HTML with the same name.
 /// This includes `\\i{...}`, `\\strong`, and many more.
 ///

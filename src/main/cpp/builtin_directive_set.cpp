@@ -26,6 +26,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"b", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior blockquote //
         { u8"blockquote", Directive_Category::pure_html, Directive_Display::block };
+    Self_Closing_Behavior br //
+        { u8"br", diagnostic::br_content_ignored, Directive_Display::in_line };
     HTML_Entity_Behavior c //
         {};
     Syntax_Highlight_Behavior code //
@@ -60,6 +62,8 @@ struct Builtin_Directive_Set::Impl {
         { 5 };
     Heading_Behavior h6 //
         { 6 };
+    Self_Closing_Behavior hr //
+        { u8"hr", diagnostic::hr_content_ignored, Directive_Display::block };
     HTML_Literal_Behavior html //
         { Directive_Display::in_line };
     HTML_Literal_Behavior htmlblock //
@@ -142,6 +146,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-U",
         u8"-b",
         u8"-blockquote",
+        u8"-br",
         u8"-c",
         u8"-code",
         u8"-codeblock",
@@ -160,6 +165,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-h4",
         u8"-h5",
         u8"-h6",
+        u8"-hr",
         u8"-html",
         u8"-html-",
         u8"-htmlblock",
@@ -229,6 +235,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->b;
         if (name == u8"blockquote")
             return &m_impl->blockquote;
+        if (name == u8"br")
+            return &m_impl->br;
         break;
 
     case u8'c':
@@ -277,6 +285,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->h5;
         if (name == u8"h6")
             return &m_impl->h6;
+        if (name == u8"hr")
+            return &m_impl->hr;
         if (name == u8"html")
             return &m_impl->html;
         if (name == u8"htmlblock")

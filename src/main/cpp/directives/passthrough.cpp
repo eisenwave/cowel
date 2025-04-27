@@ -62,6 +62,26 @@ void Special_Block_Behavior::generate_html(
     out.close_tag(m_name);
 }
 
+void Self_Closing_Behavior::generate_html(
+    HTML_Writer& out,
+    const ast::Directive& d,
+    Context& context
+) const
+{
+    if (!d.get_content().empty()) {
+        const auto location = ast::get_source_span(d.get_content().front());
+        context.try_warning(
+            m_content_ignored_diagnostic, location,
+            u8"Content was ignored. Use empty braces,"
+            "i.e. {} to resolve this warning."
+        );
+    }
+
+    Attribute_Writer attributes = out.open_tag_with_attributes(m_tag_name);
+    arguments_to_attributes(attributes, d, context);
+    attributes.end_empty();
+}
+
 void List_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
 {
     static Fixed_Name_Passthrough_Behavior item_behavior { u8"li", Directive_Category::pure_html,
