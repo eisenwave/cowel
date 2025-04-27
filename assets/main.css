@@ -308,7 +308,7 @@ warning-block {
     --left-pad: 0.5em;
 
     position: relative;
-    width: 100%;
+    width: calc(100% - var(--indent));
     padding: 0.5em 0 0.5em var(--left-pad);
     margin-left: calc(var(--indent) - var(--border-thickness) - var(--left-pad));
 
