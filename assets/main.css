@@ -31,6 +31,9 @@ html {
     --light-note-block-border-color: #6fab6f;
     --light-note-block-background-color: #e6f4e9;
     --light-note-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236fab6f"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+    --light-todo-block-border-color: #6faba0;
+    --light-todo-block-background-color: #e6f4f3;
+    --light-todo-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236faba0"><path d="M680-80q-83 0-141.5-58.5T480-280q0-83 58.5-141.5T680-480q83 0 141.5 58.5T880-280q0 83-58.5 141.5T680-80Zm67-105 28-28-75-75v-112h-40v128l87 87Zm-547 65q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h167q11-35 43-57.5t70-22.5q40 0 71.5 22.5T594-840h166q33 0 56.5 23.5T840-760v250q-18-13-38-22t-42-16v-212h-80v120H280v-120h-80v560h212q7 22 16 42t22 38H200Zm280-640q17 0 28.5-11.5T520-800q0-17-11.5-28.5T480-840q-17 0-28.5 11.5T440-800q0 17 11.5 28.5T480-760Z"/></svg>');
     --light-warning-block-border-color: #af8141;
     --light-warning-block-background-color: #f4eee6;
     --light-warning-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23af8141"><path d="M109-120q-11 0-20-5.5T75-140q-5-9-5.5-19.5T75-180l370-640q6-10 15.5-15t19.5-5q10 0 19.5 5t15.5 15l370 640q6 10 5.5 20.5T885-140q-5 9-14 14.5t-20 5.5H109Zm69-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm0-120q17 0 28.5-11.5T520-400v-120q0-17-11.5-28.5T480-560q-17 0-28.5 11.5T440-520v120q0 17 11.5 28.5T480-360Zm0-100Z"/></svg>');
@@ -64,6 +67,9 @@ html {
     --dark-note-block-border-color: #6fab76;
     --dark-note-block-background-color: #233025;
     --dark-note-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236fab76"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+    --dark-todo-block-border-color: #6fab98;
+    --dark-todo-block-background-color: #23302e;
+    --dark-todo-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236fab98"><path d="M680-80q-83 0-141.5-58.5T480-280q0-83 58.5-141.5T680-480q83 0 141.5 58.5T880-280q0 83-58.5 141.5T680-80Zm67-105 28-28-75-75v-112h-40v128l87 87Zm-547 65q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h167q11-35 43-57.5t70-22.5q40 0 71.5 22.5T594-840h166q33 0 56.5 23.5T840-760v250q-18-13-38-22t-42-16v-212h-80v120H280v-120h-80v560h212q7 22 16 42t22 38H200Zm280-640q17 0 28.5-11.5T520-800q0-17-11.5-28.5T480-840q-17 0-28.5 11.5T440-800q0 17 11.5 28.5T480-760Z"/></svg>');
     --dark-warning-block-border-color: #ab9c6f;
     --dark-warning-block-background-color: #302b23;
     --dark-warning-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab9c6f"><path d="M109-120q-11 0-20-5.5T75-140q-5-9-5.5-19.5T75-180l370-640q6-10 15.5-15t19.5-5q10 0 19.5 5t15.5 15l370 640q6 10 5.5 20.5T885-140q-5 9-14 14.5t-20 5.5H109Zm69-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm0-120q17 0 28.5-11.5T520-400v-120q0-17-11.5-28.5T480-560q-17 0-28.5 11.5T440-520v120q0 17 11.5 28.5T480-360Zm0-100Z"/></svg>');
@@ -101,6 +107,9 @@ html {
         --note-block-border-color: var(--light-note-block-border-color);
         --note-block-background-color: var(--light-note-block-background-color);
         --note-block-image: var(--light-note-block-image);
+        --todo-block-border-color: var(--light-todo-block-border-color);
+        --todo-block-background-color: var(--light-todo-block-background-color);
+        --todo-block-image: var(--light-todo-block-image);
         --warning-block-border-color: var(--light-warning-block-border-color);
         --warning-block-background-color: var(--light-warning-block-background-color);
         --warning-block-image: var(--light-warning-block-image);
@@ -134,6 +143,9 @@ html {
         --note-block-border-color: var(--dark-note-block-border-color);
         --note-block-background-color: var(--dark-note-block-background-color);
         --note-block-image: var(--dark-note-block-image);
+        --todo-block-border-color: var(--dark-todo-block-border-color);
+        --todo-block-background-color: var(--dark-todo-block-background-color);
+        --todo-block-image: var(--dark-todo-block-image);
         --warning-block-border-color: var(--dark-warning-block-border-color);
         --warning-block-background-color: var(--dark-warning-block-background-color);
         --warning-block-image: var(--dark-warning-block-image);
@@ -166,6 +178,9 @@ html.light {
     --note-block-border-color: var(--light-note-block-border-color);
     --note-block-background-color: var(--light-note-block-background-color);
     --note-block-image: var(--light-note-block-image);
+    --todo-block-border-color: var(--light-todo-block-border-color);
+    --todo-block-background-color: var(--light-todo-block-background-color);
+    --todo-block-image: var(--light-todo-block-image);
     --warning-block-border-color: var(--light-warning-block-border-color);
     --warning-block-background-color: var(--light-warning-block-background-color);
     --warning-block-image: var(--light-warning-block-image);
@@ -197,6 +212,9 @@ html.dark {
     --note-block-border-color: var(--dark-note-block-border-color);
     --note-block-background-color: var(--dark-note-block-background-color);
     --note-block-image: var(--dark-note-block-image);
+    --todo-block-border-color: var(--dark-todo-block-border-color);
+    --todo-block-background-color: var(--dark-todo-block-background-color);
+    --todo-block-image: var(--dark-todo-block-image);
     --warning-block-border-color: var(--dark-warning-block-border-color);
     --warning-block-background-color: var(--dark-warning-block-background-color);
     --warning-block-image: var(--dark-warning-block-image);
@@ -243,6 +261,7 @@ note-block,
 p,
 pre,
 samp,
+todo-block,
 ul,
 warning-block {
     display: block;
@@ -283,6 +302,7 @@ decision-block,
 example-block,
 important-block,
 note-block,
+todo-block,
 warning-block {
     --border-thickness: 0.25em;
     --left-pad: 0.5em;
@@ -301,6 +321,7 @@ decision-block::before,
 example-block::before,
 important-block::before,
 note-block::before,
+todo-block::before,
 warning-block::before {
     position: absolute;
     left: -2.5em;
@@ -497,6 +518,20 @@ example-block intro-::before {
     color: var(--example-block-border-color);
 }
 
+important-block {
+    background-color: var(--important-block-background-color);
+    border-left: var(--border-thickness) solid var(--important-block-border-color);
+}
+
+important-block::before {
+    background-image: var(--important-block-image);
+}
+
+important-block intro-::before {
+    content: "Important:";
+    color: var(--important-block-border-color);
+}
+
 note-block {
     background-color: var(--note-block-background-color);
     border-left: var(--border-thickness) solid var(--note-block-border-color);
@@ -511,18 +546,18 @@ note-block intro-::before {
     color: var(--note-block-border-color);
 }
 
-important-block {
-    background-color: var(--important-block-background-color);
-    border-left: var(--border-thickness) solid var(--important-block-border-color);
+todo-block {
+    background-color: var(--todo-block-background-color);
+    border-left: var(--border-thickness) solid var(--todo-block-border-color);
 }
 
-important-block::before {
-    background-image: var(--important-block-image);
+todo-block::before {
+    background-image: var(--todo-block-image);
 }
 
-important-block intro-::before {
-    content: "Important:";
-    color: var(--important-block-border-color);
+todo-block intro-::before {
+    content: "Todo:";
+    color: var(--todo-block-border-color);
 }
 
 warning-block {

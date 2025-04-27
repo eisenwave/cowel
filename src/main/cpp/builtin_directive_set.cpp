@@ -100,6 +100,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"sub", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior sup //
         { u8"sup", Directive_Category::formatting, Directive_Display::in_line };
+    Special_Block_Behavior todo //
+        { u8"todo-block" };
     Fixed_Name_Passthrough_Behavior tt //
         { u8"tt-", Directive_Category::formatting, Directive_Display::in_line };
     Code_Point_Behavior U //
@@ -180,6 +182,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-style",
         u8"-sub",
         u8"-sup",
+        u8"-todo",
         u8"-tt",
         u8"-u",
         u8"-ul",
@@ -339,6 +342,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8't':
+        if (name == u8"todo")
+            return &m_impl->todo;
         if (name == u8"tt")
             return &m_impl->tt;
         break;
