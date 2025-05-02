@@ -132,11 +132,27 @@ constexpr bool to_html_mode_is_paragraphed(To_HTML_Mode mode)
     return mode == To_HTML_Mode::paragraphs || mode == To_HTML_Mode::paragraphs_trimmed;
 }
 
+enum struct Paragraphs_State : bool {
+    outside,
+    inside,
+};
+
+/// @brief Converts the `content` to HTML,
+/// and depending on `mode`,
+/// possibly performing transformations like content trimming or paragraph splitting.
+/// @param out Output.
+/// @param content The content used to generate HTML.
+/// @param context The context.
+/// @param mode Unless set to `direct`, performs additional transformations.
+/// @param paragraphs_state Only meaningful when `to_html_mode_is_paragraphed(mode)` is `true`.
+/// If `inside` is given, it is assumed that the output already contains an opening `<p>` tag,
+/// and this content generation begins somewhere in the middle of the paragraph.
 void to_html(
     HTML_Writer& out,
     std::span<const ast::Content> content,
     Context& context,
-    To_HTML_Mode mode = To_HTML_Mode::direct
+    To_HTML_Mode mode = To_HTML_Mode::direct,
+    Paragraphs_State paragraphs_state = Paragraphs_State::outside
 );
 
 /// @brief Converts the source code of the content to HTML without any processing.

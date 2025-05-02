@@ -306,15 +306,35 @@ note-block,
 todo-block,
 warning-block {
     --border-thickness: 0.25em;
-    --left-pad: 0.5em;
+    --padding: 0.5em;
 
     position: relative;
     width: calc(100% - var(--indent));
-    padding: 0.5em 0 0.5em var(--left-pad);
-    margin-left: calc(var(--indent) - var(--border-thickness) - var(--left-pad));
+    padding: var(--padding);
+    margin-left: calc(var(--indent) - var(--border-thickness) - var(--padding) * 2);
 
     border-top-right-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
+}
+
+blockquote>:first-child,
+decision-block>:first-child,
+example-block>:first-child,
+important-block>:first-child,
+note-block>:first-child,
+todo-block>:first-child,
+warning-block>:first-child {
+    margin-top: 0;
+}
+
+blockquote>:last-child,
+decision-block>:last-child,
+example-block>:last-child,
+important-block>:last-child,
+note-block>:last-child,
+todo-block>:last-child,
+warning-block>:last-child {
+    margin-bottom: 0;
 }
 
 blockquote::before,

@@ -409,12 +409,13 @@ struct To_HTML_Paragraphs {
 private:
     HTML_Writer& m_out;
     Context& m_context;
-    bool m_in_paragraph = false;
+    Paragraphs_State m_state;
 
 public:
-    To_HTML_Paragraphs(HTML_Writer& out, Context& context)
+    To_HTML_Paragraphs(HTML_Writer& out, Context& context, Paragraphs_State initial_state)
         : m_out { out }
         , m_context { context }
+        , m_state { initial_state }
     {
     }
 
@@ -512,16 +513,16 @@ private:
         case Directive_Display::none: return;
 
         case Directive_Display::in_line:
-            if (!m_in_paragraph && display == Directive_Display::in_line) {
+            if (m_state == Paragraphs_State::outside && display == Directive_Display::in_line) {
                 m_out.open_tag(u8"p");
-                m_in_paragraph = true;
+                m_state = Paragraphs_State::inside;
             }
             return;
 
         case Directive_Display::block:
-            if (m_in_paragraph && display == Directive_Display::block) {
+            if (m_state == Paragraphs_State::inside && display == Directive_Display::block) {
                 m_out.close_tag(u8"p");
-                m_in_paragraph = false;
+                m_state = Paragraphs_State::outside;
             }
             return;
         }
@@ -541,7 +542,8 @@ void to_html(
     HTML_Writer& out,
     std::span<const ast::Content> content,
     Context& context,
-    To_HTML_Mode mode
+    To_HTML_Mode mode,
+    Paragraphs_State paragraphs_state
 )
 {
     if (to_html_mode_is_trimmed(mode)) {
@@ -559,7 +561,7 @@ void to_html(
 
     case To_HTML_Mode::paragraphs:
     case To_HTML_Mode::paragraphs_trimmed: {
-        To_HTML_Paragraphs impl { out, context };
+        To_HTML_Paragraphs impl { out, context, paragraphs_state };
 
         for (std::size_t i = 0; i < content.size(); ++i) {
             if (mode == To_HTML_Mode::paragraphs_trimmed) {
