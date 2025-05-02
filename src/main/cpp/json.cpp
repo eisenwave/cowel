@@ -109,7 +109,7 @@ struct Building_Visitor final : ulight::JSON_Visitor {
 };
 } // namespace
 
-inline std::optional<json::Value> load(std::u8string_view source, std::pmr::memory_resource* memory)
+std::optional<json::Value> load(std::u8string_view source, std::pmr::memory_resource* memory)
 {
     constexpr ulight::JSON_Options options { .allow_comments = true,
                                              .parse_numbers = true,
