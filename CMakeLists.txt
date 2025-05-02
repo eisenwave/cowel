@@ -58,6 +58,7 @@ add_library(mmml STATIC
     src/main/cpp/parse.cpp
     src/main/cpp/print.cpp
     src/main/cpp/services.cpp
+    src/main/cpp/theme_to_css.cpp
 )
 
 target_link_libraries(mmml ulight)
@@ -100,7 +101,6 @@ if(DEFINED EMSCRIPTEN)
 else(NOT DEFINED EMSCRIPTEN)
     add_executable(mmml-cli ${HEADERS}
         src/main/cpp/cli.cpp
-        src/main/cpp/theme_to_css.cpp
     )
     target_link_libraries(mmml-cli mmml ulight)
 

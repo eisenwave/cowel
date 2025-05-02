@@ -1,6 +1,7 @@
 #include <memory_resource>
 #include <unordered_set>
 
+#include "mmml/theme_to_css.hpp"
 #include "mmml/util/assert.hpp"
 #include "mmml/util/html_writer.hpp"
 #include "mmml/util/io.hpp"
@@ -24,9 +25,12 @@ void generate_document(const Generation_Options& options)
 
     HTML_Writer writer { options.output };
 
-    Context context { options.path,   options.source,      options.error_behavior, //
-                      options.logger, options.highlighter, options.document_finder, //
-                      options.memory, &transient_memory };
+    Context context {
+        options.path,           options.source,      options.highlight_theme_source, //
+        options.error_behavior, //
+        options.logger,         options.highlighter, options.document_finder, //
+        options.memory,         &transient_memory
+    };
     context.add_resolver(options.builtin_behavior);
 
     options.root_behavior.generate_html(writer, options.root_content, context);
@@ -231,7 +235,22 @@ void Document_Content_Behavior::generate_head(
         out.close_tag(tag);
     };
     include_css_or_js(u8"style", u8"assets/main.css");
-    include_css_or_js(u8"style", u8"assets/code.css");
+    {
+        out.write_inner_text(newline_indent);
+        out.open_tag(u8"style");
+        out.write_inner_html(u8'\n');
+        const std::u8string_view theme_json = context.get_highlight_theme_source();
+        if (!theme_to_css(out.get_output(), theme_json, context.get_transient_memory())) {
+            context.try_error(
+                diagnostic::theme_conversion, {},
+                u8"Failed to convert the syntax highlight theme to CSS, "
+                u8"possibly because the JSON was malformed."
+            );
+        }
+        out.write_inner_html(indent);
+        out.close_tag(u8"style");
+    }
+
     include_css_or_js(u8"script", u8"assets/light-dark.js");
     out.write_inner_html(u8'\n');
 }

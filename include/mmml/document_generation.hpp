@@ -29,6 +29,8 @@ struct Generation_Options {
     const std::filesystem::path& path;
     /// @brief The document source code.
     std::u8string_view source;
+    /// @brief The highlight theme source.
+    std::u8string_view highlight_theme_source;
 
     Logger& logger = ignorant_logger;
     Syntax_Highlighter& highlighter = no_support_syntax_highlighter;

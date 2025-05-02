@@ -90,10 +90,18 @@ struct Doc_Gen_Test : testing::Test {
     Builtin_Directive_Set builtin_directives {};
     std::filesystem::path file_path;
     std::pmr::vector<char8_t> source { &memory };
+    std::pmr::vector<char8_t> theme_source { &memory };
     std::u8string_view source_string {};
+    std::u8string_view theme_source_string {};
     std::pmr::vector<ast::Content> content { &memory };
 
     Collecting_Logger logger { &memory };
+
+    Doc_Gen_Test()
+    {
+        const bool theme_loaded = load_theme();
+        MMML_ASSERT(theme_loaded);
+    }
 
     [[nodiscard]]
     bool load_document(const std::filesystem::path& path)
@@ -104,6 +112,18 @@ struct Doc_Gen_Test : testing::Test {
         }
         source_string = { source.data(), source.size() };
         content = parse_and_build(source_string, &memory);
+        return true;
+    }
+
+    [[nodiscard]]
+    bool load_theme()
+    {
+        constexpr std::string_view theme_path = "ulight/themes/wg21.json";
+
+        if (!load_utf8_file_or_error(theme_source, theme_path, &memory)) {
+            return false;
+        }
+        theme_source_string = { source.data(), source.size() };
         return true;
     }
 
@@ -123,6 +143,7 @@ struct Doc_Gen_Test : testing::Test {
                                            .error_behavior = &error_behavior,
                                            .path = file_path,
                                            .source = source_string,
+                                           .highlight_theme_source = theme_source_string,
                                            .logger = logger,
                                            .highlighter = test_highlighter,
                                            .memory = &memory };

@@ -105,6 +105,10 @@ inline constexpr std::u8string_view section_ref_not_found = u8"section_ref.not_f
 /// a reference to a section forms a circular dependency.
 inline constexpr std::u8string_view section_ref_circular = u8"section_ref.circular";
 
+/// @brief When loading a syntax highlighting theme,
+/// conversion from JSON to to CSS failed.
+inline constexpr std::u8string_view theme_conversion = u8"theme.conversion";
+
 } // namespace diagnostic
 
 } // namespace mmml

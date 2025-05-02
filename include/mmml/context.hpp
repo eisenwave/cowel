@@ -59,6 +59,8 @@ private:
     std::pmr::memory_resource* m_transient_memory;
     /// @brief Source code of the document.
     string_view_type m_source;
+    /// @brief JSON source code of the syntax highlighting theme.
+    string_view_type m_highlight_theme_source;
     /// @brief A list of (non-null) name resolvers.
     /// Whenever directives have to be looked up,
     /// these are processed from
@@ -91,6 +93,7 @@ public:
     explicit Context(
         const std::filesystem::path& path,
         string_view_type source,
+        string_view_type highlight_theme_source,
         Directive_Behavior* error_behavior,
         Logger& logger,
         Syntax_Highlighter& highlighter,
@@ -102,6 +105,7 @@ public:
         , m_memory { persistent_memory }
         , m_transient_memory { transient_memory }
         , m_source { source }
+        , m_highlight_theme_source { highlight_theme_source }
         , m_error_behavior { error_behavior }
         , m_logger { logger }
         , m_syntax_highlighter { highlighter }
@@ -219,6 +223,12 @@ public:
     string_view_type get_source() const
     {
         return m_source;
+    }
+
+    [[nodiscard]]
+    string_view_type get_highlight_theme_source() const
+    {
+        return m_highlight_theme_source;
     }
 
     /// @brief Returns the inclusive minimum level of diagnostics that are currently emitted.

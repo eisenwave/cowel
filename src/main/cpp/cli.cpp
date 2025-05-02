@@ -94,9 +94,20 @@ int main(int argc, const char* const* argv)
 
     const std::string_view in_path = argv[1];
     const std::string_view out_path = argv[2];
+    constexpr std::string_view theme_path = "ulight/themes/wg21.json";
 
-    Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text = load_utf8_file(in_path, &memory);
+    const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text
+        = load_utf8_file(in_path, &memory);
     if (!in_text) {
+        Diagnostic_String error { &memory };
+        print_io_error(error, in_path, in_text.error());
+        print_code_string_stderr(error);
+        return EXIT_FAILURE;
+    }
+
+    const Result<std::pmr::vector<char8_t>, IO_Error_Code> theme_json
+        = load_utf8_file(theme_path, &memory);
+    if (!theme_json) {
         Diagnostic_String error { &memory };
         print_io_error(error, in_path, in_text.error());
         print_code_string_stderr(error);
@@ -110,6 +121,7 @@ int main(int argc, const char* const* argv)
 
     std::pmr::vector<char8_t> out_text { &memory };
     const std::u8string_view in_source { in_text->data(), in_text->size() };
+    const std::u8string_view theme_source { theme_json->data(), theme_json->size() };
 
     const std::pmr::vector<ast::Content> root_content = parse_and_build(in_source, &memory);
 
@@ -119,6 +131,7 @@ int main(int argc, const char* const* argv)
                                        .builtin_behavior = builtin_directives,
                                        .path = in_path,
                                        .source = in_source,
+                                       .highlight_theme_source = theme_source,
                                        .logger = logger,
                                        .highlighter = highlighter,
                                        .memory = &memory };

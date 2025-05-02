@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "mmml/fwd.hpp"
 #include "mmml/json.hpp"
 #include "ulight/ulight.hpp"
 
@@ -21,11 +20,6 @@ struct Property {
 struct Style {
     ulight::Highlight_Type type;
     std::pmr::vector<Property> properties;
-};
-
-enum struct Variant_Type : Default_Underlying {
-    light,
-    dark,
 };
 
 struct Highlight_Lookup_Entry {
@@ -157,7 +151,7 @@ bool theme_to_css(
     }
     out.push_back(u8'\n');
 
-    for (const auto& style : light_styles) {
+    for (const auto& style : dark_styles) {
         append(out, u8"html.dark ");
         write_style(out, style);
     }
