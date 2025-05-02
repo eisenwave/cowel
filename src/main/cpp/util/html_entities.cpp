@@ -44,7 +44,9 @@ const Character_Reference* character_reference_by_name(std::u8string_view name) 
 
 } // namespace
 
-constinit const auto html_character_names = [] {
+// We cannot use auto here because:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78217
+constinit const std::array<std::u8string_view, std::size(references)> html_character_names = [] {
     std::array<std::u8string_view, std::size(references)> result;
     for (std::size_t i = 0; i < result.size(); ++i) {
         result[i] = references[i].name_as_string();
