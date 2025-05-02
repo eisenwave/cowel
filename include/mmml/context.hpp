@@ -283,7 +283,7 @@ public:
         return { .severity = severity,
                  .id = id,
                  .location = location,
-                 .message { get_persistent_memory() } };
+                 .message = std::pmr::u8string { get_persistent_memory() } };
     }
 
     [[nodiscard]]
@@ -324,7 +324,7 @@ public:
         return { .severity = severity,
                  .id = id,
                  .location = location,
-                 .message { message, get_persistent_memory() } };
+                 .message = std::pmr::u8string { message, get_persistent_memory() } };
     }
 
     void add_resolver(const Name_Resolver& resolver)
