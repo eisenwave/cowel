@@ -53,6 +53,7 @@ add_library(mmml STATIC
     src/main/cpp/directive_processing.cpp
     src/main/cpp/builtin_directive_set.cpp
     src/main/cpp/document_generation.cpp
+    src/main/cpp/json.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/parse.cpp
     src/main/cpp/print.cpp
@@ -99,6 +100,7 @@ if(DEFINED EMSCRIPTEN)
 else(NOT DEFINED EMSCRIPTEN)
     add_executable(mmml-cli ${HEADERS}
         src/main/cpp/cli.cpp
+        src/main/cpp/theme_to_css.cpp
     )
     target_link_libraries(mmml-cli mmml ulight)
 
