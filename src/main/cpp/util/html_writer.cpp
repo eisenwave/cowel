@@ -121,7 +121,7 @@ HTML_Writer& HTML_Writer::write_preamble()
     return *this;
 }
 
-HTML_Writer& HTML_Writer::write_empty_tag(string_view_type id)
+HTML_Writer& HTML_Writer::write_self_closing_tag(string_view_type id)
 {
     MMML_ASSERT(!m_in_attributes);
     MMML_ASSERT(is_html_tag_name(id));
@@ -142,6 +142,20 @@ HTML_Writer& HTML_Writer::open_tag(string_view_type id)
     do_write(id);
     do_write(u8'>');
     ++m_depth;
+
+    return *this;
+}
+
+HTML_Writer& HTML_Writer::open_and_close_tag(string_view_type id)
+{
+    MMML_ASSERT(!m_in_attributes);
+    MMML_ASSERT(is_html_tag_name(id));
+
+    do_write(u8'<');
+    do_write(id);
+    do_write(u8"></");
+    do_write(id);
+    do_write(u8'>');
 
     return *this;
 }

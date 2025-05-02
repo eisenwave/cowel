@@ -64,7 +64,7 @@ TEST_F(HTML_Writer_Test, empty_tag)
 {
     constexpr std::u8string_view expected = u8"<br/>";
 
-    writer.write_empty_tag(u8"br");
+    writer.write_self_closing_tag(u8"br");
 
     EXPECT_EQ(expected, as_view(out));
 }

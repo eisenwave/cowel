@@ -121,14 +121,17 @@ public:
     /// However, it is not required to call this.
     Self& write_preamble();
 
-    /// @brief Writes an empty tag such as `<br/>` or `<hr/>`.
-    Self& write_empty_tag(string_view_type id);
+    /// @brief Writes a self-closing tag such as `<br/>` or `<hr/>`.
+    Self& write_self_closing_tag(string_view_type id);
 
     /// @brief Writes an HTML comment with the given contents.
     Self& write_comment(string_view_type comment);
 
     /// @brief Writes an opening tag such as `<div>`.
     Self& open_tag(string_view_type id);
+
+    /// @brief Writes an opening tag immediately followed by a closing tag, like `<div></div>`.
+    Self& open_and_close_tag(string_view_type id);
 
     /// @brief Writes an incomplete opening tag such as `<div`.
     /// Returns an `Attribute_Writer` which must be used to write attributes (if any)
