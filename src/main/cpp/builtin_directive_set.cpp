@@ -40,6 +40,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"decision-block" };
     Fixed_Name_Passthrough_Behavior del //
         { u8"del", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior details //
+        { u8"details", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dl //
         { u8"dl", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dt //
@@ -102,6 +104,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"style" };
     Fixed_Name_Passthrough_Behavior sub //
         { u8"sub", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior summary //
+        { u8"summary", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior sup //
         { u8"sup", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior table //
@@ -168,6 +172,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-dd",
         u8"-decision",
         u8"-del",
+        u8"-details",
         u8"-dl",
         u8"-dt",
         u8"-em",
@@ -201,6 +206,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-strong",
         u8"-style",
         u8"-sub",
+        u8"-summary",
         u8"-sup",
         u8"-table",
         u8"-tbody",
@@ -278,6 +284,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->decision;
         if (name == u8"del")
             return &m_impl->del;
+        if (name == u8"details")
+            return &m_impl->details;
         if (name == u8"dl")
             return &m_impl->dl;
         if (name == u8"dt")
@@ -368,6 +376,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->style;
         if (name == u8"sub")
             return &m_impl->sub;
+        if (name == u8"summary")
+            return &m_impl->summary;
         if (name == u8"sup")
             return &m_impl->sup;
         break;

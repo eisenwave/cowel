@@ -24,6 +24,9 @@ html {
     --light-decision-block-border-color: #ab6fa2;
     --light-decision-block-background-color: #f4e6f4;
     --light-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
+    --light-details-border-color: #707070;
+    --light-details-background-color: #f0f0f0;
+    --light-details-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
     --light-example-block-border-color: #6f8aab;
     --light-example-block-background-color: #e6e9f4;
     --light-example-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236f8aab"><path d="M300-80q-58 0-99-41t-41-99v-520q0-58 41-99t99-41h500v600q-25 0-42.5 17.5T740-220q0 25 17.5 42.5T800-160v80H300Zm-60-267q14-7 29-10t31-3h20v-440h-20q-25 0-42.5 17.5T240-740v393Zm160-13h320v-440H400v440Zm-160 13v-453 453Zm60 187h373q-6-14-9.5-28.5T660-220q0-16 3-31t10-29H300q-26 0-43 17.5T240-220q0 26 17 43t43 17Z"/></svg>');
@@ -61,6 +64,9 @@ html {
     --dark-blockquote-border-color: #707070;
     --dark-blockquote-background-color: #2c2c2c;
     --dark-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23707070"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
+    --dark-details-border-color: #707070;
+    --dark-details-background-color: #2c2c2c;
+    --dark-details-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
     --dark-decision-block-border-color: #ab6fa2;
     --dark-decision-block-background-color: #30232d;
     --dark-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
@@ -109,6 +115,9 @@ html {
         --decision-block-border-color: var(--light-decision-block-border-color);
         --decision-block-background-color: var(--light-decision-block-background-color);
         --decision-block-image: var(--light-decision-block-image);
+        --details-border-color: var(--light-details-border-color);
+        --details-background-color: var(--light-details-background-color);
+        --details-image: var(--light-details-image);
         --example-block-border-color: var(--light-example-block-border-color);
         --example-block-background-color: var(--light-example-block-background-color);
         --example-block-image: var(--light-example-block-image);
@@ -150,6 +159,9 @@ html {
         --decision-block-border-color: var(--dark-decision-block-border-color);
         --decision-block-background-color: var(--dark-decision-block-background-color);
         --decision-block-image: var(--dark-decision-block-image);
+        --details-border-color: var(--dark-details-border-color);
+        --details-background-color: var(--dark-details-background-color);
+        --details-image: var(--dark-details-image);
         --example-block-border-color: var(--dark-example-block-border-color);
         --example-block-background-color: var(--dark-example-block-background-color);
         --example-block-image: var(--dark-example-block-image);
@@ -190,6 +202,9 @@ html.light {
     --decision-block-border-color: var(--light-decision-block-border-color);
     --decision-block-background-color: var(--light-decision-block-background-color);
     --decision-block-image: var(--light-decision-block-image);
+    --details-border-color: var(--light-details-border-color);
+    --details-background-color: var(--light-details-background-color);
+    --details-image: var(--light-details-image);
     --example-block-border-color: var(--light-example-block-border-color);
     --example-block-background-color: var(--light-example-block-background-color);
     --example-block-image: var(--light-example-block-image);
@@ -229,6 +244,9 @@ html.dark {
     --decision-block-border-color: var(--dark-decision-block-border-color);
     --decision-block-background-color: var(--dark-decision-block-background-color);
     --decision-block-image: var(--dark-decision-block-image);
+    --details-border-color: var(--dark-details-border-color);
+    --details-background-color: var(--dark-details-background-color);
+    --details-image: var(--dark-details-image);
     --example-block-border-color: var(--dark-example-block-border-color);
     --example-block-background-color: var(--dark-example-block-background-color);
     --example-block-image: var(--dark-example-block-image);
@@ -281,6 +299,7 @@ main {
 code-block,
 blockquote,
 decision-block,
+details,
 dl,
 example-block,
 hr,
@@ -329,6 +348,7 @@ dd {
 }
 
 blockquote,
+details,
 decision-block,
 example-block,
 important-block,
@@ -349,6 +369,7 @@ warning-block {
 }
 
 blockquote>:first-child,
+details>:first-child,
 decision-block>:first-child,
 example-block>:first-child,
 important-block>:first-child,
@@ -360,6 +381,7 @@ warning-block>:first-child {
 }
 
 blockquote>:last-child,
+details>:last-child,
 decision-block>:last-child,
 example-block>:last-child,
 important-block>:last-child,
@@ -371,6 +393,7 @@ warning-block>:last-child {
 }
 
 blockquote::before,
+details::before,
 decision-block::before,
 example-block::before,
 important-block::before,
@@ -399,6 +422,27 @@ blockquote {
 blockquote::before {
     background-image: var(--blockquote-image);
     top: -0.25em;
+}
+
+details {
+    background-color: var(--details-background-color);
+    border-left: var(--border-thickness) solid var(--details-border-color);
+}
+
+details::before {
+    background-image: var(--details-image);
+}
+
+summary {
+    font-family: var(--sans-serif-family);
+    font-size: var(--sans-serif-size);
+    color: var(--details-border-color);
+    user-select: none;
+    cursor: pointer;
+}
+
+details[open]>summary {
+    margin-bottom: 0.5em;
 }
 
 code,
