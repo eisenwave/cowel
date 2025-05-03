@@ -513,6 +513,9 @@ h6 {
 
 table {
     --border: 1px solid var(--table-border-color);
+
+    margin-top: 1em;
+    margin-bottom: 1em;
     border-collapse: collapse;
 }
 
