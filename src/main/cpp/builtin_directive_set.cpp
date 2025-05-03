@@ -104,10 +104,22 @@ struct Builtin_Directive_Set::Impl {
         { u8"sub", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior sup //
         { u8"sup", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior table //
+        { u8"table", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior tbody //
+        { u8"tbody", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior td //
+        { u8"td", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior th //
+        { u8"th", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior thead //
+        { u8"thead", Directive_Category::pure_html, Directive_Display::block };
     Special_Block_Behavior tip //
         { u8"tip-block" };
     Special_Block_Behavior todo //
         { u8"todo-block" };
+    Fixed_Name_Passthrough_Behavior tr //
+        { u8"tr", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior tt //
         { u8"tt-", Directive_Category::formatting, Directive_Display::in_line };
     Code_Point_Behavior U //
@@ -190,8 +202,14 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-style",
         u8"-sub",
         u8"-sup",
+        u8"-table",
+        u8"-tbody",
+        u8"-td",
+        u8"-th",
+        u8"-thead",
         u8"-tip",
         u8"-todo",
+        u8"-trow",
         u8"-tt",
         u8"-u",
         u8"-ul",
@@ -355,10 +373,22 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8't':
+        if (name == u8"table")
+            return &m_impl->table;
+        if (name == u8"tbody")
+            return &m_impl->tbody;
+        if (name == u8"td")
+            return &m_impl->td;
+        if (name == u8"th")
+            return &m_impl->th;
+        if (name == u8"thead")
+            return &m_impl->thead;
         if (name == u8"tip")
             return &m_impl->tip;
         if (name == u8"todo")
             return &m_impl->todo;
+        if (name == u8"tr")
+            return &m_impl->tr;
         if (name == u8"tt")
             return &m_impl->tt;
         break;

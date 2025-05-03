@@ -10,6 +10,7 @@ html {
     --light-deep-background-color: #fafafa;
     --light-text-color: black;
     --light-border-color: #aaa;
+    --light-table-border-color: #777;
     --light-del-color: #be1621;
     --light-del-background-color: #fbe6e8;
     --light-ins-color: #17752d;
@@ -46,6 +47,7 @@ html {
     --dark-deep-background-color: #1a1a1a;
     --dark-text-color: #f0f0f0;
     --dark-border-color: #505050;
+    --dark-table-border-color: #777;
     --dark-del-background-color: #67060c;
     --dark-del-color: #ffdcd7;
     --dark-ins-background-color: #033a16;
@@ -93,6 +95,7 @@ html {
         --deep-background-color: var(--light-deep-background-color);
         --text-color: var(--light-text-color);
         --border-color: var(--light-border-color);
+        --table-border-color: var(--light-table-border-color);
         --del-color: var(--light-del-color);
         --del-background-color: var(--light-del-background-color);
         --ins-color: var(--light-ins-color);
@@ -133,6 +136,7 @@ html {
         --deep-background-color: var(--dark-deep-background-color);
         --text-color: var(--dark-text-color);
         --border-color: var(--dark-border-color);
+        --table-border-color: var(--dark-table-border-color);
         --del-color: var(--dark-del-color);
         --del-background-color: var(--dark-del-background-color);
         --ins-color: var(--dark-ins-color);
@@ -172,6 +176,7 @@ html.light {
     --deep-background-color: var(--light-deep-background-color);
     --text-color: var(--light-text-color);
     --border-color: var(--light-border-color);
+    --table-border-color: var(--light-table-border-color);
     --del-color: var(--light-del-color);
     --del-background-color: var(--light-del-background-color);
     --ins-color: var(--light-ins-color);
@@ -210,6 +215,7 @@ html.dark {
     --deep-background-color: var(--dark-deep-background-color);
     --text-color: var(--dark-text-color);
     --border-color: var(--dark-border-color);
+    --table-border-color: var(--dark-table-border-color);
     --del-color: var(--dark-del-color);
     --del-background-color: var(--dark-del-background-color);
     --ins-color: var(--dark-ins-color);
@@ -503,6 +509,28 @@ h4,
 h5,
 h6 {
     position: relative;
+}
+
+table {
+    --border: 1px solid var(--table-border-color);
+    border-collapse: collapse;
+}
+
+table,
+tbody,
+thead,
+th {
+    border: var(--border);
+}
+
+td {
+    border-left: var(--border);
+    border-right: var(--border);
+}
+
+td,
+th {
+    padding: 0.1em 0.5em;
 }
 
 .para {
