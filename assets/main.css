@@ -555,6 +555,35 @@ h4,
 h5,
 h6 {
     position: relative;
+    margin: 1rem 0;
+}
+
+h1 {
+    margin: 1.5rem 0;
+    font-size: 250%;
+}
+
+h2 {
+    margin: 1.5rem 0;
+    font-size: 166%;
+}
+
+h3 {
+    font-size: 133%;
+}
+
+h4 {
+    font-size: 100%;
+}
+
+h5 {
+    font-size: 100%;
+    font-weight: normal;
+}
+
+h6 {
+    font-size: 90%;
+    font-weight: normal;
 }
 
 table {
@@ -590,7 +619,8 @@ th {
     opacity: 0.25;
 
     position: absolute;
-    left: -1.5rem;
+    top: 0.05em;
+    left: calc(-1rem - 0.5ch);
 }
 
 .para,
