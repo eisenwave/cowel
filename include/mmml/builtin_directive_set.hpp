@@ -367,6 +367,61 @@ public:
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
 };
 
+struct Meta_Behavior : Directive_Behavior {
+
+    constexpr explicit Meta_Behavior()
+        : Directive_Behavior { Directive_Category::meta, Directive_Display::none }
+    {
+    }
+
+    void generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive& d, Context& context)
+        const final
+    {
+        evaluate(d, context);
+    }
+
+    void generate_html(HTML_Writer&, const ast::Directive& d, Context& context) const final
+    {
+        evaluate(d, context);
+    }
+
+    virtual void evaluate(const ast::Directive& d, Context& context) const = 0;
+};
+
+struct There_Behavior final : Meta_Behavior {
+
+    void evaluate(const ast::Directive& d, Context& context) const final;
+};
+
+struct Here_Behavior final : Pure_HTML_Behavior {
+    constexpr explicit Here_Behavior(Directive_Display display)
+        : Pure_HTML_Behavior { display }
+    {
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
+struct Table_Of_Contents_Behavior final : Pure_HTML_Behavior {
+private:
+    const std::u8string_view m_class_name;
+    const std::u8string_view m_section_name;
+
+public:
+    constexpr explicit Table_Of_Contents_Behavior(
+        Directive_Display display,
+        std::u8string_view class_name,
+        std::u8string_view section_name
+    )
+        : Pure_HTML_Behavior { display }
+        , m_class_name { class_name }
+        , m_section_name { section_name }
+    {
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
 struct Math_Behavior final : Pure_HTML_Behavior {
 
     constexpr Math_Behavior(Directive_Display display)
@@ -401,6 +456,20 @@ public:
     [[nodiscard]]
     Directive_Behavior* operator()(std::u8string_view name) const final;
 };
+
+namespace class_name {
+
+inline constexpr std::u8string_view table_of_contents = u8"toc";
+
+}
+
+namespace section_name {
+
+inline constexpr std::u8string_view document_head = u8"std.head";
+inline constexpr std::u8string_view document_body = u8"std.body";
+inline constexpr std::u8string_view table_of_contents = u8"std.toc";
+
+} // namespace section_name
 
 } // namespace mmml
 

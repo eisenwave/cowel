@@ -1,12 +1,17 @@
+#include <algorithm>
 #include <string_view>
 #include <vector>
 
+#include "mmml/diagnostic.hpp"
 #include "mmml/util/chars.hpp"
+#include "mmml/util/function_ref.hpp"
 #include "mmml/util/strings.hpp"
 
 #include "mmml/builtin_directive_set.hpp"
 #include "mmml/directive_arguments.hpp"
 #include "mmml/directive_processing.hpp"
+#include "mmml/document_sections.hpp"
+#include "mmml/util/to_chars.hpp"
 
 namespace mmml {
 namespace {
@@ -60,12 +65,15 @@ bool synthesize_id(
     return true;
 }
 
+// TODO: this should be done via variables and the context or something
+thread_local int h_counters[6] {};
+
 } // namespace
 
 void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context)
     const
 {
-    static constexpr std::u8string_view parameters[] { u8"id" };
+    static constexpr std::u8string_view parameters[] { u8"id", u8"listed" };
 
     const auto level_char = char8_t(int(u8'0') + m_level);
     const char8_t tag_name_data[2] { u8'h', level_char };
@@ -74,6 +82,34 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
     Argument_Matcher args { parameters, context.get_transient_memory() };
     args.match(d.get_arguments(), context.get_source(), Parameter_Match_Mode::only_named);
     const int id_index = args.get_argument_index(u8"id");
+
+    // Determine whether the heading should be listed in the table of contents.
+    const auto is_listed = [&] -> bool {
+        // h1 headings are not listed by default because it would be silly
+        // for the top-level heading to re-appear in the table of contents.
+        // Also, low-level headings like h5 and h6 are typically not relevant.
+        bool listed_by_default = m_level >= 2 && m_level <= 4;
+        std::pmr::vector<char8_t> listed_data { context.get_transient_memory() };
+        if (!argument_to_plaintext(listed_data, d, args, u8"listed", context)) {
+            return listed_by_default;
+        }
+        const auto listed_string = as_u8string_view(listed_data);
+        if (listed_string == u8"no") {
+            return false;
+        }
+        if (listed_string == u8"yes") {
+            return true;
+        }
+        // TODO: add invalid enum diagnostics
+        return listed_by_default;
+    }();
+
+    if (is_listed) {
+        // Update heading numbers.
+        MMML_ASSERT(m_level >= 1 && m_level <= 6);
+        ++h_counters[m_level - 1];
+        std::ranges::fill(h_counters + m_level, std::end(h_counters), 0);
+    }
 
     std::pmr::vector<char8_t> id_data { context.get_transient_memory() };
     bool has_id = false;
@@ -101,8 +137,35 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
     }
     attributes.end();
 
-    // 2. Generate a paragraph symbol with anchor link.
-    if (has_id) {
+    // 2. Generate user content in the heading.
+    std::pmr::vector<char8_t> heading_html { context.get_transient_memory() };
+    HTML_Writer heading_html_writer { heading_html };
+    to_html(heading_html_writer, d.get_content(), context);
+    const auto heading_html_string = as_u8string_view(heading_html);
+
+    // 3. Check for id duplication.
+    const bool has_valid_id = [&] {
+        if (!has_id) {
+            return false;
+        }
+        const std::u8string_view id_string_view { id_data.data(), id_data.size() };
+        std::pmr::u8string id_string { id_string_view, context.get_transient_memory() };
+        if (context.emplace_id(std::move(id_string), { heading_html_string })) {
+            return true;
+        }
+        if (!context.emits(Severity::warning)) {
+            return false;
+        }
+        Diagnostic error = context.make_warning(diagnostic::duplicate_id, d.get_source_span());
+        error.message.append(u8"Duplicate id \"");
+        error.message.append(id_string_view);
+        error.message.append(u8"\". Heading will be generated, but references may be broken.");
+        context.emit(std::move(error));
+        return false;
+    }();
+
+    // 4. Surround user content with paragraph/anchor link.
+    if (has_valid_id) {
         id_data.insert(id_data.begin(), u8'#');
         out.open_tag_with_attributes(u8"a") //
             .write_class(u8"para")
@@ -110,11 +173,115 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
             .end();
         out.close_tag(u8"a");
     }
-
-    // 3. Generate user content in the heading.
-    to_html(out, d.get_content(), context);
-
+    const auto write_numbers = [&](HTML_Writer& to) {
+        for (int i = 1; i < m_level; ++i) {
+            if (i != 1) {
+                to.write_inner_html(u8'.');
+            }
+            const int counter = h_counters[i];
+            to.write_inner_html(to_characters8(counter).as_string());
+        }
+    };
+    if (is_listed) {
+        write_numbers(out);
+        out.write_inner_html(u8". ");
+    }
+    out.write_inner_html(heading_html_string);
     out.close_tag(tag_name);
+
+    // 6. If necessary, also output the heading into the table of contents.
+    if (is_listed) {
+        Document_Sections& sections = context.get_sections();
+        const auto scope = sections.go_to_scoped(section_name::table_of_contents);
+        HTML_Writer toc_writer = sections.current_html();
+
+        toc_writer
+            .open_tag_with_attributes(u8"div") //
+            .write_class(u8"toc-num")
+            .end();
+        write_numbers(toc_writer);
+        toc_writer.close_tag(u8"div");
+
+        if (has_valid_id) {
+            toc_writer
+                .open_tag_with_attributes(u8"a") //
+                .write_href(as_u8string_view(id_data))
+                .end();
+        }
+
+        toc_writer.open_tag(tag_name);
+        toc_writer.write_inner_html(heading_html_string);
+        toc_writer.close_tag(tag_name);
+
+        if (has_valid_id) {
+            toc_writer.close_tag(u8"a");
+        }
+    }
+}
+
+namespace {
+
+void generate_sectioned(
+    const ast::Directive& d,
+    Context& context,
+    std::u8string_view no_section_diagnostic,
+    Function_Ref<void(std::u8string_view section)> action
+)
+{
+    static constexpr std::u8string_view parameters[] { u8"section" };
+    Argument_Matcher args { parameters, context.get_persistent_memory() };
+    args.match(d.get_arguments(), context.get_source());
+
+    const int arg_index = args.get_argument_index(u8"section");
+    if (arg_index < 0) {
+        context.try_error(no_section_diagnostic, d.get_source_span(), u8"No section was provided.");
+        return;
+    }
+
+    std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
+    const ast::Argument& arg = d.get_arguments()[std::size_t(arg_index)];
+    to_plaintext(name_data, arg.get_content(), context);
+    const auto section_string = as_u8string_view(name_data);
+    if (section_string.empty()) {
+        context.try_error(no_section_diagnostic, d.get_source_span(), u8"No section was provided.");
+        return;
+    }
+
+    action(section_string);
+}
+
+} // namespace
+
+void There_Behavior::evaluate(const ast::Directive& d, Context& context) const
+{
+    generate_sectioned(d, context, diagnostic::there_no_section, [&](std::u8string_view section) {
+        const auto scope = context.get_sections().go_to_scoped(section);
+        HTML_Writer there_writer = context.get_sections().current_html();
+        to_html(there_writer, d.get_content(), context);
+    });
+}
+
+void Here_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
+{
+    generate_sectioned(d, context, diagnostic::there_no_section, [&](std::u8string_view section) {
+        reference_section(out, section);
+    });
+}
+
+void Table_Of_Contents_Behavior::generate_html(
+    HTML_Writer& out,
+    const ast::Directive&,
+    Context& context
+) const
+{
+    context.get_sections().make(m_section_name);
+
+    // TODO: warn about ignored arguments and block
+    out.open_tag_with_attributes(u8"div") //
+        .write_class(m_class_name)
+        .end();
+    reference_section(out, m_section_name);
+    out.close_tag(u8"div");
 }
 
 } // namespace mmml

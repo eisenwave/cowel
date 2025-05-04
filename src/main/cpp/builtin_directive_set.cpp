@@ -64,6 +64,10 @@ struct Builtin_Directive_Set::Impl {
         { 5 };
     Heading_Behavior h6 //
         { 6 };
+    Here_Behavior here //
+        { Directive_Display::in_line };
+    Here_Behavior hereblock //
+        { Directive_Display::block };
     Self_Closing_Behavior hr //
         { u8"hr", diagnostic::hr_content_ignored, Directive_Display::block };
     HTML_Literal_Behavior html //
@@ -80,6 +84,9 @@ struct Builtin_Directive_Set::Impl {
         { u8"ins", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
         { u8"kbd", Directive_Category::formatting, Directive_Display::in_line };
+    Table_Of_Contents_Behavior make_contents //
+        { Directive_Display::block, class_name::table_of_contents,
+          section_name::table_of_contents };
     Fixed_Name_Passthrough_Behavior mark //
         { u8"mark", Directive_Category::formatting, Directive_Display::in_line };
     Math_Behavior math //
@@ -118,6 +125,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"th", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior thead //
         { u8"thead", Directive_Category::pure_html, Directive_Display::block };
+    There_Behavior there //
+        {};
     Special_Block_Behavior tip //
         { u8"tip-block" };
     Special_Block_Behavior todo //
@@ -184,6 +193,8 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-h4",
         u8"-h5",
         u8"-h6",
+        u8"-here",
+        u8"-hereblock",
         u8"-hr",
         u8"-html",
         u8"-html-",
@@ -194,6 +205,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-item",
         u8"-k",
         u8"-kbd",
+        u8"-make-contents",
         u8"-mark",
         u8"-math",
         u8"-mathblock",
@@ -314,6 +326,10 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->h5;
         if (name == u8"h6")
             return &m_impl->h6;
+        if (name == u8"here")
+            return &m_impl->here;
+        if (name == u8"hereblock")
+            return &m_impl->hereblock;
         if (name == u8"hr")
             return &m_impl->hr;
         if (name == u8"html")
@@ -340,6 +356,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'm':
+        if (name == u8"make-contents")
+            return &m_impl->make_contents;
         if (name == u8"mark")
             return &m_impl->mark;
         if (name == u8"math")
@@ -393,6 +411,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->th;
         if (name == u8"thead")
             return &m_impl->thead;
+        if (name == u8"there")
+            return &m_impl->there;
         if (name == u8"tip")
             return &m_impl->tip;
         if (name == u8"todo")
