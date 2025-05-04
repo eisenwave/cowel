@@ -275,6 +275,26 @@ struct Passthrough_Behavior : Directive_Behavior {
         = 0;
 };
 
+struct In_Tag_Behavior : Pure_HTML_Behavior {
+private:
+    const std::u8string_view m_tag_name;
+    const std::u8string_view m_class_name;
+
+public:
+    constexpr In_Tag_Behavior(
+        std::u8string_view tag_name,
+        std::u8string_view class_name,
+        Directive_Display display
+    )
+        : Pure_HTML_Behavior { display }
+        , m_tag_name { tag_name }
+        , m_class_name { class_name }
+    {
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override;
+};
+
 /// @brief Behavior for self-closing tags, like `<br/>` and `<hr/>`.
 struct Self_Closing_Behavior final : Pure_HTML_Behavior {
 private:

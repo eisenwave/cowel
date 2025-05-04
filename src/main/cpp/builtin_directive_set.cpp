@@ -82,6 +82,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"i", Directive_Category::formatting, Directive_Display::in_line };
     Special_Block_Behavior important //
         { u8"important-block" };
+    In_Tag_Behavior indent //
+        { u8"div", u8"indent", Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior ins //
         { u8"ins", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
@@ -206,6 +208,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-htmlblock",
         u8"-i",
         u8"-important",
+        u8"-indent",
         u8"-ins",
         u8"-item",
         u8"-k",
@@ -357,6 +360,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->i;
         if (name == u8"important")
             return &m_impl->important;
+        if (name == u8"indent")
+            return &m_impl->indent;
         if (name == u8"ins")
             return &m_impl->ins;
         break;

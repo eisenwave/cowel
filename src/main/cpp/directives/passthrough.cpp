@@ -30,6 +30,18 @@ void Passthrough_Behavior::generate_html(
     out.close_tag(name);
 }
 
+void In_Tag_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context)
+    const
+{
+    Attribute_Writer attributes = out.open_tag_with_attributes(m_tag_name);
+    arguments_to_attributes(attributes, d, context);
+    attributes.write_class(m_class_name);
+    attributes.end();
+
+    to_html(out, d.get_content(), context);
+    out.close_tag(m_tag_name);
+}
+
 [[nodiscard]]
 std::u8string_view
 Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d, Context& context) const

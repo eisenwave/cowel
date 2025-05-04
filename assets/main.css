@@ -97,7 +97,7 @@ html {
     --dark-warning-block-background-color: #302b23;
     --dark-warning-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab9c6f"><path d="M109-120q-11 0-20-5.5T75-140q-5-9-5.5-19.5T75-180l370-640q6-10 15.5-15t19.5-5q10 0 19.5 5t15.5 15l370 640q6 10 5.5 20.5T885-140q-5 9-14 14.5t-20 5.5H109Zm69-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm0-120q17 0 28.5-11.5T520-400v-120q0-17-11.5-28.5T480-560q-17 0-28.5 11.5T440-520v120q0 17 11.5 28.5T480-360Zm0-100Z"/></svg>');
 
-    --indent: 3em;
+    --indent: 2.5em;
     --border-radius: 0.25em;
 }
 
@@ -342,7 +342,8 @@ samp,
 tip-block,
 todo-block,
 ul,
-warning-block {
+warning-block,
+.indent {
     display: block;
     margin-top: 1em;
     margin-bottom: 1em;
@@ -361,6 +362,11 @@ a:focus {
     color: var(--a-hover-color);
 }
 
+ol,
+ul {
+    padding-left: var(--indent);
+}
+
 li {
     margin-top: 0.25em;
     margin-bottom: 0.25em;
@@ -374,6 +380,7 @@ dt {
 
 dd {
     margin-bottom: 0.25em;
+    margin-left: var(--indent);
 }
 
 abstract-block,
@@ -548,6 +555,8 @@ mark {
     background-color: var(--mark-background-color);
 }
 
+/* HEADINGS */
+
 h1,
 h2,
 h3,
@@ -638,6 +647,8 @@ th {
     content: "§";
 }
 
+/* TABLE OF CONTENTS */
+
 .toc {
     --h-indent: 0.75em;
 
@@ -723,6 +734,8 @@ th {
 .toc h2:not(:nth-child(2)>h2) {
     margin-top: 0.75em;
 }
+
+/* SPECIAL BLOCKS */
 
 intro- {
     display: inline-block;
@@ -879,6 +892,10 @@ warning-block::before {
 warning-block intro-::before {
     content: "Warning:";
     color: var(--warning-block-border-color);
+}
+
+.indent {
+    margin-left: var(--indent);
 }
 
 /* SETTINGS MENU */
