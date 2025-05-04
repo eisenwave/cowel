@@ -545,6 +545,14 @@ mark {
     background-color: var(--mark-background-color);
 }
 
+math:not([display=block]) {
+    font-size: 120%;
+}
+
+math[display=block] {
+    font-size: 110%;
+}
+
 /* HEADINGS */
 
 h1,
