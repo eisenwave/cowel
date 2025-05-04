@@ -626,10 +626,9 @@ th {
 .toc-num {
     display: inline-block;
     align-self: end;
-    padding-right: 2em;
+    padding-right: 3em;
 
     letter-spacing: 0em;
-    font-weight: bold;
 }
 
 .toc h1,
@@ -650,6 +649,41 @@ th {
 .toc a,
 .toc-num {
     border-bottom: 1px solid rgba(0, 0, 0, 0);
+    color: var(--text-color);
+}
+
+.toc h1,
+.toc-num[data-level="1"] {
+    font-size: 125%;
+    font-weight: 900;
+}
+
+.toc h2,
+.toc-num[data-level="2"] {
+    font-weight: 700;
+}
+
+.toc h3,
+.toc-num[data-level="3"] {
+    font-weight: 500;
+}
+
+.toc h4,
+.toc-num[data-level="4"] {
+    font-size: 95%;
+    font-weight: 400;
+}
+
+.toc h5,
+.toc-num[data-level="5"] {
+    font-size: 90%;
+    font-weight: 300;
+}
+
+.toc h6,
+.toc-num[data-level="6"] {
+    font-size: 90%;
+    font-weight: 100;
 }
 
 .toc a:hover {
@@ -660,14 +694,12 @@ th {
     border-bottom: 1px dashed var(--a-hover-color);
 }
 
-.toc h1,
-.toc h2 {
-    font-weight: bold;
+.toc h1:not(:nth-child(2)>h1) {
+    margin-top: 1.5em;
 }
 
-.toc h1:not(.toc a:nth-child(2) h1),
-.toc h2:not(.toc a:nth-child(2) h2) {
-    margin-top: 0.5em;
+.toc h2:not(:nth-child(2)>h2) {
+    margin-top: 0.75em;
 }
 
 intro- {

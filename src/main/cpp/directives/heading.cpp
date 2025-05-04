@@ -68,6 +68,9 @@ bool synthesize_id(
 // TODO: this should be done via variables and the context or something
 thread_local int h_counters[6] {};
 
+constexpr int min_listing_level = 2;
+constexpr int max_listing_level = 6;
+
 } // namespace
 
 void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context)
@@ -88,7 +91,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
         // h1 headings are not listed by default because it would be silly
         // for the top-level heading to re-appear in the table of contents.
         // Also, low-level headings like h5 and h6 are typically not relevant.
-        bool listed_by_default = m_level >= 2 && m_level <= 4;
+        bool listed_by_default = m_level >= min_listing_level && m_level <= max_listing_level;
         std::pmr::vector<char8_t> listed_data { context.get_transient_memory() };
         if (!argument_to_plaintext(listed_data, d, args, u8"listed", context)) {
             return listed_by_default;
@@ -174,11 +177,11 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
         out.close_tag(u8"a");
     }
     const auto write_numbers = [&](HTML_Writer& to) {
-        for (int i = 1; i < m_level; ++i) {
-            if (i != 1) {
+        for (int i = min_listing_level; i <= m_level; ++i) {
+            if (i != min_listing_level) {
                 to.write_inner_html(u8'.');
             }
-            const int counter = h_counters[i];
+            const int counter = h_counters[i - 1];
             to.write_inner_html(to_characters8(counter).as_string());
         }
     };
@@ -198,6 +201,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
         toc_writer
             .open_tag_with_attributes(u8"div") //
             .write_class(u8"toc-num")
+            .write_attribute(u8"data-level", tag_name.substr(1))
             .end();
         write_numbers(toc_writer);
         toc_writer.close_tag(u8"div");
