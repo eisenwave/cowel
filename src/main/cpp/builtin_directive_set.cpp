@@ -86,6 +86,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"ins", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
         { u8"kbd", Directive_Category::formatting, Directive_Display::in_line };
+    Lorem_Ipsum_Behavior lorem_ipsum //
+        {};
     Table_Of_Contents_Behavior make_contents //
         { Directive_Display::block, class_name::table_of_contents,
           section_name::table_of_contents };
@@ -208,6 +210,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-item",
         u8"-k",
         u8"-kbd",
+        u8"-lorem-ipsum",
         u8"-make-contents",
         u8"-mark",
         u8"-math",
@@ -361,6 +364,11 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'k':
         if (name == u8"kbd")
             return &m_impl->kbd;
+        break;
+
+    case u8'l':
+        if (name == u8"lorem-ipsum")
+            return &m_impl->lorem_ipsum;
         break;
 
     case u8'm':

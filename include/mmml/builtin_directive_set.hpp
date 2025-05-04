@@ -62,6 +62,28 @@ Code_Point_Behavior final : Directive_Behavior {
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
 };
 
+// clang-format off
+inline constexpr std::u8string_view lorem_ipsum = u8"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+// clang-format on
+
+struct Lorem_Ipsum_Behavior final : Directive_Behavior {
+    constexpr Lorem_Ipsum_Behavior()
+        : Directive_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context&) const final
+    {
+        append(out, lorem_ipsum);
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const final
+    {
+        out.write_inner_html(lorem_ipsum);
+    }
+};
+
 struct [[nodiscard]] Syntax_Highlight_Behavior : Parametric_Behavior {
 private:
     static constexpr std::u8string_view lang_parameter = u8"lang";
