@@ -47,33 +47,32 @@ struct Basic_Characters {
     }
 };
 
-template <typename T>
-inline constexpr int approximate_to_chars_decimal_digits_v
-    = (std::numeric_limits<T>::digits * 100 / 310) + 1 + std::is_signed_v<T>;
-
 template <char_like Char = char, character_convertible T>
 [[nodiscard]]
-constexpr Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>> to_characters(const T& x)
+constexpr Basic_Characters<Char, std::numeric_limits<T>::digits + 1>
+to_characters(const T& x, int base = 10)
 {
-    Basic_Characters<char, approximate_to_chars_decimal_digits_v<T>> chars {};
+    MMML_ASSERT(base >= 2 && base <= 36);
+
+    decltype(to_characters(x, base)) chars {};
     auto* const buffer_start = chars.buffer.data();
-    const auto result = std::to_chars(buffer_start, buffer_start + chars.buffer.size(), x);
+    const auto result = std::to_chars(buffer_start, buffer_start + chars.buffer.size(), x, base);
     MMML_ASSERT(result.ec == std::errc {});
     chars.length = std::size_t(result.ptr - buffer_start);
     if constexpr (std::is_same_v<Char, char>) {
         return chars;
     }
     else {
-        using result_type = Basic_Characters<Char, approximate_to_chars_decimal_digits_v<T>>;
+        using result_type = Basic_Characters<Char, std::numeric_limits<T>::digits + 1>;
         return std::bit_cast<result_type>(chars);
     }
 }
 
 template <character_convertible T>
 [[nodiscard]]
-constexpr Characters8<approximate_to_chars_decimal_digits_v<T>> to_characters8(const T& x)
+constexpr Characters8<std::numeric_limits<T>::digits + 1> to_characters8(const T& x, int base = 10)
 {
-    return to_characters<char8_t>(x);
+    return to_characters<char8_t>(x, base);
 }
 
 } // namespace mmml
