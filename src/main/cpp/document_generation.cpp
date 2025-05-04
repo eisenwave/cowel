@@ -107,6 +107,7 @@ bool Reference_Resolver::operator()(std::u8string_view text)
         MMML_ASSERT(4 + reference_length <= text.length());
         const std::u8string_view section_name = text.substr(4, reference_length);
 
+        bool section_success = true;
         const Document_Sections::entry_type* const entry
             = context.get_sections().find(section_name);
         if (!entry) {
@@ -117,11 +118,9 @@ bool Reference_Resolver::operator()(std::u8string_view text)
                 error.message += u8"\".";
                 context.emit(std::move(error));
             }
-            success = false;
-            continue;
+            section_success = false;
         }
-        const auto [_, insert_success] = visited.insert(entry);
-        if (!insert_success) {
+        else if (const auto [_, insert_success] = visited.insert(entry); !insert_success) {
             if (context.emits(Severity::error)) {
                 Diagnostic error = context.make_error(diagnostic::section_ref_circular, {});
                 error.message += u8"Circular dependency in reference to section \"";
@@ -129,13 +128,16 @@ bool Reference_Resolver::operator()(std::u8string_view text)
                 error.message += u8"\".";
                 context.emit(std::move(error));
             }
-            success = false;
-            continue;
+            section_success = false;
         }
-
         text.remove_prefix(4 + reference_length);
-        const std::u8string_view referenced_text { entry->second.data(), entry->second.size() };
-        (*this)(referenced_text);
+        if (section_success) {
+            const std::u8string_view referenced_text { entry->second.data(), entry->second.size() };
+            (*this)(referenced_text);
+        }
+        else {
+            success = section_success;
+        }
     }
     flush();
     return success;
