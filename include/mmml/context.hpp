@@ -38,6 +38,10 @@ struct Name_Resolver {
         = 0;
 };
 
+struct Referred {
+    std::u8string_view mask_html;
+};
+
 /// @brief Stores contextual information during document processing.
 struct Context {
 public:
@@ -67,6 +71,14 @@ private:
     /// last to first (i.e. from most recently added) to determine which
     /// `Directive_Behavior` should handle a given directive.
     std::pmr::vector<const Name_Resolver*> m_name_resolvers { m_transient_memory };
+    /// @brief Map of ids (as in, `id` attributes in HTML elements)
+    /// to information about the reference.
+    std::pmr::unordered_map<
+        std::pmr::u8string,
+        Referred,
+        Transparent_String_View_Hash8,
+        Transparent_String_View_Equals8>
+        m_id_references { m_transient_memory };
     Directive_Behavior* m_error_behavior;
 
     Logger& m_logger;
@@ -351,6 +363,20 @@ public:
     /// @brief Equivalent to `find_directive(directive.get_name(source))`.
     [[nodiscard]]
     Directive_Behavior* find_directive(const ast::Directive& directive) const;
+
+    [[nodiscard]]
+    const Referred* find_id(std::u8string_view id) const
+    {
+        const auto it = m_id_references.find(id);
+        return it == m_id_references.end() ? nullptr : &it->second;
+    }
+
+    [[nodiscard]]
+    bool emplace_id(std::pmr::u8string&& id, const Referred& referred)
+    {
+        const auto [it, success] = m_id_references.try_emplace(std::move(id), referred);
+        return success;
+    }
 };
 
 } // namespace mmml
