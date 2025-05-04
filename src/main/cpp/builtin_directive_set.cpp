@@ -20,8 +20,8 @@
 namespace mmml {
 
 struct Builtin_Directive_Set::Impl {
-    Do_Nothing_Behavior comment //
-        { Directive_Category::meta, Directive_Display::none };
+    Special_Block_Behavior abstract //
+        { u8"abstract-block" };
     Fixed_Name_Passthrough_Behavior b //
         { u8"b", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior blockquote //
@@ -34,6 +34,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"code", Directive_Display::in_line, To_HTML_Mode::direct };
     Syntax_Highlight_Behavior codeblock //
         { u8"code-block", Directive_Display::block, To_HTML_Mode::trimmed };
+    Do_Nothing_Behavior comment //
+        { Directive_Category::meta, Directive_Display::none };
     Fixed_Name_Passthrough_Behavior dd //
         { u8"dd", Directive_Category::pure_html, Directive_Display::block };
     Special_Block_Behavior decision //
@@ -171,6 +173,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
     // clang-format off
     static constexpr std::u8string_view prefixed_names[] {
         u8"-U",
+        u8"-abstract",
         u8"-b",
         u8"-blockquote",
         u8"-br",
@@ -269,6 +272,11 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     }
     // NOLINTBEGIN(readability-braces-around-statements)
     switch (name[0]) {
+    case u8'a':
+        if (name == u8"abstract")
+            return &m_impl->abstract;
+        break;
+
     case u8'b':
         if (name == u8"b")
             return &m_impl->b;

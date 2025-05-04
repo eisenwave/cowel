@@ -20,6 +20,9 @@ html {
     --light-a-hover-color: rgb(15, 93, 170);
     --light-mark-color: black;
     --light-mark-background-color: #ffff85;
+    --light-abstract-border-color: #707070;
+    --light-abstract-background-color: #f0f0f0;
+    --light-abstract-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M660-160h40v-160h-40v160Zm20-200q8 0 14-6t6-14q0-8-6-14t-14-6q-8 0-14 6t-6 14q0 8 6 14t14 6ZM200-800v640-640 200-200Zm80 400h147q11-23 25.5-43t32.5-37H280v80Zm0 160h123q-3-20-3-40t3-40H280v80ZM200-80q-33 0-56.5-23.5T120-160v-640q0-33 23.5-56.5T200-880h320l240 240v92q-19-6-39-9t-41-3v-40H480v-200H200v640h227q11 23 25.5 43T485-80H200Zm480-400q83 0 141.5 58.5T880-280q0 83-58.5 141.5T680-80q-83 0-141.5-58.5T480-280q0-83 58.5-141.5T680-480Z"/></svg>');
     --light-blockquote-border-color: #707070;
     --light-blockquote-background-color: #f0f0f0;
     --light-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23707070"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
@@ -63,6 +66,9 @@ html {
     --dark-a-hover-color: #afd7ff;
     --dark-mark-color: #ededa8;
     --dark-mark-background-color: #525230;
+    --dark-abstract-border-color: #999999;
+    --dark-abstract-background-color: #2c2c2c;
+    --dark-abstract-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23999999"><path d="M660-160h40v-160h-40v160Zm20-200q8 0 14-6t6-14q0-8-6-14t-14-6q-8 0-14 6t-6 14q0 8 6 14t14 6ZM200-800v640-640 200-200Zm80 400h147q11-23 25.5-43t32.5-37H280v80Zm0 160h123q-3-20-3-40t3-40H280v80ZM200-80q-33 0-56.5-23.5T120-160v-640q0-33 23.5-56.5T200-880h320l240 240v92q-19-6-39-9t-41-3v-40H480v-200H200v640h227q11 23 25.5 43T485-80H200Zm480-400q83 0 141.5 58.5T880-280q0 83-58.5 141.5T680-80q-83 0-141.5-58.5T480-280q0-83 58.5-141.5T680-480Z"/></svg>');
     --dark-blockquote-border-color: #707070;
     --dark-blockquote-background-color: #2c2c2c;
     --dark-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23707070"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
@@ -113,6 +119,9 @@ html {
         --a-hover-color: var(--light-a-hover-color);
         --mark-color: var(--light-mark-color);
         --mark-background-color: var(--light-mark-background-color);
+        --abstract-border-color: var(--light-abstract-border-color);
+        --abstract-background-color: var(--light-abstract-background-color);
+        --abstract-image: var(--light-abstract-image);
         --blockquote-border-color: var(--light-blockquote-border-color);
         --blockquote-background-color: var(--light-blockquote-background-color);
         --blockquote-image: var(--light-blockquote-image);
@@ -159,6 +168,9 @@ html {
         --a-hover-color: var(--dark-a-hover-color);
         --mark-color: var(--dark-mark-color);
         --mark-background-color: var(--dark-mark-background-color);
+        --abstract-border-color: var(--dark-abstract-border-color);
+        --abstract-background-color: var(--dark-abstract-background-color);
+        --abstract-image: var(--dark-abstract-image);
         --blockquote-border-color: var(--dark-blockquote-border-color);
         --blockquote-background-color: var(--dark-blockquote-background-color);
         --blockquote-image: var(--dark-blockquote-image);
@@ -204,6 +216,9 @@ html.light {
     --a-hover-color: var(--light-a-hover-color);
     --mark-color: var(--light-mark-color);
     --mark-background-color: var(--light-mark-background-color);
+    --abstract-border-color: var(--light-abstract-border-color);
+    --abstract-background-color: var(--light-abstract-background-color);
+    --abstract-image: var(--light-abstract-image);
     --blockquote-border-color: var(--light-blockquote-border-color);
     --blockquote-background-color: var(--light-blockquote-background-color);
     --blockquote-image: var(--light-blockquote-image);
@@ -248,6 +263,9 @@ html.dark {
     --a-hover-color: var(--dark-a-hover-color);
     --mark-color: var(--dark-mark-color);
     --mark-background-color: var(--dark-mark-background-color);
+    --abstract-border-color: var(--dark-abstract-border-color);
+    --abstract-background-color: var(--dark-abstract-background-color);
+    --abstract-image: var(--dark-abstract-image);
     --blockquote-border-color: var(--dark-blockquote-border-color);
     --blockquote-background-color: var(--dark-blockquote-background-color);
     --blockquote-image: var(--dark-blockquote-image);
@@ -306,8 +324,9 @@ main {
     margin-right: auto;
 }
 
-code-block,
+abstract-block,
 blockquote,
+code-block,
 decision-block,
 details,
 dl,
@@ -357,6 +376,7 @@ dd {
     margin-bottom: 0.25em;
 }
 
+abstract-block,
 blockquote,
 details,
 decision-block,
@@ -378,6 +398,7 @@ warning-block {
     border-bottom-right-radius: var(--border-radius);
 }
 
+abstract-block>:first-child,
 blockquote>:first-child,
 details>:first-child,
 decision-block>:first-child,
@@ -390,6 +411,7 @@ warning-block>:first-child {
     margin-top: 0;
 }
 
+abstract-block>:last-child,
 blockquote>:last-child,
 details>:last-child,
 decision-block>:last-child,
@@ -402,6 +424,7 @@ warning-block>:last-child {
     margin-bottom: 0;
 }
 
+abstract-block::before,
 blockquote::before,
 details::before,
 decision-block::before,
@@ -422,37 +445,6 @@ warning-block::before {
     background-size: contain;
     background-repeat: no-repeat;
 
-}
-
-blockquote {
-    background-color: var(--blockquote-background-color);
-    border-left: var(--border-thickness) solid var(--blockquote-border-color);
-}
-
-blockquote::before {
-    background-image: var(--blockquote-image);
-    top: -0.25em;
-}
-
-details {
-    background-color: var(--details-background-color);
-    border-left: var(--border-thickness) solid var(--details-border-color);
-}
-
-details::before {
-    background-image: var(--details-image);
-}
-
-summary {
-    font-family: var(--sans-serif-family);
-    font-size: var(--sans-serif-size);
-    color: var(--details-border-color);
-    user-select: none;
-    cursor: pointer;
-}
-
-details[open]>summary {
-    margin-bottom: 0.5em;
 }
 
 code,
@@ -709,6 +701,56 @@ intro- {
     text-transform: uppercase;
     font-size: var(--sans-serif-size);
     font-family: var(--sans-serif-family);
+}
+
+abstract-block {
+    background-color: var(--abstract-background-color);
+    border-left: var(--border-thickness) solid var(--abstract-border-color);
+}
+
+abstract-block::before {
+    background-image: var(--abstract-image);
+}
+
+abstract-block intro-::before {
+    content: "Abstract:";
+    color: var(--abstract-border-color);
+}
+
+blockquote {
+    background-color: var(--blockquote-background-color);
+    border-left: var(--border-thickness) solid var(--blockquote-border-color);
+}
+
+blockquote::before {
+    background-image: var(--blockquote-image);
+    top: -0.25em;
+}
+
+blockquote intro-::before {
+    content: "Decision:";
+    color: var(--blockquote-border-color);
+}
+
+details {
+    background-color: var(--details-background-color);
+    border-left: var(--border-thickness) solid var(--details-border-color);
+}
+
+details::before {
+    background-image: var(--details-image);
+}
+
+summary {
+    font-family: var(--sans-serif-family);
+    font-size: var(--sans-serif-size);
+    color: var(--details-border-color);
+    user-select: none;
+    cursor: pointer;
+}
+
+details[open]>summary {
+    margin-bottom: 0.5em;
 }
 
 decision-block {
