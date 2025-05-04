@@ -22,6 +22,21 @@ struct Pure_HTML_Behavior : Directive_Behavior {
     }
 };
 
+struct Pure_Plaintext_Behavior : Directive_Behavior {
+
+    constexpr Pure_Plaintext_Behavior(Directive_Display display)
+        : Directive_Behavior { Directive_Category::pure_plaintext, display }
+    {
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final
+    {
+        std::pmr::vector<char8_t> text { context.get_transient_memory() };
+        generate_plaintext(text, d, context);
+        out.write_inner_text({ text.data(), text.size() });
+    }
+};
+
 struct Do_Nothing_Behavior : Directive_Behavior {
     // TODO: diagnose ignored arguments
 
