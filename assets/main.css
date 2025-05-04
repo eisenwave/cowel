@@ -1,10 +1,7 @@
 html {
     --sans-serif-family: "Noto Sans", sans-serif;
-    --sans-serif-size: 11pt;
     --serif-family: "Noto Serif", serif;
-    --serif-size: 11pt;
     --monospace-family: "Fira Code", monospace;
-    --monospace-size: 11pt;
 
     --light-background-color: white;
     --light-deep-background-color: #fafafa;
@@ -301,7 +298,7 @@ html {
     margin: 0;
     width: 100%;
     font-family: var(--serif-family);
-    font-size: var(--serif-size);
+    font-size: 11pt;
 
     border-left: var(--border-thickness) solid var(--border-color);
     color: var(--text-color);
@@ -463,12 +460,6 @@ tt- {
     font-variant-ligatures: none;
 }
 
-code,
-tt,
-tt- {
-    font-size: var(--monospace-size);
-}
-
 code-block {
     padding: 0.5em;
     border-radius: var(--border-radius);
@@ -481,7 +472,7 @@ code-block {
 code-block,
 pre,
 samp {
-    font-size: calc(var(--monospace-size) * 0.9);
+    font-size: 90%;
     width: 100%;
 }
 
@@ -537,7 +528,6 @@ code-block .comtext {
 }
 
 kbd {
-    font-size: var(--sans-serif-size);
     font-family: var(--sans-serif-family);
 
     display: inline-block;
@@ -742,7 +732,6 @@ intro- {
 
     font-weight: 600;
     text-transform: uppercase;
-    font-size: var(--sans-serif-size);
     font-family: var(--sans-serif-family);
 }
 
@@ -786,7 +775,6 @@ details::before {
 
 summary {
     font-family: var(--sans-serif-family);
-    font-size: var(--sans-serif-size);
     color: var(--details-border-color);
     user-select: none;
     cursor: pointer;
