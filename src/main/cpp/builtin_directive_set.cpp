@@ -44,6 +44,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"del", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior details //
         { u8"details", Directive_Category::pure_html, Directive_Display::block };
+    Special_Block_Behavior diff //
+        { u8"diff-block", false };
     Fixed_Name_Passthrough_Behavior dl //
         { u8"dl", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dt //
@@ -189,6 +191,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-decision",
         u8"-del",
         u8"-details",
+        u8"-diff",
         u8"-dl",
         u8"-dt",
         u8"-em",
@@ -312,6 +315,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->del;
         if (name == u8"details")
             return &m_impl->details;
+        if (name == u8"diff")
+            return &m_impl->diff;
         if (name == u8"dl")
             return &m_impl->dl;
         if (name == u8"dt")

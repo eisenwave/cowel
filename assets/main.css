@@ -29,6 +29,9 @@ html {
     --light-details-border-color: #707070;
     --light-details-background-color: #f0f0f0;
     --light-details-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+    --light-diff-block-border-color: #707070;
+    --light-diff-block-background-color: #f0f0f0;
+    --light-diff-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M500-520h80v-80h80v-80h-80v-80h-80v80h-80v80h80v80Zm-80 160h240v-80H420v80ZM320-200q-33 0-56.5-23.5T240-280v-560q0-33 23.5-56.5T320-920h280l240 240v400q0 33-23.5 56.5T760-200H320Zm0-80h440v-360L560-840H320v560ZM160-40q-33 0-56.5-23.5T80-120v-560h80v560h440v80H160Zm160-240v-560 560Z"/></svg>');
     --light-example-block-border-color: #6f8aab;
     --light-example-block-background-color: #e6e9f4;
     --light-example-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236f8aab"><path d="M300-80q-58 0-99-41t-41-99v-520q0-58 41-99t99-41h500v600q-25 0-42.5 17.5T740-220q0 25 17.5 42.5T800-160v80H300Zm-60-267q14-7 29-10t31-3h20v-440h-20q-25 0-42.5 17.5T240-740v393Zm160-13h320v-440H400v440Zm-160 13v-453 453Zm60 187h373q-6-14-9.5-28.5T660-220q0-16 3-31t10-29H300q-26 0-43 17.5T240-220q0 26 17 43t43 17Z"/></svg>');
@@ -75,6 +78,9 @@ html {
     --dark-decision-block-border-color: #ab6fa2;
     --dark-decision-block-background-color: #30232d;
     --dark-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
+    --dark-diff-block-border-color: #707070;
+    --dark-diff-block-background-color: #2c2c2c;
+    --dark-diff-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M500-520h80v-80h80v-80h-80v-80h-80v80h-80v80h80v80Zm-80 160h240v-80H420v80ZM320-200q-33 0-56.5-23.5T240-280v-560q0-33 23.5-56.5T320-920h280l240 240v400q0 33-23.5 56.5T760-200H320Zm0-80h440v-360L560-840H320v560ZM160-40q-33 0-56.5-23.5T80-120v-560h80v560h440v80H160Zm160-240v-560 560Z"/></svg>');
     --dark-example-block-border-color: #6f81ab;
     --dark-example-block-background-color: #232630;
     --dark-example-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236f81ab"><path d="M300-80q-58 0-99-41t-41-99v-520q0-58 41-99t99-41h500v600q-25 0-42.5 17.5T740-220q0 25 17.5 42.5T800-160v80H300Zm-60-267q14-7 29-10t31-3h20v-440h-20q-25 0-42.5 17.5T240-740v393Zm160-13h320v-440H400v440Zm-160 13v-453 453Zm60 187h373q-6-14-9.5-28.5T660-220q0-16 3-31t10-29H300q-26 0-43 17.5T240-220q0 26 17 43t43 17Z"/></svg>');
@@ -128,6 +134,9 @@ html {
         --details-border-color: var(--light-details-border-color);
         --details-background-color: var(--light-details-background-color);
         --details-image: var(--light-details-image);
+        --diff-block-border-color: var(--light-diff-block-border-color);
+        --diff-block-background-color: var(--light-diff-block-background-color);
+        --diff-block-image: var(--light-diff-block-image);
         --example-block-border-color: var(--light-example-block-border-color);
         --example-block-background-color: var(--light-example-block-background-color);
         --example-block-image: var(--light-example-block-image);
@@ -177,6 +186,9 @@ html {
         --details-border-color: var(--dark-details-border-color);
         --details-background-color: var(--dark-details-background-color);
         --details-image: var(--dark-details-image);
+        --diff-block-border-color: var(--dark-diff-block-border-color);
+        --diff-block-background-color: var(--dark-diff-block-background-color);
+        --diff-block-image: var(--dark-diff-block-image);
         --example-block-border-color: var(--dark-example-block-border-color);
         --example-block-background-color: var(--dark-example-block-background-color);
         --example-block-image: var(--dark-example-block-image);
@@ -225,6 +237,9 @@ html.light {
     --details-border-color: var(--light-details-border-color);
     --details-background-color: var(--light-details-background-color);
     --details-image: var(--light-details-image);
+    --diff-block-border-color: var(--light-diff-block-border-color);
+    --diff-block-background-color: var(--light-diff-block-background-color);
+    --diff-block-image: var(--light-diff-block-image);
     --example-block-border-color: var(--light-example-block-border-color);
     --example-block-background-color: var(--light-example-block-background-color);
     --example-block-image: var(--light-example-block-image);
@@ -272,6 +287,9 @@ html.dark {
     --details-border-color: var(--dark-details-border-color);
     --details-background-color: var(--dark-details-background-color);
     --details-image: var(--dark-details-image);
+    --diff-block-border-color: var(--dark-diff-block-border-color);
+    --diff-block-background-color: var(--dark-diff-block-background-color);
+    --diff-block-image: var(--dark-diff-block-image);
     --example-block-border-color: var(--dark-example-block-border-color);
     --example-block-background-color: var(--dark-example-block-background-color);
     --example-block-image: var(--dark-example-block-image);
@@ -327,6 +345,7 @@ code-block,
 decision-block,
 details,
 dl,
+diff-block,
 example-block,
 hr,
 ol,
@@ -384,6 +403,7 @@ abstract-block,
 blockquote,
 details,
 decision-block,
+diff-block,
 example-block,
 important-block,
 note-block,
@@ -406,6 +426,7 @@ abstract-block>:first-child,
 blockquote>:first-child,
 details>:first-child,
 decision-block>:first-child,
+diff-block>:first-child,
 example-block>:first-child,
 important-block>:first-child,
 note-block>:first-child,
@@ -419,6 +440,7 @@ abstract-block>:last-child,
 blockquote>:last-child,
 details>:last-child,
 decision-block>:last-child,
+diff-block>:last-child,
 example-block>:last-child,
 important-block>:last-child,
 note-block>:last-child,
@@ -432,6 +454,7 @@ abstract-block::before,
 blockquote::before,
 details::before,
 decision-block::before,
+diff-block::before,
 example-block::before,
 important-block::before,
 note-block::before,
@@ -807,6 +830,20 @@ decision-block::before {
 decision-block intro-::before {
     content: "Decision:";
     color: var(--decision-block-border-color);
+}
+
+diff-block {
+    background-color: var(--diff-block-background-color);
+    border-left: var(--border-thickness) solid var(--diff-block-border-color);
+}
+
+diff-block::before {
+    background-image: var(--diff-block-image);
+}
+
+diff-block intro-::before {
+    content: "Difference:";
+    color: var(--diff-block-border-color);
 }
 
 example-block {
