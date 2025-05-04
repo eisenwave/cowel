@@ -66,10 +66,12 @@ void Special_Block_Behavior::generate_html(
         arguments_to_attributes(attributes, d, context);
     }
     out.open_tag(u8"p");
-    out.open_and_close_tag(u8"intro-");
-    // This space ensures that even if the user writes say,
-    // \note{abc}, there is a space between </into> and abc.
-    out.write_inner_html(u8' ');
+    if (m_emit_intro) {
+        out.open_and_close_tag(u8"intro-");
+        // This space ensures that even if the user writes say,
+        // \note{abc}, there is a space between </into> and abc.
+        out.write_inner_html(u8' ');
+    }
     to_html(out, d.get_content(), context, To_HTML_Mode::paragraphs, Paragraphs_State::inside);
     out.close_tag(m_name);
 }

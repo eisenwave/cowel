@@ -369,11 +369,13 @@ public:
 struct Special_Block_Behavior final : Pure_HTML_Behavior {
 private:
     const std::u8string_view m_name;
+    const bool m_emit_intro;
 
 public:
-    constexpr explicit Special_Block_Behavior(std::u8string_view name)
+    constexpr explicit Special_Block_Behavior(std::u8string_view name, bool emit_intro = true)
         : Pure_HTML_Behavior { Directive_Display::block }
         , m_name { name }
+        , m_emit_intro { emit_intro }
     {
     }
 
