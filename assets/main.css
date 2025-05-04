@@ -550,6 +550,9 @@ math:not([display=block]) {
 }
 
 math[display=block] {
+    width: fit-content;
+    margin-left: var(--indent);
+
     font-size: 110%;
 }
 
