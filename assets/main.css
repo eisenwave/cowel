@@ -526,6 +526,7 @@ pre,
 tt,
 tt- {
     font-family: var(--monospace-family);
+    font-style: normal;
     font-variant-ligatures: none;
 }
 
@@ -640,9 +641,22 @@ f-serif {
     font-family: var(--serif-family);
 }
 
+.grammar,
 g-term {
     font-family: var(--sans-serif-family);
     font-style: oblique;
+}
+
+.grammar {
+    margin-left: var(--indent);
+}
+
+.grammar dt {
+    font-weight: normal;
+}
+
+.grammar dt::after {
+    content: ":";
 }
 
 /* HEADINGS */
