@@ -30,6 +30,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"blockquote", false };
     Self_Closing_Behavior br //
         { u8"br", diagnostic::br_content_ignored, Directive_Display::in_line };
+    Special_Block_Behavior bug //
+        { u8"bug-block" };
     HTML_Entity_Behavior c //
         {};
     Syntax_Highlight_Behavior code //
@@ -204,6 +206,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-block",
         u8"-blockquote",
         u8"-br",
+        u8"-bug",
         u8"-c",
         u8"-code",
         u8"-codeblock",
@@ -325,6 +328,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->blockquote;
         if (name == u8"br")
             return &m_impl->br;
+        if (name == u8"bug")
+            return &m_impl->bug;
         break;
 
     case u8'c':
