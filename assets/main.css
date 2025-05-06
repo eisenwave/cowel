@@ -626,8 +626,18 @@ math[display=block] {
 }
 
 g-term,
+f-sans,
+f-serif,
 wg21-block {
     display: inline;
+}
+
+f-sans {
+    font-family: var(--sans-serif-family);
+}
+
+f-serif {
+    font-family: var(--serif-family);
 }
 
 g-term {
