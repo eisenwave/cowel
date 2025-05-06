@@ -112,6 +112,34 @@ void WG21_Block_Behavior::generate_html(HTML_Writer& out, const ast::Directive& 
     out.close_tag(tag);
 }
 
+void WG21_Head_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context)
+    const
+{
+    static constexpr std::u8string_view parameters[] { u8"title" };
+    Argument_Matcher args { parameters, context.get_transient_memory() };
+    args.match(d.get_arguments(), context.get_source());
+
+    out.open_tag_with_attributes(u8"div") //
+        .write_class(u8"wg21-head")
+        .end();
+
+    const int title_index = args.get_argument_index(u8"title");
+    if (title_index < 0) {
+        context.try_warning(
+            diagnostic::wg21_head_no_title, d.get_source_span(),
+            u8"A wg21-head directive requires a title argument"
+        );
+    }
+    out.open_tag(u8"h1");
+    to_html(out, d.get_arguments()[std::size_t(title_index)].get_content(), context);
+    out.close_tag(u8"h1");
+    out.write_inner_html(u8'\n');
+
+    to_html(out, d.get_content(), context);
+
+    out.close_tag(u8"div");
+}
+
 void Self_Closing_Behavior::generate_html(
     HTML_Writer& out,
     const ast::Directive& d,

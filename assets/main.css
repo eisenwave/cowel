@@ -676,6 +676,18 @@ g-term {
     font-style: normal;
 }
 
+.wg21-head {
+    margin-bottom: 4em;
+}
+
+.wg21-head dl {
+    font-family: var(--sans-serif-family);
+}
+
+.wg21-head dt {
+    font-style: normal;
+}
+
 /* HEADINGS */
 
 h1,

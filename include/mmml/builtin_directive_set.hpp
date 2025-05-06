@@ -411,6 +411,15 @@ public:
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
 };
 
+struct WG21_Head_Behavior final : Pure_HTML_Behavior {
+    constexpr explicit WG21_Head_Behavior()
+        : Pure_HTML_Behavior { Directive_Display::in_line }
+    {
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
 struct List_Behavior final : Pure_HTML_Behavior {
 private:
     const std::u8string_view m_tag_name;

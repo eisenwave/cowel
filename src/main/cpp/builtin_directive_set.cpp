@@ -175,6 +175,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"Example", u8"end example" };
     In_Tag_Behavior wg21_grammar //
         { u8"dl", u8"grammar", Directive_Display::block };
+    WG21_Head_Behavior wg21_head //
+        {};
     WG21_Block_Behavior wg21_note //
         { u8"Note", u8"end note" };
 
@@ -278,6 +280,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-warning",
         u8"-wg21-example",
         u8"-wg21-grammar",
+        u8"-wg21-head",
         u8"-wg21-note",
     };
     // clang-format on
@@ -530,6 +533,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->wg21_example;
         if (name == u8"wg21-grammar")
             return &m_impl->wg21_grammar;
+        if (name == u8"wg21-head")
+            return &m_impl->wg21_head;
         if (name == u8"wg21-note")
             return &m_impl->wg21_note;
         break;

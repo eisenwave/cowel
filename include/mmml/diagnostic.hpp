@@ -105,6 +105,10 @@ inline constexpr std::u8string_view there_no_section = u8"there.no_section";
 /// no section was provided.
 inline constexpr std::u8string_view here_no_section = u8"here.no_section";
 
+/// @brief In a `\wg21-head` directive,
+/// no title was specified.
+inline constexpr std::u8string_view wg21_head_no_title = u8"wg21-head.no_title";
+
 /// @brief In any directive,
 /// a duplicate `id` attribute would have been generated.
 inline constexpr std::u8string_view duplicate_id = u8"id.duplicate";
