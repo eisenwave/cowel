@@ -267,6 +267,9 @@ html.light {
     --blockquote-border-color: var(--light-blockquote-border-color);
     --blockquote-background-color: var(--light-blockquote-background-color);
     --blockquote-image: var(--light-blockquote-image);
+    --bug-block-border-color: var(--light-bug-block-border-color);
+    --bug-block-background-color: var(--light-bug-block-background-color);
+    --bug-block-image: var(--light-bug-block-image);
     --decision-block-border-color: var(--light-decision-block-border-color);
     --decision-block-background-color: var(--light-decision-block-background-color);
     --decision-block-image: var(--light-decision-block-image);
