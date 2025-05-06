@@ -3,6 +3,21 @@
 
 namespace mmml {
 
+void Block_Behavior::generate_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    Context& context
+) const
+{
+    to_plaintext(out, d, context);
+}
+
+void Block_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context)
+    const
+{
+    to_html(out, d, context);
+}
+
 void Passthrough_Behavior::generate_plaintext(
     std::pmr::vector<char8_t>& out,
     const ast::Directive& d,

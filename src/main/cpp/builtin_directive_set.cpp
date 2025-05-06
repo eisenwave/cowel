@@ -24,8 +24,10 @@ struct Builtin_Directive_Set::Impl {
         { u8"abstract-block" };
     Fixed_Name_Passthrough_Behavior b //
         { u8"b", Directive_Category::formatting, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior blockquote //
-        { u8"blockquote", Directive_Category::pure_html, Directive_Display::block };
+    Block_Behavior block //
+        {};
+    Special_Block_Behavior blockquote //
+        { u8"blockquote", false };
     Self_Closing_Behavior br //
         { u8"br", diagnostic::br_content_ignored, Directive_Display::in_line };
     HTML_Entity_Behavior c //
@@ -42,6 +44,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"decision-block" };
     Fixed_Name_Passthrough_Behavior del //
         { u8"del", Directive_Category::formatting, Directive_Display::in_line };
+    Special_Block_Behavior delblock //
+        { u8"del-block", false };
     Fixed_Name_Passthrough_Behavior details //
         { u8"details", Directive_Category::pure_html, Directive_Display::block };
     Special_Block_Behavior diff //
@@ -82,6 +86,8 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Category::pure_html, Directive_Display::block, html_tag_prefix };
     Fixed_Name_Passthrough_Behavior i //
         { u8"i", Directive_Category::formatting, Directive_Display::in_line };
+    Special_Block_Behavior insblock //
+        { u8"ins-block", false };
     Special_Block_Behavior important //
         { u8"important-block" };
     In_Tag_Behavior indent //
@@ -105,6 +111,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"note-block" };
     List_Behavior ol //
         { u8"ol" };
+    Fixed_Name_Passthrough_Behavior p //
+        { u8"p", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior q //
         { u8"q", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior s //
@@ -181,6 +189,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-U",
         u8"-abstract",
         u8"-b",
+        u8"-block",
         u8"-blockquote",
         u8"-br",
         u8"-c",
@@ -190,6 +199,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-dd",
         u8"-decision",
         u8"-del",
+        u8"-delblock",
         u8"-details",
         u8"-diff",
         u8"-dl",
@@ -213,6 +223,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-important",
         u8"-indent",
         u8"-ins",
+        u8"-insblock",
         u8"-item",
         u8"-k",
         u8"-kbd",
@@ -223,6 +234,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-mathblock",
         u8"-note",
         u8"-ol",
+        u8"-p",
         u8"-q",
         u8"-s",
         u8"-script",
@@ -289,6 +301,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'b':
         if (name == u8"b")
             return &m_impl->b;
+        if (name == u8"block")
+            return &m_impl->block;
         if (name == u8"blockquote")
             return &m_impl->blockquote;
         if (name == u8"br")
@@ -313,6 +327,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->decision;
         if (name == u8"del")
             return &m_impl->del;
+        if (name == u8"delblock")
+            return &m_impl->delblock;
         if (name == u8"details")
             return &m_impl->details;
         if (name == u8"diff")
@@ -369,6 +385,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->indent;
         if (name == u8"ins")
             return &m_impl->ins;
+        if (name == u8"insblock")
+            return &m_impl->insblock;
         break;
 
     case u8'k':
@@ -400,6 +418,11 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'o':
         if (name == u8"ol")
             return &m_impl->ol;
+        break;
+
+    case u8'p':
+        if (name == u8"p")
+            return &m_impl->p;
         break;
 
     case u8'q':

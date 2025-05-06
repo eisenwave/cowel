@@ -257,6 +257,19 @@ public:
     }
 };
 
+struct Block_Behavior final : Directive_Behavior {
+    constexpr Block_Behavior()
+        : Directive_Behavior { Directive_Category::formatting, Directive_Display::block }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
+        const final;
+
+    void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const final;
+};
+
 struct Passthrough_Behavior : Directive_Behavior {
 
     constexpr Passthrough_Behavior(Directive_Category category, Directive_Display display)
