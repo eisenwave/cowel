@@ -1,5 +1,6 @@
 #include "mmml/builtin_directive_set.hpp"
 #include "mmml/directive_processing.hpp"
+#include "mmml/util/strings.hpp"
 
 namespace mmml {
 
@@ -138,6 +139,25 @@ void WG21_Head_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d
     to_html(out, d.get_content(), context);
 
     out.close_tag(u8"div");
+}
+
+void URL_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
+{
+    std::pmr::vector<char8_t> url { context.get_transient_memory() };
+    append(url, m_url_prefix);
+    to_plaintext(url, d.get_content(), context);
+    const auto url_string = as_u8string_view(url);
+
+    Attribute_Writer attributes = out.open_tag_with_attributes(u8"a");
+    arguments_to_attributes(attributes, d, context);
+    attributes.write_href(url_string);
+    attributes.write_class(u8"sans");
+    attributes.end();
+
+    MMML_ASSERT(url_string.length() >= m_url_prefix.length());
+    out.write_inner_text(url_string.substr(m_url_prefix.length()));
+
+    out.close_tag(u8"a");
 }
 
 void Self_Closing_Behavior::generate_html(

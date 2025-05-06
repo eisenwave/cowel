@@ -102,6 +102,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"kbd", Directive_Category::formatting, Directive_Display::in_line };
     Lorem_Ipsum_Behavior lorem_ipsum //
         {};
+    URL_Behavior mail //
+        { u8"mailto:" };
     Table_Of_Contents_Behavior make_contents //
         { Directive_Display::block, class_name::table_of_contents,
           section_name::table_of_contents };
@@ -141,6 +143,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"sup", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior table //
         { u8"table", Directive_Category::pure_html, Directive_Display::block };
+    URL_Behavior tel //
+        { u8"tel:" };
     Fixed_Name_Passthrough_Behavior tbody //
         { u8"tbody", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior td //
@@ -165,6 +169,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"u", Directive_Category::formatting, Directive_Display::in_line };
     List_Behavior ul //
         { u8"ul" };
+    URL_Behavior url //
+        {};
     Get_Variable_Behavior vget //
         {};
     Modify_Variable_Behavior vset //
@@ -246,6 +252,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-k",
         u8"-kbd",
         u8"-lorem-ipsum",
+        u8"-mail",
         u8"-make-contents",
         u8"-mark",
         u8"-math",
@@ -267,6 +274,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-table",
         u8"-tbody",
         u8"-td",
+        u8"-tel",
         u8"-th",
         u8"-thead",
         u8"-tip",
@@ -275,6 +283,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-tt",
         u8"-u",
         u8"-ul",
+        u8"-url",
         u8"-vget",
         u8"-vset",
         u8"-warning",
@@ -431,6 +440,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'm':
+        if (name == u8"mail")
+            return &m_impl->mail;
         if (name == u8"make-contents")
             return &m_impl->make_contents;
         if (name == u8"mark")
@@ -491,6 +502,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->tbody;
         if (name == u8"td")
             return &m_impl->td;
+        if (name == u8"tel")
+            return &m_impl->tel;
         if (name == u8"th")
             return &m_impl->th;
         if (name == u8"thead")
@@ -517,6 +530,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->u;
         if (name == u8"ul")
             return &m_impl->ul;
+        if (name == u8"url")
+            return &m_impl->url;
         break;
 
     case u8'v':

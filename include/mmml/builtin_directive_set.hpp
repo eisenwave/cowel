@@ -420,6 +420,20 @@ struct WG21_Head_Behavior final : Pure_HTML_Behavior {
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
 };
 
+struct URL_Behavior final : Pure_HTML_Behavior {
+private:
+    const std::u8string_view m_url_prefix;
+
+public:
+    constexpr explicit URL_Behavior(std::u8string_view url_prefix = u8"")
+        : Pure_HTML_Behavior { Directive_Display::in_line }
+        , m_url_prefix { url_prefix }
+    {
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
 struct List_Behavior final : Pure_HTML_Behavior {
 private:
     const std::u8string_view m_tag_name;

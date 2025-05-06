@@ -544,7 +544,8 @@ code,
 code-block,
 pre,
 tt,
-tt- {
+tt-,
+.mono {
     font-family: var(--monospace-family);
     font-style: normal;
     font-variant-ligatures: none;
@@ -653,11 +654,13 @@ wg21-block {
     display: inline;
 }
 
-f-sans {
+f-sans,
+.sans {
     font-family: var(--sans-serif-family);
 }
 
-f-serif {
+f-serif,
+.serif {
     font-family: var(--serif-family);
 }
 
