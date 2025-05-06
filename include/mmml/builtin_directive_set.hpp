@@ -395,6 +395,22 @@ public:
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
 };
 
+struct WG21_Block_Behavior final : Pure_HTML_Behavior {
+private:
+    const std::u8string_view m_prefix;
+    const std::u8string_view m_suffix;
+
+public:
+    constexpr explicit WG21_Block_Behavior(std::u8string_view prefix, std::u8string_view suffix)
+        : Pure_HTML_Behavior { Directive_Display::in_line }
+        , m_prefix { prefix }
+        , m_suffix { suffix }
+    {
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
 struct List_Behavior final : Pure_HTML_Behavior {
 private:
     const std::u8string_view m_tag_name;

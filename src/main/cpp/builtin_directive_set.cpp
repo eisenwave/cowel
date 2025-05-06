@@ -163,6 +163,10 @@ struct Builtin_Directive_Set::Impl {
         { Variable_Operation::set };
     Special_Block_Behavior warning //
         { u8"warning-block" };
+    WG21_Block_Behavior wg21_example //
+        { u8"Example", u8"end example" };
+    WG21_Block_Behavior wg21_note //
+        { u8"Note", u8"end note" };
 
     Impl() = default;
 };
@@ -258,6 +262,8 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-vget",
         u8"-vset",
         u8"-warning",
+        u8"-wg21-example",
+        u8"-wg21-note",
     };
     // clang-format on
     static_assert(std::ranges::is_sorted(prefixed_names));
@@ -494,6 +500,10 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'w':
         if (name == u8"warning")
             return &m_impl->warning;
+        if (name == u8"wg21-example")
+            return &m_impl->wg21_example;
+        if (name == u8"wg21-note")
+            return &m_impl->wg21_note;
         break;
 
     default: break;

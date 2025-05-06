@@ -91,6 +91,27 @@ void Special_Block_Behavior::generate_html(
     out.close_tag(m_name);
 }
 
+void WG21_Block_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context)
+    const
+{
+    constexpr std::u8string_view tag = u8"wg21-block";
+
+    Attribute_Writer attributes = out.open_tag_with_attributes(tag);
+    arguments_to_attributes(attributes, d, context);
+    attributes.end();
+
+    out.write_inner_html(u8"[<i>");
+    out.write_inner_text(m_prefix);
+    out.write_inner_html(u8"</i>: ");
+
+    to_html(out, d.get_content(), context);
+
+    out.write_inner_html(u8" \N{EM DASH} <i>");
+    out.write_inner_text(m_suffix);
+    out.write_inner_html(u8"</i>]");
+    out.close_tag(tag);
+}
+
 void Self_Closing_Behavior::generate_html(
     HTML_Writer& out,
     const ast::Directive& d,

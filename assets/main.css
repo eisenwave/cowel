@@ -625,6 +625,10 @@ math[display=block] {
     font-size: 110%;
 }
 
+wg21-block {
+    display: inline;
+}
+
 /* HEADINGS */
 
 h1,
