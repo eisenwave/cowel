@@ -60,8 +60,6 @@ struct Builtin_Directive_Set::Impl {
         {};
     Special_Block_Behavior example //
         { u8"example-block" };
-    In_Tag_Behavior grammar //
-        { u8"dl", u8"grammar", Directive_Display::block };
     Fixed_Name_Passthrough_Behavior gterm //
         { u8"g-term", Directive_Category::formatting, Directive_Display::in_line };
     Heading_Behavior h1 //
@@ -173,6 +171,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"warning-block" };
     WG21_Block_Behavior wg21_example //
         { u8"Example", u8"end example" };
+    In_Tag_Behavior wg21_grammar //
+        { u8"dl", u8"grammar", Directive_Display::block };
     WG21_Block_Behavior wg21_note //
         { u8"Note", u8"end note" };
 
@@ -219,7 +219,6 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-em",
         u8"-error",
         u8"-example",
-        u8"-grammar",
         u8"-gterm",
         u8"-h1",
         u8"-h2",
@@ -275,6 +274,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-vset",
         u8"-warning",
         u8"-wg21-example",
+        u8"-wg21-grammar",
         u8"-wg21-note",
     };
     // clang-format on
@@ -367,8 +367,6 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'g':
-        if (name == u8"grammar")
-            return &m_impl->grammar;
         if (name == u8"gterm")
             return &m_impl->gterm;
         break;
@@ -525,6 +523,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->warning;
         if (name == u8"wg21-example")
             return &m_impl->wg21_example;
+        if (name == u8"wg21-grammar")
+            return &m_impl->wg21_grammar;
         if (name == u8"wg21-note")
             return &m_impl->wg21_note;
         break;

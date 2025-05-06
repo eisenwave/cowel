@@ -641,7 +641,7 @@ f-serif {
     font-family: var(--serif-family);
 }
 
-.grammar,
+.grammar dd,
 g-term {
     font-family: var(--sans-serif-family);
     font-style: oblique;
@@ -653,10 +653,7 @@ g-term {
 
 .grammar dt {
     font-weight: normal;
-}
-
-.grammar dt::after {
-    content: ":";
+    font-style: normal;
 }
 
 /* HEADINGS */
