@@ -625,8 +625,14 @@ math[display=block] {
     font-size: 110%;
 }
 
+g-term,
 wg21-block {
     display: inline;
+}
+
+g-term {
+    font-family: var(--sans-serif-family);
+    font-style: oblique;
 }
 
 /* HEADINGS */

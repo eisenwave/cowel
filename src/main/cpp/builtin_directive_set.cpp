@@ -60,6 +60,8 @@ struct Builtin_Directive_Set::Impl {
         {};
     Special_Block_Behavior example //
         { u8"example-block" };
+    Fixed_Name_Passthrough_Behavior gterm //
+        { u8"g-term", Directive_Category::formatting, Directive_Display::in_line };
     Heading_Behavior h1 //
         { 1 };
     Heading_Behavior h2 //
@@ -211,6 +213,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-em",
         u8"-error",
         u8"-example",
+        u8"-gterm",
         u8"-h1",
         u8"-h2",
         u8"-h3",
@@ -352,6 +355,11 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->error;
         if (name == u8"example")
             return &m_impl->example;
+        break;
+
+    case u8'g':
+        if (name == u8"gterm")
+            return &m_impl->gterm;
         break;
 
     case u8'h':
