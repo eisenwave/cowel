@@ -26,6 +26,9 @@ html {
     --light-decision-block-border-color: #ab6fa2;
     --light-decision-block-background-color: #f4e6f4;
     --light-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
+    --light-del-block-border-color: #be1621;
+    --light-del-block-background-color: #fbe6e8;
+    --light-del-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23be1621"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>');
     --light-details-border-color: #707070;
     --light-details-background-color: #f0f0f0;
     --light-details-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
@@ -38,6 +41,9 @@ html {
     --light-important-block-border-color: #b05252;
     --light-important-block-background-color: #f4e6e6;
     --light-important-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6f6f"><path d="M480-120q-33 0-56.5-23.5T400-200q0-33 23.5-56.5T480-280q33 0 56.5 23.5T560-200q0 33-23.5 56.5T480-120Zm-80-240v-480h160v480H400Z"/></svg>');
+    --light-ins-block-border-color: #17752d;
+    --light-ins-block-background-color: #e4faea;
+    --light-ins-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%2317752d"><path d="M440-240h80v-120h120v-80H520v-120h-80v120H320v80h120v120ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/></svg>');
     --light-note-block-border-color: #6fab6f;
     --light-note-block-background-color: #e6f4e9;
     --light-note-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236fab6f"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
@@ -78,6 +84,9 @@ html {
     --dark-decision-block-border-color: #ab6fa2;
     --dark-decision-block-background-color: #30232d;
     --dark-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
+    --dark-del-block-border-color: #be5e64;
+    --dark-del-block-background-color: #302323;
+    --dark-del-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23be5e64"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>');
     --dark-diff-block-border-color: #707070;
     --dark-diff-block-background-color: #2c2c2c;
     --dark-diff-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M500-520h80v-80h80v-80h-80v-80h-80v80h-80v80h80v80Zm-80 160h240v-80H420v80ZM320-200q-33 0-56.5-23.5T240-280v-560q0-33 23.5-56.5T320-920h280l240 240v400q0 33-23.5 56.5T760-200H320Zm0-80h440v-360L560-840H320v560ZM160-40q-33 0-56.5-23.5T80-120v-560h80v560h440v80H160Zm160-240v-560 560Z"/></svg>');
@@ -87,6 +96,9 @@ html {
     --dark-important-block-border-color: #b06262;
     --dark-important-block-background-color: #302323;
     --dark-important-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23b06262"><path d="M480-120q-33 0-56.5-23.5T400-200q0-33 23.5-56.5T480-280q33 0 56.5 23.5T560-200q0 33-23.5 56.5T480-120Zm-80-240v-480h160v480H400Z"/></svg>');
+    --dark-ins-block-border-color: #5bab6d;
+    --dark-ins-block-background-color: #233023;
+    --dark-ins-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%235bab6d"><path d="M440-240h80v-120h120v-80H520v-120h-80v120H320v80h120v120ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/></svg>');
     --dark-note-block-border-color: #6fab76;
     --dark-note-block-background-color: #233025;
     --dark-note-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236fab76"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
@@ -131,6 +143,9 @@ html {
         --decision-block-border-color: var(--light-decision-block-border-color);
         --decision-block-background-color: var(--light-decision-block-background-color);
         --decision-block-image: var(--light-decision-block-image);
+        --del-block-border-color: var(--light-del-block-border-color);
+        --del-block-background-color: var(--light-del-block-background-color);
+        --del-block-image: var(--light-del-block-image);
         --details-border-color: var(--light-details-border-color);
         --details-background-color: var(--light-details-background-color);
         --details-image: var(--light-details-image);
@@ -143,6 +158,9 @@ html {
         --important-block-border-color: var(--light-important-block-border-color);
         --important-block-background-color: var(--light-important-block-background-color);
         --important-block-image: var(--light-important-block-image);
+        --ins-block-border-color: var(--light-ins-block-border-color);
+        --ins-block-background-color: var(--light-ins-block-background-color);
+        --ins-block-image: var(--light-ins-block-image);
         --note-block-border-color: var(--light-note-block-border-color);
         --note-block-background-color: var(--light-note-block-background-color);
         --note-block-image: var(--light-note-block-image);
@@ -183,6 +201,9 @@ html {
         --decision-block-border-color: var(--dark-decision-block-border-color);
         --decision-block-background-color: var(--dark-decision-block-background-color);
         --decision-block-image: var(--dark-decision-block-image);
+        --del-block-border-color: var(--dark-del-block-border-color);
+        --del-block-background-color: var(--dark-del-block-background-color);
+        --del-block-image: var(--dark-del-block-image);
         --details-border-color: var(--dark-details-border-color);
         --details-background-color: var(--dark-details-background-color);
         --details-image: var(--dark-details-image);
@@ -195,6 +216,9 @@ html {
         --important-block-border-color: var(--dark-important-block-border-color);
         --important-block-background-color: var(--dark-important-block-background-color);
         --important-block-image: var(--dark-important-block-image);
+        --ins-block-border-color: var(--dark-ins-block-border-color);
+        --ins-block-background-color: var(--dark-ins-block-background-color);
+        --ins-block-image: var(--dark-ins-block-image);
         --note-block-border-color: var(--dark-note-block-border-color);
         --note-block-background-color: var(--dark-note-block-background-color);
         --note-block-image: var(--dark-note-block-image);
@@ -234,6 +258,9 @@ html.light {
     --decision-block-border-color: var(--light-decision-block-border-color);
     --decision-block-background-color: var(--light-decision-block-background-color);
     --decision-block-image: var(--light-decision-block-image);
+    --del-block-border-color: var(--light-del-block-border-color);
+    --del-block-background-color: var(--light-del-block-background-color);
+    --del-block-image: var(--light-del-block-image);
     --details-border-color: var(--light-details-border-color);
     --details-background-color: var(--light-details-background-color);
     --details-image: var(--light-details-image);
@@ -246,6 +273,9 @@ html.light {
     --important-block-border-color: var(--light-important-block-border-color);
     --important-block-background-color: var(--light-important-block-background-color);
     --important-block-image: var(--light-important-block-image);
+    --ins-block-border-color: var(--light-ins-block-border-color);
+    --ins-block-background-color: var(--light-ins-block-background-color);
+    --ins-block-image: var(--light-ins-block-image);
     --note-block-border-color: var(--light-note-block-border-color);
     --note-block-background-color: var(--light-note-block-background-color);
     --note-block-image: var(--light-note-block-image);
@@ -284,6 +314,9 @@ html.dark {
     --decision-block-border-color: var(--dark-decision-block-border-color);
     --decision-block-background-color: var(--dark-decision-block-background-color);
     --decision-block-image: var(--dark-decision-block-image);
+    --del-block-border-color: var(--dark-del-block-border-color);
+    --del-block-background-color: var(--dark-del-block-background-color);
+    --del-block-image: var(--dark-del-block-image);
     --details-border-color: var(--dark-details-border-color);
     --details-background-color: var(--dark-details-background-color);
     --details-image: var(--dark-details-image);
@@ -296,6 +329,9 @@ html.dark {
     --important-block-border-color: var(--dark-important-block-border-color);
     --important-block-background-color: var(--dark-important-block-background-color);
     --important-block-image: var(--dark-important-block-image);
+    --ins-block-border-color: var(--dark-ins-block-border-color);
+    --ins-block-background-color: var(--dark-ins-block-background-color);
+    --ins-block-image: var(--dark-ins-block-image);
     --note-block-border-color: var(--dark-note-block-border-color);
     --note-block-background-color: var(--dark-note-block-background-color);
     --note-block-image: var(--dark-note-block-image);
@@ -343,6 +379,7 @@ abstract-block,
 blockquote,
 code-block,
 decision-block,
+del-block,
 details,
 dl,
 diff-block,
@@ -350,6 +387,7 @@ example-block,
 hr,
 ol,
 important-block,
+ins-block,
 math[display=block],
 note-block,
 p,
@@ -401,11 +439,13 @@ dd {
 
 abstract-block,
 blockquote,
+del-block,
 details,
 decision-block,
 diff-block,
 example-block,
 important-block,
+ins-block,
 note-block,
 tip-block,
 todo-block,
@@ -424,11 +464,13 @@ warning-block {
 
 abstract-block>:first-child,
 blockquote>:first-child,
+del-block>:first-child,
 details>:first-child,
 decision-block>:first-child,
 diff-block>:first-child,
 example-block>:first-child,
 important-block>:first-child,
+ins-block>:first-child,
 note-block>:first-child,
 tip-block>:first-child,
 todo-block>:first-child,
@@ -438,11 +480,13 @@ warning-block>:first-child {
 
 abstract-block>:last-child,
 blockquote>:last-child,
+del-block>:last-child,
 details>:last-child,
 decision-block>:last-child,
 diff-block>:last-child,
 example-block>:last-child,
 important-block>:last-child,
+ins-block>:last-child,
 note-block>:last-child,
 todo-block>:last-child,
 tip-block>:last-child,
@@ -452,11 +496,13 @@ warning-block>:last-child {
 
 abstract-block::before,
 blockquote::before,
+del-block::before,
 details::before,
 decision-block::before,
 diff-block::before,
 example-block::before,
 important-block::before,
+ins-block::before,
 note-block::before,
 todo-block::before,
 tip-block::before,
@@ -794,8 +840,28 @@ blockquote::before {
 }
 
 blockquote intro-::before {
-    content: "Decision:";
+    content: "Quote:";
     color: var(--blockquote-border-color);
+}
+
+del-block {
+    background-color: var(--del-block-background-color);
+    border-left: var(--border-thickness) solid var(--del-block-border-color);
+    color: var(--del-color);
+}
+
+del-block::before {
+    background-image: var(--del-block-image);
+}
+
+del-block intro-::before {
+    content: "Deleted:";
+    color: var(--del-block-border-color);
+}
+
+del-block code,
+del-block code-block {
+    color: var(--text-color);
 }
 
 details {
@@ -872,6 +938,26 @@ important-block::before {
 important-block intro-::before {
     content: "Important:";
     color: var(--important-block-border-color);
+}
+
+ins-block {
+    background-color: var(--ins-block-background-color);
+    border-left: var(--border-thickness) solid var(--ins-block-border-color);
+    color: var(--ins-color);
+}
+
+ins-block code,
+ins-block code-block {
+    color: var(--text-color);
+}
+
+ins-block::before {
+    background-image: var(--ins-block-image);
+}
+
+ins-block intro-::before {
+    content: "Inserted:";
+    color: var(--ins-block-border-color);
 }
 
 note-block {
