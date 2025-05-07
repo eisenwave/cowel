@@ -84,7 +84,6 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
 
     Argument_Matcher args { parameters, context.get_transient_memory() };
     args.match(d.get_arguments(), context.get_source(), Parameter_Match_Mode::only_named);
-    const int id_index = args.get_argument_index(u8"id");
 
     // Determine whether the heading should be listed in the table of contents.
     const auto is_listed = [&] -> bool {
@@ -119,7 +118,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
 
     // 1. Obtain or synthesize the id.
     Attribute_Writer attributes = out.open_tag_with_attributes(tag_name);
-    if (id_index < 0) {
+    if (const int id_index = args.get_argument_index(u8"id"); id_index < 0) {
         if (synthesize_id(id_data, d.get_content(), context) && !id_data.empty()) {
             attributes.write_id(as_u8string_view(id_data));
             has_id = true;
@@ -133,11 +132,9 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
             has_id = !id_data.empty();
         }
     }
-    for (std::size_t i = 0; i < d.get_arguments().size(); ++i) {
-        if (int(i) != id_index) {
-            argument_to_attribute(attributes, d.get_arguments()[i], context);
-        }
-    }
+    arguments_to_attributes(attributes, d, context, [](std::u8string_view name) {
+        return !std::ranges::contains(parameters, name);
+    });
     attributes.end();
 
     // 2. Generate user content in the heading.
