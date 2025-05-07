@@ -872,18 +872,20 @@ void arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     Context& context,
+    Function_Ref<bool(std::u8string_view)> filter,
     Attribute_Style style
 )
 {
     for (const ast::Argument& a : d.get_arguments()) {
-        argument_to_attribute(out, a, context, style);
+        argument_to_attribute(out, a, context, filter, style);
     }
 }
 
-void argument_to_attribute(
+bool argument_to_attribute(
     Attribute_Writer& out,
     const ast::Argument& a,
     Context& context,
+    Function_Ref<bool(std::u8string_view)> filter,
     Attribute_Style style
 )
 {
@@ -893,12 +895,18 @@ void argument_to_attribute(
     to_plaintext(value, a.get_content(), context);
     const std::u8string_view value_string { value.data(), value.size() };
     if (a.has_name()) {
-        out.write_attribute(a.get_name(context.get_source()), value_string, style);
+        const std::u8string_view name = a.get_name(context.get_source());
+        if (!filter || filter(name)) {
+            out.write_attribute(name, value_string, style);
+            return true;
+        }
     }
     // TODO: what if the positional argument cannot be used as an attribute name
-    else {
+    else if (!filter || filter(value_string)) {
         out.write_empty_attribute(value_string, style);
+        return true;
     }
+    return false;
 }
 
 bool argument_to_plaintext(

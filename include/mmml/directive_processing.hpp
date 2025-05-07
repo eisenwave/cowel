@@ -6,6 +6,7 @@
 #include <string_view>
 #include <vector>
 
+#include "mmml/util/function_ref.hpp"
 #include "mmml/util/html_writer.hpp"
 #include "mmml/util/result.hpp"
 
@@ -172,13 +173,15 @@ void arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     Context& context,
+    Function_Ref<bool(std::u8string_view)> filter = {},
     Attribute_Style style = Attribute_Style::double_if_needed
 );
 
-void argument_to_attribute(
+bool argument_to_attribute(
     Attribute_Writer& out,
     const ast::Argument& a,
     Context& context,
+    Function_Ref<bool(std::u8string_view)> filter = {},
     Attribute_Style style = Attribute_Style::double_if_needed
 );
 
