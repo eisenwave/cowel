@@ -14,6 +14,7 @@ html {
     --light-ins-background-color: #e4faea;
     --light-para-color: rgb(10, 73, 136);
     --light-a-color: rgb(10, 73, 136);
+    --light-a-visited-color: rgb(44, 10, 136);
     --light-a-hover-color: rgb(15, 93, 170);
     --light-mark-color: black;
     --light-mark-background-color: #ffff85;
@@ -137,6 +138,7 @@ html {
         --ins-background-color: var(--light-ins-background-color);
         --para-color: var(--light-para-color);
         --a-color: var(--light-a-color);
+        --a-visited-color: var(--light-a-visited-color);
         --a-hover-color: var(--light-a-hover-color);
         --mark-color: var(--light-mark-color);
         --mark-background-color: var(--light-mark-background-color);
@@ -198,6 +200,7 @@ html {
         --ins-background-color: var(--dark-ins-background-color);
         --para-color: var(--dark-para-color);
         --a-color: var(--dark-a-color);
+        --a-visited-color: var(--dark-a-visited-color);
         --a-hover-color: var(--dark-a-hover-color);
         --mark-color: var(--dark-mark-color);
         --mark-background-color: var(--dark-mark-background-color);
@@ -258,6 +261,7 @@ html.light {
     --ins-background-color: var(--light-ins-background-color);
     --para-color: var(--light-para-color);
     --a-color: var(--light-a-color);
+    --a-visited-color: var(--light-a-visited-color);
     --a-hover-color: var(--light-a-hover-color);
     --mark-color: var(--light-mark-color);
     --mark-background-color: var(--light-mark-background-color);
@@ -317,6 +321,7 @@ html.dark {
     --ins-background-color: var(--dark-ins-background-color);
     --para-color: var(--dark-para-color);
     --a-color: var(--dark-a-color);
+    --a-visited-color: var(--dark-a-visited-color);
     --a-hover-color: var(--dark-a-hover-color);
     --mark-color: var(--dark-mark-color);
     --mark-background-color: var(--dark-mark-background-color);
