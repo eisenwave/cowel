@@ -429,6 +429,7 @@ warning-block,
 
 a {
     color: var(--a-color);
+    text-decoration: unset;
 }
 
 a:visited {
@@ -438,6 +439,10 @@ a:visited {
 a:hover,
 a:focus {
     color: var(--a-hover-color);
+}
+
+a:hover {
+    text-decoration: underline;
 }
 
 ol,
