@@ -33,6 +33,7 @@ set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
 include_directories(${INCLUDE_DIRS})
 
 add_library(mmml STATIC
+    src/main/cpp/util/draft_uris.cpp
     src/main/cpp/util/html_writer.cpp
     src/main/cpp/util/html_entities.cpp
     src/main/cpp/util/io.cpp
@@ -109,6 +110,7 @@ else(NOT DEFINED EMSCRIPTEN)
         src/test/cpp/main.cpp
         src/test/cpp/test_chars_strings.cpp
         src/test/cpp/test_document_generation.cpp
+        src/test/cpp/test_draft_uris.cpp
         src/test/cpp/test_html_writer.cpp
         src/test/cpp/test_levenshtein.cpp
         src/test/cpp/test_parsing.cpp
