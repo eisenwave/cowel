@@ -105,6 +105,25 @@ inline constexpr std::u8string_view there_no_section = u8"there.no_section";
 /// no section was provided.
 inline constexpr std::u8string_view here_no_section = u8"here.no_section";
 
+/// @brief In a `\ref` directive,
+/// no `to` argument was provided,
+/// meaning that the reference is without any target.
+inline constexpr std::u8string_view ref_to_missing = u8"ref.to.missing";
+
+/// @brief In a `\ref` directive,
+/// the target is empty.
+inline constexpr std::u8string_view ref_to_empty = u8"ref.to.empty";
+/// @brief In a `\ref` directive, arguments were ignored.
+inline constexpr std::u8string_view ref_args_ignored = u8"ref.args.ignored";
+
+/// @brief In a `\ref` directive,
+/// the target cannot be classified as a URL or anything else.
+inline constexpr std::u8string_view ref_to_unclassified = u8"ref.to.unclassified";
+
+/// @brief In a `\ref` directive where the target is a C++ draft URL,
+/// failed to verbalize the URL.
+inline constexpr std::u8string_view ref_draft_verbalization = u8"ref.draft_verbalization";
+
 /// @brief In a `\wg21-head` directive,
 /// no title was specified.
 inline constexpr std::u8string_view wg21_head_no_title = u8"wg21-head.no_title";

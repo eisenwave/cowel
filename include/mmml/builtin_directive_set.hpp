@@ -257,9 +257,9 @@ public:
     }
 };
 
-struct Block_Behavior final : Directive_Behavior {
-    constexpr Block_Behavior()
-        : Directive_Behavior { Directive_Category::formatting, Directive_Display::block }
+struct Wrap_Behavior final : Directive_Behavior {
+    constexpr explicit Wrap_Behavior(Directive_Category category, Directive_Display display)
+        : Directive_Behavior { category, display }
     {
     }
 
@@ -432,6 +432,16 @@ public:
     }
 
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
+struct Ref_Behavior final : Pure_HTML_Behavior {
+
+    constexpr explicit Ref_Behavior()
+        : Pure_HTML_Behavior(Directive_Display::in_line)
+    {
+    }
+
+    void generate_html(HTML_Writer&, const ast::Directive& d, Context& context) const final;
 };
 
 struct List_Behavior final : Pure_HTML_Behavior {

@@ -24,8 +24,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"abstract-block" };
     Fixed_Name_Passthrough_Behavior b //
         { u8"b", Directive_Category::formatting, Directive_Display::in_line };
-    Block_Behavior block //
-        {};
+    Wrap_Behavior block //
+        { Directive_Category::formatting, Directive_Display::block };
     Special_Block_Behavior blockquote //
         { u8"blockquote", false };
     Self_Closing_Behavior br //
@@ -96,6 +96,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"important-block" };
     In_Tag_Behavior indent //
         { u8"div", u8"indent", Directive_Display::in_line };
+    Wrap_Behavior in_line //
+        { Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior ins //
         { u8"ins", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
@@ -121,6 +123,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"p", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior q //
         { u8"q", Directive_Category::formatting, Directive_Display::in_line };
+    Ref_Behavior ref //
+        {};
     Fixed_Name_Passthrough_Behavior s //
         { u8"s", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior sans //
@@ -246,6 +250,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-i",
         u8"-important",
         u8"-indent",
+        u8"-inline",
         u8"-ins",
         u8"-insblock",
         u8"-item",
@@ -261,6 +266,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-ol",
         u8"-p",
         u8"-q",
+        u8"-ref",
         u8"-s",
         u8"-sans",
         u8"-script",
@@ -423,6 +429,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->important;
         if (name == u8"indent")
             return &m_impl->indent;
+        if (name == u8"inline")
+            return &m_impl->in_line;
         if (name == u8"ins")
             return &m_impl->ins;
         if (name == u8"insblock")
@@ -470,6 +478,11 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'q':
         if (name == u8"q")
             return &m_impl->q;
+        break;
+
+    case u8'r':
+        if (name == u8"ref")
+            return &m_impl->ref;
         break;
 
     case u8's':
