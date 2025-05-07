@@ -475,8 +475,9 @@ warning-block {
 
     position: relative;
     width: calc(100% - var(--indent));
+    box-sizing: border-box;
     padding: var(--padding);
-    margin-left: calc(var(--indent) - var(--border-thickness) - var(--padding) * 2);
+    margin-left: var(--indent);
 
     border-top-right-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
