@@ -341,7 +341,19 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     }
 
     if (classification.page != Known_Page::eelis_draft) {
-        out.write_inner_text(target_string);
+        if (classification.url_scheme != URL_Scheme::none) {
+            const std::size_t colon_index = target_string.find(u8':');
+            auto text = colon_index == std::u8string_view::npos
+                ? target_string
+                : target_string.substr(colon_index + 1);
+            if (url_scheme_is_web(classification.url_scheme) && text.starts_with(u8"//")) {
+                text.remove_prefix(2);
+            }
+            out.write_inner_text(text);
+        }
+        else {
+            out.write_inner_text(target_string);
+        }
         out.close_tag(u8"a");
         return;
     }
