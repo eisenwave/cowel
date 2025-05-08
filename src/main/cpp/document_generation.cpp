@@ -34,6 +34,8 @@ void generate_document(const Generation_Options& options)
     context.add_resolver(options.builtin_behavior);
 
     options.root_behavior.generate_html(writer, options.root_content, context);
+
+    context.get_bibliography().clear();
 }
 
 namespace {

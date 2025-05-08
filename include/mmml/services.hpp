@@ -130,6 +130,8 @@ struct Bibliography {
         = 0;
 
     virtual bool insert(Stored_Document_Info&& info) = 0;
+
+    virtual void clear() = 0;
 };
 
 struct Logger {

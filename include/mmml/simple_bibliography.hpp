@@ -73,6 +73,13 @@ public:
         const auto [_, success] = m_map->insert(std::move(info));
         return success;
     }
+
+    void clear() override
+    {
+        if (m_map) {
+            m_map->clear();
+        }
+    }
 };
 
 inline constinit Simple_Bibliography simple_bibliography;

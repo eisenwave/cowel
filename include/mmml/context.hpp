@@ -158,12 +158,12 @@ public:
     }
 
     [[nodiscard]]
-    Bibliography& get_documents()
+    Bibliography& get_bibliography()
     {
         return m_bibliography;
     }
     [[nodiscard]]
-    const Bibliography& get_documents() const
+    const Bibliography& get_bibliography() const
     {
         return m_bibliography;
     }
