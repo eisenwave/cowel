@@ -390,6 +390,78 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     out.close_tag(u8"a");
 }
 
+namespace {
+
+constexpr auto is_url_always_encoded_lambda = [](char8_t c) { return is_url_always_encoded(c); };
+
+void write_bibliography_entry(HTML_Writer& out, const Document_Info& info)
+{
+    const auto open_link_tag = [&](std::u8string_view url, bool sans = false) {
+        out.write_inner_html(u8"<a href=\"");
+        url_encode_ascii_if(
+            std::back_inserter(out.get_output()), url, is_url_always_encoded_lambda
+        );
+        out.write_inner_html(u8'"');
+        if (sans) {
+            out.write_inner_html(u8" class=sans");
+        }
+        out.write_inner_html(u8'>');
+    };
+
+    out.open_tag_with_attributes(u8"div") //
+        .write_class(u8"bib-item")
+        .end();
+    out.write_inner_html(u8'\n');
+
+    if (!info.link.empty()) {
+        open_link_tag(info.link);
+    }
+
+    MMML_ASSERT(!info.id.empty());
+    out.write_inner_html(u8'[');
+    out.write_inner_text(info.id);
+    out.write_inner_html(u8']');
+
+    if (!info.link.empty()) {
+        out.write_inner_html(u8"</a>");
+    }
+
+    if (!info.author.empty()) {
+        out.write_inner_html(u8'\n');
+        out.write_inner_text(info.author);
+        out.write_inner_html(u8'.');
+    }
+    if (!info.date.empty()) {
+        out.write_inner_html(u8"\n(");
+        out.write_inner_text(info.date);
+        out.write_inner_html(u8')');
+    }
+    if (!info.title.empty()) {
+        out.write_inner_html(u8'\n');
+        out.open_tag(u8"i");
+        out.write_inner_text(info.title);
+        out.close_tag(u8"i");
+    }
+
+    const auto write_link = [&](std::u8string_view url) {
+        out.write_inner_html(u8'\n');
+        open_link_tag(url, true);
+        out.write_inner_text(url);
+        out.write_inner_html(u8"</a>");
+    };
+
+    if (!info.long_link.empty()) {
+        write_link(info.long_link);
+    }
+    else if (!info.link.empty()) {
+        write_link(info.link);
+    }
+
+    out.close_tag(u8"div");
+}
+
+} // namespace
+
 void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& context) const
 {
     static constexpr struct Entry {
@@ -491,12 +563,18 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
                 section_out.write_inner_html(u8"<a href=\"");
                 url_encode_ascii_if(
                     std::back_inserter(section_out.get_output()), result.info.link,
-                    [](char8_t c) { return is_url_always_encoded(c); }
+                    is_url_always_encoded_lambda
                 );
                 section_out.write_inner_html(u8"\">");
             }
         }
         section_name.resize(initial_size);
+    }
+
+    {
+        const auto scope = context.get_sections().go_to_scoped(section_name::bibliography);
+        HTML_Writer bib_writer = context.get_sections().current_html();
+        write_bibliography_entry(bib_writer, result.info);
     }
 
     context.get_bibliography().insert(std::move(result));
