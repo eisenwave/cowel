@@ -133,6 +133,10 @@ inline constexpr std::u8string_view bib_id_missing = u8"bib.id.missing";
 /// the specified `id` is empty.
 inline constexpr std::u8string_view bib_id_empty = u8"bib.id.empty";
 
+/// @brief In a `\bib` directive,
+/// an attempt was made to add a duplicate entry.
+inline constexpr std::u8string_view bib_duplicate = u8"bib.duplicate";
+
 /// @brief In a `\wg21-head` directive,
 /// no title was specified.
 inline constexpr std::u8string_view wg21_head_no_title = u8"wg21-head.no_title";

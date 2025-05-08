@@ -540,6 +540,16 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
             result.info.*table[i].member = part_string;
         }
     }
+    if (context.get_bibliography().contains(result.info.id)) {
+        if (context.emits(Severity::error)) {
+            Diagnostic error = context.make_error(diagnostic::bib_duplicate, d.get_source_span());
+            error.message += u8"A bibliography entry with id \"";
+            error.message += result.info.id;
+            error.message += u8"\" already exists.";
+            context.emit(std::move(error));
+        }
+        return;
+    }
 
     // To facilitate later referencing,
     // we output the opening and closing HTML tags for this bibliography entry into sections.
