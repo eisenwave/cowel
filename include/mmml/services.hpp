@@ -97,15 +97,6 @@ struct No_Support_Syntax_Highlighter final : Syntax_Highlighter {
 
 inline constinit No_Support_Syntax_Highlighter no_support_syntax_highlighter;
 
-struct Author_Info {
-    /// @brief Full name. For example, `Donald Knuth`.
-    std::u8string_view name;
-    /// @brief E-mail address. For example, `knuth@gmail.com`.
-    std::u8string_view email;
-    /// @brief Affiliation, such as a company. For example, `Microsoft`.
-    std::u8string_view affiliation;
-};
-
 struct Document_Info {
     /// @brief ID by which the document is referenced elsewhere. For example, `Knuth01`.
     std::u8string_view id;
@@ -122,8 +113,8 @@ struct Document_Info {
     /// @brief A link to issue tracking for the document.
     /// For example, a GitHub issue URL for WG21 papers.
     std::u8string_view issue_link;
-    /// @brief A list of authors.
-    std::span<const Author_Info> authors;
+    /// @brief The author(s).
+    std::u8string_view author;
 };
 
 struct Stored_Document_Info {
@@ -138,7 +129,7 @@ struct Bibliography {
     virtual const Document_Info* find(std::u8string_view id)
         = 0;
 
-    virtual bool insert(std::pmr::u8string&& id, Stored_Document_Info&& info) = 0;
+    virtual bool insert(Stored_Document_Info&& info) = 0;
 };
 
 struct Logger {
