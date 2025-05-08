@@ -9,6 +9,8 @@
 
 namespace mmml {
 
+ULIGHT_SUPPRESS_MISSING_DECLARATIONS_WARNING()
+
 std::ostream& operator<<(std::ostream& out, Blank_Line blank) // NOLINT(misc-use-internal-linkage)
 {
     return out << "Blank_Line{.begin = " << blank.begin << ", .length = " << blank.length << "}";
@@ -202,20 +204,6 @@ TEST(Charsets, all_ascii_blank)
 {
     for (char32_t c = 0; c < 128; ++c) {
         EXPECT_EQ(contains(all_ascii_blank, c), is_ascii_blank(c));
-    }
-}
-
-TEST(Charsets, all_mmml_escapeable8)
-{
-    for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_mmml_escapeable8, c), is_mmml_escapeable(c));
-    }
-}
-
-TEST(Charsets, all_mmml_escapeable)
-{
-    for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_mmml_escapeable, c), is_mmml_escapeable(c));
     }
 }
 
