@@ -12,6 +12,7 @@
 #include "mmml/document_generation.hpp"
 #include "mmml/parse.hpp"
 #include "mmml/print.hpp"
+#include "mmml/ulight_highlighter.hpp"
 
 namespace mmml {
 namespace {

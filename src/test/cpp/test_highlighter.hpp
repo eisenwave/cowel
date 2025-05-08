@@ -12,6 +12,7 @@
 
 #include "mmml/fwd.hpp"
 #include "mmml/services.hpp"
+#include "mmml/ulight_highlighter.hpp"
 
 namespace mmml {
 
