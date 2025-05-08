@@ -37,6 +37,27 @@ struct Pure_Plaintext_Behavior : Directive_Behavior {
     }
 };
 
+struct Meta_Behavior : Directive_Behavior {
+
+    constexpr explicit Meta_Behavior()
+        : Directive_Behavior { Directive_Category::meta, Directive_Display::none }
+    {
+    }
+
+    void generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive& d, Context& context)
+        const final
+    {
+        evaluate(d, context);
+    }
+
+    void generate_html(HTML_Writer&, const ast::Directive& d, Context& context) const final
+    {
+        evaluate(d, context);
+    }
+
+    virtual void evaluate(const ast::Directive& d, Context& context) const = 0;
+};
+
 struct Do_Nothing_Behavior : Directive_Behavior {
     // TODO: diagnose ignored arguments
 
