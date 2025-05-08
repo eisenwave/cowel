@@ -396,14 +396,14 @@ constexpr auto is_url_always_encoded_lambda = [](char8_t c) { return is_url_alwa
 
 void write_bibliography_entry(HTML_Writer& out, const Document_Info& info)
 {
-    const auto open_link_tag = [&](std::u8string_view url, bool sans = false) {
+    const auto open_link_tag = [&](std::u8string_view url, bool link_class = false) {
         out.write_inner_html(u8"<a href=\"");
         url_encode_ascii_if(
             std::back_inserter(out.get_output()), url, is_url_always_encoded_lambda
         );
         out.write_inner_html(u8'"');
-        if (sans) {
-            out.write_inner_html(u8" class=sans");
+        if (link_class) {
+            out.write_inner_html(u8" class=bib-link");
         }
         out.write_inner_html(u8'>');
     };
@@ -428,19 +428,28 @@ void write_bibliography_entry(HTML_Writer& out, const Document_Info& info)
 
     if (!info.author.empty()) {
         out.write_inner_html(u8'\n');
+        out.open_tag_with_attributes(u8"span") //
+            .write_class(u8"bib-author")
+            .end();
         out.write_inner_text(info.author);
         out.write_inner_html(u8'.');
-    }
-    if (!info.date.empty()) {
-        out.write_inner_html(u8"\n(");
-        out.write_inner_text(info.date);
-        out.write_inner_html(u8')');
+        out.close_tag(u8"span");
     }
     if (!info.title.empty()) {
         out.write_inner_html(u8'\n');
-        out.open_tag(u8"i");
+        out.open_tag_with_attributes(u8"span") //
+            .write_class(u8"bib-title")
+            .end();
         out.write_inner_text(info.title);
-        out.close_tag(u8"i");
+        out.close_tag(u8"span");
+    }
+    if (!info.date.empty()) {
+        out.write_inner_html(u8"\n");
+        out.open_tag_with_attributes(u8"span") //
+            .write_class(u8"bib-date")
+            .end();
+        out.write_inner_text(info.date);
+        out.close_tag(u8"span");
     }
 
     const auto write_link = [&](std::u8string_view url) {

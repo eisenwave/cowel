@@ -885,6 +885,53 @@ th {
     margin-top: 0.75em;
 }
 
+/** BIBLIOGRAPHY */
+
+.bib {
+    display: block;
+    margin: 1em 0;
+}
+
+.bib-item {
+    display: inline-block;
+    width: 100%;
+    margin: 0.25em 0;
+}
+
+.bib-item>* {
+    padding: 0 0.125em;
+}
+
+.bib-author {
+    font-style: italic;
+}
+
+.bib-title {
+    font-weight: 500;
+}
+
+.bib-date {
+    font-family: var(--monospace-family);
+}
+
+.bib-date::before {
+    font-family: var(--serif-family);
+    content: "(";
+}
+
+.bib-date::after {
+    font-family: var(--serif-family);
+    content: ")";
+}
+
+.bib-link {
+    display: inline-block;
+    margin-left: var(--indent);
+
+    font-family: var(--sans-serif-family);
+    font-style: normal;
+}
+
 /* SPECIAL BLOCKS */
 
 intro- {
