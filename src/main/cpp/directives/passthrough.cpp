@@ -2,6 +2,7 @@
 #include "mmml/directive_processing.hpp"
 #include "mmml/util/draft_uris.hpp"
 #include "mmml/util/strings.hpp"
+#include <algorithm>
 
 namespace mmml {
 
@@ -289,13 +290,28 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     const auto target_string = as_u8string_view(target);
     const Reference_Classification classification = classify_reference(target_string);
     if (classification.type == Reference_Type::unknown) {
+        Bibliography& documents = context.get_bibliography();
+        const Document_Info* const reference = documents.find(target_string);
+        if (reference) {
+            if (!reference->link.empty()) {
+                out.open_tag_with_attributes(u8"a") //
+                    .write_href(reference->link)
+                    .end();
+            }
+            out.write_inner_text(reference->id);
+            if (!reference->link.empty()) {
+                out.close_tag(u8"a");
+            }
+            return;
+        }
+
         if (context.emits(Severity::error)) {
             Diagnostic error
-                = context.make_error(diagnostic::ref_to_unclassified, d.get_source_span());
+                = context.make_error(diagnostic::ref_to_unresolved, d.get_source_span());
             error.message += u8"The specified target \"";
             error.message += target_string;
             error.message += u8"\" cannot be classified as URL or anything else, "
-                             "so the reference is invalid.";
+                             "and it cannot be resolved.";
             context.emit(std::move(error));
         }
         try_generate_error_html(out, d, context);
@@ -383,6 +399,69 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
         out.write_inner_text(target_string);
     }
     out.close_tag(u8"a");
+}
+
+void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& context) const
+{
+    static constexpr struct Entry {
+        std::u8string_view parameter;
+        std::u8string_view Document_Info::* member;
+    } table[] {
+        { u8"id", &Document_Info::id },
+        { u8"title", &Document_Info::title },
+        { u8"date", &Document_Info::date },
+        { u8"publisher", &Document_Info::publisher },
+        { u8"link", &Document_Info::link },
+        { u8"long_link", &Document_Info::long_link },
+        { u8"issue_link", &Document_Info::issue_link },
+        { u8"author", &Document_Info::author },
+    };
+
+    // clang-format off
+    static constexpr auto  parameters = []()  {
+        std::array<std::u8string_view, std::size(table)> result;
+        std::ranges::transform(table, result.begin(), &Entry::parameter);
+        return result;
+    }();
+    // clang-format on
+    Argument_Matcher args { parameters, context.get_transient_memory() };
+    args.match(d.get_arguments(), context.get_source());
+
+    Stored_Document_Info result { .text
+                                  = std::pmr::vector<char8_t> { context.get_transient_memory() },
+                                  .info {} };
+
+    if (args.get_argument_index(u8"id") < 0) {
+        context.try_error(
+            diagnostic::bib_id_missing, d.get_source_span(),
+            u8"An id argument is required to add a bibliography entry."
+        );
+        return;
+    }
+
+    for (const auto& entry : table) {
+        const int index = args.get_argument_index(entry.parameter);
+        if (index < 0) {
+            continue;
+        }
+        const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
+        const std::size_t initial_size = result.text.size();
+        to_plaintext(result.text, arg.get_content(), context);
+        MMML_ASSERT(result.text.size() >= initial_size);
+        const auto part_string = as_u8string_view(result.text).substr(initial_size);
+
+        if (entry.parameter == u8"id" && part_string.empty()) {
+            context.try_error(
+                diagnostic::bib_id_empty, d.get_source_span(),
+                u8"An id argument for a bibliography entry cannot be empty."
+            );
+            return;
+        }
+
+        result.info.*entry.member = part_string;
+    }
+
+    context.get_bibliography().insert(std::move(result));
 }
 
 void Self_Closing_Behavior::generate_html(

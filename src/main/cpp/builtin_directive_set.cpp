@@ -24,6 +24,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"abstract-block" };
     Fixed_Name_Passthrough_Behavior b //
         { u8"b", Directive_Category::formatting, Directive_Display::in_line };
+    Bibliography_Add_Behavior bib //
+        {};
     Wrap_Behavior block //
         { Directive_Category::formatting, Directive_Display::block };
     Special_Block_Behavior blockquote //
@@ -215,6 +217,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-U",
         u8"-abstract",
         u8"-b",
+        u8"-bib",
         u8"-block",
         u8"-blockquote",
         u8"-br",
@@ -340,6 +343,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'b':
         if (name == u8"b")
             return &m_impl->b;
+        if (name == u8"bib")
+            return &m_impl->bib;
         if (name == u8"block")
             return &m_impl->block;
         if (name == u8"blockquote")

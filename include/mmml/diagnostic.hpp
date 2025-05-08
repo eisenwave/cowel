@@ -117,12 +117,21 @@ inline constexpr std::u8string_view ref_to_empty = u8"ref.to.empty";
 inline constexpr std::u8string_view ref_args_ignored = u8"ref.args.ignored";
 
 /// @brief In a `\ref` directive,
-/// the target cannot be classified as a URL or anything else.
-inline constexpr std::u8string_view ref_to_unclassified = u8"ref.to.unclassified";
+/// the target cannot be classified as a URL or anything else,
+/// and the target cannot be resolved as a document.
+inline constexpr std::u8string_view ref_to_unresolved = u8"ref.to.unresolved";
 
 /// @brief In a `\ref` directive where the target is a C++ draft URL,
 /// failed to verbalize the URL.
 inline constexpr std::u8string_view ref_draft_verbalization = u8"ref.draft_verbalization";
+
+/// @brief In a `\bib` directive,
+/// no `id` was provided.
+inline constexpr std::u8string_view bib_id_missing = u8"bib.id.missing";
+
+/// @brief In a `\bib` directive,
+/// the specified `id` is empty.
+inline constexpr std::u8string_view bib_id_empty = u8"bib.id.empty";
 
 /// @brief In a `\wg21-head` directive,
 /// no title was specified.
