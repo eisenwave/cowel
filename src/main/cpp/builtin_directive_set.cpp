@@ -108,7 +108,9 @@ struct Builtin_Directive_Set::Impl {
         {};
     URL_Behavior mail //
         { u8"mailto:" };
-    Table_Of_Contents_Behavior make_contents //
+    Make_Section_Behavior make_bibliography //
+        { Directive_Display::block, class_name::bibliography, section_name::bibliography };
+    Make_Section_Behavior make_contents //
         { Directive_Display::block, class_name::table_of_contents,
           section_name::table_of_contents };
     Fixed_Name_Passthrough_Behavior mark //
@@ -261,6 +263,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-kbd",
         u8"-lorem-ipsum",
         u8"-mail",
+        u8"-make-bib",
         u8"-make-contents",
         u8"-mark",
         u8"-math",
@@ -455,6 +458,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'm':
         if (name == u8"mail")
             return &m_impl->mail;
+        if (name == u8"make-bib")
+            return &m_impl->make_bibliography;
         if (name == u8"make-contents")
             return &m_impl->make_contents;
         if (name == u8"mark")

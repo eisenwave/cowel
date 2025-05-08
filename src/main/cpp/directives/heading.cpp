@@ -269,11 +269,8 @@ void Here_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Con
     });
 }
 
-void Table_Of_Contents_Behavior::generate_html(
-    HTML_Writer& out,
-    const ast::Directive&,
-    Context& context
-) const
+void Make_Section_Behavior::generate_html(HTML_Writer& out, const ast::Directive&, Context& context)
+    const
 {
     context.get_sections().make(m_section_name);
 
