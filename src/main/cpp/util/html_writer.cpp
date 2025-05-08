@@ -8,6 +8,7 @@
 #include "mmml/util/html_writer.hpp"
 #include "mmml/util/strings.hpp"
 #include "mmml/util/unicode.hpp"
+#include "mmml/util/url_encode.hpp"
 
 namespace mmml {
 
@@ -194,8 +195,12 @@ HTML_Writer& HTML_Writer::write_comment(string_view_type comment)
     return *this;
 }
 
-HTML_Writer&
-HTML_Writer::write_attribute(string_view_type key, string_view_type value, Attribute_Style style)
+HTML_Writer& HTML_Writer::write_attribute(
+    string_view_type key,
+    string_view_type value,
+    Attribute_Style style,
+    Attribute_Encoding encoding
+)
 {
     if (value.empty()) {
         return write_empty_attribute(key, style);
@@ -210,11 +215,35 @@ HTML_Writer::write_attribute(string_view_type key, string_view_type value, Attri
     const char8_t quote_char = attribute_style_quote_char(style);
     do_write(u8'=');
     if (!attribute_style_demands_quotes(style) && is_html_unquoted_attribute_value(value)) {
-        do_write(value);
+        switch (encoding) {
+        case Attribute_Encoding::text: {
+            do_write(value);
+            break;
+        }
+        case Attribute_Encoding::url: {
+            url_encode_ascii_if(std::back_inserter(m_out), value, [](char8_t c) {
+                return is_url_always_encoded(c);
+            });
+            break;
+        }
+        }
     }
     else {
         do_write(quote_char);
-        append_html_escaped(m_out, value, u8"\"'");
+        switch (encoding) {
+        case Attribute_Encoding::text: {
+            append_html_escaped(m_out, value, u8"\"'");
+            break;
+        }
+        case Attribute_Encoding::url: {
+            url_encode_ascii_if(std::back_inserter(m_out), value, [](char8_t c) {
+                static_assert(is_url_always_encoded(u8'"'));
+                static_assert(!is_url_always_encoded(u8'\''));
+                return c == u8'\'' || is_url_always_encoded(c);
+            });
+            break;
+        }
+        }
         do_write(quote_char);
     }
 

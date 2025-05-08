@@ -174,7 +174,17 @@ public:
     void write_inner_html(char32_t c);
 
 private:
-    Self& write_attribute(string_view_type key, string_view_type value, Attribute_Style style);
+    enum struct Attribute_Encoding : Default_Underlying {
+        text,
+        url,
+    };
+
+    Self& write_attribute(
+        string_view_type key,
+        string_view_type value,
+        Attribute_Style style,
+        Attribute_Encoding encoding
+    );
     Self& write_empty_attribute(string_view_type key, Attribute_Style style);
     Self& end_attributes();
     Self& end_empty_tag_attributes();
@@ -214,7 +224,19 @@ public:
         Attribute_Style style = Attribute_Style::double_if_needed
     )
     {
-        m_writer.write_attribute(key, value, style);
+        m_writer.write_attribute(key, value, style, HTML_Writer::Attribute_Encoding::text);
+        return *this;
+    }
+
+    /// @brief Like `write_attribute`,
+    /// but applies minimal URL encoding to the value.
+    Attribute_Writer& write_url_attribute(
+        string_view_type key,
+        string_view_type value,
+        Attribute_Style style = Attribute_Style::double_if_needed
+    )
+    {
+        m_writer.write_attribute(key, value, style, HTML_Writer::Attribute_Encoding::url);
         return *this;
     }
 
@@ -241,7 +263,7 @@ public:
     Attribute_Writer&
     write_href(string_view_type value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"href", value, style);
+        return write_url_attribute(u8"href", value, style);
     }
 
     Attribute_Writer&
