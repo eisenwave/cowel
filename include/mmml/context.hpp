@@ -83,7 +83,7 @@ private:
 
     Logger& m_logger;
     Syntax_Highlighter& m_syntax_highlighter;
-    Document_Finder& m_document_finder;
+    Bibliography& m_bibliography;
 
     Document_Sections m_sections { m_memory };
     Variable_Map m_variables { m_memory };
@@ -109,7 +109,7 @@ public:
         Directive_Behavior* error_behavior,
         Logger& logger,
         Syntax_Highlighter& highlighter,
-        Document_Finder& finder,
+        Bibliography& bibliography,
         std::pmr::memory_resource* persistent_memory,
         std::pmr::memory_resource* transient_memory
     )
@@ -121,7 +121,7 @@ public:
         , m_error_behavior { error_behavior }
         , m_logger { logger }
         , m_syntax_highlighter { highlighter }
-        , m_document_finder { finder }
+        , m_bibliography { bibliography }
     {
     }
 
@@ -158,14 +158,14 @@ public:
     }
 
     [[nodiscard]]
-    Document_Finder& get_document_finder()
+    Bibliography& get_documents()
     {
-        return m_document_finder;
+        return m_bibliography;
     }
     [[nodiscard]]
-    const Document_Finder& get_document_finder() const
+    const Bibliography& get_documents() const
     {
-        return m_document_finder;
+        return m_bibliography;
     }
 
     [[nodiscard]]

@@ -65,7 +65,7 @@ enum struct Diagnostic_Highlight : Default_Underlying;
 struct Content_Behavior;
 struct Context;
 struct Diagnostic;
-struct Document_Finder;
+struct Bibliography;
 struct Document_Info;
 struct Document_Sections;
 struct Directive_Behavior;
@@ -82,7 +82,7 @@ struct Ignorant_Logger;
 enum struct IO_Error_Code : Default_Underlying;
 struct Logger;
 struct Name_Resolver;
-struct No_Support_Document_Finder;
+struct Simple_Bibliography;
 struct No_Support_Syntax_Highlighter;
 template <typename, typename>
 struct Result;

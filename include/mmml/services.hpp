@@ -1,9 +1,7 @@
 #ifndef MMML_SERVICES_HPP
 #define MMML_SERVICES_HPP
 
-#include <cstddef>
 #include <memory_resource>
-#include <optional>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -151,25 +149,19 @@ struct Document_Info {
 };
 
 struct Stored_Document_Info {
-    std::pmr::vector<std::byte> storage;
+    /// @brief The text storage for any dynamic strings in `info`.
+    std::pmr::vector<char8_t> text;
+    /// @brief Information about the document.
     Document_Info info;
 };
 
-struct Document_Finder {
+struct Bibliography {
     [[nodiscard]]
-    virtual std::optional<Stored_Document_Info> operator()(std::u8string_view id)
+    virtual const Document_Info* find(std::u8string_view id)
         = 0;
-};
 
-struct No_Support_Document_Finder final : Document_Finder {
-    [[nodiscard]]
-    std::optional<Stored_Document_Info> operator()(std::u8string_view) final
-    {
-        return {};
-    }
+    virtual bool insert(std::pmr::u8string&& id, Stored_Document_Info&& info) = 0;
 };
-
-inline constinit No_Support_Document_Finder no_support_document_finder;
 
 struct Logger {
 private:
