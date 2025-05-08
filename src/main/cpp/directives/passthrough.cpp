@@ -2,6 +2,7 @@
 #include "mmml/directive_processing.hpp"
 #include "mmml/util/draft_uris.hpp"
 #include "mmml/util/strings.hpp"
+#include "mmml/util/url_encode.hpp"
 #include <algorithm>
 
 namespace mmml {
@@ -290,31 +291,19 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     const auto target_string = as_u8string_view(target);
     const Reference_Classification classification = classify_reference(target_string);
     if (classification.type == Reference_Type::unknown) {
-        Bibliography& documents = context.get_bibliography();
-        const Document_Info* const reference = documents.find(target_string);
-        if (reference) {
-            if (!reference->link.empty()) {
-                out.open_tag_with_attributes(u8"a") //
-                    .write_href(reference->link)
-                    .end();
-            }
-            out.write_inner_text(reference->id);
-            if (!reference->link.empty()) {
-                out.close_tag(u8"a");
-            }
-            return;
+        std::pmr::u8string section_name { context.get_transient_memory() };
+        section_name += u8"std.bib.";
+        section_name += target_string;
+        section_name += u8".open";
+        reference_section(out, section_name);
+        if (d.get_content().empty()) {
+            out.write_inner_html(u8'[');
+            out.write_inner_text(target_string);
+            out.write_inner_html(u8']');
         }
-
-        if (context.emits(Severity::error)) {
-            Diagnostic error
-                = context.make_error(diagnostic::ref_to_unresolved, d.get_source_span());
-            error.message += u8"The specified target \"";
-            error.message += target_string;
-            error.message += u8"\" cannot be classified as URL or anything else, "
-                             "and it cannot be resolved.";
-            context.emit(std::move(error));
-        }
-        try_generate_error_html(out, d, context);
+        section_name.resize(section_name.size() - 4);
+        section_name += u8"close";
+        reference_section(out, section_name);
         return;
     }
 
@@ -412,8 +401,8 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
         { u8"date", &Document_Info::date },
         { u8"publisher", &Document_Info::publisher },
         { u8"link", &Document_Info::link },
-        { u8"long_link", &Document_Info::long_link },
-        { u8"issue_link", &Document_Info::issue_link },
+        { u8"long-link", &Document_Info::long_link },
+        { u8"issue-link", &Document_Info::issue_link },
         { u8"author", &Document_Info::author },
     };
 
@@ -439,18 +428,27 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
         return;
     }
 
+    // The following process of converting directive arguments
+    // to members in the Document_Info object needs to be done in two passes
+    // because vector reallocation would invalidate string views.
+    //  1. Concatenate the text data and remember the string lengths.
+    //  2. Form string views and assign to members in the Document_Info.
+
+    std::pmr::vector<std::size_t> string_lengths { context.get_transient_memory() };
+    string_lengths.reserve(parameters.size());
+
     for (const auto& entry : table) {
         const int index = args.get_argument_index(entry.parameter);
         if (index < 0) {
+            string_lengths.push_back(0);
             continue;
         }
         const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
         const std::size_t initial_size = result.text.size();
         to_plaintext(result.text, arg.get_content(), context);
         MMML_ASSERT(result.text.size() >= initial_size);
-        const auto part_string = as_u8string_view(result.text).substr(initial_size);
 
-        if (entry.parameter == u8"id" && part_string.empty()) {
+        if (entry.parameter == u8"id" && result.text.size() == initial_size) {
             context.try_error(
                 diagnostic::bib_id_empty, d.get_source_span(),
                 u8"An id argument for a bibliography entry cannot be empty."
@@ -458,7 +456,47 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
             return;
         }
 
-        result.info.*entry.member = part_string;
+        string_lengths.push_back(result.text.size() - initial_size);
+    }
+    {
+        const auto result_string = as_u8string_view(result.text);
+        std::size_t offset = 0;
+        for (std::size_t i = 0; i < string_lengths.size(); ++i) {
+            const auto length = string_lengths[i];
+            const auto part_string = result_string.substr(offset, length);
+            offset += length;
+            result.info.*table[i].member = part_string;
+        }
+    }
+
+    // To facilitate later referencing,
+    // we output the opening and closing HTML tags for this bibliography entry into sections.
+    // If the bibliography entry has a link,
+    // those tags will be "<a href=..." and "</a>",
+    // otherwise the sections remain empty.
+
+    std::pmr::u8string section_name { u8"std.bib.", context.get_transient_memory() };
+    section_name += result.info.id;
+    const std::size_t initial_size = section_name.size();
+
+    for (const bool is_closing : { false, true }) {
+        section_name += is_closing ? u8".close" : u8".open";
+        const auto scope = context.get_sections().go_to_scoped(section_name);
+        HTML_Writer section_out = context.get_sections().current_html();
+        if (!result.info.link.empty()) {
+            if (is_closing) {
+                section_out.write_inner_html(u8"</a>");
+            }
+            else {
+                section_out.write_inner_html(u8"<a href=\"");
+                url_encode_ascii_if(
+                    std::back_inserter(section_out.get_output()), result.info.link,
+                    [](char8_t c) { return is_url_always_encoded(c); }
+                );
+                section_out.write_inner_html(u8"\">");
+            }
+        }
+        section_name.resize(initial_size);
     }
 
     context.get_bibliography().insert(std::move(result));
