@@ -126,8 +126,14 @@ struct Stored_Document_Info {
 
 struct Bibliography {
     [[nodiscard]]
-    virtual const Document_Info* find(std::u8string_view id)
+    virtual const Document_Info* find(std::u8string_view id) const
         = 0;
+
+    [[nodiscard]]
+    virtual bool contains(std::u8string_view id) const
+    {
+        return find(id) != nullptr;
+    }
 
     virtual bool insert(Stored_Document_Info&& info) = 0;
 

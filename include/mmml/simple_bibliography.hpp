@@ -56,7 +56,7 @@ public:
     Simple_Bibliography() = default;
 
     [[nodiscard]]
-    const Document_Info* find(std::u8string_view id) override
+    const Document_Info* find(std::u8string_view id) const override
     {
         if (!m_map) {
             return nullptr;
