@@ -28,7 +28,7 @@ void generate_document(const Generation_Options& options)
     Context context {
         options.path,           options.source,      options.highlight_theme_source, //
         options.error_behavior, //
-        options.logger,         options.highlighter, options.document_finder, //
+        options.logger,         options.highlighter, options.bibliography, //
         options.memory,         &transient_memory
     };
     context.add_resolver(options.builtin_behavior);

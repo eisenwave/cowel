@@ -10,6 +10,7 @@
 #include "mmml/ast.hpp"
 #include "mmml/fwd.hpp"
 #include "mmml/services.hpp"
+#include "mmml/simple_bibliography.hpp"
 
 namespace mmml {
 
@@ -34,7 +35,7 @@ struct Generation_Options {
 
     Logger& logger = ignorant_logger;
     Syntax_Highlighter& highlighter = no_support_syntax_highlighter;
-    Document_Finder& document_finder = no_support_document_finder;
+    Bibliography& bibliography = simple_bibliography;
 
     /// @brief A source of memory to be used throughout generation,
     /// emitting diagnostics, etc.
