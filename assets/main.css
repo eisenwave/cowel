@@ -451,8 +451,7 @@ ul {
 }
 
 li {
-    margin-top: 0.25em;
-    margin-bottom: 0.25em;
+    margin: 0.5em 0;
 }
 
 dt {
@@ -703,29 +702,33 @@ h6 {
 }
 
 h1 {
-    margin: 1.5rem 0;
+    margin: 2rem 0 1.5rem 0;
     font-size: 250%;
 }
 
 h2 {
-    margin: 1.5rem 0;
+    margin: 2.5rem 0 1.5rem 0;
     font-size: 166%;
 }
 
 h3 {
+    margin: 2rem 0 1rem 0;
     font-size: 133%;
 }
 
 h4 {
+    margin: 1.5rem 0 0.5rem 0;
     font-size: 100%;
 }
 
 h5 {
+    margin: 1rem 0 0.5rem 0;
     font-size: 100%;
     font-weight: normal;
 }
 
 h6 {
+    margin: 1rem 0 0.5rem 0;
     font-size: 90%;
     font-weight: normal;
 }
