@@ -43,6 +43,7 @@ void Passthrough_Behavior::generate_html(
     else {
         Attribute_Writer attributes = out.open_tag_with_attributes(name);
         arguments_to_attributes(attributes, d, context);
+        attributes.end();
     }
     to_html(out, d.get_content(), context);
     out.close_tag(name);
