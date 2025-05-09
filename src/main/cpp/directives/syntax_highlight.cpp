@@ -93,7 +93,17 @@ void Syntax_Highlight_Behavior::generate_html(
     const std::u8string_view lang
         = argument_to_plaintext_or(lang_data, lang_parameter, u8"", d, args, context);
 
-    out.open_tag(m_tag_name);
+    std::pmr::vector<char8_t> borders_data { context.get_transient_memory() };
+    const bool has_borders = this->display == Directive_Display::block
+        && argument_to_plaintext_or(borders_data, borders_parameter, u8"yes", d, args, context)
+            != u8"no";
+
+    Attribute_Writer attributes = out.open_tag_with_attributes(m_tag_name);
+    if (this->display == Directive_Display::block && !has_borders) {
+        attributes.write_class(u8"borderless");
+    }
+    attributes.end();
+
     const Result<void, Syntax_Highlight_Error> result
         = to_html_syntax_highlighted(out, d.get_content(), lang, context, m_to_html_mode);
     if (!result) {

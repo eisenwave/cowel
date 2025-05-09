@@ -565,7 +565,7 @@ tt-,
     font-variant-ligatures: none;
 }
 
-code-block {
+code-block:not(.borderless) {
     padding: 0.5em;
     border-radius: var(--border-radius);
     box-sizing: border-box;
@@ -574,7 +574,7 @@ code-block {
     border: 1px solid var(--border-color);
 }
 
-code-block,
+code-block:not(.borderless),
 pre,
 samp {
     font-size: 90%;
@@ -601,11 +601,6 @@ code-block ins-lines {
     text-decoration: none;
 }
 
-code-block .comtext ins,
-code-block .comtext ins-lines {
-    text-decoration: underline;
-}
-
 del {
     text-decoration: line-through;
 }
@@ -620,16 +615,6 @@ ins-lines,
 del-lines {
     display: inline-block;
     width: 100%;
-}
-
-.comtext {
-    font-family: var(--serif-family);
-    font-size: var(--serif-size);
-    font-style: italic;
-}
-
-code-block .comtext {
-    font-size: calc(var(--serif-size) * 0.85);
 }
 
 kbd {
