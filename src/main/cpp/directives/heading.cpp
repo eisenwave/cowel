@@ -189,7 +189,25 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
     out.write_inner_html(heading_html_string);
     out.close_tag(tag_name);
 
-    // 6. If necessary, also output the heading into the table of contents.
+    // 6. Also write an ID preview in case the heading is referenced via \ref[#id]
+
+    if (has_valid_id) {
+        Document_Sections& sections = context.get_sections();
+        std::pmr::u8string section_name { context.get_transient_memory() };
+        section_name += u8"std.id-preview.";
+        MMML_ASSERT(id_data.front() == u8'#');
+        section_name += as_u8string_view(id_data).substr(1);
+
+        const auto scope = sections.go_to_scoped(section_name);
+        HTML_Writer id_preview_out = sections.current_html();
+        if (is_listed) {
+            write_numbers(id_preview_out);
+            id_preview_out.write_inner_html(u8". ");
+        }
+        id_preview_out.write_inner_html(heading_html_string);
+    }
+
+    // 7. If necessary, also output the heading into the table of contents.
     if (is_listed) {
         Document_Sections& sections = context.get_sections();
         const auto scope = sections.go_to_scoped(section_name::table_of_contents);

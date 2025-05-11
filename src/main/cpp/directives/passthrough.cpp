@@ -315,8 +315,10 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
             .write_href(target_string)
             .end();
         if (d.get_content().empty()) {
-            // TODO: generate preview from ID
-            out.write_inner_text(target_string);
+            std::pmr::u8string section_name { context.get_transient_memory() };
+            section_name += u8"std.id-preview.";
+            section_name += target_string.substr(1);
+            reference_section(out, section_name);
         }
         else {
             to_html(out, d.get_content(), context);
