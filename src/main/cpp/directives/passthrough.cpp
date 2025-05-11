@@ -328,6 +328,16 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     }
 
     MMML_ASSERT(classification.type == Reference_Type::url);
+
+    if (!d.get_content().empty()) {
+        out.open_tag_with_attributes(u8"a") //
+            .write_href(target_string)
+            .end();
+        to_html(out, d.get_content(), context);
+        out.close_tag(u8"a");
+        return;
+    }
+
     Attribute_Writer attributes = out.open_tag_with_attributes(u8"a");
     attributes.write_href(target_string);
     const bool is_sans = classification.url_scheme == URL_Scheme::mailto
@@ -338,12 +348,6 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
         attributes.write_class(u8"sans");
     }
     attributes.end();
-
-    if (!d.get_content().empty()) {
-        to_html(out, d.get_content(), context);
-        out.close_tag(u8"a");
-        return;
-    }
 
     if (classification.page != Known_Page::eelis_draft) {
         if (classification.url_scheme != URL_Scheme::none) {
