@@ -169,7 +169,7 @@ public:
     void write_inner_html(char8_t c)
     {
         MMML_DEBUG_ASSERT(is_ascii(c));
-        write_inner_html({ &c, 1 });
+        do_write(c);
     }
     void write_inner_html(char32_t c);
 
