@@ -213,6 +213,11 @@ void Document_Content_Behavior::generate_head(
           u8"&display=swap";
 
     out.write_inner_html(indent);
+
+    out.open_tag_with_attributes(u8"meta") //
+        .write_charset(u8"UTF-8")
+        .end_empty();
+
     out.open_tag_with_attributes(u8"link") //
         .write_rel(u8"preconnent")
         .write_href(u8"https://fonts.googleapis.com")
