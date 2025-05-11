@@ -923,7 +923,7 @@ th {
 }
 
 .bib-link {
-    display: inline-block;
+    display: block;
     margin-left: var(--indent);
 
     font-family: var(--sans-serif-family);
