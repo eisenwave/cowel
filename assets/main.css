@@ -573,10 +573,10 @@ code-block:not(.borderless) {
     border: 1px solid var(--border-color);
 }
 
-code-block:not(.borderless),
+code-block,
 pre,
 samp {
-    font-size: 90%;
+    font-size: 95%;
     width: 100%;
 }
 
