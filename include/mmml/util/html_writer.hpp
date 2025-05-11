@@ -200,6 +200,12 @@ private:
     using string_view_type = HTML_Writer::string_view_type;
 
     HTML_Writer& m_writer;
+    /// @brief If this is `true`,
+    /// it would not be safe to append a `/` character to the written data because it may be
+    /// included in the value of an attribute.
+    /// For example, this can happen when writing `<br id=xyz`.
+    /// Now appending `/>` to close the attribute would result in the `/` being appended to `xzy`.
+    bool m_unsafe_slash = false;
 
 public:
     explicit Attribute_Writer(HTML_Writer& writer)
@@ -225,6 +231,8 @@ public:
     )
     {
         m_writer.write_attribute(key, value, style, HTML_Writer::Attribute_Encoding::text);
+        const char8_t back = m_writer.m_out.back();
+        m_unsafe_slash = back != u8'\'' && back != u8'"';
         return *this;
     }
 
@@ -237,6 +245,8 @@ public:
     )
     {
         m_writer.write_attribute(key, value, style, HTML_Writer::Attribute_Encoding::url);
+        const char8_t back = m_writer.m_out.back();
+        m_unsafe_slash = back != u8'\'' && back != u8'"';
         return *this;
     }
 
@@ -246,7 +256,14 @@ public:
     )
     {
         m_writer.write_empty_attribute(key, style);
+        m_unsafe_slash = false;
         return *this;
+    }
+
+    Attribute_Writer&
+    write_charset(string_view_type value, Attribute_Style style = Attribute_Style::double_if_needed)
+    {
+        return write_attribute(u8"charset", value, style);
     }
 
     Attribute_Writer&
@@ -306,6 +323,9 @@ public:
     /// writer.
     Attribute_Writer& end_empty()
     {
+        if (m_unsafe_slash) {
+            m_writer.do_write(u8' ');
+        }
         m_writer.end_empty_tag_attributes();
         return *this;
     }
