@@ -587,6 +587,8 @@ samp {
     overflow-x: auto;
 }
 
+/* INSERTIONS AND DELETIONS */
+
 ins,
 ins-lines {
     text-decoration: underline;
@@ -597,7 +599,7 @@ ins-lines {
 
 code-block ins,
 code-block ins-lines {
-    text-decoration: none;
+    text-decoration: inherit;
 }
 
 del {
@@ -614,6 +616,14 @@ ins-lines,
 del-lines {
     display: inline-block;
     width: 100%;
+}
+
+ins h-,
+ins-lines h-,
+del h-,
+del-lines h- {
+    color: inherit !important;
+    background-color: inherit !important;
 }
 
 kbd {
