@@ -200,9 +200,13 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
 
         const auto scope = sections.go_to_scoped(section_name);
         HTML_Writer id_preview_out = sections.current_html();
+        id_preview_out.write_inner_html(u8"§");
         if (is_listed) {
             write_numbers(id_preview_out);
             id_preview_out.write_inner_html(u8". ");
+        }
+        else {
+            id_preview_out.write_inner_html(u8' ');
         }
         id_preview_out.write_inner_html(heading_html_string);
     }
