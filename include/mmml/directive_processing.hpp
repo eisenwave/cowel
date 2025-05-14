@@ -213,6 +213,25 @@ void try_generate_error_plaintext(
 /// uses that behavior's `generate_html` on the directive.
 void try_generate_error_html(HTML_Writer& out, const ast::Directive& d, Context& context);
 
+[[nodiscard]]
+std::pmr::vector<ast::Content> instantiate_macro(
+    const ast::Directive& definition,
+    std::span<const ast::Argument> put_arguments,
+    std::span<const ast::Content> put_content,
+    Context& context
+);
+
+[[nodiscard]]
+std::pmr::vector<ast::Content> instantiate_macro(
+    const ast::Directive& definition,
+    const ast::Directive& invocation,
+    Context& context
+);
+
+[[nodiscard]]
+std::pmr::vector<ast::Content>
+instantiate_macro_invocation(const ast::Directive& invocation, Context& context);
+
 } // namespace mmml
 
 #endif

@@ -92,10 +92,19 @@ namespace {
 
 void try_lookup_error(const ast::Directive& directive, Context& context)
 {
-    context.try_error(
-        u8"directive_lookup.unresolved", directive.get_source_span(),
-        u8"No directive with this name exists."
-    );
+    if (!context.emits(Severity::error)) {
+        return;
+    }
+
+    const std::u8string_view name = directive.get_name(context.get_source());
+    // TODO: it would be better to only use the name as the source span,
+    //       but this requires a new convenience function in ast::Directive.
+    Diagnostic diagnostic
+        = context.make_error(diagnostic::directive_lookup_unresolved, directive.get_source_span());
+    diagnostic.message += u8"No directive with the name \"";
+    diagnostic.message += name;
+    diagnostic.message += u8"\" exists.";
+    context.emit(std::move(diagnostic));
 }
 
 } // namespace
@@ -252,29 +261,26 @@ void to_plaintext_mapped_for_highlighting(
     switch (behavior->category) {
     // Meta directives such as comments cannot generate plaintext anyway.
     case Directive_Category::meta:
-    // Mixed or pure HTML directives don't interoperate with syntax highlighting at all.
-    // There's no way to highlighting something like a `<button>` element,
-    // and even if our directive was meant to generate e.g. `Hello: <button>...`,
-    // it is not reasonable to assume that `Hello: ` can be highlighted meaningfully.
-    case Directive_Category::mixed:
-    case Directive_Category::pure_html: break;
-
+    // Pure HTML directives don't interoperate with syntax highlighting at all.
+    case Directive_Category::pure_html: {
+        break;
+    }
     // Formatting directives such as `\b` are very special;
     // it is guaranteed that we can apply syntax highlighting to the content within,
     // and feed that back into the formatting directive.
     //
     // In this function, we just recurse into the directive's contents so we know which piece of
     // content within produced what syntax-highlighted part.
-    case Directive_Category::formatting:
+    case Directive_Category::formatting: {
         to_plaintext_mapped_for_highlighting(out, out_mapping, d.get_content(), context);
         break;
-
+    }
     // For pure plaintext directives, we just run plaintext generation.
     // This also means that we don't know exactly which generated character belongs to
     // which source character, but it doesn't really matter.
     // We never run HTML generation afterwards and substitute the plaintext directive
     // with various syntax-highlighted content.
-    case Directive_Category::pure_plaintext:
+    case Directive_Category::pure_plaintext: {
         const std::size_t initial_out_size = out.size();
         const std::size_t initial_mapping_size = out_mapping.size();
         behavior->generate_plaintext(out, d, context);
@@ -288,6 +294,11 @@ void to_plaintext_mapped_for_highlighting(
         const std::size_t mapping_growth = out_mapping.size() - initial_mapping_size;
         MMML_ASSERT(out_growth == mapping_growth);
         break;
+    }
+    case Directive_Category::macro: {
+        const std::pmr::vector<ast::Content> instance = instantiate_macro_invocation(d, context);
+        to_plaintext_mapped_for_highlighting(out, out_mapping, instance, context);
+    }
     }
 }
 
@@ -425,13 +436,22 @@ public:
     void operator()(const ast::Directive& d)
     {
         if (Directive_Behavior* const behavior = m_context.find_directive(d)) {
-            on_directive(*behavior, d);
+            if (behavior->category == Directive_Category::macro) {
+                const std::pmr::vector<ast::Content> instance
+                    = instantiate_macro_invocation(d, m_context);
+                for (const auto& content : instance) {
+                    std::visit(*this, content);
+                }
+            }
+            else {
+                on_non_macro_directive(*behavior, d);
+            }
         }
         else {
             try_lookup_error(d, m_context);
         }
         if (Directive_Behavior* const eb = m_context.get_error_behavior()) {
-            on_directive(*eb, d);
+            on_non_macro_directive(*eb, d);
         }
     }
 
@@ -510,26 +530,32 @@ private:
     void transition(Directive_Display display)
     {
         switch (display) {
-        case Directive_Display::none: return;
-
-        case Directive_Display::in_line:
+        case Directive_Display::none: {
+            return;
+        }
+        case Directive_Display::in_line: {
             if (m_state == Paragraphs_State::outside && display == Directive_Display::in_line) {
                 m_out.open_tag(u8"p");
                 m_state = Paragraphs_State::inside;
             }
             return;
-
-        case Directive_Display::block:
+        }
+        case Directive_Display::block: {
             if (m_state == Paragraphs_State::inside && display == Directive_Display::block) {
                 m_out.close_tag(u8"p");
                 m_state = Paragraphs_State::outside;
             }
             return;
         }
+        case Directive_Display::macro: {
+            MMML_ASSERT_UNREACHABLE(u8"Macros should have been instantiated already.");
+            break;
+        }
+        }
         MMML_ASSERT_UNREACHABLE(u8"Invalid display value.");
     }
 
-    void on_directive(Directive_Behavior& b, const ast::Directive& d)
+    void on_non_macro_directive(Directive_Behavior& b, const ast::Directive& d)
     {
         transition(b.display);
         b.generate_html(m_out, d, m_context);
@@ -649,7 +675,6 @@ struct [[nodiscard]] Highlighted_AST_Copier {
         }
         switch (behavior->category) {
         case Directive_Category::meta:
-        case Directive_Category::mixed:
         case Directive_Category::pure_html: {
             // Boring cases.
             // These kinds of directives don't participate in syntax highlighting.
@@ -693,6 +718,13 @@ struct [[nodiscard]] Highlighted_AST_Copier {
             out.push_back(ast::Directive { directive.get_source_span(), directive.get_name_length(),
                                            std::move(copied_arguments), std::move(inner_content) });
             return;
+        }
+        case Directive_Category::macro: {
+            const std::pmr::vector<ast::Content> instance
+                = instantiate_macro_invocation(directive, context);
+            for (const auto& content : instance) {
+                std::visit(*this, content);
+            }
         }
         }
     }
@@ -943,6 +975,86 @@ void try_generate_error_html(HTML_Writer& out, const ast::Directive& d, Context&
     if (const Directive_Behavior* const behavior = context.get_error_behavior()) {
         behavior->generate_html(out, d, context);
     }
+}
+
+namespace {
+
+void substitute_in_macro(
+    std::pmr::vector<ast::Content>& content,
+    std::span<const ast::Argument> put_arguments,
+    std::span<const ast::Content> put_content,
+    Context& context
+)
+{
+    for (auto it = content.begin(); it != content.end();) {
+        auto* const d = std::get_if<ast::Directive>(&*it);
+        if (!d) {
+            // Anything other than directives (text, etc.) are unaffected by macro substitution.
+            ++it;
+            continue;
+        }
+
+        // Before anything else, we have to replace the contents and the arguments of directives.
+        // This comes even before the use evaluation of \put and \arg
+        // in order to facilitate nesting, like \arg[\arg[0]].
+        for (auto& arg : d->get_arguments()) {
+            substitute_in_macro(arg.get_content(), put_arguments, put_content, context);
+        }
+        substitute_in_macro(d->get_content(), put_arguments, put_content, context);
+
+        const std::u8string_view name = d->get_name(context.get_source());
+        if (name == u8"put") {
+            // TODO: there's probably a way to do this faster, in a single step,
+            //       but I couldn't find anything obvious in std::vector's interface.
+            it = content.erase(it);
+            it = content.insert(it, put_content.begin(), put_content.end());
+            // We must skip over substituted content,
+            // otherwise we risk expanding a \put directive that was passed to the macro,
+            // rather than being in the macro definition,
+            // and \put is only supposed to have special meaning within the macro definition.
+            it += std::ptrdiff_t(put_content.size());
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
+} // namespace
+
+std::pmr::vector<ast::Content> instantiate_macro(
+    const ast::Directive& definition,
+    std::span<const ast::Argument> put_arguments,
+    std::span<const ast::Content> put_content,
+    Context& context
+)
+{
+    const std::span<const ast::Content> content = definition.get_content();
+    std::pmr::vector<ast::Content> result { content.begin(), content.end(),
+                                            context.get_transient_memory() };
+    substitute_in_macro(result, put_arguments, put_content, context);
+    return result;
+}
+
+std::pmr::vector<ast::Content> instantiate_macro(
+    const ast::Directive& definition,
+    const ast::Directive& invocation,
+    Context& context
+)
+{
+    return instantiate_macro(
+        definition, invocation.get_arguments(), invocation.get_content(), context
+    );
+}
+
+std::pmr::vector<ast::Content>
+instantiate_macro_invocation(const ast::Directive& invocation, Context& context)
+{
+    const std::u8string_view name = invocation.get_name(context.get_source());
+    const ast::Directive* const definition = context.find_macro(name);
+    MMML_ASSERT(definition);
+
+    return instantiate_macro(*definition, invocation, context);
 }
 
 } // namespace mmml
