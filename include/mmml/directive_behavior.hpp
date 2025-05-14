@@ -34,11 +34,9 @@ enum struct Directive_Category : Default_Underlying {
     /// replaced with highlighted contents.
     /// For example, `\\code{\\b{void}}` may be turned into `\\code{\\b{\\hl-keyword{void}}}`.
     formatting,
-    /// @brief Mixed plaintext and HTML content.
-    /// This is a fallback category for when none of the other options apply.
-    /// Using it as an HTML attribute is not erroneous, but may lead to unexpected results.
-    /// For syntax highlighting, this is treated same as `pure_html`.
-    mixed,
+    /// @brief Directive which is replaced by other content,
+    /// and doesn't have fixed behavior or display style.
+    macro,
 };
 
 /// @brief Specifies how a directive should be displayed.
@@ -51,6 +49,9 @@ enum struct Directive_Display : Default_Underlying {
     /// @brief The directive is inline, such as `\\b` or `\\code`.
     /// This means that it will be displayed within paragraphs and as part of other text.
     in_line,
+    /// @brief The directive expands to other content;
+    /// it has not display style on its own.
+    macro,
 };
 
 /// @brief Implements behavior that one or multiple directives should have.
