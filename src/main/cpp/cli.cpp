@@ -69,6 +69,11 @@ struct Stderr_Logger final : Logger {
         print_file_position(out, file, diagnostic.location);
         out.append(u8' ');
         out.append(diagnostic.message);
+        out.append(ansi::h_black);
+        out.append(u8" [");
+        out.append(diagnostic.id);
+        out.append(u8']');
+        out.append(ansi::reset);
         out.append(u8'\n');
         print_code_string_stderr(out);
         out.clear();
@@ -115,8 +120,8 @@ int main(int argc, const char* const* argv)
         return EXIT_FAILURE;
     }
 
-    static constinit Document_Content_Behavior behavior {};
     Builtin_Directive_Set builtin_directives {};
+    Document_Content_Behavior behavior { builtin_directives.get_macro_behavior() };
     Stderr_Logger logger { &memory, in_path };
     static constinit Ulight_Syntax_Highlighter highlighter;
 
