@@ -9,6 +9,7 @@
 
 #include <gtest/gtest.h>
 
+#include "mmml/diagnostic_highlight.hpp"
 #include "mmml/document_content_behavior.hpp"
 #include "mmml/util/annotated_string.hpp"
 #include "mmml/util/assert.hpp"
@@ -16,13 +17,11 @@
 #include "mmml/builtin_directive_set.hpp"
 #include "mmml/content_behavior.hpp"
 #include "mmml/diagnostic.hpp"
-#include "mmml/diagnostic_highlight.hpp"
 #include "mmml/directive_behavior.hpp"
 #include "mmml/directive_processing.hpp"
 #include "mmml/document_generation.hpp"
 #include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
-#include "mmml/print.hpp"
 
 #include "collecting_logger.hpp"
 #include "diff.hpp"
@@ -81,8 +80,6 @@ struct Empty_Head_Behavior final : Head_Body_Content_Behavior {
 constinit Trivial_Content_Behavior trivial_behavior {};
 constinit Paragraphs_Behavior paragraphs_behavior {};
 constinit Empty_Head_Behavior empty_head_behavior {};
-[[maybe_unused]]
-constinit Document_Content_Behavior document_content_behavior {};
 
 struct Doc_Gen_Test : testing::Test {
     std::pmr::monotonic_buffer_resource memory;

@@ -46,6 +46,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"dd", Directive_Category::pure_html, Directive_Display::block };
     Special_Block_Behavior decision //
         { u8"decision-block" };
+    Def_Behavior def //
+        {};
     Fixed_Name_Passthrough_Behavior del //
         { u8"del", Directive_Category::formatting, Directive_Display::in_line };
     Special_Block_Behavior delblock //
@@ -105,6 +107,8 @@ struct Builtin_Directive_Set::Impl {
     Fixed_Name_Passthrough_Behavior kbd //
         { u8"kbd", Directive_Category::formatting, Directive_Display::in_line };
     Lorem_Ipsum_Behavior lorem_ipsum //
+        {};
+    Macro_Behavior macro //
         {};
     URL_Behavior mail //
         { u8"mailto:" };
@@ -209,6 +213,11 @@ Directive_Behavior& Builtin_Directive_Set::get_error_behavior() noexcept
     return m_impl->error;
 }
 
+Directive_Behavior& Builtin_Directive_Set::get_macro_behavior() noexcept
+{
+    return m_impl->macro;
+}
+
 Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
     std::u8string_view name,
     std::pmr::memory_resource* memory
@@ -230,6 +239,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-comment",
         u8"-dd",
         u8"-decision",
+        u8"-def",
         u8"-del",
         u8"-delblock",
         u8"-details",
@@ -374,6 +384,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->dd;
         if (name == u8"decision")
             return &m_impl->decision;
+        if (name == u8"def")
+            return &m_impl->def;
         if (name == u8"del")
             return &m_impl->del;
         if (name == u8"delblock")

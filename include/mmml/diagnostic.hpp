@@ -141,6 +141,18 @@ inline constexpr std::u8string_view bib_duplicate = u8"bib.duplicate";
 /// no title was specified.
 inline constexpr std::u8string_view wg21_head_no_title = u8"wg21-head.no_title";
 
+/// @brief In a `\def` directive,
+/// no pattern was provided.
+inline constexpr std::u8string_view def_no_pattern = u8"def.no_pattern";
+
+/// @brief In a `\def` directive,
+/// the given pattern is not a directive.
+inline constexpr std::u8string_view def_pattern_no_directive = u8"def.pattern.no_directive";
+
+/// @brief In a `\def` directive,
+/// the same macro was defined multiple times.
+inline constexpr std::u8string_view def_redefinition = u8"def.redefinition";
+
 /// @brief In any directive,
 /// a duplicate `id` attribute would have been generated.
 inline constexpr std::u8string_view duplicate_id = u8"id.duplicate";
@@ -156,6 +168,9 @@ inline constexpr std::u8string_view section_ref_circular = u8"section_ref.circul
 /// @brief When loading a syntax highlighting theme,
 /// conversion from JSON to to CSS failed.
 inline constexpr std::u8string_view theme_conversion = u8"theme.conversion";
+
+/// @brief Directive lookup failed.
+inline constexpr std::u8string_view directive_lookup_unresolved = u8"directive_lookup.unresolved";
 
 } // namespace diagnostic
 

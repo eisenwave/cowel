@@ -523,6 +523,24 @@ struct Math_Behavior final : Pure_HTML_Behavior {
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
 };
 
+struct Def_Behavior final : Meta_Behavior {
+
+    void evaluate(const ast::Directive& d, Context& context) const final;
+};
+
+struct Macro_Behavior final : Directive_Behavior {
+
+    constexpr Macro_Behavior()
+        : Directive_Behavior { Directive_Category::macro, Directive_Display::macro }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context&) const final;
+
+    void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const final;
+};
+
 struct [[nodiscard]]
 Builtin_Directive_Set final : Name_Resolver {
 private:
@@ -539,6 +557,9 @@ public:
 
     [[nodiscard]]
     Directive_Behavior& get_error_behavior() noexcept;
+
+    [[nodiscard]]
+    Directive_Behavior& get_macro_behavior() noexcept;
 
     [[nodiscard]]
     Distant<std::u8string_view>
