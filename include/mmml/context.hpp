@@ -54,6 +54,16 @@ public:
         string_type,
         Transparent_String_View_Hash8,
         Transparent_String_View_Equals8>;
+    using Macro_Map = std::pmr::unordered_map<
+        std::pmr::u8string,
+        const ast::Directive*,
+        Transparent_String_View_Hash8,
+        Transparent_String_View_Equals8>;
+    using ID_Map = std::pmr::unordered_map<
+        std::pmr::u8string,
+        Referred,
+        Transparent_String_View_Hash8,
+        Transparent_String_View_Equals8>;
 
 private:
     /// @brief The path at which the document is located.
@@ -73,12 +83,8 @@ private:
     std::pmr::vector<const Name_Resolver*> m_name_resolvers { m_transient_memory };
     /// @brief Map of ids (as in, `id` attributes in HTML elements)
     /// to information about the reference.
-    std::pmr::unordered_map<
-        std::pmr::u8string,
-        Referred,
-        Transparent_String_View_Hash8,
-        Transparent_String_View_Equals8>
-        m_id_references { m_transient_memory };
+    ID_Map m_id_references { m_transient_memory };
+    Macro_Map m_macros { m_transient_memory };
     Directive_Behavior* m_error_behavior;
 
     Logger& m_logger;
@@ -375,6 +381,20 @@ public:
     bool emplace_id(std::pmr::u8string&& id, const Referred& referred)
     {
         const auto [it, success] = m_id_references.try_emplace(std::move(id), referred);
+        return success;
+    }
+
+    [[nodiscard]]
+    const ast::Directive* find_macro(std::u8string_view id) const
+    {
+        const auto it = m_macros.find(id);
+        return it == m_macros.end() ? nullptr : it->second;
+    }
+
+    [[nodiscard]]
+    bool emplace_macro(std::pmr::u8string&& id, const ast::Directive* definition_directive)
+    {
+        const auto [it, success] = m_macros.try_emplace(std::move(id), definition_directive);
         return success;
     }
 };
