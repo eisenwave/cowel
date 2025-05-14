@@ -71,7 +71,7 @@ public:
     }
 
     [[nodiscard]]
-    std::span<Content> get_content() &;
+    std::pmr::vector<Content>& get_content() &;
     [[nodiscard]]
     std::span<const Content> get_content() const&;
     [[nodiscard]]
@@ -129,11 +129,11 @@ public:
     }
 
     [[nodiscard]]
-    std::span<Argument> get_arguments();
+    std::pmr::vector<Argument>& get_arguments();
     [[nodiscard]]
     std::span<const Argument> get_arguments() const;
     [[nodiscard]]
-    std::span<Content> get_content();
+    std::pmr::vector<Content>& get_content();
     [[nodiscard]]
     std::span<Content const> get_content() const;
 };
@@ -308,7 +308,7 @@ inline Directive& Directive::operator=(const Directive&) = default;
 inline Directive::~Directive() = default;
 // NOLINTEND(readability-redundant-inline-specifier)
 
-inline std::span<Content> Argument::get_content() &
+inline std::pmr::vector<Content>& Argument::get_content() &
 {
     return m_content;
 }
@@ -321,7 +321,7 @@ inline std::pmr::vector<Content>&& Argument::get_content() &&
     return std::move(m_content);
 }
 
-inline std::span<Argument> Directive::get_arguments()
+inline std::pmr::vector<Argument>& Directive::get_arguments()
 {
     return m_arguments;
 }
@@ -330,7 +330,7 @@ inline std::span<const Argument> Directive::get_arguments() const
     return m_arguments;
 }
 
-inline std::span<Content> Directive::get_content()
+inline std::pmr::vector<Content>& Directive::get_content()
 {
     return m_content;
 }
