@@ -295,9 +295,20 @@ void to_plaintext_mapped_for_highlighting(
         MMML_ASSERT(out_growth == mapping_growth);
         break;
     }
+    // For macro expansions, text or directives inside the macro
+    // are not actually within the source highlighting block.
+    // Therefore, we need overwrite those results
+    // with the same strategy as for pure plaintext directives:
+    // pretend like all the characters were generated from the invoking directive.
     case Directive_Category::macro: {
         const std::pmr::vector<ast::Content> instance = instantiate_macro_invocation(d, context);
+        const std::size_t initial_size = out_mapping.size();
         to_plaintext_mapped_for_highlighting(out, out_mapping, instance, context);
+        MMML_ASSERT(out_mapping.size() >= initial_size);
+        const std::size_t d_begin = d.get_source_span().begin;
+        for (std::size_t i = initial_size; i < out_mapping.size(); ++i) {
+            out_mapping[i] = d_begin;
+        }
     }
     }
 }
