@@ -129,7 +129,7 @@ int main(int argc, const char* const* argv)
     const std::u8string_view in_source { in_text->data(), in_text->size() };
     const std::u8string_view theme_source { theme_json->data(), theme_json->size() };
 
-    const std::pmr::vector<ast::Content> root_content = parse_and_build(in_source, &memory);
+    const std::pmr::vector<ast::Content> root_content = parse_and_build(in_source, &memory, logger);
 
     const Generation_Options options { .output = out_text,
                                        .root_behavior = behavior,

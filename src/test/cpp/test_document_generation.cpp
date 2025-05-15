@@ -108,7 +108,7 @@ struct Doc_Gen_Test : testing::Test {
             return false;
         }
         source_string = { source.data(), source.size() };
-        content = parse_and_build(source_string, &memory);
+        content = parse_and_build(source_string, &memory, logger);
         return true;
     }
 
@@ -127,7 +127,7 @@ struct Doc_Gen_Test : testing::Test {
     void load_source(std::u8string_view source)
     {
         source_string = source;
-        content = parse_and_build(source, &memory);
+        content = parse_and_build(source, &memory, logger);
     }
 
     std::u8string_view generate(Content_Behavior& root_behavior)

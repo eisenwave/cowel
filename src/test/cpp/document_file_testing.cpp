@@ -12,6 +12,7 @@
 #include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
 #include "mmml/print.hpp"
+#include "mmml/services.hpp"
 
 #include "compilation_stage.hpp"
 #include "diagnostic_policy.hpp"
@@ -48,7 +49,7 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     const std::u8string_view source { source_data.data(), source_data.size() };
     policy.source = source;
 
-    auto doc = parse_and_build(source, &memory);
+    auto doc = parse_and_build(source, &memory, ignorant_logger);
     MMML_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
 
 // FIXME reimplement

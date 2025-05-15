@@ -172,6 +172,9 @@ inline constexpr std::u8string_view theme_conversion = u8"theme.conversion";
 /// @brief Directive lookup failed.
 inline constexpr std::u8string_view directive_lookup_unresolved = u8"directive_lookup.unresolved";
 
+/// @brief When parsing, a directive block was not terminated via closing brace.
+inline constexpr std::u8string_view parse_block_unclosed = u8"parse.block.unclosed";
+
 } // namespace diagnostic
 
 } // namespace mmml

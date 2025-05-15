@@ -58,7 +58,9 @@ enum struct AST_Instruction_Type : Default_Underlying {
     /// Advance past `{`.
     push_block,
     /// @brief Advance past `}`.
-    pop_block
+    pop_block,
+    /// @brief Advance past `{`.
+    error_unclosed_block,
 };
 
 [[nodiscard]]
@@ -102,12 +104,13 @@ void parse(std::pmr::vector<AST_Instruction>& out, std::u8string_view source);
 std::pmr::vector<ast::Content> build_ast(
     std::u8string_view source,
     std::span<const AST_Instruction> instructions,
-    std::pmr::memory_resource* memory
+    std::pmr::memory_resource* memory,
+    Logger& logger
 );
 
 /// @brief Parses a document and runs `build_ast` on the results.
 std::pmr::vector<ast::Content>
-parse_and_build(std::u8string_view source, std::pmr::memory_resource* memory);
+parse_and_build(std::u8string_view source, std::pmr::memory_resource* memory, Logger& logger);
 
 } // namespace mmml
 

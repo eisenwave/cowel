@@ -77,7 +77,8 @@ private:
     };
 
     std::pmr::vector<AST_Instruction>& m_out;
-    std::u8string_view m_source;
+    const std::u8string_view m_source;
+
     std::size_t m_pos = 0;
 
 public:
@@ -490,7 +491,7 @@ private:
     bool try_match_block()
     {
         if (!expect(u8'{')) {
-            return {};
+            return false;
         }
 
         Scoped_Attempt a = attempt();
@@ -507,14 +508,16 @@ private:
         const std::size_t elements = match_content_sequence(Content_Context::block);
 
         if (!expect(u8'}')) {
-            return {};
+            a.abort();
+            m_out.push_back({ AST_Instruction_Type::error_unclosed_block });
+            return false;
         }
 
         m_out[block_instruction_index].n = elements;
         m_out.push_back({ AST_Instruction_Type::pop_block });
 
         a.commit();
-        return elements;
+        return true;
     }
 };
 
@@ -540,6 +543,7 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         MMML_ENUM_STRING_CASE8(pop_argument);
         MMML_ENUM_STRING_CASE8(push_block);
         MMML_ENUM_STRING_CASE8(pop_block);
+        MMML_ENUM_STRING_CASE8(error_unclosed_block);
     }
     MMML_ASSERT_UNREACHABLE(u8"Invalid type.");
 }

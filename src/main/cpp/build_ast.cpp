@@ -12,6 +12,7 @@
 #include "mmml/ast.hpp"
 #include "mmml/fwd.hpp"
 #include "mmml/parse.hpp"
+#include "mmml/services.hpp"
 
 namespace mmml {
 
@@ -87,6 +88,7 @@ private:
     const string_view_type m_source;
     const std::span<const AST_Instruction> m_instructions;
     std::pmr::memory_resource* const m_memory;
+    Logger& m_logger;
 
     std::size_t m_index = 0;
     Source_Position m_pos {};
@@ -95,11 +97,13 @@ public:
     AST_Builder(
         string_view_type source,
         std::span<const AST_Instruction> instructions,
-        std::pmr::memory_resource* memory
+        std::pmr::memory_resource* memory,
+        Logger& logger
     )
         : m_source { source }
         , m_instructions { instructions }
         , m_memory { memory }
+        , m_logger { logger }
     {
         MMML_ASSERT(!instructions.empty());
     }
@@ -294,6 +298,20 @@ public:
             return;
         }
         const AST_Instruction instruction = peek();
+        if (instruction.type == AST_Instruction_Type::error_unclosed_block) {
+            if (m_logger.can_log(Severity::error)) {
+                // TODO: this should really not be using the same memory resource
+                std::pmr::u8string message { m_memory };
+                message += u8"Unclosed block belonging to a directive.";
+                m_logger({ .severity = Severity::error,
+                           .id = diagnostic::parse_block_unclosed,
+                           .location = Source_Span { m_pos, 1 },
+                           .message = std::move(message) });
+            }
+            pop();
+            advance_by(1);
+            return;
+        }
         if (instruction.type != AST_Instruction_Type::push_block) {
             return;
         }
@@ -317,19 +335,20 @@ public:
 std::pmr::vector<ast::Content> build_ast(
     std::u8string_view source,
     std::span<const AST_Instruction> instructions,
-    std::pmr::memory_resource* memory
+    std::pmr::memory_resource* memory,
+    Logger& logger
 )
 {
-    return AST_Builder { source, instructions, memory }.build_document();
+    return AST_Builder { source, instructions, memory, logger }.build_document();
 }
 
 /// @brief Parses a document and runs `build_ast` on the results.
 std::pmr::vector<ast::Content>
-parse_and_build(std::u8string_view source, std::pmr::memory_resource* memory)
+parse_and_build(std::u8string_view source, std::pmr::memory_resource* memory, Logger& logger)
 {
     std::pmr::vector<AST_Instruction> instructions { memory };
     parse(instructions, source);
-    return build_ast(source, instructions, memory);
+    return build_ast(source, instructions, memory, logger);
 }
 
 } // namespace mmml
