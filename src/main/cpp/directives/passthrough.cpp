@@ -18,7 +18,7 @@ void Wrap_Behavior::generate_plaintext(
 
 void Wrap_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
 {
-    to_html(out, d.get_content(), context);
+    to_html(out, d.get_content(), context, m_to_html_mode);
 }
 
 void Passthrough_Behavior::generate_plaintext(

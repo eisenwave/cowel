@@ -27,7 +27,7 @@ struct Builtin_Directive_Set::Impl {
     Bibliography_Add_Behavior bib //
         {};
     Wrap_Behavior block //
-        { Directive_Category::formatting, Directive_Display::block };
+        { Directive_Category::formatting, Directive_Display::block, To_HTML_Mode::direct };
     Special_Block_Behavior blockquote //
         { u8"blockquote", false };
     Self_Closing_Behavior br //
@@ -101,7 +101,7 @@ struct Builtin_Directive_Set::Impl {
     In_Tag_Behavior indent //
         { u8"div", u8"indent", Directive_Display::in_line };
     Wrap_Behavior in_line //
-        { Directive_Category::formatting, Directive_Display::in_line };
+        { Directive_Category::formatting, Directive_Display::in_line, To_HTML_Mode::direct };
     Fixed_Name_Passthrough_Behavior ins //
         { u8"ins", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
@@ -129,6 +129,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"ol" };
     Fixed_Name_Passthrough_Behavior p //
         { u8"p", Directive_Category::pure_html, Directive_Display::block };
+    Wrap_Behavior paragraphs //
+        { Directive_Category::formatting, Directive_Display::block, To_HTML_Mode::paragraphs };
     Fixed_Name_Passthrough_Behavior q //
         { u8"q", Directive_Category::formatting, Directive_Display::in_line };
     Ref_Behavior ref //
@@ -281,6 +283,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-note",
         u8"-ol",
         u8"-p",
+        u8"-paragraphs",
         u8"-q",
         u8"-ref",
         u8"-s",
@@ -495,6 +498,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'p':
         if (name == u8"p")
             return &m_impl->p;
+        if (name == u8"paragraphs")
+            return &m_impl->paragraphs;
         break;
 
     case u8'q':

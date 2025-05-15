@@ -259,8 +259,17 @@ public:
 };
 
 struct Wrap_Behavior final : Directive_Behavior {
-    constexpr explicit Wrap_Behavior(Directive_Category category, Directive_Display display)
+private:
+    const To_HTML_Mode m_to_html_mode;
+
+public:
+    constexpr explicit Wrap_Behavior(
+        Directive_Category category,
+        Directive_Display display,
+        To_HTML_Mode to_html_mode
+    )
         : Directive_Behavior { category, display }
+        , m_to_html_mode { to_html_mode }
     {
     }
 
