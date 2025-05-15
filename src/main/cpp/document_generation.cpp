@@ -140,6 +140,7 @@ bool Reference_Resolver::operator()(std::u8string_view text)
         else {
             success = section_success;
         }
+        visited.erase(entry);
     }
     flush();
     return success;
