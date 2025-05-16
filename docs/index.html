@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=UTF-8 /><link rel=preconnent href=https://fonts%2egoogleapis%2ecom />
+  <link rel=preconnent href=https://fonts%2egstatic%2ecom crossorigin/>
+  <link rel=stylesheet href="https://fonts%2egoogleapis%2ecom/css2?family=Fira+Code:wght@300%2e%2e700&family=Noto+Sans:ital,wght@0,100%2e%2e900;1,100%2e%2e900&family=Noto+Serif:ital,wght@0,100%2e%2e900;1,100%2e%2e900&display=swap"/>
+  <style>
+html {
+    --sans-serif-family: "Noto Sans", sans-serif;
+    --serif-family: "Noto Serif", serif;
+    --monospace-family: "Fira Code", monospace;
+
+    --light-background-color: white;
+    --light-deep-background-color: #fafafa;
+    --light-text-color: black;
+    --light-border-color: #aaa;
+    --light-table-border-color: #777;
+    --light-del-color: #be1621;
+    --light-del-background-color: #fbe6e8;
+    --light-ins-color: #17752d;
+    --light-ins-background-color: #e4faea;
+    --light-para-color: rgb(10, 73, 136);
+    --light-a-color: rgb(10, 73, 136);
+    --light-a-visited-color: rgb(44, 10, 136);
+    --light-a-hover-color: rgb(15, 93, 170);
+    --light-mark-color: black;
+    --light-mark-background-color: #ffff85;
+    --light-abstract-border-color: #707070;
+    --light-abstract-background-color: #f0f0f0;
+    --light-abstract-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M660-160h40v-160h-40v160Zm20-200q8 0 14-6t6-14q0-8-6-14t-14-6q-8 0-14 6t-6 14q0 8 6 14t14 6ZM200-800v640-640 200-200Zm80 400h147q11-23 25.5-43t32.5-37H280v80Zm0 160h123q-3-20-3-40t3-40H280v80ZM200-80q-33 0-56.5-23.5T120-160v-640q0-33 23.5-56.5T200-880h320l240 240v92q-19-6-39-9t-41-3v-40H480v-200H200v640h227q11 23 25.5 43T485-80H200Zm480-400q83 0 141.5 58.5T880-280q0 83-58.5 141.5T680-80q-83 0-141.5-58.5T480-280q0-83 58.5-141.5T680-480Z"/></svg>');
+    --light-blockquote-border-color: #707070;
+    --light-blockquote-background-color: #f0f0f0;
+    --light-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23707070"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
+    --light-bug-block-border-color: #9f7b5d;
+    --light-bug-block-background-color: #f0e2d9;
+    --light-bug-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%239f7b5d"><path d="M480-120q-64 0-114.5-33T283-240l-95 54-40-69 103-60q-3-11-5-22.5t-4-22.5H120v-80h122q2-12 4-23.5t5-22.5l-103-60 40-69 94 55q8-14 18.5-27.5T322-612q-2-7-2-14v-14q0-24 7-46t19-41l-66-66 56-57 70 68q17-9 35.5-13.5T480-800q20 0 39 5t36 14l69-69 56 57-66 66q12 19 18.5 41t6.5 46v13.5q0 6.5-2 13.5 11 11 21.5 25t18.5 28l95-54 40 69-104 59q3 11 5.5 22.5T718-440h122v80H718q-2 12-4 23.5t-5 22.5l103 60-40 69-95-55q-32 54-82.5 87T480-120Zm-76-546q17-7 36.5-10.5T480-680q20 0 38.5 3t35.5 10q-8-23-28-38t-46-15q-26 0-47 15.5T404-666Zm76 466q73 0 116.5-61T640-400q0-70-40.5-135T480-600q-78 0-119 64.5T320-400q0 78 43.5 139T480-200Zm-40-80v-240h80v240h-80Z"/></svg>');
+    --light-decision-block-border-color: #ab6fa2;
+    --light-decision-block-background-color: #f4e6f4;
+    --light-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
+    --light-del-block-border-color: #be1621;
+    --light-del-block-background-color: #fbe6e8;
+    --light-del-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23be1621"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>');
+    --light-details-border-color: #707070;
+    --light-details-background-color: #f0f0f0;
+    --light-details-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+    --light-diff-block-border-color: #707070;
+    --light-diff-block-background-color: #f0f0f0;
+    --light-diff-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M500-520h80v-80h80v-80h-80v-80h-80v80h-80v80h80v80Zm-80 160h240v-80H420v80ZM320-200q-33 0-56.5-23.5T240-280v-560q0-33 23.5-56.5T320-920h280l240 240v400q0 33-23.5 56.5T760-200H320Zm0-80h440v-360L560-840H320v560ZM160-40q-33 0-56.5-23.5T80-120v-560h80v560h440v80H160Zm160-240v-560 560Z"/></svg>');
+    --light-example-block-border-color: #6f8aab;
+    --light-example-block-background-color: #e6e9f4;
+    --light-example-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236f8aab"><path d="M300-80q-58 0-99-41t-41-99v-520q0-58 41-99t99-41h500v600q-25 0-42.5 17.5T740-220q0 25 17.5 42.5T800-160v80H300Zm-60-267q14-7 29-10t31-3h20v-440h-20q-25 0-42.5 17.5T240-740v393Zm160-13h320v-440H400v440Zm-160 13v-453 453Zm60 187h373q-6-14-9.5-28.5T660-220q0-16 3-31t10-29H300q-26 0-43 17.5T240-220q0 26 17 43t43 17Z"/></svg>');
+    --light-important-block-border-color: #b05252;
+    --light-important-block-background-color: #f4e6e6;
+    --light-important-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6f6f"><path d="M480-120q-33 0-56.5-23.5T400-200q0-33 23.5-56.5T480-280q33 0 56.5 23.5T560-200q0 33-23.5 56.5T480-120Zm-80-240v-480h160v480H400Z"/></svg>');
+    --light-ins-block-border-color: #17752d;
+    --light-ins-block-background-color: #e4faea;
+    --light-ins-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%2317752d"><path d="M440-240h80v-120h120v-80H520v-120h-80v120H320v80h120v120ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/></svg>');
+    --light-note-block-border-color: #6fab6f;
+    --light-note-block-background-color: #e6f4e9;
+    --light-note-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236fab6f"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+    --light-tip-block-border-color: #b0a029;
+    --light-tip-block-background-color: #f4f4e6;
+    --light-tip-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23b0a029"><path d="M480-80q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM320-200v-80h320v80H320Zm10-120q-69-41-109.5-110T180-580q0-125 87.5-212.5T480-880q125 0 212.5 87.5T780-580q0 81-40.5 150T630-320H330Zm24-80h252q45-32 69.5-79T700-580q0-92-64-156t-156-64q-92 0-156 64t-64 156q0 54 24.5 101t69.5 79Zm126 0Z"/></svg>');
+    --light-todo-block-border-color: #6faba0;
+    --light-todo-block-background-color: #e6f4f3;
+    --light-todo-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236faba0"><path d="M680-80q-83 0-141.5-58.5T480-280q0-83 58.5-141.5T680-480q83 0 141.5 58.5T880-280q0 83-58.5 141.5T680-80Zm67-105 28-28-75-75v-112h-40v128l87 87Zm-547 65q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h167q11-35 43-57.5t70-22.5q40 0 71.5 22.5T594-840h166q33 0 56.5 23.5T840-760v250q-18-13-38-22t-42-16v-212h-80v120H280v-120h-80v560h212q7 22 16 42t22 38H200Zm280-640q17 0 28.5-11.5T520-800q0-17-11.5-28.5T480-840q-17 0-28.5 11.5T440-800q0 17 11.5 28.5T480-760Z"/></svg>');
+    --light-warning-block-border-color: #af8141;
+    --light-warning-block-background-color: #f4eee6;
+    --light-warning-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23af8141"><path d="M109-120q-11 0-20-5.5T75-140q-5-9-5.5-19.5T75-180l370-640q6-10 15.5-15t19.5-5q10 0 19.5 5t15.5 15l370 640q6 10 5.5 20.5T885-140q-5 9-14 14.5t-20 5.5H109Zm69-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm0-120q17 0 28.5-11.5T520-400v-120q0-17-11.5-28.5T480-560q-17 0-28.5 11.5T440-520v120q0 17 11.5 28.5T480-360Zm0-100Z"/></svg>');
+
+    --dark-background-color: #202020;
+    --dark-deep-background-color: #1a1a1a;
+    --dark-text-color: #f0f0f0;
+    --dark-border-color: #505050;
+    --dark-table-border-color: #777;
+    --dark-del-background-color: #67060c;
+    --dark-del-color: #ffdcd7;
+    --dark-ins-background-color: #033a16;
+    --dark-ins-color: #aff5b4;
+    --dark-para-color: #5bc0ff;
+    --dark-a-color: #5bc0ff;
+    --dark-a-visited-color: #c6a8ff;
+    --dark-a-hover-color: #afd7ff;
+    --dark-mark-color: #ededa8;
+    --dark-mark-background-color: #525230;
+    --dark-abstract-border-color: #999999;
+    --dark-abstract-background-color: #2c2c2c;
+    --dark-abstract-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23999999"><path d="M660-160h40v-160h-40v160Zm20-200q8 0 14-6t6-14q0-8-6-14t-14-6q-8 0-14 6t-6 14q0 8 6 14t14 6ZM200-800v640-640 200-200Zm80 400h147q11-23 25.5-43t32.5-37H280v80Zm0 160h123q-3-20-3-40t3-40H280v80ZM200-80q-33 0-56.5-23.5T120-160v-640q0-33 23.5-56.5T200-880h320l240 240v92q-19-6-39-9t-41-3v-40H480v-200H200v640h227q11 23 25.5 43T485-80H200Zm480-400q83 0 141.5 58.5T880-280q0 83-58.5 141.5T680-80q-83 0-141.5-58.5T480-280q0-83 58.5-141.5T680-480Z"/></svg>');
+    --dark-blockquote-border-color: #707070;
+    --dark-blockquote-background-color: #2c2c2c;
+    --dark-blockquote-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="%23707070"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.17 17c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94zm10 0c.51 0 .98-.29 1.2-.74l1.42-2.84c.14-.28.21-.58.21-.89V8c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h2l-1.03 2.06c-.45.89.2 1.94 1.2 1.94z"/></svg>');
+    --dark-bug-block-border-color: #ab866f;
+    --dark-bug-block-background-color: #373028;
+    --dark-bug-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab866f"><path d="M480-120q-64 0-114.5-33T283-240l-95 54-40-69 103-60q-3-11-5-22.5t-4-22.5H120v-80h122q2-12 4-23.5t5-22.5l-103-60 40-69 94 55q8-14 18.5-27.5T322-612q-2-7-2-14v-14q0-24 7-46t19-41l-66-66 56-57 70 68q17-9 35.5-13.5T480-800q20 0 39 5t36 14l69-69 56 57-66 66q12 19 18.5 41t6.5 46v13.5q0 6.5-2 13.5 11 11 21.5 25t18.5 28l95-54 40 69-104 59q3 11 5.5 22.5T718-440h122v80H718q-2 12-4 23.5t-5 22.5l103 60-40 69-95-55q-32 54-82.5 87T480-120Zm-76-546q17-7 36.5-10.5T480-680q20 0 38.5 3t35.5 10q-8-23-28-38t-46-15q-26 0-47 15.5T404-666Zm76 466q73 0 116.5-61T640-400q0-70-40.5-135T480-600q-78 0-119 64.5T320-400q0 78 43.5 139T480-200Zm-40-80v-240h80v240h-80Z"/></svg>');
+    --dark-details-border-color: #707070;
+    --dark-details-background-color: #2c2c2c;
+    --dark-details-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+    --dark-decision-block-border-color: #ab6fa2;
+    --dark-decision-block-background-color: #30232d;
+    --dark-decision-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab6fa2"><path d="M160-120v-80h480v80H160Zm226-194L160-540l84-86 228 226-86 86Zm254-254L414-796l86-84 226 226-86 86Zm184 408L302-682l56-56 522 522-56 56Z"/></svg>');
+    --dark-del-block-border-color: #be5e64;
+    --dark-del-block-background-color: #302323;
+    --dark-del-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23be5e64"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>');
+    --dark-diff-block-border-color: #707070;
+    --dark-diff-block-background-color: #2c2c2c;
+    --dark-diff-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23707070"><path d="M500-520h80v-80h80v-80h-80v-80h-80v80h-80v80h80v80Zm-80 160h240v-80H420v80ZM320-200q-33 0-56.5-23.5T240-280v-560q0-33 23.5-56.5T320-920h280l240 240v400q0 33-23.5 56.5T760-200H320Zm0-80h440v-360L560-840H320v560ZM160-40q-33 0-56.5-23.5T80-120v-560h80v560h440v80H160Zm160-240v-560 560Z"/></svg>');
+    --dark-example-block-border-color: #6f81ab;
+    --dark-example-block-background-color: #232630;
+    --dark-example-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236f81ab"><path d="M300-80q-58 0-99-41t-41-99v-520q0-58 41-99t99-41h500v600q-25 0-42.5 17.5T740-220q0 25 17.5 42.5T800-160v80H300Zm-60-267q14-7 29-10t31-3h20v-440h-20q-25 0-42.5 17.5T240-740v393Zm160-13h320v-440H400v440Zm-160 13v-453 453Zm60 187h373q-6-14-9.5-28.5T660-220q0-16 3-31t10-29H300q-26 0-43 17.5T240-220q0 26 17 43t43 17Z"/></svg>');
+    --dark-important-block-border-color: #b06262;
+    --dark-important-block-background-color: #302323;
+    --dark-important-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23b06262"><path d="M480-120q-33 0-56.5-23.5T400-200q0-33 23.5-56.5T480-280q33 0 56.5 23.5T560-200q0 33-23.5 56.5T480-120Zm-80-240v-480h160v480H400Z"/></svg>');
+    --dark-ins-block-border-color: #5bab6d;
+    --dark-ins-block-background-color: #233023;
+    --dark-ins-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%235bab6d"><path d="M440-240h80v-120h120v-80H520v-120h-80v120H320v80h120v120ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/></svg>');
+    --dark-note-block-border-color: #6fab76;
+    --dark-note-block-background-color: #233025;
+    --dark-note-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236fab76"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+    --dark-tip-block-border-color: #a2ab6f;
+    --dark-tip-block-background-color: #2f3023;
+    --dark-tip-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23a2ab6f"><path d="M480-80q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM320-200v-80h320v80H320Zm10-120q-69-41-109.5-110T180-580q0-125 87.5-212.5T480-880q125 0 212.5 87.5T780-580q0 81-40.5 150T630-320H330Zm24-80h252q45-32 69.5-79T700-580q0-92-64-156t-156-64q-92 0-156 64t-64 156q0 54 24.5 101t69.5 79Zm126 0Z"/></svg>');
+    --dark-todo-block-border-color: #6fab98;
+    --dark-todo-block-background-color: #23302e;
+    --dark-todo-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236fab98"><path d="M680-80q-83 0-141.5-58.5T480-280q0-83 58.5-141.5T680-480q83 0 141.5 58.5T880-280q0 83-58.5 141.5T680-80Zm67-105 28-28-75-75v-112h-40v128l87 87Zm-547 65q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h167q11-35 43-57.5t70-22.5q40 0 71.5 22.5T594-840h166q33 0 56.5 23.5T840-760v250q-18-13-38-22t-42-16v-212h-80v120H280v-120h-80v560h212q7 22 16 42t22 38H200Zm280-640q17 0 28.5-11.5T520-800q0-17-11.5-28.5T480-840q-17 0-28.5 11.5T440-800q0 17 11.5 28.5T480-760Z"/></svg>');
+    --dark-warning-block-border-color: #ab9c6f;
+    --dark-warning-block-background-color: #302b23;
+    --dark-warning-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%23ab9c6f"><path d="M109-120q-11 0-20-5.5T75-140q-5-9-5.5-19.5T75-180l370-640q6-10 15.5-15t19.5-5q10 0 19.5 5t15.5 15l370 640q6 10 5.5 20.5T885-140q-5 9-14 14.5t-20 5.5H109Zm69-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm0-120q17 0 28.5-11.5T520-400v-120q0-17-11.5-28.5T480-560q-17 0-28.5 11.5T440-520v120q0 17 11.5 28.5T480-360Zm0-100Z"/></svg>');
+
+    --indent: 2.5em;
+    --border-radius: 0.25em;
+}
+
+/* BEGIN LIGHT AND DARK THEME */
+
+@media (prefers-color-scheme: light) {
+    html {
+        --background-color: var(--light-background-color);
+        --deep-background-color: var(--light-deep-background-color);
+        --text-color: var(--light-text-color);
+        --border-color: var(--light-border-color);
+        --table-border-color: var(--light-table-border-color);
+        --del-color: var(--light-del-color);
+        --del-background-color: var(--light-del-background-color);
+        --ins-color: var(--light-ins-color);
+        --ins-background-color: var(--light-ins-background-color);
+        --para-color: var(--light-para-color);
+        --a-color: var(--light-a-color);
+        --a-visited-color: var(--light-a-visited-color);
+        --a-hover-color: var(--light-a-hover-color);
+        --mark-color: var(--light-mark-color);
+        --mark-background-color: var(--light-mark-background-color);
+        --abstract-border-color: var(--light-abstract-border-color);
+        --abstract-background-color: var(--light-abstract-background-color);
+        --abstract-image: var(--light-abstract-image);
+        --blockquote-border-color: var(--light-blockquote-border-color);
+        --blockquote-background-color: var(--light-blockquote-background-color);
+        --blockquote-image: var(--light-blockquote-image);
+        --bug-block-border-color: var(--light-bug-block-border-color);
+        --bug-block-background-color: var(--light-bug-block-background-color);
+        --bug-block-image: var(--light-bug-block-image);
+        --decision-block-border-color: var(--light-decision-block-border-color);
+        --decision-block-background-color: var(--light-decision-block-background-color);
+        --decision-block-image: var(--light-decision-block-image);
+        --del-block-border-color: var(--light-del-block-border-color);
+        --del-block-background-color: var(--light-del-block-background-color);
+        --del-block-image: var(--light-del-block-image);
+        --details-border-color: var(--light-details-border-color);
+        --details-background-color: var(--light-details-background-color);
+        --details-image: var(--light-details-image);
+        --diff-block-border-color: var(--light-diff-block-border-color);
+        --diff-block-background-color: var(--light-diff-block-background-color);
+        --diff-block-image: var(--light-diff-block-image);
+        --example-block-border-color: var(--light-example-block-border-color);
+        --example-block-background-color: var(--light-example-block-background-color);
+        --example-block-image: var(--light-example-block-image);
+        --important-block-border-color: var(--light-important-block-border-color);
+        --important-block-background-color: var(--light-important-block-background-color);
+        --important-block-image: var(--light-important-block-image);
+        --ins-block-border-color: var(--light-ins-block-border-color);
+        --ins-block-background-color: var(--light-ins-block-background-color);
+        --ins-block-image: var(--light-ins-block-image);
+        --note-block-border-color: var(--light-note-block-border-color);
+        --note-block-background-color: var(--light-note-block-background-color);
+        --note-block-image: var(--light-note-block-image);
+        --tip-block-border-color: var(--light-tip-block-border-color);
+        --tip-block-background-color: var(--light-tip-block-background-color);
+        --tip-block-image: var(--light-tip-block-image);
+        --todo-block-border-color: var(--light-todo-block-border-color);
+        --todo-block-background-color: var(--light-todo-block-background-color);
+        --todo-block-image: var(--light-todo-block-image);
+        --warning-block-border-color: var(--light-warning-block-border-color);
+        --warning-block-background-color: var(--light-warning-block-background-color);
+        --warning-block-image: var(--light-warning-block-image);
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    html {
+        --background-color: var(--dark-background-color);
+        --deep-background-color: var(--dark-deep-background-color);
+        --text-color: var(--dark-text-color);
+        --border-color: var(--dark-border-color);
+        --table-border-color: var(--dark-table-border-color);
+        --del-color: var(--dark-del-color);
+        --del-background-color: var(--dark-del-background-color);
+        --ins-color: var(--dark-ins-color);
+        --ins-background-color: var(--dark-ins-background-color);
+        --para-color: var(--dark-para-color);
+        --a-color: var(--dark-a-color);
+        --a-visited-color: var(--dark-a-visited-color);
+        --a-hover-color: var(--dark-a-hover-color);
+        --mark-color: var(--dark-mark-color);
+        --mark-background-color: var(--dark-mark-background-color);
+        --abstract-border-color: var(--dark-abstract-border-color);
+        --abstract-background-color: var(--dark-abstract-background-color);
+        --abstract-image: var(--dark-abstract-image);
+        --blockquote-border-color: var(--dark-blockquote-border-color);
+        --blockquote-background-color: var(--dark-blockquote-background-color);
+        --blockquote-image: var(--dark-blockquote-image);
+        --bug-block-border-color: var(--dark-bug-block-border-color);
+        --bug-block-background-color: var(--dark-bug-block-background-color);
+        --bug-block-image: var(--dark-bug-block-image);
+        --decision-block-border-color: var(--dark-decision-block-border-color);
+        --decision-block-background-color: var(--dark-decision-block-background-color);
+        --decision-block-image: var(--dark-decision-block-image);
+        --del-block-border-color: var(--dark-del-block-border-color);
+        --del-block-background-color: var(--dark-del-block-background-color);
+        --del-block-image: var(--dark-del-block-image);
+        --details-border-color: var(--dark-details-border-color);
+        --details-background-color: var(--dark-details-background-color);
+        --details-image: var(--dark-details-image);
+        --diff-block-border-color: var(--dark-diff-block-border-color);
+        --diff-block-background-color: var(--dark-diff-block-background-color);
+        --diff-block-image: var(--dark-diff-block-image);
+        --example-block-border-color: var(--dark-example-block-border-color);
+        --example-block-background-color: var(--dark-example-block-background-color);
+        --example-block-image: var(--dark-example-block-image);
+        --important-block-border-color: var(--dark-important-block-border-color);
+        --important-block-background-color: var(--dark-important-block-background-color);
+        --important-block-image: var(--dark-important-block-image);
+        --ins-block-border-color: var(--dark-ins-block-border-color);
+        --ins-block-background-color: var(--dark-ins-block-background-color);
+        --ins-block-image: var(--dark-ins-block-image);
+        --note-block-border-color: var(--dark-note-block-border-color);
+        --note-block-background-color: var(--dark-note-block-background-color);
+        --note-block-image: var(--dark-note-block-image);
+        --tip-block-border-color: var(--dark-tip-block-border-color);
+        --tip-block-background-color: var(--dark-tip-block-background-color);
+        --tip-block-image: var(--dark-tip-block-image);
+        --todo-block-border-color: var(--dark-todo-block-border-color);
+        --todo-block-background-color: var(--dark-todo-block-background-color);
+        --todo-block-image: var(--dark-todo-block-image);
+        --warning-block-border-color: var(--dark-warning-block-border-color);
+        --warning-block-background-color: var(--dark-warning-block-background-color);
+        --warning-block-image: var(--dark-warning-block-image);
+    }
+}
+
+html.light {
+    --background-color: var(--light-background-color);
+    --deep-background-color: var(--light-deep-background-color);
+    --text-color: var(--light-text-color);
+    --border-color: var(--light-border-color);
+    --table-border-color: var(--light-table-border-color);
+    --del-color: var(--light-del-color);
+    --del-background-color: var(--light-del-background-color);
+    --ins-color: var(--light-ins-color);
+    --ins-background-color: var(--light-ins-background-color);
+    --para-color: var(--light-para-color);
+    --a-color: var(--light-a-color);
+    --a-visited-color: var(--light-a-visited-color);
+    --a-hover-color: var(--light-a-hover-color);
+    --mark-color: var(--light-mark-color);
+    --mark-background-color: var(--light-mark-background-color);
+    --abstract-border-color: var(--light-abstract-border-color);
+    --abstract-background-color: var(--light-abstract-background-color);
+    --abstract-image: var(--light-abstract-image);
+    --blockquote-border-color: var(--light-blockquote-border-color);
+    --blockquote-background-color: var(--light-blockquote-background-color);
+    --blockquote-image: var(--light-blockquote-image);
+    --bug-block-border-color: var(--light-bug-block-border-color);
+    --bug-block-background-color: var(--light-bug-block-background-color);
+    --bug-block-image: var(--light-bug-block-image);
+    --decision-block-border-color: var(--light-decision-block-border-color);
+    --decision-block-background-color: var(--light-decision-block-background-color);
+    --decision-block-image: var(--light-decision-block-image);
+    --del-block-border-color: var(--light-del-block-border-color);
+    --del-block-background-color: var(--light-del-block-background-color);
+    --del-block-image: var(--light-del-block-image);
+    --details-border-color: var(--light-details-border-color);
+    --details-background-color: var(--light-details-background-color);
+    --details-image: var(--light-details-image);
+    --diff-block-border-color: var(--light-diff-block-border-color);
+    --diff-block-background-color: var(--light-diff-block-background-color);
+    --diff-block-image: var(--light-diff-block-image);
+    --example-block-border-color: var(--light-example-block-border-color);
+    --example-block-background-color: var(--light-example-block-background-color);
+    --example-block-image: var(--light-example-block-image);
+    --important-block-border-color: var(--light-important-block-border-color);
+    --important-block-background-color: var(--light-important-block-background-color);
+    --important-block-image: var(--light-important-block-image);
+    --ins-block-border-color: var(--light-ins-block-border-color);
+    --ins-block-background-color: var(--light-ins-block-background-color);
+    --ins-block-image: var(--light-ins-block-image);
+    --note-block-border-color: var(--light-note-block-border-color);
+    --note-block-background-color: var(--light-note-block-background-color);
+    --note-block-image: var(--light-note-block-image);
+    --tip-block-border-color: var(--light-tip-block-border-color);
+    --tip-block-background-color: var(--light-tip-block-background-color);
+    --tip-block-image: var(--light-tip-block-image);
+    --todo-block-border-color: var(--light-todo-block-border-color);
+    --todo-block-background-color: var(--light-todo-block-background-color);
+    --todo-block-image: var(--light-todo-block-image);
+    --warning-block-border-color: var(--light-warning-block-border-color);
+    --warning-block-background-color: var(--light-warning-block-background-color);
+    --warning-block-image: var(--light-warning-block-image);
+}
+
+html.dark {
+    --background-color: var(--dark-background-color);
+    --deep-background-color: var(--dark-deep-background-color);
+    --text-color: var(--dark-text-color);
+    --border-color: var(--dark-border-color);
+    --table-border-color: var(--dark-table-border-color);
+    --del-color: var(--dark-del-color);
+    --del-background-color: var(--dark-del-background-color);
+    --ins-color: var(--dark-ins-color);
+    --ins-background-color: var(--dark-ins-background-color);
+    --para-color: var(--dark-para-color);
+    --a-color: var(--dark-a-color);
+    --a-visited-color: var(--dark-a-visited-color);
+    --a-hover-color: var(--dark-a-hover-color);
+    --mark-color: var(--dark-mark-color);
+    --mark-background-color: var(--dark-mark-background-color);
+    --abstract-border-color: var(--dark-abstract-border-color);
+    --abstract-background-color: var(--dark-abstract-background-color);
+    --abstract-image: var(--dark-abstract-image);
+    --blockquote-border-color: var(--dark-blockquote-border-color);
+    --blockquote-background-color: var(--dark-blockquote-background-color);
+    --blockquote-image: var(--dark-blockquote-image);
+    --bug-block-border-color: var(--dark-bug-block-border-color);
+    --bug-block-background-color: var(--dark-bug-block-background-color);
+    --bug-block-image: var(--dark-bug-block-image);
+    --decision-block-border-color: var(--dark-decision-block-border-color);
+    --decision-block-background-color: var(--dark-decision-block-background-color);
+    --decision-block-image: var(--dark-decision-block-image);
+    --del-block-border-color: var(--dark-del-block-border-color);
+    --del-block-background-color: var(--dark-del-block-background-color);
+    --del-block-image: var(--dark-del-block-image);
+    --details-border-color: var(--dark-details-border-color);
+    --details-background-color: var(--dark-details-background-color);
+    --details-image: var(--dark-details-image);
+    --diff-block-border-color: var(--dark-diff-block-border-color);
+    --diff-block-background-color: var(--dark-diff-block-background-color);
+    --diff-block-image: var(--dark-diff-block-image);
+    --example-block-border-color: var(--dark-example-block-border-color);
+    --example-block-background-color: var(--dark-example-block-background-color);
+    --example-block-image: var(--dark-example-block-image);
+    --important-block-border-color: var(--dark-important-block-border-color);
+    --important-block-background-color: var(--dark-important-block-background-color);
+    --important-block-image: var(--dark-important-block-image);
+    --ins-block-border-color: var(--dark-ins-block-border-color);
+    --ins-block-background-color: var(--dark-ins-block-background-color);
+    --ins-block-image: var(--dark-ins-block-image);
+    --note-block-border-color: var(--dark-note-block-border-color);
+    --note-block-background-color: var(--dark-note-block-background-color);
+    --note-block-image: var(--dark-note-block-image);
+    --tip-block-border-color: var(--dark-tip-block-border-color);
+    --tip-block-background-color: var(--dark-tip-block-background-color);
+    --tip-block-image: var(--dark-tip-block-image);
+    --todo-block-border-color: var(--dark-todo-block-border-color);
+    --todo-block-background-color: var(--dark-todo-block-background-color);
+    --todo-block-image: var(--dark-todo-block-image);
+    --warning-block-border-color: var(--dark-warning-block-border-color);
+    --warning-block-background-color: var(--dark-warning-block-background-color);
+    --warning-block-image: var(--dark-warning-block-image);
+}
+
+/* END LIGHT AND DARK THEME */
+
+html {
+    margin: 0;
+    width: 100%;
+    font-family: var(--serif-family);
+    font-size: 11pt;
+
+    border-left: var(--border-thickness) solid var(--border-color);
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
+
+body {
+    --vertical-margin: 2rem;
+    --margin-left: 3rem;
+    --margin-right: 2rem;
+
+    margin: var(--vertical-margin) var(--margin-right) var(--vertical-margin) var(--margin-left);
+    width: calc(100% - var(--margin-left) - var(--margin-right));
+    box-sizing: border-box;
+}
+
+main {
+    max-width: 60rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+abstract-block,
+blockquote,
+bug-block,
+code-block,
+decision-block,
+del-block,
+details,
+dl,
+diff-block,
+example-block,
+hr,
+ol,
+important-block,
+ins-block,
+math[display=block],
+note-block,
+p,
+pre,
+samp,
+tip-block,
+todo-block,
+ul,
+warning-block,
+.indent {
+    display: block;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+a {
+    color: var(--a-color);
+    text-decoration: unset;
+}
+
+a:visited {
+    color: var(--a-visited-color);
+}
+
+a:hover,
+a:focus {
+    color: var(--a-hover-color);
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+ol,
+ul {
+    padding-left: var(--indent);
+}
+
+li {
+    margin: 0.5em 0;
+}
+
+dt {
+    margin-top: 0.25em;
+    font-style: italic;
+    font-weight: bold;
+}
+
+dd {
+    margin-bottom: 0.25em;
+    margin-left: var(--indent);
+}
+
+abstract-block,
+blockquote,
+bug-block,
+del-block,
+details,
+decision-block,
+diff-block,
+example-block,
+important-block,
+ins-block,
+note-block,
+tip-block,
+todo-block,
+warning-block {
+    --border-thickness: 0.25em;
+    --padding: 0.5em;
+
+    position: relative;
+    width: calc(100% - var(--indent));
+    box-sizing: border-box;
+    padding: var(--padding);
+    margin-left: var(--indent);
+
+    border-top-right-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+}
+
+abstract-block>:first-child,
+blockquote>:first-child,
+bug-block>:first-child,
+del-block>:first-child,
+details>:first-child,
+decision-block>:first-child,
+diff-block>:first-child,
+example-block>:first-child,
+important-block>:first-child,
+ins-block>:first-child,
+note-block>:first-child,
+tip-block>:first-child,
+todo-block>:first-child,
+warning-block>:first-child {
+    margin-top: 0;
+}
+
+abstract-block>:last-child,
+blockquote>:last-child,
+bug-block>:last-child,
+del-block>:last-child,
+details>:last-child,
+decision-block>:last-child,
+diff-block>:last-child,
+example-block>:last-child,
+important-block>:last-child,
+ins-block>:last-child,
+note-block>:last-child,
+todo-block>:last-child,
+tip-block>:last-child,
+warning-block>:last-child {
+    margin-bottom: 0;
+}
+
+abstract-block::before,
+blockquote::before,
+bug-block::before,
+del-block::before,
+details::before,
+decision-block::before,
+diff-block::before,
+example-block::before,
+important-block::before,
+ins-block::before,
+note-block::before,
+todo-block::before,
+tip-block::before,
+warning-block::before {
+    position: absolute;
+    left: -2.5em;
+    top: 0.25em;
+    width: 2em;
+    height: 2em;
+
+    content: "";
+    display: inline-block;
+    background-size: contain;
+    background-repeat: no-repeat;
+
+}
+
+code,
+code-block,
+pre,
+tt,
+tt-,
+.mono {
+    font-family: var(--monospace-family);
+    font-style: normal;
+    font-variant-ligatures: none;
+}
+
+code-block:not(.borderless) {
+    padding: 0.5em;
+    border-radius: var(--border-radius);
+    box-sizing: border-box;
+
+    background-color: var(--deep-background-color);
+    border: 1px solid var(--border-color);
+}
+
+code-block,
+pre,
+samp {
+    font-size: 95%;
+    width: 100%;
+}
+
+code-block,
+pre,
+samp {
+    white-space: pre;
+    overflow-x: auto;
+}
+
+/* INSERTIONS AND DELETIONS */
+
+ins,
+ins-lines {
+    text-decoration: underline;
+    font-weight: 600;
+    color: var(--ins-color);
+    background-color: var(--ins-background-color);
+}
+
+code-block ins,
+code-block ins-lines {
+    text-decoration: inherit;
+}
+
+del {
+    text-decoration: line-through;
+}
+
+del,
+del-lines {
+    color: var(--del-color);
+    background-color: var(--del-background-color);
+}
+
+ins-lines,
+del-lines {
+    display: inline-block;
+    width: 100%;
+}
+
+ins h-,
+ins-lines h-,
+del h-,
+del-lines h- {
+    color: inherit !important;
+    background-color: inherit !important;
+}
+
+kbd {
+    font-family: var(--sans-serif-family);
+
+    display: inline-block;
+    padding: 0 0.25em 0.15em 0.25em;
+    border-radius: 0.25em;
+    white-space: nowrap;
+
+    background-color: var(--deep-background-color);
+    border: 1px solid var(--border-color);
+    box-shadow: inset 0 -0.1em 0 var(--border-color);
+}
+
+mark {
+    color: var(--mark-color);
+    background-color: var(--mark-background-color);
+}
+
+math:not([display=block]) {
+    font-size: 120%;
+}
+
+math[display=block] {
+    width: fit-content;
+    margin-left: var(--indent);
+
+    font-size: 110%;
+}
+
+g-term,
+f-sans,
+f-serif,
+wg21-block {
+    display: inline;
+}
+
+f-sans,
+.sans {
+    font-family: var(--sans-serif-family);
+}
+
+f-serif,
+.serif {
+    font-family: var(--serif-family);
+}
+
+.grammar dd,
+g-term {
+    font-family: var(--sans-serif-family);
+    font-style: oblique;
+}
+
+.grammar {
+    margin-left: var(--indent);
+}
+
+.grammar dt {
+    font-weight: normal;
+    font-style: normal;
+}
+
+.wg21-head {
+    margin-bottom: 4em;
+}
+
+.wg21-head dl {
+    font-family: var(--sans-serif-family);
+}
+
+.wg21-head dt {
+    font-style: normal;
+}
+
+/* HEADINGS */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    position: relative;
+    margin: 1rem 0;
+}
+
+h1 {
+    margin: 2rem 0 1.5rem 0;
+    font-size: 250%;
+}
+
+h2 {
+    margin: 2.5rem 0 1.5rem 0;
+    font-size: 166%;
+}
+
+h3 {
+    margin: 2rem 0 1rem 0;
+    font-size: 133%;
+}
+
+h4 {
+    margin: 1.5rem 0 0.5rem 0;
+    font-size: 100%;
+}
+
+h5 {
+    margin: 1rem 0 0.5rem 0;
+    font-size: 100%;
+    font-weight: normal;
+}
+
+h6 {
+    margin: 1rem 0 0.5rem 0;
+    font-size: 90%;
+    font-weight: normal;
+}
+
+table {
+    --border: 1px solid var(--table-border-color);
+
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border-collapse: collapse;
+}
+
+table,
+tbody,
+thead,
+th {
+    border: var(--border);
+}
+
+td {
+    border-left: var(--border);
+    border-right: var(--border);
+}
+
+td,
+th {
+    padding: 0.1em 0.5em;
+}
+
+.para {
+    cursor: pointer;
+    font-weight: normal;
+    font-family: var(--monospace-family);
+    text-decoration: none;
+    opacity: 0.25;
+
+    position: absolute;
+    top: 0.05em;
+    left: calc(-1rem - 0.5ch);
+}
+
+.para,
+.para::before {
+    color: var(--para-color);
+}
+
+.para:hover,
+.para:focus,
+:target .para {
+    opacity: 1;
+}
+
+.para::before {
+    content: "§";
+}
+
+/* TABLE OF CONTENTS */
+
+.toc {
+    --h-indent: 0.75em;
+
+    display: grid;
+    grid-template-columns: min-content auto;
+}
+
+.toc-num {
+    display: inline-block;
+    align-self: end;
+    padding-right: 3em;
+
+    letter-spacing: 0em;
+}
+
+.toc h1,
+.toc h2,
+.toc h3,
+.toc h4,
+.toc h5,
+.toc h6 {
+    display: inline-block;
+
+    font-weight: 500;
+    font-size: 12pt;
+
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.toc a,
+.toc-num {
+    border-bottom: 1px solid rgba(0, 0, 0, 0);
+    color: var(--text-color);
+}
+
+.toc h1,
+.toc-num[data-level="1"] {
+    font-size: 125%;
+    font-weight: 900;
+}
+
+.toc h2,
+.toc-num[data-level="2"] {
+    font-weight: 700;
+}
+
+.toc h3,
+.toc-num[data-level="3"] {
+    font-weight: 500;
+}
+
+.toc h4,
+.toc-num[data-level="4"] {
+    font-size: 95%;
+    font-weight: 400;
+}
+
+.toc h5,
+.toc-num[data-level="5"] {
+    font-size: 90%;
+    font-weight: 300;
+}
+
+.toc h6,
+.toc-num[data-level="6"] {
+    font-size: 90%;
+    font-weight: 100;
+}
+
+.toc a:hover {
+    display: inline-block;
+    width: 100%;
+
+    color: var(--a-hover-color);
+    border-bottom: 1px dashed var(--a-hover-color);
+}
+
+.toc h1:not(:nth-child(2)>h1) {
+    margin-top: 1.5em;
+}
+
+.toc h2:not(:nth-child(2)>h2) {
+    margin-top: 0.75em;
+}
+
+/** BIBLIOGRAPHY */
+
+.bib {
+    display: block;
+    margin: 1em 0;
+}
+
+.bib-item {
+    display: inline-block;
+    width: 100%;
+    margin: 0.25em 0;
+}
+
+.bib-item>* {
+    padding: 0 0.125em;
+}
+
+.bib-author {
+    font-style: italic;
+}
+
+.bib-title {
+    font-weight: 500;
+}
+
+.bib-date {
+    font-family: var(--monospace-family);
+}
+
+.bib-date::before {
+    font-family: var(--serif-family);
+    content: "(";
+}
+
+.bib-date::after {
+    font-family: var(--serif-family);
+    content: ")";
+}
+
+.bib-link {
+    display: block;
+    margin-left: var(--indent);
+
+    font-family: var(--sans-serif-family);
+    font-style: normal;
+}
+
+/* SPECIAL BLOCKS */
+
+intro- {
+    display: inline-block;
+
+    font-weight: 600;
+    text-transform: uppercase;
+    font-family: var(--sans-serif-family);
+}
+
+abstract-block {
+    background-color: var(--abstract-background-color);
+    border-left: var(--border-thickness) solid var(--abstract-border-color);
+}
+
+abstract-block::before {
+    background-image: var(--abstract-image);
+}
+
+abstract-block intro-::before {
+    content: "Abstract:";
+    color: var(--abstract-border-color);
+}
+
+blockquote {
+    background-color: var(--blockquote-background-color);
+    border-left: var(--border-thickness) solid var(--blockquote-border-color);
+}
+
+blockquote::before {
+    background-image: var(--blockquote-image);
+    top: -0.25em;
+}
+
+blockquote intro-::before {
+    content: "Quote:";
+    color: var(--blockquote-border-color);
+}
+
+bug-block {
+    background-color: var(--bug-block-background-color);
+    border-left: var(--border-thickness) solid var(--bug-block-border-color);
+}
+
+bug-block::before {
+    background-image: var(--bug-block-image);
+}
+
+bug-block intro-::before {
+    content: "Bug:";
+    color: var(--bug-block-border-color);
+}
+
+del-block {
+    background-color: var(--del-block-background-color);
+    border-left: var(--border-thickness) solid var(--del-block-border-color);
+    color: var(--del-color);
+}
+
+del-block::before {
+    background-image: var(--del-block-image);
+}
+
+del-block intro-::before {
+    content: "Deleted:";
+    color: var(--del-block-border-color);
+}
+
+del-block code,
+del-block code-block {
+    color: var(--text-color);
+}
+
+details {
+    background-color: var(--details-background-color);
+    border-left: var(--border-thickness) solid var(--details-border-color);
+}
+
+details::before {
+    background-image: var(--details-image);
+}
+
+summary {
+    font-family: var(--sans-serif-family);
+    color: var(--details-border-color);
+    user-select: none;
+    cursor: pointer;
+}
+
+details[open]>summary {
+    margin-bottom: 0.5em;
+}
+
+decision-block {
+    background-color: var(--decision-block-background-color);
+    border-left: var(--border-thickness) solid var(--decision-block-border-color);
+}
+
+decision-block::before {
+    background-image: var(--decision-block-image);
+}
+
+decision-block intro-::before {
+    content: "Decision:";
+    color: var(--decision-block-border-color);
+}
+
+diff-block {
+    background-color: var(--diff-block-background-color);
+    border-left: var(--border-thickness) solid var(--diff-block-border-color);
+}
+
+diff-block::before {
+    background-image: var(--diff-block-image);
+}
+
+diff-block intro-::before {
+    content: "Difference:";
+    color: var(--diff-block-border-color);
+}
+
+example-block {
+    background-color: var(--example-block-background-color);
+    border-left: var(--border-thickness) solid var(--example-block-border-color);
+}
+
+example-block::before {
+    background-image: var(--example-block-image);
+}
+
+example-block intro-::before {
+    content: "Example:";
+    color: var(--example-block-border-color);
+}
+
+important-block {
+    background-color: var(--important-block-background-color);
+    border-left: var(--border-thickness) solid var(--important-block-border-color);
+}
+
+important-block::before {
+    background-image: var(--important-block-image);
+}
+
+important-block intro-::before {
+    content: "Important:";
+    color: var(--important-block-border-color);
+}
+
+ins-block {
+    background-color: var(--ins-block-background-color);
+    border-left: var(--border-thickness) solid var(--ins-block-border-color);
+    color: var(--ins-color);
+}
+
+ins-block code,
+ins-block code-block {
+    color: var(--text-color);
+}
+
+ins-block::before {
+    background-image: var(--ins-block-image);
+}
+
+ins-block intro-::before {
+    content: "Inserted:";
+    color: var(--ins-block-border-color);
+}
+
+note-block {
+    background-color: var(--note-block-background-color);
+    border-left: var(--border-thickness) solid var(--note-block-border-color);
+}
+
+note-block::before {
+    background-image: var(--note-block-image);
+}
+
+note-block intro-::before {
+    content: "Note:";
+    color: var(--note-block-border-color);
+}
+
+tip-block {
+    background-color: var(--tip-block-background-color);
+    border-left: var(--border-thickness) solid var(--tip-block-border-color);
+}
+
+tip-block::before {
+    background-image: var(--tip-block-image);
+}
+
+tip-block intro-::before {
+    content: "Tip:";
+    color: var(--tip-block-border-color);
+}
+
+todo-block {
+    background-color: var(--todo-block-background-color);
+    border-left: var(--border-thickness) solid var(--todo-block-border-color);
+}
+
+todo-block::before {
+    background-image: var(--todo-block-image);
+}
+
+todo-block intro-::before {
+    content: "Todo:";
+    color: var(--todo-block-border-color);
+}
+
+warning-block {
+    background-color: var(--warning-block-background-color);
+    border-left: var(--border-thickness) solid var(--warning-block-border-color);
+}
+
+warning-block::before {
+    background-image: var(--warning-block-image);
+}
+
+warning-block intro-::before {
+    content: "Warning:";
+    color: var(--warning-block-border-color);
+}
+
+.indent {
+    margin-left: var(--indent);
+}
+
+/* SETTINGS MENU */
+
+#settings:not(.js) {
+    display: none;
+}
+
+#settings {
+    z-index: 999;
+    position: fixed;
+    display: inline-block;
+    top: 1em;
+    right: 1em;
+    opacity: 0.25;
+}
+
+#settings:hover,
+#settings:focus {
+    opacity: 1;
+}
+
+#settings svg {
+    width: 2em;
+    height: auto;
+    cursor: pointer;
+}
+
+/* THEME ICONS */
+
+html.dark #sync-theme-icon,
+html.light #sync-theme-icon {
+    display: none;
+}
+
+html:not(.dark) #dark-theme-icon {
+    display: none;
+}
+
+html:not(.light) #light-theme-icon {
+    display: none;
+}
+  </style>
+  <style>
+@media (prefers-color-scheme: light) {
+h-[data-h^=err] { color:#ff0000; }
+h-[data-h^=cmt] { color:green; font-style:italic; }
+h-[data-h^=cmt_dlim] { font-style:normal; }
+h-[data-h^=val] { color:#9f6807; }
+h-[data-h^=num] { color:#9f6807; }
+h-[data-h^=str] { color:#9f6807; }
+h-[data-h^=esc] { color:#9f6807; }
+h-[data-h^=null] { color:#00607c; }
+h-[data-h^=bool] { color:#9f6807; }
+h-[data-h^=this] { color:#00607c; }
+h-[data-h^=mac] { color:#6f4e37; }
+h-[data-h^=kw] { color:#00607c; }
+h-[data-h^=sym] { color:#570057; }
+h-[data-h^=sym_punc] { color:#000000; }
+h-[data-h^=sym_par] { color:#af1915; }
+h-[data-h^=sym_sqr] { color:#af1915; }
+h-[data-h^=sym_brac] { color:#af1915; }
+h-[data-h^=diff_head] { color:#777777; }
+h-[data-h^=diff_head_hunk] { color:#5c477e; }
+h-[data-h^=diff_eq] { color:#000000; }
+h-[data-h^=diff_del] { color:#b31d28; background-color:#ffeef0; }
+h-[data-h^=diff_ins] { color:#22863a; background-color:#f0fff4; }
+h-[data-h^=diff_mod] { color:#7a680d; background-color:#fffdee; }
+h-[data-h^=mk_tag] { color:#00607c; }
+h-[data-h^=mk_attr] { color:#5c477e; }
+h-[data-h^=mk_del] { color:#ce9178; text-decoration:line-through; }
+h-[data-h^=mk_ins] { color:#b5cea8; text-decoration:underline; }
+h-[data-h^=mk_emph] { font-style:italic; }
+h-[data-h^=mk_stro] { font-weight:bold; }
+h-[data-h^=mk_emph_stro] { font-style:italic; font-weight:bold; }
+h-[data-h^=mk_ulin] { text-decoration:underline; }
+h-[data-h^=mk_emph_ulin] { font-style:italic; text-decoration:underline; }
+h-[data-h^=mk_stro_ulin] { font-weight:bold; text-decoration:underline; }
+h-[data-h^=mk_emph_stro_ulin] { font-weight:bold; font-style:italic; text-decoration:underline; }
+h-[data-h^=mk_strk] { text-decoration:line-through; }
+h-[data-h^=mk_emph_strk] { font-style:italic; text-decoration:line-through; }
+h-[data-h^=mk_stro_strk] { font-weight:bold; text-decoration:line-through; }
+h-[data-h^=mk_emph_stro_strk] { font-weight:bold; font-style:italic; text-decoration:line-through; }
+h-[data-h^=mk_ulin_strk] { text-decoration:underline line-through; }
+h-[data-h^=mk_emph_ulin_strk] { font-style:italic; text-decoration:underline line-through; }
+h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:underline line-through; }
+h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
+h-[data-h^=sh_cmd] { color:#00607c; }
+h-[data-h^=sh-opt] { color:#000000; }
+}
+@media (prefers-color-scheme: dark) {
+h-[data-h^=err] { color:#ff0000; }
+h-[data-h^=cmt] { color:#a2e08d; font-style:italic; }
+h-[data-h^=cmt_dlim] { font-style:normal; }
+h-[data-h^=val] { color:#f2d18d; }
+h-[data-h^=num] { color:#f2d18d; }
+h-[data-h^=num_dlim] { color:#e6b191; }
+h-[data-h^=num_deco] { color:#e6b191; }
+h-[data-h^=str] { color:#f2d18d; }
+h-[data-h^=str_dlim] { color:#e6b191; }
+h-[data-h^=str_deco] { color:#e6b191; }
+h-[data-h^=esc] { color:#e6aee6; }
+h-[data-h^=null] { color:#62ded6; }
+h-[data-h^=bool] { color:#f2d18d; }
+h-[data-h^=this] { color:#62ded6; }
+h-[data-h^=mac] { color:#cc946e; }
+h-[data-h^=kw] { color:#62ded6; }
+h-[data-h^=sym] { color:#baa6b9; }
+h-[data-h^=sym_punc] { color:#d0d0d0; }
+h-[data-h^=sym_par] { color:#fa7878; }
+h-[data-h^=sym_sqr] { color:#fa7878; }
+h-[data-h^=sym_brac] { color:#fa7878; }
+h-[data-h^=diff_head] { color:#777777; }
+h-[data-h^=diff_head_hunk] { color:#edc385; }
+h-[data-h^=diff_eq] { color:#e7e7e7; }
+h-[data-h^=diff_del] { color:#ffdcd7; background-color:#67060c; }
+h-[data-h^=diff_ins] { color:#aff5b4; background-color:#033a16; }
+h-[data-h^=diff_mod] { color:#fff4d7; background-color:#674d06; }
+h-[data-h^=mk_tag] { color:#62ded6; }
+h-[data-h^=mk_attr] { color:#a4c4de; }
+h-[data-h^=mk_del] { color:#ce9178; text-decoration:line-through; }
+h-[data-h^=mk_ins] { color:#b5cea8; text-decoration:underline; }
+h-[data-h^=mk_emph] { font-style:italic; }
+h-[data-h^=mk_stro] { font-weight:bold; }
+h-[data-h^=mk_emph_stro] { font-style:italic; font-weight:bold; }
+h-[data-h^=mk_ulin] { text-decoration:underline; }
+h-[data-h^=mk_emph_ulin] { font-style:italic; text-decoration:underline; }
+h-[data-h^=mk_stro_ulin] { font-weight:bold; text-decoration:underline; }
+h-[data-h^=mk_emph_stro_ulin] { font-weight:bold; font-style:italic; text-decoration:underline; }
+h-[data-h^=mk_strk] { text-decoration:line-through; }
+h-[data-h^=mk_emph_strk] { font-style:italic; text-decoration:line-through; }
+h-[data-h^=mk_stro_strk] { font-weight:bold; text-decoration:line-through; }
+h-[data-h^=mk_emph_stro_strk] { font-weight:bold; font-style:italic; text-decoration:line-through; }
+h-[data-h^=mk_ulin_strk] { text-decoration:underline line-through; }
+h-[data-h^=mk_emph_ulin_strk] { font-style:italic; text-decoration:underline line-through; }
+h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:underline line-through; }
+h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
+h-[data-h^=sh_cmd] { color:#62ded6; }
+h-[data-h^=sh-opt] { color:#d0d0d0; }
+}
+
+html.light h-[data-h^=err] { color:#ff0000; }
+html.light h-[data-h^=cmt] { color:green; font-style:italic; }
+html.light h-[data-h^=cmt_dlim] { font-style:normal; }
+html.light h-[data-h^=val] { color:#9f6807; }
+html.light h-[data-h^=num] { color:#9f6807; }
+html.light h-[data-h^=str] { color:#9f6807; }
+html.light h-[data-h^=esc] { color:#9f6807; }
+html.light h-[data-h^=null] { color:#00607c; }
+html.light h-[data-h^=bool] { color:#9f6807; }
+html.light h-[data-h^=this] { color:#00607c; }
+html.light h-[data-h^=mac] { color:#6f4e37; }
+html.light h-[data-h^=kw] { color:#00607c; }
+html.light h-[data-h^=sym] { color:#570057; }
+html.light h-[data-h^=sym_punc] { color:#000000; }
+html.light h-[data-h^=sym_par] { color:#af1915; }
+html.light h-[data-h^=sym_sqr] { color:#af1915; }
+html.light h-[data-h^=sym_brac] { color:#af1915; }
+html.light h-[data-h^=diff_head] { color:#777777; }
+html.light h-[data-h^=diff_head_hunk] { color:#5c477e; }
+html.light h-[data-h^=diff_eq] { color:#000000; }
+html.light h-[data-h^=diff_del] { color:#b31d28; background-color:#ffeef0; }
+html.light h-[data-h^=diff_ins] { color:#22863a; background-color:#f0fff4; }
+html.light h-[data-h^=diff_mod] { color:#7a680d; background-color:#fffdee; }
+html.light h-[data-h^=mk_tag] { color:#00607c; }
+html.light h-[data-h^=mk_attr] { color:#5c477e; }
+html.light h-[data-h^=mk_del] { color:#ce9178; text-decoration:line-through; }
+html.light h-[data-h^=mk_ins] { color:#b5cea8; text-decoration:underline; }
+html.light h-[data-h^=mk_emph] { font-style:italic; }
+html.light h-[data-h^=mk_stro] { font-weight:bold; }
+html.light h-[data-h^=mk_emph_stro] { font-style:italic; font-weight:bold; }
+html.light h-[data-h^=mk_ulin] { text-decoration:underline; }
+html.light h-[data-h^=mk_emph_ulin] { font-style:italic; text-decoration:underline; }
+html.light h-[data-h^=mk_stro_ulin] { font-weight:bold; text-decoration:underline; }
+html.light h-[data-h^=mk_emph_stro_ulin] { font-weight:bold; font-style:italic; text-decoration:underline; }
+html.light h-[data-h^=mk_strk] { text-decoration:line-through; }
+html.light h-[data-h^=mk_emph_strk] { font-style:italic; text-decoration:line-through; }
+html.light h-[data-h^=mk_stro_strk] { font-weight:bold; text-decoration:line-through; }
+html.light h-[data-h^=mk_emph_stro_strk] { font-weight:bold; font-style:italic; text-decoration:line-through; }
+html.light h-[data-h^=mk_ulin_strk] { text-decoration:underline line-through; }
+html.light h-[data-h^=mk_emph_ulin_strk] { font-style:italic; text-decoration:underline line-through; }
+html.light h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:underline line-through; }
+html.light h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
+html.light h-[data-h^=sh_cmd] { color:#00607c; }
+html.light h-[data-h^=sh-opt] { color:#000000; }
+
+html.dark h-[data-h^=err] { color:#ff0000; }
+html.dark h-[data-h^=cmt] { color:#a2e08d; font-style:italic; }
+html.dark h-[data-h^=cmt_dlim] { font-style:normal; }
+html.dark h-[data-h^=val] { color:#f2d18d; }
+html.dark h-[data-h^=num] { color:#f2d18d; }
+html.dark h-[data-h^=num_dlim] { color:#e6b191; }
+html.dark h-[data-h^=num_deco] { color:#e6b191; }
+html.dark h-[data-h^=str] { color:#f2d18d; }
+html.dark h-[data-h^=str_dlim] { color:#e6b191; }
+html.dark h-[data-h^=str_deco] { color:#e6b191; }
+html.dark h-[data-h^=esc] { color:#e6aee6; }
+html.dark h-[data-h^=null] { color:#62ded6; }
+html.dark h-[data-h^=bool] { color:#f2d18d; }
+html.dark h-[data-h^=this] { color:#62ded6; }
+html.dark h-[data-h^=mac] { color:#cc946e; }
+html.dark h-[data-h^=kw] { color:#62ded6; }
+html.dark h-[data-h^=sym] { color:#baa6b9; }
+html.dark h-[data-h^=sym_punc] { color:#d0d0d0; }
+html.dark h-[data-h^=sym_par] { color:#fa7878; }
+html.dark h-[data-h^=sym_sqr] { color:#fa7878; }
+html.dark h-[data-h^=sym_brac] { color:#fa7878; }
+html.dark h-[data-h^=diff_head] { color:#777777; }
+html.dark h-[data-h^=diff_head_hunk] { color:#edc385; }
+html.dark h-[data-h^=diff_eq] { color:#e7e7e7; }
+html.dark h-[data-h^=diff_del] { color:#ffdcd7; background-color:#67060c; }
+html.dark h-[data-h^=diff_ins] { color:#aff5b4; background-color:#033a16; }
+html.dark h-[data-h^=diff_mod] { color:#fff4d7; background-color:#674d06; }
+html.dark h-[data-h^=mk_tag] { color:#62ded6; }
+html.dark h-[data-h^=mk_attr] { color:#a4c4de; }
+html.dark h-[data-h^=mk_del] { color:#ce9178; text-decoration:line-through; }
+html.dark h-[data-h^=mk_ins] { color:#b5cea8; text-decoration:underline; }
+html.dark h-[data-h^=mk_emph] { font-style:italic; }
+html.dark h-[data-h^=mk_stro] { font-weight:bold; }
+html.dark h-[data-h^=mk_emph_stro] { font-style:italic; font-weight:bold; }
+html.dark h-[data-h^=mk_ulin] { text-decoration:underline; }
+html.dark h-[data-h^=mk_emph_ulin] { font-style:italic; text-decoration:underline; }
+html.dark h-[data-h^=mk_stro_ulin] { font-weight:bold; text-decoration:underline; }
+html.dark h-[data-h^=mk_emph_stro_ulin] { font-weight:bold; font-style:italic; text-decoration:underline; }
+html.dark h-[data-h^=mk_strk] { text-decoration:line-through; }
+html.dark h-[data-h^=mk_emph_strk] { font-style:italic; text-decoration:line-through; }
+html.dark h-[data-h^=mk_stro_strk] { font-weight:bold; text-decoration:line-through; }
+html.dark h-[data-h^=mk_emph_stro_strk] { font-weight:bold; font-style:italic; text-decoration:line-through; }
+html.dark h-[data-h^=mk_ulin_strk] { text-decoration:underline line-through; }
+html.dark h-[data-h^=mk_emph_ulin_strk] { font-style:italic; text-decoration:underline line-through; }
+html.dark h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:underline line-through; }
+html.dark h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
+html.dark h-[data-h^=sh_cmd] { color:#62ded6; }
+html.dark h-[data-h^=sh-opt] { color:#d0d0d0; }
+  </style>
+  <script>
+const theme = localStorage.getItem("mmml-theme");
+if (theme !== null) {
+    document.documentElement.className = theme;
+}
+  </script>
+</head>
+<body>
+<div id=settings tabindex=0>
+    <svg id=sync-theme-icon xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><title>Sync theme with system</title><path d="M160-160v-80h110l-16-14q-52-46-73-105t-21-119q0-111 66.5-197.5T400-790v84q-72 26-116 88.5T240-478q0 45 17 87.5t53 78.5l10 10v-98h80v240H160Zm400-10v-84q72-26 116-88.5T720-482q0-45-17-87.5T650-648l-10-10v98h-80v-240h240v80H690l16 14q49 49 71.5 106.5T800-482q0 111-66.5 197.5T560-170Z"/></svg>
+    <svg id=light-theme-icon xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><title>Light theme</title><path d="M480-360q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Zm0 80q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM200-440H40v-80h160v80Zm720 0H760v-80h160v80ZM440-760v-160h80v160h-80Zm0 720v-160h80v160h-80ZM256-650l-101-97 57-59 96 100-52 56Zm492 496-97-101 53-55 101 97-57 59Zm-98-550 97-101 59 57-100 96-56-52ZM154-212l101-97 55 53-97 101-59-57Zm326-268Z"/></svg>
+    <svg id=dark-theme-icon xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><title>Dark theme</title><path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Zm0-80q88 0 158-48.5T740-375q-20 5-40 8t-40 3q-123 0-209.5-86.5T364-660q0-20 3-40t8-40q-78 32-126.5 102T200-480q0 116 82 198t198 82Zm-10-270Z"/></svg>
+    <script>
+        const settings = document.getElementById("settings");
+        settings.classList.add("js");
+
+        const syncIcon = document.getElementById("sync-theme-icon");
+        const darkIcon = document.getElementById("dark-theme-icon");
+        const lightIcon = document.getElementById("light-theme-icon");
+        syncIcon.onclick = () => {
+            document.documentElement.className = "light";
+            localStorage.setItem("mmml-theme", "light");
+        };
+        lightIcon.onclick = () => {
+            document.documentElement.className = "dark";
+            localStorage.setItem("mmml-theme", "dark");
+        };
+        darkIcon.onclick = () => {
+            document.documentElement.removeAttribute("class");
+            localStorage.removeItem("mmml-theme");
+        };
+        settings.onkeydown = (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                event.preventDefault();
+                for (const icon of [syncIcon, darkIcon, lightIcon]) {
+                    if (window.getComputedStyle(icon).display !== "none") {
+                        icon.onclick();
+                        break;
+                    }
+                }
+            }
+        };
+    </script>
+</div>
+<main>
+
+
+
+
+
+<h1 id=missing-middle-markup-language-(mmml)><a class=para href=#missing-middle-markup-language-(mmml)></a>Missing Middle Markup Language (MMML)</h1>
+
+<h2 id=contents><a class=para href=#contents></a>Contents</h2>
+
+<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=2>2</div><a href=#getting-started><h2>Getting started</h2></a><div class=toc-num data-level=2>3</div><a href=#motivation><h2>Motivation</h2></a><div class=toc-num data-level=2>4</div><a href=#syntax-in-a-nutshell><h2>Syntax in a nutshell</h2></a><div class=toc-num data-level=3>4.1</div><a href=#whitespace><h3>Whitespace</h3></a><div class=toc-num data-level=3>4.2</div><a href=#paragraph-splitting><h3>Paragraph splitting</h3></a><div class=toc-num data-level=2>5</div><a href=#directives><h2>Directives</h2></a><div class=toc-num data-level=3>5.1</div><a href=#directive-names><h3>Directive names</h3></a><div class=toc-num data-level=3>5.2</div><a href=#directive-arguments><h3>Directive arguments</h3></a><div class=toc-num data-level=3>5.3</div><a href=#directive-content><h3>Directive content</h3></a><div class=toc-num data-level=2>6</div><a href=#contexts-and-output><h2>Contexts and output</h2></a><div class=toc-num data-level=2>7</div><a href=#themes><h2>Themes</h2></a><div class=toc-num data-level=2>8</div><a href=#list-of-directives><h2>List of directives</h2></a><div class=toc-num data-level=3>8.1</div><a href=#comments><h3>Comments</h3></a><div class=toc-num data-level=4>8.1.1</div><a href=#—-comments><h4><code><h- data-h=mk_tag>\comment</h-></code> &mdash; Comments</h4></a><div class=toc-num data-level=3>8.2</div><a href=#text-formatting><h3>Text formatting</h3></a><div class=toc-num data-level=3>8.3</div><a href=#code><h3>Code and syntax highlighting</h3></a><div class=toc-num data-level=4>8.3.1</div><a href=#—-inline-code><h4><code><h- data-h=mk_tag>\code</h-></code> &mdash; Inline code</h4></a><div class=toc-num data-level=4>8.3.2</div><a href=#—-code-blocks><h4><code><h- data-h=mk_tag>\codeblock</h-></code> &mdash; Code blocks</h4></a><div class=toc-num data-level=3>8.4</div><a href=#special-characters><h3>Special characters</h3></a><div class=toc-num data-level=4>8.4.1</div><a href=#—-code-point-literal><h4><code><h- data-h=mk_tag>\U</h-></code> &mdash; Code point literal</h4></a><div class=toc-num data-level=4>8.4.2</div><a href=#—-character-references><h4><code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4></a><div class=toc-num data-level=3>8.5</div><a href=#special-blocks><h3>Special blocks</h3></a><div class=toc-num data-level=4>8.5.1</div><a href=#dir-abstract><h4><code><h- data-h=mk_tag>\abstract</h-></code> &mdash; Abstract blocks</h4></a><div class=toc-num data-level=4>8.5.2</div><a href=#dir-blockquote><h4><code><h- data-h=mk_tag>\blockquote</h-></code> &mdash; Quote blocks</h4></a><div class=toc-num data-level=4>8.5.3</div><a href=#dir-bug><h4><code><h- data-h=mk_tag>\bug</h-></code> &mdash; Bug blocks</h4></a><div class=toc-num data-level=4>8.5.4</div><a href=#dir-decision><h4><code><h- data-h=mk_tag>\decision</h-></code> &mdash; Decision blocks</h4></a><div class=toc-num data-level=4>8.5.5</div><a href=#dir-delblock><h4><code><h- data-h=mk_tag>\delblock</h-></code> &mdash; Deletion blocks</h4></a><div class=toc-num data-level=4>8.5.6</div><a href=#dir-details><h4><code><h- data-h=mk_tag>\details</h-></code> &mdash; Details blocks aka spoilers</h4></a><div class=toc-num data-level=4>8.5.7</div><a href=#dir-diff><h4><code><h- data-h=mk_tag>\diff</h-></code> &mdash; Difference blocks</h4></a><div class=toc-num data-level=4>8.5.8</div><a href=#dir-example><h4><code><h- data-h=mk_tag>\diff</h-></code> &mdash; Example blocks</h4></a><div class=toc-num data-level=4>8.5.9</div><a href=#dir-insblock><h4><code><h- data-h=mk_tag>\insblock</h-></code> &mdash; Insertion blocks</h4></a><div class=toc-num data-level=4>8.5.10</div><a href=#dir-important><h4><code><h- data-h=mk_tag>\important</h-></code> &mdash; Important blocks</h4></a><div class=toc-num data-level=4>8.5.11</div><a href=#dir-note><h4><code><h- data-h=mk_tag>\note</h-></code> &mdash; Note blocks</h4></a><div class=toc-num data-level=4>8.5.12</div><a href=#dir-tip><h4><code><h- data-h=mk_tag>\tip</h-></code> &mdash; Tip blocks</h4></a><div class=toc-num data-level=4>8.5.13</div><a href=#dir-todo><h4><code><h- data-h=mk_tag>\todo</h-></code> &mdash; TODO blocks</h4></a><div class=toc-num data-level=4>8.5.14</div><a href=#dir-warning><h4><code><h- data-h=mk_tag>\warning</h-></code> &mdash; Warning blocks</h4></a><div class=toc-num data-level=3>8.6</div><a href=#lists><h3>Lists</h3></a><div class=toc-num data-level=4>8.6.1</div><a href=#dir-ul><h4><code><h- data-h=mk_tag>\ul</h-></code> &mdash; Unordered lists</h4></a><div class=toc-num data-level=4>8.6.2</div><a href=#dir-ol><h4><code><h- data-h=mk_tag>\ol</h-></code> &mdash; Ordered lists</h4></a><div class=toc-num data-level=4>8.6.3</div><a href=#dir-dl><h4><code><h- data-h=mk_tag>\dl</h-></code> &mdash; Definition lists</h4></a><div class=toc-num data-level=3>8.7</div><a href=#tables><h3>Tables</h3></a><div class=toc-num data-level=3>8.8</div><a href=#headings><h3>Headings</h3></a><div class=toc-num data-level=3>8.9</div><a href=#references><h3>References</h3></a><div class=toc-num data-level=4>8.9.1</div><a href=#dir-ref><h4><code><h- data-h=mk_tag>\ref</h-></code> &mdash; References</h4></a><div class=toc-num data-level=4>8.9.2</div><a href=#dir-mail><h4><code><h- data-h=mk_tag>\mail</h-></code> &mdash; E-Mail addresses</h4></a><div class=toc-num data-level=4>8.9.3</div><a href=#dir-tel><h4><code><h- data-h=mk_tag>\tel</h-></code> &mdash; Telephone numbers</h4></a><div class=toc-num data-level=3>8.10</div><a href=#foreign-languages><h3>Foreign languages</h3></a><div class=toc-num data-level=4>8.10.1</div><a href=#dir-html><h4><code><h- data-h=mk_tag>\html</h-></code> &mdash; Inline HTML</h4></a><div class=toc-num data-level=4>8.10.2</div><a href=#dir-htmlblock><h4><code><h- data-h=mk_tag>\htmlblock</h-></code> &mdash; HTML blocks</h4></a><div class=toc-num data-level=4>8.10.3</div><a href=#dir-html-element><h4><code><h- data-h=mk_tag>\html-*</h-></code> &mdash; HTML element literals</h4></a><div class=toc-num data-level=4>8.10.4</div><a href=#dir-script><h4><code><h- data-h=mk_tag>\script</h-></code> &mdash; JavaScript blocks</h4></a><div class=toc-num data-level=4>8.10.5</div><a href=#dir-style><h4><code><h- data-h=mk_tag>\style</h-></code> &mdash; CSS blocks</h4></a><div class=toc-num data-level=3>8.11</div><a href=#paragraph-control><h3>Paragraph control</h3></a><div class=toc-num data-level=4>8.11.1</div><a href=#dir-p><h4><code><h- data-h=mk_tag>\p</h-></code> &mdash; Paragraphs</h4></a><div class=toc-num data-level=4>8.11.2</div><a href=#dir-paragraphs><h4><code><h- data-h=mk_tag>\paragraphs</h-></code> &mdash; Enable paragraph splitting</h4></a><div class=toc-num data-level=4>8.11.3</div><a href=#dir-block><h4><code><h- data-h=mk_tag>\block</h-></code> &mdash; Display as block content</h4></a><div class=toc-num data-level=4>8.11.4</div><a href=#dir-inline><h4><code><h- data-h=mk_tag>\inline</h-></code> &mdash; Display as inline content</h4></a><div class=toc-num data-level=3>8.12</div><a href=#macros><h3>Macros</h3></a><div class=toc-num data-level=4>8.12.1</div><a href=#dir-def><h4><code><h- data-h=mk_tag>\def</h-></code> &mdash; Define a macro</h4></a></div>
+
+<h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
+
+<p>MMML is a markup language with TeX-like syntax,
+intended to generate HTML documents,
+mainly for proposals and technical text.
+Many of its features are purpose-built for use in WG21,
+such as for writing C++ proposals.
+</p>
+<example-block><p><intro-></intro-> 
+The following MMML code ...
+</p><code-block>Hello, <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_brac>{</h->strong<h- data-h=sym_brac>}</h-> world!</code-block>
+<p>... generates the HTML ...
+</p><code-block>Hello, <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h->strong<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h-> world!</code-block>
+<p>... which renders as:
+<div class=indent>
+Hello, <strong>strong</strong> world!
+</div>
+</p></example-block>
+
+<h2 id=getting-started><a class=para href=#getting-started></a>2. Getting started</h2>
+
+<p>MMML is still early in development,
+and not available in any package manager yet.
+To install it and run MMML:
+</p><code-block><h- data-h=sh_cmd>git</h-> <h- data-h=str>clone</h-> <h- data-h=str>https://github.com/Eisenwave/mmml.git</h-> <h- data-h=sh-opt>--recursive</h->
+<h- data-h=sh_cmd>cd</h-> <h- data-h=str>mmml</h->
+<h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>-B</h-> <h- data-h=str>build</h->
+<h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>--build</h-> <h- data-h=str>build</h->
+<h- data-h=sh_cmd>./build/mmml-cli</h-> <h- data-h=str>INPUT.mmml</h-> <h- data-h=str>OUTPUT.html</h-></code-block>
+
+<h2 id=motivation><a class=para href=#motivation></a>3. Motivation</h2>
+
+<p>Many similar tools (mpark/wg21, bikeshed, etc.)
+are based on Markdown.
+This makes them beginner-friendly,
+but advanced formatting requires heavy use of Markdown extensions
+or mixed use of Markdown and HTML tags.
+Metadata such as bibliographies, document information, etc.
+also rely on yet another format (e.g. JSON, YAML).
+</p>
+<p>This makes these tools difficult to master and makes the design incoherent.
+Why do we need three languages glued together just to format our documents?
+</p>
+<p>MMML is the missing middle, the missing link.
+It makes producing HTML a natural part of the language,
+lets you specify metadata,
+and more, all in one, simple syntax.
+</p>
+<h2 id=syntax-in-a-nutshell><a class=para href=#syntax-in-a-nutshell></a>4. Syntax in a nutshell</h2>
+
+<p>MMML has a minimalistic but powerful syntax,
+built on top of only three syntactical constructs:
+</p><ul>
+<li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>various-directives</h-><h- data-h=sym_sqr>[</h->positional args<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> 0<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
+<li><code>Text.</code></li>
+<li>Escape sequences, such as <code><h- data-h=esc>\</h-><h- data-h=esc>{</h-></code>, <code><h- data-h=esc>\</h-><h- data-h=esc>}</h-></code>, <code><h- data-h=esc>\</h-><h- data-h=esc>\</h-></code>, etc.</li>
+</ul>
+
+<p>There is no special syntax besides that,
+meaning that as long as some bit of code doesn't contain a <code>\</code>,
+it's all interpreted as plaintext.
+This makes MMML exceptionally suited to nest other languages inside of it in code blocks etc.
+</p>
+<h3 id=whitespace><a class=para href=#whitespace></a>4.1. Whitespace</h3>
+
+<p>MMML translates very directly into HTML.
+Any whitespace in text is preserved exactly as is.
+The way that whitespace is processed then depends on the produced HTML and how it is CSS-styled.
+</p>
+<example-block><p><intro-></intro-> 
+At a top level, whitespace is merged and line breaks are rendered like spaces:
+</p><code-block>This displays on one line
+because line breaks render like spaces.</code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->This displays on one line
+because line breaks render like spaces.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+<p>Rendered output:
+<div class=indent>This displays on one line because line breaks render like spaces.</div>
+</p></example-block>
+
+<h3 id=paragraph-splitting><a class=para href=#paragraph-splitting></a>4.2. Paragraph splitting</h3>
+
+<p>At the top-level in the document and within the content of certain directives,
+<i>paragraph splitting</i> takes place.
+All content in MMML is either <i>inline content</i>, <i>block content</i>, or <i>meta content</i>.
+Text and escape sequences are inline content,
+and directives are sometimes inline and sometimes block content.
+Certain directives (e.g. <code><h- data-h=mk_tag>\comment</h-></code>) that don't generate anything rendered are meta content.
+</p>
+<p>The process of paragraph splitting works as follows:
+</p><ul>
+<li>
+Blank-line-separated blocks of inline content is wrapped in in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
+Meta content is not counted as a blank line, so it "continues" inline content,
+but no effort is made to wrap it in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
+</li>
+<li>
+Block content stays untouched, i.e. it is not wrapped in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
+However, it also terminates prior inline content, like a blank line.
+</li>
+</ul>
+
+<example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block>First paragraph.
+
+Second paragraph.
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_brac>{</h->This is a block directive.<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->First paragraph.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
+
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Second paragraph.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h->This is a block directive.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<h2 id=directives><a class=para href=#directives></a>5. Directives</h2>
+
+<p>A <i>directive</i> is a way of generating plaintext, HTML, both, or neither.
+You can think of it as a "command" or "function call".
+</p>
+<p>Every directive has three parts:
+</p><ul>
+<li>The <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive-name</h-></code> selects a specific directive to be processed.</li>
+<li>
+An optional <code>[comma-separated, positional arguments, named-arguments = ...]</code>
+provides additional inputs to the directive.
+</li>
+<li>
+An optional <code>{block of content}</code> provides a "main input" to a directive.
+</li>
+</ul>
+
+<h3 id=directive-names><a class=para href=#directive-names></a>5.1. Directive names</h3>
+
+<p>A <i>directive name</i> selects a specific directive to be processed.
+The name begins with a <code>\</code> character,
+followed by
+<a href=https://html%2espec%2ewhatwg%2eorg/dev/custom-elements%2ehtml#valid-custom-element-name>
+any character that is valid in an HTML (custom) tag name.
+</a>
+This includes any alphanumeric ASCII characters,
+'<tt->-</tt->', '<tt->.</tt->', '<tt->_</tt->', and various Unicode characters.
+</p>
+<h3 id=directive-arguments><a class=para href=#directive-arguments></a>5.2. Directive arguments</h3>
+
+<p><i>Directive arguments</i> can be <i>positional arguments</i> or <i>named arguments</i>.
+Arguments are separated by commas.
+Unlike anywhere else, whitespace surrounding directive arguments is ignored.
+</p>
+<p>Arguments provide additional information to a directive.
+</p>
+<example-block><p><intro-></intro-> 
+Often, arguments are converted to HTML attributes.
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->Bold text.<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-><h- data-h=sym_punc>&gt;</h->Bold text.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<h3 id=directive-content><a class=para href=#directive-content></a>5.3. Directive content</h3>
+
+<p>The <i>directive content</i> is the primary input to a directive.
+It is delimited by a '<tt->{</tt->' and ends with a <em>matching</em> closing '<tt->}</tt->'.
+This means that you can have opening and closing braces inside text,
+but they need to be balanced.
+</p>
+<example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->Bold text { with braces }.<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->Bold text { with braces }.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<p>Escape sequences don't participate in this "brace matching",
+so they can be used to literally produce a brace character.
+</p><example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->Bold text <h- data-h=esc>\</h-><h- data-h=esc>{</h-> with brace.<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->Bold text { with brace.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<p>Unlike in the directive arguments,
+whitespace is not trimmed.
+</p><example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->bold<h- data-h=sym_brac>}</h-> <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_brac>{</h-> italic <h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->bold<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-> <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_punc>&gt;</h-> italic <h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<note-block><p><intro-></intro-> 
+Only one such block of content can be provided, unlike in TeX,
+which has a similar syntax,
+but permits multiple blocks. Each block is separated by a pair of braces.
+</p></note-block>
+
+<h2 id=contexts-and-output><a class=para href=#contexts-and-output></a>6. Contexts and output</h2>
+
+<p>There are two types of contexts: <i>plaintext contexts</i> and <i>HTML contexts</i>.
+These control what directives (and other content) will generate.
+</p>
+<example-block><p><intro-></intro-> 
+The MMML text <code>&amp;</code> will be converted to <tt->&amp;</tt-> literally in a plaintext context,
+and to <code><h- data-h=esc>&amp;amp;</h-></code> in an HTML context.
+</p></example-block>
+
+
+<p>Any directive is capable of generating either plaintext or HTML,
+and the output may be substantially different depending on the context.
+</p>
+<example-block><p><intro-></intro-> 
+The <code><h- data-h=mk_tag>\c</h-></code> directive is used to generate HTML character references, aka "HTML entities".
+It converts its input to plaintext to determine the chosen character.
+Within such a plaintext context,
+directives like <code><h- data-h=mk_tag>\b</h-></code> will simply output their content as plaintext:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->Omega<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-> <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->Omega<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=esc>&amp;Omega;</h-> <h- data-h=esc>&amp;Omega;</h-></code-block>
+<p>Also, <code><h- data-h=mk_tag>\c</h-></code> will only emit an HTML entity in an HTML context.
+In a plaintext context (such as in the input to <code><h- data-h=mk_tag>\c</h-></code>), it outputs the character directly.
+For example, if we write:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->Omega<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
+<p>The generated (malformed) HTML is:
+</p><code-block>&amp;Ω;</code-block>
+</example-block>
+
+<h2 id=themes><a class=para href=#themes></a>7. Themes</h2>
+
+<p>MMML outputs documents that can be viewed in <i>light mode</i> and <i>dark mode</i>.
+</p>
+<p>When the document is opened with support for JavaScript,
+there is an button in the top-right that can be used to switch between three modes:
+</p><ul>
+<li>Sync the theme with the OS (default)</li>
+<li>Light mode (ignoring system preference)</li>
+<li>Dark mode (ignoring system preference)</li>
+</ul>
+
+<p>Forced light/dark mode works by adding a <tt->light</tt-> or <tt->dark</tt->
+class to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>html</h-><h- data-h=sym_punc>&gt;</h-></code> element in the DOM.
+</p>
+<important-block><p><intro-></intro-> 
+If you want to customize colors with CSS,
+remember to make them respond to theme and OS preference changes.
+</p>
+<p>For reference, you can look at the CSS in the MMML source code to see how it's done properly.
+</p></important-block>
+
+<h2 id=list-of-directives><a class=para href=#list-of-directives></a>8. List of directives</h2>
+
+<h3 id=comments><a class=para href=#comments></a>8.1. Comments</h3>
+
+<p>Unlike many other markup languages,
+MMML has no dedicated syntax for comments.
+However, there exists a <code><h- data-h=mk_tag>\comment</h-></code> directive which you can use to put comments into code.
+</p>
+<h4 id=—-comments><a class=para href=#—-comments></a>8.1.1. <code><h- data-h=mk_tag>\comment</h-></code> &mdash; Comments</h4>
+
+<p>The <code><h- data-h=mk_tag>\comment</h-></code> directive does not process its arguments or content.
+It outputs no plaintext or HTML.
+</p>
+<example-block><p><intro-></intro-> 
+While comments don't output anything,
+<a href=#paragraph-splitting>§4.2. Paragraph splitting</a> is based on blank lines in the source,
+so comments don't split paragraphs:
+</p><code-block>Text
+<h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>This is </h-><h- data-h=cmt>\</h-><h- data-h=cmt>directive{comment} content.</h-><h- data-h=cmt_dlim>}</h->
+Text</code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Text
+
+Text<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<h3 id=text-formatting><a class=para href=#text-formatting></a>8.2. Text formatting</h3>
+
+<p>MMML allows for basic text formatting using various directives.
+Many of the formatting directives are some direct equivalent of an HTML element.
+For these, there is a fixed HTML element that will always be used.
+You can rely on this when adding custom CSS.
+</p>
+<table>
+<tr>
+    <th>Directive</th>
+    <th>HTML</th>
+    <th>Renders as</th>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><b>Bold text</b></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>del</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>del</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>del</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><del>Deleted text</del></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>em</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>em</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>em</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><em>Emphasized text</em></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>gterm</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><i>unspecified</i></td>
+    <td><g-term>grammar-term</g-term></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><i>Italic text</i></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ins</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ins</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>ins</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><ins>Inserted text</ins></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>kbd</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>kbd</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>kbd</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><kbd>Ctrl</kbd> + <kbd>Keyboard key</kbd></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mark</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>mark</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>mark</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><mark>Marked/highlighted</mark></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>q</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>q</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>q</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><q>Quoted text</q></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>sans</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><i>unspecified</i></td>
+    <td><f-sans>Sans-serif font</f-sans></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>serif</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><i>unspecified</i></td>
+    <td><f-serif>Serif font</f-serif></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><sub>Small text</sub></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>s</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>s</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>s</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><s>Struck text</s></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>sub</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>sub</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>sub</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><sub>Subscript</sub></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>sup</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>sup</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>sup</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><sup>Superscript</sup></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><b>Strong text</b></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>tt</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><i>unspecified</i></td>
+    <td><tt->Teletype/monospace font</tt-></td>
+</tr>
+<tr>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>u</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>u</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>u</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><u>Underlined text</u></td>
+</tr>
+</table>
+
+<p>All such <i>formatting directives</i>
+convert all named arguments directly into HTML attributes.
+</p>
+<h3 id=code><a class=para href=#code></a>8.3. Code and syntax highlighting</h3>
+
+<p>MMML uses
+<a href=https://github%2ecom/Eisenwave/ulight>µlight</a>
+for syntax highlighting.
+While the set of supported language is relatively small,
+the highlighter is ultra-light, extremely fast, and
+deals with modern C++ features correctly.
+</p>
+<h4 id=—-inline-code><a class=para href=#—-inline-code></a>8.3.1. <code><h- data-h=mk_tag>\code</h-></code> &mdash; Inline code</h4>
+
+<p>The <code><h- data-h=mk_tag>\code</h-></code> directive produced syntax-highlighted text in code font.
+</p>
+<dl>
+<dt>Arguments</dt>
+<dd>
+<code><h- data-h=mk_tag>\code</h-></code> accepts a single <tt->lang</tt-> argument which specifies the language
+used for syntax highlighting.
+</dd>
+
+<dt>Input content</dt>
+<dd>
+The input to a <code><h- data-h=mk_tag>\code</h-></code> directive is a plaintext context.
+However, there are special rules for formatting directives
+and pure plaintext directives (see below).
+</dd>
+
+<dt>HTML output</dt>
+<dd>
+In an HTML context, the <code><h- data-h=mk_tag>\code</h-></code> takes the input source code,
+applies syntax highlighting,
+and outputs the result surrounded by <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code>.
+</dd>
+
+<dt>Plaintext output</dt>
+<dd>
+In a plaintext context, <code><h- data-h=mk_tag>\code</h-></code> simply outputs the input source code.
+</dd>
+
+<dt>Display style</dt>
+<dd>Inline</dd>
+</dl>
+
+<example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_sqr>[</h->cpp<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->123<h- data-h=sym_brac>}</h-></code-block>
+<p>This applies C++ syntax highlighting, and generates HTML.
+The <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-></code> tags are an implementation detail and may be subject to change.
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>num</h-><h- data-h=sym_punc>&gt;</h->123<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<tip-block><p><intro-></intro-> 
+Writing <code><h- data-h=mk_tag>\code</h-></code> directives directly is often too tedious,
+so you'll likely want to define a macro to make this easier:
+</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>Defines a </h-><h- data-h=cmt>\</h-><h- data-h=cmt>js directive that can be used in place of </h-><h- data-h=cmt>\</h-><h- data-h=cmt>code[js] from now on:</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>def</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>js</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_sqr>[</h->js<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+Let's highlight <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>js</h-><h- data-h=sym_brac>{</h->var<h- data-h=sym_brac>}</h-> in JavaScript.</code-block>
+</tip-block>
+
+<h4 id=—-code-blocks><a class=para href=#—-code-blocks></a>8.3.2. <code><h- data-h=mk_tag>\codeblock</h-></code> &mdash; Code blocks</h4>
+
+<p>The <code><h- data-h=mk_tag>\codeblock</h-></code> directive works exactly like <code><h- data-h=mk_tag>\code</h-></code>,
+but it is a block directive, not an inline directive.
+</p>
+<p>Additionally, code blocks render using borders and a dark background by default.
+This can be controlled using the <tt->borders</tt->.
+</p>
+<example-block><p><intro-></intro-> 
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>codeblock</h-><h- data-h=sym_sqr>[</h->js<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
+// Borders enabled
+let x = 0;
+<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>codeblock</h-><h- data-h=sym_sqr>[</h->js<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>borders</h-><h- data-h=sym_punc>=</h->no<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
+// Borders disabled
+let x = 0;
+<h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as:
+</p><code-block><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Borders enabled</h->
+<h- data-h=kw>let</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h-></code-block>
+<code-block class=borderless><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Borders disabled</h->
+<h- data-h=kw>let</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h-></code-block>
+</example-block>
+
+<h3 id=special-characters><a class=para href=#special-characters></a>8.4. Special characters</h3>
+
+<p>It is quite common that a text document should include special characters.
+While MMML is built on UTF-8,
+and in theory one could just write the character directly into the source code,
+not every text editor handles special characters well.
+</p>
+<p>To increase portability,
+MMML has the <code><h- data-h=mk_tag>\U</h-></code> and <code><h- data-h=mk_tag>\c</h-></code> directives.
+</p>
+<h4 id=—-code-point-literal><a class=para href=#—-code-point-literal></a>8.4.1. <code><h- data-h=mk_tag>\U</h-></code> &mdash; Code point literal</h4>
+
+<p>The input to a <code><h- data-h=mk_tag>\U</h-></code> directive is a plaintext context,
+which should be a sequence of hexadecimal numbers
+specifying a <a href=https://infra%2espec%2ewhatwg%2eorg/#scalar-value>Unicode scalar value</a>;
+that is, a code point which UTF-8 permits to be encoded.
+</p>
+<example-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{</h->30<h- data-h=sym_brac>}</h-></code> generates '<tt->0</tt->' U+0030 DIGIT ZERO
+</p></example-block>
+
+<note-block><p><intro-></intro-> 
+Like anywhere else, directives inside of <code><h- data-h=mk_tag>\U</h-></code> are allowed.
+</p></note-block>
+
+<h4 id=—-character-references><a class=para href=#—-character-references></a>8.4.2. <code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4>
+
+<p>The input to a <code><h- data-h=mk_tag>\c</h-></code> directive is a plaintext context,
+where the same content is permitted as for HTML character references, aka. HTML entities,
+between '<tt->&amp;</tt->' and '<tt->;</tt->'.
+</p>
+<example-block><p><intro-></intro-> 
+Using <code><h- data-h=mk_tag>\U</h-></code> and <code><h- data-h=mk_tag>\c</h-></code>, the '<tt->&amp;</tt->' character can be produced in a number of ways:
+</p><ul>
+    <li>Literally '<tt->&amp;</tt->' in text</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{</h->26<h- data-h=sym_brac>}</h-></code> (code point literal for U+0026)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->amp<h- data-h=sym_brac>}</h-></code> (like <code><h- data-h=esc>&amp;amp;</h-></code>, named character reference)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->#38<h- data-h=sym_brac>}</h-></code> (like <code><h- data-h=esc>&amp;38;</h-></code>, decimal character reference)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->#x26<h- data-h=sym_brac>}</h-></code> (like <code><h- data-h=esc>&amp;x26;</h-></code>, hexadecimal character reference)</li>
+</ul>
+</example-block>
+
+<p>In an HTML context, <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h-></code> is literally translated into <code><h- data-h=esc>&amp;xyz;</h-></code>.
+In a plaintext context, the character reference is mapped onto its corresponding code point(s),
+and those code points are output directly.
+</p>
+<note-block><p><intro-></intro-> 
+Like anywhere else, directives inside of <code><h- data-h=mk_tag>\c</h-></code> are allowed.
+</p></note-block>
+
+<h3 id=special-blocks><a class=para href=#special-blocks></a>8.5. Special blocks</h3>
+
+<p>Often, the content we write falls into some special category like "example", "note", etc.
+MMML supports a large number of <i>special block directives</i>,
+which wrap their content in a block, with background color, borders, etc.
+</p>
+<p>The input to all special block directives is an HTML context,
+they all convert their arguments to HTML attributes,
+and they all display as block content.
+</p>
+<h4 id=dir-abstract><a class=para href=#dir-abstract></a>8.5.1. <code><h- data-h=mk_tag>\abstract</h-></code> &mdash; Abstract blocks</h4>
+
+<abstract-block><p><intro-></intro-> 
+Abstracts provide a summary of the document.
+</p></abstract-block>
+
+<h4 id=dir-blockquote><a class=para href=#dir-blockquote></a>8.5.2. <code><h- data-h=mk_tag>\blockquote</h-></code> &mdash; Quote blocks</h4>
+
+<p>The <code><h- data-h=mk_tag>\blockquote</h-></code> directive directly corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h-></code> element.
+</p>
+<blockquote>
+<p>Quotes blocks or "block quotes" display quoted text.
+</p></blockquote>
+
+<h4 id=dir-bug><a class=para href=#dir-bug></a>8.5.3. <code><h- data-h=mk_tag>\bug</h-></code> &mdash; Bug blocks</h4>
+
+<bug-block><p><intro-></intro-> 
+A bug block contains the description of a bug.
+This often includes a code block which demonstrates how to reproduce the bug.
+</p></bug-block>
+
+<h4 id=dir-decision><a class=para href=#dir-decision></a>8.5.4. <code><h- data-h=mk_tag>\decision</h-></code> &mdash; Decision blocks</h4>
+
+<decision-block><p><intro-></intro-> 
+A decision block indicates that a decision needs to be made.
+</p></decision-block>
+
+<h4 id=dir-delblock><a class=para href=#dir-delblock></a>8.5.5. <code><h- data-h=mk_tag>\delblock</h-></code> &mdash; Deletion blocks</h4>
+
+<del-block>
+<p>A deletion block acts as a wrapper for a large amount of deleted content.
+It is typically used when individual <code><h- data-h=mk_tag>\del</h-></code> directives would be too tedious to use.
+</p></del-block>
+
+<h4 id=dir-details><a class=para href=#dir-details></a>8.5.6. <code><h- data-h=mk_tag>\details</h-></code> &mdash; Details blocks aka spoilers</h4>
+
+<p>The <code><h- data-h=mk_tag>\details</h-></code> directive directly corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>details</h-><h- data-h=sym_punc>&gt;</h-></code> element.
+Within <code><h- data-h=mk_tag>\details</h-></code>,
+the <code><h- data-h=mk_tag>\summary</h-></code> directive can be used to specify <i>summary text</i>.
+</p>
+<details>
+<summary>This is a summary. Click to open!</summary>
+A details block contains details which need to be revealed by the user.
+This is also referred to as "spoiler".
+</details>
+
+<h4 id=dir-diff><a class=para href=#dir-diff></a>8.5.7. <code><h- data-h=mk_tag>\diff</h-></code> &mdash; Difference blocks</h4>
+
+<diff-block>
+<p>A difference block contains changes,
+where some content within is typically <del>deleted</del> or <ins>inserted</ins>.
+</p></diff-block>
+
+<h4 id=dir-example><a class=para href=#dir-example></a>8.5.8. <code><h- data-h=mk_tag>\diff</h-></code> &mdash; Example blocks</h4>
+
+<example-block><p><intro-></intro-> 
+An example block contains examples.
+</p></example-block>
+
+<h4 id=dir-insblock><a class=para href=#dir-insblock></a>8.5.9. <code><h- data-h=mk_tag>\insblock</h-></code> &mdash; Insertion blocks</h4>
+
+<ins-block>
+<p>A deletion block acts as a wrapper for a large amount of inserted content.
+It is typically used when individual <code><h- data-h=mk_tag>\ins</h-></code> directives would be too tedious to use.
+</p></ins-block>
+
+<h4 id=dir-important><a class=para href=#dir-important></a>8.5.10. <code><h- data-h=mk_tag>\important</h-></code> &mdash; Important blocks</h4>
+
+<important-block><p><intro-></intro-> 
+Important blocks contain especially important information.
+</p></important-block>
+
+<h4 id=dir-note><a class=para href=#dir-note></a>8.5.11. <code><h- data-h=mk_tag>\note</h-></code> &mdash; Note blocks</h4>
+
+<note-block><p><intro-></intro-> 
+Note blocks contain less important information,
+which can often be skipped over by readers.
+</p></note-block>
+
+<h4 id=dir-tip><a class=para href=#dir-tip></a>8.5.12. <code><h- data-h=mk_tag>\tip</h-></code> &mdash; Tip blocks</h4>
+
+<tip-block><p><intro-></intro-> 
+Tip blocks contain useful advice.
+</p></tip-block>
+
+<h4 id=dir-todo><a class=para href=#dir-todo></a>8.5.13. <code><h- data-h=mk_tag>\todo</h-></code> &mdash; TODO blocks</h4>
+
+<todo-block><p><intro-></intro-> 
+TODO blocks contain actions that remain to be done.
+They may indicate that a part of a project is incomplete.
+</p></todo-block>
+
+<h4 id=dir-warning><a class=para href=#dir-warning></a>8.5.14. <code><h- data-h=mk_tag>\warning</h-></code> &mdash; Warning blocks</h4>
+
+<warning-block><p><intro-></intro-> 
+Warning blocks warn the reader of some hazard or potential mistake.
+</p></warning-block>
+
+<h3 id=lists><a class=para href=#lists></a>8.6. Lists</h3>
+
+<h4 id=dir-ul><a class=para href=#dir-ul></a>8.6.1. <code><h- data-h=mk_tag>\ul</h-></code> &mdash; Unordered lists</h4>
+
+<p>The <code><h- data-h=mk_tag>\ul</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_punc>&gt;</h-></code> element, and produces an unordered list.
+Within that list,
+you can use the pseudo-directive <code><h- data-h=mk_tag>\item</h-></code> to produce list items.
+</p>
+<h4 id=dir-ol><a class=para href=#dir-ol></a>8.6.2. <code><h- data-h=mk_tag>\ol</h-></code> &mdash; Ordered lists</h4>
+
+<p>The <code><h- data-h=mk_tag>\ol</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ol</h-><h- data-h=sym_punc>&gt;</h-></code> element, and produces an ordered list.
+Within that list,
+you can use the pseudo-directive <code><h- data-h=mk_tag>\item</h-></code> to produce list items.
+</p>
+<h4 id=dir-dl><a class=para href=#dir-dl></a>8.6.3. <code><h- data-h=mk_tag>\dl</h-></code> &mdash; Definition lists</h4>
+
+<p>The <code><h- data-h=mk_tag>\dl</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>dl</h-><h- data-h=sym_punc>&gt;</h-></code> element, and produces a definition list.
+Within that list, you can use
+</p><ul>
+<li><code><h- data-h=mk_tag>\dt</h-></code> for <i>definition terms</i>, and</li>
+<li><code><h- data-h=mk_tag>\dd</h-></code> for <i>definition descriptions</i>.</li>
+</ul>
+
+<h3 id=tables><a class=para href=#tables></a>8.7. Tables</h3>
+
+<p>Tables are simply produced by using the
+<code><h- data-h=mk_tag>\table</h-></code>, <code><h- data-h=mk_tag>\thead</h-></code>, <code><h- data-h=mk_tag>\tbody</h-></code>, <code><h- data-h=mk_tag>\tr</h-></code>, <code><h- data-h=mk_tag>\th</h-></code>, and <code><h- data-h=mk_tag>\td</h-></code> directives to
+produce the corresponding HTML tags with the same name.
+</p>
+<tip-block><p><intro-></intro-> 
+To perform advanced styling,
+like controlling alignment within columns,
+use a <code><h- data-h=mk_tag>\style</h-></code> directive.
+</p></tip-block>
+
+<h3 id=headings><a class=para href=#headings></a>8.8. Headings</h3>
+
+<p>Headings can be produced using the
+<code><h- data-h=mk_tag>\h1</h-></code>, <code><h- data-h=mk_tag>\h2</h-></code>, <code><h- data-h=mk_tag>\h3</h-></code>, <code><h- data-h=mk_tag>\h4</h-></code>, <code><h- data-h=mk_tag>\h5</h-></code>, and <code><h- data-h=mk_tag>\h6</h-></code> directives to
+produce the corresponding HTML tags with the same name.
+</p>
+<p>Arguments to these headings are converted into attributes of the corresponding HTML element.
+An <tt->id</tt-> argument can be provided explicitly.
+</p>
+<p>If none is provided, an <tt->id</tt-> is synthesized from the content within the heading.
+</p>
+<tip-block><p><intro-></intro-> 
+Headings can be referenced using the <code><h- data-h=mk_tag>\ref</h-></code> directive:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>h2</h-><h- data-h=sym_brac>{</h->Heading with synthesized id<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>h2</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h->xyz<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->Heading with manual id<h- data-h=sym_brac>}</h->
+<h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>These can be referenced as follows</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->#heading-with-synthesized-id<h- data-h=sym_sqr>]</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->#xzy<h- data-h=sym_sqr>]</h-></code-block>
+</tip-block>
+
+<h3 id=references><a class=para href=#references></a>8.9. References</h3>
+
+<h4 id=dir-ref><a class=para href=#dir-ref></a>8.9.1. <code><h- data-h=mk_tag>\ref</h-></code> &mdash; References</h4>
+
+<p>The <code><h- data-h=mk_tag>\ref</h-></code> directive takes a single <tt->to</tt-> argument,
+which can be a URL, anchor, or something else.
+It produces an <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>a</h-><h- data-h=sym_punc>&gt;</h-></code> tag with some content inside.
+</p>
+<p>The content is an HTML context, and is what actually gets displayed.
+If no content is provided, it can be synthesized from the following types of references:
+</p>
+<ul>
+<li><tt->mailto</tt-> URLs (e-mail addresses)</li>
+<li><tt->tel</tt-> URLs (telephone numbers)</li>
+<li><tt->http</tt-> and <tt->https</tt-> URLs</li>
+<li>Anchors (<tt->#id</tt->) for some heading in the document</li>
+<li>Anything defined in the bibliography using <code><h- data-h=mk_tag>\bib</h-></code></li>
+</ul>
+
+<example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->mail:john@us.gov<h- data-h=sym_sqr>]</h-></code-block>
+<p>HTML output (<code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>a</h-><h- data-h=sym_punc>&gt;</h-></code> tag may have additional attributes):
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>a</h-> <h- data-h=mk_attr>href</h-><h- data-h=sym_punc>=</h-><h- data-h=str>mail:john@us.gov</h-><h- data-h=sym_punc>&gt;</h->john@us.gov<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>a</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<example-block><p><intro-></intro-> 
+C++ standard draft links can be synthesized into human-readable descriptions.
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->https://eel.is/c++draft/expr#1<h- data-h=sym_sqr>]</h-></code-block>
+<p>This renders as:
+<div class=indent>
+<a href=https://eel%2eis/c++draft/expr#1>[expr] paragraph 1</a>
+</div>
+</p></example-block>
+
+<h4 id=dir-mail><a class=para href=#dir-mail></a>8.9.2. <code><h- data-h=mk_tag>\mail</h-></code> &mdash; E-Mail addresses</h4>
+
+<p>A <code><h- data-h=mk_tag>\mail</h-></code> directive behaves the same <code><h- data-h=mk_tag>\ref</h-></code> directive that is given a <tt->mailto</tt-> URL.
+However, the input is provided as content instead of an argument,
+and the displayed text cannot be customized.
+</p>
+<example-block><p><intro-></intro-> 
+The following two lines produce the same output:
+</p><code-block>Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mail</h-><h- data-h=sym_brac>{</h->john@us.gov<h- data-h=sym_brac>}</h->.
+Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->mailto:john@us.gov<h- data-h=sym_sqr>]</h->.</code-block>
+</example-block>
+
+<h4 id=dir-tel><a class=para href=#dir-tel></a>8.9.3. <code><h- data-h=mk_tag>\tel</h-></code> &mdash; Telephone numbers</h4>
+
+<p>A <code><h- data-h=mk_tag>\tel</h-></code> directive behaves the same <code><h- data-h=mk_tag>\ref</h-></code> directive that is given a <tt->tel</tt-> URL.
+However, the input is provided as content instead of an argument,
+and the displayed text cannot be customized.
+</p>
+<example-block><p><intro-></intro-> 
+The following two lines produce the same output:
+</p><code-block>Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>tel</h-><h- data-h=sym_brac>{</h->+1234<h- data-h=sym_brac>}</h->.
+Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->tel:+1234<h- data-h=sym_sqr>]</h->.</code-block>
+</example-block>
+
+<h3 id=foreign-languages><a class=para href=#foreign-languages></a>8.10. Foreign languages</h3>
+
+<h4 id=dir-html><a class=para href=#dir-html></a>8.10.1. <code><h- data-h=mk_tag>\html</h-></code> &mdash; Inline HTML</h4>
+
+<p>The <code><h- data-h=mk_tag>\html</h-></code> directive can be used to output HTML literally.
+Its content is a plaintext context,
+and it displays as inline content.
+</p>
+<example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block>This is <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>html</h-><h- data-h=sym_brac>{</h->&lt;b&gt;bold text&lt;/b&gt;<h- data-h=sym_brac>}</h->.</code-block>
+<p>Generated HTML:
+</p><code-block>This is <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->bold text<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->.</code-block>
+</example-block>
+
+<warning-block><p><intro-></intro-> 
+The <code><h- data-h=mk_tag>\html</h-></code> directive can produce malformed HTML content if you're not careful.
+See, <a href=#dir-html-element>§8.10.3. <code><h- data-h=mk_tag>\html-*</h-></code> &mdash; HTML element literals</a> for a safer option.
+</p></warning-block>
+
+<h4 id=dir-htmlblock><a class=para href=#dir-htmlblock></a>8.10.2. <code><h- data-h=mk_tag>\htmlblock</h-></code> &mdash; HTML blocks</h4>
+
+<p>The <code><h- data-h=mk_tag>\htmlblock</h-></code> directive works exactly like the <code><h- data-h=mk_tag>\html</h-></code> directive,
+but displays as block content instead of inline content.
+</p>
+<warning-block><p><intro-></intro-> 
+The <code><h- data-h=mk_tag>\htmlblock</h-></code> directive can produce malformed HTML content if you're not careful.
+See, <a href=#dir-html-element>§8.10.3. <code><h- data-h=mk_tag>\html-*</h-></code> &mdash; HTML element literals</a> for a safer option.
+</p></warning-block>
+
+<h4 id=dir-html-element><a class=para href=#dir-html-element></a>8.10.3. <code><h- data-h=mk_tag>\html-*</h-></code> &mdash; HTML element literals</h4>
+
+<p>Any directive beginning with <code><h- data-h=mk_tag>\html-</h-></code> can be used to produce an HTML element
+directly.
+Its content is a plaintext context,
+and it displays as inline content.
+Arguments are converted to HTML attributes of the produced tag.
+</p>
+<example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block>This is <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>html-span</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h->abc<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->a span<h- data-h=sym_brac>}</h->.</code-block>
+<p>Generated HTML:
+</p><code-block>This is <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>span</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-><h- data-h=sym_punc>&gt;</h->a span<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>span</h-><h- data-h=sym_punc>&gt;</h->.</code-block>
+</example-block>
+
+<h4 id=dir-script><a class=para href=#dir-script></a>8.10.4. <code><h- data-h=mk_tag>\script</h-></code> &mdash; JavaScript blocks</h4>
+
+<p>The content of a <code><h- data-h=mk_tag>\script</h-></code> directive is a plaintext context,
+where the input is treated as JavaScript code and surrounded in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=cmt_dlim>/*</h-><h- data-h=cmt>...</h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
+</p>
+<p><code><h- data-h=mk_tag>\script</h-></code> displays as meta content (like <code><h- data-h=mk_tag>\comment</h-></code>).
+</p>
+<example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_brac>{</h->
+console.log("hello");
+<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_punc>&gt;</h->
+<h- data-h=id>console</h-><h- data-h=sym_op>.</h-><h- data-h=id>log</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>hello</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<h4 id=dir-style><a class=para href=#dir-style></a>8.10.5. <code><h- data-h=mk_tag>\style</h-></code> &mdash; CSS blocks</h4>
+
+<p>The content of a <code><h- data-h=mk_tag>\style</h-></code> directive is a plaintext context,
+where the input is treated as JavaScript code and surrounded in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=cmt_dlim>/*</h-><h- data-h=cmt>...</h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
+</p>
+<p><code><h- data-h=mk_tag>\style</h-></code> displays as meta content (like <code><h- data-h=mk_tag>\comment</h-></code>).
+</p>
+<example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_brac>{</h->
+body { color: red; }
+<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_punc>&gt;</h->
+<h- data-h=mk_tag>body</h-> <h- data-h=sym_brac>{</h-> <h- data-h=mk_attr>color</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>red</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
+<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<h3 id=paragraph-control><a class=para href=#paragraph-control></a>8.11. Paragraph control</h3>
+
+<p>In some cases, the automatic <a href=#paragraph-splitting>§4.2. Paragraph splitting</a>
+process is not enough.
+To get more fine-tuned control, we have a number of directives.
+</p>
+<h4 id=dir-p><a class=para href=#dir-p></a>8.11.1. <code><h- data-h=mk_tag>\p</h-></code> &mdash; Paragraphs</h4>
+
+<p>The <code><h- data-h=mk_tag>\p</h-></code> directive surrounds its content in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
+</p>
+<h4 id=dir-paragraphs><a class=para href=#dir-paragraphs></a>8.11.2. <code><h- data-h=mk_tag>\paragraphs</h-></code> &mdash; Enable paragraph splitting</h4>
+
+<p>The <code><h- data-h=mk_tag>\paragraphs</h-></code> directive activates paragraph splitting.
+This may be useful in places where it is not active by default.
+</p>
+<example-block><p><intro-></intro-> 
+MMML markup:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_brac>{</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>item</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>paragraphs</h-><h- data-h=sym_brac>{</h->
+First paragraph in bullet.
+
+Second paragraph.
+<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_punc>&gt;</h->
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>li</h-><h- data-h=sym_punc>&gt;</h->
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->First paragraph in bullet.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
+
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Second paragraph in bullet.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
+<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>li</h-><h- data-h=sym_punc>&gt;</h->
+<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<h4 id=dir-block><a class=para href=#dir-block></a>8.11.3. <code><h- data-h=mk_tag>\block</h-></code> &mdash; Display as block content</h4>
+
+<p>The <code><h- data-h=mk_tag>\block</h-></code> directive doesn't add any HTML itself,
+but causes its contents to be considered block content.
+</p>
+<example-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\block</h-></code> can be used to suppress automatic paragraph splitting:
+</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>No &lt;p&gt; tags will be added here</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>block</h-><h- data-h=sym_brac>{</h->
+First paragraph.
+
+Second paragraph.
+<h- data-h=sym_brac>}</h-></code-block>
+</example-block>
+
+<h4 id=dir-inline><a class=para href=#dir-inline></a>8.11.4. <code><h- data-h=mk_tag>\inline</h-></code> &mdash; Display as inline content</h4>
+
+<p>The <code><h- data-h=mk_tag>\inline</h-></code> directive works like the <code><h- data-h=mk_tag>\block</h-></code> directive,
+but causes its contents to display as inline content, not as block content.
+</p>
+<h3 id=macros><a class=para href=#macros></a>8.12. Macros</h3>
+
+<h4 id=dir-def><a class=para href=#dir-def></a>8.12.1. <code><h- data-h=mk_tag>\def</h-></code> &mdash; Define a macro</h4>
+
+<p>The <code><h- data-h=mk_tag>\def</h-></code> directive defines a <i>macro</i>,
+which is basically a user-defined directive.
+It has a single <tt->pattern</tt-> argument,
+which shall be a single <i>pattern directive</i> which describes the defined directive.
+</p>
+<note-block><p><intro-></intro-> 
+The arguments and content of the pattern directive are not processed,
+but can be used to document how the directive is meant to be used.
+</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>The following two definitions are equivalent:</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>def</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>def</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h-></code-block>
+</note-block>
+
+<p>When a macro is used, the content within the <code><h- data-h=mk_tag>\def</h-></code> directive is copied.
+Any uses of the <code><h- data-h=mk_tag>\put</h-></code> pseud-directive inside the macro are replaced with copies
+of the input content.
+</p>
+<example-block><p><intro-></intro-> 
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>def</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>bi</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>Now, the following are equivalent:</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_brac>{</h->bold and italic<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>bi</h-><h- data-h=sym_brac>{</h->bold and italic<h- data-h=sym_brac>}</h-></code-block>
+</example-block>
+
+<todo-block><p><intro-></intro-> 
+Currently, macros only support content as input.
+Arguments to macros are ignored entirely.
+This should be supported at some point.
+</p></todo-block>
+</main></body>
+</html>

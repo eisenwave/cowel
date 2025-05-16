@@ -1,0 +1,1008 @@
+\def[\cm{...}]{\code[mmml]{\put}}
+\def[\ch{...}]{\code[html]{\put}}
+\def[\defn{...}]{\i{\put}}
+\def[\dir{...}]{\cm{\html-h-[data-h=mk_tag]{\\\put}}}
+
+\h1{Missing Middle Markup Language (MMML)}
+
+\h2[listed=no]{Contents}
+
+\make-contents
+
+\h2{Introduction}
+
+MMML is a markup language with TeX-like syntax,
+intended to generate HTML documents,
+mainly for proposals and technical text.
+Many of its features are purpose-built for use in WG21,
+such as for writing C++ proposals.
+
+\example{
+The following MMML code ...
+\codeblock[mmml]{
+Hello, \\strong{strong} world!
+}
+... generates the HTML ...
+\codeblock[html]{
+Hello, <strong>strong</strong> world!
+}
+... which renders as:
+\indent{
+Hello, \strong{strong} world!
+}
+}
+
+\h2{Getting started}
+
+MMML is still early in development,
+and not available in any package manager yet.
+To install it and run MMML:
+\codeblock[sh]{
+git clone https://github.com/Eisenwave/mmml.git --recursive
+cd mmml
+cmake -B build
+cmake --build build
+./build/mmml-cli INPUT.mmml OUTPUT.html
+}
+
+\h2{Motivation}
+
+Many similar tools (mpark/wg21, bikeshed, etc.)
+are based on Markdown.
+This makes them beginner-friendly,
+but advanced formatting requires heavy use of Markdown extensions
+or mixed use of Markdown and HTML tags.
+Metadata such as bibliographies, document information, etc.
+also rely on yet another format (e.g. JSON, YAML).
+
+This makes these tools difficult to master and makes the design incoherent.
+Why do we need three languages glued together just to format our documents?
+
+MMML is the missing middle, the missing link.
+It makes producing HTML a natural part of the language,
+lets you specify metadata,
+and more, all in one, simple syntax.
+
+\h2{Syntax in a nutshell}
+
+MMML has a minimalistic but powerful syntax,
+built on top of only three syntactical constructs:
+\ul{
+\item{\cm{\\various-directives[positional args, named-args = 0]{and content}}}
+\item{\cm{Text.}}
+\item{Escape sequences, such as \cm{\\\U{7B}}, \cm{\\\U{7D}}, \cm{\\\\}, etc.}
+}
+
+There is no special syntax besides that,
+meaning that as long as some bit of code doesn't contain a \cm{\\},
+it's all interpreted as plaintext.
+This makes MMML exceptionally suited to nest other languages inside of it in code blocks etc.
+
+\h3{Whitespace}
+
+MMML translates very directly into HTML.
+Any whitespace in text is preserved exactly as is.
+The way that whitespace is processed then depends on the produced HTML and how it is CSS-styled.
+
+\example{
+At a top level, whitespace is merged and line breaks are rendered like spaces:
+\codeblock[mmml]{
+This displays on one line
+because line breaks render like spaces.
+}
+Generated HTML:
+\codeblock[html]{
+<p>This displays on one line
+because line breaks render like spaces.</p>
+}
+Rendered output:
+\indent{This displays on one line because line breaks render like spaces.}
+}
+
+\h3{Paragraph splitting}
+
+At the top-level in the document and within the content of certain directives,
+\defn{paragraph splitting} takes place.
+All content in MMML is either \defn{inline content}, \defn{block content}, or \defn{meta content}.
+Text and escape sequences are inline content,
+and directives are sometimes inline and sometimes block content.
+Certain directives (e.g. \dir{comment}) that don't generate anything rendered are meta content.
+
+The process of paragraph splitting works as follows:
+\ul{
+\item{
+Blank-line-separated blocks of inline content is wrapped in in \ch{<p>...</p>} tags.
+Meta content is not counted as a blank line, so it "continues" inline content,
+but no effort is made to wrap it in \ch{<p>...</p>}.
+}
+\item{
+Block content stays untouched, i.e. it is not wrapped in \ch{<p>...</p>}.
+However, it also terminates prior inline content, like a blank line.
+}
+}
+
+\example{
+MMML markup:
+\codeblock[mmml]{
+First paragraph.
+
+Second paragraph.
+\\blockquote{This is a block directive.}
+}
+Generated HTML:
+\codeblock[html]{
+<p>First paragraph.</p>
+
+<p>Second paragraph.</p>
+<blockquote>This is a block directive.</blockquote>
+}
+}
+
+\h2{Directives}
+
+A \defn{directive} is a way of generating plaintext, HTML, both, or neither.
+You can think of it as a "command" or "function call".
+
+Every directive has three parts:
+\ul{
+\item{The \cm{\\directive-name} selects a specific directive to be processed.}
+\item{
+An optional \cm{[comma-separated, positional arguments, named-arguments = ...]}
+provides additional inputs to the directive.
+}
+\item{
+An optional \cm{{block of content}} provides a "main input" to a directive.
+}
+}
+
+\h3{Directive names}
+
+A \defn{directive name} selects a specific directive to be processed.
+The name begins with a \cm{\\} character,
+followed by
+\ref[https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name]{
+any character that is valid in an HTML (custom) tag name.
+}
+This includes any alphanumeric ASCII characters,
+'\tt{-}', '\tt{.}', '\tt{_}', and various Unicode characters.
+
+\h3{Directive arguments}
+
+\defn{Directive arguments} can be \defn{positional arguments} or \defn{named arguments}.
+Arguments are separated by commas.
+Unlike anywhere else, whitespace surrounding directive arguments is ignored.
+
+Arguments provide additional information to a directive.
+
+\example{
+Often, arguments are converted to HTML attributes.
+\codeblock[mmml]{
+\\b[id = abc]{Bold text.}
+}
+Generated HTML:
+\codeblock[html]{
+<b id=abc>Bold text.</b>
+}
+}
+
+\h3{Directive content}
+
+The \defn{directive content} is the primary input to a directive.
+It is delimited by a '\tt{\{}' and ends with a \em{matching} closing '\tt{\}}'.
+This means that you can have opening and closing braces inside text,
+but they need to be balanced.
+
+\example{
+MMML markup:
+\codeblock[mmml]{
+\\b{Bold text { with braces }.}
+}
+Generated HTML:
+\codeblock[html]{
+<b>Bold text { with braces }.</b>
+}
+}
+
+Escape sequences don't participate in this "brace matching",
+so they can be used to literally produce a brace character.
+\example{
+MMML markup:
+\codeblock[mmml]{
+\\b{Bold text \\\U{7B} with brace.}
+}
+Generated HTML:
+\codeblock[html]{
+<b>Bold text \U{7B} with brace.</b>
+}
+}
+
+Unlike in the directive arguments,
+whitespace is not trimmed.
+\example{
+MMML markup:
+\codeblock[mmml]{
+\\b{bold} \\i{ italic }
+}
+Generated HTML:
+\codeblock[html]{
+<b>bold</b> <i> italic </i>
+}
+}
+
+\note{
+Only one such block of content can be provided, unlike in TeX,
+which has a similar syntax,
+but permits multiple blocks. Each block is separated by a pair of braces.
+}
+
+\h2{Contexts and output}
+
+There are two types of contexts: \defn{plaintext contexts} and \defn{HTML contexts}.
+These control what directives (and other content) will generate.
+
+\example{
+The MMML text \cm{&} will be converted to \tt{&} literally in a plaintext context,
+and to \ch{&amp;} in an HTML context.
+}
+
+
+Any directive is capable of generating either plaintext or HTML,
+and the output may be substantially different depending on the context.
+
+\example{
+The \dir{c} directive is used to generate HTML character references, aka "HTML entities".
+It converts its input to plaintext to determine the chosen character.
+Within such a plaintext context,
+directives like \dir{b} will simply output their content as plaintext:
+\codeblock[mmml]{
+\\c{\\b{Omega}} \\c{Omega}
+}
+Generated HTML:
+\codeblock[html]{
+&Omega; &Omega;
+}
+Also, \dir{c} will only emit an HTML entity in an HTML context.
+In a plaintext context (such as in the input to \dir{c}), it outputs the character directly.
+For example, if we write:
+\codeblock[mmml]{
+\\c{\\c{Omega}}
+}
+The generated (malformed) HTML is:
+\codeblock[html]{
+&\c{Omega};
+}
+}
+
+\h2{Themes}
+
+MMML outputs documents that can be viewed in \defn{light mode} and \defn{dark mode}.
+
+When the document is opened with support for JavaScript,
+there is an button in the top-right that can be used to switch between three modes:
+\ul{
+\item{Sync the theme with the OS (default)}
+\item{Light mode (ignoring system preference)}
+\item{Dark mode (ignoring system preference)}
+}
+
+Forced light/dark mode works by adding a \tt{light} or \tt{dark}
+class to the \ch{<html>} element in the DOM.
+
+\important{
+If you want to customize colors with CSS,
+remember to make them respond to theme and OS preference changes.
+
+For reference, you can look at the CSS in the MMML source code to see how it's done properly.
+}
+
+\h2{List of directives}
+
+\h3{Comments}
+
+Unlike many other markup languages,
+MMML has no dedicated syntax for comments.
+However, there exists a \dir{comment} directive which you can use to put comments into code.
+
+\h4{\dir{comment} \c{mdash} Comments}
+
+The \dir{comment} directive does not process its arguments or content.
+It outputs no plaintext or HTML.
+
+\example{
+While comments don't output anything,
+\ref[#paragraph-splitting] is based on blank lines in the source,
+so comments don't split paragraphs:
+\codeblock[mmml]{
+Text
+\\comment{This is \\directive{comment} content.}
+Text
+}
+Generated HTML:
+\codeblock[html]{
+<p>Text
+
+Text</p>
+}
+}
+
+\h3{Text formatting}
+
+MMML allows for basic text formatting using various directives.
+Many of the formatting directives are some direct equivalent of an HTML element.
+For these, there is a fixed HTML element that will always be used.
+You can rely on this when adding custom CSS.
+
+\table{
+\tr{
+    \th{Directive}
+    \th{HTML}
+    \th{Renders as}
+}
+\tr{
+    \td{\cm{\\b{...}}}
+    \td{\ch{<b>...</b>}}
+    \td{\b{Bold text}}
+}
+\tr{
+    \td{\cm{\\del{...}}}
+    \td{\ch{<del>...</del>}}
+    \td{\del{Deleted text}}
+}
+\tr{
+    \td{\cm{\\em{...}}}
+    \td{\ch{<em>...</em>}}
+    \td{\em{Emphasized text}}
+}
+\tr{
+    \td{\cm{\\gterm{...}}}
+    \td{\i{unspecified}}
+    \td{\gterm{grammar-term}}
+}
+\tr{
+    \td{\cm{\\i{...}}}
+    \td{\ch{<i>...</i>}}
+    \td{\i{Italic text}}
+}
+\tr{
+    \td{\cm{\\ins{...}}}
+    \td{\ch{<ins>...</ins>}}
+    \td{\ins{Inserted text}}
+}
+\tr{
+    \td{\cm{\\kbd{...}}}
+    \td{\ch{<kbd>...</kbd>}}
+    \td{\kbd{Ctrl} + \kbd{Keyboard key}}
+}
+\tr{
+    \td{\cm{\\mark{...}}}
+    \td{\ch{<mark>...</mark>}}
+    \td{\mark{Marked/highlighted}}
+}
+\tr{
+    \td{\cm{\\q{...}}}
+    \td{\ch{<q>...</q>}}
+    \td{\q{Quoted text}}
+}
+\tr{
+    \td{\cm{\\sans{...}}}
+    \td{\i{unspecified}}
+    \td{\sans{Sans-serif font}}
+}
+\tr{
+    \td{\cm{\\serif{...}}}
+    \td{\i{unspecified}}
+    \td{\serif{Serif font}}
+}
+\tr{
+    \td{\cm{\\small{...}}}
+    \td{\ch{<small>...</small>}}
+    \td{\sub{Small text}}
+}
+\tr{
+    \td{\cm{\\s{...}}}
+    \td{\ch{<s>...</s>}}
+    \td{\s{Struck text}}
+}
+\tr{
+    \td{\cm{\\sub{...}}}
+    \td{\ch{<sub>...</sub>}}
+    \td{\sub{Subscript}}
+}
+\tr{
+    \td{\cm{\\sup{...}}}
+    \td{\ch{<sup>...</sup>}}
+    \td{\sup{Superscript}}
+}
+\tr{
+    \td{\cm{\\strong{...}}}
+    \td{\ch{<strong>...</strong>}}
+    \td{\b{Strong text}}
+}
+\tr{
+    \td{\cm{\\tt{...}}}
+    \td{\i{unspecified}}
+    \td{\tt{Teletype/monospace font}}
+}
+\tr{
+    \td{\cm{\\u{...}}}
+    \td{\ch{<u>...</u>}}
+    \td{\u{Underlined text}}
+}
+}
+
+All such \defn{formatting directives}
+convert all named arguments directly into HTML attributes.
+
+\h3[id=code]{Code and syntax highlighting}
+
+MMML uses
+\ref[https://github.com/Eisenwave/ulight]{µlight}
+for syntax highlighting.
+While the set of supported language is relatively small,
+the highlighter is ultra-light, extremely fast, and
+deals with modern C++ features correctly.
+
+\h4{\dir{code} \c{mdash} Inline code}
+
+The \dir{code} directive produced syntax-highlighted text in code font.
+
+\dl{
+\dt{Arguments}
+\dd{
+\dir{code} accepts a single \tt{lang} argument which specifies the language
+used for syntax highlighting.
+}
+
+\dt{Input content}
+\dd{
+The input to a \dir{code} directive is a plaintext context.
+However, there are special rules for formatting directives
+and pure plaintext directives (see below).
+}
+
+\dt{HTML output}
+\dd{
+In an HTML context, the \dir{code} takes the input source code,
+applies syntax highlighting,
+and outputs the result surrounded by \ch{<code>...</code>}.
+}
+
+\dt{Plaintext output}
+\dd{
+In a plaintext context, \dir{code} simply outputs the input source code.
+}
+
+\dt{Display style}
+\dd{Inline}
+}
+
+\example{
+MMML markup:
+\codeblock[mmml]{
+\\code[cpp]{123}
+}
+This applies C++ syntax highlighting, and generates HTML.
+The \ch{<h->} tags are an implementation detail and may be subject to change.
+\codeblock[html]{
+<code><h- data-h=num>123</h-></code>
+}
+}
+
+\tip{
+Writing \dir{code} directives directly is often too tedious,
+so you'll likely want to define a macro to make this easier:
+\codeblock[mmml]{
+\\comment{Defines a \\js directive that can be used in place of \\code[js] from now on:}
+\\def[\\js]{\\code[js]{\\put}}
+Let's highlight \\js{var} in JavaScript.
+}
+}
+
+\h4{\dir{codeblock} \c{mdash} Code blocks}
+
+The \dir{codeblock} directive works exactly like \dir{code},
+but it is a block directive, not an inline directive.
+
+Additionally, code blocks render using borders and a dark background by default.
+This can be controlled using the \tt{borders}.
+
+\example{
+\codeblock[mmml]{
+\\codeblock[js]{
+// Borders enabled
+let x = 0;
+}
+\\codeblock[js,borders=no]{
+// Borders disabled
+let x = 0;
+}
+}
+This renders as:
+\codeblock[js]{
+// Borders enabled
+let x = 0;
+}
+\codeblock[js,borders=no]{
+// Borders disabled
+let x = 0;
+}
+}
+
+\h3{Special characters}
+
+It is quite common that a text document should include special characters.
+While MMML is built on UTF-8,
+and in theory one could just write the character directly into the source code,
+not every text editor handles special characters well.
+
+To increase portability,
+MMML has the \dir{U} and \dir{c} directives.
+
+\h4{\dir{U} \c{mdash} Code point literal}
+
+The input to a \dir{U} directive is a plaintext context,
+which should be a sequence of hexadecimal numbers
+specifying a \ref[https://infra.spec.whatwg.org/#scalar-value]{Unicode scalar value};
+that is, a code point which UTF-8 permits to be encoded.
+
+\example{
+\cm{\\U{30}} generates '\tt{0}' U+0030 DIGIT ZERO
+}
+
+\note{
+Like anywhere else, directives inside of \dir{U} are allowed.
+}
+
+\h4{\dir{c} \c{mdash} Character references}
+
+The input to a \dir{c} directive is a plaintext context,
+where the same content is permitted as for HTML character references, aka. HTML entities,
+between '\tt{&}' and '\tt{;}'.
+
+\example{
+Using \dir{U} and \dir{c}, the '\tt{&}' character can be produced in a number of ways:
+\ul{
+    \item{Literally '\tt{&}' in text}
+    \item{\cm{\\U{26}} (code point literal for U+0026)}
+    \item{\cm{\\c{amp}} (like \ch{&amp;}, named character reference)}
+    \item{\cm{\\c{#38}} (like \ch{&38;}, decimal character reference)}
+    \item{\cm{\\c{#x26}} (like \ch{&x26;}, hexadecimal character reference)}
+}
+}
+
+In an HTML context, \cm{\\c{xyz}} is literally translated into \ch{&xyz;}.
+In a plaintext context, the character reference is mapped onto its corresponding code point(s),
+and those code points are output directly.
+
+\note{
+Like anywhere else, directives inside of \dir{c} are allowed.
+}
+
+\h3{Special blocks}
+
+Often, the content we write falls into some special category like "example", "note", etc.
+MMML supports a large number of \defn{special block directives},
+which wrap their content in a block, with background color, borders, etc.
+
+The input to all special block directives is an HTML context,
+they all convert their arguments to HTML attributes,
+and they all display as block content.
+
+\h4[id=dir-abstract]{\dir{abstract} \c{mdash} Abstract blocks}
+
+\abstract{
+Abstracts provide a summary of the document.
+}
+
+\h4[id=dir-blockquote]{\dir{blockquote} \c{mdash} Quote blocks}
+
+The \dir{blockquote} directive directly corresponds to the \ch{<blockquote>} element.
+
+\blockquote{
+Quotes blocks or "block quotes" display quoted text.
+}
+
+\h4[id=dir-bug]{\dir{bug} \c{mdash} Bug blocks}
+
+\bug{
+A bug block contains the description of a bug.
+This often includes a code block which demonstrates how to reproduce the bug.
+}
+
+\h4[id=dir-decision]{\dir{decision} \c{mdash} Decision blocks}
+
+\decision{
+A decision block indicates that a decision needs to be made.
+}
+
+\h4[id=dir-delblock]{\dir{delblock} \c{mdash} Deletion blocks}
+
+\delblock{
+A deletion block acts as a wrapper for a large amount of deleted content.
+It is typically used when individual \dir{del} directives would be too tedious to use.
+}
+
+\h4[id=dir-details]{\dir{details} \c{mdash} Details blocks aka spoilers}
+
+The \dir{details} directive directly corresponds to the \ch{<details>} element.
+Within \dir{details},
+the \dir{summary} directive can be used to specify \defn{summary text}.
+
+\details{
+\summary{This is a summary. Click to open!}
+A details block contains details which need to be revealed by the user.
+This is also referred to as "spoiler".
+}
+
+\h4[id=dir-diff]{\dir{diff} \c{mdash} Difference blocks}
+
+\diff{
+A difference block contains changes,
+where some content within is typically \del{deleted} or \ins{inserted}.
+}
+
+\h4[id=dir-example]{\dir{diff} \c{mdash} Example blocks}
+
+\example{
+An example block contains examples.
+}
+
+\h4[id=dir-insblock]{\dir{insblock} \c{mdash} Insertion blocks}
+
+\insblock{
+A deletion block acts as a wrapper for a large amount of inserted content.
+It is typically used when individual \dir{ins} directives would be too tedious to use.
+}
+
+\h4[id=dir-important]{\dir{important} \c{mdash} Important blocks}
+
+\important{
+Important blocks contain especially important information.
+}
+
+\h4[id=dir-note]{\dir{note} \c{mdash} Note blocks}
+
+\note{
+Note blocks contain less important information,
+which can often be skipped over by readers.
+}
+
+\h4[id=dir-tip]{\dir{tip} \c{mdash} Tip blocks}
+
+\tip{
+Tip blocks contain useful advice.
+}
+
+\h4[id=dir-todo]{\dir{todo} \c{mdash} TODO blocks}
+
+\todo{
+TODO blocks contain actions that remain to be done.
+They may indicate that a part of a project is incomplete.
+}
+
+\h4[id=dir-warning]{\dir{warning} \c{mdash} Warning blocks}
+
+\warning{
+Warning blocks warn the reader of some hazard or potential mistake.
+}
+
+\h3{Lists}
+
+\h4[id=dir-ul]{\dir{ul} \c{mdash} Unordered lists}
+
+The \dir{ul} directive corresponds to the \ch{<ul>} element, and produces an unordered list.
+Within that list,
+you can use the pseudo-directive \dir{item} to produce list items.
+
+\h4[id=dir-ol]{\dir{ol} \c{mdash} Ordered lists}
+
+The \dir{ol} directive corresponds to the \ch{<ol>} element, and produces an ordered list.
+Within that list,
+you can use the pseudo-directive \dir{item} to produce list items.
+
+\h4[id=dir-dl]{\dir{dl} \c{mdash} Definition lists}
+
+The \dir{dl} directive corresponds to the \ch{<dl>} element, and produces a definition list.
+Within that list, you can use
+\ul{
+\item{\dir{dt} for \defn{definition terms}, and}
+\item{\dir{dd} for \defn{definition descriptions}.}
+}
+
+\h3{Tables}
+
+Tables are simply produced by using the
+\dir{table}, \dir{thead}, \dir{tbody}, \dir{tr}, \dir{th}, and \dir{td} directives to
+produce the corresponding HTML tags with the same name.
+
+\tip{
+To perform advanced styling,
+like controlling alignment within columns,
+use a \dir{style} directive.
+}
+
+\h3{Headings}
+
+Headings can be produced using the
+\dir{h1}, \dir{h2}, \dir{h3}, \dir{h4}, \dir{h5}, and \dir{h6} directives to
+produce the corresponding HTML tags with the same name.
+
+Arguments to these headings are converted into attributes of the corresponding HTML element.
+An \tt{id} argument can be provided explicitly.
+
+If none is provided, an \tt{id} is synthesized from the content within the heading.
+
+\tip{
+Headings can be referenced using the \dir{ref} directive:
+\codeblock[mmml]{
+\\h2{Heading with synthesized id}
+\\h2[id=xyz]{Heading with manual id}
+\\comment{These can be referenced as follows}
+\\ref[#heading-with-synthesized-id]
+\\ref[#xzy]
+}
+}
+
+\h3{References}
+
+\h4[id=dir-ref]{\dir{ref} \c{mdash} References}
+
+The \dir{ref} directive takes a single \tt{to} argument,
+which can be a URL, anchor, or something else.
+It produces an \ch{<a>} tag with some content inside.
+
+The content is an HTML context, and is what actually gets displayed.
+If no content is provided, it can be synthesized from the following types of references:
+
+\ul{
+\item{\tt{mailto} URLs (e-mail addresses)}
+\item{\tt{tel} URLs (telephone numbers)}
+\item{\tt{http} and \tt{https} URLs}
+\item{Anchors (\tt{#id}) for some heading in the document}
+\item{Anything defined in the bibliography using \dir{bib}}
+}
+
+\example{
+MMML markup:
+\codeblock[mmml]{
+\\ref[mail:john@us.gov]
+}
+HTML output (\ch{<a>} tag may have additional attributes):
+\codeblock[html]{
+<a href=mail:john@us.gov>john@us.gov</a>
+}
+}
+
+\example{
+C++ standard draft links can be synthesized into human-readable descriptions.
+\codeblock[mmml]{
+\\ref[https://eel.is/c++draft/expr#1]
+}
+This renders as:
+\indent{
+\ref[https://eel.is/c++draft/expr#1]
+}
+}
+
+\h4[id=dir-mail]{\dir{mail} \c{mdash} E-Mail addresses}
+
+A \dir{mail} directive behaves the same \dir{ref} directive that is given a \tt{mailto} URL.
+However, the input is provided as content instead of an argument,
+and the displayed text cannot be customized.
+
+\example{
+The following two lines produce the same output:
+\codeblock[mmml]{
+Please contact \\mail{john@us.gov}.
+Please contact \\ref[mailto:john@us.gov].
+}
+}
+
+\h4[id=dir-tel]{\dir{tel} \c{mdash} Telephone numbers}
+
+A \dir{tel} directive behaves the same \dir{ref} directive that is given a \tt{tel} URL.
+However, the input is provided as content instead of an argument,
+and the displayed text cannot be customized.
+
+\example{
+The following two lines produce the same output:
+\codeblock[mmml]{
+Please contact \\tel{+1234}.
+Please contact \\ref[tel:+1234].
+}
+}
+
+\h3{Foreign languages}
+
+\h4[id=dir-html]{\dir{html} \c{mdash} Inline HTML}
+
+The \dir{html} directive can be used to output HTML literally.
+Its content is a plaintext context,
+and it displays as inline content.
+
+\example{
+MMML markup:
+\codeblock[mmml]{
+This is \\html{<b>bold text</b>}.
+}
+Generated HTML:
+\codeblock[html]{
+This is <b>bold text</b>.
+}
+}
+
+\warning{
+The \dir{html} directive can produce malformed HTML content if you're not careful.
+See, \ref[#dir-html-element] for a safer option.
+}
+
+\h4[id=dir-htmlblock]{\dir{htmlblock} \c{mdash} HTML blocks}
+
+The \dir{htmlblock} directive works exactly like the \dir{html} directive,
+but displays as block content instead of inline content.
+
+\warning{
+The \dir{htmlblock} directive can produce malformed HTML content if you're not careful.
+See, \ref[#dir-html-element] for a safer option.
+}
+
+\h4[id=dir-html-element]{\dir{html-*} \c{mdash} HTML element literals}
+
+Any directive beginning with \dir{html-} can be used to produce an HTML element
+directly.
+Its content is a plaintext context,
+and it displays as inline content.
+Arguments are converted to HTML attributes of the produced tag.
+
+\example{
+MMML markup:
+\codeblock[mmml]{
+This is \\html-span[id=abc]{a span}.
+}
+Generated HTML:
+\codeblock[html]{
+This is <span id=abc>a span</span>.
+}
+}
+
+\h4[id=dir-script]{\dir{script} \c{mdash} JavaScript blocks}
+
+The content of a \dir{script} directive is a plaintext context,
+where the input is treated as JavaScript code and surrounded in \ch{<script>/*...*/</script>} tags.
+
+\dir{script} displays as meta content (like \dir{comment}).
+
+\example{
+MMML markup:
+\codeblock[mmml]{
+\\script{
+console.log("hello");
+}
+}
+Generated HTML:
+\codeblock[html]{
+<script>
+console.log("hello");
+</script>
+}
+}
+
+\h4[id=dir-style]{\dir{style} \c{mdash} CSS blocks}
+
+The content of a \dir{style} directive is a plaintext context,
+where the input is treated as JavaScript code and surrounded in \ch{<style>/*...*/</style>} tags.
+
+\dir{style} displays as meta content (like \dir{comment}).
+
+\example{
+MMML markup:
+\codeblock[mmml]{
+\\style{
+body { color: red; }
+}
+}
+Generated HTML:
+\codeblock[html]{
+<style>
+body { color: red; }
+</style>
+}
+}
+
+\h3{Paragraph control}
+
+In some cases, the automatic \ref[#paragraph-splitting]
+process is not enough.
+To get more fine-tuned control, we have a number of directives.
+
+\h4[id=dir-p]{\dir{p} \c{mdash} Paragraphs}
+
+The \dir{p} directive surrounds its content in \ch{<p>...</p>} tags.
+
+\h4[id=dir-paragraphs]{\dir{paragraphs} \c{mdash} Enable paragraph splitting}
+
+The \dir{paragraphs} directive activates paragraph splitting.
+This may be useful in places where it is not active by default.
+
+\example{
+MMML markup:
+\codeblock[mmml]{
+\\ul{
+\\item{\\paragraphs{
+First paragraph in bullet.
+
+Second paragraph.
+}}
+}
+}
+Generated HTML:
+\codeblock[html]{
+<ul>
+<li>
+<p>First paragraph in bullet.</p>
+
+<p>Second paragraph in bullet.</p>
+</li>
+</ul>
+}
+}
+
+\h4[id=dir-block]{\dir{block} \c{mdash} Display as block content}
+
+The \dir{block} directive doesn't add any HTML itself,
+but causes its contents to be considered block content.
+
+\example{
+\dir{block} can be used to suppress automatic paragraph splitting:
+\codeblock[mmml]{
+\\comment{No <p> tags will be added here}
+\\block{
+First paragraph.
+
+Second paragraph.
+}
+}
+}
+
+\h4[id=dir-inline]{\dir{inline} \c{mdash} Display as inline content}
+
+The \dir{inline} directive works like the \dir{block} directive,
+but causes its contents to display as inline content, not as block content.
+
+\h3{Macros}
+
+\h4[id=dir-def]{\dir{def} \c{mdash} Define a macro}
+
+The \dir{def} directive defines a \defn{macro},
+which is basically a user-defined directive.
+It has a single \tt{pattern} argument,
+which shall be a single \defn{pattern directive} which describes the defined directive.
+
+\note{
+The arguments and content of the pattern directive are not processed,
+but can be used to document how the directive is meant to be used.
+\codeblock[mmml]{
+\\comment{The following two definitions are equivalent:}
+\\def[\\macro{...}]{xyz}
+\\def[\\macro]{xyz}
+}
+}
+
+When a macro is used, the content within the \dir{def} directive is copied.
+Any uses of the \dir{put} pseud-directive inside the macro are replaced with copies
+of the input content.
+
+\example{
+\codeblock[mmml]{
+\\def[\\bi]{\\b{\\i{\\put}}}
+\\comment{Now, the following are equivalent:}
+\\b{\\i{bold and italic}}
+\\bi{bold and italic}
+}
+}
+
+\todo{
+Currently, macros only support content as input.
+Arguments to macros are ignored entirely.
+This should be supported at some point.
+}
