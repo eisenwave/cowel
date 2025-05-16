@@ -528,6 +528,26 @@ let x = 0;
 }
 }
 
+\h3{Separators}
+
+\h4[id=dir-br]{\dir{br} \c{mdash} Break line}
+
+The \dir{br} directive produces a line break,
+and corresponds to the HTML element \ch{<br/>}.
+It displays as inline content, and its input content is ignored.
+
+\dir{br} is particularly useful when line breaks are treated same as spaces,
+which is the case in most HTML content.
+
+\h4[id=dir-hr]{\dir{hr} \c{mdash} Horizontal rule}
+
+The \dir{hr} directive produces a horizontal rule,
+and corresponds to the HTML element \ch{<hr/>}.
+It displays as block content, and its input content is ignored.
+
+Here is an example:
+\hr
+
 \h3{Special characters}
 
 It is quite common that a text document should include special characters.
