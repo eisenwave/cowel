@@ -641,7 +641,7 @@ A difference block contains changes,
 where some content within is typically \del{deleted} or \ins{inserted}.
 }
 
-\h4[id=dir-example]{\dir{diff} \c{mdash} Example blocks}
+\h4[id=dir-example]{\dir{example} \c{mdash} Example blocks}
 
 \example{
 An example block contains examples.
