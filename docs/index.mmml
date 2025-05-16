@@ -969,6 +969,50 @@ Second paragraph.
 The \dir{inline} directive works like the \dir{block} directive,
 but causes its contents to display as inline content, not as block content.
 
+\h3{Sections}
+
+Often, you want to produce content in one place,
+but have it display in another place within the document.
+A classic example is collecting headings automatically in a table of contents,
+or copying the content of a heading into a preview when referenced by \cm{\\ref[#id]}.
+
+\h4[id=dir-there]{\dir{there} \c{mdash} Append content to section}
+
+The \dir{there} directive displays as meta content.
+Basically, it stashes away its input content (which is an HTML context) somewhere else.
+
+It takes a single \tt{section} argument which specifies the name of the section.
+The \tt{section} argument is a plaintext context.
+
+\h4[id=dir-here]{\dir{here} \c{mdash} Copy section content}
+
+The \dir{here} directive inserts the content from another section at its location.
+It displays as inline content.
+
+It takes a single \tt{section} argument which specifies the name of the section.
+The \tt{section} argument is a plaintext context.
+
+All references produced by \dir{here} are resolved in a post-processing step,
+which allows forward-references.
+
+\example{
+MMML markup:
+\codeblock[mmml]{
+\\there[sec]{before/}
+(\\here[sec])
+\\there[sec]{/after}
+}
+Generated HTML:
+\codeblock[html]{
+(before//after)
+}
+}
+
+\h4[id=dir-hereblock]{\dir{hereblock} \c{mdash} Copy section content in block}
+
+The \dir{hereblock} directive functions exactly like the \dir{here} directive,
+but displays as block content instead of inline content.
+
 \h3{Macros}
 
 \h4[id=dir-def]{\dir{def} \c{mdash} Define a macro}
