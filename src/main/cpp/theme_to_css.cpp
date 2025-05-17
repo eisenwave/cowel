@@ -36,9 +36,9 @@ constexpr auto highlight_type_lookup = []() {
     return std::to_array(result);
 }();
 
-[[nodiscard]]
-constexpr std::optional<ulight::Highlight_Type> highlight_type_by_long_string(std::u8string_view str
-)
+} // namespace
+
+std::optional<ulight::Highlight_Type> highlight_type_by_long_string(std::u8string_view str)
 {
     const auto* const it = std::ranges::lower_bound(
         highlight_type_lookup, str, {}, &Highlight_Lookup_Entry::long_string
@@ -48,6 +48,8 @@ constexpr std::optional<ulight::Highlight_Type> highlight_type_by_long_string(st
     }
     return it->type;
 }
+
+namespace {
 
 bool decode_variant(std::pmr::vector<Style>& out, const json::Object& object)
 {
