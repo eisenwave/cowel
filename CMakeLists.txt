@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(mmml)
+project(cowel)
 
 add_subdirectory(ulight)
 
@@ -32,7 +32,7 @@ endif()
 set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
 include_directories(${INCLUDE_DIRS})
 
-add_library(mmml STATIC
+add_library(cowel STATIC
     src/main/cpp/util/draft_uris.cpp
     src/main/cpp/util/html_writer.cpp
     src/main/cpp/util/html_entities.cpp
@@ -63,21 +63,21 @@ add_library(mmml STATIC
     src/main/cpp/theme_to_css.cpp
 )
 
-target_link_libraries(mmml ulight)
-target_compile_options(mmml PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
-target_link_options(mmml PUBLIC ${SANITIZER_OPTIONS})
+target_link_libraries(cowel ulight)
+target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
+target_link_options(cowel PUBLIC ${SANITIZER_OPTIONS})
 
 if(DEFINED EMSCRIPTEN)
     # https://stunlock.gg/posts/emscripten_with_cmake/
-    add_executable(mmml-wasm ${HEADERS}
+    add_executable(cowel-wasm ${HEADERS}
         src/main/cpp/wasm.cpp
     )
-    target_link_libraries(mmml-wasm bm)
-    set_target_properties(mmml-wasm PROPERTIES
+    target_link_libraries(cowel-wasm bm)
+    set_target_properties(cowel-wasm PROPERTIES
         OUTPUT_NAME "bm"
         SUFFIX ".wasm"
     )
-    target_compile_options(mmml-wasm PRIVATE
+    target_compile_options(cowel-wasm PRIVATE
         # the SHELL option group prevents de-duplication
         # https://cmake.org/cmake/help/latest/prop_tgt/COMPILE_OPTIONS.html#option-de-duplication
         "SHELL:-s SIDE_MODULE=0"
@@ -85,7 +85,7 @@ if(DEFINED EMSCRIPTEN)
         "-Os"
 #       "-fno-exceptions"
     )
-    target_link_options(mmml-wasm PRIVATE
+    target_link_options(cowel-wasm PRIVATE
         "-Os"
 #       "-fno-exceptions"
         "-static-libc++"
@@ -101,12 +101,12 @@ if(DEFINED EMSCRIPTEN)
     )
 
 else(NOT DEFINED EMSCRIPTEN)
-    add_executable(mmml-cli ${HEADERS}
+    add_executable(cowel-cli ${HEADERS}
         src/main/cpp/cli.cpp
     )
-    target_link_libraries(mmml-cli mmml ulight)
+    target_link_libraries(cowel-cli cowel ulight)
 
-    add_executable(mmml-test ${HEADERS}
+    add_executable(cowel-test ${HEADERS}
         src/test/cpp/document_file_testing.cpp
         src/test/cpp/main.cpp
         src/test/cpp/test_chars_strings.cpp
@@ -119,5 +119,5 @@ else(NOT DEFINED EMSCRIPTEN)
         src/test/cpp/test_typo.cpp
         src/test/cpp/test_valid.cpp
     )
-    target_link_libraries(mmml-test mmml ulight GTest::GTest GTest::Main)
+    target_link_libraries(cowel-test cowel ulight GTest::GTest GTest::Main)
 endif()

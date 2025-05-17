@@ -3,22 +3,22 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/util/annotated_string.hpp"
-#include "mmml/util/assert.hpp"
-#include "mmml/util/io.hpp"
-#include "mmml/util/result.hpp"
-#include "mmml/util/tty.hpp"
+#include "cowel/util/annotated_string.hpp"
+#include "cowel/util/assert.hpp"
+#include "cowel/util/io.hpp"
+#include "cowel/util/result.hpp"
+#include "cowel/util/tty.hpp"
 
-#include "mmml/fwd.hpp"
-#include "mmml/parse.hpp"
-#include "mmml/print.hpp"
-#include "mmml/services.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/parse.hpp"
+#include "cowel/print.hpp"
+#include "cowel/services.hpp"
 
 #include "compilation_stage.hpp"
 #include "diagnostic_policy.hpp"
 #include "document_file_testing.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
@@ -30,7 +30,7 @@ struct Printing_Diagnostic_Policy : Diagnostic_Policy {
 
 bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
 {
-#define MMML_SWITCH_ON_POLICY_ACTION(...)                                                          \
+#define COWEL_SWITCH_ON_POLICY_ACTION(...)                                                         \
     switch (__VA_ARGS__) {                                                                         \
     case Policy_Action::success: return true;                                                      \
     case Policy_Action::failure: return false;                                                     \
@@ -45,12 +45,12 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     if (Result<void, IO_Error_Code> r = load_utf8_file(source_data, full_path); !r) {
         return policy.error(r.error()) == Policy_Action::success;
     }
-    MMML_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::load_file));
+    COWEL_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::load_file));
     const std::u8string_view source { source_data.data(), source_data.size() };
     policy.source = source;
 
     auto doc = parse_and_build(source, &memory, ignorant_logger);
-    MMML_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
+    COWEL_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
 
 // FIXME reimplement
 #if 0 // NOLINT(readability-avoid-unconditional-preprocessor-if)
@@ -58,9 +58,9 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     Result<void, bmd::Document_Error> result
         = bmd::doc_to_html(consumer, *doc, { .indent_width = 4 }, &memory);
     if (!result) {
-        MMML_SWITCH_ON_POLICY_ACTION(policy.error(result.error()));
+        COWEL_SWITCH_ON_POLICY_ACTION(policy.error(result.error()));
     }
-    MMML_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::process));
+    COWEL_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::process));
 
     return policy.is_success();
 #endif
@@ -100,10 +100,10 @@ public:
 bool test_for_success(std::string_view file, Compilation_Stage until_stage)
 {
     // Sorry, testing for only partial success is not implemented yet.
-    MMML_ASSERT(until_stage == Compilation_Stage::process);
+    COWEL_ASSERT(until_stage == Compilation_Stage::process);
 
     Expect_Success_Diagnostic_Policy policy;
     return test_validity(file, policy);
 }
 
-} // namespace mmml
+} // namespace cowel

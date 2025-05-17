@@ -1,11 +1,11 @@
-#ifndef MMML_DIAGNOSTIC_POLICY_HPP
-#define MMML_DIAGNOSTIC_POLICY_HPP
+#ifndef COWEL_DIAGNOSTIC_POLICY_HPP
+#define COWEL_DIAGNOSTIC_POLICY_HPP
 
-#include "mmml/fwd.hpp"
+#include "cowel/fwd.hpp"
 
 #include "compilation_stage.hpp"
 
-namespace mmml {
+namespace cowel {
 
 enum struct Policy_Action : Default_Underlying {
     /// @brief Immediate success.
@@ -32,6 +32,6 @@ struct Diagnostic_Policy {
     virtual Policy_Action done(Compilation_Stage) = 0;
 };
 
-} // namespace mmml
+} // namespace cowel
 
 #endif

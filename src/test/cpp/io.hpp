@@ -1,18 +1,18 @@
-#ifndef MMML_TEST_IO_HPP
-#define MMML_TEST_IO_HPP
+#ifndef COWEL_TEST_IO_HPP
+#define COWEL_TEST_IO_HPP
 
 #include <memory_resource>
 #include <string_view>
 #include <vector>
 
-#include "mmml/util/annotated_string.hpp"
-#include "mmml/util/io.hpp"
-#include "mmml/util/result.hpp"
+#include "cowel/util/annotated_string.hpp"
+#include "cowel/util/io.hpp"
+#include "cowel/util/result.hpp"
 
-#include "mmml/fwd.hpp"
-#include "mmml/print.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/print.hpp"
 
-namespace mmml {
+namespace cowel {
 
 [[nodiscard]]
 inline bool load_utf8_file_or_error(
@@ -32,6 +32,6 @@ inline bool load_utf8_file_or_error(
     return false;
 }
 
-} // namespace mmml
+} // namespace cowel
 
 #endif

@@ -1,12 +1,12 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/ast.hpp"
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/context.hpp"
-#include "mmml/directive_processing.hpp"
+#include "cowel/ast.hpp"
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/context.hpp"
+#include "cowel/directive_processing.hpp"
 
-namespace mmml {
+namespace cowel {
 
 void Def_Behavior::evaluate(const ast::Directive& d, Context& context) const
 {
@@ -61,7 +61,7 @@ void Macro_Behavior::generate_plaintext(
     const std::u8string_view name = d.get_name(context.get_source());
     const ast::Directive* const definition = context.find_macro(name);
     // There should be no mismatch between the directive behavior lookup and macro lookup.
-    MMML_ASSERT(definition);
+    COWEL_ASSERT(definition);
 
     std::pmr::vector<ast::Content> instantiation = instantiate_macro(*definition, d, context);
     to_plaintext(out, instantiation, context);
@@ -73,10 +73,10 @@ void Macro_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Co
     const std::u8string_view name = d.get_name(context.get_source());
     const ast::Directive* const definition = context.find_macro(name);
     // There should be no mismatch between the directive behavior lookup and macro lookup.
-    MMML_ASSERT(definition);
+    COWEL_ASSERT(definition);
 
     std::pmr::vector<ast::Content> instantiation = instantiate_macro(*definition, d, context);
     to_html(out, instantiation, context);
 }
 
-} // namespace mmml
+} // namespace cowel

@@ -6,11 +6,11 @@
 
 #include "ulight/json.hpp"
 
-#include "mmml/util/assert.hpp"
+#include "cowel/util/assert.hpp"
 
-#include "mmml/json.hpp"
+#include "cowel/json.hpp"
 
-namespace mmml::json {
+namespace cowel::json {
 namespace {
 struct Building_Visitor final : ulight::JSON_Visitor {
     using Pos = ulight::Source_Position;
@@ -96,7 +96,7 @@ struct Building_Visitor final : ulight::JSON_Visitor {
     {
         if (structure_stack.empty()) {
             root_value = std::move(value);
-            MMML_ASSERT(property_stack.empty());
+            COWEL_ASSERT(property_stack.empty());
         }
         else if (auto* const array = std::get_if<json::Array>(&structure_stack.back())) {
             array->push_back(std::move(value));
@@ -121,4 +121,4 @@ std::optional<json::Value> load(std::u8string_view source, std::pmr::memory_reso
     return std::move(visitor.root_value);
 }
 
-} // namespace mmml::json
+} // namespace cowel::json

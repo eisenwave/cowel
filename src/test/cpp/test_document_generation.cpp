@@ -9,26 +9,26 @@
 
 #include <gtest/gtest.h>
 
-#include "mmml/diagnostic_highlight.hpp"
-#include "mmml/document_content_behavior.hpp"
-#include "mmml/util/annotated_string.hpp"
-#include "mmml/util/assert.hpp"
+#include "cowel/diagnostic_highlight.hpp"
+#include "cowel/document_content_behavior.hpp"
+#include "cowel/util/annotated_string.hpp"
+#include "cowel/util/assert.hpp"
 
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/content_behavior.hpp"
-#include "mmml/diagnostic.hpp"
-#include "mmml/directive_behavior.hpp"
-#include "mmml/directive_processing.hpp"
-#include "mmml/document_generation.hpp"
-#include "mmml/fwd.hpp"
-#include "mmml/parse.hpp"
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/content_behavior.hpp"
+#include "cowel/diagnostic.hpp"
+#include "cowel/directive_behavior.hpp"
+#include "cowel/directive_processing.hpp"
+#include "cowel/document_generation.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/parse.hpp"
 
 #include "collecting_logger.hpp"
 #include "diff.hpp"
 #include "io.hpp"
 #include "test_highlighter.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
@@ -56,7 +56,7 @@ struct Paragraphs_Behavior final : Content_Behavior {
     void generate_plaintext(std::pmr::vector<char8_t>&, std::span<const ast::Content>, Context&)
         const final
     {
-        MMML_ASSERT_UNREACHABLE(u8"Unimplemented, not needed.");
+        COWEL_ASSERT_UNREACHABLE(u8"Unimplemented, not needed.");
     }
 
     void generate_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
@@ -97,7 +97,7 @@ struct Doc_Gen_Test : testing::Test {
     Doc_Gen_Test()
     {
         const bool theme_loaded = load_theme();
-        MMML_ASSERT(theme_loaded);
+        COWEL_ASSERT(theme_loaded);
     }
 
     [[nodiscard]]
@@ -160,7 +160,7 @@ struct Doc_Gen_Test : testing::Test {
 TEST_F(Doc_Gen_Test, empty)
 {
     constexpr std::u8string_view expected;
-    ASSERT_TRUE(load_document("empty.mmml"));
+    ASSERT_TRUE(load_document("empty.cow"));
     const std::u8string_view actual = generate(trivial_behavior);
     EXPECT_EQ(expected, actual);
 }
@@ -168,7 +168,7 @@ TEST_F(Doc_Gen_Test, empty)
 TEST_F(Doc_Gen_Test, text)
 {
     constexpr std::u8string_view expected = u8"Hello, world!\n";
-    ASSERT_TRUE(load_document("text.mmml"));
+    ASSERT_TRUE(load_document("text.cow"));
     const std::u8string_view actual = generate(trivial_behavior);
     EXPECT_EQ(expected, actual);
 }
@@ -180,7 +180,7 @@ a paragraph.
 </p>
 <p>This is another paragraph.
 </p>)";
-    ASSERT_TRUE(load_document("paragraphs.mmml"));
+    ASSERT_TRUE(load_document("paragraphs.cow"));
     const std::u8string_view actual = generate(paragraphs_behavior);
     EXPECT_EQ(expected, actual);
 }
@@ -219,7 +219,7 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<error->\\c{#xD800}</error->\n" },
       { diagnostic::c_nonscalar } },
     
-    { Path { "U/ascii.mmml" },
+    { Path { "U/ascii.cow" },
       Source { u8"ABC\n" } },
     { Source { u8"\\U{00B6}\n" },
       Source { u8"¶\n" } },
@@ -273,7 +273,7 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<code> <b><h- data-h=kw>xxx</h-></b> </code>\n" } },
     { Source { u8"\\code[x]{ \\b{x}xx }\n" },
       Source { u8"<code> <b><h- data-h=kw>x</h-></b><h- data-h=kw>xx</h-> </code>\n" } },
-    { Path { "codeblock/trim.mmml" },
+    { Path { "codeblock/trim.cow" },
       Path { "codeblock/trim.html" } },
 
     { Source { u8"\\hl[keyword]{awoo}\n" },
@@ -361,4 +361,4 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
 }
 
 } // namespace
-} // namespace mmml
+} // namespace cowel

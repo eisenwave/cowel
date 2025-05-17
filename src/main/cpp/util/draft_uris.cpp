@@ -2,18 +2,18 @@
 #include <optional>
 #include <string_view>
 
-#include "mmml/util/assert.hpp"
-#include "mmml/util/draft_uris.hpp"
-#include "mmml/util/from_chars.hpp"
-#include "mmml/util/result.hpp"
-#include "mmml/util/to_chars.hpp"
+#include "cowel/util/assert.hpp"
+#include "cowel/util/draft_uris.hpp"
+#include "cowel/util/from_chars.hpp"
+#include "cowel/util/result.hpp"
+#include "cowel/util/to_chars.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 std::optional<Draft_Location> match_location(std::u8string_view uri)
 {
-    MMML_ASSERT(!uri.empty());
+    COWEL_ASSERT(!uri.empty());
 
     const std::size_t part_length = std::min(uri.length(), uri.find(u8'-'));
 
@@ -110,7 +110,7 @@ std::optional<Draft_Location> match_location(std::u8string_view uri)
         return Draft_Location { Draft_Location_Type::section, 0, part_length };
     }
     }
-    MMML_ASSERT_UNREACHABLE(u8"Switch should have returned in all cases.");
+    COWEL_ASSERT_UNREACHABLE(u8"Switch should have returned in all cases.");
 }
 
 } // namespace
@@ -365,4 +365,4 @@ Result<void, Draft_URI_Error> parse_and_verbalize_draft_uri(
     return {};
 }
 
-} // namespace mmml
+} // namespace cowel

@@ -3,18 +3,18 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/util/annotated_string.hpp"
-#include "mmml/util/ansi.hpp"
+#include "cowel/util/annotated_string.hpp"
+#include "cowel/util/ansi.hpp"
 
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/diagnostic.hpp"
-#include "mmml/document_content_behavior.hpp"
-#include "mmml/document_generation.hpp"
-#include "mmml/parse.hpp"
-#include "mmml/print.hpp"
-#include "mmml/ulight_highlighter.hpp"
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/diagnostic.hpp"
+#include "cowel/document_content_behavior.hpp"
+#include "cowel/document_generation.hpp"
+#include "cowel/parse.hpp"
+#include "cowel/print.hpp"
+#include "cowel/ulight_highlighter.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 [[nodiscard]]
@@ -93,7 +93,7 @@ int main(int argc, const char* const* argv)
         Basic_Annotated_String<char8_t, Diagnostic_Highlight> error { &memory };
         error.append(u8"Usage: ");
         error.append(program_name);
-        error.append(u8" IN_FILE.mmml OUT_FILE.html\n");
+        error.append(u8" IN_FILE.cowel OUT_FILE.html\n");
         print_code_string_stderr(error);
         return EXIT_FAILURE;
     }
@@ -158,10 +158,10 @@ int main(int argc, const char* const* argv)
 }
 
 } // namespace
-} // namespace mmml
+} // namespace cowel
 
 // NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, const char* const* argv)
 {
-    return mmml::main(argc, argv);
+    return cowel::main(argc, argv);
 }

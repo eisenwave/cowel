@@ -3,9 +3,9 @@
 
 #include <gtest/gtest.h>
 
-#include "mmml/util/to_chars.hpp"
+#include "cowel/util/to_chars.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 using namespace std::literals;
@@ -26,4 +26,4 @@ TEST(To_Chars, small_numbers)
 }
 
 } // namespace
-} // namespace mmml
+} // namespace cowel

@@ -9,15 +9,15 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/util/typo.hpp"
+#include "cowel/util/typo.hpp"
 
-#include "mmml/base_behaviors.hpp"
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/directive_behavior.hpp"
-#include "mmml/directive_processing.hpp"
-#include "mmml/fwd.hpp"
+#include "cowel/base_behaviors.hpp"
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/directive_behavior.hpp"
+#include "cowel/directive_processing.hpp"
+#include "cowel/fwd.hpp"
 
-namespace mmml {
+namespace cowel {
 
 struct Builtin_Directive_Set::Impl {
     Special_Block_Behavior abstract //
@@ -606,4 +606,4 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     return nullptr;
 }
 
-} // namespace mmml
+} // namespace cowel

@@ -1,5 +1,5 @@
-#ifndef MMML_TEST_DIFF_HPP
-#define MMML_TEST_DIFF_HPP
+#ifndef COWEL_TEST_DIFF_HPP
+#define COWEL_TEST_DIFF_HPP
 
 #include <algorithm>
 #include <cstddef>
@@ -8,13 +8,13 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/util/annotated_string.hpp"
-#include "mmml/util/assert.hpp"
+#include "cowel/util/annotated_string.hpp"
+#include "cowel/util/assert.hpp"
 
-#include "mmml/diagnostic_highlight.hpp"
-#include "mmml/fwd.hpp"
+#include "cowel/diagnostic_highlight.hpp"
+#include "cowel/fwd.hpp"
 
-namespace mmml {
+namespace cowel {
 
 enum struct Edit_Type : signed char {
     /// @brief Delete an element in the source sequence.
@@ -40,7 +40,7 @@ inline std::pmr::vector<Edit_Type> shortest_edit_script(
     std::pmr::vector<std::size_t> f_data((from.size() + 1) * (to.size() + 1), memory);
     const auto F = [&](std::size_t i, std::size_t j) -> std::size_t& {
         const std::size_t index = (i * (to.size() + 1)) + j;
-        MMML_DEBUG_ASSERT(index < f_data.size());
+        COWEL_DEBUG_ASSERT(index < f_data.size());
         return f_data[index];
     };
 
@@ -170,6 +170,6 @@ inline void print_lines_diff(
     print_diff(out, from_lines, to_lines);
 }
 
-} // namespace mmml
+} // namespace cowel
 
 #endif

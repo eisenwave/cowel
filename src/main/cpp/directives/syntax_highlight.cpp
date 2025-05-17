@@ -1,12 +1,13 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/directive_processing.hpp"
-#include "mmml/theme_to_css.hpp"
-#include "mmml/util/strings.hpp"
+#include "cowel/util/strings.hpp"
 
-namespace mmml {
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/directive_processing.hpp"
+#include "cowel/theme_to_css.hpp"
+
+namespace cowel {
 namespace {
 
 [[nodiscard]]
@@ -163,7 +164,7 @@ void Highlight_Behavior::generate_html(
     }
 
     const std::u8string_view short_name = ulight::highlight_type_short_string_u8(*type);
-    MMML_ASSERT(!short_name.empty());
+    COWEL_ASSERT(!short_name.empty());
 
     out.open_tag_with_attributes(u8"h-") //
         .write_attribute(u8"data-h", short_name)
@@ -172,4 +173,4 @@ void Highlight_Behavior::generate_html(
     out.close_tag(u8"h-");
 }
 
-} // namespace mmml
+} // namespace cowel

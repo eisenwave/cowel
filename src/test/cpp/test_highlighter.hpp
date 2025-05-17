@@ -1,5 +1,5 @@
-#ifndef MMML_TEST_HIGHLIGHTER_HPP
-#define MMML_TEST_HIGHLIGHTER_HPP
+#ifndef COWEL_TEST_HIGHLIGHTER_HPP
+#define COWEL_TEST_HIGHLIGHTER_HPP
 
 #include <cstddef>
 #include <memory_resource>
@@ -7,14 +7,14 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/util/result.hpp"
-#include "mmml/util/typo.hpp"
+#include "cowel/util/result.hpp"
+#include "cowel/util/typo.hpp"
 
-#include "mmml/fwd.hpp"
-#include "mmml/services.hpp"
-#include "mmml/ulight_highlighter.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/services.hpp"
+#include "cowel/ulight_highlighter.hpp"
 
-namespace mmml {
+namespace cowel {
 
 /// @brief Runs syntax highlighting for code of a test-only language
 /// where sequences of the character `x` are considered keywords.
@@ -88,6 +88,6 @@ Test_Highlighter final : Syntax_Highlighter {
 
 inline constinit Test_Highlighter test_highlighter;
 
-} // namespace mmml
+} // namespace cowel
 
 #endif

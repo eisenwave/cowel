@@ -12,20 +12,20 @@
 
 #include <gtest/gtest.h>
 
-#include "mmml/util/annotated_string.hpp"
-#include "mmml/util/io.hpp"
-#include "mmml/util/result.hpp"
-#include "mmml/util/strings.hpp"
-#include "mmml/util/tty.hpp"
+#include "cowel/util/annotated_string.hpp"
+#include "cowel/util/io.hpp"
+#include "cowel/util/result.hpp"
+#include "cowel/util/strings.hpp"
+#include "cowel/util/tty.hpp"
 
-#include "mmml/ast.hpp"
-#include "mmml/diagnostic_highlight.hpp"
-#include "mmml/fwd.hpp"
-#include "mmml/parse.hpp"
-#include "mmml/print.hpp"
-#include "mmml/services.hpp"
+#include "cowel/ast.hpp"
+#include "cowel/diagnostic_highlight.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/parse.hpp"
+#include "cowel/print.hpp"
+#include "cowel/services.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 std::ostream& operator<<(std::ostream& out, std::u8string_view str)
@@ -298,7 +298,7 @@ std::optional<Parsed_File> parse_file(std::u8string_view file, std::pmr::memory_
     Parsed_File result { .source = std::pmr::vector<char8_t> { memory },
                          .instructions = std::pmr::vector<AST_Instruction> { memory } };
 
-    Result<void, mmml::IO_Error_Code> r = load_utf8_file(result.source, full_file_name);
+    Result<void, cowel::IO_Error_Code> r = load_utf8_file(result.source, full_file_name);
     if (!r) {
         Diagnostic_String out { memory };
         print_io_error(out, full_file_name, r.error());
@@ -377,7 +377,7 @@ bool run_parse_test(std::u8string_view file, std::span<const AST_Instruction> ex
 }
 
 // NOLINTBEGIN(bugprone-unchecked-optional-access)
-#define MMML_PARSE_AND_BUILD_BOILERPLATE(...)                                                      \
+#define COWEL_PARSE_AND_BUILD_BOILERPLATE(...)                                                     \
     std::optional<Actual_Document> parsed = parse_and_build_file(__VA_ARGS__, &memory);            \
     ASSERT_TRUE(parsed);                                                                           \
     const auto actual = parsed->to_expected();                                                     \
@@ -390,7 +390,7 @@ TEST(Parse, empty)
         { AST_Instruction_Type::push_document, 0 },
         { AST_Instruction_Type::pop_document, 0 },
     };
-    ASSERT_TRUE(run_parse_test(u8"empty.mmml", expected));
+    ASSERT_TRUE(run_parse_test(u8"empty.cow", expected));
 }
 
 TEST(Parse_And_Build, empty)
@@ -398,7 +398,7 @@ TEST(Parse_And_Build, empty)
     static std::pmr::monotonic_buffer_resource memory;
     static const std::pmr::vector<Expected_Content> expected { &memory };
 
-    MMML_PARSE_AND_BUILD_BOILERPLATE(u8"empty.mmml");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"empty.cow");
 }
 
 TEST(Parse, hello_code)
@@ -415,7 +415,7 @@ TEST(Parse, hello_code)
         { AST_Instruction_Type::pop_document, 0 },
     };
     // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"hello_code.mmml", expected));
+    ASSERT_TRUE(run_parse_test(u8"hello_code.cow", expected));
 }
 
 TEST(Parse_And_Build, hello_code)
@@ -427,7 +427,7 @@ TEST(Parse_And_Build, hello_code)
         &memory
     };
 
-    MMML_PARSE_AND_BUILD_BOILERPLATE(u8"hello_code.mmml");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"hello_code.cow");
 }
 
 TEST(Parse, hello_directive)
@@ -466,7 +466,7 @@ TEST(Parse, hello_directive)
         { AST_Instruction_Type::pop_document },
     };
     // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"hello_directive.mmml", expected));
+    ASSERT_TRUE(run_parse_test(u8"hello_directive.cow", expected));
 }
 
 TEST(Parse_And_Build, hello_directive)
@@ -481,7 +481,7 @@ TEST(Parse_And_Build, hello_directive)
         &memory
     };
 
-    MMML_PARSE_AND_BUILD_BOILERPLATE(u8"hello_directive.mmml");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"hello_directive.cow");
 }
 
 TEST(Parse_And_Build, directive_arg_balanced_braces)
@@ -495,7 +495,7 @@ TEST(Parse_And_Build, directive_arg_balanced_braces)
         &memory
     };
 
-    MMML_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_balanced_braces.mmml");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_balanced_braces.cow");
 }
 
 TEST(Parse_And_Build, directive_arg_unbalanced_brace)
@@ -505,7 +505,7 @@ TEST(Parse_And_Build, directive_arg_unbalanced_brace)
         { Expected_Content::directive(u8"d"), Expected_Content::text(u8"[}]\n") }, &memory
     };
 
-    MMML_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_brace.mmml");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_brace.cow");
 }
 
 TEST(Parse_And_Build, directive_arg_unbalanced_brace_2)
@@ -519,7 +519,7 @@ TEST(Parse_And_Build, directive_arg_unbalanced_brace_2)
         &memory
     };
 
-    MMML_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_brace_2.mmml");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_brace_2.cow");
 }
 
 TEST(Parse_And_Build, directive_arg_unbalanced_through_brace_escape)
@@ -531,7 +531,7 @@ TEST(Parse_And_Build, directive_arg_unbalanced_through_brace_escape)
         &memory
     };
 
-    MMML_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_through_brace_escape.mmml");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_through_brace_escape.cow");
 }
 
 TEST(Parse_And_Build, directive_brace_escape)
@@ -543,8 +543,8 @@ TEST(Parse_And_Build, directive_brace_escape)
         &memory
     };
 
-    MMML_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_through_brace_escape.mmml");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_through_brace_escape.cow");
 }
 
 } // namespace
-} // namespace mmml
+} // namespace cowel

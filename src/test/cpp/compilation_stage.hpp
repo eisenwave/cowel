@@ -1,11 +1,11 @@
-#ifndef MMML_COMPILATION_STAGE_HPP
-#define MMML_COMPILATION_STAGE_HPP
+#ifndef COWEL_COMPILATION_STAGE_HPP
+#define COWEL_COMPILATION_STAGE_HPP
 
 #include <compare>
 
-#include "mmml/fwd.hpp"
+#include "cowel/fwd.hpp"
 
-namespace mmml {
+namespace cowel {
 
 enum struct Compilation_Stage : Default_Underlying { //
     load_file,
@@ -19,6 +19,6 @@ constexpr std::strong_ordering operator<=>(Compilation_Stage a, Compilation_Stag
     return static_cast<Default_Underlying>(a) <=> static_cast<Default_Underlying>(b);
 }
 
-} // namespace mmml
+} // namespace cowel
 
 #endif

@@ -1,11 +1,15 @@
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/directive_processing.hpp"
-#include "mmml/util/draft_uris.hpp"
-#include "mmml/util/strings.hpp"
-#include "mmml/util/url_encode.hpp"
 #include <algorithm>
+#include <string_view>
+#include <vector>
 
-namespace mmml {
+#include "cowel/util/draft_uris.hpp"
+#include "cowel/util/strings.hpp"
+#include "cowel/util/url_encode.hpp"
+
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/directive_processing.hpp"
+
+namespace cowel {
 
 void Wrap_Behavior::generate_plaintext(
     std::pmr::vector<char8_t>& out,
@@ -159,7 +163,7 @@ void URL_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     attributes.write_class(u8"sans");
     attributes.end();
 
-    MMML_ASSERT(url_string.length() >= m_url_prefix.length());
+    COWEL_ASSERT(url_string.length() >= m_url_prefix.length());
     out.write_inner_text(url_string.substr(m_url_prefix.length()));
 
     out.close_tag(u8"a");
@@ -223,7 +227,7 @@ Reference_Classification classify_reference(std::u8string_view ref)
 
     const auto classify_web_url = [&](URL_Scheme scheme) -> Reference_Classification {
         const std::u8string_view prefix = url_scheme_prefix(scheme);
-        MMML_DEBUG_ASSERT(ref.starts_with(prefix));
+        COWEL_DEBUG_ASSERT(ref.starts_with(prefix));
         ref.remove_prefix(prefix.length());
 
         std::optional<Known_Page> page;
@@ -327,7 +331,7 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
         return;
     }
 
-    MMML_ASSERT(classification.type == Reference_Type::url);
+    COWEL_ASSERT(classification.type == Reference_Type::url);
 
     if (!d.get_content().empty()) {
         out.open_tag_with_attributes(u8"a") //
@@ -369,7 +373,7 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
 
     const std::size_t last_slash_pos = target_string.find_last_of(u8'/');
     // Classification as eel.is URL should have been impossible if there is no slash.
-    MMML_ASSERT(last_slash_pos != std::u8string_view::npos);
+    COWEL_ASSERT(last_slash_pos != std::u8string_view::npos);
     const std::u8string_view last_uri_part = target_string.substr(last_slash_pos + 1);
 
     auto consume_verbalized = [&](std::u8string_view part, Text_Format format) {
@@ -438,7 +442,7 @@ void write_bibliography_entry(HTML_Writer& out, const Document_Info& info)
         open_link_tag(info.link);
     }
 
-    MMML_ASSERT(!info.id.empty());
+    COWEL_ASSERT(!info.id.empty());
     out.write_inner_html(u8'[');
     out.write_inner_text(info.id);
     out.write_inner_html(u8']');
@@ -548,7 +552,7 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
         const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
         const std::size_t initial_size = result.text.size();
         to_plaintext(result.text, arg.get_content(), context);
-        MMML_ASSERT(result.text.size() >= initial_size);
+        COWEL_ASSERT(result.text.size() >= initial_size);
 
         if (entry.parameter == u8"id" && result.text.size() == initial_size) {
             context.try_error(
@@ -664,4 +668,4 @@ void List_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Con
     out.close_tag(m_tag_name);
 }
 
-} // namespace mmml
+} // namespace cowel

@@ -3,12 +3,12 @@
 
 #include "ulight/ulight.hpp"
 
-#include "mmml/util/typo.hpp"
+#include "cowel/util/typo.hpp"
 
-#include "mmml/services.hpp"
-#include "mmml/ulight_highlighter.hpp"
+#include "cowel/services.hpp"
+#include "cowel/ulight_highlighter.hpp"
 
-namespace mmml {
+namespace cowel {
 
 std::span<const std::u8string_view> Ulight_Syntax_Highlighter::get_supported_languages() const
 {
@@ -67,4 +67,4 @@ Result<void, Syntax_Highlight_Error> Ulight_Syntax_Highlighter::operator()( //
     }
 }
 
-} // namespace mmml
+} // namespace cowel

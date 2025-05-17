@@ -3,10 +3,10 @@
 
 #include <gtest/gtest.h>
 
-#include "mmml/util/draft_uris.hpp"
-#include "mmml/util/result.hpp"
+#include "cowel/util/draft_uris.hpp"
+#include "cowel/util/result.hpp"
 
-namespace mmml {
+namespace cowel {
 
 ULIGHT_SUPPRESS_MISSING_DECLARATIONS_WARNING()
 
@@ -133,4 +133,4 @@ TEST(Draft_URIs, verbalize)
 }
 
 } // namespace
-} // namespace mmml
+} // namespace cowel

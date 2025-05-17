@@ -3,9 +3,9 @@
 #include <cstring>
 #include <string_view>
 
-#include "mmml/util/html_entities.hpp"
+#include "cowel/util/html_entities.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 struct Character_Reference {
@@ -70,4 +70,4 @@ std::u32string_view string_by_character_reference_name(std::u8string_view name) 
     return {};
 }
 
-} // namespace mmml
+} // namespace cowel

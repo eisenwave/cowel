@@ -8,20 +8,20 @@
 #include <string>
 #include <string_view>
 
-#include "mmml/util/annotated_string.hpp"
-#include "mmml/util/ansi.hpp"
-#include "mmml/util/assert.hpp"
-#include "mmml/util/source_position.hpp"
-#include "mmml/util/strings.hpp"
-#include "mmml/util/to_chars.hpp"
-#include "mmml/util/tty.hpp"
+#include "cowel/util/annotated_string.hpp"
+#include "cowel/util/ansi.hpp"
+#include "cowel/util/assert.hpp"
+#include "cowel/util/source_position.hpp"
+#include "cowel/util/strings.hpp"
+#include "cowel/util/to_chars.hpp"
+#include "cowel/util/tty.hpp"
 
-#include "mmml/ast.hpp"
-#include "mmml/diagnostic_highlight.hpp"
-#include "mmml/fwd.hpp"
-#include "mmml/print.hpp"
+#include "cowel/ast.hpp"
+#include "cowel/diagnostic_highlight.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/print.hpp"
 
-namespace mmml {
+namespace cowel {
 
 namespace {
 
@@ -63,7 +63,7 @@ std::u8string_view diagnostic_highlight_ansi_sequence(Diagnostic_Highlight type)
 
     case escape: return ansi::h_yellow;
     }
-    MMML_ASSERT_UNREACHABLE(u8"Unknown code span type.");
+    COWEL_ASSERT_UNREACHABLE(u8"Unknown code span type.");
 }
 
 enum struct Error_Line_Type : Default_Underlying { note, error };
@@ -91,7 +91,7 @@ std::u8string_view to_prose(IO_Error_Code e)
     case corrupted: //
         return u8"Data in the file is corrupted (not properly encoded).";
     }
-    MMML_ASSERT_UNREACHABLE(u8"invalid error code");
+    COWEL_ASSERT_UNREACHABLE(u8"invalid error code");
 }
 
 void file_name_to_utf8(std::pmr::u8string& out, std::string_view name)
@@ -180,12 +180,12 @@ void do_print_affected_line(
     std::size_t column
 )
 {
-    MMML_ASSERT(length > 0);
+    COWEL_ASSERT(length > 0);
 
     {
         // Sorry, multi-line printing is not supported yet.
         const std::u8string_view snippet = source.substr(begin, length);
-        MMML_ASSERT(length <= 1 || snippet.find('\n') == std::string_view::npos);
+        COWEL_ASSERT(length <= 1 || snippet.find('\n') == std::string_view::npos);
     }
 
     const std::u8string_view cited_code = find_line(source, begin);
@@ -251,13 +251,13 @@ void print_affected_line(
 
 void print_affected_line(Diagnostic_String& out, std::u8string_view source, const Source_Span& pos)
 {
-    MMML_ASSERT(!pos.empty());
+    COWEL_ASSERT(!pos.empty());
     do_print_affected_line(out, source, pos.begin, pos.length, pos.line, pos.column);
 }
 
 std::u8string_view find_line(std::u8string_view source, std::size_t index)
 {
-    MMML_ASSERT(index <= source.size());
+    COWEL_ASSERT(index <= source.size());
 
     if (index == source.size() || source[index] == '\n') {
         // Special case for EOF positions, which may be past the end of a line,
@@ -495,8 +495,8 @@ private:
 
     void print_indent()
     {
-        MMML_ASSERT(indent_level >= 0);
-        MMML_ASSERT(options.indent_width >= 0);
+        COWEL_ASSERT(indent_level >= 0);
+        COWEL_ASSERT(options.indent_width >= 0);
 
         const auto indent = std::size_t(options.indent_width * indent_level);
         out.append(indent, u8' ');
@@ -521,7 +521,7 @@ void print_internal_error_notice(Diagnostic_String& out)
     out.append(notice, Diagnostic_Highlight::internal_error_notice);
 }
 
-#ifndef MMML_EMSCRIPTEN
+#ifndef COWEL_EMSCRIPTEN
 
 std::ostream& operator<<(std::ostream& out, std::u8string_view str)
 {
@@ -538,7 +538,7 @@ std::ostream& print_code_string(std::ostream& out, const Diagnostic_String& stri
     Annotation_Span<Diagnostic_Highlight> previous {};
     for (const Annotation_Span<Diagnostic_Highlight> span : string) {
         const std::size_t previous_end = previous.begin + previous.length;
-        MMML_ASSERT(span.begin >= previous_end);
+        COWEL_ASSERT(span.begin >= previous_end);
         if (previous_end != span.begin) {
             out << text.substr(previous_end, span.begin - previous_end);
         }
@@ -565,4 +565,4 @@ void print_code_string_stderr(const Diagnostic_String& string)
 }
 #endif
 
-} // namespace mmml
+} // namespace cowel

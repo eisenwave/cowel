@@ -11,16 +11,16 @@
             const overrideClass = prefersDark.matches ? "light" : "dark";
             if (htmlClasses.contains("light")) {
                 htmlClasses.remove("light");
-                localStorage.removeItem("mmml-theme");
+                localStorage.removeItem("cowel-theme");
             } else if (htmlClasses.contains("dark")) {
                 htmlClasses.remove("dark");
-                localStorage.removeItem("mmml-theme");
+                localStorage.removeItem("cowel-theme");
             } else {
                 htmlClasses.add(overrideClass);
                 // to avoid legal issues or controversy in general,
                 // we don't mess with local storage when the page is hosted in arbitrary places
                 if (window.location.protocol === "file:") {
-                    localStorage.setItem("mmml-theme", overrideClass);
+                    localStorage.setItem("cowel-theme", overrideClass);
                 }
             }
         };

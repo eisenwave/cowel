@@ -2,31 +2,31 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/diagnostic.hpp"
-#include "mmml/util/chars.hpp"
-#include "mmml/util/function_ref.hpp"
-#include "mmml/util/strings.hpp"
+#include "cowel/diagnostic.hpp"
+#include "cowel/util/chars.hpp"
+#include "cowel/util/function_ref.hpp"
+#include "cowel/util/strings.hpp"
 
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/directive_arguments.hpp"
-#include "mmml/directive_processing.hpp"
-#include "mmml/document_sections.hpp"
-#include "mmml/util/to_chars.hpp"
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/directive_arguments.hpp"
+#include "cowel/directive_processing.hpp"
+#include "cowel/document_sections.hpp"
+#include "cowel/util/to_chars.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 void trim_left(std::pmr::vector<char8_t>& text)
 {
     const std::size_t amount = length_blank_left(as_u8string_view(text));
-    MMML_ASSERT(amount <= text.size());
+    COWEL_ASSERT(amount <= text.size());
     text.erase(text.begin(), text.begin() + std::ptrdiff_t(amount));
 }
 
 void trim_right(std::pmr::vector<char8_t>& text)
 {
     const std::size_t amount = length_blank_right(as_u8string_view(text));
-    MMML_ASSERT(amount <= text.size());
+    COWEL_ASSERT(amount <= text.size());
     text.erase(text.end() - std::ptrdiff_t(amount), text.end());
 }
 
@@ -108,7 +108,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
 
     if (is_listed) {
         // Update heading numbers.
-        MMML_ASSERT(m_level >= 1 && m_level <= 6);
+        COWEL_ASSERT(m_level >= 1 && m_level <= 6);
         ++h_counters[m_level - 1];
         std::ranges::fill(h_counters + m_level, std::end(h_counters), 0);
     }
@@ -195,7 +195,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
         Document_Sections& sections = context.get_sections();
         std::pmr::u8string section_name { context.get_transient_memory() };
         section_name += u8"std.id-preview.";
-        MMML_ASSERT(id_data.front() == u8'#');
+        COWEL_ASSERT(id_data.front() == u8'#');
         section_name += as_u8string_view(id_data).substr(1);
 
         const auto scope = sections.go_to_scoped(section_name);
@@ -304,4 +304,4 @@ void Make_Section_Behavior::generate_html(HTML_Writer& out, const ast::Directive
     out.close_tag(u8"div");
 }
 
-} // namespace mmml
+} // namespace cowel

@@ -1,13 +1,13 @@
 #include <vector>
 
-#include "mmml/util/from_chars.hpp"
-#include "mmml/util/html_entities.hpp"
-#include "mmml/util/strings.hpp"
+#include "cowel/util/from_chars.hpp"
+#include "cowel/util/html_entities.hpp"
+#include "cowel/util/strings.hpp"
 
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/directive_processing.hpp"
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/directive_processing.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 [[nodiscard]]
@@ -122,4 +122,4 @@ void HTML_Entity_Behavior::generate_html(
     out.write_inner_html(u8';');
 }
 
-} // namespace mmml
+} // namespace cowel

@@ -7,10 +7,10 @@
 
 #include <gtest/gtest.h>
 
-#include "mmml/util/html_entities.hpp"
-#include "mmml/util/html_writer.hpp"
+#include "cowel/util/html_entities.hpp"
+#include "cowel/util/html_writer.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 [[nodiscard]]
@@ -170,4 +170,4 @@ TEST(HTML_Entities, all_found)
 }
 
 } // namespace
-} // namespace mmml
+} // namespace cowel

@@ -1394,7 +1394,7 @@ html.dark h-[data-h^=sh_cmd] { color:#62ded6; }
 html.dark h-[data-h^=sh-opt] { color:#d0d0d0; }
   </style>
   <script>
-const theme = localStorage.getItem("mmml-theme");
+const theme = localStorage.getItem("cowel-theme");
 if (theme !== null) {
     document.documentElement.className = theme;
 }
@@ -1414,16 +1414,16 @@ if (theme !== null) {
             const overrideClass = prefersDark.matches ? "light" : "dark";
             if (htmlClasses.contains("light")) {
                 htmlClasses.remove("light");
-                localStorage.removeItem("mmml-theme");
+                localStorage.removeItem("cowel-theme");
             } else if (htmlClasses.contains("dark")) {
                 htmlClasses.remove("dark");
-                localStorage.removeItem("mmml-theme");
+                localStorage.removeItem("cowel-theme");
             } else {
                 htmlClasses.add(overrideClass);
                 // to avoid legal issues or controversy in general,
                 // we don't mess with local storage when the page is hosted in arbitrary places
                 if (window.location.protocol === "file:") {
-                    localStorage.setItem("mmml-theme", overrideClass);
+                    localStorage.setItem("cowel-theme", overrideClass);
                 }
             }
         };
@@ -1441,7 +1441,7 @@ if (theme !== null) {
 
 
 
-<h1 id=missing-middle-markup-language-(mmml)><a class=para href=#missing-middle-markup-language-(mmml)></a>Missing Middle Markup Language (MMML)</h1>
+<h1 id=compact-web-language-(cowel)><a class=para href=#compact-web-language-(cowel)></a>Compact Web Language (COWEL)</h1>
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
@@ -1449,14 +1449,14 @@ if (theme !== null) {
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
-<p>MMML is a markup language with TeX-like syntax,
+<p>COWEL is a markup language with TeX-like syntax,
 intended to generate HTML documents,
 mainly for proposals and technical text.
 Many of its features are purpose-built for use in WG21,
 such as for writing C++ proposals.
 </p>
 <example-block><p><intro-></intro-> 
-The following MMML code ...
+The following COWEL code ...
 </p><code-block>Hello, <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_brac>{</h->strong<h- data-h=sym_brac>}</h-> world!</code-block>
 <p>... generates the HTML ...
 </p><code-block>Hello, <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h->strong<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h-> world!</code-block>
@@ -1468,14 +1468,14 @@ Hello, <strong>strong</strong> world!
 
 <h2 id=getting-started><a class=para href=#getting-started></a>2. Getting started</h2>
 
-<p>MMML is still early in development,
+<p>COWEL is still early in development,
 and not available in any package manager yet.
-To install it and run MMML:
-</p><code-block><h- data-h=sh_cmd>git</h-> <h- data-h=str>clone</h-> <h- data-h=str>https://github.com/Eisenwave/mmml.git</h-> <h- data-h=sh-opt>--recursive</h->
-<h- data-h=sh_cmd>cd</h-> <h- data-h=str>mmml</h->
+To install it and run COWEL:
+</p><code-block><h- data-h=sh_cmd>git</h-> <h- data-h=str>clone</h-> <h- data-h=str>https://github.com/Eisenwave/cowel.git</h-> <h- data-h=sh-opt>--recursive</h->
+<h- data-h=sh_cmd>cd</h-> <h- data-h=str>cowel</h->
 <h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>-B</h-> <h- data-h=str>build</h->
 <h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>--build</h-> <h- data-h=str>build</h->
-<h- data-h=sh_cmd>./build/mmml-cli</h-> <h- data-h=str>INPUT.mmml</h-> <h- data-h=str>OUTPUT.html</h-></code-block>
+<h- data-h=sh_cmd>./build/cowel-cli</h-> <h- data-h=str>INPUT.cowel</h-> <h- data-h=str>OUTPUT.html</h-></code-block>
 
 <h2 id=motivation><a class=para href=#motivation></a>3. Motivation</h2>
 
@@ -1490,14 +1490,14 @@ also rely on yet another format (e.g. JSON, YAML).
 <p>This makes these tools difficult to master and makes the design incoherent.
 Why do we need three languages glued together just to format our documents?
 </p>
-<p>MMML is the missing middle, the missing link.
+<p>COWEL is the missing middle, the missing link.
 It makes producing HTML a natural part of the language,
 lets you specify metadata,
 and more, all in one, simple syntax.
 </p>
 <h2 id=syntax-in-a-nutshell><a class=para href=#syntax-in-a-nutshell></a>4. Syntax in a nutshell</h2>
 
-<p>MMML has a minimalistic but powerful syntax,
+<p>COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 </p><ul>
 <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>various-directives</h-><h- data-h=sym_sqr>[</h->positional args<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> 0<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
@@ -1508,11 +1508,11 @@ built on top of only three syntactical constructs:
 <p>There is no special syntax besides that,
 meaning that as long as some bit of code doesn't contain a <code>\</code>,
 it's all interpreted as plaintext.
-This makes MMML exceptionally suited to nest other languages inside of it in code blocks etc.
+This makes COWEL exceptionally suited to nest other languages inside of it in code blocks etc.
 </p>
 <h3 id=whitespace><a class=para href=#whitespace></a>4.1. Whitespace</h3>
 
-<p>MMML translates very directly into HTML.
+<p>COWEL translates very directly into HTML.
 Any whitespace in text is preserved exactly as is.
 The way that whitespace is processed then depends on the produced HTML and how it is CSS-styled.
 </p>
@@ -1531,7 +1531,7 @@ because line breaks render like spaces.<h- data-h=sym_punc>&lt;/</h-><h- data-h=
 
 <p>At the top-level in the document and within the content of certain directives,
 <i>paragraph splitting</i> takes place.
-All content in MMML is either <i>inline content</i>, <i>block content</i>, or <i>meta content</i>.
+All content in COWEL is either <i>inline content</i>, <i>block content</i>, or <i>meta content</i>.
 Text and escape sequences are inline content,
 and directives are sometimes inline and sometimes block content.
 Certain directives (e.g. <code><h- data-h=mk_tag>\comment</h-></code>) that don't generate anything rendered are meta content.
@@ -1550,7 +1550,7 @@ However, it also terminates prior inline content, like a blank line.
 </ul>
 
 <example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block>First paragraph.
 
 Second paragraph.
@@ -1613,7 +1613,7 @@ This means that you can have opening and closing braces inside text,
 but they need to be balanced.
 </p>
 <example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->Bold text { with braces }.<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->Bold text { with braces }.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code-block>
@@ -1622,7 +1622,7 @@ MMML markup:
 <p>Escape sequences don't participate in this "brace matching",
 so they can be used to literally produce a brace character.
 </p><example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->Bold text <h- data-h=esc>\</h-><h- data-h=esc>{</h-> with brace.<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->Bold text { with brace.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code-block>
@@ -1631,7 +1631,7 @@ MMML markup:
 <p>Unlike in the directive arguments,
 whitespace is not trimmed.
 </p><example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->bold<h- data-h=sym_brac>}</h-> <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_brac>{</h-> italic <h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->bold<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-> <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_punc>&gt;</h-> italic <h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_punc>&gt;</h-></code-block>
@@ -1649,7 +1649,7 @@ but permits multiple blocks. Each block is separated by a pair of braces.
 These control what directives (and other content) will generate.
 </p>
 <example-block><p><intro-></intro-> 
-The MMML text <code>&amp;</code> will be converted to <tt->&amp;</tt-> literally in a plaintext context,
+The COWEL text <code>&amp;</code> will be converted to <tt->&amp;</tt-> literally in a plaintext context,
 and to <code><h- data-h=esc>&amp;amp;</h-></code> in an HTML context.
 </p></example-block>
 
@@ -1675,7 +1675,7 @@ For example, if we write:
 
 <h2 id=themes><a class=para href=#themes></a>7. Themes</h2>
 
-<p>MMML outputs documents that can be viewed in <i>light mode</i> and <i>dark mode</i>.
+<p>COWEL outputs documents that can be viewed in <i>light mode</i> and <i>dark mode</i>.
 </p>
 <p>When the document is opened with support for JavaScript,
 there is an button in the top-right that can be used to switch between three modes:
@@ -1692,7 +1692,7 @@ class to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>html</h-><h- d
 If you want to customize colors with CSS,
 remember to make them respond to theme and OS preference changes.
 </p>
-<p>For reference, you can look at the CSS in the MMML source code to see how it's done properly.
+<p>For reference, you can look at the CSS in the COWEL source code to see how it's done properly.
 </p></important-block>
 
 <h2 id=list-of-directives><a class=para href=#list-of-directives></a>8. List of directives</h2>
@@ -1700,7 +1700,7 @@ remember to make them respond to theme and OS preference changes.
 <h3 id=comments><a class=para href=#comments></a>8.1. Comments</h3>
 
 <p>Unlike many other markup languages,
-MMML has no dedicated syntax for comments.
+COWEL has no dedicated syntax for comments.
 However, there exists a <code><h- data-h=mk_tag>\comment</h-></code> directive which you can use to put comments into code.
 </p>
 <h4 id=—-comments><a class=para href=#—-comments></a>8.1.1. <code><h- data-h=mk_tag>\comment</h-></code> &mdash; Comments</h4>
@@ -1723,7 +1723,7 @@ Text<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&g
 
 <h3 id=text-formatting><a class=para href=#text-formatting></a>8.2. Text formatting</h3>
 
-<p>MMML allows for basic text formatting using various directives.
+<p>COWEL allows for basic text formatting using various directives.
 Many of the formatting directives are some direct equivalent of an HTML element.
 For these, there is a fixed HTML element that will always be used.
 You can rely on this when adding custom CSS.
@@ -1831,7 +1831,7 @@ convert all named arguments directly into HTML attributes.
 </p>
 <h3 id=code><a class=para href=#code></a>8.3. Code and syntax highlighting</h3>
 
-<p>MMML uses
+<p>COWEL uses
 <a href=https://github%2ecom/Eisenwave/ulight>µlight</a>
 for syntax highlighting.
 While the set of supported language is relatively small,
@@ -1873,7 +1873,7 @@ In a plaintext context, <code><h- data-h=mk_tag>\code</h-></code> simply outputs
 </dl>
 
 <example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_sqr>[</h->cpp<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->123<h- data-h=sym_brac>}</h-></code-block>
 <p>This applies C++ syntax highlighting, and generates HTML.
 The <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-></code> tags are an implementation detail and may be subject to change.
@@ -1948,7 +1948,7 @@ Only µlight long names should be used directly.
 <p>In recent years, browser support for
 <a href=https://developer%2emozilla%2eorg/en-US/docs/Web/MathML>MathML</a>
 within HTML has become widespread.
-MMML relies entirely on the browser for properly rendering math as MathML,
+COWEL relies entirely on the browser for properly rendering math as MathML,
 which is very simple and lightweight,
 but not as portable as "baking" the math into an SVG.
 </p>
@@ -1978,7 +1978,7 @@ Math <math display=inline>
 </p></example-block>
 
 <p>However, hand-writing MathML would be extremely tedious and verbose,
-so MMML offers some convenience directives, listed below.
+so COWEL offers some convenience directives, listed below.
 </p>
 <h4 id=dir-math><a class=para href=#dir-math></a>8.4.1. <code><h- data-h=mk_tag>\math</h-></code> &mdash; Inline math</h4>
 
@@ -1989,7 +1989,7 @@ and displays as inline content.
 <p>Its content is an HTML context,
 and within it, additional pseudo-directives like <code><h- data-h=mk_tag>\mi</h-></code> or <code><h- data-h=mk_tag>\mn</h-></code>
 corresponding to MathML elements can be used.
-Essentially, this allows you to build MathML using MMML syntax.
+Essentially, this allows you to build MathML using COWEL syntax.
 </p>
 <p>See <a href=https://developer%2emozilla%2eorg/en-US/docs/Web/MathML/Reference/Element>Mozilla's MathML elements reference</a>
 for a list of supported elements/directives.
@@ -2031,12 +2031,12 @@ It displays as block content, and its input content is ignored.
 <h3 id=special-characters><a class=para href=#special-characters></a>8.6. Special characters</h3>
 
 <p>It is quite common that a text document should include special characters.
-While MMML is built on UTF-8,
+While COWEL is built on UTF-8,
 and in theory one could just write the character directly into the source code,
 not every text editor handles special characters well.
 </p>
 <p>To increase portability,
-MMML has the <code><h- data-h=mk_tag>\U</h-></code> and <code><h- data-h=mk_tag>\c</h-></code> directives.
+COWEL has the <code><h- data-h=mk_tag>\U</h-></code> and <code><h- data-h=mk_tag>\c</h-></code> directives.
 </p>
 <h4 id=—-code-point-literal><a class=para href=#—-code-point-literal></a>8.6.1. <code><h- data-h=mk_tag>\U</h-></code> &mdash; Code point literal</h4>
 
@@ -2081,7 +2081,7 @@ Like anywhere else, directives inside of <code><h- data-h=mk_tag>\c</h-></code> 
 <h3 id=special-blocks><a class=para href=#special-blocks></a>8.7. Special blocks</h3>
 
 <p>Often, the content we write falls into some special category like "example", "note", etc.
-MMML supports a large number of <i>special block directives</i>,
+COWEL supports a large number of <i>special block directives</i>,
 which wrap their content in a block, with background color, borders, etc.
 </p>
 <p>The input to all special block directives is an HTML context,
@@ -2261,7 +2261,7 @@ If no content is provided, it can be synthesized from the following types of ref
 </ul>
 
 <example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->mail:john@us.gov<h- data-h=sym_sqr>]</h-></code-block>
 <p>HTML output (<code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>a</h-><h- data-h=sym_punc>&gt;</h-></code> tag may have additional attributes):
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>a</h-> <h- data-h=mk_attr>href</h-><h- data-h=sym_punc>=</h-><h- data-h=str>mail:john@us.gov</h-><h- data-h=sym_punc>&gt;</h->john@us.gov<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>a</h-><h- data-h=sym_punc>&gt;</h-></code-block>
@@ -2309,7 +2309,7 @@ Its content is a plaintext context,
 and it displays as inline content.
 </p>
 <example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block>This is <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>html</h-><h- data-h=sym_brac>{</h->&lt;b&gt;bold text&lt;/b&gt;<h- data-h=sym_brac>}</h->.</code-block>
 <p>Generated HTML:
 </p><code-block>This is <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->bold text<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->.</code-block>
@@ -2339,7 +2339,7 @@ and it displays as inline content.
 Arguments are converted to HTML attributes of the produced tag.
 </p>
 <example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block>This is <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>html-span</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h->abc<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->a span<h- data-h=sym_brac>}</h->.</code-block>
 <p>Generated HTML:
 </p><code-block>This is <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>span</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-><h- data-h=sym_punc>&gt;</h->a span<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>span</h-><h- data-h=sym_punc>&gt;</h->.</code-block>
@@ -2353,7 +2353,7 @@ where the input is treated as JavaScript code and surrounded in <code><h- data-h
 <p><code><h- data-h=mk_tag>\script</h-></code> displays as meta content (like <code><h- data-h=mk_tag>\comment</h-></code>).
 </p>
 <example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_brac>{</h->
 console.log("hello");
 <h- data-h=sym_brac>}</h-></code-block>
@@ -2371,7 +2371,7 @@ where the input is treated as JavaScript code and surrounded in <code><h- data-h
 <p><code><h- data-h=mk_tag>\style</h-></code> displays as meta content (like <code><h- data-h=mk_tag>\comment</h-></code>).
 </p>
 <example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_brac>{</h->
 body { color: red; }
 <h- data-h=sym_brac>}</h-></code-block>
@@ -2397,7 +2397,7 @@ To get more fine-tuned control, we have a number of directives.
 This may be useful in places where it is not active by default.
 </p>
 <example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_brac>{</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>item</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>paragraphs</h-><h- data-h=sym_brac>{</h->
 First paragraph in bullet.
@@ -2462,7 +2462,7 @@ The <tt->section</tt-> argument is a plaintext context.
 which allows forward-references.
 </p>
 <example-block><p><intro-></intro-> 
-MMML markup:
+COWEL markup:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_sqr>[</h->sec<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->before/<h- data-h=sym_brac>}</h->
 (<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>here</h-><h- data-h=sym_sqr>[</h->sec<h- data-h=sym_sqr>]</h->)
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_sqr>[</h->sec<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->/after<h- data-h=sym_brac>}</h-></code-block>

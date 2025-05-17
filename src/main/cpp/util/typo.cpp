@@ -8,13 +8,13 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/util/levenshtein.hpp"
-#include "mmml/util/levenshtein_utf8.hpp"
-#include "mmml/util/strings.hpp"
-#include "mmml/util/typo.hpp"
-#include "mmml/util/unicode.hpp"
+#include "cowel/util/levenshtein.hpp"
+#include "cowel/util/levenshtein_utf8.hpp"
+#include "cowel/util/strings.hpp"
+#include "cowel/util/typo.hpp"
+#include "cowel/util/unicode.hpp"
 
-namespace mmml {
+namespace cowel {
 
 namespace {
 
@@ -93,4 +93,4 @@ Distant<std::size_t> closest_match(
     return best_match;
 }
 
-} // namespace mmml
+} // namespace cowel

@@ -1,4 +1,4 @@
-#ifndef MMML_EMSCRIPTEN
+#ifndef COWEL_EMSCRIPTEN
 
 #include <bit>
 #include <cstddef>
@@ -9,14 +9,14 @@
 #include <string_view>
 #include <vector>
 
-#include "mmml/util/function_ref.hpp"
-#include "mmml/util/io.hpp"
-#include "mmml/util/result.hpp"
-#include "mmml/util/unicode.hpp"
+#include "cowel/util/function_ref.hpp"
+#include "cowel/util/io.hpp"
+#include "cowel/util/result.hpp"
+#include "cowel/util/unicode.hpp"
 
-#include "mmml/fwd.hpp"
+#include "cowel/fwd.hpp"
 
-namespace mmml {
+namespace cowel {
 
 [[nodiscard]]
 Result<void, IO_Error_Code> file_to_bytes_chunked(
@@ -96,5 +96,5 @@ load_utf32le_file(std::string_view path, std::pmr::memory_resource* memory)
     return result;
 }
 
-} // namespace mmml
+} // namespace cowel
 #endif

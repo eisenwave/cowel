@@ -2,12 +2,12 @@
 #include <span>
 #include <string_view>
 
-#include "mmml/util/assert.hpp"
+#include "cowel/util/assert.hpp"
 
-#include "mmml/ast.hpp"
-#include "mmml/directive_arguments.hpp"
+#include "cowel/ast.hpp"
+#include "cowel/directive_arguments.hpp"
 
-namespace mmml {
+namespace cowel {
 
 void match_parameters_and_arguments(
     std::span<int> out_indices,
@@ -18,8 +18,8 @@ void match_parameters_and_arguments(
     Parameter_Match_Mode mode
 )
 {
-    MMML_ASSERT(out_indices.size() == parameters.size());
-    MMML_ASSERT(out_status.size() == arguments.size());
+    COWEL_ASSERT(out_indices.size() == parameters.size());
+    COWEL_ASSERT(out_status.size() == arguments.size());
 
     for (int& i : out_indices) {
         i = -1;
@@ -65,4 +65,4 @@ void match_parameters_and_arguments(
     }
 }
 
-} // namespace mmml
+} // namespace cowel

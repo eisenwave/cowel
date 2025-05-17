@@ -4,12 +4,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "mmml/json.hpp"
+#include "cowel/json.hpp"
 #include "ulight/ulight.hpp"
 
-#include "mmml/theme_to_css.hpp"
+#include "cowel/theme_to_css.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 struct Property {
@@ -27,11 +27,12 @@ struct Highlight_Lookup_Entry {
     ulight::Highlight_Type type;
 };
 
-#define MMML_HIGHLIGHT_TYPE_LOOKUP(id, long_string, short_string, value)                           \
+#define COWEL_HIGHLIGHT_TYPE_LOOKUP(id, long_string, short_string, value)                          \
     { u8##long_string, ulight::Highlight_Type::id },
 
 constexpr auto highlight_type_lookup = []() {
-    Highlight_Lookup_Entry result[] { ULIGHT_HIGHLIGHT_TYPE_ENUM_DATA(MMML_HIGHLIGHT_TYPE_LOOKUP) };
+    Highlight_Lookup_Entry result[] { ULIGHT_HIGHLIGHT_TYPE_ENUM_DATA(COWEL_HIGHLIGHT_TYPE_LOOKUP
+    ) };
     std::ranges::sort(result, {}, &Highlight_Lookup_Entry::long_string);
     return std::to_array(result);
 }();
@@ -161,4 +162,4 @@ bool theme_to_css(
     return true;
 }
 
-} // namespace mmml
+} // namespace cowel

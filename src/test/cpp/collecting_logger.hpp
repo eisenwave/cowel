@@ -1,17 +1,16 @@
-#ifndef MMML_COLLECTING_LOGGER_HPP
-#define MMML_COLLECTING_LOGGER_HPP
+#ifndef COWEL_COLLECTING_LOGGER_HPP
+#define COWEL_COLLECTING_LOGGER_HPP
 
 #include <memory_resource>
 #include <string_view>
 #include <utility>
 #include <vector>
 
-#include "mmml/diagnostic.hpp"
-#include "mmml/services.hpp"
+#include "cowel/diagnostic.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/services.hpp"
 
-#include "mmml/fwd.hpp"
-
-namespace mmml {
+namespace cowel {
 
 struct Collecting_Logger final : Logger {
     std::pmr::vector<Diagnostic> diagnostics;
@@ -41,6 +40,6 @@ struct Collecting_Logger final : Logger {
     }
 };
 
-} // namespace mmml
+} // namespace cowel
 
 #endif

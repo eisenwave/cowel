@@ -5,14 +5,14 @@
 #include <string_view>
 #include <system_error>
 
-#include "mmml/fwd.hpp"
-#include "mmml/util/assert.hpp"
-#include "mmml/util/chars.hpp"
-#include "mmml/util/strings.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/util/assert.hpp"
+#include "cowel/util/chars.hpp"
+#include "cowel/util/strings.hpp"
 
-#include "mmml/parse_utils.hpp"
+#include "cowel/parse_utils.hpp"
 
-namespace mmml {
+namespace cowel {
 
 Blank_Line find_blank_line_sequence // NOLINT(bugprone-exception-escape)
     (std::u8string_view str) noexcept
@@ -59,7 +59,7 @@ Blank_Line find_blank_line_sequence // NOLINT(bugprone-exception-escape)
             continue;
         }
         }
-        MMML_ASSERT_UNREACHABLE(u8"Invalid state");
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid state");
     }
 
     static_assert(!Blank_Line {}, "A value-initialized Blank_Line should be falsy");
@@ -86,7 +86,7 @@ std::optional<unsigned long long> parse_uinteger_digits(std::u8string_view text,
 
 std::size_t match_digits(std::u8string_view str, int base)
 {
-    MMML_ASSERT((base >= 2 && base <= 10) || base == 16);
+    COWEL_ASSERT((base >= 2 && base <= 10) || base == 16);
     static constexpr std::u8string_view hexadecimal_digits = u8"0123456789abcdefABCDEF";
 
     const std::u8string_view digits
@@ -131,4 +131,4 @@ std::optional<long long> parse_integer_literal(std::u8string_view str) noexcept
     return std::nullopt;
 }
 
-} // namespace mmml
+} // namespace cowel

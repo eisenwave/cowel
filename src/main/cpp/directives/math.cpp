@@ -1,10 +1,10 @@
 #include <algorithm>
 #include <string_view>
 
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/directive_processing.hpp"
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/directive_processing.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 // clang-format off
@@ -83,4 +83,4 @@ void Math_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Con
     out.close_tag(tag_name);
 }
 
-} // namespace mmml
+} // namespace cowel

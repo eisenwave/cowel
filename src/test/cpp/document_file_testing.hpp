@@ -1,11 +1,11 @@
-#ifndef MMML_TEST_DOCUMENT_FILE_TESTING_HPP
-#define MMML_TEST_DOCUMENT_FILE_TESTING_HPP
+#ifndef COWEL_TEST_DOCUMENT_FILE_TESTING_HPP
+#define COWEL_TEST_DOCUMENT_FILE_TESTING_HPP
 
 #include <string_view>
 
 #include "compilation_stage.hpp"
 
-namespace mmml {
+namespace cowel {
 
 [[nodiscard]]
 bool test_for_success(
@@ -13,6 +13,6 @@ bool test_for_success(
     Compilation_Stage until_stage = Compilation_Stage::process
 );
 
-} // namespace mmml
+} // namespace cowel
 
 #endif

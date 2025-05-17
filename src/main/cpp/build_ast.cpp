@@ -6,15 +6,15 @@
 #include <utility>
 #include <vector>
 
-#include "mmml/util/assert.hpp"
-#include "mmml/util/source_position.hpp"
+#include "cowel/util/assert.hpp"
+#include "cowel/util/source_position.hpp"
 
-#include "mmml/ast.hpp"
-#include "mmml/fwd.hpp"
-#include "mmml/parse.hpp"
-#include "mmml/services.hpp"
+#include "cowel/ast.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/parse.hpp"
+#include "cowel/services.hpp"
 
-namespace mmml {
+namespace cowel {
 
 namespace ast {
 
@@ -48,19 +48,19 @@ Directive::Directive(
     , m_arguments { std::move(args) }
     , m_content { std::move(block) }
 {
-    MMML_ASSERT(m_name_length != 0);
+    COWEL_ASSERT(m_name_length != 0);
 }
 
 Text::Text(const Source_Span& pos)
     : m_pos { pos }
 {
-    MMML_ASSERT(!pos.empty());
+    COWEL_ASSERT(!pos.empty());
 }
 
 Escaped::Escaped(const Source_Span& pos)
     : m_pos { pos }
 {
-    MMML_ASSERT(pos.length == 2);
+    COWEL_ASSERT(pos.length == 2);
 }
 
 } // namespace ast
@@ -105,12 +105,12 @@ public:
         , m_memory { memory }
         , m_logger { logger }
     {
-        MMML_ASSERT(!instructions.empty());
+        COWEL_ASSERT(!instructions.empty());
     }
 
     void advance_by(std::size_t n)
     {
-        MMML_ASSERT(m_pos.begin + n <= m_source.size());
+        COWEL_ASSERT(m_pos.begin + n <= m_source.size());
 
         for (std::size_t i = 0; i < n; ++i) {
             advance(m_pos, m_source[m_pos.begin]);
@@ -126,13 +126,13 @@ public:
     [[nodiscard]]
     AST_Instruction peek()
     {
-        MMML_ASSERT(m_index < m_instructions.size());
+        COWEL_ASSERT(m_index < m_instructions.size());
         return m_instructions[m_index];
     }
 
     AST_Instruction pop()
     {
-        MMML_ASSERT(m_index < m_instructions.size());
+        COWEL_ASSERT(m_index < m_instructions.size());
         return m_instructions[m_index++];
     }
 
@@ -140,7 +140,7 @@ public:
     std::pmr::vector<ast::Content> build_document()
     {
         const AST_Instruction push_doc = pop();
-        MMML_ASSERT(push_doc.type == AST_Instruction_Type::push_document);
+        COWEL_ASSERT(push_doc.type == AST_Instruction_Type::push_document);
 
         std::pmr::vector<ast::Content> result { m_memory };
         result.reserve(push_doc.n);
@@ -175,7 +175,7 @@ public:
             out.push_back(build_directive());
             break;
 
-        default: MMML_ASSERT_UNREACHABLE(u8"Invalid content creating instruction.");
+        default: COWEL_ASSERT_UNREACHABLE(u8"Invalid content creating instruction.");
         }
     }
 
@@ -183,7 +183,7 @@ public:
     ast::Escaped build_escape()
     {
         const AST_Instruction instruction = pop();
-        MMML_ASSERT(instruction.type == AST_Instruction_Type::escape);
+        COWEL_ASSERT(instruction.type == AST_Instruction_Type::escape);
 
         ast::Escaped result { Source_Span { m_pos, instruction.n } };
         advance_by(instruction.n);
@@ -194,7 +194,7 @@ public:
     ast::Text build_text()
     {
         const AST_Instruction instruction = pop();
-        MMML_ASSERT(instruction.type == AST_Instruction_Type::text);
+        COWEL_ASSERT(instruction.type == AST_Instruction_Type::text);
 
         ast::Text result { Source_Span { m_pos, instruction.n } };
         advance_by(instruction.n);
@@ -205,8 +205,8 @@ public:
     ast::Directive build_directive()
     {
         const AST_Instruction instruction = pop();
-        MMML_ASSERT(instruction.type == AST_Instruction_Type::push_directive);
-        MMML_ASSERT(instruction.n >= 2);
+        COWEL_ASSERT(instruction.type == AST_Instruction_Type::push_directive);
+        COWEL_ASSERT(instruction.n >= 2);
 
         const Source_Position initial_pos = m_pos;
         const std::size_t name_length = instruction.n - 1;
@@ -219,7 +219,7 @@ public:
         try_append_block(block);
 
         const AST_Instruction pop_instruction = pop();
-        MMML_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_directive);
+        COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_directive);
 
         const Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
         return { span, name_length, std::move(arguments), std::move(block) };
@@ -262,7 +262,7 @@ public:
     void append_argument(std::pmr::vector<ast::Argument>& out)
     {
         const AST_Instruction instruction = pop();
-        MMML_ASSERT(instruction.type == AST_Instruction_Type::push_argument);
+        COWEL_ASSERT(instruction.type == AST_Instruction_Type::push_argument);
 
         const Source_Position initial_pos = m_pos;
         std::optional<Source_Span> name;
@@ -351,4 +351,4 @@ parse_and_build(std::u8string_view source, std::pmr::memory_resource* memory, Lo
     return build_ast(source, instructions, memory, logger);
 }
 
-} // namespace mmml
+} // namespace cowel

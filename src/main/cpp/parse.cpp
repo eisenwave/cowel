@@ -4,16 +4,16 @@
 #include <string_view>
 #include <vector>
 
-#include "ulight/impl/lang/mmml.hpp"
+#include "ulight/impl/lang/cowel.hpp"
 
-#include "mmml/util/assert.hpp"
-#include "mmml/util/chars.hpp"
-#include "mmml/util/unicode.hpp"
+#include "cowel/util/assert.hpp"
+#include "cowel/util/chars.hpp"
+#include "cowel/util/unicode.hpp"
 
-#include "mmml/fwd.hpp"
-#include "mmml/parse.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/parse.hpp"
 
-namespace mmml {
+namespace cowel {
 
 namespace {
 
@@ -53,14 +53,14 @@ private:
 
         void commit()
         {
-            MMML_ASSERT(m_self);
+            COWEL_ASSERT(m_self);
             m_self = nullptr;
         }
 
         void abort()
         {
-            MMML_ASSERT(m_self);
-            MMML_ASSERT(m_self->m_out.size() >= m_initial_size);
+            COWEL_ASSERT(m_self);
+            COWEL_ASSERT(m_self->m_out.size() >= m_initial_size);
 
             m_self->m_pos = m_initial_pos;
             m_self->m_out.resize(m_initial_size);
@@ -128,7 +128,7 @@ private:
     [[nodiscard]]
     char8_t peek() const
     {
-        MMML_ASSERT(!eof());
+        COWEL_ASSERT(!eof());
         return m_source[m_pos];
     }
 
@@ -187,7 +187,7 @@ private:
         }
         // This function is only safe to call when we have expectations towards ASCII characters.
         // Any non-ASCII character should have already been rejected.
-        MMML_ASSERT(is_ascii(c));
+        COWEL_ASSERT(is_ascii(c));
         ++m_pos;
         return true;
     }
@@ -206,7 +206,7 @@ private:
             //       the loop condition.
             //       After all, that function also checks for termination and EOF.
             const bool success = try_match_content(context, levels);
-            MMML_ASSERT(success);
+            COWEL_ASSERT(success);
         }
 
         return elements;
@@ -245,7 +245,7 @@ private:
                 }
                 // Escape sequence such as `\{`.
                 // We treat these as separate in the AST, not as content.
-                if (is_mmml_escapeable(remainder.front())) {
+                if (is_cowel_escapeable(remainder.front())) {
                     break;
                 }
                 // Directive names; also not part of content.
@@ -253,7 +253,7 @@ private:
                 // directive because the remaining arguments and the block are optional.
                 // I.e. we can break with certainty despite only having examined one character.
                 const auto [code_point, length] = utf8::decode_and_length_or_throw(remainder);
-                if (is_mmml_directive_name(code_point)) {
+                if (is_cowel_directive_name(code_point)) {
                     break;
                 }
                 continue;
@@ -282,7 +282,7 @@ private:
             }
         }
 
-        MMML_ASSERT(m_pos >= initial_pos);
+        COWEL_ASSERT(m_pos >= initial_pos);
         if (m_pos == initial_pos) {
             return false;
         }
@@ -299,7 +299,7 @@ private:
         if (!expect('\\')) {
             return {};
         }
-        const std::size_t name_length = ulight::mmml::match_directive_name(peek_all());
+        const std::size_t name_length = ulight::cowel::match_directive_name(peek_all());
         if (name_length == 0) {
             return false;
         }
@@ -338,7 +338,7 @@ private:
                 m_out.push_back({ AST_Instruction_Type::argument_comma });
                 continue;
             }
-            MMML_ASSERT_UNREACHABLE(
+            COWEL_ASSERT_UNREACHABLE(
                 u8"Successfully matched arguments must be followed by ']' or ','"
             );
         }
@@ -353,7 +353,7 @@ private:
 
         if (m_pos + sequence_length < m_source.size() //
             && m_source[m_pos] == u8'\\' //
-            && is_mmml_escapeable(char8_t(m_source[m_pos + 1]))) //
+            && is_cowel_escapeable(char8_t(m_source[m_pos + 1]))) //
         {
             m_pos += sequence_length;
             m_out.push_back({ AST_Instruction_Type::escape, sequence_length });
@@ -394,7 +394,7 @@ private:
     {
         Scoped_Attempt a = attempt();
 
-        const std::size_t leading_whitespace = ulight::mmml::match_whitespace(peek_all());
+        const std::size_t leading_whitespace = ulight::cowel::match_whitespace(peek_all());
         if (leading_whitespace != 0) {
             m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
         }
@@ -404,14 +404,14 @@ private:
             return false;
         }
 
-        const std::size_t name_length = ulight::mmml::match_argument_name(peek_all());
+        const std::size_t name_length = ulight::cowel::match_argument_name(peek_all());
         m_out.push_back({ AST_Instruction_Type::argument_name, name_length });
         if (name_length == 0) {
             return false;
         }
         m_pos += name_length;
 
-        const std::size_t trailing_whitespace = ulight::mmml::match_whitespace(peek_all());
+        const std::size_t trailing_whitespace = ulight::cowel::match_whitespace(peek_all());
         m_pos += trailing_whitespace;
         if (eof()) {
             return false;
@@ -432,7 +432,7 @@ private:
     {
         Scoped_Attempt a = attempt();
 
-        const std::size_t leading_whitespace = ulight::mmml::match_whitespace(peek_all());
+        const std::size_t leading_whitespace = ulight::cowel::match_whitespace(peek_all());
         if (leading_whitespace != 0) {
             m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
         }
@@ -445,7 +445,7 @@ private:
         // match_content_sequence is very aggressive, so I think at this point,
         // we have to be at the end of an argument due to a comma separator or closing square.
         const char8_t c = m_source[m_pos];
-        MMML_ASSERT(c == u8',' || c == u8']');
+        COWEL_ASSERT(c == u8',' || c == u8']');
 
         trim_trailing_whitespace_in_matched_content();
 
@@ -461,14 +461,14 @@ private:
     /// it is simply replaced with `skip`.
     void trim_trailing_whitespace_in_matched_content()
     {
-        MMML_ASSERT(!m_out.empty());
+        COWEL_ASSERT(!m_out.empty());
 
         AST_Instruction& latest = m_out.back();
         if (latest.type != AST_Instruction_Type::text) {
             return;
         }
         const std::size_t total_length = latest.n;
-        MMML_ASSERT(total_length != 0);
+        COWEL_ASSERT(total_length != 0);
 
         const std::size_t text_begin = m_pos - total_length;
 
@@ -484,7 +484,7 @@ private:
             m_out.push_back({ AST_Instruction_Type::skip, total_length - non_white_length });
         }
         else {
-            MMML_ASSERT(non_white_length == total_length);
+            COWEL_ASSERT(non_white_length == total_length);
         }
     }
 
@@ -527,25 +527,25 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
 {
     using enum AST_Instruction_Type;
     switch (type) {
-        MMML_ENUM_STRING_CASE8(skip);
-        MMML_ENUM_STRING_CASE8(escape);
-        MMML_ENUM_STRING_CASE8(text);
-        MMML_ENUM_STRING_CASE8(argument_name);
-        MMML_ENUM_STRING_CASE8(argument_equal);
-        MMML_ENUM_STRING_CASE8(argument_comma);
-        MMML_ENUM_STRING_CASE8(push_document);
-        MMML_ENUM_STRING_CASE8(pop_document);
-        MMML_ENUM_STRING_CASE8(push_directive);
-        MMML_ENUM_STRING_CASE8(pop_directive);
-        MMML_ENUM_STRING_CASE8(push_arguments);
-        MMML_ENUM_STRING_CASE8(pop_arguments);
-        MMML_ENUM_STRING_CASE8(push_argument);
-        MMML_ENUM_STRING_CASE8(pop_argument);
-        MMML_ENUM_STRING_CASE8(push_block);
-        MMML_ENUM_STRING_CASE8(pop_block);
-        MMML_ENUM_STRING_CASE8(error_unclosed_block);
+        COWEL_ENUM_STRING_CASE8(skip);
+        COWEL_ENUM_STRING_CASE8(escape);
+        COWEL_ENUM_STRING_CASE8(text);
+        COWEL_ENUM_STRING_CASE8(argument_name);
+        COWEL_ENUM_STRING_CASE8(argument_equal);
+        COWEL_ENUM_STRING_CASE8(argument_comma);
+        COWEL_ENUM_STRING_CASE8(push_document);
+        COWEL_ENUM_STRING_CASE8(pop_document);
+        COWEL_ENUM_STRING_CASE8(push_directive);
+        COWEL_ENUM_STRING_CASE8(pop_directive);
+        COWEL_ENUM_STRING_CASE8(push_arguments);
+        COWEL_ENUM_STRING_CASE8(pop_arguments);
+        COWEL_ENUM_STRING_CASE8(push_argument);
+        COWEL_ENUM_STRING_CASE8(pop_argument);
+        COWEL_ENUM_STRING_CASE8(push_block);
+        COWEL_ENUM_STRING_CASE8(pop_block);
+        COWEL_ENUM_STRING_CASE8(error_unclosed_block);
     }
-    MMML_ASSERT_UNREACHABLE(u8"Invalid type.");
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid type.");
 }
 
 void parse(std::pmr::vector<AST_Instruction>& out, std::u8string_view source)
@@ -553,4 +553,4 @@ void parse(std::pmr::vector<AST_Instruction>& out, std::u8string_view source)
     Parser { out, source }();
 }
 
-} // namespace mmml
+} // namespace cowel

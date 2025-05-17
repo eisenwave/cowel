@@ -1,4 +1,4 @@
-#ifndef MMML_EMSCRIPTEN
+#ifndef COWEL_EMSCRIPTEN
 
 #ifdef __unix__
 #include "stdio.h" // NOLINT for fileno
@@ -6,9 +6,9 @@
 #include <unistd.h>
 #endif
 
-#include "mmml/util/tty.hpp"
+#include "cowel/util/tty.hpp"
 
-namespace mmml {
+namespace cowel {
 
 bool is_tty(std::FILE* file) noexcept
 {
@@ -23,5 +23,5 @@ const bool is_stdin_tty = is_tty(stdin);
 const bool is_stdout_tty = is_tty(stdout);
 const bool is_stderr_tty = is_tty(stderr);
 
-} // namespace mmml
+} // namespace cowel
 #endif

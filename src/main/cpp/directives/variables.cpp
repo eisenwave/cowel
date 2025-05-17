@@ -1,9 +1,12 @@
-#include "mmml/util/strings.hpp"
+#include <string_view>
+#include <vector>
 
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/directive_processing.hpp"
+#include "cowel/util/strings.hpp"
 
-namespace mmml {
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/directive_processing.hpp"
+
+namespace cowel {
 
 namespace {
 
@@ -91,4 +94,4 @@ void process(
     }
 }
 
-} // namespace mmml
+} // namespace cowel

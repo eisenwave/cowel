@@ -4,9 +4,9 @@
 #include <span>
 #include <string_view>
 
-#include "mmml/util/typo.hpp"
+#include "cowel/util/typo.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 TEST(Typo, empty)
@@ -50,4 +50,4 @@ TEST(Typo, fuzzy_match)
 }
 
 } // namespace
-} // namespace mmml
+} // namespace cowel

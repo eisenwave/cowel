@@ -6,10 +6,10 @@
 
 #include <gtest/gtest.h>
 
-#include "mmml/util/levenshtein_utf8.hpp"
-#include "mmml/util/unicode.hpp"
+#include "cowel/util/levenshtein_utf8.hpp"
+#include "cowel/util/unicode.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 TEST(Levenshtein, empty)
@@ -122,4 +122,4 @@ TEST(Levenshtein, ascii_commutative_fuzzing)
 }
 
 } // namespace
-} // namespace mmml
+} // namespace cowel

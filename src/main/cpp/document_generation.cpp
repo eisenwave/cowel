@@ -1,25 +1,25 @@
 #include <memory_resource>
 #include <unordered_set>
 
-#include "mmml/theme_to_css.hpp"
-#include "mmml/util/assert.hpp"
-#include "mmml/util/html_writer.hpp"
-#include "mmml/util/io.hpp"
+#include "cowel/theme_to_css.hpp"
+#include "cowel/util/assert.hpp"
+#include "cowel/util/html_writer.hpp"
+#include "cowel/util/io.hpp"
 
-#include "mmml/content_behavior.hpp"
-#include "mmml/context.hpp"
-#include "mmml/diagnostic.hpp"
-#include "mmml/directive_processing.hpp"
-#include "mmml/document_content_behavior.hpp"
-#include "mmml/document_generation.hpp"
-#include "mmml/document_sections.hpp"
-#include "mmml/util/strings.hpp"
+#include "cowel/content_behavior.hpp"
+#include "cowel/context.hpp"
+#include "cowel/diagnostic.hpp"
+#include "cowel/directive_processing.hpp"
+#include "cowel/document_content_behavior.hpp"
+#include "cowel/document_generation.hpp"
+#include "cowel/document_sections.hpp"
+#include "cowel/util/strings.hpp"
 
-namespace mmml {
+namespace cowel {
 
 void generate_document(const Generation_Options& options)
 {
-    MMML_ASSERT(options.memory != nullptr);
+    COWEL_ASSERT(options.memory != nullptr);
 
     std::pmr::unsynchronized_pool_resource transient_memory { options.memory };
 
@@ -103,10 +103,10 @@ bool Reference_Resolver::operator()(std::u8string_view text)
             ++plain_length;
             continue;
         }
-        MMML_DEBUG_ASSERT(code_units == 4);
+        COWEL_DEBUG_ASSERT(code_units == 4);
         flush();
         const auto reference_length = std::size_t(code_point - supplementary_pua_a_min);
-        MMML_ASSERT(4 + reference_length <= text.length());
+        COWEL_ASSERT(4 + reference_length <= text.length());
         const std::u8string_view section_name = text.substr(4, reference_length);
 
         bool section_success = true;
@@ -219,7 +219,7 @@ void Document_Content_Behavior::generate_html(
         Distant<std::u8string_view>
         fuzzy_lookup_name(std::u8string_view, std::pmr::memory_resource*) const final
         {
-            MMML_ASSERT_UNREACHABLE(u8"Unimplemented.");
+            COWEL_ASSERT_UNREACHABLE(u8"Unimplemented.");
         }
 
         [[nodiscard]]
@@ -274,7 +274,7 @@ void Document_Content_Behavior::generate_head(
         out.open_tag(tag);
         out.write_inner_html(u8'\n');
         const Result<void, IO_Error_Code> r = file_to_inner_html(out, path, context);
-        MMML_ASSERT(r);
+        COWEL_ASSERT(r);
         out.write_inner_html(indent);
         out.close_tag(tag);
     };
@@ -307,11 +307,11 @@ void Document_Content_Behavior::generate_body(
 {
     const Result<void, IO_Error_Code> r
         = file_to_inner_html(out, u8"assets/settings-widget.html", context);
-    MMML_ASSERT(r);
+    COWEL_ASSERT(r);
     out.open_tag(u8"main");
     out.write_inner_html(u8'\n');
     to_html(out, content, context, To_HTML_Mode::paragraphs);
     out.close_tag(u8"main");
 }
 
-} // namespace mmml
+} // namespace cowel

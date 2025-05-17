@@ -1,14 +1,14 @@
 #include <vector>
 
-#include "mmml/util/html_writer.hpp"
-#include "mmml/util/strings.hpp"
+#include "cowel/util/html_writer.hpp"
+#include "cowel/util/strings.hpp"
 
-#include "mmml/ast.hpp"
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/context.hpp"
-#include "mmml/directive_processing.hpp"
+#include "cowel/ast.hpp"
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/context.hpp"
+#include "cowel/directive_processing.hpp"
 
-namespace mmml {
+namespace cowel {
 
 void HTML_Literal_Behavior::generate_html(
     HTML_Writer& out,
@@ -39,4 +39,4 @@ void HTML_Raw_Text_Behavior::generate_html(
     out.close_tag(m_tag_name);
 }
 
-} // namespace mmml
+} // namespace cowel

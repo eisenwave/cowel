@@ -8,22 +8,22 @@
 
 #include "ulight/ulight.hpp"
 
-#include "mmml/fwd.hpp"
-#include "mmml/parse_utils.hpp"
-#include "mmml/util/assert.hpp"
-#include "mmml/util/html_writer.hpp"
-#include "mmml/util/result.hpp"
-#include "mmml/util/source_position.hpp"
-#include "mmml/util/strings.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/parse_utils.hpp"
+#include "cowel/util/assert.hpp"
+#include "cowel/util/html_writer.hpp"
+#include "cowel/util/result.hpp"
+#include "cowel/util/source_position.hpp"
+#include "cowel/util/strings.hpp"
 
-#include "mmml/ast.hpp"
-#include "mmml/context.hpp"
-#include "mmml/directive_arguments.hpp"
-#include "mmml/directive_behavior.hpp"
-#include "mmml/directive_processing.hpp"
-#include "mmml/services.hpp"
+#include "cowel/ast.hpp"
+#include "cowel/context.hpp"
+#include "cowel/directive_arguments.hpp"
+#include "cowel/directive_behavior.hpp"
+#include "cowel/directive_processing.hpp"
+#include "cowel/services.hpp"
 
-namespace mmml {
+namespace cowel {
 
 Directive_Behavior* Context::find_directive(std::u8string_view name) const
 {
@@ -135,7 +135,7 @@ To_Plaintext_Status to_plaintext(
     if (const auto* const d = get_if<ast::Directive>(&c)) {
         return to_plaintext(out, *d, context, mode);
     }
-    MMML_ASSERT_UNREACHABLE(u8"Invalid form of content.");
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid form of content.");
 }
 
 To_Plaintext_Status to_plaintext(
@@ -174,7 +174,7 @@ To_Plaintext_Status to_plaintext(
         return To_Plaintext_Status::some_ignored;
     }
     }
-    MMML_ASSERT_UNREACHABLE(u8"Should have returned in switch.");
+    COWEL_ASSERT_UNREACHABLE(u8"Should have returned in switch.");
 }
 
 To_Plaintext_Status to_plaintext(
@@ -202,7 +202,7 @@ void to_plaintext_mapped_for_highlighting(
     std::visit(
         [&]<typename T>(const T& x) {
             if constexpr (std::is_same_v<T, ast::Generated>) {
-                MMML_ASSERT_UNREACHABLE(u8"Generated content during syntax highlighting?!");
+                COWEL_ASSERT_UNREACHABLE(u8"Generated content during syntax highlighting?!");
             }
             else {
                 to_plaintext_mapped_for_highlighting(out, out_mapping, x, context);
@@ -226,14 +226,14 @@ void to_plaintext_mapped_for_highlighting(
     out.insert(out.end(), text.begin(), text.end());
 
     const Source_Span pos = t.get_source_span();
-    MMML_ASSERT(pos.length == text.length());
+    COWEL_ASSERT(pos.length == text.length());
 
     const std::size_t initial_size = out_mapping.size();
     out_mapping.reserve(initial_size + pos.length);
     for (std::size_t i = pos.begin; i < pos.end(); ++i) {
         out_mapping.push_back(i);
     }
-    MMML_ASSERT(out_mapping.size() - initial_size == text.size());
+    COWEL_ASSERT(out_mapping.size() - initial_size == text.size());
 }
 
 void to_plaintext_mapped_for_highlighting(
@@ -284,7 +284,7 @@ void to_plaintext_mapped_for_highlighting(
         const std::size_t initial_out_size = out.size();
         const std::size_t initial_mapping_size = out_mapping.size();
         behavior->generate_plaintext(out, d, context);
-        MMML_ASSERT(out.size() >= initial_out_size);
+        COWEL_ASSERT(out.size() >= initial_out_size);
         const std::size_t out_growth = out.size() - initial_out_size;
         out_mapping.reserve(out_mapping.size() + out_growth);
         const std::size_t d_begin = d.get_source_span().begin;
@@ -292,7 +292,7 @@ void to_plaintext_mapped_for_highlighting(
             out_mapping.push_back(d_begin);
         }
         const std::size_t mapping_growth = out_mapping.size() - initial_mapping_size;
-        MMML_ASSERT(out_growth == mapping_growth);
+        COWEL_ASSERT(out_growth == mapping_growth);
         break;
     }
     // For macro expansions, text or directives inside the macro
@@ -304,7 +304,7 @@ void to_plaintext_mapped_for_highlighting(
         const std::pmr::vector<ast::Content> instance = instantiate_macro_invocation(d, context);
         const std::size_t initial_size = out_mapping.size();
         to_plaintext_mapped_for_highlighting(out, out_mapping, instance, context);
-        MMML_ASSERT(out_mapping.size() >= initial_size);
+        COWEL_ASSERT(out_mapping.size() >= initial_size);
         const std::size_t d_begin = d.get_source_span().begin;
         for (std::size_t i = initial_size; i < out_mapping.size(); ++i) {
             out_mapping[i] = d_begin;
@@ -393,7 +393,7 @@ void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Co
                 str = trim_ascii_blank_right(str);
             }
             // Other trimming mechanisms should have eliminated completely blank strings.
-            MMML_ASSERT(!str.empty());
+            COWEL_ASSERT(!str.empty());
             out.write_inner_text(str);
         }
 
@@ -407,7 +407,7 @@ void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Co
                 str = trim_ascii_blank_right(str);
             }
             // Other trimming mechanisms should have eliminated completely blank strings.
-            MMML_ASSERT(!str.empty());
+            COWEL_ASSERT(!str.empty());
             out.write_inner_html(str);
         }
 
@@ -504,7 +504,7 @@ public:
         while (!text.empty()) {
             const Blank_Line blank = find_blank_line_sequence(text);
             if (!blank) {
-                MMML_ASSERT(blank.begin == 0);
+                COWEL_ASSERT(blank.begin == 0);
                 transition(Directive_Display::in_line);
                 m_out.write_inner_text(text);
                 break;
@@ -517,7 +517,7 @@ public:
                 transition(Directive_Display::in_line);
                 m_out.write_inner_text(text.substr(0, blank.begin));
                 text.remove_prefix(blank.begin);
-                MMML_ASSERT(text.length() >= blank.length);
+                COWEL_ASSERT(text.length() >= blank.length);
             }
             transition(Directive_Display::block);
             m_out.write_inner_text(text.substr(0, blank.length));
@@ -559,11 +559,11 @@ private:
             return;
         }
         case Directive_Display::macro: {
-            MMML_ASSERT_UNREACHABLE(u8"Macros should have been instantiated already.");
+            COWEL_ASSERT_UNREACHABLE(u8"Macros should have been instantiated already.");
             break;
         }
         }
-        MMML_ASSERT_UNREACHABLE(u8"Invalid display value.");
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid display value.");
     }
 
     void on_non_macro_directive(Directive_Behavior& b, const ast::Directive& d)
@@ -628,7 +628,7 @@ void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, 
             out.write_inner_html(t->get_text(context.get_source()));
         }
         if (const auto* const _ = get_if<ast::Generated>(&c)) {
-            MMML_ASSERT_UNREACHABLE(u8"Attempting to generate literal HTML from Behaved_Content");
+            COWEL_ASSERT_UNREACHABLE(u8"Attempting to generate literal HTML from Behaved_Content");
             return;
         }
         if (const auto* const d = get_if<ast::Directive>(&c)) {
@@ -671,7 +671,7 @@ struct [[nodiscard]] Highlighted_AST_Copier {
 
     void operator()(const ast::Generated&)
     {
-        MMML_ASSERT_UNREACHABLE(u8"Generated content during highlighting?");
+        COWEL_ASSERT_UNREACHABLE(u8"Generated content during highlighting?");
     }
 
     void operator()(const ast::Directive& directive)
@@ -719,7 +719,7 @@ struct [[nodiscard]] Highlighted_AST_Copier {
             for (const auto& c : directive.get_content()) {
                 std::visit(inner_copier, c);
             }
-            MMML_ASSERT(inner_copier.index >= index);
+            COWEL_ASSERT(inner_copier.index >= index);
             index = inner_copier.index;
 
             std::pmr::vector<ast::Argument> copied_arguments { directive.get_arguments().begin(),
@@ -814,8 +814,8 @@ std::pmr::vector<ast::Content> copy_highlighted(
     Context& context
 )
 {
-    MMML_ASSERT(to_source_index.size() == highlighted_source.size());
-    MMML_ASSERT(to_highlight_span.size() == highlighted_source.size());
+    COWEL_ASSERT(to_source_index.size() == highlighted_source.size());
+    COWEL_ASSERT(to_highlight_span.size() == highlighted_source.size());
 
     std::pmr::vector<ast::Content> result { context.get_transient_memory() };
     result.reserve(content.size());
@@ -843,12 +843,12 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     To_HTML_Mode mode
 )
 {
-    MMML_ASSERT(!to_html_mode_is_paragraphed(mode));
+    COWEL_ASSERT(!to_html_mode_is_paragraphed(mode));
 
     std::pmr::vector<char8_t> plaintext { context.get_transient_memory() };
     std::pmr::vector<std::size_t> plaintext_to_source_index { context.get_transient_memory() };
     to_plaintext_mapped_for_highlighting(plaintext, plaintext_to_source_index, content, context);
-    MMML_ASSERT(plaintext.size() == plaintext_to_source_index.size());
+    COWEL_ASSERT(plaintext.size() == plaintext_to_source_index.size());
 
     std::pmr::vector<Highlight_Span> spans { context.get_transient_memory() };
     const std::u8string_view plaintext_str { plaintext.data(), plaintext.size() };
@@ -1063,9 +1063,9 @@ instantiate_macro_invocation(const ast::Directive& invocation, Context& context)
 {
     const std::u8string_view name = invocation.get_name(context.get_source());
     const ast::Directive* const definition = context.find_macro(name);
-    MMML_ASSERT(definition);
+    COWEL_ASSERT(definition);
 
     return instantiate_macro(*definition, invocation, context);
 }
 
-} // namespace mmml
+} // namespace cowel

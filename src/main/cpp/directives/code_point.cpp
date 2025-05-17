@@ -1,11 +1,11 @@
-#include "mmml/util/from_chars.hpp"
-#include "mmml/util/strings.hpp"
+#include "cowel/util/from_chars.hpp"
+#include "cowel/util/strings.hpp"
 
-#include "mmml/ast.hpp"
-#include "mmml/builtin_directive_set.hpp"
-#include "mmml/directive_processing.hpp"
+#include "cowel/ast.hpp"
+#include "cowel/builtin_directive_set.hpp"
+#include "cowel/directive_processing.hpp"
 
-namespace mmml {
+namespace cowel {
 namespace {
 
 constexpr char32_t error_point = char32_t(-1);
@@ -80,4 +80,4 @@ void Code_Point_Behavior::generate_html(HTML_Writer& out, const ast::Directive& 
     out.write_inner_html(code_point);
 }
 
-} // namespace mmml
+} // namespace cowel
