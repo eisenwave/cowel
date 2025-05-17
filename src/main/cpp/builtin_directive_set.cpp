@@ -84,6 +84,8 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::in_line };
     Here_Behavior hereblock //
         { Directive_Display::block };
+    Highlight_Behavior hl // NOLINT(misc-confusable-identifiers)
+        {};
     Self_Closing_Behavior hr //
         { u8"hr", diagnostic::hr_content_ignored, Directive_Display::block };
     HTML_Literal_Behavior html //
@@ -260,6 +262,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-h6",
         u8"-here",
         u8"-hereblock",
+        u8"-hl",
         u8"-hr",
         u8"-html",
         u8"-html-",
@@ -434,6 +437,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->here;
         if (name == u8"hereblock")
             return &m_impl->hereblock;
+        if (name == u8"hl")
+            return &m_impl->hl;
         if (name == u8"hr")
             return &m_impl->hr;
         if (name == u8"html")

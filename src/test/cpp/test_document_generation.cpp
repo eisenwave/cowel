@@ -276,6 +276,11 @@ constexpr Basic_Test basic_tests[] {
     { Path { "codeblock/trim.mmml" },
       Path { "codeblock/trim.html" } },
 
+    { Source { u8"\\hl[keyword]{awoo}\n" },
+      Source { u8"<h- data-h=kw>awoo</h->\n" } },
+    { Source { u8"\\code[c]{int \\hl[number]{x}}\n" },
+      Source { u8"<code><h- data-h=kw_type>int</h-> <h- data-h=num>x</h-></code>\n" } },
+
     { Source { u8"" },
       Path { "document/empty.html" },
       {},

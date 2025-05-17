@@ -1,5 +1,10 @@
+#include <string_view>
+#include <vector>
+
 #include "mmml/builtin_directive_set.hpp"
 #include "mmml/directive_processing.hpp"
+#include "mmml/theme_to_css.hpp"
+#include "mmml/util/strings.hpp"
 
 namespace mmml {
 namespace {
@@ -80,6 +85,7 @@ void Syntax_Highlight_Behavior::
     generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive&, const Argument_Matcher&, Context&)
         const
 {
+    // FIXME: this should generate something for inline directives
 }
 
 void Syntax_Highlight_Behavior::generate_html(
@@ -111,6 +117,59 @@ void Syntax_Highlight_Behavior::generate_html(
         diagnose(result.error(), lang, d, context);
     }
     out.close_tag(m_tag_name);
+}
+
+void Highlight_Behavior::generate_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    const Argument_Matcher&,
+    Context& context
+) const
+{
+    to_plaintext(out, d.get_content(), context);
+}
+
+void Highlight_Behavior::generate_html(
+    HTML_Writer& out,
+    const ast::Directive& d,
+    const Argument_Matcher& args,
+    Context& context
+) const
+{
+    std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
+    const bool has_name = argument_to_plaintext(name_data, d, args, name_parameter, context);
+    if (!has_name) {
+        context.try_error(
+            diagnostic::hl_name_missing, d.get_source_span(),
+            u8"A name parameter is required to specify the kind of highlight to apply."
+        );
+        try_generate_error_html(out, d, context);
+        return;
+    }
+    const auto name_string = as_u8string_view(name_data);
+
+    const std::optional<ulight::Highlight_Type> type = highlight_type_by_long_string(name_string);
+    if (!type) {
+        if (context.emits(Severity::error)) {
+            Diagnostic diagnostic
+                = context.make_error(diagnostic::hl_name_invalid, d.get_source_span());
+            diagnostic.message += u8"The given highlight name \"";
+            diagnostic.message += name_string;
+            diagnostic.message += u8"\" is not a valid ulight highlight name (long form).";
+            context.emit(std::move(diagnostic));
+        }
+        try_generate_error_html(out, d, context);
+        return;
+    }
+
+    const std::u8string_view short_name = ulight::highlight_type_short_string_u8(*type);
+    MMML_ASSERT(!short_name.empty());
+
+    out.open_tag_with_attributes(u8"h-") //
+        .write_attribute(u8"data-h", short_name)
+        .end();
+    to_html(out, d.get_content(), context);
+    out.close_tag(u8"h-");
 }
 
 } // namespace mmml

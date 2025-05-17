@@ -92,6 +92,13 @@ inline constexpr std::u8string_view highlight_malformed = u8"highlight.malformed
 /// something went wrong.
 inline constexpr std::u8string_view highlight_error = u8"highlight.error";
 
+/// @brief In a `\hl` directive,
+/// no name parameter was provided.
+inline constexpr std::u8string_view hl_name_missing = u8"highlight.name.missing";
+/// @brief In a `\hl` directive,
+/// the given highlight name is not valid.
+inline constexpr std::u8string_view hl_name_invalid = u8"highlight.name.invalid";
+
 /// @brief The content of a `\br` directive tag was ignored.
 inline constexpr std::u8string_view br_content_ignored = u8"br.content.ignored";
 /// @brief The content of a `\hr` directive tag was ignored.

@@ -84,6 +84,7 @@ struct Lorem_Ipsum_Behavior final : Directive_Behavior {
     }
 };
 
+/// @brief Responsible for syntax-highlighted directives like `\code` or `\codeblock`.
 struct [[nodiscard]] Syntax_Highlight_Behavior : Parametric_Behavior {
 private:
     static constexpr std::u8string_view lang_parameter = u8"lang";
@@ -102,6 +103,31 @@ public:
         : Parametric_Behavior { Directive_Category::pure_html, d, parameters }
         , m_tag_name { tag_name }
         , m_to_html_mode { mode }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive&, const Argument_Matcher&, Context&)
+        const override;
+
+    void generate_html(
+        HTML_Writer& out,
+        const ast::Directive& d,
+        const Argument_Matcher& args,
+        Context& context
+    ) const override;
+};
+
+/// @brief Forces a certain highlight to be applied.
+struct [[nodiscard]] Highlight_Behavior : Parametric_Behavior {
+private:
+    static constexpr std::u8string_view name_parameter = u8"name";
+    static constexpr std::u8string_view parameters[] { name_parameter };
+
+public:
+    constexpr explicit Highlight_Behavior()
+        : Parametric_Behavior { Directive_Category::pure_html, Directive_Display::in_line,
+                                parameters }
     {
     }
 
