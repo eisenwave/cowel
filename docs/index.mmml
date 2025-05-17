@@ -1,7 +1,7 @@
 \def[\cm{...}]{\code[mmml]{\put}}
 \def[\ch{...}]{\code[html]{\put}}
 \def[\defn{...}]{\i{\put}}
-\def[\dir{...}]{\cm{\html-h-[data-h=mk_tag]{\\\put}}}
+\def[\dir{...}]{\cm{\hl[markup-tag]{\\\put}}}
 
 \h1{Missing Middle Markup Language (MMML)}
 
@@ -442,7 +442,7 @@ While the set of supported language is relatively small,
 the highlighter is ultra-light, extremely fast, and
 deals with modern C++ features correctly.
 
-\h4{\dir{code} \c{mdash} Inline code}
+\h4[id=dir-code]{\dir{code} \c{mdash} Inline code}
 
 The \dir{code} directive produced syntax-highlighted text in code font.
 
@@ -498,7 +498,7 @@ Let's highlight \\js{var} in JavaScript.
 }
 }
 
-\h4{\dir{codeblock} \c{mdash} Code blocks}
+\h4[id=dir-codeblock]{\dir{codeblock} \c{mdash} Code blocks}
 
 The \dir{codeblock} directive works exactly like \dir{code},
 but it is a block directive, not an inline directive.
@@ -526,6 +526,41 @@ let x = 0;
 // Borders disabled
 let x = 0;
 }
+}
+
+\h4[id=dir-hl]{\dir{hl} \c{mdash} Syntax highlight override}
+
+The \dir{hl} directive forces certain syntax highlighting to be applied to some text;
+it is a manual override for when automatic syntax highlighting is insufficient or broken.
+It displays as inline content and wraps its content (which is an HTML context)
+in the appropriate syntax highlighting tags.
+
+It has a single \tt{name} argument, which is the µlight \defn{long name} for a highlight type.
+You can obtain a list of possible long names at
+\ref[https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h]{\tt{ulight.h}}
+from the definition of \code[cpp]{enum ulight_highlight_type}.
+The long name is the enumerator name without the \tt{ULIGHT_HL} prefix,
+all lowercase, and with hyphens instead of underscores.
+
+\example{
+It is possible to mix automatic syntax highlighting with manual overrides:
+\codeblock[mmml]{
+\\comment{_Int128 is manually highlighted as a type keyword,
+          and x is automatically highlighted as an identifier}
+\\code[c]{\\hl[keyword-type]{_Int128} x}
+}
+This generates the HTML (subject to change):
+\codeblock[html]{
+<code><h- data=h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>
+}
+It renders as \code[c]{\hl[keyword-type]{_Int128} x}.
+}
+
+\note{
+While it is also possible to produce the highlighting tags using
+\cm{\\html-h-[data-h=kw_type]{_Int128}},
+the "short names" (\cm{kw_type}) are not stable, i.e. they are more likely to change.
+Only µlight long names should be used directly.
 }
 
 \h3[id=math]{Math}
