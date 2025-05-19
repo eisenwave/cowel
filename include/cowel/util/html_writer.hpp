@@ -272,6 +272,12 @@ public:
         return write_attribute(u8"class", value, style);
     }
 
+    Attribute_Writer&
+    write_content(string_view_type value, Attribute_Style style = Attribute_Style::double_if_needed)
+    {
+        return write_attribute(u8"content", value, style);
+    }
+
     Attribute_Writer& write_crossorigin()
     {
         return write_empty_attribute(u8"crossorigin");
@@ -287,6 +293,12 @@ public:
     write_id(string_view_type value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
         return write_attribute(u8"id", value, style);
+    }
+
+    Attribute_Writer&
+    write_name(string_view_type value, Attribute_Style style = Attribute_Style::double_if_needed)
+    {
+        return write_attribute(u8"name", value, style);
     }
 
     Attribute_Writer&
