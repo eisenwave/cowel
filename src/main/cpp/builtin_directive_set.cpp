@@ -193,6 +193,8 @@ struct Builtin_Directive_Set::Impl {
         { Variable_Operation::set };
     Special_Block_Behavior warning //
         { u8"warning-block" };
+    Self_Closing_Behavior wbr //
+        { u8"wbr", diagnostic::wbr_content_ignored, Directive_Display::in_line };
     WG21_Block_Behavior wg21_example //
         { u8"Example", u8"end example" };
     In_Tag_Behavior wg21_grammar //
@@ -315,6 +317,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-vget",
         u8"-vset",
         u8"-warning",
+        u8"-wbr",
         u8"-wg21-example",
         u8"-wg21-grammar",
         u8"-wg21-head",
@@ -589,6 +592,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'w':
         if (name == u8"warning")
             return &m_impl->warning;
+        if (name == u8"wbr")
+            return &m_impl->wbr;
         if (name == u8"wg21-example")
             return &m_impl->wg21_example;
         if (name == u8"wg21-grammar")

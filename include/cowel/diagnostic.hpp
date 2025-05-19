@@ -103,6 +103,8 @@ inline constexpr std::u8string_view hl_name_invalid = u8"highlight.name.invalid"
 inline constexpr std::u8string_view br_content_ignored = u8"br.content.ignored";
 /// @brief The content of a `\hr` directive tag was ignored.
 inline constexpr std::u8string_view hr_content_ignored = u8"hr.content.ignored";
+/// @brief The content of a `\wbr` directive tag was ignored.
+inline constexpr std::u8string_view wbr_content_ignored = u8"wbr.content.ignored";
 
 /// @brief In a `\there` directive,
 /// no section was provided.
