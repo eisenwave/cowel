@@ -36,10 +36,18 @@ struct Builtin_Directive_Set::Impl {
         { u8"bug-block" };
     HTML_Entity_Behavior c //
         {};
+    Fixed_Name_Passthrough_Behavior caption //
+        { u8"caption", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior cite //
+        { u8"cite", Directive_Category::formatting, Directive_Display::in_line };
     Syntax_Highlight_Behavior code //
         { u8"code", Directive_Display::in_line, To_HTML_Mode::direct };
     Syntax_Highlight_Behavior codeblock //
         { u8"code-block", Directive_Display::block, To_HTML_Mode::trimmed };
+    Fixed_Name_Passthrough_Behavior col //
+        { u8"col", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior colgroup //
+        { u8"colgroup", Directive_Category::pure_html, Directive_Display::block };
     Do_Nothing_Behavior comment //
         { Directive_Category::meta, Directive_Display::none };
     Fixed_Name_Passthrough_Behavior dd //
@@ -54,6 +62,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"del-block", false };
     Fixed_Name_Passthrough_Behavior details //
         { u8"details", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior dfn //
+        { u8"dfn", Directive_Category::formatting, Directive_Display::in_line };
     Special_Block_Behavior diff //
         { u8"diff-block", false };
     Fixed_Name_Passthrough_Behavior dl //
@@ -125,6 +135,8 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::in_line };
     Math_Behavior mathblock //
         { Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior noscript //
+        { u8"noscript", Directive_Category::pure_html, Directive_Display::block };
     Special_Block_Behavior note //
         { u8"note-block" };
     List_Behavior ol //
@@ -133,12 +145,16 @@ struct Builtin_Directive_Set::Impl {
         { u8"p", Directive_Category::pure_html, Directive_Display::block };
     Wrap_Behavior paragraphs //
         { Directive_Category::formatting, Directive_Display::block, To_HTML_Mode::paragraphs };
+    Fixed_Name_Passthrough_Behavior pre //
+        { u8"pre", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior q //
         { u8"q", Directive_Category::formatting, Directive_Display::in_line };
     Ref_Behavior ref //
         {};
     Fixed_Name_Passthrough_Behavior s //
         { u8"s", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior samp //
+        { u8"samp", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior sans //
         { u8"f-sans", Directive_Category::formatting, Directive_Display::in_line };
     HTML_Raw_Text_Behavior script //
@@ -165,6 +181,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"tbody", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior td //
         { u8"td", Directive_Category::pure_html, Directive_Display::block };
+    Fixed_Name_Passthrough_Behavior tfoot //
+        { u8"tfoot", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior th //
         { u8"th", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior thead //
@@ -187,6 +205,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"ul" };
     URL_Behavior url //
         {};
+    Fixed_Name_Passthrough_Behavior var //
+        { u8"var", Directive_Category::formatting, Directive_Display::in_line };
     Get_Variable_Behavior vget //
         {};
     Modify_Variable_Behavior vset //
@@ -240,6 +260,8 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-br",
         u8"-bug",
         u8"-c",
+        u8"-caption",
+        u8"-cite",
         u8"-code",
         u8"-codeblock",
         u8"-comment",
@@ -249,6 +271,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-del",
         u8"-delblock",
         u8"-details",
+        u8"-dfn",
         u8"-diff",
         u8"-dl",
         u8"-dt",
@@ -285,13 +308,16 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-mark",
         u8"-math",
         u8"-mathblock",
+        u8"-noscript",
         u8"-note",
         u8"-ol",
         u8"-p",
         u8"-paragraphs",
+        u8"-pre",
         u8"-q",
         u8"-ref",
         u8"-s",
+        u8"-samp",
         u8"-sans",
         u8"-script",
         u8"-serif",
@@ -305,6 +331,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-tbody",
         u8"-td",
         u8"-tel",
+        u8"-tfoot",
         u8"-th",
         u8"-thead",
         u8"-tip",
@@ -314,6 +341,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-u",
         u8"-ul",
         u8"-url",
+        u8"-var",
         u8"-vget",
         u8"-vset",
         u8"-warning",
@@ -380,6 +408,10 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'c':
         if (name == u8"c")
             return &m_impl->c;
+        if (name == u8"caption")
+            return &m_impl->caption;
+        if (name == u8"cite")
+            return &m_impl->cite;
         if (name == u8"code")
             return &m_impl->code;
         if (name == u8"codeblock")
@@ -401,6 +433,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->delblock;
         if (name == u8"details")
             return &m_impl->details;
+        if (name == u8"dfn")
+            return &m_impl->dfn;
         if (name == u8"diff")
             return &m_impl->diff;
         if (name == u8"dl")
@@ -494,6 +528,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'n':
+        if (name == u8"noscript")
+            return &m_impl->noscript;
         if (name == u8"note")
             return &m_impl->note;
         break;
@@ -508,6 +544,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->p;
         if (name == u8"paragraphs")
             return &m_impl->paragraphs;
+        if (name == u8"pre")
+            return &m_impl->pre;
         break;
 
     case u8'q':
@@ -523,6 +561,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8's':
         if (name == u8"s")
             return &m_impl->s;
+        if (name == u8"samp")
+            return &m_impl->samp;
         if (name == u8"sans")
             return &m_impl->sans;
         if (name == u8"script")
@@ -552,6 +592,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->td;
         if (name == u8"tel")
             return &m_impl->tel;
+        if (name == u8"tfoot")
+            return &m_impl->tfoot;
         if (name == u8"th")
             return &m_impl->th;
         if (name == u8"thead")
@@ -583,6 +625,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'v':
+        if (name == u8"var")
+            return &m_impl->var;
         if (name == u8"vget")
             return &m_impl->vget;
         if (name == u8"vset")

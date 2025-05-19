@@ -338,92 +338,112 @@ You can rely on this when adding custom CSS.
     \th{HTML}
     \th{Renders as}
 }
-\tr{
+\tr[id=dir-b]{
     \td{\cm{\\b{...}}}
     \td{\ch{<b>...</b>}}
     \td{\b{Bold text}}
 }
-\tr{
+\tr[id=dir-cite]{
+    \td{\cm{\\cite{...}}}
+    \td{\ch{<cite>...</cite>}}
+    \td{\cite{Name of cited work}}
+}
+\tr[id=dir-del]{
     \td{\cm{\\del{...}}}
     \td{\ch{<del>...</del>}}
     \td{\del{Deleted text}}
 }
-\tr{
+\tr[id=dir-dfn]{
+    \td{\cm{\\dfn{...}}}
+    \td{\ch{<dfn>...</dfn>}}
+    \td{\dfn{Definition}}
+}
+\tr[id=dir-em]{
     \td{\cm{\\em{...}}}
     \td{\ch{<em>...</em>}}
     \td{\em{Emphasized text}}
 }
-\tr{
+\tr[id=dir-gterm]{
     \td{\cm{\\gterm{...}}}
     \td{\i{unspecified}}
     \td{\gterm{grammar-term}}
 }
-\tr{
+\tr[id=dir-i]{
     \td{\cm{\\i{...}}}
     \td{\ch{<i>...</i>}}
     \td{\i{Italic text}}
 }
-\tr{
+\tr[id=dir-ins]{
     \td{\cm{\\ins{...}}}
     \td{\ch{<ins>...</ins>}}
     \td{\ins{Inserted text}}
 }
-\tr{
+\tr[id=dir-kbd]{
     \td{\cm{\\kbd{...}}}
     \td{\ch{<kbd>...</kbd>}}
     \td{\kbd{Ctrl} + \kbd{Keyboard key}}
 }
-\tr{
+\tr[id=dir-mark]{
     \td{\cm{\\mark{...}}}
     \td{\ch{<mark>...</mark>}}
     \td{\mark{Marked/highlighted}}
 }
-\tr{
+\tr[id=dir-q]{
     \td{\cm{\\q{...}}}
     \td{\ch{<q>...</q>}}
     \td{\q{Quoted text}}
 }
-\tr{
-    \td{\cm{\\sans{...}}}
-    \td{\i{unspecified}}
-    \td{\sans{Sans-serif font}}
-}
-\tr{
-    \td{\cm{\\serif{...}}}
-    \td{\i{unspecified}}
-    \td{\serif{Serif font}}
-}
-\tr{
-    \td{\cm{\\small{...}}}
-    \td{\ch{<small>...</small>}}
-    \td{\sub{Small text}}
-}
-\tr{
+\tr[id=dir-s]{
     \td{\cm{\\s{...}}}
     \td{\ch{<s>...</s>}}
     \td{\s{Struck text}}
 }
-\tr{
+\tr[id=dir-samp]{
+    \td{\cm{\\samp{...}}}
+    \td{\ch{<samp>...</samp>}}
+    \td{\samp{Sample output}}
+}
+\tr[id=dir-sans]{
+    \td{\cm{\\sans{...}}}
+    \td{\i{unspecified}}
+    \td{\sans{Sans-serif font}}
+}
+\tr[id=dir-serif]{
+    \td{\cm{\\serif{...}}}
+    \td{\i{unspecified}}
+    \td{\serif{Serif font}}
+}
+\tr[id=dir-small]{
+    \td{\cm{\\small{...}}}
+    \td{\ch{<small>...</small>}}
+    \td{\sub{Small text}}
+}
+\tr[id=dir-sub]{
     \td{\cm{\\sub{...}}}
     \td{\ch{<sub>...</sub>}}
     \td{\sub{Subscript}}
 }
-\tr{
+\tr[id=dir-sup]{
     \td{\cm{\\sup{...}}}
     \td{\ch{<sup>...</sup>}}
     \td{\sup{Superscript}}
 }
-\tr{
+\tr[id=dir-strong]{
     \td{\cm{\\strong{...}}}
     \td{\ch{<strong>...</strong>}}
     \td{\b{Strong text}}
 }
-\tr{
+\tr[id=dir-tt]{
     \td{\cm{\\tt{...}}}
     \td{\i{unspecified}}
     \td{\tt{Teletype/monospace font}}
 }
-\tr{
+\tr[id=dir-var]{
+    \td{\cm{\\var{...}}}
+    \td{\ch{<var>...</var>}}
+    \td{\var{Variable name}}
+}
+\tr[id=dir-u]{
     \td{\cm{\\u{...}}}
     \td{\ch{<u>...</u>}}
     \td{\u{Underlined text}}
@@ -432,6 +452,15 @@ You can rely on this when adding custom CSS.
 
 All such \defn{formatting directives}
 convert all named arguments directly into HTML attributes.
+
+\note{
+By default, a substantial amount of directives are styled the same way.
+For example, \dir{cite}, \dir{var}, \dir{i} and \dir{em} are all italic.
+Both \dir{strong} and \dir{b} are bold.
+Both \dir{tt} and \dir{samp} use teletype font.
+
+However, you can customize the style; see \ref[#dir-style].
+}
 
 \h3[id=code]{Code and syntax highlighting}
 
@@ -561,6 +590,33 @@ While it is also possible to produce the highlighting tags using
 \cm{\\html-h-[data-h=kw_type]{_Int128}},
 the "short names" (\cm{kw_type}) are not stable, i.e. they are more likely to change.
 Only µlight long names should be used directly.
+}
+
+\h4[id=dir-pre]{\dir{pre} \c{mdash} Preformatted blocks}
+
+The \dir{pre} directive contains pre-formatted content.
+It can be used to contain code, however, there is no syntax highlighting in a \dir{pre} block.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\\pre{
+Hello, world!
+=============
+    a b c
+}
+}
+This renders as:
+\pre{
+Hello, world!
+=============
+    a b c
+}
+}
+
+\todo{
+Unlike \dir{codeblock}, \dir{pre} currently does not support the \tt{borders=no} option.
+This will be added in the future.
 }
 
 \h3[id=math]{Math}
@@ -849,7 +905,10 @@ Within that list, you can use
 \h3{Tables}
 
 Tables are simply produced by using the
-\dir{table}, \dir{thead}, \dir{tbody}, \dir{tr}, \dir{th}, and \dir{td} directives to
+\dir{table}, \dir{thead}, \dir{tbody}, \dir{tfoot},
+\dir{tr}, \dir{th}, \dir{td},
+\dir{colgroup}, \dir{col},
+and \dir{caption} directives to
 produce the corresponding HTML tags with the same name.
 
 \tip{
@@ -1023,6 +1082,12 @@ console.log("hello");
 </script>
 }
 }
+
+\h4[id=dir-noscript]{\dir{noscript} \c{mdash} No-JavaScript content}
+
+The \dir{noscript} directive corresponds to the \ch{<noscript>} element.
+Its content is an HTML context,
+and will only be shown by the browser when JavaScript is disabled.
 
 \h4[id=dir-style]{\dir{style} \c{mdash} CSS blocks}
 

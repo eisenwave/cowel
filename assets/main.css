@@ -422,7 +422,6 @@ math[display=block],
 note-block,
 p,
 pre,
-samp,
 tip-block,
 todo-block,
 ul,
@@ -562,6 +561,7 @@ warning-block::before {
 code,
 code-block,
 pre,
+samp,
 tt,
 tt-,
 .mono {
@@ -570,7 +570,8 @@ tt-,
     font-variant-ligatures: none;
 }
 
-code-block:not(.borderless) {
+code-block:not(.borderless),
+pre {
     padding: 0.5em;
     border-radius: var(--border-radius);
     box-sizing: border-box;
@@ -580,15 +581,13 @@ code-block:not(.borderless) {
 }
 
 code-block,
-pre,
-samp {
+pre {
     font-size: 95%;
     width: 100%;
 }
 
 code-block,
-pre,
-samp {
+pre {
     white-space: pre;
     overflow-x: auto;
 }

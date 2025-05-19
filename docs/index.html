@@ -429,7 +429,6 @@ math[display=block],
 note-block,
 p,
 pre,
-samp,
 tip-block,
 todo-block,
 ul,
@@ -569,6 +568,7 @@ warning-block::before {
 code,
 code-block,
 pre,
+samp,
 tt,
 tt-,
 .mono {
@@ -577,7 +577,8 @@ tt-,
     font-variant-ligatures: none;
 }
 
-code-block:not(.borderless) {
+code-block:not(.borderless),
+pre {
     padding: 0.5em;
     border-radius: var(--border-radius);
     box-sizing: border-box;
@@ -587,15 +588,13 @@ code-block:not(.borderless) {
 }
 
 code-block,
-pre,
-samp {
+pre {
     font-size: 95%;
     width: 100%;
 }
 
 code-block,
-pre,
-samp {
+pre {
     white-space: pre;
     overflow-x: auto;
 }
@@ -1445,7 +1444,7 @@ if (theme !== null) {
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
 
-<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=2>2</div><a href=#getting-started><h2>Getting started</h2></a><div class=toc-num data-level=2>3</div><a href=#motivation><h2>Motivation</h2></a><div class=toc-num data-level=2>4</div><a href=#syntax-in-a-nutshell><h2>Syntax in a nutshell</h2></a><div class=toc-num data-level=3>4.1</div><a href=#whitespace><h3>Whitespace</h3></a><div class=toc-num data-level=3>4.2</div><a href=#paragraph-splitting><h3>Paragraph splitting</h3></a><div class=toc-num data-level=2>5</div><a href=#directives><h2>Directives</h2></a><div class=toc-num data-level=3>5.1</div><a href=#directive-names><h3>Directive names</h3></a><div class=toc-num data-level=3>5.2</div><a href=#directive-arguments><h3>Directive arguments</h3></a><div class=toc-num data-level=3>5.3</div><a href=#directive-content><h3>Directive content</h3></a><div class=toc-num data-level=2>6</div><a href=#contexts-and-output><h2>Contexts and output</h2></a><div class=toc-num data-level=2>7</div><a href=#themes><h2>Themes</h2></a><div class=toc-num data-level=2>8</div><a href=#list-of-directives><h2>List of directives</h2></a><div class=toc-num data-level=3>8.1</div><a href=#comments><h3>Comments</h3></a><div class=toc-num data-level=4>8.1.1</div><a href=#—-comments><h4><code><h- data-h=mk_tag>\comment</h-></code> &mdash; Comments</h4></a><div class=toc-num data-level=3>8.2</div><a href=#text-formatting><h3>Text formatting</h3></a><div class=toc-num data-level=3>8.3</div><a href=#code><h3>Code and syntax highlighting</h3></a><div class=toc-num data-level=4>8.3.1</div><a href=#dir-code><h4><code><h- data-h=mk_tag>\code</h-></code> &mdash; Inline code</h4></a><div class=toc-num data-level=4>8.3.2</div><a href=#dir-codeblock><h4><code><h- data-h=mk_tag>\codeblock</h-></code> &mdash; Code blocks</h4></a><div class=toc-num data-level=4>8.3.3</div><a href=#dir-hl><h4><code><h- data-h=mk_tag>\hl</h-></code> &mdash; Syntax highlight override</h4></a><div class=toc-num data-level=3>8.4</div><a href=#math><h3>Math</h3></a><div class=toc-num data-level=4>8.4.1</div><a href=#dir-math><h4><code><h- data-h=mk_tag>\math</h-></code> &mdash; Inline math</h4></a><div class=toc-num data-level=4>8.4.2</div><a href=#dir-mathblock><h4><code><h- data-h=mk_tag>\mathblock</h-></code> &mdash; Math blocks</h4></a><div class=toc-num data-level=3>8.5</div><a href=#separators><h3>Separators</h3></a><div class=toc-num data-level=4>8.5.1</div><a href=#dir-br><h4><code><h- data-h=mk_tag>\br</h-></code> &mdash; Break line</h4></a><div class=toc-num data-level=4>8.5.2</div><a href=#dir-hr><h4><code><h- data-h=mk_tag>\hr</h-></code> &mdash; Horizontal rule</h4></a><div class=toc-num data-level=4>8.5.3</div><a href=#dir-wbr><h4><code><h- data-h=mk_tag>\wbr</h-></code> &mdash; Word break opportunity</h4></a><div class=toc-num data-level=3>8.6</div><a href=#special-characters><h3>Special characters</h3></a><div class=toc-num data-level=4>8.6.1</div><a href=#—-code-point-literal><h4><code><h- data-h=mk_tag>\U</h-></code> &mdash; Code point literal</h4></a><div class=toc-num data-level=4>8.6.2</div><a href=#—-character-references><h4><code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4></a><div class=toc-num data-level=3>8.7</div><a href=#special-blocks><h3>Special blocks</h3></a><div class=toc-num data-level=4>8.7.1</div><a href=#dir-abstract><h4><code><h- data-h=mk_tag>\abstract</h-></code> &mdash; Abstract blocks</h4></a><div class=toc-num data-level=4>8.7.2</div><a href=#dir-blockquote><h4><code><h- data-h=mk_tag>\blockquote</h-></code> &mdash; Quote blocks</h4></a><div class=toc-num data-level=4>8.7.3</div><a href=#dir-bug><h4><code><h- data-h=mk_tag>\bug</h-></code> &mdash; Bug blocks</h4></a><div class=toc-num data-level=4>8.7.4</div><a href=#dir-decision><h4><code><h- data-h=mk_tag>\decision</h-></code> &mdash; Decision blocks</h4></a><div class=toc-num data-level=4>8.7.5</div><a href=#dir-delblock><h4><code><h- data-h=mk_tag>\delblock</h-></code> &mdash; Deletion blocks</h4></a><div class=toc-num data-level=4>8.7.6</div><a href=#dir-details><h4><code><h- data-h=mk_tag>\details</h-></code> &mdash; Details blocks aka spoilers</h4></a><div class=toc-num data-level=4>8.7.7</div><a href=#dir-diff><h4><code><h- data-h=mk_tag>\diff</h-></code> &mdash; Difference blocks</h4></a><div class=toc-num data-level=4>8.7.8</div><a href=#dir-example><h4><code><h- data-h=mk_tag>\example</h-></code> &mdash; Example blocks</h4></a><div class=toc-num data-level=4>8.7.9</div><a href=#dir-insblock><h4><code><h- data-h=mk_tag>\insblock</h-></code> &mdash; Insertion blocks</h4></a><div class=toc-num data-level=4>8.7.10</div><a href=#dir-important><h4><code><h- data-h=mk_tag>\important</h-></code> &mdash; Important blocks</h4></a><div class=toc-num data-level=4>8.7.11</div><a href=#dir-note><h4><code><h- data-h=mk_tag>\note</h-></code> &mdash; Note blocks</h4></a><div class=toc-num data-level=4>8.7.12</div><a href=#dir-tip><h4><code><h- data-h=mk_tag>\tip</h-></code> &mdash; Tip blocks</h4></a><div class=toc-num data-level=4>8.7.13</div><a href=#dir-todo><h4><code><h- data-h=mk_tag>\todo</h-></code> &mdash; TODO blocks</h4></a><div class=toc-num data-level=4>8.7.14</div><a href=#dir-warning><h4><code><h- data-h=mk_tag>\warning</h-></code> &mdash; Warning blocks</h4></a><div class=toc-num data-level=3>8.8</div><a href=#lists><h3>Lists</h3></a><div class=toc-num data-level=4>8.8.1</div><a href=#dir-ul><h4><code><h- data-h=mk_tag>\ul</h-></code> &mdash; Unordered lists</h4></a><div class=toc-num data-level=4>8.8.2</div><a href=#dir-ol><h4><code><h- data-h=mk_tag>\ol</h-></code> &mdash; Ordered lists</h4></a><div class=toc-num data-level=4>8.8.3</div><a href=#dir-dl><h4><code><h- data-h=mk_tag>\dl</h-></code> &mdash; Definition lists</h4></a><div class=toc-num data-level=3>8.9</div><a href=#tables><h3>Tables</h3></a><div class=toc-num data-level=3>8.10</div><a href=#headings><h3>Headings</h3></a><div class=toc-num data-level=3>8.11</div><a href=#references><h3>References</h3></a><div class=toc-num data-level=4>8.11.1</div><a href=#dir-ref><h4><code><h- data-h=mk_tag>\ref</h-></code> &mdash; References</h4></a><div class=toc-num data-level=4>8.11.2</div><a href=#dir-mail><h4><code><h- data-h=mk_tag>\mail</h-></code> &mdash; E-Mail addresses</h4></a><div class=toc-num data-level=4>8.11.3</div><a href=#dir-tel><h4><code><h- data-h=mk_tag>\tel</h-></code> &mdash; Telephone numbers</h4></a><div class=toc-num data-level=3>8.12</div><a href=#foreign-languages><h3>Foreign languages</h3></a><div class=toc-num data-level=4>8.12.1</div><a href=#dir-html><h4><code><h- data-h=mk_tag>\html</h-></code> &mdash; Inline HTML</h4></a><div class=toc-num data-level=4>8.12.2</div><a href=#dir-htmlblock><h4><code><h- data-h=mk_tag>\htmlblock</h-></code> &mdash; HTML blocks</h4></a><div class=toc-num data-level=4>8.12.3</div><a href=#dir-html-element><h4><code><h- data-h=mk_tag>\html-*</h-></code> &mdash; HTML element literals</h4></a><div class=toc-num data-level=4>8.12.4</div><a href=#dir-script><h4><code><h- data-h=mk_tag>\script</h-></code> &mdash; JavaScript blocks</h4></a><div class=toc-num data-level=4>8.12.5</div><a href=#dir-style><h4><code><h- data-h=mk_tag>\style</h-></code> &mdash; CSS blocks</h4></a><div class=toc-num data-level=3>8.13</div><a href=#paragraph-control><h3>Paragraph control</h3></a><div class=toc-num data-level=4>8.13.1</div><a href=#dir-p><h4><code><h- data-h=mk_tag>\p</h-></code> &mdash; Paragraphs</h4></a><div class=toc-num data-level=4>8.13.2</div><a href=#dir-paragraphs><h4><code><h- data-h=mk_tag>\paragraphs</h-></code> &mdash; Enable paragraph splitting</h4></a><div class=toc-num data-level=4>8.13.3</div><a href=#dir-block><h4><code><h- data-h=mk_tag>\block</h-></code> &mdash; Display as block content</h4></a><div class=toc-num data-level=4>8.13.4</div><a href=#dir-inline><h4><code><h- data-h=mk_tag>\inline</h-></code> &mdash; Display as inline content</h4></a><div class=toc-num data-level=3>8.14</div><a href=#sections><h3>Sections</h3></a><div class=toc-num data-level=4>8.14.1</div><a href=#dir-there><h4><code><h- data-h=mk_tag>\there</h-></code> &mdash; Append content to section</h4></a><div class=toc-num data-level=4>8.14.2</div><a href=#dir-here><h4><code><h- data-h=mk_tag>\here</h-></code> &mdash; Copy section content</h4></a><div class=toc-num data-level=4>8.14.3</div><a href=#dir-hereblock><h4><code><h- data-h=mk_tag>\hereblock</h-></code> &mdash; Copy section content in block</h4></a><div class=toc-num data-level=3>8.15</div><a href=#macros><h3>Macros</h3></a><div class=toc-num data-level=4>8.15.1</div><a href=#dir-def><h4><code><h- data-h=mk_tag>\def</h-></code> &mdash; Define a macro</h4></a></div>
+<div class=toc><div class=toc-num data-level=2>1</div><a href=#introduction><h2>Introduction</h2></a><div class=toc-num data-level=2>2</div><a href=#getting-started><h2>Getting started</h2></a><div class=toc-num data-level=2>3</div><a href=#motivation><h2>Motivation</h2></a><div class=toc-num data-level=2>4</div><a href=#syntax-in-a-nutshell><h2>Syntax in a nutshell</h2></a><div class=toc-num data-level=3>4.1</div><a href=#whitespace><h3>Whitespace</h3></a><div class=toc-num data-level=3>4.2</div><a href=#paragraph-splitting><h3>Paragraph splitting</h3></a><div class=toc-num data-level=2>5</div><a href=#directives><h2>Directives</h2></a><div class=toc-num data-level=3>5.1</div><a href=#directive-names><h3>Directive names</h3></a><div class=toc-num data-level=3>5.2</div><a href=#directive-arguments><h3>Directive arguments</h3></a><div class=toc-num data-level=3>5.3</div><a href=#directive-content><h3>Directive content</h3></a><div class=toc-num data-level=2>6</div><a href=#contexts-and-output><h2>Contexts and output</h2></a><div class=toc-num data-level=2>7</div><a href=#themes><h2>Themes</h2></a><div class=toc-num data-level=2>8</div><a href=#list-of-directives><h2>List of directives</h2></a><div class=toc-num data-level=3>8.1</div><a href=#comments><h3>Comments</h3></a><div class=toc-num data-level=4>8.1.1</div><a href=#—-comments><h4><code><h- data-h=mk_tag>\comment</h-></code> &mdash; Comments</h4></a><div class=toc-num data-level=3>8.2</div><a href=#text-formatting><h3>Text formatting</h3></a><div class=toc-num data-level=3>8.3</div><a href=#code><h3>Code and syntax highlighting</h3></a><div class=toc-num data-level=4>8.3.1</div><a href=#dir-code><h4><code><h- data-h=mk_tag>\code</h-></code> &mdash; Inline code</h4></a><div class=toc-num data-level=4>8.3.2</div><a href=#dir-codeblock><h4><code><h- data-h=mk_tag>\codeblock</h-></code> &mdash; Code blocks</h4></a><div class=toc-num data-level=4>8.3.3</div><a href=#dir-hl><h4><code><h- data-h=mk_tag>\hl</h-></code> &mdash; Syntax highlight override</h4></a><div class=toc-num data-level=4>8.3.4</div><a href=#dir-pre><h4><code><h- data-h=mk_tag>\pre</h-></code> &mdash; Preformatted blocks</h4></a><div class=toc-num data-level=3>8.4</div><a href=#math><h3>Math</h3></a><div class=toc-num data-level=4>8.4.1</div><a href=#dir-math><h4><code><h- data-h=mk_tag>\math</h-></code> &mdash; Inline math</h4></a><div class=toc-num data-level=4>8.4.2</div><a href=#dir-mathblock><h4><code><h- data-h=mk_tag>\mathblock</h-></code> &mdash; Math blocks</h4></a><div class=toc-num data-level=3>8.5</div><a href=#separators><h3>Separators</h3></a><div class=toc-num data-level=4>8.5.1</div><a href=#dir-br><h4><code><h- data-h=mk_tag>\br</h-></code> &mdash; Break line</h4></a><div class=toc-num data-level=4>8.5.2</div><a href=#dir-hr><h4><code><h- data-h=mk_tag>\hr</h-></code> &mdash; Horizontal rule</h4></a><div class=toc-num data-level=4>8.5.3</div><a href=#dir-wbr><h4><code><h- data-h=mk_tag>\wbr</h-></code> &mdash; Word break opportunity</h4></a><div class=toc-num data-level=3>8.6</div><a href=#special-characters><h3>Special characters</h3></a><div class=toc-num data-level=4>8.6.1</div><a href=#—-code-point-literal><h4><code><h- data-h=mk_tag>\U</h-></code> &mdash; Code point literal</h4></a><div class=toc-num data-level=4>8.6.2</div><a href=#—-character-references><h4><code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4></a><div class=toc-num data-level=3>8.7</div><a href=#special-blocks><h3>Special blocks</h3></a><div class=toc-num data-level=4>8.7.1</div><a href=#dir-abstract><h4><code><h- data-h=mk_tag>\abstract</h-></code> &mdash; Abstract blocks</h4></a><div class=toc-num data-level=4>8.7.2</div><a href=#dir-blockquote><h4><code><h- data-h=mk_tag>\blockquote</h-></code> &mdash; Quote blocks</h4></a><div class=toc-num data-level=4>8.7.3</div><a href=#dir-bug><h4><code><h- data-h=mk_tag>\bug</h-></code> &mdash; Bug blocks</h4></a><div class=toc-num data-level=4>8.7.4</div><a href=#dir-decision><h4><code><h- data-h=mk_tag>\decision</h-></code> &mdash; Decision blocks</h4></a><div class=toc-num data-level=4>8.7.5</div><a href=#dir-delblock><h4><code><h- data-h=mk_tag>\delblock</h-></code> &mdash; Deletion blocks</h4></a><div class=toc-num data-level=4>8.7.6</div><a href=#dir-details><h4><code><h- data-h=mk_tag>\details</h-></code> &mdash; Details blocks aka spoilers</h4></a><div class=toc-num data-level=4>8.7.7</div><a href=#dir-diff><h4><code><h- data-h=mk_tag>\diff</h-></code> &mdash; Difference blocks</h4></a><div class=toc-num data-level=4>8.7.8</div><a href=#dir-example><h4><code><h- data-h=mk_tag>\example</h-></code> &mdash; Example blocks</h4></a><div class=toc-num data-level=4>8.7.9</div><a href=#dir-insblock><h4><code><h- data-h=mk_tag>\insblock</h-></code> &mdash; Insertion blocks</h4></a><div class=toc-num data-level=4>8.7.10</div><a href=#dir-important><h4><code><h- data-h=mk_tag>\important</h-></code> &mdash; Important blocks</h4></a><div class=toc-num data-level=4>8.7.11</div><a href=#dir-note><h4><code><h- data-h=mk_tag>\note</h-></code> &mdash; Note blocks</h4></a><div class=toc-num data-level=4>8.7.12</div><a href=#dir-tip><h4><code><h- data-h=mk_tag>\tip</h-></code> &mdash; Tip blocks</h4></a><div class=toc-num data-level=4>8.7.13</div><a href=#dir-todo><h4><code><h- data-h=mk_tag>\todo</h-></code> &mdash; TODO blocks</h4></a><div class=toc-num data-level=4>8.7.14</div><a href=#dir-warning><h4><code><h- data-h=mk_tag>\warning</h-></code> &mdash; Warning blocks</h4></a><div class=toc-num data-level=3>8.8</div><a href=#lists><h3>Lists</h3></a><div class=toc-num data-level=4>8.8.1</div><a href=#dir-ul><h4><code><h- data-h=mk_tag>\ul</h-></code> &mdash; Unordered lists</h4></a><div class=toc-num data-level=4>8.8.2</div><a href=#dir-ol><h4><code><h- data-h=mk_tag>\ol</h-></code> &mdash; Ordered lists</h4></a><div class=toc-num data-level=4>8.8.3</div><a href=#dir-dl><h4><code><h- data-h=mk_tag>\dl</h-></code> &mdash; Definition lists</h4></a><div class=toc-num data-level=3>8.9</div><a href=#tables><h3>Tables</h3></a><div class=toc-num data-level=3>8.10</div><a href=#headings><h3>Headings</h3></a><div class=toc-num data-level=3>8.11</div><a href=#references><h3>References</h3></a><div class=toc-num data-level=4>8.11.1</div><a href=#dir-ref><h4><code><h- data-h=mk_tag>\ref</h-></code> &mdash; References</h4></a><div class=toc-num data-level=4>8.11.2</div><a href=#dir-mail><h4><code><h- data-h=mk_tag>\mail</h-></code> &mdash; E-Mail addresses</h4></a><div class=toc-num data-level=4>8.11.3</div><a href=#dir-tel><h4><code><h- data-h=mk_tag>\tel</h-></code> &mdash; Telephone numbers</h4></a><div class=toc-num data-level=3>8.12</div><a href=#foreign-languages><h3>Foreign languages</h3></a><div class=toc-num data-level=4>8.12.1</div><a href=#dir-html><h4><code><h- data-h=mk_tag>\html</h-></code> &mdash; Inline HTML</h4></a><div class=toc-num data-level=4>8.12.2</div><a href=#dir-htmlblock><h4><code><h- data-h=mk_tag>\htmlblock</h-></code> &mdash; HTML blocks</h4></a><div class=toc-num data-level=4>8.12.3</div><a href=#dir-html-element><h4><code><h- data-h=mk_tag>\html-*</h-></code> &mdash; HTML element literals</h4></a><div class=toc-num data-level=4>8.12.4</div><a href=#dir-script><h4><code><h- data-h=mk_tag>\script</h-></code> &mdash; JavaScript blocks</h4></a><div class=toc-num data-level=4>8.12.5</div><a href=#dir-noscript><h4><code><h- data-h=mk_tag>\noscript</h-></code> &mdash; No-JavaScript content</h4></a><div class=toc-num data-level=4>8.12.6</div><a href=#dir-style><h4><code><h- data-h=mk_tag>\style</h-></code> &mdash; CSS blocks</h4></a><div class=toc-num data-level=3>8.13</div><a href=#paragraph-control><h3>Paragraph control</h3></a><div class=toc-num data-level=4>8.13.1</div><a href=#dir-p><h4><code><h- data-h=mk_tag>\p</h-></code> &mdash; Paragraphs</h4></a><div class=toc-num data-level=4>8.13.2</div><a href=#dir-paragraphs><h4><code><h- data-h=mk_tag>\paragraphs</h-></code> &mdash; Enable paragraph splitting</h4></a><div class=toc-num data-level=4>8.13.3</div><a href=#dir-block><h4><code><h- data-h=mk_tag>\block</h-></code> &mdash; Display as block content</h4></a><div class=toc-num data-level=4>8.13.4</div><a href=#dir-inline><h4><code><h- data-h=mk_tag>\inline</h-></code> &mdash; Display as inline content</h4></a><div class=toc-num data-level=3>8.14</div><a href=#sections><h3>Sections</h3></a><div class=toc-num data-level=4>8.14.1</div><a href=#dir-there><h4><code><h- data-h=mk_tag>\there</h-></code> &mdash; Append content to section</h4></a><div class=toc-num data-level=4>8.14.2</div><a href=#dir-here><h4><code><h- data-h=mk_tag>\here</h-></code> &mdash; Copy section content</h4></a><div class=toc-num data-level=4>8.14.3</div><a href=#dir-hereblock><h4><code><h- data-h=mk_tag>\hereblock</h-></code> &mdash; Copy section content in block</h4></a><div class=toc-num data-level=3>8.15</div><a href=#macros><h3>Macros</h3></a><div class=toc-num data-level=4>8.15.1</div><a href=#dir-def><h4><code><h- data-h=mk_tag>\def</h-></code> &mdash; Define a macro</h4></a></div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
 
@@ -1734,92 +1733,112 @@ You can rely on this when adding custom CSS.
     <th>HTML</th>
     <th>Renders as</th>
 </tr>
-<tr>
+<tr id=dir-b>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><b>Bold text</b></td>
 </tr>
-<tr>
+<tr id=dir-cite>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cite</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>cite</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>cite</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><cite>Name of cited work</cite></td>
+</tr>
+<tr id=dir-del>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>del</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>del</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>del</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><del>Deleted text</del></td>
 </tr>
-<tr>
+<tr id=dir-dfn>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>dfn</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>dfn</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>dfn</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><dfn>Definition</dfn></td>
+</tr>
+<tr id=dir-em>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>em</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>em</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>em</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><em>Emphasized text</em></td>
 </tr>
-<tr>
+<tr id=dir-gterm>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>gterm</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><i>unspecified</i></td>
     <td><g-term>grammar-term</g-term></td>
 </tr>
-<tr>
+<tr id=dir-i>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><i>Italic text</i></td>
 </tr>
-<tr>
+<tr id=dir-ins>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ins</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ins</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>ins</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><ins>Inserted text</ins></td>
 </tr>
-<tr>
+<tr id=dir-kbd>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>kbd</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>kbd</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>kbd</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><kbd>Ctrl</kbd> + <kbd>Keyboard key</kbd></td>
 </tr>
-<tr>
+<tr id=dir-mark>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mark</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>mark</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>mark</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><mark>Marked/highlighted</mark></td>
 </tr>
-<tr>
+<tr id=dir-q>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>q</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>q</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>q</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><q>Quoted text</q></td>
 </tr>
-<tr>
-    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>sans</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
-    <td><i>unspecified</i></td>
-    <td><f-sans>Sans-serif font</f-sans></td>
-</tr>
-<tr>
-    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>serif</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
-    <td><i>unspecified</i></td>
-    <td><f-serif>Serif font</f-serif></td>
-</tr>
-<tr>
-    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
-    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_punc>&gt;</h-></code></td>
-    <td><sub>Small text</sub></td>
-</tr>
-<tr>
+<tr id=dir-s>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>s</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>s</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>s</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><s>Struck text</s></td>
 </tr>
-<tr>
+<tr id=dir-samp>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>samp</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>samp</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>samp</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><samp>Sample output</samp></td>
+</tr>
+<tr id=dir-sans>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>sans</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><i>unspecified</i></td>
+    <td><f-sans>Sans-serif font</f-sans></td>
+</tr>
+<tr id=dir-serif>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>serif</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><i>unspecified</i></td>
+    <td><f-serif>Serif font</f-serif></td>
+</tr>
+<tr id=dir-small>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><sub>Small text</sub></td>
+</tr>
+<tr id=dir-sub>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>sub</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>sub</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>sub</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><sub>Subscript</sub></td>
 </tr>
-<tr>
+<tr id=dir-sup>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>sup</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>sup</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>sup</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><sup>Superscript</sup></td>
 </tr>
-<tr>
+<tr id=dir-strong>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><b>Strong text</b></td>
 </tr>
-<tr>
+<tr id=dir-tt>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>tt</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><i>unspecified</i></td>
     <td><tt->Teletype/monospace font</tt-></td>
 </tr>
-<tr>
+<tr id=dir-var>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>var</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>var</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>var</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td><var>Variable name</var></td>
+</tr>
+<tr id=dir-u>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>u</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>u</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>u</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><u>Underlined text</u></td>
@@ -1829,6 +1848,15 @@ You can rely on this when adding custom CSS.
 <p>All such <i>formatting directives</i>
 convert all named arguments directly into HTML attributes.
 </p>
+<note-block><p><intro-></intro-> 
+By default, a substantial amount of directives are styled the same way.
+For example, <code><h- data-h=mk_tag>\cite</h-></code>, <code><h- data-h=mk_tag>\var</h-></code>, <code><h- data-h=mk_tag>\i</h-></code> and <code><h- data-h=mk_tag>\em</h-></code> are all italic.
+Both <code><h- data-h=mk_tag>\strong</h-></code> and <code><h- data-h=mk_tag>\b</h-></code> are bold.
+Both <code><h- data-h=mk_tag>\tt</h-></code> and <code><h- data-h=mk_tag>\samp</h-></code> use teletype font.
+</p>
+<p>However, you can customize the style; see <a href=#dir-style>§8.12.6. <code><h- data-h=mk_tag>\style</h-></code> &mdash; CSS blocks</a>.
+</p></note-block>
+
 <h3 id=code><a class=para href=#code></a>8.3. Code and syntax highlighting</h3>
 
 <p>COWEL uses
@@ -1942,6 +1970,31 @@ While it is also possible to produce the highlighting tags using
 the "short names" (<code>kw_type</code>) are not stable, i.e. they are more likely to change.
 Only µlight long names should be used directly.
 </p></note-block>
+
+<h4 id=dir-pre><a class=para href=#dir-pre></a>8.3.4. <code><h- data-h=mk_tag>\pre</h-></code> &mdash; Preformatted blocks</h4>
+
+<p>The <code><h- data-h=mk_tag>\pre</h-></code> directive contains pre-formatted content.
+It can be used to contain code, however, there is no syntax highlighting in a <code><h- data-h=mk_tag>\pre</h-></code> block.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>pre</h-><h- data-h=sym_brac>{</h->
+Hello, world!
+=============
+    a b c
+<h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as:
+</p><pre>
+Hello, world!
+=============
+    a b c
+</pre>
+</example-block>
+
+<todo-block><p><intro-></intro-> 
+Unlike <code><h- data-h=mk_tag>\codeblock</h-></code>, <code><h- data-h=mk_tag>\pre</h-></code> currently does not support the <tt->borders=no</tt-> option.
+This will be added in the future.
+</p></todo-block>
 
 <h3 id=math><a class=para href=#math></a>8.4. Math</h3>
 
@@ -2230,7 +2283,10 @@ Within that list, you can use
 <h3 id=tables><a class=para href=#tables></a>8.9. Tables</h3>
 
 <p>Tables are simply produced by using the
-<code><h- data-h=mk_tag>\table</h-></code>, <code><h- data-h=mk_tag>\thead</h-></code>, <code><h- data-h=mk_tag>\tbody</h-></code>, <code><h- data-h=mk_tag>\tr</h-></code>, <code><h- data-h=mk_tag>\th</h-></code>, and <code><h- data-h=mk_tag>\td</h-></code> directives to
+<code><h- data-h=mk_tag>\table</h-></code>, <code><h- data-h=mk_tag>\thead</h-></code>, <code><h- data-h=mk_tag>\tbody</h-></code>, <code><h- data-h=mk_tag>\tfoot</h-></code>,
+<code><h- data-h=mk_tag>\tr</h-></code>, <code><h- data-h=mk_tag>\th</h-></code>, <code><h- data-h=mk_tag>\td</h-></code>,
+<code><h- data-h=mk_tag>\colgroup</h-></code>, <code><h- data-h=mk_tag>\col</h-></code>,
+and <code><h- data-h=mk_tag>\caption</h-></code> directives to
 produce the corresponding HTML tags with the same name.
 </p>
 <tip-block><p><intro-></intro-> 
@@ -2381,7 +2437,13 @@ console.log("hello");
 <h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
 
-<h4 id=dir-style><a class=para href=#dir-style></a>8.12.5. <code><h- data-h=mk_tag>\style</h-></code> &mdash; CSS blocks</h4>
+<h4 id=dir-noscript><a class=para href=#dir-noscript></a>8.12.5. <code><h- data-h=mk_tag>\noscript</h-></code> &mdash; No-JavaScript content</h4>
+
+<p>The <code><h- data-h=mk_tag>\noscript</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>noscript</h-><h- data-h=sym_punc>&gt;</h-></code> element.
+Its content is an HTML context,
+and will only be shown by the browser when JavaScript is disabled.
+</p>
+<h4 id=dir-style><a class=para href=#dir-style></a>8.12.6. <code><h- data-h=mk_tag>\style</h-></code> &mdash; CSS blocks</h4>
 
 <p>The content of a <code><h- data-h=mk_tag>\style</h-></code> directive is a plaintext context,
 where the input is treated as JavaScript code and surrounded in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=cmt_dlim>/*</h-><h- data-h=cmt>...</h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
