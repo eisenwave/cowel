@@ -252,6 +252,10 @@ void Document_Content_Behavior::generate_head(
     out.open_tag_with_attributes(u8"meta") //
         .write_charset(u8"UTF-8")
         .end_empty();
+    out.open_tag_with_attributes(u8"meta") //
+        .write_name(u8"viewport")
+        .write_content(u8"width=device-width, initial-scale=1")
+        .end_empty();
 
     out.open_tag_with_attributes(u8"link") //
         .write_rel(u8"preconnent")
