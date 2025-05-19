@@ -31,7 +31,14 @@ void Passthrough_Behavior::generate_plaintext(
     Context& context
 ) const
 {
-    to_plaintext(out, d.get_content(), context);
+    switch (category) {
+    case Directive_Category::formatting:
+    case Directive_Category::pure_plaintext: to_plaintext(out, d.get_content(), context); break;
+    case Directive_Category::pure_html: break;
+    case Directive_Category::meta:
+    case Directive_Category::macro:
+        COWEL_ASSERT_UNREACHABLE(u8"Passthrough_Behavior should not be meta or macro.");
+    }
 }
 
 void Passthrough_Behavior::generate_html(
@@ -51,6 +58,22 @@ void Passthrough_Behavior::generate_html(
     }
     to_html(out, d.get_content(), context);
     out.close_tag(name);
+}
+
+void In_Tag_Behavior::generate_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    Context& context
+) const
+{
+    switch (category) {
+    case Directive_Category::formatting:
+    case Directive_Category::pure_plaintext: to_plaintext(out, d, context); break;
+    case Directive_Category::pure_html: break;
+    case Directive_Category::meta:
+    case Directive_Category::macro:
+        COWEL_ASSERT_UNREACHABLE(u8"In_Tag_Behavior should not be meta or macro.");
+    }
 }
 
 void In_Tag_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context)

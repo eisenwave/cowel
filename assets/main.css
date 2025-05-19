@@ -692,6 +692,14 @@ g-term {
     font-style: normal;
 }
 
+.oblique {
+    font-style: oblique;
+}
+
+.word {
+    white-space: nowrap;
+}
+
 .wg21-head {
     margin-bottom: 4em;
 }

@@ -111,7 +111,7 @@ struct Builtin_Directive_Set::Impl {
     Special_Block_Behavior important //
         { u8"important-block" };
     In_Tag_Behavior indent //
-        { u8"div", u8"indent", Directive_Display::in_line };
+        { u8"div", u8"indent", Directive_Category::pure_html, Directive_Display::in_line };
     Wrap_Behavior in_line //
         { Directive_Category::formatting, Directive_Display::in_line, To_HTML_Mode::direct };
     Fixed_Name_Passthrough_Behavior ins //
@@ -139,6 +139,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"noscript", Directive_Category::pure_html, Directive_Display::block };
     Special_Block_Behavior note //
         { u8"note-block" };
+    In_Tag_Behavior o //
+        { u8"span", u8"oblique", Directive_Category::formatting, Directive_Display::in_line };
     List_Behavior ol //
         { u8"ol" };
     Fixed_Name_Passthrough_Behavior p //
@@ -218,11 +220,13 @@ struct Builtin_Directive_Set::Impl {
     WG21_Block_Behavior wg21_example //
         { u8"Example", u8"end example" };
     In_Tag_Behavior wg21_grammar //
-        { u8"dl", u8"grammar", Directive_Display::block };
+        { u8"dl", u8"grammar", Directive_Category::pure_html, Directive_Display::block };
     WG21_Head_Behavior wg21_head //
         {};
     WG21_Block_Behavior wg21_note //
         { u8"Note", u8"end note" };
+    In_Tag_Behavior word //
+        { u8"span", u8"word", Directive_Category::formatting, Directive_Display::in_line };
 
     Impl() = default;
 };
@@ -350,6 +354,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-wg21-grammar",
         u8"-wg21-head",
         u8"-wg21-note",
+        u8"-word",
     };
     // clang-format on
     static_assert(std::ranges::is_sorted(prefixed_names));
@@ -535,6 +540,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'o':
+        if (name == u8"o")
+            return &m_impl->o;
         if (name == u8"ol")
             return &m_impl->ol;
         break;
@@ -646,6 +653,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->wg21_head;
         if (name == u8"wg21-note")
             return &m_impl->wg21_note;
+        if (name == u8"word")
+            return &m_impl->word;
         break;
 
     default: break;

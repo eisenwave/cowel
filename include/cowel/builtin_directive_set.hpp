@@ -311,6 +311,10 @@ struct Passthrough_Behavior : Directive_Behavior {
     constexpr Passthrough_Behavior(Directive_Category category, Directive_Display display)
         : Directive_Behavior { category, display }
     {
+        COWEL_ASSERT(
+            category == Directive_Category::formatting || category == Directive_Category::pure_html
+            || category == Directive_Category::pure_plaintext
+        );
     }
 
     void
@@ -324,7 +328,7 @@ struct Passthrough_Behavior : Directive_Behavior {
         = 0;
 };
 
-struct In_Tag_Behavior : Pure_HTML_Behavior {
+struct In_Tag_Behavior : Directive_Behavior {
 private:
     const std::u8string_view m_tag_name;
     const std::u8string_view m_class_name;
@@ -333,13 +337,22 @@ public:
     constexpr In_Tag_Behavior(
         std::u8string_view tag_name,
         std::u8string_view class_name,
+        Directive_Category category,
         Directive_Display display
     )
-        : Pure_HTML_Behavior { display }
+        : Directive_Behavior { category, display }
         , m_tag_name { tag_name }
         , m_class_name { class_name }
     {
+        COWEL_ASSERT(
+            category == Directive_Category::formatting || category == Directive_Category::pure_html
+            || category == Directive_Category::pure_plaintext
+        );
     }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
+        const override;
 
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override;
 };

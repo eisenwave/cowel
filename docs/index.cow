@@ -388,6 +388,11 @@ You can rely on this when adding custom CSS.
     \td{\ch{<mark>...</mark>}}
     \td{\mark{Marked/highlighted}}
 }
+\tr[id=dir-o]{
+    \td{\cm{\\o{...}}}
+    \td{\i{unspecified}}
+    \td{\o{Oblique text}}
+}
 \tr[id=dir-q]{
     \td{\cm{\\q{...}}}
     \td{\ch{<q>...</q>}}
@@ -460,6 +465,12 @@ Both \dir{strong} and \dir{b} are bold.
 Both \dir{tt} and \dir{samp} use teletype font.
 
 However, you can customize the style; see \ref[#dir-style].
+}
+
+\note{
+The difference between oblique (\dir{o}) and italic (\dir{i}) text
+is that oblique text is merely slanted,
+while italic text is fundamentally a different font with different characters.
 }
 
 \h3[id=code]{Code and syntax highlighting}
@@ -683,7 +694,7 @@ but it displays as block content instead of inline content,
 and it produces an opening
 \ch{<math display=block>} tag.
 
-\h3{Separators}
+\h3{Separators and word breaking}
 
 \h4[id=dir-br]{\dir{br} \c{mdash} Break line}
 
@@ -719,6 +730,17 @@ which outputs a U+200B ZERO-WIDTH SPACE code point.
 \tip{
 If you want to provide a word break hint but have a hyphen at the end of the line,
 use \cm{\\U{AD}} or \cm{\\c{shy}} to output a U+00AD SOFT HYPHEN.
+}
+
+\h4[id=dir-word]{\dir{word} \c{mdash} Unbroken words}
+
+The \dir{word} directive is a formatting directive which prevents word breaks within its content.
+Its content is an HTML context.
+This is done by applying a \tt[css]{white-space: nowrap;} style its content.
+
+\tip{
+Another way to prevent word-breaking is to use non-breaking spaces.
+You can insert these using \cm{Combined\\c{nbsp}Word}.
 }
 
 \h3{Special characters}
