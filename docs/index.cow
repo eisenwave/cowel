@@ -1,7 +1,7 @@
 \def[\cm{...}]{\code[cowel]{\put}}
 \def[\ch{...}]{\code[html]{\put}}
-\def[\defn{...}]{\i{\put}}
 \def[\dir{...}]{\cm{\hl[markup-tag]{\\\put}}}
+\def[\codepoint{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}
 
 \h1{Compact Web Language (COWEL)}
 
@@ -102,8 +102,8 @@ Rendered output:
 \h3{Paragraph splitting}
 
 At the top-level in the document and within the content of certain directives,
-\defn{paragraph splitting} takes place.
-All content in COWEL is either \defn{inline content}, \defn{block content}, or \defn{meta content}.
+\dfn{paragraph splitting} takes place.
+All content in COWEL is either \dfn{inline content}, \dfn{block content}, or \dfn{meta content}.
 Text and escape sequences are inline content,
 and directives are sometimes inline and sometimes block content.
 Certain directives (e.g. \dir{comment}) that don't generate anything rendered are meta content.
@@ -140,7 +140,7 @@ Generated HTML:
 
 \h2{Directives}
 
-A \defn{directive} is a way of generating plaintext, HTML, both, or neither.
+A \dfn{directive} is a way of generating plaintext, HTML, both, or neither.
 You can think of it as a "command" or "function call".
 
 Every directive has three parts:
@@ -157,18 +157,27 @@ An optional \cm{{block of content}} provides a "main input" to a directive.
 
 \h3{Directive names}
 
-A \defn{directive name} selects a specific directive to be processed.
+A \dfn{directive name} selects a specific directive to be processed.
 The name begins with a \cm{\\} character,
 followed by
 \ref[https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name]{
 any character that is valid in an HTML (custom) tag name.
 }
 This includes any alphanumeric ASCII characters,
-'\tt{-}', '\tt{.}', '\tt{_}', and various Unicode characters.
+\codepoint{002D}, \codepoint{002E}, \codepoint{005F},
+and various Unicode characters.
+
+\tip{
+You can use an empty block of content to "cut a name short":
+\codeblock[cowel]{
+Thisisavery\\wbr{}longword.
+}
+Doing so is equivalent to writing \cm{\\wbr} and \cm{longword} immediately following one another.
+}
 
 \h3{Directive arguments}
 
-\defn{Directive arguments} can be \defn{positional arguments} or \defn{named arguments}.
+\dfn{Directive arguments} can be \dfn{positional arguments} or \dfn{named arguments}.
 Arguments are separated by commas.
 Unlike anywhere else, whitespace surrounding directive arguments is ignored.
 
@@ -185,9 +194,64 @@ Generated HTML:
 }
 }
 
+\h4{Named arguments}
+
+Named arguments are of the form
+\cm{name = value}, where spaces anywhere around \cm{name} and \cm{value} are ignored.
+Named arguments are matched to directive parameters before any positional arguments,
+meaning that positional arguments fill the remaining unmatched arguments.
+
+Argument names can consist of any character, except
+ASCII control characters,
+U+0020\c{nbsp}SPACE,
+\codepoint{0022},
+\codepoint{0027},
+\codepoint{002C},
+\codepoint{002F},
+\codepoint{003D},
+\codepoint{003E},
+\codepoint{005B},
+\codepoint{005C},
+\codepoint{005D},
+\codepoint{007B},
+\codepoint{007D},
+and noncharacters.
+
+\tip{
+If you want to provide a positional argument that is \cm{name = value} instead,
+you can do so by writing:
+\codeblock[cowel]{
+\\comment{"name = value" as a positional argument}
+\\xyz[name \\= value]
+\\comment{named argument with name "name" and value "value"}
+\\xyz[name = value]
+}
+Only the literal \cm{=} character can be used for named arguments,
+not its escaped variant \cm{\\=}.
+}
+
+\h4{Positional arguments}
+
+Positional arguments are content just like any other content,
+except that an unbalanced closing \codepoint{005D} or a \codepoint{002C}
+ends the content.
+
+\tip{
+You can use escape sequences to continue otherwise ended content.
+\codeblock[cowel]{
+\\xyz[hello, world]  \\comment{Two positional arguments}
+\\xyz[hello\\, world] \\comment{One positional argument containing a comma.}
+
+\\xyz[hello[]world]  \\comment{OK, [] is balanced and included in single argument}
+\\xyz[hello\\]world]  \\comment{OK}
+\\xyz[hello\\[world]  \\comment{OK}
+\\xyz[hello[world]   \\comment{error: unterminated arguments}
+}
+}
+
 \h3{Directive content}
 
-The \defn{directive content} is the primary input to a directive.
+The \dfn{directive content} is the primary input to a directive.
 It is delimited by a '\tt{\{}' and ends with a \em{matching} closing '\tt{\}}'.
 This means that you can have opening and closing braces inside text,
 but they need to be balanced.
@@ -235,9 +299,41 @@ which has a similar syntax,
 but permits multiple blocks. Each block is separated by a pair of braces.
 }
 
+\h3{Directive processing}
+
+Unlike in typical programming languages,
+where the input to a function is processed at the call site and the resulting values
+are passed into the function,
+COWEL directives have \em{absolute} control over their inputs and how they are processed.
+
+Say you have a JavaScript function:
+\codeblock[js]{
+function f(x) {
+    console.log(x);
+}
+f(2 + 2);
+}
+\code[js]{f} has no idea that its input was originally \code[js]{2 + 2}.
+It only sees the value \code[js]{4} and prints it, "oblivious to the outside".
+
+COWEL follows a different model:
+\codeblock[cowel]{
+\\comment{\\b{x}}
+}
+No \ch{<b>} tag is ever generated because \cm{\\b{x}} is never processed.
+\dir{comment} is not magical feature;
+it simply has control over all of its contents and arguments,
+and it can choose not to process them.
+
+You can even make a \dir{comment2} directive that works
+just like \dir{comment} yourself:
+\codeblock[cowel]{
+\\def[\\comment2]{}
+}
+
 \h2{Contexts and output}
 
-There are two types of contexts: \defn{plaintext contexts} and \defn{HTML contexts}.
+There are two types of contexts: \dfn{plaintext contexts} and \dfn{HTML contexts}.
 These control what directives (and other content) will generate.
 
 \example{
@@ -275,7 +371,7 @@ The generated (malformed) HTML is:
 
 \h2{Themes}
 
-COWEL outputs documents that can be viewed in \defn{light mode} and \defn{dark mode}.
+COWEL outputs documents that can be viewed in \dfn{light mode} and \dfn{dark mode}.
 
 When the document is opened with support for JavaScript,
 there is an button in the top-right that can be used to switch between three modes:
@@ -455,7 +551,7 @@ You can rely on this when adding custom CSS.
 }
 }
 
-All such \defn{formatting directives}
+All such \dfn{formatting directives}
 convert all named arguments directly into HTML attributes.
 
 \note{
@@ -575,7 +671,7 @@ it is a manual override for when automatic syntax highlighting is insufficient o
 It displays as inline content and wraps its content (which is an HTML context)
 in the appropriate syntax highlighting tags.
 
-It has a single \tt{name} argument, which is the µlight \defn{long name} for a highlight type.
+It has a single \tt{name} argument, which is the µlight \dfn{long name} for a highlight type.
 You can obtain a list of possible long names at
 \ref[https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h]{\tt{ulight.h}}
 from the definition of \code[cpp]{enum ulight_highlight_type}.
@@ -684,6 +780,20 @@ The previous example in \ref[#math] could also be written like:
 Math
 \\math{ \\mfrac{\\mi{x}\\mn{2}} }
 in a sentence.
+}
+}
+
+\tip{
+If you frequently use math inside plain sentences,
+you can define a convenience macro:
+\codeblock[cowel]{
+\\def[\\mathsqr{...}]{\\math{\\msup{\\mi{\\put}\\mn{2}}}}
+
+The sum of \\mathsqr{x} and \\mathsqr{y} \c{mldr}
+}
+This renders as:
+\indent{
+The sum of \math{\msup{\mi{x}\mn{2}}} and \math{\msup{\mi{y}\mn{2}}} \c{mldr}
 }
 }
 
@@ -796,7 +906,7 @@ Like anywhere else, directives inside of \dir{c} are allowed.
 \h3{Special blocks}
 
 Often, the content we write falls into some special category like "example", "note", etc.
-COWEL supports a large number of \defn{special block directives},
+COWEL supports a large number of \dfn{special block directives},
 which wrap their content in a block, with background color, borders, etc.
 
 The input to all special block directives is an HTML context,
@@ -841,7 +951,7 @@ It is typically used when individual \dir{del} directives would be too tedious t
 
 The \dir{details} directive directly corresponds to the \ch{<details>} element.
 Within \dir{details},
-the \dir{summary} directive can be used to specify \defn{summary text}.
+the \dir{summary} directive can be used to specify \dfn{summary text}.
 
 \details{
 \summary{This is a summary. Click to open!}
@@ -920,8 +1030,8 @@ you can use the pseudo-directive \dir{item} to produce list items.
 The \dir{dl} directive corresponds to the \ch{<dl>} element, and produces a definition list.
 Within that list, you can use
 \ul{
-\item{\dir{dt} for \defn{definition terms}, and}
-\item{\dir{dd} for \defn{definition descriptions}.}
+\item{\dir{dt} for \dfn{definition terms}, and}
+\item{\dir{dd} for \dfn{definition descriptions}.}
 }
 
 \h3{Tables}
@@ -1241,10 +1351,10 @@ but displays as block content instead of inline content.
 
 \h4[id=dir-def]{\dir{def} \c{mdash} Define a macro}
 
-The \dir{def} directive defines a \defn{macro},
+The \dir{def} directive defines a \dfn{macro},
 which is basically a user-defined directive.
 It has a single \tt{pattern} argument,
-which shall be a single \defn{pattern directive} which describes the defined directive.
+which shall be a single \dfn{pattern directive} which describes the defined directive.
 
 \note{
 The arguments and content of the pattern directive are not processed,
