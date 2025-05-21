@@ -1,7 +1,7 @@
-\def[\cm{...}]{\code[cowel]{\put}}
-\def[\ch{...}]{\code[html]{\put}}
-\def[\dir{...}]{\cm{\hl[markup-tag]{\\\put}}}
-\def[\codepoint{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}
+\macro[\cm{...}]{\code[cowel]{\put}}
+\macro[\ch{...}]{\code[html]{\put}}
+\macro[\dir{...}]{\cm{\hl[markup-tag]{\\\put}}}
+\macro[\codepoint{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}
 
 \there[std.head]{
 \html-title{COWEL - Compact Web Language Documentation}
@@ -124,6 +124,9 @@ Block content stays untouched, i.e. it is not wrapped in \ch{<p>...</p>}.
 However, it also terminates prior inline content, like a blank line.
 }
 }
+
+\blabla
+\ref[#x]
 
 \example{
 COWEL markup:
@@ -332,7 +335,7 @@ and it can choose not to process them.
 You can even make a \dir{comment2} directive that works
 just like \dir{comment} yourself:
 \codeblock[cowel]{
-\\def[\\comment2]{}
+\\macro[\\comment2]{}
 }
 
 \h2{Contexts and output}
@@ -633,7 +636,7 @@ Writing \dir{code} directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:
 \codeblock[cowel]{
 \\comment{Defines a \\js directive that can be used in place of \\code[js] from now on:}
-\\def[\\js]{\\code[js]{\\put}}
+\\macro[\\js]{\\code[js]{\\put}}
 Let's highlight \\js{var} in JavaScript.
 }
 }
@@ -791,7 +794,7 @@ in a sentence.
 If you frequently use math inside plain sentences,
 you can define a convenience macro:
 \codeblock[cowel]{
-\\def[\\mathsqr{...}]{\\math{\\msup{\\mi{\\put}\\mn{2}}}}
+\\macro[\\mathsqr{...}]{\\math{\\msup{\\mi{\\put}\\mn{2}}}}
 
 The sum of \\mathsqr{x} and \\mathsqr{y} \c{mldr}
 }
@@ -1378,9 +1381,9 @@ but displays as block content instead of inline content.
 
 \h3{Macros}
 
-\h4[id=dir-def]{\dir{def} \c{mdash} Define a macro}
+\h4[id=dir-def]{\dir{macro} \c{mdash} Define a macro}
 
-The \dir{def} directive defines a \dfn{macro},
+The \dir{macro} directive defines a \dfn{macro},
 which is basically a user-defined directive.
 It has a single \tt{pattern} argument,
 which shall be a single \dfn{pattern directive} which describes the defined directive.
@@ -1390,18 +1393,18 @@ The arguments and content of the pattern directive are not processed,
 but can be used to document how the directive is meant to be used.
 \codeblock[cowel]{
 \\comment{The following two definitions are equivalent:}
-\\def[\\macro{...}]{xyz}
-\\def[\\macro]{xyz}
+\\macro[\\m{...}]{xyz}
+\\macro[\\m]{xyz}
 }
 }
 
-When a macro is used, the content within the \dir{def} directive is copied.
+When a macro is used, the content within the \dir{macro} directive is copied.
 Any uses of the \dir{put} pseud-directive inside the macro are replaced with copies
 of the input content.
 
 \example{
 \codeblock[cowel]{
-\\def[\\bi]{\\b{\\i{\\put}}}
+\\macro[\\bi]{\\b{\\i{\\put}}}
 \\comment{Now, the following are equivalent:}
 \\b{\\i{bold and italic}}
 \\bi{bold and italic}

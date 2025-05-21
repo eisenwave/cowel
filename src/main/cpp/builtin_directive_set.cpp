@@ -54,7 +54,7 @@ struct Builtin_Directive_Set::Impl {
         { u8"dd", Directive_Category::pure_html, Directive_Display::block };
     Special_Block_Behavior decision //
         { u8"decision-block" };
-    Def_Behavior def //
+    Macro_Define_Behavior def //
         {};
     Fixed_Name_Passthrough_Behavior del //
         { u8"del", Directive_Category::formatting, Directive_Display::in_line };
@@ -120,7 +120,9 @@ struct Builtin_Directive_Set::Impl {
         { u8"kbd", Directive_Category::formatting, Directive_Display::in_line };
     Lorem_Ipsum_Behavior lorem_ipsum //
         {};
-    Macro_Behavior macro //
+    Macro_Define_Behavior macro //
+        {};
+    Macro_Instantiate_Behavior macro_instantiate //
         {};
     URL_Behavior mail //
         { u8"mailto:" };
@@ -245,7 +247,7 @@ Directive_Behavior& Builtin_Directive_Set::get_error_behavior() noexcept
 
 Directive_Behavior& Builtin_Directive_Set::get_macro_behavior() noexcept
 {
-    return m_impl->macro;
+    return m_impl->macro_instantiate;
 }
 
 Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
@@ -271,7 +273,6 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-comment",
         u8"-dd",
         u8"-decision",
-        u8"-def",
         u8"-del",
         u8"-delblock",
         u8"-details",
@@ -306,6 +307,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-k",
         u8"-kbd",
         u8"-lorem-ipsum",
+        u8"-macro",
         u8"-mail",
         u8"-make-bib",
         u8"-make-contents",
@@ -430,8 +432,6 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->dd;
         if (name == u8"decision")
             return &m_impl->decision;
-        if (name == u8"def")
-            return &m_impl->def;
         if (name == u8"del")
             return &m_impl->del;
         if (name == u8"delblock")
@@ -518,6 +518,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'm':
+        if (name == u8"macro")
+            return &m_impl->macro;
         if (name == u8"mail")
             return &m_impl->mail;
         if (name == u8"make-bib")

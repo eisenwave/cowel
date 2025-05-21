@@ -571,14 +571,14 @@ struct Math_Behavior final : Pure_HTML_Behavior {
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
 };
 
-struct Def_Behavior final : Meta_Behavior {
+struct Macro_Define_Behavior final : Meta_Behavior {
 
     void evaluate(const ast::Directive& d, Context& context) const final;
 };
 
-struct Macro_Behavior final : Directive_Behavior {
+struct Macro_Instantiate_Behavior final : Directive_Behavior {
 
-    constexpr Macro_Behavior()
+    constexpr Macro_Instantiate_Behavior()
         : Directive_Behavior { Directive_Category::macro, Directive_Display::macro }
     {
     }
