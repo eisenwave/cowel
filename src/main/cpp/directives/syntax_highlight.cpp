@@ -50,31 +50,31 @@ void diagnose(
             );
             break;
         }
-        Diagnostic warning
-            = context.make_warning(diagnostic::highlight_language, d.get_source_span());
-        warning.message
-            += u8"Unable to apply syntax highlighting because the specified language \"";
-        warning.message += lang;
-        warning.message += u8"\" is not supported.";
-        context.emit(std::move(warning));
+        const std::u8string_view message[] {
+            u8"Unable to apply syntax highlighting because the specified language \"",
+            lang,
+            u8"\" is not supported.",
+        };
+        context.emit_warning(diagnostic::highlight_language, d.get_source_span(), message);
         break;
     }
     case Syntax_Highlight_Error::bad_code: {
-        Diagnostic warning
-            = context.make_warning(diagnostic::highlight_malformed, d.get_source_span());
-        warning.message += u8"Unable to apply syntax highlighting because the code is not valid "
-                           u8"for the specified language \"";
-        warning.message += lang;
-        warning.message += u8"\".";
-        context.emit(std::move(warning));
+        const std::u8string_view message[] {
+            u8"Unable to apply syntax highlighting because the code is not valid "
+            u8"for the specified language \"",
+            lang,
+            u8"\".",
+        };
+        context.emit_warning(diagnostic::highlight_malformed, d.get_source_span(), message);
         break;
     }
     case Syntax_Highlight_Error::other: {
-        Diagnostic warning = context.make_warning(diagnostic::highlight_error, d.get_source_span());
-        warning.message += u8"Unable to apply syntax highlighting because of an internal error.";
-        warning.message += lang;
-        warning.message += u8"\".";
-        context.emit(std::move(warning));
+        const std::u8string_view message[] {
+            u8"Unable to apply syntax highlighting because of an internal error.",
+            lang,
+            u8"\".",
+        };
+        context.emit_warning(diagnostic::highlight_error, d.get_source_span(), message);
         break;
     }
     }
@@ -151,14 +151,12 @@ void Highlight_Behavior::generate_html(
 
     const std::optional<ulight::Highlight_Type> type = highlight_type_by_long_string(name_string);
     if (!type) {
-        if (context.emits(Severity::error)) {
-            Diagnostic diagnostic
-                = context.make_error(diagnostic::hl_name_invalid, d.get_source_span());
-            diagnostic.message += u8"The given highlight name \"";
-            diagnostic.message += name_string;
-            diagnostic.message += u8"\" is not a valid ulight highlight name (long form).";
-            context.emit(std::move(diagnostic));
-        }
+        const std::u8string_view message[] {
+            u8"The given highlight name \"",
+            name_string,
+            u8"\" is not a valid ulight highlight name (long form).",
+        };
+        context.try_error(diagnostic::hl_name_invalid, d.get_source_span(), message);
         try_generate_error_html(out, d, context);
         return;
     }

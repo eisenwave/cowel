@@ -177,13 +177,12 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
         }
     }
     if (context.get_bibliography().contains(result.info.id)) {
-        if (context.emits(Severity::error)) {
-            Diagnostic error = context.make_error(diagnostic::bib_duplicate, d.get_source_span());
-            error.message += u8"A bibliography entry with id \"";
-            error.message += result.info.id;
-            error.message += u8"\" already exists.";
-            context.emit(std::move(error));
-        }
+        const std::u8string_view message[] {
+            u8"A bibliography entry with id \"",
+            result.info.id,
+            u8"\" already exists.",
+        };
+        context.try_error(diagnostic::bib_duplicate, d.get_source_span(), message);
         return;
     }
 

@@ -114,23 +114,21 @@ bool Reference_Resolver::operator()(std::u8string_view text)
         const Document_Sections::entry_type* const entry
             = context.get_sections().find(section_name);
         if (!entry) {
-            if (context.emits(Severity::error)) {
-                Diagnostic error = context.make_error(diagnostic::section_ref_not_found, {});
-                error.message += u8"Invalid reference to section \"";
-                error.message += section_name;
-                error.message += u8"\".";
-                context.emit(std::move(error));
-            }
+            const std::u8string_view message[] {
+                u8"Invalid reference to section \"",
+                section_name,
+                u8"\".",
+            };
+            context.try_error(diagnostic::section_ref_not_found, {}, message);
             section_success = false;
         }
         else if (const auto [_, insert_success] = visited.insert(entry); !insert_success) {
-            if (context.emits(Severity::error)) {
-                Diagnostic error = context.make_error(diagnostic::section_ref_circular, {});
-                error.message += u8"Circular dependency in reference to section \"";
-                error.message += section_name;
-                error.message += u8"\".";
-                context.emit(std::move(error));
-            }
+            const std::u8string_view message[] {
+                u8"Circular dependency in reference to section \"",
+                section_name,
+                u8"\".",
+            };
+            context.try_error(diagnostic::section_ref_circular, {}, message);
             section_success = false;
         }
         text.remove_prefix(4 + reference_length);

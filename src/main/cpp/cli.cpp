@@ -46,18 +46,24 @@ std::u8string_view severity_tag(Severity severity)
 struct Stderr_Logger final : Logger {
     Diagnostic_String out;
     std::string_view file;
+    std::u8string_view source;
     bool any_errors = false;
 
     [[nodiscard]]
-    constexpr Stderr_Logger(std::pmr::memory_resource* memory, std::string_view file)
+    constexpr Stderr_Logger(
+        std::pmr::memory_resource* memory,
+        std::string_view file,
+        std::u8string_view source
+    )
         : Logger { Severity::min }
         , out { memory }
         , file { file }
+        , source { source }
     {
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
-    void operator()(Diagnostic&& diagnostic) final
+    void operator()(const Diagnostic& diagnostic) final
     {
         any_errors |= diagnostic.severity >= Severity::error;
 
@@ -65,16 +71,25 @@ struct Stderr_Logger final : Logger {
         out.append(severity_tag(diagnostic.severity));
         out.append(ansi::reset);
         out.append(u8": ");
-        // TODO: print more details
-        print_file_position(out, file, diagnostic.location);
+        if (diagnostic.location.empty()) {
+            print_location_of_file(out, file);
+        }
+        else {
+            print_file_position(out, file, diagnostic.location);
+        }
         out.append(u8' ');
-        out.append(diagnostic.message);
+        for (const std::u8string_view part : diagnostic.message) {
+            out.append(part);
+        }
         out.append(ansi::h_black);
         out.append(u8" [");
         out.append(diagnostic.id);
         out.append(u8']');
         out.append(ansi::reset);
         out.append(u8'\n');
+        if (!diagnostic.location.empty()) {
+            print_affected_line(out, source, diagnostic.location);
+        }
         print_code_string_stderr(out);
         out.clear();
     }
@@ -120,14 +135,14 @@ int main(int argc, const char* const* argv)
         return EXIT_FAILURE;
     }
 
-    Builtin_Directive_Set builtin_directives {};
-    Document_Content_Behavior behavior { builtin_directives.get_macro_behavior() };
-    Stderr_Logger logger { &memory, in_path };
-    static constinit Ulight_Syntax_Highlighter highlighter;
-
     std::pmr::vector<char8_t> out_text { &memory };
     const std::u8string_view in_source { in_text->data(), in_text->size() };
     const std::u8string_view theme_source { theme_json->data(), theme_json->size() };
+
+    Builtin_Directive_Set builtin_directives {};
+    Document_Content_Behavior behavior { builtin_directives.get_macro_behavior() };
+    Stderr_Logger logger { &memory, in_path, in_source };
+    static constinit Ulight_Syntax_Highlighter highlighter;
 
     const std::pmr::vector<ast::Content> root_content = parse_and_build(in_source, &memory, logger);
 

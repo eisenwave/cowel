@@ -96,15 +96,16 @@ void try_lookup_error(const ast::Directive& directive, Context& context)
         return;
     }
 
-    const std::u8string_view name = directive.get_name(context.get_source());
     // TODO: it would be better to only use the name as the source span,
     //       but this requires a new convenience function in ast::Directive.
-    Diagnostic diagnostic
-        = context.make_error(diagnostic::directive_lookup_unresolved, directive.get_source_span());
-    diagnostic.message += u8"No directive with the name \"";
-    diagnostic.message += name;
-    diagnostic.message += u8"\" exists.";
-    context.emit(std::move(diagnostic));
+    const std::u8string_view message[] {
+        u8"No directive with the name \"",
+        directive.get_name(context.get_source()),
+        u8"\" exists.",
+    };
+    context.try_error(
+        diagnostic::directive_lookup_unresolved, directive.get_source_span(), message
+    );
 }
 
 } // namespace

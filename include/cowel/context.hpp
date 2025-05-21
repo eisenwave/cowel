@@ -264,95 +264,117 @@ public:
         return m_logger.can_log(severity);
     }
 
-    void emit(Diagnostic&& diagnostic)
+    void emit(const Diagnostic& diagnostic)
     {
         COWEL_ASSERT(emits(diagnostic.severity));
-        m_logger(std::move(diagnostic));
+        m_logger(diagnostic);
     }
 
-    /// @brief Equivalent to `emit(make_diagnostic(severity, id, location, message))`.
     void
-    try_emit(Severity severity, string_view_type id, Source_Span location, string_view_type message)
+    emit_debug(string_view_type id, Source_Span location, std::span<const string_view_type> message)
     {
-        if (emits(severity)) {
-            emit(make_diagnostic(severity, id, location, message));
+        emit({ Severity::debug, id, location, message });
+    }
+
+    void emit_debug(string_view_type id, Source_Span location, string_view_type message)
+    {
+        emit_debug(id, location, { &message, 1 });
+    }
+
+    void emit_soft_warning(
+        string_view_type id,
+        Source_Span location,
+        std::span<const string_view_type> message
+    )
+    {
+        emit({ Severity::soft_warning, id, location, message });
+    }
+
+    void emit_soft_warning(string_view_type id, Source_Span location, string_view_type message)
+    {
+        emit_debug(id, location, { &message, 1 });
+    }
+
+    void emit_warning(
+        string_view_type id,
+        Source_Span location,
+        std::span<const string_view_type> message
+    )
+    {
+        emit({ Severity::warning, id, location, message });
+    }
+
+    void emit_warning(string_view_type id, Source_Span location, string_view_type message)
+    {
+        emit_debug(id, location, { &message, 1 });
+    }
+
+    void
+    emit_error(string_view_type id, Source_Span location, std::span<const string_view_type> message)
+    {
+        emit({ Severity::error, id, location, message });
+    }
+
+    void emit_error(string_view_type id, Source_Span location, string_view_type message)
+    {
+        emit_error(id, location, { &message, 1 });
+    }
+
+    void try_emit(const Diagnostic& diagnostic)
+    {
+        if (emits(diagnostic.severity)) {
+            emit(diagnostic);
         }
+    }
+
+    void
+    try_debug(string_view_type id, Source_Span location, std::span<const string_view_type> message)
+    {
+        try_emit({ Severity::debug, id, location, message });
     }
 
     void try_debug(string_view_type id, Source_Span location, string_view_type message)
     {
-        try_emit(Severity::debug, id, location, message);
+        try_debug(id, location, { &message, 1 });
+    }
+
+    void try_soft_warning(
+        string_view_type id,
+        Source_Span location,
+        std::span<const string_view_type> message
+    )
+    {
+        try_emit({ Severity::soft_warning, id, location, message });
     }
 
     void try_soft_warning(string_view_type id, Source_Span location, string_view_type message)
     {
-        try_emit(Severity::soft_warning, id, location, message);
+        try_soft_warning(id, location, { &message, 1 });
+    }
+
+    void try_warning(
+        string_view_type id,
+        Source_Span location,
+        std::span<const string_view_type> message
+    )
+    {
+        try_emit({ Severity::warning, id, location, message });
     }
 
     void try_warning(string_view_type id, Source_Span location, string_view_type message)
     {
-        try_emit(Severity::warning, id, location, message);
+        try_warning(id, location, { &message, 1 });
+    }
+
+    void
+    try_error(string_view_type id, Source_Span location, std::span<const string_view_type> message)
+    {
+        try_emit({ Severity::error, id, location, message });
     }
 
     void try_error(string_view_type id, Source_Span location, string_view_type message)
     {
-        try_emit(Severity::error, id, location, message);
-    }
-
-    /// @brief Returns a diagnostic with the given `severity` and using `get_persistent_memory()`
-    /// as a memory resource for the message.
-    /// The message is empty.
-    /// @param severity The diagnostic severity. `emits(severity)` shall be `true`.
-    /// @param location The location within the file where the diagnostic was generated.
-    [[nodiscard]]
-    Diagnostic make_diagnostic(Severity severity, std::u8string_view id, Source_Span location) const
-    {
-        COWEL_ASSERT(emits(severity));
-        return { .severity = severity,
-                 .id = id,
-                 .location = location,
-                 .message = std::pmr::u8string { get_persistent_memory() } };
-    }
-
-    [[nodiscard]]
-    Diagnostic make_debug(std::u8string_view id, Source_Span location) const
-    {
-        return make_diagnostic(Severity::debug, id, location);
-    }
-
-    [[nodiscard]]
-    Diagnostic make_soft_warning(std::u8string_view id, Source_Span location) const
-    {
-        return make_diagnostic(Severity::soft_warning, id, location);
-    }
-
-    [[nodiscard]]
-    Diagnostic make_warning(std::u8string_view id, Source_Span location) const
-    {
-        return make_diagnostic(Severity::warning, id, location);
-    }
-
-    [[nodiscard]]
-    Diagnostic make_error(std::u8string_view id, Source_Span location) const
-    {
-        return make_diagnostic(Severity::error, id, location);
-    }
-
-    /// @brief Like `make_diagnostic(severity)`,
-    /// but initializes the result's message using the given `message`.
-    [[nodiscard]]
-    Diagnostic make_diagnostic(
-        Severity severity,
-        std::u8string_view id,
-        Source_Span location,
-        string_view_type message
-    ) const
-    {
-        COWEL_ASSERT(emits(severity));
-        return { .severity = severity,
-                 .id = id,
-                 .location = location,
-                 .message = std::pmr::u8string { message, get_persistent_memory() } };
+        try_error(id, location, { &message, 1 });
     }
 
     void add_resolver(const Name_Resolver& resolver)

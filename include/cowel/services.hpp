@@ -169,14 +169,13 @@ public:
         return severity >= m_min_severity;
     }
 
-    constexpr virtual void operator()(Diagnostic&& diagnostic) = 0;
+    constexpr virtual void operator()(const Diagnostic& diagnostic) = 0;
 };
 
 struct Ignorant_Logger final : Logger {
     using Logger::Logger;
 
-    // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
-    void operator()(Diagnostic&&) final { }
+    void operator()(const Diagnostic&) final { }
 };
 
 inline constinit Ignorant_Logger ignorant_logger { Severity::none };

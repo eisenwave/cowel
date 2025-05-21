@@ -153,14 +153,12 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
         if (context.emplace_id(std::move(id_string), { heading_html_string })) {
             return true;
         }
-        if (!context.emits(Severity::warning)) {
-            return false;
-        }
-        Diagnostic error = context.make_warning(diagnostic::duplicate_id, d.get_source_span());
-        error.message.append(u8"Duplicate id \"");
-        error.message.append(id_string_view);
-        error.message.append(u8"\". Heading will be generated, but references may be broken.");
-        context.emit(std::move(error));
+        const std::u8string_view message[] {
+            u8"Duplicate id \"",
+            id_string_view,
+            u8"\". Heading will be generated, but references may be broken.",
+        };
+        context.try_warning(diagnostic::duplicate_id, d.get_source_span(), message);
         return false;
     }();
 

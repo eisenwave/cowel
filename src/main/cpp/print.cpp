@@ -182,11 +182,7 @@ void do_print_affected_line(
 {
     COWEL_ASSERT(length > 0);
 
-    {
-        // Sorry, multi-line printing is not supported yet.
-        const std::u8string_view snippet = source.substr(begin, length);
-        COWEL_ASSERT(length <= 1 || snippet.find('\n') == std::string_view::npos);
-    }
+    // TODO: add proper multi-line support
 
     const std::u8string_view cited_code = find_line(source, begin);
 
@@ -209,10 +205,11 @@ void do_print_affected_line(
     out.append(u8' ');
     out.append(column, u8' ');
     {
+        const std::size_t indicator_length = std::min(length, cited_code.length() - column);
         auto position = out.build(Diagnostic_Highlight::position_indicator);
         position.append(u8'^');
-        if (length > 1) {
-            position.append(length - 1, u8'~');
+        if (indicator_length) {
+            position.append(indicator_length - 1, u8'~');
         }
     }
     out.append(u8'\n');

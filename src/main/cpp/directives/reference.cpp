@@ -240,14 +240,12 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     const Result<void, Draft_URI_Error> r
         = parse_and_verbalize_draft_uri(consume_verbalized, last_uri_part, buffer);
     if (!r) {
-        if (context.emits(Severity::warning)) {
-            Diagnostic warning
-                = context.make_warning(diagnostic::ref_draft_verbalization, d.get_source_span());
-            warning.message += u8"The given reference in the C++ draft \"";
-            warning.message += last_uri_part;
-            warning.message += u8"\" could not be verbalized automatically.";
-            context.emit(std::move(warning));
-        }
+        const std::u8string_view message[] {
+            u8"The given reference in the C++ draft \"",
+            last_uri_part,
+            u8"\" could not be verbalized automatically.",
+        };
+        context.try_warning(diagnostic::ref_draft_verbalization, d.get_source_span(), message);
         out.write_inner_text(target_string);
     }
     out.close_tag(u8"a");

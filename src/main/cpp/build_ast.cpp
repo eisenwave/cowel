@@ -300,13 +300,13 @@ public:
         const AST_Instruction instruction = peek();
         if (instruction.type == AST_Instruction_Type::error_unclosed_block) {
             if (m_logger.can_log(Severity::error)) {
-                // TODO: this should really not be using the same memory resource
-                std::pmr::u8string message { m_memory };
-                message += u8"Unclosed block belonging to a directive.";
+                constexpr std::u8string_view message[] {
+                    u8"Unclosed block belonging to a directive."
+                };
                 m_logger({ .severity = Severity::error,
                            .id = diagnostic::parse_block_unclosed,
                            .location = Source_Span { m_pos, 1 },
-                           .message = std::move(message) });
+                           .message = message });
             }
             pop();
             advance_by(1);

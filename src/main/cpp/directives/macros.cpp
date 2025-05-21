@@ -8,7 +8,7 @@
 
 namespace cowel {
 
-void Def_Behavior::evaluate(const ast::Directive& d, Context& context) const
+void Macro_Define_Behavior::evaluate(const ast::Directive& d, Context& context) const
 {
     static const std::u8string_view parameters[] { u8"pattern" };
     Argument_Matcher args { parameters, context.get_transient_memory() };
@@ -41,18 +41,16 @@ void Def_Behavior::evaluate(const ast::Directive& d, Context& context) const
 
     const bool success = context.emplace_macro(std::move(owned_name), &d);
     if (!success) {
-        if (context.emits(Severity::soft_warning)) {
-            Diagnostic diagnostic
-                = context.make_soft_warning(diagnostic::def_redefinition, d.get_source_span());
-            diagnostic.message += u8"Redefinition of macro \"";
-            diagnostic.message += pattern_name;
-            diagnostic.message += u8"\".";
-            context.emit(std::move(diagnostic));
-        }
+        const std::u8string_view message[] {
+            u8"Redefinition of macro \"",
+            pattern_name,
+            u8"\".",
+        };
+        context.try_soft_warning(diagnostic::def_redefinition, d.get_source_span(), message);
     }
 }
 
-void Macro_Behavior::generate_plaintext(
+void Macro_Instantiate_Behavior::generate_plaintext(
     std::pmr::vector<char8_t>& out,
     const ast::Directive& d,
     Context& context
@@ -67,8 +65,11 @@ void Macro_Behavior::generate_plaintext(
     to_plaintext(out, instantiation, context);
 }
 
-void Macro_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context)
-    const
+void Macro_Instantiate_Behavior::generate_html(
+    HTML_Writer& out,
+    const ast::Directive& d,
+    Context& context
+) const
 {
     const std::u8string_view name = d.get_name(context.get_source());
     const ast::Directive* const definition = context.find_macro(name);

@@ -2,7 +2,7 @@
 #define COWEL_DIAGNOSTIC_HPP
 
 #include <compare>
-#include <string>
+#include <span>
 #include <string_view>
 
 #include "cowel/util/source_position.hpp"
@@ -54,8 +54,8 @@ struct Diagnostic {
     std::u8string_view id;
     /// @brief The span of code that is responsible for this diagnostic.
     Source_Span location;
-    /// @brief The diagnostic message.
-    std::pmr::u8string message;
+    /// @brief The diagnostic message parts.
+    std::span<const std::u8string_view> message;
 };
 
 namespace diagnostic {
@@ -150,17 +150,17 @@ inline constexpr std::u8string_view bib_duplicate = u8"bib.duplicate";
 /// no title was specified.
 inline constexpr std::u8string_view wg21_head_no_title = u8"wg21-head.no_title";
 
-/// @brief In a `\def` directive,
+/// @brief In a `\macro` directive,
 /// no pattern was provided.
-inline constexpr std::u8string_view def_no_pattern = u8"def.no_pattern";
+inline constexpr std::u8string_view def_no_pattern = u8"macro.no_pattern";
 
-/// @brief In a `\def` directive,
+/// @brief In a `\macro` directive,
 /// the given pattern is not a directive.
-inline constexpr std::u8string_view def_pattern_no_directive = u8"def.pattern.no_directive";
+inline constexpr std::u8string_view def_pattern_no_directive = u8"macro.pattern.no_directive";
 
-/// @brief In a `\def` directive,
+/// @brief In a `\macro` directive,
 /// the same macro was defined multiple times.
-inline constexpr std::u8string_view def_redefinition = u8"def.redefinition";
+inline constexpr std::u8string_view def_redefinition = u8"macro.redefinition";
 
 /// @brief In any directive,
 /// a duplicate `id` attribute would have been generated.
