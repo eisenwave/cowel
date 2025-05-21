@@ -276,6 +276,14 @@ void to_plaintext_mapped_for_highlighting(
         to_plaintext_mapped_for_highlighting(out, out_mapping, d.get_content(), context);
         break;
     }
+    // For macro expansions, text or directives inside the macro
+    // are not actually within the source highlighting block.
+    // However, that's not really a problem; subsequent functionality can deal with that.
+    case Directive_Category::macro: {
+        const std::pmr::vector<ast::Content> instance = instantiate_macro_invocation(d, context);
+        to_plaintext_mapped_for_highlighting(out, out_mapping, instance, context);
+        break;
+    }
     // For pure plaintext directives, we just run plaintext generation.
     // This also means that we don't know exactly which generated character belongs to
     // which source character, but it doesn't really matter.
@@ -295,21 +303,6 @@ void to_plaintext_mapped_for_highlighting(
         const std::size_t mapping_growth = out_mapping.size() - initial_mapping_size;
         COWEL_ASSERT(out_growth == mapping_growth);
         break;
-    }
-    // For macro expansions, text or directives inside the macro
-    // are not actually within the source highlighting block.
-    // Therefore, we need overwrite those results
-    // with the same strategy as for pure plaintext directives:
-    // pretend like all the characters were generated from the invoking directive.
-    case Directive_Category::macro: {
-        const std::pmr::vector<ast::Content> instance = instantiate_macro_invocation(d, context);
-        const std::size_t initial_size = out_mapping.size();
-        to_plaintext_mapped_for_highlighting(out, out_mapping, instance, context);
-        COWEL_ASSERT(out_mapping.size() >= initial_size);
-        const std::size_t d_begin = d.get_source_span().begin;
-        for (std::size_t i = initial_size; i < out_mapping.size(); ++i) {
-            out_mapping[i] = d_begin;
-        }
     }
     }
 }
@@ -642,6 +635,36 @@ namespace {
 
 constexpr std::u8string_view highlighting_tag = u8"h-";
 
+/// @brief Returns an `ast::Generated` element
+/// containing a highlighting element or simply the given text,
+/// depending on whether `span` is null.
+[[nodiscard]]
+ast::Generated make_generated_highlight(
+    std::u8string_view inner_text,
+    const Highlight_Span* span,
+    std::pmr::memory_resource* memory
+)
+{
+    std::pmr::vector<char8_t> span_data { memory };
+    HTML_Writer span_writer { span_data };
+
+    if (span) {
+        const std::u8string_view id
+            = ulight::highlight_type_short_string_u8(ulight::Highlight_Type(span->type));
+
+        span_writer.open_tag_with_attributes(highlighting_tag)
+            .write_attribute(u8"data-h", id, Attribute_Style::double_if_needed)
+            .end();
+    }
+    span_writer.write_inner_text(inner_text);
+    if (span) {
+        span_writer.close_tag(highlighting_tag);
+    }
+
+    return ast::Generated { std::move(span_data), ast::Generated_Type::html,
+                            Directive_Display::in_line };
+}
+
 std::pmr::vector<ast::Content> copy_highlighted(
     std::span<const ast::Content> content,
     std::u8string_view highlighted_text,
@@ -653,9 +676,9 @@ std::pmr::vector<ast::Content> copy_highlighted(
 struct [[nodiscard]] Highlighted_AST_Copier {
     std::pmr::vector<ast::Content>& out;
 
-    std::u8string_view source;
-    std::span<const std::size_t> to_source_index;
-    std::span<const Highlight_Span*> to_span;
+    const std::u8string_view source;
+    const std::span<const std::size_t> to_document_index;
+    const std::span<const Highlight_Span*> to_highlight;
     Context& context;
 
     std::size_t index = 0;
@@ -713,8 +736,8 @@ struct [[nodiscard]] Highlighted_AST_Copier {
             std::pmr::vector<ast::Content> inner_content;
             Highlighted_AST_Copier inner_copier { .out = inner_content,
                                                   .source = source,
-                                                  .to_source_index = to_source_index,
-                                                  .to_span = to_span,
+                                                  .to_document_index = to_document_index,
+                                                  .to_highlight = to_highlight,
                                                   .context = context,
                                                   .index = index };
             for (const auto& c : directive.get_content()) {
@@ -742,53 +765,39 @@ struct [[nodiscard]] Highlighted_AST_Copier {
     }
 
 private:
-    void append_highlighted_text_in(Source_Span source_span)
+    void append_highlighted_text_in(const Source_Span& document_span)
     {
-        const std::size_t limit = to_source_index.size();
-        while (index < limit) {
-            if (to_source_index[index] < source_span.begin) {
+        COWEL_DEBUG_ASSERT(document_span.end() <= context.get_source().size());
+        COWEL_DEBUG_ASSERT(source.size() == to_document_index.size());
+        COWEL_DEBUG_ASSERT(source.size() == to_highlight.size());
+
+        const std::size_t limit = source.size();
+        for (std::size_t index = 0; index < limit;) {
+            // TODO: There are a few possible optimizations here.
+            //       Firstly, we can early-quit once we're past the end of the contiguous
+            //       highlighted snippets that fall into document_span.
+            //       Secondly, instead of starting the search at zero,
+            //       we can use a hint and later restart if nothing was found.
+            //       That is because it's very likely that two document spans and their generated
+            //       source are contiguous.
+            //       Macros break this mold.
+            if (!document_span.contains(to_document_index[index])) {
                 ++index;
                 continue;
             }
-            if (to_source_index[index] >= source_span.end()) {
-                break;
-            }
-            const Highlight_Span* const current_span = to_span[index];
+            const Highlight_Span* const current_span = to_highlight[index];
             const std::size_t snippet_begin = index++;
-            for (; index < limit && to_source_index[index] < source_span.end(); ++index) {
-                if (to_span[index] != current_span) {
+            for (; index < limit; ++index) {
+                if (!document_span.contains(to_document_index[index])
+                    || to_highlight[index] != current_span) {
                     break;
                 }
             };
-            out.push_back(
-                make_generated(source.substr(snippet_begin, index - snippet_begin), current_span)
-            );
+            out.push_back(make_generated_highlight(
+                source.substr(snippet_begin, index - snippet_begin), current_span,
+                context.get_transient_memory()
+            ));
         }
-    }
-
-    [[nodiscard]]
-    ast::Generated make_generated(std::u8string_view inner_text, const Highlight_Span* span) const
-    {
-        std::pmr::vector<char8_t> span_data { context.get_transient_memory() };
-        HTML_Writer span_writer { span_data };
-
-        if (span) {
-            const std::string_view raw_id
-                = ulight::highlight_type_short_string(ulight::Highlight_Type(span->type));
-            const std::u8string_view u8_id { reinterpret_cast<const char8_t*>(raw_id.data()),
-                                             raw_id.length() };
-
-            span_writer.open_tag_with_attributes(highlighting_tag)
-                .write_attribute(u8"data-h", u8_id, Attribute_Style::double_if_needed)
-                .end();
-        }
-        span_writer.write_inner_text(inner_text);
-        if (span) {
-            span_writer.close_tag(highlighting_tag);
-        }
-
-        return ast::Generated { std::move(span_data), ast::Generated_Type::html,
-                                Directive_Display::in_line };
     }
 };
 
@@ -823,8 +832,8 @@ std::pmr::vector<ast::Content> copy_highlighted(
 
     Highlighted_AST_Copier copier { .out = result,
                                     .source = highlighted_text,
-                                    .to_source_index = to_source_index,
-                                    .to_span = to_highlight_span,
+                                    .to_document_index = to_source_index,
+                                    .to_highlight = to_highlight_span,
                                     .context = context };
 
     for (const auto& c : content) {
