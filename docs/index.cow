@@ -125,9 +125,6 @@ However, it also terminates prior inline content, like a blank line.
 }
 }
 
-\blabla
-\ref[#x]
-
 \example{
 COWEL markup:
 \codeblock[cowel]{
