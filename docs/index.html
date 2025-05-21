@@ -1406,6 +1406,8 @@ if (theme !== null) {
     document.documentElement.className = theme;
 }
   </script>
+
+<title>COWEL - Compact Web Language Documentation</title>
 </head>
 <body>
 <div id=settings tabindex=0>
@@ -1443,6 +1445,8 @@ if (theme !== null) {
     </script>
 </div>
 <main>
+
+
 
 
 
@@ -2656,6 +2660,29 @@ Basically, it stashes away its input content (which is an HTML context) somewher
 <p>It takes a single <tt->section</tt-> argument which specifies the name of the section.
 The <tt->section</tt-> argument is a plaintext context.
 </p>
+<p>By default, all document content is placed within a <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>main</h-><h- data-h=sym_punc>&gt;</h-></code> element,
+inside <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>body</h-><h- data-h=sym_punc>&gt;</h-></code>, inside <code>html</code>.
+<code><h- data-h=mk_tag>\there</h-></code> allows you to write outside of the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>main</h-><h- data-h=sym_punc>&gt;</h-></code> element:
+</p>
+<ul>
+<li>
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_sqr>[</h->std.head<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->text<h- data-h=sym_brac>}</h-></code> will write <code>text</code>
+inside of the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>head</h-><h- data-h=sym_punc>&gt;</h-></code> element (following auto-generated content).
+</li>
+<li>
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_sqr>[</h->std.body<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->text<h- data-h=sym_brac>}</h-></code> will write <code>text</code>
+inside of the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>body</h-><h- data-h=sym_punc>&gt;</h-></code> element (following <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>main</h-><h- data-h=sym_punc>&gt;</h-></code>
+and other automatically inserted elements).
+</li>
+</ul>
+
+<tip-block><p><intro-></intro-> 
+You can change the title of the document as follows:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_sqr>[</h->std.head<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>html-title</h-><h- data-h=sym_brac>{</h->This is the document title!<h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h-></code-block>
+</tip-block>
+
 <h4 id=dir-here><a class=para href=#dir-here></a>8.14.2. <code><h- data-h=mk_tag>\here</h-></code> &mdash; Copy section content</h4>
 
 <p>The <code><h- data-h=mk_tag>\here</h-></code> directive inserts the content from another section at its location.

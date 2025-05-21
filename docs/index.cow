@@ -3,6 +3,10 @@
 \def[\dir{...}]{\cm{\hl[markup-tag]{\\\put}}}
 \def[\codepoint{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}
 
+\there[std.head]{
+\html-title{COWEL - Compact Web Language Documentation}
+}
+
 \h1{Compact Web Language (COWEL)}
 
 \h2[listed=no]{Contents}
@@ -1317,6 +1321,31 @@ Basically, it stashes away its input content (which is an HTML context) somewher
 
 It takes a single \tt{section} argument which specifies the name of the section.
 The \tt{section} argument is a plaintext context.
+
+By default, all document content is placed within a \ch{<main>} element,
+inside \ch{<body>}, inside \ch{html}.
+\dir{there} allows you to write outside of the \ch{<main>} element:
+
+\ul{
+\item{
+\cm{\\there[std.head]{text}} will write \cm{text}
+inside of the \ch{<head>} element (following auto-generated content).
+}
+\item{
+\cm{\\there[std.body]{text}} will write \cm{text}
+inside of the \ch{<body>} element (following \ch{<main>}
+and other automatically inserted elements).
+}
+}
+
+\tip{
+You can change the title of the document as follows:
+\codeblock[cowel]{
+\\there[std.head]{
+\\html-title{This is the document title!}
+}
+}
+}
 
 \h4[id=dir-here]{\dir{here} \c{mdash} Copy section content}
 
