@@ -40,6 +40,7 @@ add_library(cowel STATIC
     src/main/cpp/util/tty.cpp
     src/main/cpp/util/typo.cpp
 
+    src/main/cpp/directives/bibliography.cpp
     src/main/cpp/directives/code_point.cpp
     src/main/cpp/directives/heading.cpp
     src/main/cpp/directives/html_entity.cpp
@@ -47,8 +48,10 @@ add_library(cowel STATIC
     src/main/cpp/directives/macros.cpp
     src/main/cpp/directives/math.cpp
     src/main/cpp/directives/passthrough.cpp
+    src/main/cpp/directives/reference.cpp
     src/main/cpp/directives/syntax_highlight.cpp
     src/main/cpp/directives/variables.cpp
+    src/main/cpp/directives/wg21.cpp
 
     src/main/cpp/argument_matching.cpp
     src/main/cpp/build_ast.cpp
