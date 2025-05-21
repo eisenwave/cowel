@@ -2,6 +2,7 @@
 #define COWEL_HTML_WRITER_HPP
 
 #include <cstddef>
+#include <span>
 #include <string_view>
 #include <vector>
 
@@ -116,6 +117,14 @@ public:
         return m_depth == 0;
     }
 
+    /// @brief Sets the element depth tracked by the writer.
+    /// This is useful when the writer is used to output unbalanced HTML tags.
+    Self& set_depth(std::size_t depth)
+    {
+        m_depth = depth;
+        return *this;
+    }
+
     /// @brief Writes the `<!DOCTYPE ...` preamble for the HTML file.
     /// For whole documents should be called exactly once, prior to any other `write` functions.
     /// However, it is not required to call this.
@@ -184,7 +193,17 @@ private:
         string_view_type value,
         Attribute_Style style,
         Attribute_Encoding encoding
+    )
+    {
+        return write_attribute(key, { &value, 1 }, style, encoding);
+    }
+    Self& write_attribute(
+        string_view_type key,
+        std::span<const string_view_type> value_parts,
+        Attribute_Style style,
+        Attribute_Encoding encoding
     );
+
     Self& write_empty_attribute(string_view_type key, Attribute_Style style);
     Self& end_attributes();
     Self& end_empty_tag_attributes();
@@ -231,6 +250,21 @@ public:
     )
     {
         m_writer.write_attribute(key, value, style, HTML_Writer::Attribute_Encoding::text);
+        const char8_t back = m_writer.m_out.back();
+        m_unsafe_slash = back != u8'\'' && back != u8'"';
+        return *this;
+    }
+
+    /// @brief Like the overload taking a single `string_view` as a value,
+    /// but allows for the attribute to consist of multiple parts,
+    /// which are joined together.
+    Attribute_Writer& write_attribute(
+        string_view_type key,
+        std::span<const string_view_type> value_parts,
+        Attribute_Style style = Attribute_Style::double_if_needed
+    )
+    {
+        m_writer.write_attribute(key, value_parts, style, HTML_Writer::Attribute_Encoding::text);
         const char8_t back = m_writer.m_out.back();
         m_unsafe_slash = back != u8'\'' && back != u8'"';
         return *this;
