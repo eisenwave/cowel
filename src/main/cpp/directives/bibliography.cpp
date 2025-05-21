@@ -14,6 +14,8 @@ namespace cowel {
 
 namespace {
 
+constexpr std::u8string_view bib_item_id_prefix = u8"bib-item-";
+
 constexpr auto is_url_always_encoded_lambda = [](char8_t c) { return is_url_always_encoded(c); };
 
 void write_bibliography_entry(HTML_Writer& out, const Document_Info& info)
@@ -30,7 +32,10 @@ void write_bibliography_entry(HTML_Writer& out, const Document_Info& info)
         out.write_inner_html(u8'>');
     };
 
+    const std::u8string_view id_parts[] { bib_item_id_prefix, info.id };
+
     out.open_tag_with_attributes(u8"div") //
+        .write_attribute(u8"id", id_parts)
         .write_class(u8"bib-item")
         .end();
     out.write_inner_html(u8'\n');
@@ -187,29 +192,34 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
     // If the bibliography entry has a link,
     // those tags will be "<a href=..." and "</a>",
     // otherwise the sections remain empty.
-
-    std::pmr::u8string section_name { u8"std.bib.", context.get_transient_memory() };
-    section_name += result.info.id;
-    const std::size_t initial_size = section_name.size();
-
-    for (const bool is_closing : { false, true }) {
-        section_name += is_closing ? u8".close" : u8".open";
+    {
+        std::pmr::u8string section_name { u8"std.bib.", context.get_transient_memory() };
+        section_name += result.info.id;
         const auto scope = context.get_sections().go_to_scoped(section_name);
         HTML_Writer section_out = context.get_sections().current_html();
+
         if (!result.info.link.empty()) {
-            if (is_closing) {
-                section_out.write_inner_html(u8"</a>");
-            }
-            else {
-                section_out.write_inner_html(u8"<a href=\"");
-                url_encode_ascii_if(
-                    std::back_inserter(section_out.get_output()), result.info.link,
-                    is_url_always_encoded_lambda
-                );
-                section_out.write_inner_html(u8"\">");
-            }
+            // If the document info has a link,
+            // then we want references to bibliography entries (e.g. "[N5008]")
+            // to use that link.
+            section_out.write_inner_html(u8"<a href=\"");
+            url_encode_ascii_if(
+                std::back_inserter(section_out.get_output()), result.info.link,
+                is_url_always_encoded_lambda
+            );
+            section_out.write_inner_html(u8"\">");
         }
-        section_name.resize(initial_size);
+        else {
+            // Otherwise, the reference should redirect down
+            // to the respective entry within the bibliography.
+            // In any case, it's important to guarantee that an <a> element will be emitted.
+            const std::u8string_view id_parts[] { u8"#", bib_item_id_prefix, result.info.id };
+            section_out
+                .open_tag_with_attributes(u8"a") //
+                .write_attribute(u8"id", id_parts)
+                .end();
+            section_out.set_depth(0);
+        }
     }
 
     {

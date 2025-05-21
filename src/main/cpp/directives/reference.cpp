@@ -138,18 +138,16 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     const Reference_Classification classification = classify_reference(target_string);
     if (classification.type == Reference_Type::unknown) {
         std::pmr::u8string section_name { context.get_transient_memory() };
-        section_name += u8"std.bib.";
+        section_name += section_name::bibliography;
+        section_name += u8'.';
         section_name += target_string;
-        section_name += u8".open";
         reference_section(out, section_name);
         if (d.get_content().empty()) {
             out.write_inner_html(u8'[');
             out.write_inner_text(target_string);
             out.write_inner_html(u8']');
         }
-        section_name.resize(section_name.size() - 4);
-        section_name += u8"close";
-        reference_section(out, section_name);
+        out.write_inner_html(u8"</a>"); // no close_tag to avoid depth check
         return;
     }
 
@@ -159,7 +157,8 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
             .end();
         if (d.get_content().empty()) {
             std::pmr::u8string section_name { context.get_transient_memory() };
-            section_name += u8"std.id-preview.";
+            section_name += section_name::id_preview;
+            section_name += u8'.';
             section_name += target_string.substr(1);
             reference_section(out, section_name);
         }
