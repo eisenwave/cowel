@@ -194,7 +194,8 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
     if (has_valid_id) {
         Document_Sections& sections = context.get_sections();
         std::pmr::u8string section_name { context.get_transient_memory() };
-        section_name += u8"std.id-preview.";
+        section_name += section_name::id_preview;
+        section_name += u8'.';
         COWEL_ASSERT(id_data.front() == u8'#');
         section_name += as_u8string_view(id_data).substr(1);
 

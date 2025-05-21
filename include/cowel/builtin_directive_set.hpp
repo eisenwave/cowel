@@ -627,6 +627,7 @@ inline constexpr std::u8string_view table_of_contents = u8"toc";
 namespace section_name {
 
 inline constexpr std::u8string_view bibliography = u8"std.bib";
+inline constexpr std::u8string_view id_preview = u8"std.id-preview";
 inline constexpr std::u8string_view document_head = u8"std.head";
 inline constexpr std::u8string_view document_body = u8"std.body";
 inline constexpr std::u8string_view table_of_contents = u8"std.toc";
