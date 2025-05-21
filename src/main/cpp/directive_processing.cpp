@@ -644,7 +644,7 @@ constexpr std::u8string_view highlighting_tag = u8"h-";
 
 std::pmr::vector<ast::Content> copy_highlighted(
     std::span<const ast::Content> content,
-    std::u8string_view highlighted_source,
+    std::u8string_view highlighted_text,
     std::span<const std::size_t> to_source_index,
     std::span<const Highlight_Span*> to_highlight_span,
     Context& context
@@ -795,7 +795,7 @@ private:
 /// @brief Creates a copy of the given `content`
 // using the specified syntax highlighting information.
 /// @param content The content to copy.
-/// @param highlighted_source The highlighted source code.
+/// @param highlighted_text The highlighted source code.
 /// @param to_source_index A mapping of each code unit in `highlighted_source`
 /// to the index in the document source code.
 /// @param to_highlight_span A mapping of each code unit in `highlighted_source`
@@ -809,20 +809,20 @@ private:
 /// and the contents of `formatting` directives are replaced, recursively.
 std::pmr::vector<ast::Content> copy_highlighted(
     std::span<const ast::Content> content,
-    std::u8string_view highlighted_source,
+    std::u8string_view highlighted_text,
     std::span<const std::size_t> to_source_index,
     std::span<const Highlight_Span*> to_highlight_span,
     Context& context
 )
 {
-    COWEL_ASSERT(to_source_index.size() == highlighted_source.size());
-    COWEL_ASSERT(to_highlight_span.size() == highlighted_source.size());
+    COWEL_ASSERT(to_source_index.size() == highlighted_text.size());
+    COWEL_ASSERT(to_highlight_span.size() == highlighted_text.size());
 
     std::pmr::vector<ast::Content> result { context.get_transient_memory() };
     result.reserve(content.size());
 
     Highlighted_AST_Copier copier { .out = result,
-                                    .source = highlighted_source,
+                                    .source = highlighted_text,
                                     .to_source_index = to_source_index,
                                     .to_span = to_highlight_span,
                                     .context = context };
