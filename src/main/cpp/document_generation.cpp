@@ -6,6 +6,7 @@
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/io.hpp"
 
+#include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_behavior.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
@@ -171,8 +172,12 @@ void Head_Body_Content_Behavior::generate_html(
 
         current_out.write_preamble();
         open_and_close(u8"html", [&] {
-            open_and_close(u8"head", [&] { reference_section(current_out, u8"head"); });
-            open_and_close(u8"body", [&] { reference_section(current_out, u8"body"); });
+            open_and_close(u8"head", [&] {
+                reference_section(current_out, section_name::document_head);
+            });
+            open_and_close(u8"body", [&] {
+                reference_section(current_out, section_name::document_body);
+            });
         });
 
         html_section = &sections.current();
@@ -181,12 +186,12 @@ void Head_Body_Content_Behavior::generate_html(
     const std::u8string_view html_string { html_text.data(), html_text.size() };
 
     {
-        const auto scope = sections.go_to_scoped(u8"head");
+        const auto scope = sections.go_to_scoped(section_name::document_head);
         HTML_Writer current_out = sections.current_html();
         generate_head(current_out, content, context);
     }
     {
-        const auto scope = sections.go_to_scoped(u8"body");
+        const auto scope = sections.go_to_scoped(section_name::document_body);
         HTML_Writer current_out = sections.current_html();
         generate_body(current_out, content, context);
     }
