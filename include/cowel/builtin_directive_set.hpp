@@ -90,11 +90,17 @@ private:
     static constexpr std::u8string_view lang_parameter = u8"lang";
     static constexpr std::u8string_view nested_parameter = u8"nested";
     static constexpr std::u8string_view borders_parameter = u8"borders";
+    static constexpr std::u8string_view prefix_parameter = u8"prefix";
+    static constexpr std::u8string_view suffix_parameter = u8"suffix";
+    // clang-format off
     static constexpr std::u8string_view parameters[] {
         lang_parameter,
         borders_parameter,
         nested_parameter,
+        prefix_parameter,
+        suffix_parameter,
     };
+    // clang-format on
 
     const std::u8string_view m_tag_name;
     const To_HTML_Mode m_to_html_mode;

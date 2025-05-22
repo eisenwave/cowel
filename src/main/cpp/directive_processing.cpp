@@ -850,15 +850,24 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     std::span<const ast::Content> content,
     std::u8string_view language,
     Context& context,
+    std::u8string_view prefix,
+    std::u8string_view suffix,
     To_HTML_Mode mode
 )
 {
     COWEL_ASSERT(!to_html_mode_is_paragraphed(mode));
 
     std::pmr::vector<char8_t> plaintext { context.get_transient_memory() };
-    std::pmr::vector<std::size_t> plaintext_to_source_index { context.get_transient_memory() };
-    to_plaintext_mapped_for_highlighting(plaintext, plaintext_to_source_index, content, context);
-    COWEL_ASSERT(plaintext.size() == plaintext_to_source_index.size());
+    std::pmr::vector<std::size_t> plaintext_to_document_index { context.get_transient_memory() };
+
+    // 0 is a safe value for document index mapping
+    // because it's impossible to provide input to syntax highlighting at the zeroth index.
+    plaintext.insert(plaintext.end(), prefix.begin(), prefix.end());
+    plaintext_to_document_index.resize(prefix.size(), 0);
+    to_plaintext_mapped_for_highlighting(plaintext, plaintext_to_document_index, content, context);
+    plaintext.insert(plaintext.end(), suffix.begin(), suffix.end());
+    plaintext_to_document_index.resize(plaintext_to_document_index.size() + suffix.size(), 0);
+    COWEL_ASSERT(plaintext.size() == plaintext_to_document_index.size());
 
     std::pmr::vector<Highlight_Span> spans { context.get_transient_memory() };
     const std::u8string_view plaintext_str { plaintext.data(), plaintext.size() };
@@ -879,7 +888,7 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     }
 
     const std::pmr::vector<ast::Content> highlighted_content = copy_highlighted(
-        content, plaintext_str, plaintext_to_source_index, plaintext_to_span, context
+        content, plaintext_str, plaintext_to_document_index, plaintext_to_span, context
     );
     to_html(out, highlighted_content, context, mode);
     return {};

@@ -96,6 +96,25 @@ void Syntax_Highlight_Behavior::generate_plaintext(
 
 namespace {
 
+struct String_Argument {
+    std::pmr::vector<char8_t> data;
+    std::u8string_view string;
+};
+
+String_Argument get_string_argument(
+    std::u8string_view name,
+    const ast::Directive& d,
+    const Argument_Matcher& args,
+    Context& context,
+    std::u8string_view fallback = u8""
+)
+{
+    String_Argument result { .data = std::pmr::vector<char8_t>(context.get_transient_memory()),
+                             .string = {} };
+    result.string = argument_to_plaintext_or(result.data, name, fallback, d, args, context);
+    return result;
+}
+
 [[nodiscard]]
 bool get_yes_no_argument(
     std::u8string_view name,
@@ -138,9 +157,9 @@ void Syntax_Highlight_Behavior::generate_html(
     Context& context
 ) const
 {
-    std::pmr::vector<char8_t> lang_data { context.get_transient_memory() };
-    const std::u8string_view lang
-        = argument_to_plaintext_or(lang_data, lang_parameter, u8"", d, args, context);
+    const String_Argument lang = get_string_argument(lang_parameter, d, args, context);
+    const String_Argument prefix = get_string_argument(prefix_parameter, d, args, context);
+    const String_Argument suffix = get_string_argument(suffix_parameter, d, args, context);
 
     const bool has_borders = this->display == Directive_Display::in_line
         || get_yes_no_argument(borders_parameter, diagnostic::codeblock::borders_invalid, d, args,
@@ -159,11 +178,12 @@ void Syntax_Highlight_Behavior::generate_html(
         attributes.end();
     }
 
-    const Result<void, Syntax_Highlight_Error> result
-        = to_html_syntax_highlighted(out, d.get_content(), lang, context, m_to_html_mode);
+    const Result<void, Syntax_Highlight_Error> result = to_html_syntax_highlighted(
+        out, d.get_content(), lang.string, context, prefix.string, suffix.string, m_to_html_mode
+    );
     if (!result) {
         to_html(out, d.get_content(), context, m_to_html_mode);
-        diagnose(result.error(), lang, d, context);
+        diagnose(result.error(), lang.string, d, context);
     }
 
     if (!is_nested) {

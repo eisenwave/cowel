@@ -166,6 +166,8 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     std::span<const ast::Content> content,
     std::u8string_view language,
     Context& context,
+    std::u8string_view prefix = u8"",
+    std::u8string_view suffix = u8"",
     To_HTML_Mode mode = To_HTML_Mode::direct
 );
 

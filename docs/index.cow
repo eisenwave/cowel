@@ -589,10 +589,12 @@ The \dir{code} directive produced syntax-highlighted text in code font.
 \dl{
 \dt{Arguments}
 \dd{
-\dir{code} accepts a \tt{lang} argument,
-specifying the syntax highlighting language,
-and a \tt{nested} argument,
-specifying whether whether to omit \ch{<code>} tags.
+\ul{
+\item{\tt{lang} (plaintext) \c{mdash} the syntax highlighting language.}
+\item{\tt{nested} (yes/no) \c{mdash} whether whether to omit \ch{<code>} tags.}
+\item{\tt{prefix} (plaintext) \c{mdash} code before the input from the view of the highlighter.}
+\item{\tt{suffix} (plaintext) \c{mdash} code after input from the view of the highlighter.}
+}
 }
 
 \dt{Input content}
@@ -630,6 +632,8 @@ The \ch{<h->} tags are an implementation detail and may be subject to change.
 }
 }
 
+\h5{Manual nested highlighting}
+
 The \tt{nested} parameter is a plaintext context,
 which accepts either \tt{yes} or \tt{no}, where \tt{no} is the default.
 When enabled, the surrounding \ch{<code>} tags are omitted,
@@ -654,6 +658,37 @@ However, the difference would be obvious once you want to style \ch{<code>} elem
 to have borders, background color, padding, and other such styling features.
 \tt{nested=yes} directly emits the highlighting HTML elements,
 which is more composable.
+
+\h5{Highlighting prefix and suffix}
+
+The \tt{prefix} and \tt{suffix} parameters are plaintext contexts
+which can be used to further control highlighting.
+Especially with inline code,
+the highlighting depends on the surrounding code.
+
+\tt{prefix} and \tt{suffix} can be used to provide that surrounding code,
+without becoming part of the highlighted output.
+
+\example{
+Using \tt{prefix},
+we can control whether a JSON string is interpreted as a markup key,
+or as a string value:
+\codeblock[cowel]{\literally{
+In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
+}}
+This renders as:
+\indent{
+In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
+}
+Notice that the color of \code[json,prefix=\{]{"keys"} is different because it is interpreted
+as if it was positioned like:
+\codeblock[json]{
+\{"keys"
+}
+}
+
+
+\h5{Further advice on highlighting}
 
 \tip{
 Writing \dir{code} directives directly is often too tedious,
