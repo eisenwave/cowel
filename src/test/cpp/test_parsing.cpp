@@ -401,6 +401,26 @@ TEST(Parse_And_Build, empty)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"empty.cow");
 }
 
+TEST(Parse, directive_brace_escape_2)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_block, 4 },
+        { AST_Instruction_Type::escape, 2 },
+        { AST_Instruction_Type::text, 4 },
+        { AST_Instruction_Type::escape, 2 },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_block },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"directive_brace_escape_2.cow", expected));
+}
+
 TEST(Parse, hello_code)
 {
     // clang-format off

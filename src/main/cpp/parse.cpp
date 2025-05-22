@@ -19,19 +19,6 @@ namespace {
 
 enum struct Content_Context : Default_Underlying { document, argument_value, block };
 
-[[nodiscard]]
-constexpr bool is_terminated_by(Content_Context context, char8_t c)
-{
-    switch (context) {
-    case Content_Context::argument_value: //
-        return c == u8',' || c == u8']' || c == u8'}';
-    case Content_Context::block: //
-        return c == u8'}';
-    default: //
-        return false;
-    }
-}
-
 struct [[nodiscard]] Parser {
 private:
     struct [[nodiscard]] Scoped_Attempt {
@@ -198,15 +185,8 @@ private:
         Bracket_Levels levels {};
         std::size_t elements = 0;
 
-        for (; !eof(); ++elements) {
-            if (is_terminated_by(context, peek())) {
-                break;
-            }
-            // TODO: perhaps we could simplify this by making try_match_content
-            //       the loop condition.
-            //       After all, that function also checks for termination and EOF.
-            const bool success = try_match_content(context, levels);
-            COWEL_ASSERT(success);
+        while (try_match_content(context, levels)) {
+            ++elements;
         }
 
         return elements;
@@ -270,15 +250,22 @@ private:
                 if (c == u8'[') {
                     ++levels.square;
                 }
-                if (c == u8']' && levels.square-- == 0) {
-                    break;
+                else if (c == u8']') {
+                    if (levels.square == 0) {
+                        break;
+                    }
+                    --levels.square;
                 }
             }
             if (c == u8'{') {
                 ++levels.brace;
             }
-            if (c == u8'}' && levels.brace-- == 0) {
-                break;
+            else if (c == u8'}') {
+                if (levels.brace == 0) {
+                    break;
+                }
+                --levels.brace;
+                continue;
             }
         }
 
