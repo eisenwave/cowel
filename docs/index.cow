@@ -9,6 +9,20 @@
 
 \h1{Compact Web Language (COWEL)}
 
+\html-div[id=github]{
+\style{
+h1 {
+    margin-bottom: 0;
+}
+
+#github {
+    font-size: 125%;
+    margin-bottom: 3em;
+}
+}
+\ref[https://github.com/eisenwave/cowel]
+}
+
 \h2[listed=no]{Contents}
 
 \make-contents
