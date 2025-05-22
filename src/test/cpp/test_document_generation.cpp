@@ -108,7 +108,7 @@ struct Doc_Gen_Test : testing::Test {
             return false;
         }
         source_string = { source.data(), source.size() };
-        content = parse_and_build(source_string, &memory, logger);
+        content = parse_and_build(source_string, &memory, make_parse_error_consumer());
         return true;
     }
 
@@ -127,7 +127,7 @@ struct Doc_Gen_Test : testing::Test {
     void load_source(std::u8string_view source)
     {
         source_string = source;
-        content = parse_and_build(source, &memory, logger);
+        content = parse_and_build(source, &memory, make_parse_error_consumer());
     }
 
     std::u8string_view generate(Content_Behavior& root_behavior)
@@ -146,6 +146,18 @@ struct Doc_Gen_Test : testing::Test {
                                            .memory = &memory };
         generate_document(options);
         return { out.data(), out.size() };
+    }
+
+    Parse_Error_Consumer make_parse_error_consumer()
+    {
+        constexpr auto invoker = [](void* entity, std::u8string_view id, Source_Span location,
+                                    std::u8string_view message) {
+            auto* const self = static_cast<Doc_Gen_Test*>(entity);
+            File_Source_Span8 file_location { location, self->file_path.generic_u8string() };
+            Diagnostic d { Severity::error, id, file_location, { &message, 1 } };
+            self->logger(d);
+        };
+        return Parse_Error_Consumer { invoker, this };
     }
 
     void clear()

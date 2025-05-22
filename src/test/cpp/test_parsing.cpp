@@ -23,7 +23,6 @@
 #include "cowel/fwd.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/print.hpp"
-#include "cowel/services.hpp"
 
 namespace cowel {
 namespace {
@@ -320,8 +319,7 @@ parse_and_build_file(std::u8string_view file, std::pmr::memory_resource* memory)
     }
     const std::u8string_view source_string = parsed->get_source_string();
 
-    std::pmr::vector<ast::Content> content
-        = build_ast(source_string, parsed->instructions, memory, ignorant_logger);
+    std::pmr::vector<ast::Content> content = build_ast(source_string, parsed->instructions, memory);
     return Actual_Document { std::move(parsed->source), std::move(content) };
 }
 

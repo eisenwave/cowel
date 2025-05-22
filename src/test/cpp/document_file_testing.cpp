@@ -12,7 +12,6 @@
 #include "cowel/fwd.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/print.hpp"
-#include "cowel/services.hpp"
 
 #include "compilation_stage.hpp"
 #include "diagnostic_policy.hpp"
@@ -49,7 +48,7 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     const std::u8string_view source { source_data.data(), source_data.size() };
     policy.source = source;
 
-    auto doc = parse_and_build(source, &memory, ignorant_logger);
+    auto doc = parse_and_build(source, &memory);
     COWEL_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
 
 // FIXME reimplement

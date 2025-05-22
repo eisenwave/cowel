@@ -114,6 +114,8 @@ int main(int argc, const char* const* argv)
     }
 
     const std::string_view in_path = argv[1];
+    const std::u8string_view in_path_u8 { reinterpret_cast<const char8_t*>(in_path.data()),
+                                          in_path.size() };
     const std::string_view out_path = argv[2];
     constexpr std::string_view theme_path = "ulight/themes/wg21.json";
 
@@ -144,7 +146,13 @@ int main(int argc, const char* const* argv)
     Stderr_Logger logger { &memory, in_path, in_source };
     static constinit Ulight_Syntax_Highlighter highlighter;
 
-    const std::pmr::vector<ast::Content> root_content = parse_and_build(in_source, &memory, logger);
+    const std::pmr::vector<ast::Content> root_content = parse_and_build(
+        in_source, &memory,
+        [&](std::u8string_view id, Source_Span pos, std::u8string_view message) {
+            logger(Diagnostic {
+                Severity::error, id, File_Source_Span8 { pos, in_path_u8 }, { &message, 1 } });
+        }
+    );
 
     const Generation_Options options { .output = out_text,
                                        .root_behavior = behavior,
