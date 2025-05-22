@@ -87,6 +87,7 @@ private:
     Macro_Map m_macros { m_transient_memory };
     Directive_Behavior* m_error_behavior;
 
+    File_Loader& m_file_loader;
     Logger& m_logger;
     Syntax_Highlighter& m_syntax_highlighter;
     Bibliography& m_bibliography;
@@ -113,6 +114,7 @@ public:
         string_view_type source,
         string_view_type highlight_theme_source,
         Directive_Behavior* error_behavior,
+        File_Loader& file_loader,
         Logger& logger,
         Syntax_Highlighter& highlighter,
         Bibliography& bibliography,
@@ -125,6 +127,7 @@ public:
         , m_source { source }
         , m_highlight_theme_source { highlight_theme_source }
         , m_error_behavior { error_behavior }
+        , m_file_loader { file_loader }
         , m_logger { logger }
         , m_syntax_highlighter { highlighter }
         , m_bibliography { bibliography }
@@ -139,6 +142,17 @@ public:
     const std::filesystem::path& get_document_path() const
     {
         return m_document_path;
+    }
+
+    [[nodiscard]]
+    File_Loader& get_file_loader()
+    {
+        return m_file_loader;
+    }
+    [[nodiscard]]
+    const File_Loader& get_file_loader() const
+    {
+        return m_file_loader;
     }
 
     [[nodiscard]]

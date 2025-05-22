@@ -140,6 +140,22 @@ struct Bibliography {
     virtual void clear() = 0;
 };
 
+struct File_Loader {
+    [[nodiscard]]
+    virtual bool operator()(std::pmr::vector<char8_t>& out, std::u8string_view path)
+        = 0;
+};
+
+struct Always_Failing_File_Loader final : File_Loader {
+    [[nodiscard]]
+    bool operator()(std::pmr::vector<char8_t>&, std::u8string_view) final
+    {
+        return false;
+    }
+};
+
+inline constinit Always_Failing_File_Loader always_failing_file_loader;
+
 struct Logger {
 private:
     Severity m_min_severity;

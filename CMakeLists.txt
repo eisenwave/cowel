@@ -42,6 +42,7 @@ add_library(cowel STATIC
 
     src/main/cpp/directives/bibliography.cpp
     src/main/cpp/directives/code_point.cpp
+    src/main/cpp/directives/files.cpp
     src/main/cpp/directives/heading.cpp
     src/main/cpp/directives/html_entity.cpp
     src/main/cpp/directives/literal.cpp

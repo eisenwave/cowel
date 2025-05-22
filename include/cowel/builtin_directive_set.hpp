@@ -600,6 +600,17 @@ struct Math_Behavior final : Pure_HTML_Behavior {
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
 };
 
+struct Include_Behavior final : Pure_Plaintext_Behavior {
+
+    constexpr Include_Behavior(Directive_Display display)
+        : Pure_Plaintext_Behavior { display }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context&) const final;
+};
+
 struct Macro_Define_Behavior final : Meta_Behavior {
 
     void evaluate(const ast::Directive& d, Context& context) const final;

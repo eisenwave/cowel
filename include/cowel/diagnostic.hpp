@@ -152,6 +152,18 @@ inline constexpr std::u8string_view name_invalid = u8"hl:name.invalid";
 
 } // namespace hl
 
+namespace include {
+
+/// @brief In an `\include` directive,
+/// no file path was provided.
+inline constexpr std::u8string_view path_missing = u8"include:path.empty";
+
+/// @brief In an `\include` directive,
+/// the file could not be loaded.
+inline constexpr std::u8string_view io = u8"include:io";
+
+} // namespace include
+
 namespace there {
 
 /// @brief In a `\there` directive,

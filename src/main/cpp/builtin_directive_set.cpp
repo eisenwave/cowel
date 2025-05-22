@@ -110,6 +110,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"ins-block", false };
     Special_Block_Behavior important //
         { u8"important-block" };
+    Include_Behavior //
+        include { Directive_Display::in_line };
     In_Tag_Behavior indent //
         { u8"div", u8"indent", Directive_Category::pure_html, Directive_Display::in_line };
     Wrap_Behavior in_line //
@@ -503,6 +505,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->i;
         if (name == u8"important")
             return &m_impl->important;
+        if (name == u8"include")
+            return &m_impl->include;
         if (name == u8"indent")
             return &m_impl->indent;
         if (name == u8"inline")

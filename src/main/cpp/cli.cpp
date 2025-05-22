@@ -17,6 +17,23 @@
 namespace cowel {
 namespace {
 
+struct Relative_File_Loader final : File_Loader {
+    std::filesystem::path base;
+
+    explicit Relative_File_Loader(std::filesystem::path&& base)
+        : base { std::move(base) }
+    {
+    }
+
+    [[nodiscard]]
+    bool operator()(std::pmr::vector<char8_t>& out, std::u8string_view u8path) final
+    {
+        const std::filesystem::path relative { u8path, std::filesystem::path::generic_format };
+        const std::filesystem::path resolved = base / relative;
+        return load_utf8_file(out, resolved.native()).has_value();
+    }
+};
+
 [[nodiscard]]
 std::u8string_view severity_highlight(Severity severity)
 {
@@ -116,6 +133,8 @@ int main(int argc, const char* const* argv)
     const std::string_view in_path = argv[1];
     const std::u8string_view in_path_u8 { reinterpret_cast<const char8_t*>(in_path.data()),
                                           in_path.size() };
+    auto in_path_directory = std::filesystem::path { in_path }.parent_path();
+
     const std::string_view out_path = argv[2];
     constexpr std::string_view theme_path = "ulight/themes/wg21.json";
 
@@ -143,6 +162,7 @@ int main(int argc, const char* const* argv)
 
     Builtin_Directive_Set builtin_directives {};
     Document_Content_Behavior behavior { builtin_directives.get_macro_behavior() };
+    Relative_File_Loader file_loader { std::move(in_path_directory) };
     Stderr_Logger logger { &memory, in_path, in_source };
     static constinit Ulight_Syntax_Highlighter highlighter;
 
@@ -161,6 +181,7 @@ int main(int argc, const char* const* argv)
                                        .path = in_path,
                                        .source = in_source,
                                        .highlight_theme_source = theme_source,
+                                       .file_loader = file_loader,
                                        .logger = logger,
                                        .highlighter = highlighter,
                                        .memory = &memory };

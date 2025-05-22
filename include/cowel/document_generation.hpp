@@ -33,6 +33,7 @@ struct Generation_Options {
     /// @brief The highlight theme source.
     std::u8string_view highlight_theme_source;
 
+    File_Loader& file_loader = always_failing_file_loader;
     Logger& logger = ignorant_logger;
     Syntax_Highlighter& highlighter = no_support_syntax_highlighter;
     Bibliography& bibliography = simple_bibliography;

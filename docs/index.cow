@@ -1527,6 +1527,54 @@ Generated HTML:
 The \dir{hereblock} directive functions exactly like the \dir{here} directive,
 but displays as block content instead of inline content.
 
+\h3{File management}
+
+Once projects get larger,
+it often becomes difficult to manage everything in a single file.
+Also, tooling may benefit from having separate files.
+For example, keeping separate SVG files
+or CSS files may have better IDE support than writing these out directly inside of COWEL.
+
+COWEL provides directives to load content from other files.
+
+\h4[id=dir-include]{\dir{include} \c{mdash} Include text from a file}
+
+The \dir{include} directive produces plaintext by loading the text contents of another file,
+relative to the directory of the document.
+
+It has no arguments, and its content is a plaintext context in which the path is specified.
+
+\example{
+Say we have a JavaScript file \tt{example.js} which we want to keep separate from the document.
+We can then include it into a \dir{script} block to use it as a script,
+or we can include it into a \dir{codeblock} to display its contents.
+\codeblock[cowel]{\literally{
+\codeblock[js]{
+// code included from example.js:
+\include{example.js}
+}
+}}
+Assuming that \tt{example.js} is located in the same directory as the document
+and that loading the file succeeds,
+this renders as: 
+\codeblock[js]{
+// code included from example.js:
+\include{example.js}
+}
+}
+
+\note{
+Directives and any other COWEL content within the file are not processed.
+\dir{include} simply takes the text content of the file and generates plaintext from it.
+
+However, when the directive is used in an HTML context
+(like if we simply use \dir{include} in the middle of the document),
+it is subject to escaping (\tt{&} \c{rightarrow} \ch{&amp;}, etc.) just like any other text.
+In other words, you are also safe from HTML tags inside of included text breaking the document,
+barring a few directives, like \dir{html} or \dir{script};
+no such escaping takes place inside of \dir{script}.
+}
+
 \h3{Macros}
 
 \h4[id=dir-def]{\dir{macro} \c{mdash} Define a macro}

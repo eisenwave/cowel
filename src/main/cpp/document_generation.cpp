@@ -26,12 +26,16 @@ void generate_document(const Generation_Options& options)
 
     HTML_Writer writer { options.output };
 
-    Context context {
-        options.path,           options.source,      options.highlight_theme_source, //
-        options.error_behavior, //
-        options.logger,         options.highlighter, options.bibliography, //
-        options.memory,         &transient_memory
-    };
+    Context context { options.path, //
+                      options.source, //
+                      options.highlight_theme_source, //
+                      options.error_behavior, //
+                      options.file_loader,
+                      options.logger, //
+                      options.highlighter, //
+                      options.bibliography, //
+                      options.memory, //
+                      &transient_memory };
     context.add_resolver(options.builtin_behavior);
 
     options.root_behavior.generate_html(writer, options.root_content, context);
