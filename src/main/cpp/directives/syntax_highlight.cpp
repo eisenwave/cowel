@@ -82,11 +82,16 @@ void diagnose(
 
 } // namespace
 
-void Syntax_Highlight_Behavior::
-    generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive&, const Argument_Matcher&, Context&)
-        const
+void Syntax_Highlight_Behavior::generate_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    const Argument_Matcher&,
+    Context& context
+) const
 {
-    // FIXME: this should generate something for inline directives
+    if (display == Directive_Display::in_line) {
+        to_plaintext(out, d, context);
+    }
 }
 
 void Syntax_Highlight_Behavior::generate_html(
