@@ -10,6 +10,7 @@
 
 #include "cowel/ast.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/util/function_ref.hpp"
 
 namespace cowel {
 
@@ -99,18 +100,24 @@ struct AST_Instruction {
 /// so the parsed result may be undesirable, but always valid.
 void parse(std::pmr::vector<AST_Instruction>& out, std::u8string_view source);
 
+using Parse_Error_Consumer
+    = Function_Ref<void(std::u8string_view id, Source_Span location, std::u8string_view message)>;
+
 /// @brief Builds an AST from a span of instructions,
 /// usually obtained from `parse`.
 std::pmr::vector<ast::Content> build_ast(
     std::u8string_view source,
     std::span<const AST_Instruction> instructions,
     std::pmr::memory_resource* memory,
-    Logger& logger
+    Parse_Error_Consumer on_error = {}
 );
 
 /// @brief Parses a document and runs `build_ast` on the results.
-std::pmr::vector<ast::Content>
-parse_and_build(std::u8string_view source, std::pmr::memory_resource* memory, Logger& logger);
+std::pmr::vector<ast::Content> parse_and_build(
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    Parse_Error_Consumer on_error = {}
+);
 
 } // namespace cowel
 

@@ -6,13 +6,13 @@
 #include <utility>
 #include <vector>
 
+#include "cowel/diagnostic.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/source_position.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/parse.hpp"
-#include "cowel/services.hpp"
 
 namespace cowel {
 
@@ -88,7 +88,7 @@ private:
     const string_view_type m_source;
     const std::span<const AST_Instruction> m_instructions;
     std::pmr::memory_resource* const m_memory;
-    Logger& m_logger;
+    Parse_Error_Consumer m_on_error;
 
     std::size_t m_index = 0;
     Source_Position m_pos {};
@@ -98,12 +98,12 @@ public:
         string_view_type source,
         std::span<const AST_Instruction> instructions,
         std::pmr::memory_resource* memory,
-        Logger& logger
+        Parse_Error_Consumer on_error
     )
         : m_source { source }
         , m_instructions { instructions }
         , m_memory { memory }
-        , m_logger { logger }
+        , m_on_error { on_error }
     {
         COWEL_ASSERT(!instructions.empty());
     }
@@ -299,14 +299,9 @@ public:
         }
         const AST_Instruction instruction = peek();
         if (instruction.type == AST_Instruction_Type::error_unclosed_block) {
-            if (m_logger.can_log(Severity::error)) {
-                constexpr std::u8string_view message[] {
-                    u8"Unclosed block belonging to a directive."
-                };
-                m_logger({ .severity = Severity::error,
-                           .id = diagnostic::parse_block_unclosed,
-                           .location = Source_Span { m_pos, 1 },
-                           .message = message });
+            if (m_on_error) {
+                constexpr std::u8string_view message = u8"Unclosed block belonging to a directive.";
+                m_on_error(diagnostic::parse_block_unclosed, Source_Span { m_pos, 1 }, message);
             }
             pop();
             advance_by(1);
@@ -336,19 +331,22 @@ std::pmr::vector<ast::Content> build_ast(
     std::u8string_view source,
     std::span<const AST_Instruction> instructions,
     std::pmr::memory_resource* memory,
-    Logger& logger
+    Parse_Error_Consumer on_error
 )
 {
-    return AST_Builder { source, instructions, memory, logger }.build_document();
+    return AST_Builder { source, instructions, memory, on_error }.build_document();
 }
 
 /// @brief Parses a document and runs `build_ast` on the results.
-std::pmr::vector<ast::Content>
-parse_and_build(std::u8string_view source, std::pmr::memory_resource* memory, Logger& logger)
+std::pmr::vector<ast::Content> parse_and_build(
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    Parse_Error_Consumer on_error
+)
 {
     std::pmr::vector<AST_Instruction> instructions { memory };
     parse(instructions, source);
-    return build_ast(source, instructions, memory, logger);
+    return build_ast(source, instructions, memory, on_error);
 }
 
 } // namespace cowel
