@@ -115,6 +115,20 @@ inline constexpr std::u8string_view nonscalar = u8"c:nonscalar";
 
 } // namespace c
 
+namespace code {
+
+/// @brief In `\code`, the given `nested` parameter is not `yes` or `no`.
+inline constexpr std::u8string_view nested_invalid = u8"code:nested.invalid";
+
+} // namespace code
+
+namespace codeblock {
+
+/// @brief In `\codeblock`, the given `borders` parameter is not `yes` or `no`.
+inline constexpr std::u8string_view borders_invalid = u8"codeblock:borders.invalid";
+
+} // namespace codeblock
+
 namespace U {
 
 /// @brief In `\\U`, the input is blank.

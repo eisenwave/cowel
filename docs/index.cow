@@ -589,8 +589,10 @@ The \dir{code} directive produced syntax-highlighted text in code font.
 \dl{
 \dt{Arguments}
 \dd{
-\dir{code} accepts a single \tt{lang} argument which specifies the language
-used for syntax highlighting.
+\dir{code} accepts a \tt{lang} argument,
+specifying the syntax highlighting language,
+and a \tt{nested} argument,
+specifying whether whether to omit \ch{<code>} tags.
 }
 
 \dt{Input content}
@@ -627,6 +629,31 @@ The \ch{<h->} tags are an implementation detail and may be subject to change.
 <code><h- data-h=num>123</h-></code>
 }
 }
+
+The \tt{nested} parameter is a plaintext context,
+which accepts either \tt{yes} or \tt{no}, where \tt{no} is the default.
+When enabled, the surrounding \ch{<code>} tags are omitted,
+which makes it suitable for nesting languages within other \dir{code} or \dir{codeblock}
+directives.
+
+\example{
+You can nest JSON inside of a C++ string literal as follows:
+\codeblock[cowel]{\unprocessed{
+Call: \code[cpp]{out.write_json("\code[json,nested=yes]{{"x":123,"y":true,"z":null}}")}
+}}
+This renders as follows:
+\indent{
+Call: \code[cpp]{out.write_json("\code[json,nested=yes]{{"x":123,"y":true,"z":null}}")}
+}
+}
+
+Note that by default,
+you may often not even notice a visual difference between using the \tt{nested}
+parameter and not using it.
+However, the difference would be obvious once you want to style \ch{<code>} elements
+to have borders, background color, padding, and other such styling features.
+\tt{nested=yes} directly emits the highlighting HTML elements,
+which is more composable.
 
 \tip{
 Writing \dir{code} directives directly is often too tedious,

@@ -1980,8 +1980,10 @@ deals with modern C++ features correctly.
 <dl>
 <dt>Arguments</dt>
 <dd>
-<code><h- data-h=mk_tag>\code</h-></code> accepts a single <tt->lang</tt-> argument which specifies the language
-used for syntax highlighting.
+<code><h- data-h=mk_tag>\code</h-></code> accepts a <tt->lang</tt-> argument,
+specifying the syntax highlighting language,
+and a <tt->nested</tt-> argument,
+specifying whether whether to omit <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
 </dd>
 
 <dt>Input content</dt>
@@ -2015,6 +2017,29 @@ The <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_p
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>num</h-><h- data-h=sym_punc>&gt;</h->123<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
 
+<p>The <tt->nested</tt-> parameter is a plaintext context,
+which accepts either <tt->yes</tt-> or <tt->no</tt->, where <tt->no</tt-> is the default.
+When enabled, the surrounding <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code> tags are omitted,
+which makes it suitable for nesting languages within other <code><h- data-h=mk_tag>\code</h-></code> or <code><h- data-h=mk_tag>\codeblock</h-></code>
+directives.
+</p>
+<example-block><p><intro-></intro-> 
+You can nest JSON inside of a C++ string literal as follows:
+</p><code-block>Call: <h- data-h=mk_tag>\code</h-><h- data-h=sym_sqr>[</h->cpp<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->out.write_json("<h- data-h=mk_tag>\code</h-><h- data-h=sym_sqr>[</h->json<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>nested</h-><h- data-h=sym_punc>=</h->yes<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->{"x":123,"y":true,"z":null}<h- data-h=sym_brac>}</h->")<h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as follows:
+<div class=indent>
+Call: <code><h- data-h=id>out</h-><h- data-h=sym_op>.</h-><h- data-h=id>write_json</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_attr>"x"</h-><h- data-h=sym_punc>:</h-><h- data-h=num>123</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>"y"</h-><h- data-h=sym_punc>:</h-><h- data-h=bool>true</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>"z"</h-><h- data-h=sym_punc>:</h-><h- data-h=null>null</h-><h- data-h=sym_brac>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code>
+</div>
+</p></example-block>
+
+<p>Note that by default,
+you may often not even notice a visual difference between using the <tt->nested</tt->
+parameter and not using it.
+However, the difference would be obvious once you want to style <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code> elements
+to have borders, background color, padding, and other such styling features.
+<tt->nested=yes</tt-> directly emits the highlighting HTML elements,
+which is more composable.
+</p>
 <tip-block><p><intro-></intro-> 
 Writing <code><h- data-h=mk_tag>\code</h-></code> directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:

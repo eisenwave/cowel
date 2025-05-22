@@ -94,6 +94,43 @@ void Syntax_Highlight_Behavior::generate_plaintext(
     }
 }
 
+namespace {
+
+[[nodiscard]]
+bool get_yes_no_argument(
+    std::u8string_view name,
+    std::u8string_view diagnostic_id,
+    const ast::Directive& d,
+    const Argument_Matcher& args,
+    Context& context,
+    bool fallback
+)
+{
+    const int index = args.get_argument_index(name);
+    if (index < 0) {
+        return fallback;
+    }
+    const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
+    std::pmr::vector<char8_t> data { context.get_transient_memory() };
+    to_plaintext(data, arg.get_content(), context);
+    const auto string = as_u8string_view(data);
+    if (string == u8"yes") {
+        return true;
+    }
+    if (string == u8"no") {
+        return false;
+    }
+    const std::u8string_view message[] {
+        u8"Argument has to be \"yes\" or \"no\", but \"",
+        string,
+        u8"\" was given.",
+    };
+    context.try_warning(diagnostic_id, arg.get_source_span(), message);
+    return fallback;
+}
+
+} // namespace
+
 void Syntax_Highlight_Behavior::generate_html(
     HTML_Writer& out,
     const ast::Directive& d,
@@ -105,16 +142,22 @@ void Syntax_Highlight_Behavior::generate_html(
     const std::u8string_view lang
         = argument_to_plaintext_or(lang_data, lang_parameter, u8"", d, args, context);
 
-    std::pmr::vector<char8_t> borders_data { context.get_transient_memory() };
-    const bool has_borders = this->display == Directive_Display::block
-        && argument_to_plaintext_or(borders_data, borders_parameter, u8"yes", d, args, context)
-            != u8"no";
+    const bool has_borders = this->display == Directive_Display::in_line
+        || get_yes_no_argument(borders_parameter, diagnostic::codeblock::borders_invalid, d, args,
+                               context, true);
 
-    Attribute_Writer attributes = out.open_tag_with_attributes(m_tag_name);
-    if (this->display == Directive_Display::block && !has_borders) {
-        attributes.write_class(u8"borderless");
+    const bool is_nested = this->display == Directive_Display::in_line
+        && get_yes_no_argument(nested_parameter, diagnostic::code::nested_invalid, d, args, context,
+                               false);
+
+    if (!is_nested) {
+        Attribute_Writer attributes = out.open_tag_with_attributes(m_tag_name);
+        if (!has_borders) {
+            COWEL_ASSERT(display != Directive_Display::in_line);
+            attributes.write_class(u8"borderless");
+        }
+        attributes.end();
     }
-    attributes.end();
 
     const Result<void, Syntax_Highlight_Error> result
         = to_html_syntax_highlighted(out, d.get_content(), lang, context, m_to_html_mode);
@@ -122,7 +165,10 @@ void Syntax_Highlight_Behavior::generate_html(
         to_html(out, d.get_content(), context, m_to_html_mode);
         diagnose(result.error(), lang, d, context);
     }
-    out.close_tag(m_tag_name);
+
+    if (!is_nested) {
+        out.close_tag(m_tag_name);
+    }
 }
 
 void Highlight_Behavior::generate_plaintext(

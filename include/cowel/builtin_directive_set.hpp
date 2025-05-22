@@ -88,8 +88,13 @@ struct Lorem_Ipsum_Behavior final : Directive_Behavior {
 struct [[nodiscard]] Syntax_Highlight_Behavior : Parametric_Behavior {
 private:
     static constexpr std::u8string_view lang_parameter = u8"lang";
+    static constexpr std::u8string_view nested_parameter = u8"nested";
     static constexpr std::u8string_view borders_parameter = u8"borders";
-    static constexpr std::u8string_view parameters[] { lang_parameter, borders_parameter };
+    static constexpr std::u8string_view parameters[] {
+        lang_parameter,
+        borders_parameter,
+        nested_parameter,
+    };
 
     const std::u8string_view m_tag_name;
     const To_HTML_Mode m_to_html_mode;
