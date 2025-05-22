@@ -627,6 +627,8 @@ struct Macro_Instantiate_Behavior final : Directive_Behavior {
     generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context&) const final;
 
     void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const final;
+
+    void instantiate(std::pmr::vector<ast::Content>&, const ast::Directive&, Context&) const final;
 };
 
 struct [[nodiscard]]

@@ -50,18 +50,72 @@ void Macro_Define_Behavior::evaluate(const ast::Directive& d, Context& context) 
     }
 }
 
+namespace {
+
+void substitute_in_macro(
+    std::pmr::vector<ast::Content>& content,
+    std::span<const ast::Argument> put_arguments,
+    std::span<const ast::Content> put_content,
+    Context& context
+)
+{
+    for (auto it = content.begin(); it != content.end();) {
+        auto* const d = std::get_if<ast::Directive>(&*it);
+        if (!d) {
+            // Anything other than directives (text, etc.) are unaffected by macro substitution.
+            ++it;
+            continue;
+        }
+
+        // Before anything else, we have to replace the contents and the arguments of directives.
+        // This comes even before the use evaluation of \put and \arg
+        // in order to facilitate nesting, like \arg[\arg[0]].
+        for (auto& arg : d->get_arguments()) {
+            substitute_in_macro(arg.get_content(), put_arguments, put_content, context);
+        }
+        substitute_in_macro(d->get_content(), put_arguments, put_content, context);
+
+        const std::u8string_view name = d->get_name(context.get_source());
+        if (name == u8"put") {
+            // TODO: there's probably a way to do this faster, in a single step,
+            //       but I couldn't find anything obvious in std::vector's interface.
+            it = content.erase(it);
+            it = content.insert(it, put_content.begin(), put_content.end());
+            // We must skip over substituted content,
+            // otherwise we risk expanding a \put directive that was passed to the macro,
+            // rather than being in the macro definition,
+            // and \put is only supposed to have special meaning within the macro definition.
+            it += std::ptrdiff_t(put_content.size());
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
+void instantiate_macro(
+    std::pmr::vector<ast::Content>& out,
+    const ast::Directive& definition,
+    std::span<const ast::Argument> put_arguments,
+    std::span<const ast::Content> put_content,
+    Context& context
+)
+{
+    const std::span<const ast::Content> content = definition.get_content();
+    out.insert(out.end(), content.begin(), content.end());
+    substitute_in_macro(out, put_arguments, put_content, context);
+}
+
+} // namespace
+
 void Macro_Instantiate_Behavior::generate_plaintext(
     std::pmr::vector<char8_t>& out,
     const ast::Directive& d,
     Context& context
 ) const
 {
-    const std::u8string_view name = d.get_name(context.get_source());
-    const ast::Directive* const definition = context.find_macro(name);
-    // There should be no mismatch between the directive behavior lookup and macro lookup.
-    COWEL_ASSERT(definition);
-
-    std::pmr::vector<ast::Content> instantiation = instantiate_macro(*definition, d, context);
+    std::pmr::vector<ast::Content> instantiation { context.get_transient_memory() };
+    instantiate(instantiation, d, context);
     to_plaintext(out, instantiation, context);
 }
 
@@ -71,13 +125,22 @@ void Macro_Instantiate_Behavior::generate_html(
     Context& context
 ) const
 {
+    std::pmr::vector<ast::Content> instantiation { context.get_transient_memory() };
+    instantiate(instantiation, d, context);
+    to_html(out, instantiation, context);
+}
+
+void Macro_Instantiate_Behavior::instantiate(
+    std::pmr::vector<ast::Content>& out,
+    const ast::Directive& d,
+    Context& context
+) const
+{
     const std::u8string_view name = d.get_name(context.get_source());
     const ast::Directive* const definition = context.find_macro(name);
-    // There should be no mismatch between the directive behavior lookup and macro lookup.
     COWEL_ASSERT(definition);
 
-    std::pmr::vector<ast::Content> instantiation = instantiate_macro(*definition, d, context);
-    to_html(out, instantiation, context);
+    instantiate_macro(out, *definition, d.get_arguments(), d.get_content(), context);
 }
 
 } // namespace cowel

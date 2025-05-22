@@ -280,7 +280,7 @@ void to_plaintext_mapped_for_highlighting(
     // are not actually within the source highlighting block.
     // However, that's not really a problem; subsequent functionality can deal with that.
     case Directive_Category::macro: {
-        const std::pmr::vector<ast::Content> instance = instantiate_macro_invocation(d, context);
+        const std::pmr::vector<ast::Content> instance = behavior->instantiate(d, context);
         to_plaintext_mapped_for_highlighting(out, out_mapping, instance, context);
         break;
     }
@@ -442,8 +442,7 @@ public:
     {
         if (Directive_Behavior* const behavior = m_context.find_directive(d)) {
             if (behavior->category == Directive_Category::macro) {
-                const std::pmr::vector<ast::Content> instance
-                    = instantiate_macro_invocation(d, m_context);
+                const std::pmr::vector<ast::Content> instance = behavior->instantiate(d, m_context);
                 for (const auto& content : instance) {
                     std::visit(*this, content);
                 }
@@ -756,7 +755,7 @@ struct [[nodiscard]] Highlighted_AST_Copier {
         }
         case Directive_Category::macro: {
             const std::pmr::vector<ast::Content> instance
-                = instantiate_macro_invocation(directive, context);
+                = behavior->instantiate(directive, context);
             for (const auto& content : instance) {
                 std::visit(*this, content);
             }
@@ -1005,86 +1004,6 @@ void try_generate_error_html(HTML_Writer& out, const ast::Directive& d, Context&
     if (const Directive_Behavior* const behavior = context.get_error_behavior()) {
         behavior->generate_html(out, d, context);
     }
-}
-
-namespace {
-
-void substitute_in_macro(
-    std::pmr::vector<ast::Content>& content,
-    std::span<const ast::Argument> put_arguments,
-    std::span<const ast::Content> put_content,
-    Context& context
-)
-{
-    for (auto it = content.begin(); it != content.end();) {
-        auto* const d = std::get_if<ast::Directive>(&*it);
-        if (!d) {
-            // Anything other than directives (text, etc.) are unaffected by macro substitution.
-            ++it;
-            continue;
-        }
-
-        // Before anything else, we have to replace the contents and the arguments of directives.
-        // This comes even before the use evaluation of \put and \arg
-        // in order to facilitate nesting, like \arg[\arg[0]].
-        for (auto& arg : d->get_arguments()) {
-            substitute_in_macro(arg.get_content(), put_arguments, put_content, context);
-        }
-        substitute_in_macro(d->get_content(), put_arguments, put_content, context);
-
-        const std::u8string_view name = d->get_name(context.get_source());
-        if (name == u8"put") {
-            // TODO: there's probably a way to do this faster, in a single step,
-            //       but I couldn't find anything obvious in std::vector's interface.
-            it = content.erase(it);
-            it = content.insert(it, put_content.begin(), put_content.end());
-            // We must skip over substituted content,
-            // otherwise we risk expanding a \put directive that was passed to the macro,
-            // rather than being in the macro definition,
-            // and \put is only supposed to have special meaning within the macro definition.
-            it += std::ptrdiff_t(put_content.size());
-        }
-        else {
-            ++it;
-        }
-    }
-}
-
-} // namespace
-
-std::pmr::vector<ast::Content> instantiate_macro(
-    const ast::Directive& definition,
-    std::span<const ast::Argument> put_arguments,
-    std::span<const ast::Content> put_content,
-    Context& context
-)
-{
-    const std::span<const ast::Content> content = definition.get_content();
-    std::pmr::vector<ast::Content> result { content.begin(), content.end(),
-                                            context.get_transient_memory() };
-    substitute_in_macro(result, put_arguments, put_content, context);
-    return result;
-}
-
-std::pmr::vector<ast::Content> instantiate_macro(
-    const ast::Directive& definition,
-    const ast::Directive& invocation,
-    Context& context
-)
-{
-    return instantiate_macro(
-        definition, invocation.get_arguments(), invocation.get_content(), context
-    );
-}
-
-std::pmr::vector<ast::Content>
-instantiate_macro_invocation(const ast::Directive& invocation, Context& context)
-{
-    const std::u8string_view name = invocation.get_name(context.get_source());
-    const ast::Directive* const definition = context.find_macro(name);
-    COWEL_ASSERT(definition);
-
-    return instantiate_macro(*definition, invocation, context);
 }
 
 } // namespace cowel
