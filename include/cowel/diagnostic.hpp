@@ -53,7 +53,7 @@ struct Diagnostic {
     /// dot-separated sequence of identifier for this diagnostic.
     std::u8string_view id;
     /// @brief The span of code that is responsible for this diagnostic.
-    Source_Span location;
+    File_Source_Span8 location;
     /// @brief The diagnostic message parts.
     std::span<const std::u8string_view> message;
 };
