@@ -276,7 +276,7 @@ void generate_sectioned(
 
 void There_Behavior::evaluate(const ast::Directive& d, Context& context) const
 {
-    generate_sectioned(d, context, diagnostic::there_no_section, [&](std::u8string_view section) {
+    generate_sectioned(d, context, diagnostic::there::no_section, [&](std::u8string_view section) {
         const auto scope = context.get_sections().go_to_scoped(section);
         HTML_Writer there_writer = context.get_sections().current_html();
         to_html(there_writer, d.get_content(), context);
@@ -285,7 +285,7 @@ void There_Behavior::evaluate(const ast::Directive& d, Context& context) const
 
 void Here_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
 {
-    generate_sectioned(d, context, diagnostic::there_no_section, [&](std::u8string_view section) {
+    generate_sectioned(d, context, diagnostic::there::no_section, [&](std::u8string_view section) {
         reference_section(out, section);
     });
 }

@@ -149,7 +149,7 @@ void Self_Closing_Behavior::generate_html(
     if (!d.get_content().empty()) {
         const auto location = ast::get_source_span(d.get_content().front());
         context.try_warning(
-            m_content_ignored_diagnostic, location,
+            diagnostic::ignored_content, location,
             u8"Content was ignored. Use empty braces,"
             "i.e. {} to resolve this warning."
         );

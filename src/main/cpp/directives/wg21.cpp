@@ -43,7 +43,7 @@ void WG21_Head_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d
     const int title_index = args.get_argument_index(u8"title");
     if (title_index < 0) {
         context.try_warning(
-            diagnostic::wg21_head_no_title, d.get_source_span(),
+            diagnostic::wg21_head::no_title, d.get_source_span(),
             u8"A wg21-head directive requires a title argument"
         );
     }

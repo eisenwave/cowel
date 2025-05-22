@@ -361,17 +361,11 @@ public:
 struct Self_Closing_Behavior final : Pure_HTML_Behavior {
 private:
     const std::u8string_view m_tag_name;
-    const std::u8string_view m_content_ignored_diagnostic;
 
 public:
-    constexpr Self_Closing_Behavior(
-        std::u8string_view tag_name,
-        std::u8string_view content_ignored_diagnostic,
-        Directive_Display display
-    )
+    constexpr Self_Closing_Behavior(std::u8string_view tag_name, Directive_Display display)
         : Pure_HTML_Behavior { display }
         , m_tag_name { tag_name }
-        , m_content_ignored_diagnostic { content_ignored_diagnostic }
     {
     }
 

@@ -31,7 +31,7 @@ struct Builtin_Directive_Set::Impl {
     Special_Block_Behavior blockquote //
         { u8"blockquote", false };
     Self_Closing_Behavior br //
-        { u8"br", diagnostic::br_content_ignored, Directive_Display::in_line };
+        { u8"br", Directive_Display::in_line };
     Special_Block_Behavior bug //
         { u8"bug-block" };
     HTML_Entity_Behavior c //
@@ -97,7 +97,7 @@ struct Builtin_Directive_Set::Impl {
     Highlight_Behavior hl // NOLINT(misc-confusable-identifiers)
         {};
     Self_Closing_Behavior hr //
-        { u8"hr", diagnostic::hr_content_ignored, Directive_Display::block };
+        { u8"hr", Directive_Display::block };
     HTML_Literal_Behavior html //
         { Directive_Display::in_line };
     HTML_Literal_Behavior htmlblock //
@@ -218,7 +218,7 @@ struct Builtin_Directive_Set::Impl {
     Special_Block_Behavior warning //
         { u8"warning-block" };
     Self_Closing_Behavior wbr //
-        { u8"wbr", diagnostic::wbr_content_ignored, Directive_Display::in_line };
+        { u8"wbr", Directive_Display::in_line };
     WG21_Block_Behavior wg21_example //
         { u8"Example", u8"end example" };
     In_Tag_Behavior wg21_grammar //

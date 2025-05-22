@@ -17,7 +17,7 @@ void Macro_Define_Behavior::evaluate(const ast::Directive& d, Context& context) 
     const int pattern_index = args.get_argument_index(u8"pattern");
     if (pattern_index < 0) {
         context.try_error(
-            diagnostic::def_no_pattern, d.get_source_span(),
+            diagnostic::macro::no_pattern, d.get_source_span(),
             u8"A directive pattern must be provided when defining a macro."
         );
         return;
@@ -26,7 +26,7 @@ void Macro_Define_Behavior::evaluate(const ast::Directive& d, Context& context) 
     if (pattern_arg.get_content().size() != 1
         || !std::holds_alternative<ast::Directive>(pattern_arg.get_content()[0])) {
         context.try_error(
-            diagnostic::def_pattern_no_directive, pattern_arg.get_source_span(),
+            diagnostic::macro::pattern_no_directive, pattern_arg.get_source_span(),
             u8"The pattern in a macro definition has to be a single directive, nothing else."
         );
         return;
@@ -46,7 +46,7 @@ void Macro_Define_Behavior::evaluate(const ast::Directive& d, Context& context) 
             pattern_name,
             u8"\".",
         };
-        context.try_soft_warning(diagnostic::def_redefinition, d.get_source_span(), message);
+        context.try_soft_warning(diagnostic::macro::redefinition, d.get_source_span(), message);
     }
 }
 

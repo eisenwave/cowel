@@ -22,7 +22,7 @@ void check_arguments(const ast::Directive& d, Context& context)
     if (!d.get_arguments().empty()) {
         const Source_Span pos = d.get_arguments().front().get_source_span();
         context.try_warning(
-            diagnostic::c_args_ignored, pos, u8"Arguments to this directive are ignored."
+            diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."
         );
     }
 }
@@ -40,14 +40,14 @@ std::array<char32_t, 2> get_code_points_from_digits(
         const std::u8string_view message = base == 10
             ? u8"Expected a sequence of decimal digits."
             : u8"Expected a sequence of hexadecimal digits.";
-        context.try_error(diagnostic::c_digits, d.get_source_span(), message);
+        context.try_error(diagnostic::c::digits, d.get_source_span(), message);
         return {};
     }
 
     const auto code_point = char32_t(*value);
     if (!is_scalar_value(code_point)) {
         context.try_error(
-            diagnostic::c_nonscalar, d.get_source_span(),
+            diagnostic::c::nonscalar, d.get_source_span(),
             u8"The given hex sequence is not a Unicode scalar value. "
             u8"Therefore, it cannot be encoded as UTF-8."
         );
@@ -63,7 +63,7 @@ get_code_points(std::u8string_view trimmed_text, const ast::Directive& d, Contex
 {
     if (trimmed_text.empty()) {
         context.try_error(
-            diagnostic::c_blank, d.get_source_span(),
+            diagnostic::c::blank, d.get_source_span(),
             u8"Expected an HTML character reference, but got a blank string."
         );
         return {};
@@ -76,7 +76,7 @@ get_code_points(std::u8string_view trimmed_text, const ast::Directive& d, Contex
     const std::array<char32_t, 2> result = code_points_by_character_reference_name(trimmed_text);
     if (result[0] == 0) {
         context.try_error(
-            diagnostic::c_name, d.get_source_span(), u8"Invalid named HTML character."
+            diagnostic::c::name, d.get_source_span(), u8"Invalid named HTML character."
         );
     }
     return result;

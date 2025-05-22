@@ -107,7 +107,7 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     for (std::size_t i = 0; i < args.argument_statuses().size(); ++i) {
         if (args.argument_statuses()[i] == Argument_Status::unmatched) {
             context.try_warning(
-                diagnostic::ref_args_ignored, d.get_arguments()[i].get_source_span(),
+                diagnostic::ignored_args, d.get_arguments()[i].get_source_span(),
                 u8"This argument was ignored."
             );
         }
@@ -116,7 +116,7 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     const int to_index = args.get_argument_index(u8"to");
     if (to_index < 0) {
         context.try_error(
-            diagnostic::ref_to_missing, d.get_source_span(),
+            diagnostic::ref::to_missing, d.get_source_span(),
             u8"A \"to\" argument is required for a reference."
         );
         try_generate_error_html(out, d, context);
@@ -127,7 +127,7 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     to_plaintext(target, d.get_arguments()[std::size_t(to_index)].get_content(), context);
     if (target.empty()) {
         context.try_error(
-            diagnostic::ref_to_empty, d.get_source_span(),
+            diagnostic::ref::to_empty, d.get_source_span(),
             u8"A \"to\" argument cannot have an empty value."
         );
         try_generate_error_html(out, d, context);
@@ -245,7 +245,7 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
             last_uri_part,
             u8"\" could not be verbalized automatically.",
         };
-        context.try_warning(diagnostic::ref_draft_verbalization, d.get_source_span(), message);
+        context.try_warning(diagnostic::ref::draft_verbalization, d.get_source_span(), message);
         out.write_inner_text(target_string);
     }
     out.close_tag(u8"a");

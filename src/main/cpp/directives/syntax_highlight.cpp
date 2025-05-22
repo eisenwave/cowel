@@ -146,7 +146,7 @@ void Highlight_Behavior::generate_html(
     const bool has_name = argument_to_plaintext(name_data, d, args, name_parameter, context);
     if (!has_name) {
         context.try_error(
-            diagnostic::hl_name_missing, d.get_source_span(),
+            diagnostic::hl::name_missing, d.get_source_span(),
             u8"A name parameter is required to specify the kind of highlight to apply."
         );
         try_generate_error_html(out, d, context);
@@ -161,7 +161,7 @@ void Highlight_Behavior::generate_html(
             name_string,
             u8"\" is not a valid ulight highlight name (long form).",
         };
-        context.try_error(diagnostic::hl_name_invalid, d.get_source_span(), message);
+        context.try_error(diagnostic::hl::name_invalid, d.get_source_span(), message);
         try_generate_error_html(out, d, context);
         return;
     }

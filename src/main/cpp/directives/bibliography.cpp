@@ -130,7 +130,7 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
 
     if (args.get_argument_index(u8"id") < 0) {
         context.try_error(
-            diagnostic::bib_id_missing, d.get_source_span(),
+            diagnostic::bib::id_missing, d.get_source_span(),
             u8"An id argument is required to add a bibliography entry."
         );
         return;
@@ -158,7 +158,7 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
 
         if (entry.parameter == u8"id" && result.text.size() == initial_size) {
             context.try_error(
-                diagnostic::bib_id_empty, d.get_source_span(),
+                diagnostic::bib::id_empty, d.get_source_span(),
                 u8"An id argument for a bibliography entry cannot be empty."
             );
             return;
@@ -182,7 +182,7 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
             result.info.id,
             u8"\" already exists.",
         };
-        context.try_error(diagnostic::bib_duplicate, d.get_source_span(), message);
+        context.try_error(diagnostic::bib::duplicate, d.get_source_span(), message);
         return;
     }
 
