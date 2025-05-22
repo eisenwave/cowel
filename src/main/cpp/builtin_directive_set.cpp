@@ -118,6 +118,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"ins", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
         { u8"kbd", Directive_Category::formatting, Directive_Display::in_line };
+    Literally_Behavior literally //
+        { Directive_Display::in_line };
     Lorem_Ipsum_Behavior lorem_ipsum //
         {};
     Macro_Define_Behavior macro //
@@ -207,6 +209,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"u", Directive_Category::formatting, Directive_Display::in_line };
     List_Behavior ul //
         { u8"ul" };
+    Unprocessed_Behavior unprocessed //
+        { Directive_Display::in_line };
     URL_Behavior url //
         {};
     Fixed_Name_Passthrough_Behavior var //
@@ -306,6 +310,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-item",
         u8"-k",
         u8"-kbd",
+        u8"-literally",
         u8"-lorem-ipsum",
         u8"-macro",
         u8"-mail",
@@ -346,6 +351,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-tt",
         u8"-u",
         u8"-ul",
+        u8"-unprocessed",
         u8"-url",
         u8"-var",
         u8"-vget",
@@ -513,6 +519,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'l':
+        if (name == u8"literally")
+            return &m_impl->literally;
         if (name == u8"lorem-ipsum")
             return &m_impl->lorem_ipsum;
         break;
@@ -629,6 +637,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->u;
         if (name == u8"ul")
             return &m_impl->ul;
+        if (name == u8"unprocessed")
+            return &m_impl->unprocessed;
         if (name == u8"url")
             return &m_impl->url;
         break;

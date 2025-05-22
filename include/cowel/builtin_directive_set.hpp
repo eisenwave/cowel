@@ -143,6 +143,30 @@ public:
     ) const override;
 };
 
+struct Literally_Behavior : Pure_Plaintext_Behavior {
+
+    constexpr explicit Literally_Behavior(Directive_Display display)
+        : Pure_Plaintext_Behavior { display }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
+        const override;
+};
+
+struct Unprocessed_Behavior : Pure_Plaintext_Behavior {
+
+    constexpr explicit Unprocessed_Behavior(Directive_Display display)
+        : Pure_Plaintext_Behavior { display }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
+        const override;
+};
+
 struct HTML_Literal_Behavior : Pure_HTML_Behavior {
 
     constexpr explicit HTML_Literal_Behavior(Directive_Display display)
