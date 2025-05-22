@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "cowel/ast.hpp"
 #include "cowel/context.hpp"
 #include "cowel/fwd.hpp"
 
@@ -70,6 +71,36 @@ struct Directive_Behavior {
         = 0;
 
     virtual void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const = 0;
+
+    virtual void instantiate(std::pmr::vector<ast::Content>&, const ast::Directive&, Context&) const
+    {
+        COWEL_ASSERT_UNREACHABLE(u8"Instantiation unimplemented.");
+    }
+
+    [[nodiscard]]
+    std::pmr::vector<char8_t> generate_plaintext(const ast::Directive& d, Context& context) const
+    {
+        std::pmr::vector<char8_t> result { context.get_transient_memory() };
+        generate_plaintext(result, d, context);
+        return result;
+    }
+
+    [[nodiscard]]
+    std::pmr::vector<char8_t> generate_html(const ast::Directive& d, Context& context) const
+    {
+        std::pmr::vector<char8_t> result { context.get_transient_memory() };
+        HTML_Writer writer { result };
+        generate_html(writer, d, context);
+        return result;
+    }
+
+    [[nodiscard]]
+    std::pmr::vector<ast::Content> instantiate(const ast::Directive& d, Context& context) const
+    {
+        std::pmr::vector<ast::Content> result { context.get_transient_memory() };
+        instantiate(result, d, context);
+        return result;
+    }
 };
 
 } // namespace cowel
