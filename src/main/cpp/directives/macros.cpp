@@ -138,6 +138,9 @@ void Macro_Instantiate_Behavior::instantiate(
 {
     const std::u8string_view name = d.get_name(context.get_source());
     const ast::Directive* const definition = context.find_macro(name);
+    // We always find a macro
+    // because the name lookup for this directive utilizes `find_macro`,
+    // so we're effectively calling it twice with the same input.
     COWEL_ASSERT(definition);
 
     instantiate_macro(out, *definition, d.get_arguments(), d.get_content(), context);
