@@ -108,20 +108,22 @@ struct Source_Span : Source_Position {
     }
 };
 
-/// Represents the location of a file, combined with the position within that file.
-struct File_Source_Span : Source_Span {
+template <typename Char>
+struct Basic_File_Source_Span : Source_Span {
+    using string_view_type = std::basic_string_view<Char>;
+
     /// File name.
-    std::string_view file_name;
+    string_view_type file_name;
 
     [[nodiscard]]
-    constexpr File_Source_Span(Source_Span local, std::string_view file)
+    constexpr Basic_File_Source_Span(const Source_Span& local, string_view_type file)
         : Source_Span(local)
         , file_name(file)
     {
     }
 
     [[nodiscard]]
-    friend constexpr auto operator<=>(File_Source_Span, File_Source_Span)
+    friend constexpr auto operator<=>(Basic_File_Source_Span, Basic_File_Source_Span)
         = default;
 
     [[nodiscard]]
@@ -130,6 +132,9 @@ struct File_Source_Span : Source_Span {
         return begin + length;
     }
 };
+
+using File_Source_Span = Basic_File_Source_Span<char>;
+using File_Source_Span8 = Basic_File_Source_Span<char8_t>;
 
 /// Represents the location of a file, combined with the position within that file.
 struct File_Source_Position : Source_Position {
