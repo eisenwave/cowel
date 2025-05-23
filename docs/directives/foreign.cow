@@ -1,0 +1,102 @@
+\h3{Foreign languages}
+
+\h4[id=dir-html]{\dir{html} \c{mdash} Inline HTML}
+
+The \dir{html} directive can be used to output HTML literally.
+Its content is a plaintext context,
+and it displays as inline content.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+This is \\html{<b>bold text</b>}.
+}
+Generated HTML:
+\codeblock[html]{
+This is <b>bold text</b>.
+}
+}
+
+\warning{
+The \dir{html} directive can produce malformed HTML content if you're not careful.
+See, \ref[#dir-html-element] for a safer option.
+}
+
+\h4[id=dir-htmlblock]{\dir{htmlblock} \c{mdash} HTML blocks}
+
+The \dir{htmlblock} directive works exactly like the \dir{html} directive,
+but displays as block content instead of inline content.
+
+\warning{
+The \dir{htmlblock} directive can produce malformed HTML content if you're not careful.
+See, \ref[#dir-html-element] for a safer option.
+}
+
+\h4[id=dir-html-element]{\dir{html-*} \c{mdash} HTML element literals}
+
+Any directive beginning with \dir{html-} can be used to produce an HTML element
+directly.
+Its content is a plaintext context,
+and it displays as inline content.
+Arguments are converted to HTML attributes of the produced tag.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+This is \\html-span[id=abc]{a span}.
+}
+Generated HTML:
+\codeblock[html]{
+This is <span id=abc>a span</span>.
+}
+}
+
+\h4[id=dir-script]{\dir{script} \c{mdash} JavaScript blocks}
+
+The content of a \dir{script} directive is a plaintext context,
+where the input is treated as JavaScript code and surrounded in \ch{<script>/*...*/</script>} tags.
+
+\dir{script} displays as meta content (like \dir{comment}).
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\\script{
+console.log("hello");
+}
+}
+Generated HTML:
+\codeblock[html]{
+<script>
+console.log("hello");
+</script>
+}
+}
+
+\h4[id=dir-noscript]{\dir{noscript} \c{mdash} No-JavaScript content}
+
+The \dir{noscript} directive corresponds to the \ch{<noscript>} element.
+Its content is an HTML context,
+and will only be shown by the browser when JavaScript is disabled.
+
+\h4[id=dir-style]{\dir{style} \c{mdash} CSS blocks}
+
+The content of a \dir{style} directive is a plaintext context,
+where the input is treated as JavaScript code and surrounded in \ch{<style>/*...*/</style>} tags.
+
+\dir{style} displays as meta content (like \dir{comment}).
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\\style{
+body { color: red; }
+}
+}
+Generated HTML:
+\codeblock[html]{
+<style>
+body { color: red; }
+</style>
+}
+}

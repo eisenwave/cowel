@@ -1,0 +1,147 @@
+\h3{Text formatting}
+
+COWEL allows for basic text formatting using various directives.
+Many of the formatting directives are some direct equivalent of an HTML element.
+For these, there is a fixed HTML element that will always be used.
+You can rely on this when adding custom CSS.
+
+\table{
+\tr{
+    \th{Directive}
+    \th{HTML}
+    \th{Renders as}
+}
+\tr[id=dir-b]{
+    \td{\cm{\\b{...}}}
+    \td{\ch{<b>...</b>}}
+    \td{\b{Bold text}}
+}
+\tr[id=dir-cite]{
+    \td{\cm{\\cite{...}}}
+    \td{\ch{<cite>...</cite>}}
+    \td{\cite{Name of cited work}}
+}
+\tr[id=dir-del]{
+    \td{\cm{\\del{...}}}
+    \td{\ch{<del>...</del>}}
+    \td{\del{Deleted text}}
+}
+\tr[id=dir-dfn]{
+    \td{\cm{\\dfn{...}}}
+    \td{\ch{<dfn>...</dfn>}}
+    \td{\dfn{Definition}}
+}
+\tr[id=dir-em]{
+    \td{\cm{\\em{...}}}
+    \td{\ch{<em>...</em>}}
+    \td{\em{Emphasized text}}
+}
+\tr[id=dir-gterm]{
+    \td{\cm{\\gterm{...}}}
+    \td{\i{unspecified}}
+    \td{\gterm{grammar-term}}
+}
+\tr[id=dir-i]{
+    \td{\cm{\\i{...}}}
+    \td{\ch{<i>...</i>}}
+    \td{\i{Italic text}}
+}
+\tr[id=dir-ins]{
+    \td{\cm{\\ins{...}}}
+    \td{\ch{<ins>...</ins>}}
+    \td{\ins{Inserted text}}
+}
+\tr[id=dir-kbd]{
+    \td{\cm{\\kbd{...}}}
+    \td{\ch{<kbd>...</kbd>}}
+    \td{\kbd{Ctrl} + \kbd{Keyboard key}}
+}
+\tr[id=dir-mark]{
+    \td{\cm{\\mark{...}}}
+    \td{\ch{<mark>...</mark>}}
+    \td{\mark{Marked/highlighted}}
+}
+\tr[id=dir-o]{
+    \td{\cm{\\o{...}}}
+    \td{\i{unspecified}}
+    \td{\o{Oblique text}}
+}
+\tr[id=dir-q]{
+    \td{\cm{\\q{...}}}
+    \td{\ch{<q>...</q>}}
+    \td{\q{Quoted text}}
+}
+\tr[id=dir-s]{
+    \td{\cm{\\s{...}}}
+    \td{\ch{<s>...</s>}}
+    \td{\s{Struck text}}
+}
+\tr[id=dir-samp]{
+    \td{\cm{\\samp{...}}}
+    \td{\ch{<samp>...</samp>}}
+    \td{\samp{Sample output}}
+}
+\tr[id=dir-sans]{
+    \td{\cm{\\sans{...}}}
+    \td{\i{unspecified}}
+    \td{\sans{Sans-serif font}}
+}
+\tr[id=dir-serif]{
+    \td{\cm{\\serif{...}}}
+    \td{\i{unspecified}}
+    \td{\serif{Serif font}}
+}
+\tr[id=dir-small]{
+    \td{\cm{\\small{...}}}
+    \td{\ch{<small>...</small>}}
+    \td{\sub{Small text}}
+}
+\tr[id=dir-sub]{
+    \td{\cm{\\sub{...}}}
+    \td{\ch{<sub>...</sub>}}
+    \td{\sub{Subscript}}
+}
+\tr[id=dir-sup]{
+    \td{\cm{\\sup{...}}}
+    \td{\ch{<sup>...</sup>}}
+    \td{\sup{Superscript}}
+}
+\tr[id=dir-strong]{
+    \td{\cm{\\strong{...}}}
+    \td{\ch{<strong>...</strong>}}
+    \td{\b{Strong text}}
+}
+\tr[id=dir-tt]{
+    \td{\cm{\\tt{...}}}
+    \td{\i{unspecified}}
+    \td{\tt{Teletype/monospace font}}
+}
+\tr[id=dir-var]{
+    \td{\cm{\\var{...}}}
+    \td{\ch{<var>...</var>}}
+    \td{\var{Variable name}}
+}
+\tr[id=dir-u]{
+    \td{\cm{\\u{...}}}
+    \td{\ch{<u>...</u>}}
+    \td{\u{Underlined text}}
+}
+}
+
+All such \dfn{formatting directives}
+convert all named arguments directly into HTML attributes.
+
+\note{
+By default, a substantial amount of directives are styled the same way.
+For example, \dir{cite}, \dir{var}, \dir{i} and \dir{em} are all italic.
+Both \dir{strong} and \dir{b} are bold.
+Both \dir{tt} and \dir{samp} use teletype font.
+
+However, you can customize the style; see \ref[#dir-style].
+}
+
+\note{
+The difference between oblique (\dir{o}) and italic (\dir{i}) text
+is that oblique text is merely slanted,
+while italic text is fundamentally a different font with different characters.
+}

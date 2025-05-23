@@ -1,0 +1,230 @@
+\h2{Directives}
+
+A \dfn{directive} is a way of generating plaintext, HTML, both, or neither.
+You can think of it as a "command" or "function call".
+
+Every directive has three parts:
+\ul{
+\item{The \cm{\\directive-name} selects a specific directive to be processed.}
+\item{
+An optional \cm{[comma-separated, positional arguments, named-arguments = ...]}
+provides additional inputs to the directive.
+}
+\item{
+An optional \cm{{block of content}} provides a "main input" to a directive.
+}
+}
+
+\h3{Directive names}
+
+A \dfn{directive name} selects a specific directive to be processed.
+The name begins with a \cm{\\} character,
+followed by
+\ref[https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name]{
+any character that is valid in an HTML (custom) tag name.
+}
+This includes any alphanumeric ASCII characters,
+\codepoint{002D}, \codepoint{002E}, \codepoint{005F},
+and various Unicode characters.
+
+\tip{
+You can use an empty block of content to "cut a name short":
+\codeblock[cowel]{
+Thisisavery\\wbr{}longword.
+}
+Doing so is equivalent to writing \cm{\\wbr} and \cm{longword} immediately following one another.
+}
+
+\h3{Directive arguments}
+
+\dfn{Directive arguments} can be \dfn{positional arguments} or \dfn{named arguments}.
+Arguments are separated by commas.
+Unlike anywhere else, whitespace surrounding directive arguments is ignored.
+
+Arguments provide additional information to a directive.
+
+\example{
+Often, arguments are converted to HTML attributes.
+\codeblock[cowel]{
+\\b[id = abc]{Bold text.}
+}
+Generated HTML:
+\codeblock[html]{
+<b id=abc>Bold text.</b>
+}
+}
+
+\h4{Named arguments}
+
+Named arguments are of the form
+\cm{name = value}, where spaces anywhere around \cm{name} and \cm{value} are ignored.
+Named arguments are matched to directive parameters before any positional arguments,
+meaning that positional arguments fill the remaining unmatched arguments.
+
+Argument names can consist of any character, except
+ASCII control characters,
+U+0020\c{nbsp}SPACE,
+\codepoint{0022},
+\codepoint{0027},
+\codepoint{002C},
+\codepoint{002F},
+\codepoint{003D},
+\codepoint{003E},
+\codepoint{005B},
+\codepoint{005C},
+\codepoint{005D},
+\codepoint{007B},
+\codepoint{007D},
+and noncharacters.
+
+\tip{
+If you want to provide a positional argument that is \cm{name = value} instead,
+you can do so by writing:
+\codeblock[cowel]{
+\\comment{"name = value" as a positional argument}
+\\xyz[name \\= value]
+\\comment{named argument with name "name" and value "value"}
+\\xyz[name = value]
+}
+Only the literal \cm{=} character can be used for named arguments,
+not its escaped variant \cm{\\=}.
+}
+
+\h4{Positional arguments}
+
+Positional arguments are content just like any other content,
+except that an unbalanced closing \codepoint{005D} or a \codepoint{002C}
+ends the content.
+
+\tip{
+You can use escape sequences to continue otherwise ended content.
+\codeblock[cowel]{
+\\xyz[hello, world]  \\comment{Two positional arguments}
+\\xyz[hello\\, world] \\comment{One positional argument containing a comma.}
+
+\\xyz[hello[]world]  \\comment{OK, [] is balanced and included in single argument}
+\\xyz[hello\\]world]  \\comment{OK}
+\\xyz[hello\\[world]  \\comment{OK}
+\\xyz[hello[world]   \\comment{error: unterminated arguments}
+}
+}
+
+\h3{Directive content}
+
+The \dfn{directive content} is the primary input to a directive.
+It is delimited by a '\tt{\{}' and ends with a \em{matching} closing '\tt{\}}'.
+This means that you can have opening and closing braces inside text,
+but they need to be balanced.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\\b{Bold text { with braces }.}
+}
+Generated HTML:
+\codeblock[html]{
+<b>Bold text { with braces }.</b>
+}
+}
+
+Escape sequences don't participate in this "brace matching",
+so they can be used to literally produce a brace character.
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\\b{Bold text \\\U{7B} with brace.}
+}
+Generated HTML:
+\codeblock[html]{
+<b>Bold text \U{7B} with brace.</b>
+}
+}
+
+Unlike in the directive arguments,
+whitespace is not trimmed.
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\\b{bold} \\i{ italic }
+}
+Generated HTML:
+\codeblock[html]{
+<b>bold</b> <i> italic </i>
+}
+}
+
+\note{
+Only one such block of content can be provided, unlike in TeX,
+which has a similar syntax,
+but permits multiple blocks. Each block is separated by a pair of braces.
+}
+
+\h3{Directive processing}
+
+Unlike in typical programming languages,
+where the input to a function is processed at the call site and the resulting values
+are passed into the function,
+COWEL directives have \em{absolute} control over their inputs and how they are processed.
+
+Say you have a JavaScript function:
+\codeblock[js]{
+function f(x) {
+    console.log(x);
+}
+f(2 + 2);
+}
+\code[js]{f} has no idea that its input was originally \code[js]{2 + 2}.
+It only sees the value \code[js]{4} and prints it, "oblivious to the outside".
+
+COWEL follows a different model:
+\codeblock[cowel]{
+\\comment{\\b{x}}
+}
+No \ch{<b>} tag is ever generated because \cm{\\b{x}} is never processed.
+\dir{comment} is not magical feature;
+it simply has control over all of its contents and arguments,
+and it can choose not to process them.
+
+You can even make a \dir{comment2} directive that works
+just like \dir{comment} yourself:
+\codeblock[cowel]{
+\\macro[\\comment2]{}
+}
+
+\h2{Contexts and output}
+
+There are two types of contexts: \dfn{plaintext contexts} and \dfn{HTML contexts}.
+These control what directives (and other content) will generate.
+
+\example{
+The COWEL text \cm{&} will be converted to \tt{&} literally in a plaintext context,
+and to \ch{&amp;} in an HTML context.
+}
+
+
+Any directive is capable of generating either plaintext or HTML,
+and the output may be substantially different depending on the context.
+
+\example{
+The \dir{c} directive is used to generate HTML character references, aka "HTML entities".
+It converts its input to plaintext to determine the chosen character.
+Within such a plaintext context,
+directives like \dir{b} will simply output their content as plaintext:
+\codeblock[cowel]{
+\\c{\\b{Omega}} \\c{Omega}
+}
+Generated HTML:
+\codeblock[html]{
+&Omega; &Omega;
+}
+Also, \dir{c} will only emit an HTML entity in an HTML context.
+In a plaintext context (such as in the input to \dir{c}), it outputs the character directly.
+For example, if we write:
+\codeblock[cowel]{
+\\c{\\c{Omega}}
+}
+The generated (malformed) HTML is:
+\codeblock[html]{
+&\c{Omega};
+}
+}

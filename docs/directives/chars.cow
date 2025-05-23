@@ -1,0 +1,49 @@
+\h3{Special characters}
+
+It is quite common that a text document should include special characters.
+While COWEL is built on UTF-8,
+and in theory one could just write the character directly into the source code,
+not every text editor handles special characters well.
+
+To increase portability,
+COWEL has the \dir{U} and \dir{c} directives.
+
+\h4{\dir{U} \c{mdash} Code point literal}
+
+The input to a \dir{U} directive is a plaintext context,
+which should be a sequence of hexadecimal numbers
+specifying a \ref[https://infra.spec.whatwg.org/#scalar-value]{Unicode scalar value};
+that is, a code point which UTF-8 permits to be encoded.
+
+\example{
+\cm{\\U{30}} generates '\tt{0}' U+0030 DIGIT ZERO
+}
+
+\note{
+Like anywhere else, directives inside of \dir{U} are allowed.
+}
+
+\h4{\dir{c} \c{mdash} Character references}
+
+The input to a \dir{c} directive is a plaintext context,
+where the same content is permitted as for HTML character references, aka. HTML entities,
+between '\tt{&}' and '\tt{;}'.
+
+\example{
+Using \dir{U} and \dir{c}, the '\tt{&}' character can be produced in a number of ways:
+\ul{
+    \item{Literally '\tt{&}' in text}
+    \item{\cm{\\U{26}} (code point literal for U+0026)}
+    \item{\cm{\\c{amp}} (like \ch{&amp;}, named character reference)}
+    \item{\cm{\\c{#38}} (like \ch{&38;}, decimal character reference)}
+    \item{\cm{\\c{#x26}} (like \ch{&x26;}, hexadecimal character reference)}
+}
+}
+
+In an HTML context, \cm{\\c{xyz}} is literally translated into \ch{&xyz;}.
+In a plaintext context, the character reference is mapped onto its corresponding code point(s),
+and those code points are output directly.
+
+\note{
+Like anywhere else, directives inside of \dir{c} are allowed.
+}

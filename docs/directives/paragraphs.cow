@@ -1,0 +1,59 @@
+\h3{Paragraph control}
+
+In some cases, the automatic \ref[#paragraph-splitting]
+process is not enough.
+To get more fine-tuned control, we have a number of directives.
+
+\h4[id=dir-p]{\dir{p} \c{mdash} Paragraphs}
+
+The \dir{p} directive surrounds its content in \ch{<p>...</p>} tags.
+
+\h4[id=dir-paragraphs]{\dir{paragraphs} \c{mdash} Enable paragraph splitting}
+
+The \dir{paragraphs} directive activates paragraph splitting.
+This may be useful in places where it is not active by default.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\\ul{
+\\item{\\paragraphs{
+First paragraph in bullet.
+
+Second paragraph.
+}}
+}
+}
+Generated HTML:
+\codeblock[html]{
+<ul>
+<li>
+<p>First paragraph in bullet.</p>
+
+<p>Second paragraph in bullet.</p>
+</li>
+</ul>
+}
+}
+
+\h4[id=dir-block]{\dir{block} \c{mdash} Display as block content}
+
+The \dir{block} directive doesn't add any HTML itself,
+but causes its contents to be considered block content.
+
+\example{
+\dir{block} can be used to suppress automatic paragraph splitting:
+\codeblock[cowel]{
+\\comment{No <p> tags will be added here}
+\\block{
+First paragraph.
+
+Second paragraph.
+}
+}
+}
+
+\h4[id=dir-inline]{\dir{inline} \c{mdash} Display as inline content}
+
+The \dir{inline} directive works like the \dir{block} directive,
+but causes its contents to display as inline content, not as block content.

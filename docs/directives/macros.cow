@@ -1,0 +1,37 @@
+\h3{Macros}
+
+\h4[id=dir-def]{\dir{macro} \c{mdash} Define a macro}
+
+The \dir{macro} directive defines a \dfn{macro},
+which is basically a user-defined directive.
+It has a single \tt{pattern} argument,
+which shall be a single \dfn{pattern directive} which describes the defined directive.
+
+\note{
+The arguments and content of the pattern directive are not processed,
+but can be used to document how the directive is meant to be used.
+\codeblock[cowel]{
+\\comment{The following two definitions are equivalent:}
+\\macro[\\m{...}]{xyz}
+\\macro[\\m]{xyz}
+}
+}
+
+When a macro is used, the content within the \dir{macro} directive is copied.
+Any uses of the \dir{put} pseud-directive inside the macro are replaced with copies
+of the input content.
+
+\example{
+\codeblock[cowel]{
+\\macro[\\bi]{\\b{\\i{\\put}}}
+\\comment{Now, the following are equivalent:}
+\\b{\\i{bold and italic}}
+\\bi{bold and italic}
+}
+}
+
+\todo{
+Currently, macros only support content as input.
+Arguments to macros are ignored entirely.
+This should be supported at some point.
+}

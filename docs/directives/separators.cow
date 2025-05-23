@@ -1,0 +1,48 @@
+\h3{Separators and word breaking}
+
+\h4[id=dir-br]{\dir{br} \c{mdash} Break line}
+
+The \dir{br} directive produces a line break,
+and corresponds to the HTML element \ch{<br/>}.
+It displays as inline content, and its input content is ignored.
+
+\dir{br} is particularly useful when line breaks are treated same as spaces,
+which is the case in most HTML content.
+
+\h4[id=dir-hr]{\dir{hr} \c{mdash} Horizontal rule}
+
+The \dir{hr} directive produces a horizontal rule,
+and corresponds to the HTML element \ch{<hr/>}.
+It displays as block content, and its input content is ignored.
+
+Here is an example:
+\hr
+
+\h4[id=dir-wbr]{\dir{wbr} \c{mdash} Word break opportunity}
+
+The \dir{wbr} directive produces a word break opportunity,
+and corresponds to the HTML element \ch{<wbr>}.
+It displays as inline content, and its input content is ignored.
+
+\ch{<wbr>} elements can be inserted into the middle of long words,
+which, if they don't fit on one line,
+will be broken at the point of the \ch{<wbr>} element (without a hyphen at the end of the line).
+
+Since µlight only supports UTF-8 output, \dir{wbr} is equivalent to \cm{\\U{200B}},
+which outputs a U+200B ZERO-WIDTH SPACE code point.
+
+\tip{
+If you want to provide a word break hint but have a hyphen at the end of the line,
+use \cm{\\U{AD}} or \cm{\\c{shy}} to output a U+00AD SOFT HYPHEN.
+}
+
+\h4[id=dir-word]{\dir{word} \c{mdash} Unbroken words}
+
+The \dir{word} directive is a formatting directive which prevents word breaks within its content.
+Its content is an HTML context.
+This is done by applying a \tt[css]{white-space: nowrap;} style its content.
+
+\tip{
+Another way to prevent word-breaking is to use non-breaking spaces.
+You can insert these using \cm{Combined\\c{nbsp}Word}.
+}

@@ -1,0 +1,107 @@
+\h3{Special blocks}
+
+Often, the content we write falls into some special category like "example", "note", etc.
+COWEL supports a large number of \dfn{special block directives},
+which wrap their content in a block, with background color, borders, etc.
+
+The input to all special block directives is an HTML context,
+they all convert their arguments to HTML attributes,
+and they all display as block content.
+
+\h4[id=dir-abstract]{\dir{abstract} \c{mdash} Abstract blocks}
+
+\abstract{
+Abstracts provide a summary of the document.
+}
+
+\h4[id=dir-blockquote]{\dir{blockquote} \c{mdash} Quote blocks}
+
+The \dir{blockquote} directive directly corresponds to the \ch{<blockquote>} element.
+
+\blockquote{
+Quotes blocks or "block quotes" display quoted text.
+}
+
+\h4[id=dir-bug]{\dir{bug} \c{mdash} Bug blocks}
+
+\bug{
+A bug block contains the description of a bug.
+This often includes a code block which demonstrates how to reproduce the bug.
+}
+
+\h4[id=dir-decision]{\dir{decision} \c{mdash} Decision blocks}
+
+\decision{
+A decision block indicates that a decision needs to be made.
+}
+
+\h4[id=dir-delblock]{\dir{delblock} \c{mdash} Deletion blocks}
+
+\delblock{
+A deletion block acts as a wrapper for a large amount of deleted content.
+It is typically used when individual \dir{del} directives would be too tedious to use.
+}
+
+\h4[id=dir-details]{\dir{details} \c{mdash} Details blocks aka spoilers}
+
+The \dir{details} directive directly corresponds to the \ch{<details>} element.
+Within \dir{details},
+the \dir{summary} directive can be used to specify \dfn{summary text}.
+
+\details{
+\summary{This is a summary. Click to open!}
+A details block contains details which need to be revealed by the user.
+This is also referred to as "spoiler".
+}
+
+\h4[id=dir-diff]{\dir{diff} \c{mdash} Difference blocks}
+
+\diff{
+A difference block contains changes,
+where some content within is typically \del{deleted} or \ins{inserted}.
+}
+
+\h4[id=dir-example]{\dir{example} \c{mdash} Example blocks}
+
+\example{
+An example block contains examples.
+}
+
+\h4[id=dir-insblock]{\dir{insblock} \c{mdash} Insertion blocks}
+
+\insblock{
+A deletion block acts as a wrapper for a large amount of inserted content.
+It is typically used when individual \dir{ins} directives would be too tedious to use.
+}
+
+\h4[id=dir-important]{\dir{important} \c{mdash} Important blocks}
+
+\important{
+Important blocks contain especially important information.
+}
+
+\h4[id=dir-note]{\dir{note} \c{mdash} Note blocks}
+
+\note{
+Note blocks contain less important information,
+which can often be skipped over by readers.
+}
+
+\h4[id=dir-tip]{\dir{tip} \c{mdash} Tip blocks}
+
+\tip{
+Tip blocks contain useful advice.
+}
+
+\h4[id=dir-todo]{\dir{todo} \c{mdash} TODO blocks}
+
+\todo{
+TODO blocks contain actions that remain to be done.
+They may indicate that a part of a project is incomplete.
+}
+
+\h4[id=dir-warning]{\dir{warning} \c{mdash} Warning blocks}
+
+\warning{
+Warning blocks warn the reader of some hazard or potential mistake.
+}

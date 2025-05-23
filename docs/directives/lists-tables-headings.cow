@@ -1,0 +1,59 @@
+\h3{Lists}
+
+\h4[id=dir-ul]{\dir{ul} \c{mdash} Unordered lists}
+
+The \dir{ul} directive corresponds to the \ch{<ul>} element, and produces an unordered list.
+Within that list,
+you can use the pseudo-directive \dir{item} to produce list items.
+
+\h4[id=dir-ol]{\dir{ol} \c{mdash} Ordered lists}
+
+The \dir{ol} directive corresponds to the \ch{<ol>} element, and produces an ordered list.
+Within that list,
+you can use the pseudo-directive \dir{item} to produce list items.
+
+\h4[id=dir-dl]{\dir{dl} \c{mdash} Definition lists}
+
+The \dir{dl} directive corresponds to the \ch{<dl>} element, and produces a definition list.
+Within that list, you can use
+\ul{
+\item{\dir{dt} for \dfn{definition terms}, and}
+\item{\dir{dd} for \dfn{definition descriptions}.}
+}
+
+\h3{Tables}
+
+Tables are simply produced by using the
+\dir{table}, \dir{thead}, \dir{tbody}, \dir{tfoot},
+\dir{tr}, \dir{th}, \dir{td},
+\dir{colgroup}, \dir{col},
+and \dir{caption} directives to
+produce the corresponding HTML tags with the same name.
+
+\tip{
+To perform advanced styling,
+like controlling alignment within columns,
+use a \dir{style} directive.
+}
+
+\h3{Headings}
+
+Headings can be produced using the
+\dir{h1}, \dir{h2}, \dir{h3}, \dir{h4}, \dir{h5}, and \dir{h6} directives to
+produce the corresponding HTML tags with the same name.
+
+Arguments to these headings are converted into attributes of the corresponding HTML element.
+An \tt{id} argument can be provided explicitly.
+
+If none is provided, an \tt{id} is synthesized from the content within the heading.
+
+\tip{
+Headings can be referenced using the \dir{ref} directive:
+\codeblock[cowel]{
+\\h2{Heading with synthesized id}
+\\h2[id=xyz]{Heading with manual id}
+\\comment{These can be referenced as follows}
+\\ref[#heading-with-synthesized-id]
+\\ref[#xzy]
+}
+}

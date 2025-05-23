@@ -1,0 +1,68 @@
+\h3{References}
+
+\h4[id=dir-ref]{\dir{ref} \c{mdash} References}
+
+The \dir{ref} directive takes a single \tt{to} argument,
+which can be a URL, anchor, or something else.
+It produces an \ch{<a>} tag with some content inside.
+
+The content is an HTML context, and is what actually gets displayed.
+If no content is provided, it can be synthesized from the following types of references:
+
+\ul{
+\item{\tt{mailto} URLs (e-mail addresses)}
+\item{\tt{tel} URLs (telephone numbers)}
+\item{\tt{http} and \tt{https} URLs}
+\item{Anchors (\tt{#id}) for some heading in the document}
+\item{Anything defined in the bibliography using \dir{bib}}
+}
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\\ref[mail:john@us.gov]
+}
+HTML output (\ch{<a>} tag may have additional attributes):
+\codeblock[html]{
+<a href=mail:john@us.gov>john@us.gov</a>
+}
+}
+
+\example{
+C++ standard draft links can be synthesized into human-readable descriptions.
+\codeblock[cowel]{
+\\ref[https://eel.is/c++draft/expr#1]
+}
+This renders as:
+\indent{
+\ref[https://eel.is/c++draft/expr#1]
+}
+}
+
+\h4[id=dir-mail]{\dir{mail} \c{mdash} E-Mail addresses}
+
+A \dir{mail} directive behaves the same \dir{ref} directive that is given a \tt{mailto} URL.
+However, the input is provided as content instead of an argument,
+and the displayed text cannot be customized.
+
+\example{
+The following two lines produce the same output:
+\codeblock[cowel]{
+Please contact \\mail{john@us.gov}.
+Please contact \\ref[mailto:john@us.gov].
+}
+}
+
+\h4[id=dir-tel]{\dir{tel} \c{mdash} Telephone numbers}
+
+A \dir{tel} directive behaves the same \dir{ref} directive that is given a \tt{tel} URL.
+However, the input is provided as content instead of an argument,
+and the displayed text cannot be customized.
+
+\example{
+The following two lines produce the same output:
+\codeblock[cowel]{
+Please contact \\tel{+1234}.
+Please contact \\ref[tel:+1234].
+}
+}

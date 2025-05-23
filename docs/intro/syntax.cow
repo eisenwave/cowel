@@ -1,0 +1,74 @@
+\h2{Syntax in a nutshell}
+
+COWEL has a minimalistic but powerful syntax,
+built on top of only three syntactical constructs:
+\ul{
+\item{\cm{\\various-directives[positional args, named-args = 0]{and content}}}
+\item{\cm{Text.}}
+\item{Escape sequences, such as \cm{\\\U{7B}}, \cm{\\\U{7D}}, \cm{\\\\}, etc.}
+}
+
+There is no special syntax besides that,
+meaning that as long as some bit of code doesn't contain a \cm{\\},
+it's all interpreted as plaintext.
+This makes COWEL exceptionally suited to nest other languages inside of it in code blocks etc.
+
+\h3{Whitespace}
+
+COWEL translates very directly into HTML.
+Any whitespace in text is preserved exactly as is.
+The way that whitespace is processed then depends on the produced HTML and how it is CSS-styled.
+
+\example{
+At a top level, whitespace is merged and line breaks are rendered like spaces:
+\codeblock[cowel]{
+This displays on one line
+because line breaks render like spaces.
+}
+Generated HTML:
+\codeblock[html]{
+<p>This displays on one line
+because line breaks render like spaces.</p>
+}
+Rendered output:
+\indent{This displays on one line because line breaks render like spaces.}
+}
+
+\h3{Paragraph splitting}
+
+At the top-level in the document and within the content of certain directives,
+\dfn{paragraph splitting} takes place.
+All content in COWEL is either \dfn{inline content}, \dfn{block content}, or \dfn{meta content}.
+Text and escape sequences are inline content,
+and directives are sometimes inline and sometimes block content.
+Certain directives (e.g. \dir{comment}) that don't generate anything rendered are meta content.
+
+The process of paragraph splitting works as follows:
+\ul{
+\item{
+Blank-line-separated blocks of inline content is wrapped in in \ch{<p>...</p>} tags.
+Meta content is not counted as a blank line, so it "continues" inline content,
+but no effort is made to wrap it in \ch{<p>...</p>}.
+}
+\item{
+Block content stays untouched, i.e. it is not wrapped in \ch{<p>...</p>}.
+However, it also terminates prior inline content, like a blank line.
+}
+}
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+First paragraph.
+
+Second paragraph.
+\\blockquote{This is a block directive.}
+}
+Generated HTML:
+\codeblock[html]{
+<p>First paragraph.</p>
+
+<p>Second paragraph.</p>
+<blockquote>This is a block directive.</blockquote>
+}
+}

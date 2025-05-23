@@ -1,0 +1,293 @@
+\h3[id=code]{Code and syntax highlighting}
+
+COWEL uses
+\ref[https://github.com/Eisenwave/ulight]{µlight}
+for syntax highlighting.
+While the set of supported language is relatively small,
+the highlighter is ultra-light, extremely fast, and
+deals with modern C++ features correctly.
+
+\h4[id=dir-code]{\dir{code} \c{mdash} Inline code}
+
+The \dir{code} directive produced syntax-highlighted text in code font.
+
+\dl{
+\dt{Arguments}
+\dd{
+\ul{
+\item{\tt{lang} (plaintext) \c{mdash} the syntax highlighting language.}
+\item{\tt{nested} (yes/no) \c{mdash} whether whether to omit \ch{<code>} tags.}
+\item{\tt{prefix} (plaintext) \c{mdash} code before the input from the view of the highlighter.}
+\item{\tt{suffix} (plaintext) \c{mdash} code after input from the view of the highlighter.}
+}
+}
+
+\dt{Input content}
+\dd{
+The input to a \dir{code} directive is a plaintext context.
+However, there are special rules for formatting directives
+and pure plaintext directives (see below).
+}
+
+\dt{HTML output}
+\dd{
+In an HTML context, the \dir{code} takes the input source code,
+applies syntax highlighting,
+and outputs the result surrounded by \ch{<code>...</code>}.
+}
+
+\dt{Plaintext output}
+\dd{
+In a plaintext context, \dir{code} simply outputs the input source code.
+}
+
+\dt{Display style}
+\dd{Inline}
+}
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\\code[cpp]{123}
+}
+This applies C++ syntax highlighting, and generates HTML.
+The \ch{<h->} tags are an implementation detail and may be subject to change.
+\codeblock[html]{
+<code><h- data-h=num>123</h-></code>
+}
+}
+
+\h5{Manual nested highlighting}
+
+The \tt{nested} parameter is a plaintext context,
+which accepts either \tt{yes} or \tt{no}, where \tt{no} is the default.
+When enabled, the surrounding \ch{<code>} tags are omitted,
+which makes it suitable for nesting languages within other \dir{code} or \dir{codeblock}
+directives.
+
+\example{
+You can nest JSON inside of a C++ string literal as follows:
+\codeblock[cowel]{\unprocessed{
+Call: \code[cpp]{out.write_json("\code[json,nested=yes]{{"x":123,"y":true,"z":null}}")}
+}}
+This renders as follows:
+\indent{
+Call: \code[cpp]{out.write_json("\code[json,nested=yes]{{"x":123,"y":true,"z":null}}")}
+}
+}
+
+Note that by default,
+you may often not even notice a visual difference between using the \tt{nested}
+parameter and not using it.
+However, the difference would be obvious once you want to style \ch{<code>} elements
+to have borders, background color, padding, and other such styling features.
+\tt{nested=yes} directly emits the highlighting HTML elements,
+which is more composable.
+
+\h5{Highlighting prefix and suffix}
+
+The \tt{prefix} and \tt{suffix} parameters are plaintext contexts
+which can be used to further control highlighting.
+Especially with inline code,
+the highlighting depends on the surrounding code.
+
+\tt{prefix} and \tt{suffix} can be used to provide that surrounding code,
+without becoming part of the highlighted output.
+
+\example{
+Using \tt{prefix},
+we can control whether a JSON string is interpreted as a markup key,
+or as a string value:
+\codeblock[cowel]{\literally{
+In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
+}}
+This renders as:
+\indent{
+In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
+}
+Notice that the color of \code[json,prefix=\{]{"keys"} is different because it is interpreted
+as if it was positioned like:
+\codeblock[json]{
+\{"keys"
+}
+}
+
+
+\h5{Further advice on highlighting}
+
+\tip{
+Writing \dir{code} directives directly is often too tedious,
+so you'll likely want to define a macro to make this easier:
+\codeblock[cowel]{
+\\comment{Defines a \\js directive that can be used in place of \\code[js] from now on:}
+\\macro[\\js]{\\code[js]{\\put}}
+Let's highlight \\js{var} in JavaScript.
+}
+}
+
+\h4[id=dir-codeblock]{\dir{codeblock} \c{mdash} Code blocks}
+
+The \dir{codeblock} directive works exactly like \dir{code},
+but it is a block directive, not an inline directive.
+
+Additionally, code blocks render using borders and a dark background by default.
+This can be controlled using the \tt{borders}.
+
+\example{
+\codeblock[cowel]{
+\\codeblock[js]{
+// Borders enabled
+let x = 0;
+}
+\\codeblock[js,borders=no]{
+// Borders disabled
+let x = 0;
+}
+}
+This renders as:
+\codeblock[js]{
+// Borders enabled
+let x = 0;
+}
+\codeblock[js,borders=no]{
+// Borders disabled
+let x = 0;
+}
+}
+
+\h4[id=dir-hl]{\dir{hl} \c{mdash} Syntax highlight override}
+
+The \dir{hl} directive forces certain syntax highlighting to be applied to some text;
+it is a manual override for when automatic syntax highlighting is insufficient or broken.
+It displays as inline content and wraps its content (which is an HTML context)
+in the appropriate syntax highlighting tags.
+
+It has a single \tt{name} argument, which is the µlight \dfn{long name} for a highlight type.
+You can obtain a list of possible long names at
+\ref[https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h]{\tt{ulight.h}}
+from the definition of \code[cpp]{enum ulight_highlight_type}.
+The long name is the enumerator name without the \tt{ULIGHT_HL} prefix,
+all lowercase, and with hyphens instead of underscores.
+
+\example{
+It is possible to mix automatic syntax highlighting with manual overrides:
+\codeblock[cowel]{
+\\comment{_Int128 is manually highlighted as a type keyword,
+          and x is automatically highlighted as an identifier}
+\\code[c]{\\hl[keyword-type]{_Int128} x}
+}
+This generates the HTML (subject to change):
+\codeblock[html]{
+<code><h- data=h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>
+}
+It renders as \code[c]{\hl[keyword-type]{_Int128} x}.
+}
+
+\note{
+While it is also possible to produce the highlighting tags using
+\cm{\\html-h-[data-h=kw_type]{_Int128}},
+the "short names" (\cm{kw_type}) are not stable, i.e. they are more likely to change.
+Only µlight long names should be used directly.
+}
+
+\h4[id=dir-pre]{\dir{pre} \c{mdash} Preformatted blocks}
+
+The \dir{pre} directive contains pre-formatted content.
+It can be used to contain code, however, there is no syntax highlighting in a \dir{pre} block.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\\pre{
+Hello, world!
+=============
+    a b c
+}
+}
+This renders as:
+\pre{
+Hello, world!
+=============
+    a b c
+}
+}
+
+\todo{
+Unlike \dir{codeblock}, \dir{pre} currently does not support the \tt{borders=no} option.
+This will be added in the future.
+}
+
+\h4[id=dir-literally]{\dir{literally} \c{mdash} Treat input literally as text}
+
+The \dir{literally} directive treats its input source code as plain text,
+even if it contains directives or escape sequences.
+It outputs the given input source code as text.
+
+Its content is an unprocessed context,
+and it takes no arguments.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{
+\literally{\pre{\literally{
+This \comment{comment} \{ is taken literally \}!
+}}}
+}
+This renders as:
+\pre{\literally{
+This \comment{comment} \{ is taken literally \}!
+}}
+}
+
+\note{
+\dir{put} pseudo-directives in macros are still processed,
+even inside \dir{literally} blocks
+because \dir{macro} replaces any appearances of \dir{put} with the given content,
+disregarding the semantics of any directives nested within.
+}
+
+\h4[id=dir-unprocessed]{\dir{unprocessed} \c{mdash} Suppress directive processing}
+
+The \dir{unprocessed} directive works just like \dir{literally},
+except that escape sequences are processed into their escaped characters.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\pre{\unprocessed{
+This \comment{comment} \{ is unprocessed \}!
+}}
+}}
+This renders as:
+\pre{\unprocessed{
+This \comment{comment} \{ is unprocessed \}!
+}}
+}
+
+\tip{
+\dir{unprocessed} and (to a lesser extent) \dir{literally} are very useful for nesting
+code inside COWEL that already contains underscores.
+For example, \cm{\\n} is an escape sequence for newline characters in many languages,
+and it may be annoying if it gets interpreted as an \dir{n} directive:
+\codeblock[cowel]{\unprocessed{
+\codeblock[cpp]{\unprocessed{
+std::string_view s = "Several\nLines\nof\nCode.";
+}}
+}}
+This renders as:
+\codeblock[cpp]{\unprocessed{
+std::string_view s = "Several\nLines\nof\nCode.";
+}}
+Notice that COWEL technically parses a \dir{nLines} directive instead of just \dir{n},
+which is the part that turns into a newline escape sequence in the C++ code block.
+However, that is ultimately irrelevant for syntax highlighting
+because the source characters of \dir{nLines} are taken as text,
+and then split up according to C++ syntax.
+}
+
+\note{
+\dir{put} pseudo-directives in macros are still processed,
+even inside \dir{unprocessed} blocks
+because \dir{macro} replaces any appearances of \dir{put} with the given content,
+disregarding the semantics of any directives nested within.
+}

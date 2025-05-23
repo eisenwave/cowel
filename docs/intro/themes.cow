@@ -1,0 +1,21 @@
+\h2{Themes}
+
+COWEL outputs documents that can be viewed in \dfn{light mode} and \dfn{dark mode}.
+
+When the document is opened with support for JavaScript,
+there is an button in the top-right that can be used to switch between three modes:
+\ul{
+\item{Sync the theme with the OS (default)}
+\item{Light mode (ignoring system preference)}
+\item{Dark mode (ignoring system preference)}
+}
+
+Forced light/dark mode works by adding a \tt{light} or \tt{dark}
+class to the \ch{<html>} element in the DOM.
+
+\important{
+If you want to customize colors with CSS,
+remember to make them respond to theme and OS preference changes.
+
+For reference, you can look at the CSS in the COWEL source code to see how it's done properly.
+}
