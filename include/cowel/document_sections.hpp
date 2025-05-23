@@ -173,6 +173,17 @@ public:
         return Scoped_Section { *this, *old };
     }
 
+    /// @brief Calls `go_to(section)` and returns a `Scoped_Section` which,
+    /// upon destruction, sets the current section to the section prior to `go_to`.
+    ///
+    /// This is useful for temporarily writing content to a different section.
+    Scoped_Section go_to_scoped(std::pmr::u8string&& section)
+    {
+        entry_type* const old = m_current;
+        go_to(std::move(section));
+        return Scoped_Section { *this, *old };
+    }
+
     /// @brief Returns a reference to the current section.
     [[nodiscard]]
     entry_type& current() noexcept

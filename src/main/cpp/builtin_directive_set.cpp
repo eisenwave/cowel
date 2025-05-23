@@ -108,6 +108,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"i", Directive_Category::formatting, Directive_Display::in_line };
     Special_Block_Behavior insblock //
         { u8"ins-block", false };
+    Import_Behavior import //
+        {};
     Special_Block_Behavior important //
         { u8"important-block" };
     Include_Behavior //
@@ -304,6 +306,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-html-",
         u8"-htmlblock",
         u8"-i",
+        u8"-import",
         u8"-important",
         u8"-indent",
         u8"-inline",
@@ -503,6 +506,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'i':
         if (name == u8"i")
             return &m_impl->i;
+        if (name == u8"import")
+            return &m_impl->import;
         if (name == u8"important")
             return &m_impl->important;
         if (name == u8"include")

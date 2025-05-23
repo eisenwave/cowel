@@ -1575,6 +1575,66 @@ barring a few directives, like \dir{html} or \dir{script};
 no such escaping takes place inside of \dir{script}.
 }
 
+\h4[id=dir-import]{\dir{import} \c{mdash} Import a sub-document}
+
+The \dir{import} directive loads the content from another COWEL document,
+substitutes the \dir{import} directive for those contents,
+and processes them.
+
+It has no arguments, and its content is a plaintext context in which the path is specified.
+
+While \dir{import} and \dir{include} are similar,
+there are some stark differences:
+\ul{
+\item{
+\dir{import} is used for COWEL documents,
+while \dir{include} is used for anything else.
+}
+\item{
+\dir{import} doesn't just load the text from another file,
+but parses it and ensures that the contents are a valid COWEL document.
+}
+\item{
+\dir{include} is a plaintext directive, and interops nicely with syntax highlighting.
+It is also possible to \dir{include} COWEL files into code blocks without
+any regards as to their contents.
+On the contrary, content expanded from \dir{import}
+is subject to the same rules as the surrounding document.
+}
+}
+
+\example{
+Say we have another \tt{test.cow} files containing:
+\codeblock[cowel]{\literally{
+Hello, \strong{imports}!
+
+Next paragraph.
+}}
+When using \dir{import},
+the contents of the other file are substituted where we have written \dir{import},
+which means that imported content also plays nicely with paragraph splitting:
+\codeblock[cowel]{\literally{
+First paragraph.
+\import{test.cow}
+}}
+Generated HTML:
+\codeblock[html]{
+<p>First paragraph.
+Hello, <strong>imports</strong>!</p>
+
+<p>Next paragraph.</p>
+}
+}
+
+\tip{
+It is common practice to collect macros and other reusable components in separate documents,
+and to \dir{import} them when needed.
+This can help you avoid copying boilerplate between multiple documents.
+
+It is also common to split documents into multiple files that are combined using a sequence
+of \dir{import}s.
+}
+
 \h3{Macros}
 
 \h4[id=dir-def]{\dir{macro} \c{mdash} Define a macro}

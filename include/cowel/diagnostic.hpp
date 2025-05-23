@@ -164,6 +164,18 @@ inline constexpr std::u8string_view io = u8"include:io";
 
 } // namespace include
 
+namespace import {
+
+/// @brief In an `\import` directive,
+/// no file path was provided.
+inline constexpr std::u8string_view path_missing = u8"import:path.empty";
+
+/// @brief In an `\import` directive,
+/// the file could not be loaded.
+inline constexpr std::u8string_view io = u8"import:io";
+
+} // namespace import
+
 namespace there {
 
 /// @brief In a `\there` directive,
