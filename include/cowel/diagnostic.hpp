@@ -141,6 +141,29 @@ inline constexpr std::u8string_view nonscalar = u8"U:nonscalar";
 
 } // namespace U
 
+namespace Udigits {
+
+/// @brief In a `\Udigits` directive,
+/// the input is blank.
+inline constexpr std::u8string_view blank = u8"Udigits:blank";
+/// @brief In a `\Udigits` directive,
+/// the input malformed text.
+inline constexpr std::u8string_view malformed = u8"Udigits:malformed";
+/// @brief In a `\Udigits` directive,
+/// the input contains code units that were ignored because only the first code point is converted.
+inline constexpr std::u8string_view ignored = u8"Udigits:ignored";
+
+/// @brief The `zfill` argument could not be parsed as an integer.
+inline constexpr std::u8string_view zfill_not_an_integer = u8"Udigits:zfill.parse";
+/// @brief The `zfill` argument could not be parsed as an integer.
+inline constexpr std::u8string_view zfill_range = u8"Udigits:zfill.range";
+/// @brief The `base` argument could not be parsed as an integer.
+inline constexpr std::u8string_view base_not_an_integer = u8"Udigits:base.parse";
+/// @brief The `base` argument could not be parsed as an integer.
+inline constexpr std::u8string_view base_range = u8"Udigits:base.base";
+
+} // namespace Udigits
+
 namespace hl {
 
 /// @brief In a `\hl` directive,

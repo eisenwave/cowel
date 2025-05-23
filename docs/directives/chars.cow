@@ -23,6 +23,63 @@ that is, a code point which UTF-8 permits to be encoded.
 Like anywhere else, directives inside of \dir{U} are allowed.
 }
 
+\h4[id=dir-Udigits]{\dir{Udigits} \c{mdash} Digits of code point}
+
+The \dir{Udigits} directive is essentially the inverse of the \dir{U} directive.
+Its input is also a plaintext context;
+rather than producing a code point from a digit sequence,
+it produces a digit sequence from its input code point.
+
+This can be fine-tuned with the following parameters:
+\dd{
+\dt{\mka{zfill}}
+\dd{
+The minimum amount of digits that should be produced.
+This is an integer argument in range [0, 1024], and defaults to zero.
+If the amount of digits is less than \mka{zfill},
+it will be left-padded with additional '\tt{0}' characters.
+}
+
+\dt{\mka{base}}
+\dd{
+The base of the output digit sequence, in range [2, 16].
+This defaults to 16, meaning that the digits are printed in hexadecimal.
+}
+}
+
+\example{
+COWEL markup:
+\codeblock[cowel]{\literally{
+U+\Udigits[4]{x}
+}}
+This renders as:
+\indent{
+U+\Udigits[4]{x}
+}
+Note that U+0078 is the usual way in which Unicode code points are represented.
+That is, \tt{U+}, followed by at least four hexadecimal digits.
+It is also possible to define a macro if we need this frequently:
+\codeblock[cowel]{\literally{
+\macro[\code-point]{U+\Udigits{\put}}
+\code-point{x}
+}}
+}
+
+\dir{Udigits} uses only the first code point within the input text,
+even though the entire input text is processed into plaintext.
+
+\bug{
+If we provide more than a single code point, some input is discarded:
+\codeblock[cowel]{
+\\Udigits{abc}
+}
+This renders as
+\indent{
+\Udigits{a}
+}
+... which corresponds to \cm{a}, whereas \cm{b} and \cm{c} are discarded.
+}
+
 \h4{\dir{c} \c{mdash} Character references}
 
 The input to a \dir{c} directive is a plaintext context,

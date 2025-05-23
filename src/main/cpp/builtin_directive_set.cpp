@@ -211,6 +211,8 @@ struct Builtin_Directive_Set::Impl {
         {};
     Fixed_Name_Passthrough_Behavior u //
         { u8"u", Directive_Category::formatting, Directive_Display::in_line };
+    Code_Point_Digits_Behavior Udigits //
+        {};
     List_Behavior ul //
         { u8"ul" };
     Unprocessed_Behavior unprocessed //
@@ -266,6 +268,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
     // clang-format off
     static constexpr std::u8string_view prefixed_names[] {
         u8"-U",
+        u8"-Udigits",
         u8"-abstract",
         u8"-b",
         u8"-bib",
@@ -639,6 +642,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'U':
         if (name == u8"U")
             return &m_impl->U;
+        if (name == u8"Udigits")
+            return &m_impl->Udigits;
         break;
 
     case u8'u':
