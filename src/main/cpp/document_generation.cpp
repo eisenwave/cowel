@@ -161,7 +161,7 @@ void Head_Body_Content_Behavior::generate_html(
 
     const Document_Sections::entry_type* html_section = nullptr;
     auto& html_text = [&] -> std::pmr::vector<char8_t>& {
-        const auto scope = sections.go_to_scoped(u8"html");
+        const auto scope = sections.go_to_scoped(section_name::document_html);
 
         HTML_Writer current_out = sections.current_html();
         const auto open_and_close = [&](std::u8string_view tag, auto f) {
