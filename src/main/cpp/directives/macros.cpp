@@ -8,11 +8,33 @@
 
 namespace cowel {
 
+void Instantiated_Behavior::generate_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    Context& context
+) const
+{
+    std::pmr::vector<ast::Content> instantiation { context.get_transient_memory() };
+    instantiate(instantiation, d, context);
+    to_plaintext(out, instantiation, context);
+}
+
+void Instantiated_Behavior::generate_html(
+    HTML_Writer& out,
+    const ast::Directive& d,
+    Context& context
+) const
+{
+    std::pmr::vector<ast::Content> instantiation { context.get_transient_memory() };
+    instantiate(instantiation, d, context);
+    to_html(out, instantiation, context);
+}
+
 void Macro_Define_Behavior::evaluate(const ast::Directive& d, Context& context) const
 {
     static const std::u8string_view parameters[] { u8"pattern" };
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments(), context.get_source());
+    args.match(d.get_arguments());
 
     const int pattern_index = args.get_argument_index(u8"pattern");
     if (pattern_index < 0) {
@@ -36,7 +58,7 @@ void Macro_Define_Behavior::evaluate(const ast::Directive& d, Context& context) 
     // The pattern arguments and content currently have no special meaning.
     // They are merely used as documentation by the user, but are never processed.
     // We are only interested in the pattern name at the point of definition.
-    const std::u8string_view pattern_name = pattern_directive.get_name(context.get_source());
+    const std::u8string_view pattern_name = pattern_directive.get_name();
     std::pmr::u8string owned_name { pattern_name, context.get_transient_memory() };
 
     const bool success = context.emplace_macro(std::move(owned_name), &d);
@@ -75,8 +97,7 @@ void substitute_in_macro(
         }
         substitute_in_macro(d->get_content(), put_arguments, put_content, context);
 
-        const std::u8string_view name = d->get_name(context.get_source());
-        if (name == u8"put") {
+        if (d->get_name() == u8"put") {
             // TODO: there's probably a way to do this faster, in a single step,
             //       but I couldn't find anything obvious in std::vector's interface.
             it = content.erase(it);
@@ -108,36 +129,13 @@ void instantiate_macro(
 
 } // namespace
 
-void Macro_Instantiate_Behavior::generate_plaintext(
-    std::pmr::vector<char8_t>& out,
-    const ast::Directive& d,
-    Context& context
-) const
-{
-    std::pmr::vector<ast::Content> instantiation { context.get_transient_memory() };
-    instantiate(instantiation, d, context);
-    to_plaintext(out, instantiation, context);
-}
-
-void Macro_Instantiate_Behavior::generate_html(
-    HTML_Writer& out,
-    const ast::Directive& d,
-    Context& context
-) const
-{
-    std::pmr::vector<ast::Content> instantiation { context.get_transient_memory() };
-    instantiate(instantiation, d, context);
-    to_html(out, instantiation, context);
-}
-
 void Macro_Instantiate_Behavior::instantiate(
     std::pmr::vector<ast::Content>& out,
     const ast::Directive& d,
     Context& context
 ) const
 {
-    const std::u8string_view name = d.get_name(context.get_source());
-    const ast::Directive* const definition = context.find_macro(name);
+    const ast::Directive* const definition = context.find_macro(d.get_name());
     // We always find a macro
     // because the name lookup for this directive utilizes `find_macro`,
     // so we're effectively calling it twice with the same input.

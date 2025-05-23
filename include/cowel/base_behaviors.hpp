@@ -58,6 +58,22 @@ struct Meta_Behavior : Directive_Behavior {
     virtual void evaluate(const ast::Directive& d, Context& context) const = 0;
 };
 
+/// @brief A base behavior for macro directives.
+/// The generation of plaintext and HTML is implemented in terms of `instantiate()`,
+/// i.e. we simply instantiate the macro and generate output from the instantiated contents.
+struct Instantiated_Behavior : Directive_Behavior {
+
+    constexpr Instantiated_Behavior()
+        : Directive_Behavior { Directive_Category::macro, Directive_Display::macro }
+    {
+    }
+
+    void generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context&)
+        const override;
+
+    void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const override;
+};
+
 struct Do_Nothing_Behavior : Directive_Behavior {
     // TODO: diagnose ignored arguments
 
@@ -94,14 +110,14 @@ public:
         const override
     {
         Argument_Matcher args { m_parameters, context.get_transient_memory() };
-        args.match(d.get_arguments(), context.get_source());
+        args.match(d.get_arguments());
         generate_plaintext(out, d, args, context);
     }
 
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override
     {
         Argument_Matcher args { m_parameters, context.get_transient_memory() };
-        args.match(d.get_arguments(), context.get_source());
+        args.match(d.get_arguments());
         generate_html(out, d, args, context);
     }
 
