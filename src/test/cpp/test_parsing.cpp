@@ -116,9 +116,9 @@ struct Expected_Content {
             return from(*d);
         }
         if (const auto* const e = get_if<ast::Escaped>(&actual)) {
-            return escape(e->get_text());
+            return escape(e->get_source());
         }
-        const std::u8string_view result = get<ast::Text>(actual).get_text();
+        const std::u8string_view result = get<ast::Text>(actual).get_source();
         return text(result);
     }
 

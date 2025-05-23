@@ -21,6 +21,7 @@ namespace cowel::ast {
 struct Argument final {
 private:
     Source_Span m_source_span;
+    std::u8string_view m_source;
     std::pmr::vector<Content> m_content;
     Source_Span m_name_span;
     std::u8string_view m_name;
@@ -30,6 +31,7 @@ public:
     [[nodiscard]]
     Argument(
         const Source_Span& source_span,
+        std::u8string_view source,
         const Source_Span& name_span,
         std::u8string_view name,
         std::pmr::vector<ast::Content>&& children
@@ -37,7 +39,11 @@ public:
 
     /// @brief Constructor for positional (unnamed) arguments.
     [[nodiscard]]
-    Argument(const Source_Span& source_span, std::pmr::vector<ast::Content>&& children);
+    Argument(
+        const Source_Span& source_span,
+        std::u8string_view source,
+        std::pmr::vector<ast::Content>&& children
+    );
 
     Argument(Argument&&) noexcept;
     Argument(const Argument&);
@@ -54,10 +60,9 @@ public:
     }
 
     [[nodiscard]]
-    std::u8string_view get_source(std::u8string_view source) const
+    std::u8string_view get_source() const
     {
-        COWEL_ASSERT(m_source_span.begin + m_source_span.length <= source.size());
-        return source.substr(m_source_span.begin, m_source_span.length);
+        return m_source;
     }
 
     [[nodiscard]]
@@ -87,6 +92,7 @@ public:
 struct Directive final {
 private:
     Source_Span m_source_span;
+    std::u8string_view m_source;
     std::u8string_view m_name;
 
     std::pmr::vector<Argument> m_arguments;
@@ -96,6 +102,7 @@ public:
     [[nodiscard]]
     Directive(
         const Source_Span& source_span,
+        std::u8string_view source,
         std::u8string_view name,
         std::pmr::vector<Argument>&& args,
         std::pmr::vector<Content>&& block
@@ -116,10 +123,9 @@ public:
     }
 
     [[nodiscard]]
-    std::u8string_view get_source(std::u8string_view source) const
+    std::u8string_view get_source() const
     {
-        COWEL_ASSERT(m_source_span.begin + m_source_span.length <= source.size());
-        return source.substr(m_source_span.begin, m_source_span.length);
+        return m_source;
     }
 
     [[nodiscard]]
@@ -147,11 +153,11 @@ public:
 struct Text final {
 private:
     Source_Span m_source_span;
-    std::u8string_view m_text;
+    std::u8string_view m_source;
 
 public:
     [[nodiscard]]
-    Text(const Source_Span& source_span, std::u8string_view text);
+    Text(const Source_Span& source_span, std::u8string_view source);
 
     [[nodiscard]]
     Source_Span get_source_span() const
@@ -160,16 +166,9 @@ public:
     }
 
     [[nodiscard]]
-    std::u8string_view get_source(std::u8string_view source) const
+    std::u8string_view get_source() const
     {
-        COWEL_ASSERT(m_source_span.begin + m_source_span.length <= source.size());
-        return source.substr(m_source_span.begin, m_source_span.length);
-    }
-
-    [[nodiscard]]
-    std::u8string_view get_text() const
-    {
-        return m_text;
+        return m_source;
     }
 };
 
@@ -177,11 +176,11 @@ public:
 struct Escaped final {
 private:
     Source_Span m_source_span;
-    std::u8string_view m_text;
+    std::u8string_view m_source;
 
 public:
     [[nodiscard]]
-    Escaped(const Source_Span& source_span, std::u8string_view text);
+    Escaped(const Source_Span& source_span, std::u8string_view source);
 
     [[nodiscard]]
     Source_Span get_source_span() const
@@ -189,19 +188,21 @@ public:
         return m_source_span;
     }
 
+    /// @brief Returns a two-character substring of the `source`,
+    /// where the first character is the escaping backslash,
+    /// and the second character is the escaped character.
     [[nodiscard]]
-    std::u8string_view get_source(std::u8string_view source) const
+    std::u8string_view get_source() const
     {
-        COWEL_ASSERT(m_source_span.begin + m_source_span.length <= source.size());
-        return source.substr(m_source_span.begin, m_source_span.length);
+        return m_source;
     }
 
     /// @brief Returns the escaped character.
     [[nodiscard]]
     char8_t get_char() const
     {
-        COWEL_DEBUG_ASSERT(m_text.size() >= 2);
-        return m_text[1];
+        COWEL_DEBUG_ASSERT(m_source.size() >= 2);
+        return m_source[1];
     }
 
     /// @brief Returns the index of the escaped character in the source file.
@@ -209,15 +210,6 @@ public:
     std::size_t get_char_index() const
     {
         return m_source_span.begin + 1;
-    }
-
-    /// @brief Returns a two-character substring of the `source`,
-    /// where the first character is the escaping backslash,
-    /// and the second character is the escaped character.
-    [[nodiscard]]
-    std::u8string_view get_text() const
-    {
-        return m_text;
     }
 };
 
@@ -365,12 +357,12 @@ inline Source_Span get_source_span(const Content& node)
 }
 
 [[nodiscard]]
-inline std::u8string_view get_source(const Content& node, std::u8string_view source)
+inline std::u8string_view get_source(const Content& node)
 {
     return visit(
-        [source]<typename T>(const T& v) -> std::u8string_view {
+        []<typename T>(const T& v) -> std::u8string_view {
             if constexpr (user_written<T>) {
-                return v.get_source(source);
+                return v.get_source();
             }
             else {
                 return {};

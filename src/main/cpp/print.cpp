@@ -391,7 +391,7 @@ public:
 
         out.append(u8"Text", Diagnostic_Highlight::tag);
         out.append(u8'(', Diagnostic_Highlight::punctuation);
-        print_cut_off(out, node.get_text(), std::size_t(options.max_node_text_length));
+        print_cut_off(out, node.get_source(), std::size_t(options.max_node_text_length));
         out.append(u8')', Diagnostic_Highlight::punctuation);
         out.append(u8'\n');
     }
@@ -402,7 +402,7 @@ public:
 
         out.append(u8"Escaped", Diagnostic_Highlight::tag);
         out.append(u8'(', Diagnostic_Highlight::punctuation);
-        print_cut_off(out, node.get_text(), std::size_t(options.max_node_text_length));
+        print_cut_off(out, node.get_source(), std::size_t(options.max_node_text_length));
         out.append(u8')', Diagnostic_Highlight::punctuation);
         out.append(u8'\n');
     }

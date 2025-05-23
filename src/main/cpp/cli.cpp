@@ -179,7 +179,6 @@ int main(int argc, const char* const* argv)
                                        .root_content = root_content,
                                        .builtin_behavior = builtin_directives,
                                        .path = in_path,
-                                       .source = in_source,
                                        .highlight_theme_source = theme_source,
                                        .file_loader = file_loader,
                                        .logger = logger,

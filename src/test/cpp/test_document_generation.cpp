@@ -139,7 +139,6 @@ struct Doc_Gen_Test : testing::Test {
                                            .builtin_behavior = builtin_directives,
                                            .error_behavior = &error_behavior,
                                            .path = file_path,
-                                           .source = source_string,
                                            .highlight_theme_source = theme_source_string,
                                            .logger = logger,
                                            .highlighter = test_highlighter,

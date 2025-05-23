@@ -44,7 +44,7 @@ std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content>
 {
     while (!content.empty()) {
         if (const auto* const text = std::get_if<ast::Text>(&content.front())) {
-            if (is_ascii_blank(text->get_text())) {
+            if (is_ascii_blank(text->get_source())) {
                 content = content.subspan(1);
                 continue;
             }
@@ -64,7 +64,7 @@ std::span<const ast::Content> trim_blank_text_right(std::span<const ast::Content
 {
     while (!content.empty()) {
         if (const auto* const text = std::get_if<ast::Text>(&content.back())) {
-            if (is_ascii_blank(text->get_text())) {
+            if (is_ascii_blank(text->get_source())) {
                 content = content.subspan(0, content.size() - 1);
                 continue;
             }
@@ -115,7 +115,7 @@ To_Plaintext_Status to_plaintext(
 )
 {
     if (const auto* const t = get_if<ast::Text>(&c)) {
-        const std::u8string_view text = t->get_text();
+        const std::u8string_view text = t->get_source();
         out.insert(out.end(), text.begin(), text.end());
         return To_Plaintext_Status::ok;
     }
@@ -220,7 +220,7 @@ void to_plaintext_mapped_for_highlighting(
     // TODO: to be accurate, we would have to process HTML entities here so that syntax highlighting
     //       sees them as a character rather than attempting to highlight the original entity.
     //       For example, `&lt;` should be highlighted like a `<` operator.
-    const std::u8string_view text = t.get_text();
+    const std::u8string_view text = t.get_source();
     out.insert(out.end(), text.begin(), text.end());
 
     const Source_Span pos = t.get_source_span();
@@ -323,7 +323,7 @@ void to_html(HTML_Writer& out, const ast::Content& c, Context& context)
 
 void to_html(HTML_Writer& out, const ast::Text& text, [[maybe_unused]] Context& context)
 {
-    const std::u8string_view output = text.get_text();
+    const std::u8string_view output = text.get_source();
     out.write_inner_text(output);
 }
 
@@ -374,7 +374,7 @@ void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Co
 
         void operator()(const ast::Text& text) const
         {
-            std::u8string_view str = text.get_text();
+            std::u8string_view str = text.get_source();
             // Note that the following two conditions are not mutually exclusive
             // when content contains just one element.
             if (i == 0) {
@@ -467,7 +467,7 @@ public:
     // but blank lines can act as separators between paragraphs.
     void operator()(const ast::Text& t, bool trim_left = false, bool trim_right = false)
     {
-        std::u8string_view text = t.get_text();
+        std::u8string_view text = t.get_source();
         if (trim_left) {
             text = trim_ascii_blank_left(text);
         }
@@ -607,21 +607,21 @@ void to_html(
     }
 }
 
-void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
+void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, Context&)
 {
     for (const ast::Content& c : content) {
         if (const auto* const e = get_if<ast::Escaped>(&c)) {
             out.write_inner_html(e->get_char());
         }
         if (const auto* const t = get_if<ast::Text>(&c)) {
-            out.write_inner_html(t->get_text());
+            out.write_inner_html(t->get_source());
         }
         if (const auto* const _ = get_if<ast::Generated>(&c)) {
             COWEL_ASSERT_UNREACHABLE(u8"Attempting to generate literal HTML from Behaved_Content");
             return;
         }
         if (const auto* const d = get_if<ast::Directive>(&c)) {
-            out.write_inner_text(d->get_source(context.get_source()));
+            out.write_inner_text(d->get_source());
         }
     }
 }
@@ -745,8 +745,9 @@ struct [[nodiscard]] Highlighted_AST_Copier {
                                                                directive.get_arguments().end(),
                                                                context.get_transient_memory() };
 
-            out.push_back(ast::Directive { directive.get_source_span(), directive.get_name(),
-                                           std::move(copied_arguments), std::move(inner_content) });
+            out.push_back(ast::Directive { directive.get_source_span(), directive.get_source(),
+                                           directive.get_name(), std::move(copied_arguments),
+                                           std::move(inner_content) });
             return;
         }
         case Directive_Category::macro: {
@@ -762,7 +763,6 @@ struct [[nodiscard]] Highlighted_AST_Copier {
 private:
     void append_highlighted_text_in(const Source_Span& document_span)
     {
-        COWEL_DEBUG_ASSERT(document_span.end() <= context.get_source().size());
         COWEL_DEBUG_ASSERT(source.size() == to_document_index.size());
         COWEL_DEBUG_ASSERT(source.size() == to_highlight.size());
 

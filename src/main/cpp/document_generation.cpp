@@ -27,7 +27,6 @@ void generate_document(const Generation_Options& options)
     HTML_Writer writer { options.output };
 
     Context context { options.path, //
-                      options.source, //
                       options.highlight_theme_source, //
                       options.error_behavior, //
                       options.file_loader,

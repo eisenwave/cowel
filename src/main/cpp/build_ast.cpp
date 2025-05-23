@@ -20,57 +20,69 @@ namespace ast {
 
 Argument::Argument(
     const Source_Span& source_span,
+    std::u8string_view source,
     const Source_Span& name_span,
     std::u8string_view name,
     std::pmr::vector<ast::Content>&& children
 )
     : m_source_span { source_span }
+    , m_source { source }
     , m_content { std::move(children) }
     , m_name_span { name_span }
     , m_name { name }
 {
+    COWEL_ASSERT(m_source_span.length == m_source.length());
     COWEL_ASSERT(m_name_span.length == m_name.length());
 }
 
 [[nodiscard]]
-Argument::Argument(const Source_Span& source_span, std::pmr::vector<ast::Content>&& children)
+Argument::Argument(
+    const Source_Span& source_span,
+    std::u8string_view source,
+    std::pmr::vector<ast::Content>&& children
+)
     : m_source_span { source_span }
+    , m_source { source }
     , m_content { std::move(children) }
     , m_name_span { source_span, 0 } // NOLINT(cppcoreguidelines-slicing)
     , m_name {}
 {
+    COWEL_ASSERT(m_source_span.length == m_source.length());
 }
 
 Directive::Directive(
     const Source_Span& source_span,
+    std::u8string_view source,
     std::u8string_view name,
     std::pmr::vector<Argument>&& args,
     std::pmr::vector<Content>&& block
 )
     : m_source_span { source_span }
+    , m_source { source }
     , m_name { name }
     , m_arguments { std::move(args) }
     , m_content { std::move(block) }
 {
+    COWEL_ASSERT(m_source_span.length == m_source.length());
     COWEL_ASSERT(!name.empty());
     COWEL_ASSERT(!name.starts_with(u8'\\'));
     COWEL_ASSERT(name.length() <= source_span.length);
 }
 
-Text::Text(const Source_Span& source_span, std::u8string_view text)
+Text::Text(const Source_Span& source_span, std::u8string_view source)
     : m_source_span { source_span }
-    , m_text { text }
+    , m_source { source }
 {
     COWEL_ASSERT(!source_span.empty());
-    COWEL_ASSERT(text.length() == source_span.length);
+    COWEL_ASSERT(source.length() == source_span.length);
 }
 
-Escaped::Escaped(const Source_Span& source_span, std::u8string_view text)
+Escaped::Escaped(const Source_Span& source_span, std::u8string_view source)
     : m_source_span { source_span }
-    , m_text { text }
+    , m_source { source }
 {
     COWEL_ASSERT(source_span.length == 2);
-    COWEL_ASSERT(text.length() == 2);
+    COWEL_ASSERT(source.length() == 2);
 }
 
 } // namespace ast
@@ -237,11 +249,11 @@ private:
         const AST_Instruction pop_instruction = pop();
         COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_directive);
 
-        const Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
-        const Source_Span name_span = span.to_right(1).with_length(name_length);
+        const Source_Span source_span { initial_pos, m_pos.begin - initial_pos.begin };
+        const Source_Span name_span = source_span.to_right(1).with_length(name_length);
         const std::u8string_view name = extract(name_span);
 
-        return { span, name, std::move(arguments), std::move(block) };
+        return { source_span, extract(source_span), name, std::move(arguments), std::move(block) };
     }
 
     void try_append_argument_sequence(std::pmr::vector<ast::Argument>& out)
@@ -304,10 +316,11 @@ private:
             append_content(children);
         }
 
-        const Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
+        const Source_Span source_span { initial_pos, m_pos.begin - initial_pos.begin };
+        const std::u8string_view source = extract(source_span);
         out.push_back(
-            name ? ast::Argument { span, *name, extract(*name), std::move(children) }
-                 : ast::Argument { span, std::move(children) }
+            name ? ast::Argument { source_span, source, *name, extract(*name), std::move(children) }
+                 : ast::Argument { source_span, source, std::move(children) }
         );
     }
 
