@@ -60,31 +60,35 @@ void Import_Behavior::instantiate(
 
     const auto path_string = as_u8string_view(path_data);
 
-    std::pmr::vector<char8_t> source_text { context.get_transient_memory() };
-    const bool success = context.get_file_loader()(source_text, path_string);
-    if (!success) {
-        const std::u8string_view message[] {
-            u8"Failed to import sub-document from file \"", path_string,
-            u8"\" because the file could not be opened or because of an I/O error. ",
-            u8"Note that files are loaded relative to the directory of the current document."
-        };
-        context.try_error(diagnostic::import::io, d.get_source_span(), message);
-    }
-    const auto source_string = as_u8string_view(source_text);
-
     // This is a bit of a dirty hack.
     // We need to somehow keep the source code of the loaded file alive
     // because the AST is filled with nodes that have string_views into it.
     //
     // The easiest approach is to just write to a section or variable or something.
     // Anything in "std." is reserved for COWEL anyway, so we may as well do it like this.
-    {
+    const auto* const source_text = [&] -> std::pmr::vector<char8_t>* {
         std::pmr::u8string section_name { u8"std.import.", context.get_transient_memory() };
         section_name += path_string;
         const auto scope = context.get_sections().go_to_scoped(std::move(section_name));
-        // This is fine by the way; moving vectors preserves pointers and iterators.
-        context.get_sections().current_text() = std::move(source_text);
+
+        std::pmr::vector<char8_t>& out = context.get_sections().current_text();
+        const bool success = context.get_file_loader()(out, path_string);
+        if (!success) {
+            const std::u8string_view message[] {
+                u8"Failed to import sub-document from file \"", path_string,
+                u8"\" because the file could not be opened or because of an I/O error. ",
+                u8"Note that files are loaded relative to the directory of the current document."
+            };
+            context.try_error(diagnostic::import::io, d.get_source_span(), message);
+            return nullptr;
+        }
+        return &out;
+    }();
+    if (!source_text) {
+        return;
     }
+
+    const auto source_string = as_u8string_view(*source_text);
 
     auto on_error
         = [&](std::u8string_view id, const Source_Span& location, std::u8string_view message) {
