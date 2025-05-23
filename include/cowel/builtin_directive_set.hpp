@@ -25,10 +25,10 @@ struct Error_Behavior : Do_Nothing_Behavior {
     {
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context&) const override
     {
         out.open_tag(id);
-        out.write_inner_text(d.get_source(context.get_source()));
+        out.write_inner_text(d.get_source());
         out.close_tag(id);
     }
 };

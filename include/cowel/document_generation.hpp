@@ -28,8 +28,6 @@ struct Generation_Options {
 
     /// @brief The path of the source file.
     const std::filesystem::path& path;
-    /// @brief The document source code.
-    std::u8string_view source;
     /// @brief The highlight theme source.
     std::u8string_view highlight_theme_source;
 
