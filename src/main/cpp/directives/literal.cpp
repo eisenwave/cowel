@@ -35,11 +35,9 @@ void Literally_Behavior::generate_plaintext(
     if (d.get_content().empty()) {
         return;
     }
-    const std::size_t begin = ast::get_source_span(d.get_content().front()).begin;
-    const std::size_t end = ast::get_source_span(d.get_content().back()).end();
-    COWEL_ASSERT(end >= begin);
-    const std::u8string_view source = context.get_source().substr(begin, end - begin);
-    append(out, source);
+    for (const ast::Content& c : d.get_content()) {
+        append(out, ast::get_source(c));
+    }
 }
 
 void Unprocessed_Behavior::generate_plaintext(
@@ -55,7 +53,7 @@ void Unprocessed_Behavior::generate_plaintext(
     }
     for (const ast::Content& c : d.get_content()) {
         if (const auto* const directive = std::get_if<ast::Directive>(&c)) {
-            append(out, directive->get_source(context.get_source()));
+            append(out, directive->get_source());
         }
         else {
             to_plaintext(out, c, context);
