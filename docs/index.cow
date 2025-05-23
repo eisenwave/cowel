@@ -2,6 +2,7 @@
 \macro[\ch{...}]{\code[html]{\put}}
 \macro[\dir{...}]{\cm{\hl[markup-tag]{\\\put}}}
 \macro[\codepoint{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}
+\macro[\mka{...}]{\tt{\hl[markup-attr]{\put}}}
 
 \there[std.head]{
 \html-title{COWEL - Compact Web Language Documentation}

@@ -42,7 +42,11 @@ Headings can be produced using the
 \dir{h1}, \dir{h2}, \dir{h3}, \dir{h4}, \dir{h5}, and \dir{h6} directives to
 produce the corresponding HTML tags with the same name.
 
-Arguments to these headings are converted into attributes of the corresponding HTML element.
+Headings take a \tt{listed} argument, which is a yes/no plaintext argument.
+Unless its value is \tt{no}, headings are numbered and added to the table of contents
+(\ref[#dir-make-contents]) automatically.
+
+Other arguments to these headings are converted into attributes of the corresponding HTML element.
 An \tt{id} argument can be provided explicitly.
 
 If none is provided, an \tt{id} is synthesized from the content within the heading.
@@ -56,4 +60,119 @@ Headings can be referenced using the \dir{ref} directive:
 \\ref[#heading-with-synthesized-id]
 \\ref[#xzy]
 }
+}
+
+\h4[id=dir-make-contents]{\dir{make-contents} \c{mdash} Make table of contents}
+
+The \dir{make-contents} directive generates the table of contents,
+which is comprised of all the headings within the document.
+It takes no arguments and its content is ignored.
+It displays as a block.
+
+The table of contents is is populated by headings (\ref[#headings])
+as the document is processed.
+
+\tip{
+Since the table of contents should usually not be listed within itself,
+an unlisted heading may be used:
+\codeblock[cowel]{
+\\h2[listed=no]{Contents}
+\\make-contents
+}
+A similar effect can be achieved using \dir{html-h2} (\ref[#dir-html-element]).
+However, using \dir{html-h2} will also not emit a link icon in the gutter,
+and it will not synthesize an \mka{id} for that heading.
+}
+
+\note{
+The underlying contents can be obtained with \cm{\\here[std.contents]}.
+\dir{make-contents} additionally wraps those contents in HTML elements to
+chang their visual appearance.
+}
+
+\h3{Bibliography}
+
+In technical writing it is common for documents to reference other papers,
+and it is expected that references are properly cited.
+To support this,
+
+COWEL provides directives for adding bibliography entries,
+and for generating a bibliography automatically.
+
+\h4[id=dir-bib]{\dir{bib} \c{mdash} Add bibliography entry}
+
+The \dir{bib} directive adds a single entry to the bibliography.
+Its content is ignored, and it displays as a meta directive.
+
+It has a number of parameters,
+each of which is a plaintext context:
+
+\dl{
+\dt{\mka{id}}
+\dd{
+The identifier of the bibliography entry.
+This can later be referenced using \cm{\\ref[id]}.
+}
+
+\dt{\mka{author}}
+\dd{
+The name of the author(s).
+This is in no particular format, and if you want to provide multiple authors,
+you can do so via a comma-separated list here.
+}
+
+\dt{\mka{title}}
+\dd{The title of the cited work.}
+
+\dt{\mka{date}}
+\dd{
+The date of publication.
+No particular format is enforced; this is simply a string, so you can choose some local format.
+}
+
+\dt{\mka{publisher}}
+\dd{The name of the publisher.}
+
+\dt{\mka{link}}
+\dd{
+The primary link to the document.
+This should typically be a short link because it is copied into each \dir{ref}
+to the bibliography entry.
+}
+
+\dt{\mka{long-link}}
+\dd{
+A "long link" to the document.
+If present, this will be rendered within the bibliography,
+and it is typically meant to be a semantic or more stable link than the \mka{link}.
+You can also think of it as a "link for pretty printing".
+}
+
+\dt{\mka{issue-link}}
+\dd{
+A link to issue tracking for the document.
+For example, in WG21 circles, this may be a link to the GitHub issue where a paper is tracked.
+}
+}
+
+Every argument except the \mka{id} is optional,
+although you will hardly get meaningful bibliography output if only the \mka{id} is specified.
+
+
+\h4[id=dir-make-bib]{\dir{make-bib} \c{mdash} Generate bibliography}
+
+The \dir{make-bib} directive generates a bibliography.
+This is typically done towards the bottom of the document, but can be done anywhere.
+
+It takes no arguments, its content is ignored,
+and it displays as a block.
+
+The \dir{make-bib} directive is populated by uses of \dir{bib} directives in order of use.
+That is, the bibliography is not automatically sorted for you;
+the order in which \dir{bib} directives are used is also the order in which the bibliography
+entries are generated.
+
+\note{
+Similar to \dir{make-contents},
+it is a wrapper for the underlying \tt{std.bib} section.
 }
