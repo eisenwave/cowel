@@ -223,6 +223,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
             .end();
         write_numbers(toc_writer);
         toc_writer.close_tag(u8"div");
+        toc_writer.write_inner_html(u8'\n'); // non-functional, purely for prettier HTML output
 
         if (has_valid_id) {
             toc_writer
@@ -238,6 +239,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
         if (has_valid_id) {
             toc_writer.close_tag(u8"a");
         }
+        toc_writer.write_inner_html(u8'\n'); // non-functional, purely for prettier HTML output
     }
 }
 
