@@ -122,7 +122,7 @@ void Bibliography_Add_Behavior::evaluate(const ast::Directive& d, Context& conte
         }();
     // clang-format on
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments(), context.get_source());
+    args.match(d.get_arguments());
 
     Stored_Document_Info result { .text
                                   = std::pmr::vector<char8_t> { context.get_transient_memory() },

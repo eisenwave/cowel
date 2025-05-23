@@ -52,7 +52,7 @@ void to_math_html(HTML_Writer& out, std::span<const ast::Content> contents, Cont
             to_html(out, c, context);
             continue;
         }
-        const std::u8string_view name = d->get_name(context.get_source());
+        const std::u8string_view name = d->get_name();
         if (!std::ranges::binary_search(mathml_names, name)) {
             to_html(out, *d, context);
             continue;

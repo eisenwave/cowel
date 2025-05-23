@@ -16,13 +16,13 @@
 namespace cowel {
 
 [[nodiscard]]
-std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content>, Context&);
+std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content>);
 [[nodiscard]]
-std::span<const ast::Content> trim_blank_text_right(std::span<const ast::Content>, Context&);
+std::span<const ast::Content> trim_blank_text_right(std::span<const ast::Content>);
 
 /// @brief Trims leading and trailing completely blank text content.
 [[nodiscard]]
-std::span<const ast::Content> trim_blank_text(std::span<const ast::Content>, Context&);
+std::span<const ast::Content> trim_blank_text(std::span<const ast::Content>);
 
 enum struct To_Plaintext_Mode : bool { //
     normal,

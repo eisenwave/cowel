@@ -102,7 +102,7 @@ void Ref_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
 {
     static const std::u8string_view parameters[] { u8"to" };
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments(), context.get_source());
+    args.match(d.get_arguments());
 
     for (std::size_t i = 0; i < args.argument_statuses().size(); ++i) {
         if (args.argument_statuses()[i] == Argument_Status::unmatched) {

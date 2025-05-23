@@ -14,7 +14,6 @@ void match_parameters_and_arguments(
     std::span<Argument_Status> out_status,
     std::span<const std::u8string_view> parameters,
     std::span<const ast::Argument> arguments,
-    std::u8string_view source,
     Parameter_Match_Mode mode
 )
 {
@@ -33,7 +32,7 @@ void match_parameters_and_arguments(
             if (!arguments[arg_index].has_name()) {
                 continue;
             }
-            const std::u8string_view arg_name = arguments[arg_index].get_name(source);
+            const std::u8string_view arg_name = arguments[arg_index].get_name();
             for (std::size_t i = 0; i < parameters.size(); ++i) {
                 if (arg_name == parameters[i]) {
                     if (out_indices[i] == -1) {

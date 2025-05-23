@@ -83,7 +83,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
     const std::u8string_view tag_name { tag_name_data, sizeof(tag_name_data) };
 
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments(), context.get_source(), Parameter_Match_Mode::only_named);
+    args.match(d.get_arguments(), Parameter_Match_Mode::only_named);
 
     // Determine whether the heading should be listed in the table of contents.
     const auto is_listed = [&] -> bool {
@@ -252,7 +252,7 @@ void generate_sectioned(
 {
     static constexpr std::u8string_view parameters[] { u8"section" };
     Argument_Matcher args { parameters, context.get_persistent_memory() };
-    args.match(d.get_arguments(), context.get_source());
+    args.match(d.get_arguments());
 
     const int arg_index = args.get_argument_index(u8"section");
     if (arg_index < 0) {

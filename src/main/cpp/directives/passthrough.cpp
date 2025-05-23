@@ -44,7 +44,7 @@ void Passthrough_Behavior::generate_html(
     Context& context
 ) const
 {
-    const std::u8string_view name = get_name(d, context);
+    const std::u8string_view name = get_name(d);
     if (d.get_arguments().empty()) {
         out.open_tag(name);
     }
@@ -86,10 +86,9 @@ void In_Tag_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, C
 }
 
 [[nodiscard]]
-std::u8string_view
-Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d, Context& context) const
+std::u8string_view Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d) const
 {
-    const std::u8string_view raw_name = d.get_name(context.get_source());
+    const std::u8string_view raw_name = d.get_name();
     const std::u8string_view name
         = raw_name.starts_with(builtin_directive_prefix) ? raw_name.substr(1) : raw_name;
     return name.substr(m_name_prefix.size());
@@ -170,7 +169,7 @@ void List_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Con
     attributes.end();
     for (const ast::Content& c : d.get_content()) {
         if (const auto* const directive = std::get_if<ast::Directive>(&c)) {
-            const std::u8string_view name = directive->get_name(context.get_source());
+            const std::u8string_view name = directive->get_name();
             if (name == u8"item" || name == u8"-item") {
                 item_behavior.generate_html(out, *directive, context);
             }

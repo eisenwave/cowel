@@ -19,48 +19,58 @@ namespace cowel {
 namespace ast {
 
 Argument::Argument(
-    const Source_Span& pos,
-    const Source_Span& name,
+    const Source_Span& source_span,
+    const Source_Span& name_span,
+    std::u8string_view name,
     std::pmr::vector<ast::Content>&& children
 )
-    : m_pos { pos }
+    : m_source_span { source_span }
     , m_content { std::move(children) }
+    , m_name_span { name_span }
     , m_name { name }
 {
+    COWEL_ASSERT(m_name_span.length == m_name.length());
 }
 
 [[nodiscard]]
-Argument::Argument(const Source_Span& pos, std::pmr::vector<ast::Content>&& children)
-    : m_pos { pos }
+Argument::Argument(const Source_Span& source_span, std::pmr::vector<ast::Content>&& children)
+    : m_source_span { source_span }
     , m_content { std::move(children) }
-    , m_name { pos, 0 } // NOLINT(cppcoreguidelines-slicing)
+    , m_name_span { source_span, 0 } // NOLINT(cppcoreguidelines-slicing)
+    , m_name {}
 {
 }
 
 Directive::Directive(
-    const Source_Span& pos,
-    std::size_t name_length,
+    const Source_Span& source_span,
+    std::u8string_view name,
     std::pmr::vector<Argument>&& args,
     std::pmr::vector<Content>&& block
 )
-    : m_pos { pos }
-    , m_name_length { name_length }
+    : m_source_span { source_span }
+    , m_name { name }
     , m_arguments { std::move(args) }
     , m_content { std::move(block) }
 {
-    COWEL_ASSERT(m_name_length != 0);
+    COWEL_ASSERT(!name.empty());
+    COWEL_ASSERT(!name.starts_with(u8'\\'));
+    COWEL_ASSERT(name.length() <= source_span.length);
 }
 
-Text::Text(const Source_Span& pos)
-    : m_pos { pos }
+Text::Text(const Source_Span& source_span, std::u8string_view text)
+    : m_source_span { source_span }
+    , m_text { text }
 {
-    COWEL_ASSERT(!pos.empty());
+    COWEL_ASSERT(!source_span.empty());
+    COWEL_ASSERT(text.length() == source_span.length);
 }
 
-Escaped::Escaped(const Source_Span& pos)
-    : m_pos { pos }
+Escaped::Escaped(const Source_Span& source_span, std::u8string_view text)
+    : m_source_span { source_span }
+    , m_text { text }
 {
-    COWEL_ASSERT(pos.length == 2);
+    COWEL_ASSERT(source_span.length == 2);
+    COWEL_ASSERT(text.length() == 2);
 }
 
 } // namespace ast
@@ -108,6 +118,25 @@ public:
         COWEL_ASSERT(!instructions.empty());
     }
 
+    void build_document(std::pmr::vector<ast::Content>& out)
+    {
+        const AST_Instruction push_doc = pop();
+        COWEL_ASSERT(push_doc.type == AST_Instruction_Type::push_document);
+        out.clear();
+        out.reserve(push_doc.n);
+
+        for (std::size_t i = 0; i < push_doc.n; ++i) {
+            append_content(out);
+        }
+    }
+
+private:
+    [[nodiscard]]
+    std::u8string_view extract(const Source_Span& span) const
+    {
+        return m_source.substr(span.begin, span.length);
+    }
+
     void advance_by(std::size_t n)
     {
         COWEL_ASSERT(m_pos.begin + n <= m_source.size());
@@ -134,21 +163,6 @@ public:
     {
         COWEL_ASSERT(m_index < m_instructions.size());
         return m_instructions[m_index++];
-    }
-
-    [[nodiscard]]
-    std::pmr::vector<ast::Content> build_document()
-    {
-        const AST_Instruction push_doc = pop();
-        COWEL_ASSERT(push_doc.type == AST_Instruction_Type::push_document);
-
-        std::pmr::vector<ast::Content> result { m_memory };
-        result.reserve(push_doc.n);
-        for (std::size_t i = 0; i < push_doc.n; ++i) {
-            append_content(result);
-        }
-
-        return result;
     }
 
     void append_content(std::pmr::vector<ast::Content>& out)
@@ -185,7 +199,8 @@ public:
         const AST_Instruction instruction = pop();
         COWEL_ASSERT(instruction.type == AST_Instruction_Type::escape);
 
-        ast::Escaped result { Source_Span { m_pos, instruction.n } };
+        const Source_Span span { m_pos, instruction.n };
+        ast::Escaped result { span, extract(span) };
         advance_by(instruction.n);
         return result;
     }
@@ -196,7 +211,8 @@ public:
         const AST_Instruction instruction = pop();
         COWEL_ASSERT(instruction.type == AST_Instruction_Type::text);
 
-        ast::Text result { Source_Span { m_pos, instruction.n } };
+        const Source_Span span { m_pos, instruction.n };
+        ast::Text result { span, extract(span) };
         advance_by(instruction.n);
         return result;
     }
@@ -222,7 +238,10 @@ public:
         COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_directive);
 
         const Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
-        return { span, name_length, std::move(arguments), std::move(block) };
+        const Source_Span name_span = span.to_right(1).with_length(name_length);
+        const std::u8string_view name = extract(name_span);
+
+        return { span, name, std::move(arguments), std::move(block) };
     }
 
     void try_append_argument_sequence(std::pmr::vector<ast::Argument>& out)
@@ -287,7 +306,7 @@ public:
 
         const Source_Span span { initial_pos, m_pos.begin - initial_pos.begin };
         out.push_back(
-            name ? ast::Argument { span, *name, std::move(children) }
+            name ? ast::Argument { span, *name, extract(*name), std::move(children) }
                  : ast::Argument { span, std::move(children) }
         );
     }
@@ -327,6 +346,17 @@ public:
 
 } // namespace
 
+void build_ast(
+    std::pmr::vector<ast::Content>& out,
+    std::u8string_view source,
+    std::span<const AST_Instruction> instructions,
+    std::pmr::memory_resource* memory,
+    Parse_Error_Consumer on_error
+)
+{
+    AST_Builder { source, instructions, memory, on_error }.build_document(out);
+}
+
 std::pmr::vector<ast::Content> build_ast(
     std::u8string_view source,
     std::span<const AST_Instruction> instructions,
@@ -334,7 +364,21 @@ std::pmr::vector<ast::Content> build_ast(
     Parse_Error_Consumer on_error
 )
 {
-    return AST_Builder { source, instructions, memory, on_error }.build_document();
+    std::pmr::vector<ast::Content> result { memory };
+    build_ast(result, source, instructions, memory, on_error);
+    return result;
+}
+
+void parse_and_build(
+    std::pmr::vector<ast::Content>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    Parse_Error_Consumer on_error
+)
+{
+    std::pmr::vector<AST_Instruction> instructions { memory };
+    parse(instructions, source);
+    build_ast(out, source, instructions, memory, on_error);
 }
 
 /// @brief Parses a document and runs `build_ast` on the results.

@@ -37,15 +37,14 @@ Directive_Behavior* Context::find_directive(std::u8string_view name) const
 
 Directive_Behavior* Context::find_directive(const ast::Directive& directive) const
 {
-    return find_directive(directive.get_name(m_source));
+    return find_directive(directive.get_name());
 }
 
-std::span<const ast::Content>
-trim_blank_text_left(std::span<const ast::Content> content, Context& context)
+std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content> content)
 {
     while (!content.empty()) {
         if (const auto* const text = std::get_if<ast::Text>(&content.front())) {
-            if (is_ascii_blank(text->get_text(context.get_source()))) {
+            if (is_ascii_blank(text->get_text())) {
                 content = content.subspan(1);
                 continue;
             }
@@ -61,12 +60,11 @@ trim_blank_text_left(std::span<const ast::Content> content, Context& context)
     return content;
 }
 
-std::span<const ast::Content>
-trim_blank_text_right(std::span<const ast::Content> content, Context& context)
+std::span<const ast::Content> trim_blank_text_right(std::span<const ast::Content> content)
 {
     while (!content.empty()) {
         if (const auto* const text = std::get_if<ast::Text>(&content.back())) {
-            if (is_ascii_blank(text->get_text(context.get_source()))) {
+            if (is_ascii_blank(text->get_text())) {
                 content = content.subspan(0, content.size() - 1);
                 continue;
             }
@@ -82,10 +80,9 @@ trim_blank_text_right(std::span<const ast::Content> content, Context& context)
     return content;
 }
 
-std::span<const ast::Content>
-trim_blank_text(std::span<const ast::Content> content, Context& context)
+std::span<const ast::Content> trim_blank_text(std::span<const ast::Content> content)
 {
-    return trim_blank_text_right(trim_blank_text_left(content, context), context);
+    return trim_blank_text_right(trim_blank_text_left(content));
 }
 
 namespace {
@@ -100,7 +97,7 @@ void try_lookup_error(const ast::Directive& directive, Context& context)
     //       but this requires a new convenience function in ast::Directive.
     const std::u8string_view message[] {
         u8"No directive with the name \"",
-        directive.get_name(context.get_source()),
+        directive.get_name(),
         u8"\" exists.",
     };
     context.try_error(
@@ -118,12 +115,12 @@ To_Plaintext_Status to_plaintext(
 )
 {
     if (const auto* const t = get_if<ast::Text>(&c)) {
-        const std::u8string_view text = t->get_text(context.get_source());
+        const std::u8string_view text = t->get_text();
         out.insert(out.end(), text.begin(), text.end());
         return To_Plaintext_Status::ok;
     }
     if (const auto* const e = get_if<ast::Escaped>(&c)) {
-        out.push_back(e->get_char(context.get_source()));
+        out.push_back(e->get_char());
         return To_Plaintext_Status::ok;
     }
     if (const auto* const b = get_if<ast::Generated>(&c)) {
@@ -217,13 +214,13 @@ void to_plaintext_mapped_for_highlighting(
     std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
     const ast::Text& t,
-    Context& context
+    [[maybe_unused]] Context& context
 )
 {
     // TODO: to be accurate, we would have to process HTML entities here so that syntax highlighting
     //       sees them as a character rather than attempting to highlight the original entity.
     //       For example, `&lt;` should be highlighted like a `<` operator.
-    const std::u8string_view text = t.get_text(context.get_source());
+    const std::u8string_view text = t.get_text();
     out.insert(out.end(), text.begin(), text.end());
 
     const Source_Span pos = t.get_source_span();
@@ -241,10 +238,10 @@ void to_plaintext_mapped_for_highlighting(
     std::pmr::vector<char8_t>& out,
     std::pmr::vector<std::size_t>& out_mapping,
     const ast::Escaped& e,
-    Context& context
+    [[maybe_unused]] Context& context
 )
 {
-    out.push_back(e.get_char(context.get_source()));
+    out.push_back(e.get_char());
     out_mapping.push_back(e.get_char_index());
 }
 
@@ -324,15 +321,15 @@ void to_html(HTML_Writer& out, const ast::Content& c, Context& context)
     std::visit([&](const auto& x) { to_html(out, x, context); }, c);
 }
 
-void to_html(HTML_Writer& out, const ast::Text& text, Context& context)
+void to_html(HTML_Writer& out, const ast::Text& text, [[maybe_unused]] Context& context)
 {
-    const std::u8string_view output = text.get_text(context.get_source());
+    const std::u8string_view output = text.get_text();
     out.write_inner_text(output);
 }
 
-void to_html(HTML_Writer& out, const ast::Escaped& escaped, Context& context)
+void to_html(HTML_Writer& out, const ast::Escaped& escaped, [[maybe_unused]] Context& context)
 {
-    const char8_t c = escaped.get_char(context.get_source());
+    const char8_t c = escaped.get_char();
     out.write_inner_text(c);
 }
 
@@ -377,7 +374,7 @@ void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Co
 
         void operator()(const ast::Text& text) const
         {
-            std::u8string_view str = text.get_text(context.get_source());
+            std::u8string_view str = text.get_text();
             // Note that the following two conditions are not mutually exclusive
             // when content contains just one element.
             if (i == 0) {
@@ -407,7 +404,7 @@ void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Co
 
         void operator()(const ast::Escaped& e) const
         {
-            out.write_inner_html(e.get_char(context.get_source()));
+            out.write_inner_html(e.get_char());
         }
 
         void operator()(const ast::Directive& e) const
@@ -470,7 +467,7 @@ public:
     // but blank lines can act as separators between paragraphs.
     void operator()(const ast::Text& t, bool trim_left = false, bool trim_right = false)
     {
-        std::u8string_view text = t.get_text(m_context.get_source());
+        std::u8string_view text = t.get_text();
         if (trim_left) {
             text = trim_ascii_blank_left(text);
         }
@@ -577,7 +574,7 @@ void to_html(
 )
 {
     if (to_html_mode_is_trimmed(mode)) {
-        content = trim_blank_text(content, context);
+        content = trim_blank_text(content);
     }
 
     switch (mode) {
@@ -614,11 +611,10 @@ void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, 
 {
     for (const ast::Content& c : content) {
         if (const auto* const e = get_if<ast::Escaped>(&c)) {
-            const char8_t c = e->get_char(context.get_source());
-            out.write_inner_html(c);
+            out.write_inner_html(e->get_char());
         }
         if (const auto* const t = get_if<ast::Text>(&c)) {
-            out.write_inner_html(t->get_text(context.get_source()));
+            out.write_inner_html(t->get_text());
         }
         if (const auto* const _ = get_if<ast::Generated>(&c)) {
             COWEL_ASSERT_UNREACHABLE(u8"Attempting to generate literal HTML from Behaved_Content");
@@ -749,7 +745,7 @@ struct [[nodiscard]] Highlighted_AST_Copier {
                                                                directive.get_arguments().end(),
                                                                context.get_transient_memory() };
 
-            out.push_back(ast::Directive { directive.get_source_span(), directive.get_name_length(),
+            out.push_back(ast::Directive { directive.get_source_span(), directive.get_name(),
                                            std::move(copied_arguments), std::move(inner_content) });
             return;
         }
@@ -956,7 +952,7 @@ bool argument_to_attribute(
     to_plaintext(value, a.get_content(), context);
     const std::u8string_view value_string { value.data(), value.size() };
     if (a.has_name()) {
-        const std::u8string_view name = a.get_name(context.get_source());
+        const std::u8string_view name = a.get_name();
         if (!filter || filter(name)) {
             out.write_attribute(name, value_string, style);
             return true;

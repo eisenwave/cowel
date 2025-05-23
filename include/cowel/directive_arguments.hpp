@@ -43,14 +43,12 @@ enum struct Parameter_Match_Mode : Default_Underlying {
 /// @param out_status for each argument, the resulting status after matching
 /// @param parameters a span of parameter names
 /// @param arguments a span of arguments, which could be named or unnamed
-/// @param source the source
 /// @param mode the mode
 void match_parameters_and_arguments(
     std::span<int> out_indices,
     std::span<Argument_Status> out_status,
     std::span<const std::u8string_view> parameters,
     std::span<const ast::Argument> arguments,
-    std::u8string_view source,
     Parameter_Match_Mode mode = Parameter_Match_Mode::normal
 );
 
@@ -76,14 +74,11 @@ public:
     /// Other member function can subsequently access the results.
     void match(
         std::span<const ast::Argument> arguments,
-        std::u8string_view source,
         Parameter_Match_Mode mode = Parameter_Match_Mode::normal
     )
     {
         m_statuses.resize(arguments.size());
-        match_parameters_and_arguments(
-            m_indices, m_statuses, m_parameters, arguments, source, mode
-        );
+        match_parameters_and_arguments(m_indices, m_statuses, m_parameters, arguments, mode);
     }
 
     /// @brief Returns the matched argument index for the parameter with the given name,

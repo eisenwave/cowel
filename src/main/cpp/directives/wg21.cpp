@@ -34,7 +34,7 @@ void WG21_Head_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d
 {
     static constexpr std::u8string_view parameters[] { u8"title" };
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments(), context.get_source());
+    args.match(d.get_arguments());
 
     out.open_tag_with_attributes(u8"div") //
         .write_class(u8"wg21-head")

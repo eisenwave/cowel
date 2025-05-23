@@ -20,20 +20,24 @@ namespace cowel::ast {
 
 struct Argument final {
 private:
-    Source_Span m_pos;
+    Source_Span m_source_span;
     std::pmr::vector<Content> m_content;
-    Source_Span m_name;
+    Source_Span m_name_span;
+    std::u8string_view m_name;
 
 public:
+    /// @brief Constructor for named arguments.
     [[nodiscard]]
     Argument(
-        const Source_Span& pos,
-        const Source_Span& name,
+        const Source_Span& source_span,
+        const Source_Span& name_span,
+        std::u8string_view name,
         std::pmr::vector<ast::Content>&& children
     );
 
+    /// @brief Constructor for positional (unnamed) arguments.
     [[nodiscard]]
-    Argument(const Source_Span& pos, std::pmr::vector<ast::Content>&& children);
+    Argument(const Source_Span& source_span, std::pmr::vector<ast::Content>&& children);
 
     Argument(Argument&&) noexcept;
     Argument(const Argument&);
@@ -46,28 +50,30 @@ public:
     [[nodiscard]]
     Source_Span get_source_span() const
     {
-        return m_pos;
+        return m_source_span;
     }
 
     [[nodiscard]]
     std::u8string_view get_source(std::u8string_view source) const
     {
-        COWEL_ASSERT(m_pos.begin + m_pos.length <= source.size());
-        return source.substr(m_pos.begin, m_pos.length);
+        COWEL_ASSERT(m_source_span.begin + m_source_span.length <= source.size());
+        return source.substr(m_source_span.begin, m_source_span.length);
     }
 
     [[nodiscard]]
     bool has_name() const
     {
-        return !m_name.empty();
+        return !m_name_span.empty();
     }
     [[nodiscard]]
-    Source_Span get_name_span() const;
-    [[nodiscard]]
-    std::u8string_view get_name(std::u8string_view source) const
+    Source_Span get_name_span() const
     {
-        COWEL_ASSERT(m_name.begin + m_name.length <= source.size());
-        return source.substr(m_name.begin, m_name.length);
+        return m_name_span;
+    }
+    [[nodiscard]]
+    std::u8string_view get_name() const
+    {
+        return m_name;
     }
 
     [[nodiscard]]
@@ -80,8 +86,8 @@ public:
 
 struct Directive final {
 private:
-    Source_Span m_pos;
-    std::size_t m_name_length;
+    Source_Span m_source_span;
+    std::u8string_view m_name;
 
     std::pmr::vector<Argument> m_arguments;
     std::pmr::vector<Content> m_content;
@@ -89,8 +95,8 @@ private:
 public:
     [[nodiscard]]
     Directive(
-        const Source_Span& pos,
-        std::size_t name_length,
+        const Source_Span& source_span,
+        std::u8string_view name,
         std::pmr::vector<Argument>&& args,
         std::pmr::vector<Content>&& block
     );
@@ -106,26 +112,26 @@ public:
     [[nodiscard]]
     Source_Span get_source_span() const
     {
-        return m_pos;
-    }
-
-    [[nodiscard]]
-    std::size_t get_name_length() const
-    {
-        return m_name_length;
+        return m_source_span;
     }
 
     [[nodiscard]]
     std::u8string_view get_source(std::u8string_view source) const
     {
-        COWEL_ASSERT(m_pos.begin + m_pos.length <= source.size());
-        return source.substr(m_pos.begin, m_pos.length);
+        COWEL_ASSERT(m_source_span.begin + m_source_span.length <= source.size());
+        return source.substr(m_source_span.begin, m_source_span.length);
     }
 
     [[nodiscard]]
-    std::u8string_view get_name(std::u8string_view source) const
+    Source_Span get_name_span() const
     {
-        return source.substr(m_pos.begin + 1, m_name_length);
+        return m_source_span.with_length(m_name.length());
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_name() const
+    {
+        return m_name;
     }
 
     [[nodiscard]]
@@ -140,75 +146,78 @@ public:
 
 struct Text final {
 private:
-    Source_Span m_pos;
+    Source_Span m_source_span;
+    std::u8string_view m_text;
 
 public:
     [[nodiscard]]
-    Text(const Source_Span& pos);
+    Text(const Source_Span& source_span, std::u8string_view text);
 
     [[nodiscard]]
     Source_Span get_source_span() const
     {
-        return m_pos;
+        return m_source_span;
     }
 
     [[nodiscard]]
     std::u8string_view get_source(std::u8string_view source) const
     {
-        COWEL_ASSERT(m_pos.begin + m_pos.length <= source.size());
-        return source.substr(m_pos.begin, m_pos.length);
+        COWEL_ASSERT(m_source_span.begin + m_source_span.length <= source.size());
+        return source.substr(m_source_span.begin, m_source_span.length);
     }
 
     [[nodiscard]]
-    std::u8string_view get_text(std::u8string_view source) const
+    std::u8string_view get_text() const
     {
-        return source.substr(m_pos.begin, m_pos.length);
+        return m_text;
     }
 };
 
 /// @brief An escape sequence, such as `\\{`, `\\}`, or `\\\\`.
 struct Escaped final {
 private:
-    Source_Span m_pos;
+    Source_Span m_source_span;
+    std::u8string_view m_text;
 
 public:
     [[nodiscard]]
-    Escaped(const Source_Span& pos);
+    Escaped(const Source_Span& source_span, std::u8string_view text);
 
     [[nodiscard]]
     Source_Span get_source_span() const
     {
-        return m_pos;
+        return m_source_span;
     }
 
     [[nodiscard]]
     std::u8string_view get_source(std::u8string_view source) const
     {
-        COWEL_ASSERT(m_pos.begin + m_pos.length <= source.size());
-        return source.substr(m_pos.begin, m_pos.length);
+        COWEL_ASSERT(m_source_span.begin + m_source_span.length <= source.size());
+        return source.substr(m_source_span.begin, m_source_span.length);
     }
 
     /// @brief Returns the escaped character.
     [[nodiscard]]
-    char8_t get_char(std::u8string_view source) const
+    char8_t get_char() const
     {
-        return source[get_char_index()];
+        COWEL_DEBUG_ASSERT(m_text.size() >= 2);
+        return m_text[1];
     }
 
     /// @brief Returns the index of the escaped character in the source file.
     [[nodiscard]]
     std::size_t get_char_index() const
     {
-        return m_pos.begin + 1;
+        return m_source_span.begin + 1;
     }
 
     /// @brief Returns a two-character substring of the `source`,
     /// where the first character is the escaping backslash,
     /// and the second character is the escaped character.
     [[nodiscard]]
-    std::u8string_view get_text(std::u8string_view source) const
+    std::u8string_view get_text() const
     {
-        return source.substr(m_pos.begin, m_pos.length);
+        return m_text;
     }
 };
 

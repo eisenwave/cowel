@@ -48,7 +48,7 @@ struct Expected_Argument {
     Expected_Argument& operator=(const Expected_Argument&);
     ~Expected_Argument();
 
-    static Expected_Argument from(const ast::Argument& arg, std::u8string_view source);
+    static Expected_Argument from(const ast::Argument& arg);
 
     [[nodiscard]]
     bool matches(const ast::Argument& actual, std::u8string_view source) const;
@@ -110,33 +110,33 @@ struct Expected_Content {
                  .content = std::move(content) };
     }
 
-    static Expected_Content from(const ast::Content& actual, std::u8string_view source)
+    static Expected_Content from(const ast::Content& actual)
     {
         if (const auto* const d = get_if<ast::Directive>(&actual)) {
-            return from(*d, source);
+            return from(*d);
         }
         if (const auto* const e = get_if<ast::Escaped>(&actual)) {
-            return escape(e->get_text(source));
+            return escape(e->get_text());
         }
-        const std::u8string_view result = get<ast::Text>(actual).get_text(source);
+        const std::u8string_view result = get<ast::Text>(actual).get_text();
         return text(result);
     }
 
-    static Expected_Content from(const ast::Directive& actual, std::u8string_view source)
+    static Expected_Content from(const ast::Directive& actual)
     {
         std::vector<Expected_Argument> arguments;
         arguments.reserve(actual.get_arguments().size());
         for (const ast::Argument& arg : actual.get_arguments()) {
-            arguments.push_back(Expected_Argument::from(arg, source));
+            arguments.push_back(Expected_Argument::from(arg));
         }
 
         std::vector<Expected_Content> content;
         content.reserve(actual.get_content().size());
         for (const ast::Content& c : actual.get_content()) {
-            content.push_back(from(c, source));
+            content.push_back(from(c));
         }
 
-        return directive(actual.get_name(source), std::move(arguments), std::move(content));
+        return directive(actual.get_name(), std::move(arguments), std::move(content));
     }
 
     [[nodiscard]]
@@ -180,14 +180,14 @@ Expected_Argument& Expected_Argument::operator=(const Expected_Argument&)
 Expected_Argument::~Expected_Argument()
     = default;
 
-Expected_Argument Expected_Argument::from(const ast::Argument& arg, std::u8string_view source)
+Expected_Argument Expected_Argument::from(const ast::Argument& arg)
 {
     std::vector<Expected_Content> content;
     for (const ast::Content& c : arg.get_content()) {
-        content.push_back(Expected_Content::from(c, source));
+        content.push_back(Expected_Content::from(c));
     }
     if (arg.has_name()) {
-        return Expected_Argument { arg.get_name(source), std::move(content) };
+        return Expected_Argument { arg.get_name(), std::move(content) };
     }
     return auto(std::move(content));
 }
@@ -270,7 +270,7 @@ struct [[nodiscard]] Actual_Document {
         std::pmr::vector<Expected_Content> result { content.get_allocator() };
         result.reserve(content.size());
         for (const auto& actual : content) {
-            result.push_back(Expected_Content::from(actual, source_string()));
+            result.push_back(Expected_Content::from(actual));
         }
         return result;
     }
@@ -445,7 +445,10 @@ TEST(Parse_And_Build, hello_code)
         &memory
     };
 
-    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"hello_code.cow");
+    std::optional<Actual_Document> parsed = parse_and_build_file(u8"hello_code.cow", &memory);
+    ASSERT_TRUE(parsed);
+    const auto actual = parsed->to_expected();
+    ASSERT_EQ(expected, actual);
 }
 
 TEST(Parse, hello_directive)

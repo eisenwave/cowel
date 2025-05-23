@@ -388,11 +388,10 @@ public:
     void visit(const ast::Text& node) final
     {
         print_indent();
-        const string_view_type extracted = node.get_text(source);
 
         out.append(u8"Text", Diagnostic_Highlight::tag);
         out.append(u8'(', Diagnostic_Highlight::punctuation);
-        print_cut_off(out, extracted, std::size_t(options.max_node_text_length));
+        print_cut_off(out, node.get_text(), std::size_t(options.max_node_text_length));
         out.append(u8')', Diagnostic_Highlight::punctuation);
         out.append(u8'\n');
     }
@@ -400,11 +399,10 @@ public:
     void visit(const ast::Escaped& node) final
     {
         print_indent();
-        const string_view_type extracted = node.get_text(source);
 
         out.append(u8"Escaped", Diagnostic_Highlight::tag);
         out.append(u8'(', Diagnostic_Highlight::punctuation);
-        print_cut_off(out, extracted, std::size_t(options.max_node_text_length));
+        print_cut_off(out, node.get_text(), std::size_t(options.max_node_text_length));
         out.append(u8')', Diagnostic_Highlight::punctuation);
         out.append(u8'\n');
     }
@@ -413,7 +411,7 @@ public:
     {
         print_indent();
 
-        out.build(Diagnostic_Highlight::tag).append(u8'\\').append(directive.get_name(source));
+        out.build(Diagnostic_Highlight::tag).append(u8'\\').append(directive.get_name());
 
         if (!directive.get_arguments().empty()) {
             out.append(u8'[', Diagnostic_Highlight::punctuation);
@@ -466,7 +464,7 @@ public:
         if (arg.has_name()) {
             out.append(u8"Named_Argument", Diagnostic_Highlight::tag);
             out.append(u8'(', Diagnostic_Highlight::punctuation);
-            out.append(arg.get_name(source), Diagnostic_Highlight::attribute);
+            out.append(arg.get_name(), Diagnostic_Highlight::attribute);
             out.append(u8')', Diagnostic_Highlight::punctuation);
         }
         else {

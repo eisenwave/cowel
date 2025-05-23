@@ -359,7 +359,7 @@ struct Passthrough_Behavior : Directive_Behavior {
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override;
 
     [[nodiscard]]
-    virtual std::u8string_view get_name(const ast::Directive& d, Context& context) const
+    virtual std::u8string_view get_name(const ast::Directive& d) const
         = 0;
 };
 
@@ -432,7 +432,7 @@ public:
     }
 
     [[nodiscard]]
-    std::u8string_view get_name(const ast::Directive& d, Context& context) const override;
+    std::u8string_view get_name(const ast::Directive& d) const override;
 };
 
 struct Fixed_Name_Passthrough_Behavior : Passthrough_Behavior {
@@ -451,7 +451,7 @@ public:
     }
 
     [[nodiscard]]
-    std::u8string_view get_name(const ast::Directive&, Context&) const override
+    std::u8string_view get_name(const ast::Directive&) const override
     {
         return m_name;
     }
@@ -611,22 +611,17 @@ struct Include_Behavior final : Pure_Plaintext_Behavior {
     generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context&) const final;
 };
 
+struct Import_Behavior final : Instantiated_Behavior {
+
+    void instantiate(std::pmr::vector<ast::Content>&, const ast::Directive&, Context&) const final;
+};
+
 struct Macro_Define_Behavior final : Meta_Behavior {
 
     void evaluate(const ast::Directive& d, Context& context) const final;
 };
 
-struct Macro_Instantiate_Behavior final : Directive_Behavior {
-
-    constexpr Macro_Instantiate_Behavior()
-        : Directive_Behavior { Directive_Category::macro, Directive_Display::macro }
-    {
-    }
-
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context&) const final;
-
-    void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const final;
+struct Macro_Instantiate_Behavior final : Instantiated_Behavior {
 
     void instantiate(std::pmr::vector<ast::Content>&, const ast::Directive&, Context&) const final;
 };
@@ -670,6 +665,7 @@ namespace section_name {
 
 inline constexpr std::u8string_view bibliography = u8"std.bib";
 inline constexpr std::u8string_view id_preview = u8"std.id-preview";
+inline constexpr std::u8string_view document_html = u8"std.html";
 inline constexpr std::u8string_view document_head = u8"std.head";
 inline constexpr std::u8string_view document_body = u8"std.body";
 inline constexpr std::u8string_view table_of_contents = u8"std.toc";
