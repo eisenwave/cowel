@@ -11,7 +11,7 @@ there is an button in the top-right that can be used to switch between three mod
 }
 
 Forced light/dark mode works by adding a \tt{light} or \tt{dark}
-class to the \ch{<html>} element in the DOM.
+class to the \cow.html{<html>} element in the DOM.
 
 \important{
 If you want to customize colors with CSS,

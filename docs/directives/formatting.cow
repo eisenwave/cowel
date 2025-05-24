@@ -12,118 +12,118 @@ You can rely on this when adding custom CSS.
     \th{Renders as}
 }
 \tr[id=dir-b]{
-    \td{\cm{\\b{...}}}
-    \td{\ch{<b>...</b>}}
+    \td{\cow.c{\\b{...}}}
+    \td{\cow.html{<b>...</b>}}
     \td{\b{Bold text}}
 }
 \tr[id=dir-cite]{
-    \td{\cm{\\cite{...}}}
-    \td{\ch{<cite>...</cite>}}
+    \td{\cow.c{\\cite{...}}}
+    \td{\cow.html{<cite>...</cite>}}
     \td{\cite{Name of cited work}}
 }
 \tr[id=dir-del]{
-    \td{\cm{\\del{...}}}
-    \td{\ch{<del>...</del>}}
+    \td{\cow.c{\\del{...}}}
+    \td{\cow.html{<del>...</del>}}
     \td{\del{Deleted text}}
 }
 \tr[id=dir-dfn]{
-    \td{\cm{\\dfn{...}}}
-    \td{\ch{<dfn>...</dfn>}}
+    \td{\cow.c{\\dfn{...}}}
+    \td{\cow.html{<dfn>...</dfn>}}
     \td{\dfn{Definition}}
 }
 \tr[id=dir-em]{
-    \td{\cm{\\em{...}}}
-    \td{\ch{<em>...</em>}}
+    \td{\cow.c{\\em{...}}}
+    \td{\cow.html{<em>...</em>}}
     \td{\em{Emphasized text}}
 }
 \tr[id=dir-gterm]{
-    \td{\cm{\\gterm{...}}}
+    \td{\cow.c{\\gterm{...}}}
     \td{\i{unspecified}}
     \td{\gterm{grammar-term}}
 }
 \tr[id=dir-i]{
-    \td{\cm{\\i{...}}}
-    \td{\ch{<i>...</i>}}
+    \td{\cow.c{\\i{...}}}
+    \td{\cow.html{<i>...</i>}}
     \td{\i{Italic text}}
 }
 \tr[id=dir-ins]{
-    \td{\cm{\\ins{...}}}
-    \td{\ch{<ins>...</ins>}}
+    \td{\cow.c{\\ins{...}}}
+    \td{\cow.html{<ins>...</ins>}}
     \td{\ins{Inserted text}}
 }
 \tr[id=dir-kbd]{
-    \td{\cm{\\kbd{...}}}
-    \td{\ch{<kbd>...</kbd>}}
+    \td{\cow.c{\\kbd{...}}}
+    \td{\cow.html{<kbd>...</kbd>}}
     \td{\kbd{Ctrl} + \kbd{Keyboard key}}
 }
 \tr[id=dir-mark]{
-    \td{\cm{\\mark{...}}}
-    \td{\ch{<mark>...</mark>}}
+    \td{\cow.c{\\mark{...}}}
+    \td{\cow.html{<mark>...</mark>}}
     \td{\mark{Marked/highlighted}}
 }
 \tr[id=dir-o]{
-    \td{\cm{\\o{...}}}
+    \td{\cow.c{\\o{...}}}
     \td{\i{unspecified}}
     \td{\o{Oblique text}}
 }
 \tr[id=dir-q]{
-    \td{\cm{\\q{...}}}
-    \td{\ch{<q>...</q>}}
+    \td{\cow.c{\\q{...}}}
+    \td{\cow.html{<q>...</q>}}
     \td{\q{Quoted text}}
 }
 \tr[id=dir-s]{
-    \td{\cm{\\s{...}}}
-    \td{\ch{<s>...</s>}}
+    \td{\cow.c{\\s{...}}}
+    \td{\cow.html{<s>...</s>}}
     \td{\s{Struck text}}
 }
 \tr[id=dir-samp]{
-    \td{\cm{\\samp{...}}}
-    \td{\ch{<samp>...</samp>}}
+    \td{\cow.c{\\samp{...}}}
+    \td{\cow.html{<samp>...</samp>}}
     \td{\samp{Sample output}}
 }
 \tr[id=dir-sans]{
-    \td{\cm{\\sans{...}}}
+    \td{\cow.c{\\sans{...}}}
     \td{\i{unspecified}}
     \td{\sans{Sans-serif font}}
 }
 \tr[id=dir-serif]{
-    \td{\cm{\\serif{...}}}
+    \td{\cow.c{\\serif{...}}}
     \td{\i{unspecified}}
     \td{\serif{Serif font}}
 }
 \tr[id=dir-small]{
-    \td{\cm{\\small{...}}}
-    \td{\ch{<small>...</small>}}
+    \td{\cow.c{\\small{...}}}
+    \td{\cow.html{<small>...</small>}}
     \td{\sub{Small text}}
 }
 \tr[id=dir-sub]{
-    \td{\cm{\\sub{...}}}
-    \td{\ch{<sub>...</sub>}}
+    \td{\cow.c{\\sub{...}}}
+    \td{\cow.html{<sub>...</sub>}}
     \td{\sub{Subscript}}
 }
 \tr[id=dir-sup]{
-    \td{\cm{\\sup{...}}}
-    \td{\ch{<sup>...</sup>}}
+    \td{\cow.c{\\sup{...}}}
+    \td{\cow.html{<sup>...</sup>}}
     \td{\sup{Superscript}}
 }
 \tr[id=dir-strong]{
-    \td{\cm{\\strong{...}}}
-    \td{\ch{<strong>...</strong>}}
+    \td{\cow.c{\\strong{...}}}
+    \td{\cow.html{<strong>...</strong>}}
     \td{\b{Strong text}}
 }
 \tr[id=dir-tt]{
-    \td{\cm{\\tt{...}}}
+    \td{\cow.c{\\tt{...}}}
     \td{\i{unspecified}}
     \td{\tt{Teletype/monospace font}}
 }
 \tr[id=dir-var]{
-    \td{\cm{\\var{...}}}
-    \td{\ch{<var>...</var>}}
+    \td{\cow.c{\\var{...}}}
+    \td{\cow.html{<var>...</var>}}
     \td{\var{Variable name}}
 }
 \tr[id=dir-u]{
-    \td{\cm{\\u{...}}}
-    \td{\ch{<u>...</u>}}
+    \td{\cow.c{\\u{...}}}
+    \td{\cow.html{<u>...</u>}}
     \td{\u{Underlined text}}
 }
 }
@@ -133,15 +133,15 @@ convert all named arguments directly into HTML attributes.
 
 \note{
 By default, a substantial amount of directives are styled the same way.
-For example, \dir{cite}, \dir{var}, \dir{i} and \dir{em} are all italic.
-Both \dir{strong} and \dir{b} are bold.
-Both \dir{tt} and \dir{samp} use teletype font.
+For example, \cow.dir{cite}, \cow.dir{var}, \cow.dir{i} and \cow.dir{em} are all italic.
+Both \cow.dir{strong} and \cow.dir{b} are bold.
+Both \cow.dir{tt} and \cow.dir{samp} use teletype font.
 
 However, you can customize the style; see \ref[#dir-style].
 }
 
 \note{
-The difference between oblique (\dir{o}) and italic (\dir{i}) text
+The difference between oblique (\cow.dir{o}) and italic (\cow.dir{i}) text
 is that oblique text is merely slanted,
 while italic text is fundamentally a different font with different characters.
 }

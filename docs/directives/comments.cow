@@ -2,11 +2,11 @@
 
 Unlike many other markup languages,
 COWEL has no dedicated syntax for comments.
-However, there exists a \dir{comment} directive which you can use to put comments into code.
+However, there exists a \cow.dir{comment} directive which you can use to put comments into code.
 
-\h4{\dir{comment} \c{mdash} Comments}
+\h4{\cow.dir{comment} \c{mdash} Comments}
 
-The \dir{comment} directive does not process its arguments or content.
+The \cow.dir{comment} directive does not process its arguments or content.
 It outputs no plaintext or HTML.
 
 \example{

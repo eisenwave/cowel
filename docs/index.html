@@ -1826,7 +1826,8 @@ and various Unicode characters.
 <tip-block><p><intro-></intro-> 
 You can use an empty block of content to "cut a name short":
 </p><code-block>Thisisavery<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>wbr</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h->longword.</code-block>
-<p>Doing so is equivalent to writing <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>wbr</h-></code> and <code>longword</code> immediately following one another.
+<p>Doing so is equivalent to writing
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>wbr</h-></code> and <code>longword</code> immediately following one another.
 </p></tip-block>
 
 <h3 id=directive-arguments><a class=para href=#directive-arguments></a>5.2. Directive arguments</h3>
@@ -2555,7 +2556,8 @@ It displays as inline content, and its input content is ignored.
 </p>
 <p><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>wbr</h-><h- data-h=sym_punc>&gt;</h-></code> elements can be inserted into the middle of long words,
 which, if they don't fit on one line,
-will be broken at the point of the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>wbr</h-><h- data-h=sym_punc>&gt;</h-></code> element (without a hyphen at the end of the line).
+will be broken at the point of the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>wbr</h-><h- data-h=sym_punc>&gt;</h-></code> element
+(without a hyphen at the end of the line).
 </p>
 <p>Since µlight only supports UTF-8 output, <code><h- data-h=mk_tag>\wbr</h-></code> is equivalent to <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{</h->200B<h- data-h=sym_brac>}</h-></code>,
 which outputs a U+200B ZERO-WIDTH SPACE code point.
@@ -2567,7 +2569,8 @@ use <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{<
 
 <h4 id=dir-word><a class=para href=#dir-word></a>8.5.4. <code><h- data-h=mk_tag>\word</h-></code> &mdash; Unbroken words</h4>
 
-<p>The <code><h- data-h=mk_tag>\word</h-></code> directive is a formatting directive which prevents word breaks within its content.
+<p>The <code><h- data-h=mk_tag>\word</h-></code> directive is a formatting directive
+which prevents word breaks within its content.
 Its content is an HTML context.
 This is done by applying a <tt- css>white-space: nowrap;</tt-> style its content.
 </p>
@@ -2830,19 +2833,22 @@ Warning blocks warn the reader of some hazard or potential mistake.
 
 <h4 id=dir-ul><a class=para href=#dir-ul></a>8.8.1. <code><h- data-h=mk_tag>\ul</h-></code> &mdash; Unordered lists</h4>
 
-<p>The <code><h- data-h=mk_tag>\ul</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_punc>&gt;</h-></code> element, and produces an unordered list.
+<p>The <code><h- data-h=mk_tag>\ul</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_punc>&gt;</h-></code> element,
+and produces an unordered list.
 Within that list,
 you can use the pseudo-directive <code><h- data-h=mk_tag>\item</h-></code> to produce list items.
 </p>
 <h4 id=dir-ol><a class=para href=#dir-ol></a>8.8.2. <code><h- data-h=mk_tag>\ol</h-></code> &mdash; Ordered lists</h4>
 
-<p>The <code><h- data-h=mk_tag>\ol</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ol</h-><h- data-h=sym_punc>&gt;</h-></code> element, and produces an ordered list.
+<p>The <code><h- data-h=mk_tag>\ol</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ol</h-><h- data-h=sym_punc>&gt;</h-></code> element,
+and produces an ordered list.
 Within that list,
 you can use the pseudo-directive <code><h- data-h=mk_tag>\item</h-></code> to produce list items.
 </p>
 <h4 id=dir-dl><a class=para href=#dir-dl></a>8.8.3. <code><h- data-h=mk_tag>\dl</h-></code> &mdash; Definition lists</h4>
 
-<p>The <code><h- data-h=mk_tag>\dl</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>dl</h-><h- data-h=sym_punc>&gt;</h-></code> element, and produces a definition list.
+<p>The <code><h- data-h=mk_tag>\dl</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>dl</h-><h- data-h=sym_punc>&gt;</h-></code> element,
+and produces a definition list.
 Within that list, you can use
 </p><ul>
 <li><code><h- data-h=mk_tag>\dt</h-></code> for <dfn>definition terms</dfn>, and</li>
@@ -2951,7 +2957,8 @@ you can do so via a comma-separated list here.
 <dt><tt-><h- data-h=mk_attr>date</h-></tt-></dt>
 <dd>
 The date of publication.
-No particular format is enforced; this is simply a string, so you can choose some local format.
+No particular format is enforced; this is simply a string,
+so you can choose some local format.
 </dd>
 
 <dt><tt-><h- data-h=mk_attr>publisher</h-></tt-></dt>
@@ -3108,7 +3115,8 @@ COWEL markup:
 <h4 id=dir-script><a class=para href=#dir-script></a>8.13.4. <code><h- data-h=mk_tag>\script</h-></code> &mdash; JavaScript blocks</h4>
 
 <p>The content of a <code><h- data-h=mk_tag>\script</h-></code> directive is a plaintext context,
-where the input is treated as JavaScript code and surrounded in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=cmt_dlim>/*</h-><h- data-h=cmt>...</h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
+where the input is treated as JavaScript code
+and surrounded in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=cmt_dlim>/*</h-><h- data-h=cmt>...</h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
 </p>
 <p><code><h- data-h=mk_tag>\script</h-></code> displays as meta content (like <code><h- data-h=mk_tag>\comment</h-></code>).
 </p>

@@ -3,28 +3,28 @@
 Often, you want to produce content in one place,
 but have it display in another place within the document.
 A classic example is collecting headings automatically in a table of contents,
-or copying the content of a heading into a preview when referenced by \cm{\\ref[#id]}.
+or copying the content of a heading into a preview when referenced by \cow.c{\\ref[#id]}.
 
-\h4[id=dir-there]{\dir{there} \c{mdash} Append content to section}
+\h4[id=dir-there]{\cow.dir{there} \c{mdash} Append content to section}
 
-The \dir{there} directive displays as meta content.
+The \cow.dir{there} directive displays as meta content.
 Basically, it stashes away its input content (which is an HTML context) somewhere else.
 
 It takes a single \tt{section} argument which specifies the name of the section.
 The \tt{section} argument is a plaintext context.
 
-By default, all document content is placed within a \ch{<main>} element,
-inside \ch{<body>}, inside \ch{html}.
-\dir{there} allows you to write outside of the \ch{<main>} element:
+By default, all document content is placed within a \cow.html{<main>} element,
+inside \cow.html{<body>}, inside \cow.html{html}.
+\cow.dir{there} allows you to write outside of the \cow.html{<main>} element:
 
 \ul{
 \item{
-\cm{\\there[std.head]{text}} will write \cm{text}
-inside of the \ch{<head>} element (following auto-generated content).
+\cow.c{\\there[std.head]{text}} will write \cow.c{text}
+inside of the \cow.html{<head>} element (following auto-generated content).
 }
 \item{
-\cm{\\there[std.body]{text}} will write \cm{text}
-inside of the \ch{<body>} element (following \ch{<main>}
+\cow.c{\\there[std.body]{text}} will write \cow.c{text}
+inside of the \cow.html{<body>} element (following \cow.html{<main>}
 and other automatically inserted elements).
 }
 }
@@ -38,15 +38,15 @@ You can change the title of the document as follows:
 }
 }
 
-\h4[id=dir-here]{\dir{here} \c{mdash} Copy section content}
+\h4[id=dir-here]{\cow.dir{here} \c{mdash} Copy section content}
 
-The \dir{here} directive inserts the content from another section at its location.
+The \cow.dir{here} directive inserts the content from another section at its location.
 It displays as inline content.
 
 It takes a single \tt{section} argument which specifies the name of the section.
 The \tt{section} argument is a plaintext context.
 
-All references produced by \dir{here} are resolved in a post-processing step,
+All references produced by \cow.dir{here} are resolved in a post-processing step,
 which allows forward-references.
 
 \example{
@@ -62,7 +62,7 @@ Generated HTML:
 }
 }
 
-\h4[id=dir-hereblock]{\dir{hereblock} \c{mdash} Copy section content in block}
+\h4[id=dir-hereblock]{\cow.dir{hereblock} \c{mdash} Copy section content in block}
 
-The \dir{hereblock} directive functions exactly like the \dir{here} directive,
+The \cow.dir{hereblock} directive functions exactly like the \cow.dir{here} directive,
 but displays as block content instead of inline content.

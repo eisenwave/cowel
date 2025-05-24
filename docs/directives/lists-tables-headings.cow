@@ -1,45 +1,48 @@
 \h3{Lists}
 
-\h4[id=dir-ul]{\dir{ul} \c{mdash} Unordered lists}
+\h4[id=dir-ul]{\cow.dir{ul} \c{mdash} Unordered lists}
 
-The \dir{ul} directive corresponds to the \ch{<ul>} element, and produces an unordered list.
+The \cow.dir{ul} directive corresponds to the \cow.html{<ul>} element,
+and produces an unordered list.
 Within that list,
-you can use the pseudo-directive \dir{item} to produce list items.
+you can use the pseudo-directive \cow.dir{item} to produce list items.
 
-\h4[id=dir-ol]{\dir{ol} \c{mdash} Ordered lists}
+\h4[id=dir-ol]{\cow.dir{ol} \c{mdash} Ordered lists}
 
-The \dir{ol} directive corresponds to the \ch{<ol>} element, and produces an ordered list.
+The \cow.dir{ol} directive corresponds to the \cow.html{<ol>} element,
+and produces an ordered list.
 Within that list,
-you can use the pseudo-directive \dir{item} to produce list items.
+you can use the pseudo-directive \cow.dir{item} to produce list items.
 
-\h4[id=dir-dl]{\dir{dl} \c{mdash} Definition lists}
+\h4[id=dir-dl]{\cow.dir{dl} \c{mdash} Definition lists}
 
-The \dir{dl} directive corresponds to the \ch{<dl>} element, and produces a definition list.
+The \cow.dir{dl} directive corresponds to the \cow.html{<dl>} element,
+and produces a definition list.
 Within that list, you can use
 \ul{
-\item{\dir{dt} for \dfn{definition terms}, and}
-\item{\dir{dd} for \dfn{definition descriptions}.}
+\item{\cow.dir{dt} for \dfn{definition terms}, and}
+\item{\cow.dir{dd} for \dfn{definition descriptions}.}
 }
 
 \h3{Tables}
 
 Tables are simply produced by using the
-\dir{table}, \dir{thead}, \dir{tbody}, \dir{tfoot},
-\dir{tr}, \dir{th}, \dir{td},
-\dir{colgroup}, \dir{col},
-and \dir{caption} directives to
+\cow.dir{table}, \cow.dir{thead}, \cow.dir{tbody}, \cow.dir{tfoot},
+\cow.dir{tr}, \cow.dir{th}, \cow.dir{td},
+\cow.dir{colgroup}, \cow.dir{col},
+and \cow.dir{caption} directives to
 produce the corresponding HTML tags with the same name.
 
 \tip{
 To perform advanced styling,
 like controlling alignment within columns,
-use a \dir{style} directive.
+use a \cow.dir{style} directive.
 }
 
 \h3{Headings}
 
 Headings can be produced using the
-\dir{h1}, \dir{h2}, \dir{h3}, \dir{h4}, \dir{h5}, and \dir{h6} directives to
+\cow.dir{h1}, \cow.dir{h2}, \cow.dir{h3}, \cow.dir{h4}, \cow.dir{h5}, and \cow.dir{h6} directives to
 produce the corresponding HTML tags with the same name.
 
 Headings take a \tt{listed} argument, which is a yes/no plaintext argument.
@@ -52,7 +55,7 @@ An \tt{id} argument can be provided explicitly.
 If none is provided, an \tt{id} is synthesized from the content within the heading.
 
 \tip{
-Headings can be referenced using the \dir{ref} directive:
+Headings can be referenced using the \cow.dir{ref} directive:
 \codeblock[cowel]{
 \\h2{Heading with synthesized id}
 \\h2[id=xyz]{Heading with manual id}
@@ -62,9 +65,9 @@ Headings can be referenced using the \dir{ref} directive:
 }
 }
 
-\h4[id=dir-make-contents]{\dir{make-contents} \c{mdash} Make table of contents}
+\h4[id=dir-make-contents]{\cow.dir{make-contents} \c{mdash} Make table of contents}
 
-The \dir{make-contents} directive generates the table of contents,
+The \cow.dir{make-contents} directive generates the table of contents,
 which is comprised of all the headings within the document.
 It takes no arguments and its content is ignored.
 It displays as a block.
@@ -79,14 +82,14 @@ an unlisted heading may be used:
 \\h2[listed=no]{Contents}
 \\make-contents
 }
-A similar effect can be achieved using \dir{html-h2} (\ref[#dir-html-element]).
-However, using \dir{html-h2} will also not emit a link icon in the gutter,
-and it will not synthesize an \mka{id} for that heading.
+A similar effect can be achieved using \cow.dir{html-h2} (\ref[#dir-html-element]).
+However, using \cow.dir{html-h2} will also not emit a link icon in the gutter,
+and it will not synthesize an \cow.attr{id} for that heading.
 }
 
 \note{
-The underlying contents can be obtained with \cm{\\here[std.contents]}.
-\dir{make-contents} additionally wraps those contents in HTML elements to
+The underlying contents can be obtained with \cow.c{\\here[std.contents]}.
+\cow.dir{make-contents} additionally wraps those contents in HTML elements to
 chang their visual appearance.
 }
 
@@ -99,80 +102,81 @@ To support this,
 COWEL provides directives for adding bibliography entries,
 and for generating a bibliography automatically.
 
-\h4[id=dir-bib]{\dir{bib} \c{mdash} Add bibliography entry}
+\h4[id=dir-bib]{\cow.dir{bib} \c{mdash} Add bibliography entry}
 
-The \dir{bib} directive adds a single entry to the bibliography.
+The \cow.dir{bib} directive adds a single entry to the bibliography.
 Its content is ignored, and it displays as a meta directive.
 
 It has a number of parameters,
 each of which is a plaintext context:
 
 \dl{
-\dt{\mka{id}}
+\dt{\cow.attr{id}}
 \dd{
 The identifier of the bibliography entry.
-This can later be referenced using \cm{\\ref[id]}.
+This can later be referenced using \cow.c{\\ref[id]}.
 }
 
-\dt{\mka{author}}
+\dt{\cow.attr{author}}
 \dd{
 The name of the author(s).
 This is in no particular format, and if you want to provide multiple authors,
 you can do so via a comma-separated list here.
 }
 
-\dt{\mka{title}}
+\dt{\cow.attr{title}}
 \dd{The title of the cited work.}
 
-\dt{\mka{date}}
+\dt{\cow.attr{date}}
 \dd{
 The date of publication.
-No particular format is enforced; this is simply a string, so you can choose some local format.
+No particular format is enforced; this is simply a string,
+so you can choose some local format.
 }
 
-\dt{\mka{publisher}}
+\dt{\cow.attr{publisher}}
 \dd{The name of the publisher.}
 
-\dt{\mka{link}}
+\dt{\cow.attr{link}}
 \dd{
 The primary link to the document.
-This should typically be a short link because it is copied into each \dir{ref}
+This should typically be a short link because it is copied into each \cow.dir{ref}
 to the bibliography entry.
 }
 
-\dt{\mka{long-link}}
+\dt{\cow.attr{long-link}}
 \dd{
 A "long link" to the document.
 If present, this will be rendered within the bibliography,
-and it is typically meant to be a semantic or more stable link than the \mka{link}.
+and it is typically meant to be a semantic or more stable link than the \cow.attr{link}.
 You can also think of it as a "link for pretty printing".
 }
 
-\dt{\mka{issue-link}}
+\dt{\cow.attr{issue-link}}
 \dd{
 A link to issue tracking for the document.
 For example, in WG21 circles, this may be a link to the GitHub issue where a paper is tracked.
 }
 }
 
-Every argument except the \mka{id} is optional,
-although you will hardly get meaningful bibliography output if only the \mka{id} is specified.
+Every argument except the \cow.attr{id} is optional,
+although you will hardly get meaningful bibliography output if only the \cow.attr{id} is specified.
 
 
-\h4[id=dir-make-bib]{\dir{make-bib} \c{mdash} Generate bibliography}
+\h4[id=dir-make-bib]{\cow.dir{make-bib} \c{mdash} Generate bibliography}
 
-The \dir{make-bib} directive generates a bibliography.
+The \cow.dir{make-bib} directive generates a bibliography.
 This is typically done towards the bottom of the document, but can be done anywhere.
 
 It takes no arguments, its content is ignored,
 and it displays as a block.
 
-The \dir{make-bib} directive is populated by uses of \dir{bib} directives in order of use.
+The \cow.dir{make-bib} directive is populated by uses of \cow.dir{bib} directives in order of use.
 That is, the bibliography is not automatically sorted for you;
-the order in which \dir{bib} directives are used is also the order in which the bibliography
+the order in which \cow.dir{bib} directives are used is also the order in which the bibliography
 entries are generated.
 
 \note{
-Similar to \dir{make-contents},
+Similar to \cow.dir{make-contents},
 it is a wrapper for the underlying \tt{std.bib} section.
 }

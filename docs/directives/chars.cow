@@ -6,26 +6,26 @@ and in theory one could just write the character directly into the source code,
 not every text editor handles special characters well.
 
 To increase portability,
-COWEL has the \dir{U} and \dir{c} directives.
+COWEL has the \cow.dir{U} and \cow.dir{c} directives.
 
-\h4[id=dir-U]{\dir{U} \c{mdash} Code point literal}
+\h4[id=dir-U]{\cow.dir{U} \c{mdash} Code point literal}
 
-The input to a \dir{U} directive is a plaintext context,
+The input to a \cow.dir{U} directive is a plaintext context,
 which should be a sequence of hexadecimal numbers
 specifying a \ref[https://infra.spec.whatwg.org/#scalar-value]{Unicode scalar value};
 that is, a code point which UTF-8 permits to be encoded.
 
 \example{
-\cm{\\U{30}} generates '\tt{\U{30}}' U+0030 DIGIT ZERO.
+\cow.c{\\U{30}} generates '\tt{\U{30}}' U+0030 DIGIT ZERO.
 }
 
 \note{
-Like anywhere else, directives inside of \dir{U} are allowed.
+Like anywhere else, directives inside of \cow.dir{U} are allowed.
 }
 
-\h4[id=dir-N]{\dir{N} \c{mdash} Code point by name}
+\h4[id=dir-N]{\cow.dir{N} \c{mdash} Code point by name}
 
-The \dir{N} directive behaves almost identically to \dir{U},
+The \cow.dir{N} directive behaves almost identically to \cow.dir{U},
 except that its input has to be a
 \ref[https://www.unicode.org/reports/tr34/#Names]{Unicode name}
 rather than a hex digits.
@@ -33,42 +33,42 @@ That is, the name of a code point,
 or one of its "control", "alternate", or "correction" aliases.
 
 \example{
-\cm{\\N{DIGIT ZERO}} '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
+\cow.c{\\N{DIGIT ZERO}} '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
 }
 
 \tip{
-\dir{N} can lead to much more descriptive, human-friendly code, compared to \dir{U}.
+\cow.dir{N} can lead to much more descriptive, human-friendly code, compared to \cow.dir{U}.
 
-The main issue with \dir{U} is that it is very non-descriptive in source code.
+The main issue with \cow.dir{U} is that it is very non-descriptive in source code.
 It simply contains a handful of digits,
 and unless the reader is a Unicode expert who happens to know that sequence,
 they cannot easily tell what the purpose of the character is.
 }
 
-\h4[id=dir-Udigits]{\dir{Udigits} \c{mdash} Digits of code point}
+\h4[id=dir-Udigits]{\cow.dir{Udigits} \c{mdash} Digits of code point}
 
-The \dir{Udigits} directive is essentially the inverse of the \dir{U} directive.
+The \cow.dir{Udigits} directive is essentially the inverse of the \cow.dir{U} directive.
 Its input is also a plaintext context;
 rather than producing a code point from a digit sequence,
 it produces a digit sequence from its input code point.
 
 This can be fine-tuned with the following parameters:
 \dd{
-\dt{\mka{zfill}}
+\dt{\cow.attr{zfill}}
 \dd{
 The minimum amount of digits that should be produced.
 This is an integer argument in range [0, 1024], and defaults to zero.
-If the amount of digits is less than \mka{zfill},
+If the amount of digits is less than \cow.attr{zfill},
 it will be left-padded with additional '\tt{0}' characters.
 }
 
-\dt{\mka{base}}
+\dt{\cow.attr{base}}
 \dd{
 The base of the output digit sequence, in range [2, 16].
 This defaults to 16, meaning that the digits are printed in hexadecimal.
 }
 
-\dt{\mka{lower}}
+\dt{\cow.attr{lower}}
 \dd{
 A yes/no plaintext argument, defaulting to \tt{no}.
 If \tt{yes} is specified, digits beyond '\tt{9}' (i.e. '\tt{A}' to '\tt{F}')
@@ -95,7 +95,7 @@ It is also possible to define a macro if we need this frequently:
 }
 
 \tip{
-\dir{Udigits} can also be combined with \dir{N}
+\cow.dir{Udigits} can also be combined with \cow.dir{N}
 to produce human-readable descriptions of code points,
 while also keeping our source code readable:
 \codeblock[cowel]{\literally{
@@ -108,7 +108,7 @@ U+\Udigits[4]{\N{SECTION SIGN}} SECTION SIGN
 }
 }
 
-\dir{Udigits} uses only the first code point within the input text,
+\cow.dir{Udigits} uses only the first code point within the input text,
 even though the entire input text is processed into plaintext.
 
 \bug{
@@ -120,30 +120,30 @@ This renders as
 \indent{
 \Udigits{a}
 }
-... which corresponds to \cm{a}, whereas \cm{b} and \cm{c} are discarded.
+... which corresponds to \cow.c{a}, whereas \cow.c{b} and \cow.c{c} are discarded.
 }
 
-\h4{\dir{c} \c{mdash} Character references}
+\h4{\cow.dir{c} \c{mdash} Character references}
 
-The input to a \dir{c} directive is a plaintext context,
+The input to a \cow.dir{c} directive is a plaintext context,
 where the same content is permitted as for HTML character references, aka. HTML entities,
 between '\tt{&}' and '\tt{;}'.
 
 \example{
-Using \dir{U} and \dir{c}, the '\tt{&}' character can be produced in a number of ways:
+Using \cow.dir{U} and \cow.dir{c}, the '\tt{&}' character can be produced in a number of ways:
 \ul{
     \item{Literally '\tt{&}' in text}
-    \item{\cm{\\U{26}} (code point literal for U+0026)}
-    \item{\cm{\\c{amp}} (like \ch{&amp;}, named character reference)}
-    \item{\cm{\\c{#38}} (like \ch{&38;}, decimal character reference)}
-    \item{\cm{\\c{#x26}} (like \ch{&x26;}, hexadecimal character reference)}
+    \item{\cow.c{\\U{26}} (code point literal for U+0026)}
+    \item{\cow.c{\\c{amp}} (like \cow.html{&amp;}, named character reference)}
+    \item{\cow.c{\\c{#38}} (like \cow.html{&38;}, decimal character reference)}
+    \item{\cow.c{\\c{#x26}} (like \cow.html{&x26;}, hexadecimal character reference)}
 }
 }
 
-In an HTML context, \cm{\\c{xyz}} is literally translated into \ch{&xyz;}.
+In an HTML context, \cow.c{\\c{xyz}} is literally translated into \cow.html{&xyz;}.
 In a plaintext context, the character reference is mapped onto its corresponding code point(s),
 and those code points are output directly.
 
 \note{
-Like anywhere else, directives inside of \dir{c} are allowed.
+Like anywhere else, directives inside of \cow.dir{c} are allowed.
 }

@@ -8,7 +8,7 @@ which is very simple and lightweight,
 but not as portable as "baking" the math into an SVG.
 
 \example{
-If you have existing MathML, you can embed their content using \dir{html} or \dir{htmlblock}:
+If you have existing MathML, you can embed their content using \cow.dir{html} or \cow.dir{htmlblock}:
 \codeblock[cowel]{
 Math
 \\html{
@@ -32,7 +32,7 @@ Math
 </math>}
 in a sentence.
 }
-You can also keep the MathML separate within an XML document and \dir{include} it:
+You can also keep the MathML separate within an XML document and \cow.dir{include} it:
 \codeblock[cowel]{\literally{
 Math \html{\include{math.mml}} in a sentence.
 }}
@@ -41,14 +41,14 @@ Math \html{\include{math.mml}} in a sentence.
 However, hand-writing MathML would be extremely tedious and verbose,
 so COWEL offers some convenience directives, listed below.
 
-\h4[id=dir-math]{\dir{math} \c{mdash} Inline math}
+\h4[id=dir-math]{\cow.dir{math} \c{mdash} Inline math}
 
-A \dir{math} directive surrounds its content with
-\ch{<math display=inline>...</math>} tags,
+A \cow.dir{math} directive surrounds its content with
+\cow.html{<math display=inline>...</math>} tags,
 and displays as inline content.
 
 Its content is an HTML context,
-and within it, additional pseudo-directives like \dir{mi} or \dir{mn}
+and within it, additional pseudo-directives like \cow.dir{mi} or \cow.dir{mn}
 corresponding to MathML elements can be used.
 Essentially, this allows you to build MathML using COWEL syntax.
 
@@ -78,9 +78,9 @@ The sum of \math{\msup{\mi{x}\mn{2}}} and \math{\msup{\mi{y}\mn{2}}} \c{mldr}
 }
 }
 
-\h4[id=dir-mathblock]{\dir{mathblock} \c{mdash} Math blocks}
+\h4[id=dir-mathblock]{\cow.dir{mathblock} \c{mdash} Math blocks}
 
-The \dir{mathblock} directive functions almost exactly as the \dir{math} directive,
+The \cow.dir{mathblock} directive functions almost exactly as the \cow.dir{math} directive,
 but it displays as block content instead of inline content,
 and it produces an opening
-\ch{<math display=block>} tag.
+\cow.html{<math display=block>} tag.
