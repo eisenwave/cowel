@@ -8,7 +8,7 @@
 
 namespace cowel {
 
-void Wrap_Behavior::generate_plaintext(
+void HTML_Wrapper_Behavior::generate_plaintext(
     std::pmr::vector<char8_t>& out,
     const ast::Directive& d,
     Context& context
@@ -17,9 +17,36 @@ void Wrap_Behavior::generate_plaintext(
     to_plaintext(out, d.get_content(), context);
 }
 
-void Wrap_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
+void HTML_Wrapper_Behavior::generate_html(
+    HTML_Writer& out,
+    const ast::Directive& d,
+    Context& context
+) const
 {
     to_html(out, d.get_content(), context, m_to_html_mode);
+}
+
+void Plaintext_Wrapper_Behavior::generate_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    Context& context
+) const
+{
+    to_plaintext(out, d.get_content(), context);
+}
+
+void Trim_Behavior::generate_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    Context& context
+) const
+{
+    to_plaintext(out, d.get_content(), context, To_Plaintext_Mode::trimmed);
+}
+
+void Trim_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
+{
+    to_html(out, d.get_content(), context, To_HTML_Mode::trimmed);
 }
 
 void Passthrough_Behavior::generate_plaintext(

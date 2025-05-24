@@ -26,7 +26,7 @@ struct Builtin_Directive_Set::Impl {
         { u8"b", Directive_Category::formatting, Directive_Display::in_line };
     Bibliography_Add_Behavior bib //
         {};
-    Wrap_Behavior block //
+    HTML_Wrapper_Behavior block //
         { Directive_Category::formatting, Directive_Display::block, To_HTML_Mode::direct };
     Special_Block_Behavior blockquote //
         { u8"blockquote", false };
@@ -116,7 +116,7 @@ struct Builtin_Directive_Set::Impl {
         include { Directive_Display::in_line };
     In_Tag_Behavior indent //
         { u8"div", u8"indent", Directive_Category::pure_html, Directive_Display::in_line };
-    Wrap_Behavior in_line //
+    HTML_Wrapper_Behavior in_line //
         { Directive_Category::formatting, Directive_Display::in_line, To_HTML_Mode::direct };
     Fixed_Name_Passthrough_Behavior ins //
         { u8"ins", Directive_Category::formatting, Directive_Display::in_line };
@@ -153,7 +153,7 @@ struct Builtin_Directive_Set::Impl {
         { u8"ol" };
     Fixed_Name_Passthrough_Behavior p //
         { u8"p", Directive_Category::pure_html, Directive_Display::block };
-    Wrap_Behavior paragraphs //
+    HTML_Wrapper_Behavior paragraphs //
         { Directive_Category::formatting, Directive_Display::block, To_HTML_Mode::paragraphs };
     Fixed_Name_Passthrough_Behavior pre //
         { u8"pre", Directive_Category::pure_html, Directive_Display::block };
@@ -187,6 +187,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"table", Directive_Category::pure_html, Directive_Display::block };
     URL_Behavior tel //
         { u8"tel:" };
+    Plaintext_Wrapper_Behavior text //
+        { Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior tbody //
         { u8"tbody", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior td //
@@ -205,6 +207,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"todo-block" };
     Fixed_Name_Passthrough_Behavior tr //
         { u8"tr", Directive_Category::pure_html, Directive_Display::block };
+    Trim_Behavior trim //
+        { Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior tt //
         { u8"tt-", Directive_Category::formatting, Directive_Display::in_line };
     Code_Point_Behavior U //
@@ -350,12 +354,14 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-tbody",
         u8"-td",
         u8"-tel",
+        u8"-text",
         u8"-tfoot",
         u8"-th",
         u8"-thead",
         u8"-tip",
         u8"-todo",
-        u8"-trow",
+        u8"-tr",
+        u8"-trim",
         u8"-tt",
         u8"-u",
         u8"-ul",
@@ -621,6 +627,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->td;
         if (name == u8"tel")
             return &m_impl->tel;
+        if (name == u8"text")
+            return &m_impl->text;
         if (name == u8"tfoot")
             return &m_impl->tfoot;
         if (name == u8"th")
@@ -635,6 +643,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->todo;
         if (name == u8"tr")
             return &m_impl->tr;
+        if (name == u8"trim")
+            return &m_impl->trim;
         if (name == u8"tt")
             return &m_impl->tt;
         break;

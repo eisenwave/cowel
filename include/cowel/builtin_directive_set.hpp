@@ -332,18 +332,44 @@ public:
     }
 };
 
-struct Wrap_Behavior final : Directive_Behavior {
+struct HTML_Wrapper_Behavior final : Directive_Behavior {
 private:
     const To_HTML_Mode m_to_html_mode;
 
 public:
-    constexpr explicit Wrap_Behavior(
+    constexpr explicit HTML_Wrapper_Behavior(
         Directive_Category category,
         Directive_Display display,
         To_HTML_Mode to_html_mode
     )
         : Directive_Behavior { category, display }
         , m_to_html_mode { to_html_mode }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
+        const final;
+
+    void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const final;
+};
+
+struct Plaintext_Wrapper_Behavior : Pure_Plaintext_Behavior {
+
+    constexpr explicit Plaintext_Wrapper_Behavior(Directive_Display display)
+        : Pure_Plaintext_Behavior(display)
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
+        const override;
+};
+
+struct Trim_Behavior : Directive_Behavior {
+
+    constexpr explicit Trim_Behavior(Directive_Category category, Directive_Display display)
+        : Directive_Behavior { category, display }
     {
     }
 
