@@ -33,7 +33,7 @@ That is, the name of a code point,
 or one of its "control", "alternate", or "correction" aliases.
 
 \example{
-\cow.c{\\N{DIGIT ZERO}} '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
+\cow.c{\\N{DIGIT ZERO}} generates '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
 }
 
 \tip{
