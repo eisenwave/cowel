@@ -69,7 +69,7 @@ std::u8string_view diagnostic_highlight_ansi_sequence(Diagnostic_Highlight type)
 enum struct Error_Line_Type : Default_Underlying { note, error };
 
 struct Error_Line {
-    std::optional<File_Source_Position> pos {};
+    std::optional<File_Source_Position8> pos {};
     std::u8string_view message;
     bool omit_affected_line = false;
 };
@@ -94,24 +94,7 @@ std::u8string_view to_prose(IO_Error_Code e)
     COWEL_ASSERT_UNREACHABLE(u8"invalid error code");
 }
 
-void file_name_to_utf8(std::pmr::u8string& out, std::string_view name)
-{
-    // Technically, we're making the (not always correct) assumption that file name encoding
-    // is UTF-8, which is not guaranteed.
-    // However, the process of converting this properly in a portable way would be somewhat
-    // complex, and I don't care about correct non-ASCII file names for now.
-    out.resize(name.size());
-    std::memcpy(out.data(), name.data(), name.size());
-}
-
-std::pmr::u8string file_name_to_utf8(std::string_view name, std::pmr::memory_resource* memory)
-{
-    std::pmr::u8string result { memory };
-    file_name_to_utf8(result, name);
-    return result;
-}
-
-void print_source_position(Diagnostic_String& out, const std::optional<File_Source_Position>& pos)
+void print_source_position(Diagnostic_String& out, const std::optional<File_Source_Position8>& pos)
 {
     if (!pos) {
         out.append(u8"(internal):", Diagnostic_Highlight::code_position);
@@ -127,7 +110,7 @@ void print_source_position(Diagnostic_String& out, const std::optional<File_Sour
 void print_diagnostic_prefix(
     Diagnostic_String& out,
     Error_Line_Type type,
-    std::optional<File_Source_Position> pos
+    std::optional<File_Source_Position8> pos
 )
 {
     print_source_position(out, pos);
@@ -219,15 +202,13 @@ void do_print_affected_line(
 
 void print_file_position(
     Diagnostic_String& out,
-    std::string_view file,
+    std::u8string_view file,
     const Source_Position& pos,
     bool colon_suffix
 )
 {
-    const std::pmr::u8string file8 = file_name_to_utf8(file, out.get_memory());
-
     auto builder = out.build(Diagnostic_Highlight::code_position);
-    builder.append(file8)
+    builder.append(file)
         .append(':')
         .append_integer(pos.line + 1)
         .append(':')
@@ -271,10 +252,9 @@ std::u8string_view find_line(std::u8string_view source, std::size_t index)
     return source.substr(begin, end - begin);
 }
 
-void print_location_of_file(Diagnostic_String& out, std::string_view file)
+void print_location_of_file(Diagnostic_String& out, std::u8string_view file)
 {
-    const std::pmr::u8string file8 = file_name_to_utf8(file, out.get_memory());
-    out.build(Diagnostic_Highlight::code_position).append(file8).append(u8':');
+    out.build(Diagnostic_Highlight::code_position).append(file).append(u8':');
 }
 
 void print_assertion_error(Diagnostic_String& out, const Assertion_Error& error)
@@ -290,14 +270,14 @@ void print_assertion_error(Diagnostic_String& out, const Assertion_Error& error)
     const Source_Position pos { .line = error.location.line(),
                                 .column = error.location.column(),
                                 .begin = {} };
-    print_file_position(out, error.location.file_name(), pos);
+    print_file_position(out, as_u8string_view(error.location.file_name()), pos);
     out.append(u8' ');
     out.append(error.message, Diagnostic_Highlight::error_text);
     out.append(u8"\n\n");
     print_internal_error_notice(out);
 }
 
-void print_io_error(Diagnostic_String& out, std::string_view file, IO_Error_Code error)
+void print_io_error(Diagnostic_String& out, std::u8string_view file, IO_Error_Code error)
 {
     print_location_of_file(out, file);
     out.append(u8' ');

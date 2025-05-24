@@ -20,19 +20,19 @@ namespace cowel::ast {
 
 struct Argument final {
 private:
-    Source_Span m_source_span;
+    File_Source_Span8 m_source_span;
     std::u8string_view m_source;
     std::pmr::vector<Content> m_content;
-    Source_Span m_name_span;
+    File_Source_Span8 m_name_span;
     std::u8string_view m_name;
 
 public:
     /// @brief Constructor for named arguments.
     [[nodiscard]]
     Argument(
-        const Source_Span& source_span,
+        const File_Source_Span8& source_span,
         std::u8string_view source,
-        const Source_Span& name_span,
+        const File_Source_Span8& name_span,
         std::u8string_view name,
         std::pmr::vector<ast::Content>&& children
     );
@@ -40,7 +40,7 @@ public:
     /// @brief Constructor for positional (unnamed) arguments.
     [[nodiscard]]
     Argument(
-        const Source_Span& source_span,
+        const File_Source_Span8& source_span,
         std::u8string_view source,
         std::pmr::vector<ast::Content>&& children
     );
@@ -54,7 +54,7 @@ public:
     ~Argument();
 
     [[nodiscard]]
-    Source_Span get_source_span() const
+    File_Source_Span8 get_source_span() const
     {
         return m_source_span;
     }
@@ -71,7 +71,7 @@ public:
         return !m_name_span.empty();
     }
     [[nodiscard]]
-    Source_Span get_name_span() const
+    File_Source_Span8 get_name_span() const
     {
         return m_name_span;
     }
@@ -91,7 +91,7 @@ public:
 
 struct Directive final {
 private:
-    Source_Span m_source_span;
+    File_Source_Span8 m_source_span;
     std::u8string_view m_source;
     std::u8string_view m_name;
 
@@ -101,7 +101,7 @@ private:
 public:
     [[nodiscard]]
     Directive(
-        const Source_Span& source_span,
+        const File_Source_Span8& source_span,
         std::u8string_view source,
         std::u8string_view name,
         std::pmr::vector<Argument>&& args,
@@ -117,7 +117,7 @@ public:
     ~Directive();
 
     [[nodiscard]]
-    Source_Span get_source_span() const
+    File_Source_Span8 get_source_span() const
     {
         return m_source_span;
     }
@@ -129,7 +129,7 @@ public:
     }
 
     [[nodiscard]]
-    Source_Span get_name_span() const
+    File_Source_Span8 get_name_span() const
     {
         return m_source_span.with_length(m_name.length());
     }
@@ -152,15 +152,15 @@ public:
 
 struct Text final {
 private:
-    Source_Span m_source_span;
+    File_Source_Span8 m_source_span;
     std::u8string_view m_source;
 
 public:
     [[nodiscard]]
-    Text(const Source_Span& source_span, std::u8string_view source);
+    Text(const File_Source_Span8& source_span, std::u8string_view source);
 
     [[nodiscard]]
-    Source_Span get_source_span() const
+    File_Source_Span8 get_source_span() const
     {
         return m_source_span;
     }
@@ -175,15 +175,15 @@ public:
 /// @brief An escape sequence, such as `\\{`, `\\}`, or `\\\\`.
 struct Escaped final {
 private:
-    Source_Span m_source_span;
+    File_Source_Span8 m_source_span;
     std::u8string_view m_source;
 
 public:
     [[nodiscard]]
-    Escaped(const Source_Span& source_span, std::u8string_view source);
+    Escaped(const File_Source_Span8& source_span, std::u8string_view source);
 
     [[nodiscard]]
-    Source_Span get_source_span() const
+    File_Source_Span8 get_source_span() const
     {
         return m_source_span;
     }
@@ -341,15 +341,15 @@ inline std::span<Content const> Directive::get_content() const
 }
 
 [[nodiscard]]
-inline Source_Span get_source_span(const Content& node)
+inline File_Source_Span8 get_source_span(const Content& node, std::u8string_view fallback_file)
 {
     return visit(
-        []<typename T>(const T& v) -> Source_Span {
+        [&]<typename T>(const T& v) -> File_Source_Span8 {
             if constexpr (one_of<T, Text, Escaped, Directive>) {
                 return v.get_source_span();
             }
             else {
-                return {};
+                return { {}, fallback_file };
             }
         },
         node

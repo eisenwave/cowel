@@ -58,24 +58,25 @@ void Import_Behavior::instantiate(
         return;
     }
 
-    const auto path_string = as_u8string_view(path_data);
-
     // This is a bit of a dirty hack.
     // We need to somehow keep the source code of the loaded file alive
     // because the AST is filled with nodes that have string_views into it.
     //
     // The easiest approach is to just write to a section or variable or something.
     // Anything in "std." is reserved for COWEL anyway, so we may as well do it like this.
+    std::u8string_view persistent_path;
     const auto* const source_text = [&] -> std::pmr::vector<char8_t>* {
         std::pmr::u8string section_name { u8"std.import.", context.get_transient_memory() };
-        section_name += path_string;
+        const std::size_t base_length = section_name.length();
+        section_name += as_u8string_view(path_data);
         const auto scope = context.get_sections().go_to_scoped(std::move(section_name));
+        persistent_path = context.get_sections().current_name().substr(base_length);
 
         std::pmr::vector<char8_t>& out = context.get_sections().current_text();
-        const bool success = context.get_file_loader()(out, path_string);
+        const bool success = context.get_file_loader()(out, persistent_path);
         if (!success) {
             const std::u8string_view message[] {
-                u8"Failed to import sub-document from file \"", path_string,
+                u8"Failed to import sub-document from file \"", persistent_path,
                 u8"\" because the file could not be opened or because of an I/O error. ",
                 u8"Note that files are loaded relative to the directory of the current document."
             };
@@ -90,15 +91,15 @@ void Import_Behavior::instantiate(
 
     const auto source_string = as_u8string_view(*source_text);
 
-    auto on_error
-        = [&](std::u8string_view id, const Source_Span& location, std::u8string_view message) {
-              constexpr auto severity = Severity::error;
-              if (!context.emits(severity)) {
-                  return;
-              }
-              context.emit(Diagnostic { severity, id, { location, path_string }, { &message, 1 } });
-          };
-    parse_and_build(out, source_string, context.get_transient_memory(), on_error);
+    auto on_error = [&](std::u8string_view id, const Source_Span& location,
+                        std::u8string_view message) {
+        constexpr auto severity = Severity::error;
+        if (!context.emits(severity)) {
+            return;
+        }
+        context.emit(Diagnostic { severity, id, { location, persistent_path }, { &message, 1 } });
+    };
+    parse_and_build(out, source_string, persistent_path, context.get_transient_memory(), on_error);
 }
 
 } // namespace cowel

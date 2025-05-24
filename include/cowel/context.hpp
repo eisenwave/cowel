@@ -66,8 +66,6 @@ public:
         Transparent_String_View_Equals8>;
 
 private:
-    /// @brief The path at which the document is located.
-    const std::filesystem::path& m_document_path;
     /// @brief Additional memory used during processing.
     std::pmr::memory_resource* m_memory;
     std::pmr::memory_resource* m_transient_memory;
@@ -95,7 +93,6 @@ private:
 
 public:
     /// @brief Constructs a new context.
-    /// @param path The file path of the current document.
     /// @param source The source code.
     /// @param emit_diagnostic Called when a diagnostic is emitted.
     /// @param min_diagnostic_level The minimum level of diagnostics that are emitted.
@@ -108,7 +105,6 @@ public:
     /// @param transient_memory Additional memory which does not persist beyond the
     /// destruction of the context.
     explicit Context(
-        const std::filesystem::path& path,
         string_view_type highlight_theme_source,
         Directive_Behavior* error_behavior,
         File_Loader& file_loader,
@@ -118,8 +114,7 @@ public:
         std::pmr::memory_resource* persistent_memory,
         std::pmr::memory_resource* transient_memory
     )
-        : m_document_path { path }
-        , m_memory { persistent_memory }
+        : m_memory { persistent_memory }
         , m_transient_memory { transient_memory }
         , m_highlight_theme_source { highlight_theme_source }
         , m_error_behavior { error_behavior }
@@ -133,12 +128,6 @@ public:
     Context(const Context&) = delete;
     Context& operator=(const Context&) = delete;
     ~Context() = default;
-
-    [[nodiscard]]
-    const std::filesystem::path& get_document_path() const
-    {
-        return m_document_path;
-    }
 
     [[nodiscard]]
     File_Loader& get_file_loader()
@@ -277,66 +266,72 @@ public:
     void emit(
         Severity severity,
         string_view_type id,
-        const Source_Span& location,
+        const File_Source_Span8& location,
         std::span<const string_view_type> message
     )
     {
-        emit({ severity, id, { location, m_document_path.generic_u8string() }, message });
+        emit({ severity, id, location, message });
     }
 
     void emit_debug(
         string_view_type id,
-        const Source_Span& location,
+        const File_Source_Span8& location,
         std::span<const string_view_type> message
     )
     {
         emit(Severity::debug, id, location, message);
     }
 
-    void emit_debug(string_view_type id, const Source_Span& location, string_view_type message)
+    void
+    emit_debug(string_view_type id, const File_Source_Span8& location, string_view_type message)
     {
         emit_debug(id, location, { &message, 1 });
     }
 
     void emit_soft_warning(
         string_view_type id,
-        const Source_Span& location,
+        const File_Source_Span8& location,
         std::span<const string_view_type> message
     )
     {
         emit(Severity::soft_warning, id, location, message);
     }
 
-    void
-    emit_soft_warning(string_view_type id, const Source_Span& location, string_view_type message)
+    void emit_soft_warning(
+        string_view_type id,
+        const File_Source_Span8& location,
+        string_view_type message
+    )
     {
         emit_debug(id, location, { &message, 1 });
     }
 
     void emit_warning(
         string_view_type id,
-        const Source_Span& location,
+        const File_Source_Span8& location,
         std::span<const string_view_type> message
     )
     {
         emit(Severity::warning, id, location, message);
     }
 
-    void emit_warning(string_view_type id, const Source_Span& location, string_view_type message)
+    void
+    emit_warning(string_view_type id, const File_Source_Span8& location, string_view_type message)
     {
         emit_debug(id, location, { &message, 1 });
     }
 
     void emit_error(
         string_view_type id,
-        const Source_Span& location,
+        const File_Source_Span8& location,
         std::span<const string_view_type> message
     )
     {
         emit(Severity::error, id, location, message);
     }
 
-    void emit_error(string_view_type id, const Source_Span& location, string_view_type message)
+    void
+    emit_error(string_view_type id, const File_Source_Span8& location, string_view_type message)
     {
         emit_error(id, location, { &message, 1 });
     }
@@ -351,68 +346,72 @@ public:
     void try_emit(
         Severity severity,
         string_view_type id,
-        const Source_Span& location,
+        const File_Source_Span8& location,
         std::span<const string_view_type> message
     )
     {
         if (emits(severity)) {
-            emit({ severity, id, { location, m_document_path.generic_u8string() }, message });
+            emit({ severity, id, location, message });
         }
     }
 
     void try_debug(
         string_view_type id,
-        const Source_Span& location,
+        const File_Source_Span8& location,
         std::span<const string_view_type> message
     )
     {
         try_emit(Severity::debug, id, location, message);
     }
 
-    void try_debug(string_view_type id, const Source_Span& location, string_view_type message)
+    void try_debug(string_view_type id, const File_Source_Span8& location, string_view_type message)
     {
         try_debug(id, location, { &message, 1 });
     }
 
     void try_soft_warning(
         string_view_type id,
-        const Source_Span& location,
+        const File_Source_Span8& location,
         std::span<const string_view_type> message
     )
     {
         try_emit(Severity::soft_warning, id, location, message);
     }
 
-    void
-    try_soft_warning(string_view_type id, const Source_Span& location, string_view_type message)
+    void try_soft_warning(
+        string_view_type id,
+        const File_Source_Span8& location,
+        string_view_type message
+    )
     {
         try_soft_warning(id, location, { &message, 1 });
     }
 
     void try_warning(
         string_view_type id,
-        const Source_Span& location,
+        const File_Source_Span8& location,
         std::span<const string_view_type> message
     )
     {
         try_emit(Severity::warning, id, location, message);
     }
 
-    void try_warning(string_view_type id, const Source_Span& location, string_view_type message)
+    void
+    try_warning(string_view_type id, const File_Source_Span8& location, string_view_type message)
     {
         try_warning(id, location, { &message, 1 });
     }
 
     void try_error(
         string_view_type id,
-        const Source_Span& location,
+        const File_Source_Span8& location,
         std::span<const string_view_type> message
     )
     {
         try_emit(Severity::error, id, location, message);
     }
 
-    void try_error(string_view_type id, const Source_Span& location, string_view_type message)
+    void try_error(string_view_type id, const File_Source_Span8& location, string_view_type message)
     {
         try_error(id, location, { &message, 1 });
     }

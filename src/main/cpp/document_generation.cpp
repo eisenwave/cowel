@@ -26,8 +26,7 @@ void generate_document(const Generation_Options& options)
 
     HTML_Writer writer { options.output };
 
-    Context context { options.path, //
-                      options.highlight_theme_source, //
+    Context context { options.highlight_theme_source, //
                       options.error_behavior, //
                       options.file_loader,
                       options.logger, //
@@ -48,8 +47,8 @@ namespace {
 Result<void, IO_Error_Code>
 file_to_inner_html(HTML_Writer& out, std::u8string_view path, Context& context)
 {
-    Result<std::pmr::vector<char8_t>, IO_Error_Code> result
-        = load_utf8_file(as_string_view(path), context.get_transient_memory());
+    const Result<std::pmr::vector<char8_t>, IO_Error_Code> result
+        = load_utf8_file(path, context.get_transient_memory());
     if (!result) {
         return result.error();
     }
@@ -75,10 +74,10 @@ struct Reference_Resolver {
     std::pmr::unordered_set<const void*>& visited;
     Context& context;
 
-    bool operator()(std::u8string_view text);
+    bool operator()(std::u8string_view text, std::u8string_view file);
 };
 
-bool Reference_Resolver::operator()(std::u8string_view text)
+bool Reference_Resolver::operator()(std::u8string_view text, std::u8string_view file)
 {
     bool success = true;
 
@@ -122,7 +121,7 @@ bool Reference_Resolver::operator()(std::u8string_view text)
                 section_name,
                 u8"\".",
             };
-            context.try_error(diagnostic::section_ref_not_found, {}, message);
+            context.try_error(diagnostic::section_ref_not_found, { {}, file }, message);
             section_success = false;
         }
         else if (const auto [_, insert_success] = visited.insert(entry); !insert_success) {
@@ -131,13 +130,13 @@ bool Reference_Resolver::operator()(std::u8string_view text)
                 section_name,
                 u8"\".",
             };
-            context.try_error(diagnostic::section_ref_circular, {}, message);
+            context.try_error(diagnostic::section_ref_circular, { {}, file }, message);
             section_success = false;
         }
         text.remove_prefix(4 + reference_length);
         if (section_success) {
             const std::u8string_view referenced_text { entry->second.data(), entry->second.size() };
-            (*this)(referenced_text);
+            (*this)(referenced_text, file);
         }
         else {
             success = section_success;
@@ -200,7 +199,11 @@ void Head_Body_Content_Behavior::generate_html(
     std::pmr::unordered_set<const void*> visited(context.get_transient_memory());
     visited.insert(html_section);
 
-    Reference_Resolver { out.get_output(), visited, context }(html_string);
+    if (!content.empty()) {
+        // TODO: this way of obtaining the file is kinda unclean ...
+        const std::u8string_view file = ast::get_source_span(content.front(), u8"").file_name;
+        Reference_Resolver { out.get_output(), visited, context }(html_string, file);
+    }
 }
 
 constexpr std::u8string_view indent = u8"  ";
@@ -296,7 +299,7 @@ void Document_Content_Behavior::generate_head(
         const std::u8string_view theme_json = context.get_highlight_theme_source();
         if (!theme_to_css(out.get_output(), theme_json, context.get_transient_memory())) {
             context.try_error(
-                diagnostic::theme_conversion, {},
+                diagnostic::theme_conversion, { {}, u8"<no file>" },
                 u8"Failed to convert the syntax highlight theme to CSS, "
                 u8"possibly because the JSON was malformed."
             );

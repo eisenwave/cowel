@@ -7,6 +7,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/io.hpp"
 #include "cowel/util/result.hpp"
+#include "cowel/util/strings.hpp"
 #include "cowel/util/tty.hpp"
 
 #include "cowel/fwd.hpp"
@@ -23,11 +24,11 @@ namespace {
 using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
 
 struct Printing_Diagnostic_Policy : Diagnostic_Policy {
-    std::string_view file;
+    std::u8string_view file;
     std::u8string_view source;
 };
 
-bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
+bool test_validity(std::u8string_view file, Printing_Diagnostic_Policy& policy)
 {
 #define COWEL_SWITCH_ON_POLICY_ACTION(...)                                                         \
     switch (__VA_ARGS__) {                                                                         \
@@ -37,7 +38,7 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     }
     std::pmr::monotonic_buffer_resource memory;
 
-    const auto full_path = "test/" + std::pmr::string { file, &memory };
+    const auto full_path = u8"test/" + std::pmr::u8string { file, &memory };
     policy.file = full_path;
 
     std::pmr::vector<char8_t> source_data { &memory };
@@ -48,7 +49,7 @@ bool test_validity(std::string_view file, Printing_Diagnostic_Policy& policy)
     const std::u8string_view source { source_data.data(), source_data.size() };
     policy.source = source;
 
-    auto doc = parse_and_build(source, &memory);
+    auto doc = parse_and_build(source, as_u8string_view(file), &memory);
     COWEL_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
 
 // FIXME reimplement
@@ -96,7 +97,7 @@ public:
 
 } // namespace
 
-bool test_for_success(std::string_view file, Compilation_Stage until_stage)
+bool test_for_success(std::u8string_view file, Compilation_Stage until_stage)
 {
     // Sorry, testing for only partial success is not implemented yet.
     COWEL_ASSERT(until_stage == Compilation_Stage::process);

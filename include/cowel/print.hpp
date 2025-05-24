@@ -27,7 +27,7 @@ std::u8string_view find_line(std::u8string_view source, std::size_t index);
 /// @brief Prints the location of the file nicely formatted.
 /// @param out the string to write to
 /// @param file the file
-void print_location_of_file(Diagnostic_String& out, std::string_view file);
+void print_location_of_file(Diagnostic_String& out, std::u8string_view file);
 
 /// @brief Prints a position within a file, consisting of the file name and line/column.
 /// @param out the string to write to
@@ -36,7 +36,7 @@ void print_location_of_file(Diagnostic_String& out, std::string_view file);
 /// @param colon_suffix if `true`, appends a `:` to the string as part of the same token
 void print_file_position(
     Diagnostic_String& out,
-    std::string_view file,
+    std::u8string_view file,
     const Source_Position& pos,
     bool colon_suffix = true
 );
@@ -56,7 +56,7 @@ void print_affected_line(Diagnostic_String& out, std::u8string_view source, cons
 
 void print_assertion_error(Diagnostic_String& out, const Assertion_Error& error);
 
-void print_io_error(Diagnostic_String& out, std::string_view file, IO_Error_Code error);
+void print_io_error(Diagnostic_String& out, std::u8string_view file, IO_Error_Code error);
 
 struct AST_Formatting_Options {
     int indent_width;

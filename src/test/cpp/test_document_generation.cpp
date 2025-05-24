@@ -104,18 +104,20 @@ struct Doc_Gen_Test : testing::Test {
     bool load_document(const std::filesystem::path& path)
     {
         file_path = "test" / path;
-        if (!load_utf8_file_or_error(source, file_path.c_str(), &memory)) {
+        if (!load_utf8_file_or_error(source, file_path.generic_u8string(), &memory)) {
             return false;
         }
         source_string = { source.data(), source.size() };
-        content = parse_and_build(source_string, &memory, make_parse_error_consumer());
+        content = parse_and_build(
+            source_string, path.generic_u8string(), &memory, make_parse_error_consumer()
+        );
         return true;
     }
 
     [[nodiscard]]
     bool load_theme()
     {
-        constexpr std::string_view theme_path = "ulight/themes/wg21.json";
+        constexpr std::u8string_view theme_path = u8"ulight/themes/wg21.json";
 
         if (!load_utf8_file_or_error(theme_source, theme_path, &memory)) {
             return false;
@@ -127,7 +129,7 @@ struct Doc_Gen_Test : testing::Test {
     void load_source(std::u8string_view source)
     {
         source_string = source;
-        content = parse_and_build(source, &memory, make_parse_error_consumer());
+        content = parse_and_build(source, u8"<no file>", &memory, make_parse_error_consumer());
     }
 
     std::u8string_view generate(Content_Behavior& root_behavior)
@@ -149,11 +151,10 @@ struct Doc_Gen_Test : testing::Test {
 
     Parse_Error_Consumer make_parse_error_consumer()
     {
-        constexpr auto invoker = [](void* entity, std::u8string_view id, Source_Span location,
-                                    std::u8string_view message) {
+        constexpr auto invoker = [](void* entity, std::u8string_view id,
+                                    const File_Source_Span8& location, std::u8string_view message) {
             auto* const self = static_cast<Doc_Gen_Test*>(entity);
-            File_Source_Span8 file_location { location, self->file_path.generic_u8string() };
-            Diagnostic d { Severity::error, id, file_location, { &message, 1 } };
+            Diagnostic d { Severity::error, id, location, { &message, 1 } };
             self->logger(d);
         };
         return Parse_Error_Consumer { invoker, this };
@@ -197,7 +198,7 @@ a paragraph.
 }
 
 struct Path {
-    std::string_view value;
+    std::u8string_view value;
 };
 
 struct Source {
@@ -230,7 +231,7 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<error->\\c{#xD800}</error->\n" },
       { diagnostic::c::nonscalar } },
     
-    { Path { "U/ascii.cow" },
+    { Path { u8"U/ascii.cow" },
       Source { u8"ABC\n" } },
     { Source { u8"\\U{00B6}\n" },
       Source { u8"¶\n" } },
@@ -284,8 +285,8 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<code> <b><h- data-h=kw>xxx</h-></b> </code>\n" } },
     { Source { u8"\\code[x]{ \\b{x}xx }\n" },
       Source { u8"<code> <b><h- data-h=kw>x</h-></b><h- data-h=kw>xx</h-> </code>\n" } },
-    { Path { "codeblock/trim.cow" },
-      Path { "codeblock/trim.html" } },
+    { Path { u8"codeblock/trim.cow" },
+      Path { u8"codeblock/trim.html" } },
 
     { Source { u8"\\hl[keyword]{awoo}\n" },
       Source { u8"<h- data-h=kw>awoo</h->\n" } },
@@ -293,7 +294,7 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<code><h- data-h=kw_type>int</h-> <h- data-h=num>x</h-></code>\n" } },
 
     { Source { u8"" },
-      Path { "document/empty.html" },
+      Path { u8"document/empty.html" },
       {},
       empty_head_behavior }
 };
@@ -319,7 +320,7 @@ std::u8string_view load_basic_test_expectations(
 {
     if (const auto* const path = std::get_if<Path>(&test.expected_html)) {
         storage.clear();
-        std::pmr::string full_path { "test/", memory };
+        std::pmr::u8string full_path { u8"test/", memory };
         full_path += path->value;
         if (!load_utf8_file_or_error(storage, full_path, memory)) {
             return u8"";

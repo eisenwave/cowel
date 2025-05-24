@@ -65,6 +65,12 @@ constexpr std::u8string_view as_u8string_view(std::span<const char8_t> text)
 }
 
 [[nodiscard]]
+constexpr std::u8string_view as_u8string_view(std::string_view text)
+{
+    return { reinterpret_cast<const char8_t*>(text.data()), text.size() };
+}
+
+[[nodiscard]]
 constexpr bool contains(std::u8string_view str, char8_t c)
 {
     return str.find(c) != std::u8string_view::npos;

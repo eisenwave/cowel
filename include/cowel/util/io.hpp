@@ -110,14 +110,14 @@ inline Unique_File fopen_unique(const char* path, const char* mode) noexcept
 [[nodiscard]]
 Result<void, IO_Error_Code> file_to_bytes_chunked(
     Function_Ref<void(std::span<const std::byte>)> consume_chunk,
-    std::string_view path
+    std::u8string_view path
 );
 
 /// @brief Reads all bytes from a file and appends them to a given vector.
 /// @param path the file path
 template <byte_like Byte, typename Alloc>
 [[nodiscard]]
-Result<void, IO_Error_Code> file_to_bytes(std::vector<Byte, Alloc>& out, std::string_view path)
+Result<void, IO_Error_Code> file_to_bytes(std::vector<Byte, Alloc>& out, std::u8string_view path)
 {
     return file_to_bytes_chunked(
         [&out](std::span<const std::byte> chunk) -> void {
@@ -130,15 +130,15 @@ Result<void, IO_Error_Code> file_to_bytes(std::vector<Byte, Alloc>& out, std::st
 }
 
 [[nodiscard]]
-Result<void, IO_Error_Code> load_utf8_file(std::pmr::vector<char8_t>& out, std::string_view path);
+Result<void, IO_Error_Code> load_utf8_file(std::pmr::vector<char8_t>& out, std::u8string_view path);
 
 [[nodiscard]]
 Result<std::pmr::vector<char8_t>, IO_Error_Code>
-load_utf8_file(std::string_view path, std::pmr::memory_resource* memory);
+load_utf8_file(std::u8string_view path, std::pmr::memory_resource* memory);
 
 [[nodiscard]]
 Result<std::pmr::vector<char32_t>, IO_Error_Code>
-load_utf32le_file(std::string_view path, std::pmr::memory_resource* memory);
+load_utf32le_file(std::u8string_view path, std::pmr::memory_resource* memory);
 
 } // namespace cowel
 #endif

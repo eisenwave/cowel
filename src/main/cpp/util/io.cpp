@@ -21,7 +21,7 @@ namespace cowel {
 [[nodiscard]]
 Result<void, IO_Error_Code> file_to_bytes_chunked(
     Function_Ref<void(std::span<const std::byte>)> consume_chunk,
-    std::string_view path
+    std::u8string_view path
 )
 {
     constexpr std::size_t block_size = BUFSIZ;
@@ -50,7 +50,7 @@ Result<void, IO_Error_Code> file_to_bytes_chunked(
     return {};
 }
 
-Result<void, IO_Error_Code> load_utf8_file(std::pmr::vector<char8_t>& out, std::string_view path)
+Result<void, IO_Error_Code> load_utf8_file(std::pmr::vector<char8_t>& out, std::u8string_view path)
 {
     const std::size_t initial_size = out.size();
     Result<void, IO_Error_Code> r = file_to_bytes(out, path);
@@ -65,7 +65,7 @@ Result<void, IO_Error_Code> load_utf8_file(std::pmr::vector<char8_t>& out, std::
 }
 
 Result<std::pmr::vector<char8_t>, IO_Error_Code>
-load_utf8_file(std::string_view path, std::pmr::memory_resource* memory)
+load_utf8_file(std::u8string_view path, std::pmr::memory_resource* memory)
 {
     std::pmr::vector<char8_t> result { memory };
     if (auto r = load_utf8_file(result, path); !r) {
@@ -76,7 +76,7 @@ load_utf8_file(std::string_view path, std::pmr::memory_resource* memory)
 
 [[nodiscard]]
 Result<std::pmr::vector<char32_t>, IO_Error_Code>
-load_utf32le_file(std::string_view path, std::pmr::memory_resource* memory)
+load_utf32le_file(std::u8string_view path, std::pmr::memory_resource* memory)
 {
     std::pmr::vector<std::byte> bytes { memory };
 

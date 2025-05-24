@@ -5,6 +5,7 @@
 
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
+#include "cowel/util/strings.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/diagnostic.hpp"
@@ -30,7 +31,7 @@ struct Relative_File_Loader final : File_Loader {
     {
         const std::filesystem::path relative { u8path, std::filesystem::path::generic_format };
         const std::filesystem::path resolved = base / relative;
-        return load_utf8_file(out, resolved.native()).has_value();
+        return load_utf8_file(out, resolved.generic_u8string()).has_value();
     }
 };
 
@@ -62,20 +63,12 @@ std::u8string_view severity_tag(Severity severity)
 
 struct Stderr_Logger final : Logger {
     Diagnostic_String out;
-    std::string_view file;
-    std::u8string_view source;
     bool any_errors = false;
 
     [[nodiscard]]
-    constexpr Stderr_Logger(
-        std::pmr::memory_resource* memory,
-        std::string_view file,
-        std::u8string_view source
-    )
+    constexpr Stderr_Logger(std::pmr::memory_resource* memory)
         : Logger { Severity::min }
         , out { memory }
-        , file { file }
-        , source { source }
     {
     }
 
@@ -89,10 +82,10 @@ struct Stderr_Logger final : Logger {
         out.append(ansi::reset);
         out.append(u8": ");
         if (diagnostic.location.empty()) {
-            print_location_of_file(out, file);
+            print_location_of_file(out, diagnostic.location.file_name);
         }
         else {
-            print_file_position(out, file, diagnostic.location);
+            print_file_position(out, diagnostic.location.file_name, diagnostic.location);
         }
         out.append(u8' ');
         for (const std::u8string_view part : diagnostic.message) {
@@ -104,9 +97,12 @@ struct Stderr_Logger final : Logger {
         out.append(u8']');
         out.append(ansi::reset);
         out.append(u8'\n');
+        // FIXME: reimplement for multi-file logging
+        /*
         if (!diagnostic.location.empty()) {
             print_affected_line(out, source, diagnostic.location);
         }
+        */
         print_code_string_stderr(out);
         out.clear();
     }
@@ -131,18 +127,18 @@ int main(int argc, const char* const* argv)
     }
 
     const std::string_view in_path = argv[1];
-    const std::u8string_view in_path_u8 { reinterpret_cast<const char8_t*>(in_path.data()),
-                                          in_path.size() };
+    const std::u8string_view in_path_u8 = as_u8string_view(in_path);
     auto in_path_directory = std::filesystem::path { in_path }.parent_path();
 
     const std::string_view out_path = argv[2];
-    constexpr std::string_view theme_path = "ulight/themes/wg21.json";
+    const std::u8string_view out_path_u8 = as_u8string_view(out_path);
+    constexpr std::u8string_view theme_path = u8"ulight/themes/wg21.json";
 
     const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text
-        = load_utf8_file(in_path, &memory);
+        = load_utf8_file(in_path_u8, &memory);
     if (!in_text) {
         Diagnostic_String error { &memory };
-        print_io_error(error, in_path, in_text.error());
+        print_io_error(error, in_path_u8, in_text.error());
         print_code_string_stderr(error);
         return EXIT_FAILURE;
     }
@@ -151,7 +147,7 @@ int main(int argc, const char* const* argv)
         = load_utf8_file(theme_path, &memory);
     if (!theme_json) {
         Diagnostic_String error { &memory };
-        print_io_error(error, in_path, in_text.error());
+        print_io_error(error, in_path_u8, in_text.error());
         print_code_string_stderr(error);
         return EXIT_FAILURE;
     }
@@ -163,14 +159,13 @@ int main(int argc, const char* const* argv)
     Builtin_Directive_Set builtin_directives {};
     Document_Content_Behavior behavior { builtin_directives.get_macro_behavior() };
     Relative_File_Loader file_loader { std::move(in_path_directory) };
-    Stderr_Logger logger { &memory, in_path, in_source };
+    Stderr_Logger logger { &memory };
     static constinit Ulight_Syntax_Highlighter highlighter;
 
     const std::pmr::vector<ast::Content> root_content = parse_and_build(
-        in_source, &memory,
-        [&](std::u8string_view id, Source_Span pos, std::u8string_view message) {
-            logger(Diagnostic {
-                Severity::error, id, File_Source_Span8 { pos, in_path_u8 }, { &message, 1 } });
+        in_source, in_path_u8, &memory,
+        [&](std::u8string_view id, File_Source_Span8 pos, std::u8string_view message) {
+            logger(Diagnostic { Severity::error, id, pos, { &message, 1 } });
         }
     );
 
@@ -186,16 +181,16 @@ int main(int argc, const char* const* argv)
                                        .memory = &memory };
     generate_document(options);
 
-    std::FILE* const out_file = std::fopen(out_path.data(), "wb");
+    const auto out_file = fopen_unique(out_path.data(), "wb");
     if (!out_file) {
         Diagnostic_String error { &memory };
-        print_location_of_file(error, out_path);
+        print_location_of_file(error, out_path_u8);
         error.append(u8" Failed to open file.");
         print_code_string_stderr(error);
         return EXIT_FAILURE;
     }
 
-    std::fwrite(out_text.data(), 1, out_text.size(), out_file);
+    std::fwrite(out_text.data(), 1, out_text.size(), out_file.get());
 
     return logger.any_errors ? EXIT_FAILURE : EXIT_SUCCESS;
 }

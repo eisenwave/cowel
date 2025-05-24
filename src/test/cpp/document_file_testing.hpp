@@ -9,7 +9,7 @@ namespace cowel {
 
 [[nodiscard]]
 bool test_for_success(
-    std::string_view file,
+    std::u8string_view file,
     Compilation_Stage until_stage = Compilation_Stage::process
 );
 

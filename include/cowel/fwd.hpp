@@ -73,7 +73,6 @@ struct Directive_Content_Behavior;
 enum struct Directive_Category : Default_Underlying;
 enum struct Directive_Display : Default_Underlying;
 struct Error_Tag;
-struct File_Source_Position;
 struct Generation_Options;
 enum struct HLJS_Scope : Default_Underlying;
 struct HTML_Writer;

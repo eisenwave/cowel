@@ -117,7 +117,18 @@ struct Basic_File_Source_Span : Source_Span {
 
     [[nodiscard]]
     constexpr Basic_File_Source_Span(const Source_Span& local, string_view_type file)
-        : Source_Span(local)
+        : Source_Span { local }
+        , file_name(file)
+    {
+    }
+
+    [[nodiscard]]
+    constexpr Basic_File_Source_Span(
+        const Source_Position& local,
+        std::size_t length,
+        string_view_type file
+    )
+        : Source_Span { local, length }
         , file_name(file)
     {
     }
@@ -131,34 +142,58 @@ struct Basic_File_Source_Span : Source_Span {
     {
         return begin + length;
     }
+
+    /// @brief Returns a span with the same properties except that the length is `l`.
+    [[nodiscard]]
+    constexpr Basic_File_Source_Span with_length(std::size_t l) const
+    {
+        return { Source_Span::with_length(l), file_name };
+    }
+
+    [[nodiscard]]
+    constexpr Basic_File_Source_Span to_right(std::size_t offset) const
+    {
+        return { Source_Span::to_right(offset), file_name };
+    }
+
+    [[nodiscard]]
+    constexpr Basic_File_Source_Span to_left(std::size_t offset) const
+    {
+        return { Source_Span::to_left(offset), file_name };
+    }
 };
 
 using File_Source_Span = Basic_File_Source_Span<char>;
 using File_Source_Span8 = Basic_File_Source_Span<char8_t>;
 
 /// Represents the location of a file, combined with the position within that file.
-struct File_Source_Position : Source_Position {
-    /// File name.
-    std::string_view file_name;
+template <typename Char>
+struct Basic_File_Source_Position : Source_Position {
+    using string_view_type = std::basic_string_view<Char>;
+
+    string_view_type file_name;
 
     [[nodiscard]]
-    constexpr File_Source_Position(const File_Source_Span& span)
+    constexpr Basic_File_Source_Position(const File_Source_Span& span)
         : Source_Position { span } // NOLINT(cppcoreguidelines-slicing)
         , file_name(span.file_name)
     {
     }
 
     [[nodiscard]]
-    constexpr File_Source_Position(Source_Position local, std::string_view file)
+    constexpr Basic_File_Source_Position(Source_Position local, std::string_view file)
         : Source_Position(local)
         , file_name(file)
     {
     }
 
     [[nodiscard]]
-    friend constexpr auto operator<=>(File_Source_Position, File_Source_Position)
+    friend constexpr auto operator<=>(Basic_File_Source_Position, Basic_File_Source_Position)
         = default;
 };
+
+using File_Source_Position = Basic_File_Source_Position<char>;
+using File_Source_Position8 = Basic_File_Source_Position<char8_t>;
 
 } // namespace cowel
 

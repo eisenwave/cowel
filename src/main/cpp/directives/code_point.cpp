@@ -84,7 +84,7 @@ char32_t
 Code_Point_By_Digits_Behavior::get_code_point(const ast::Directive& d, Context& context) const
 {
     if (!d.get_arguments().empty()) {
-        const Source_Span pos = d.get_arguments().front().get_source_span();
+        const File_Source_Span8 pos = d.get_arguments().front().get_source_span();
         context.try_warning(
             diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."
         );
@@ -132,7 +132,7 @@ char32_t
 Code_Point_By_Name_Behavior::get_code_point(const ast::Directive& d, Context& context) const
 {
     if (!d.get_arguments().empty()) {
-        const Source_Span pos = d.get_arguments().front().get_source_span();
+        const File_Source_Span8 pos = d.get_arguments().front().get_source_span();
         context.try_warning(
             diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."
         );

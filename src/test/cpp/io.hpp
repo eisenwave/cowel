@@ -17,7 +17,7 @@ namespace cowel {
 [[nodiscard]]
 inline bool load_utf8_file_or_error(
     std::pmr::vector<char8_t>& out,
-    std::string_view path,
+    std::u8string_view path,
     std::pmr::memory_resource* memory
 )
 {

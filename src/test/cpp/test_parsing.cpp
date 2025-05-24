@@ -292,15 +292,14 @@ std::optional<Parsed_File> parse_file(std::u8string_view file, std::pmr::memory_
 {
     std::pmr::u8string full_file { u8"test/", memory };
     full_file += file;
-    const std::string_view full_file_name = as_string_view(full_file);
 
     Parsed_File result { .source = std::pmr::vector<char8_t> { memory },
                          .instructions = std::pmr::vector<AST_Instruction> { memory } };
 
-    Result<void, cowel::IO_Error_Code> r = load_utf8_file(result.source, full_file_name);
+    Result<void, cowel::IO_Error_Code> r = load_utf8_file(result.source, full_file);
     if (!r) {
         Diagnostic_String out { memory };
-        print_io_error(out, full_file_name, r.error());
+        print_io_error(out, full_file, r.error());
         print_code_string(std::cout, out, is_stdout_tty);
         return {};
     }
@@ -319,7 +318,8 @@ parse_and_build_file(std::u8string_view file, std::pmr::memory_resource* memory)
     }
     const std::u8string_view source_string = parsed->get_source_string();
 
-    std::pmr::vector<ast::Content> content = build_ast(source_string, parsed->instructions, memory);
+    std::pmr::vector<ast::Content> content
+        = build_ast(source_string, file, parsed->instructions, memory);
     return Actual_Document { std::move(parsed->source), std::move(content) };
 }
 
