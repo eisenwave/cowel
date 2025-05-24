@@ -24,9 +24,10 @@ std::span<const ast::Content> trim_blank_text_right(std::span<const ast::Content
 [[nodiscard]]
 std::span<const ast::Content> trim_blank_text(std::span<const ast::Content>);
 
-enum struct To_Plaintext_Mode : bool { //
+enum struct To_Plaintext_Mode : Default_Underlying { //
     normal,
     no_side_effects,
+    trimmed,
 };
 
 enum struct To_Plaintext_Status : Default_Underlying { //

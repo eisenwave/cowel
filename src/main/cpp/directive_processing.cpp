@@ -105,6 +105,59 @@ void try_lookup_error(const ast::Directive& directive, Context& context)
     );
 }
 
+void to_plaintext_trimmed(
+    std::pmr::vector<char8_t>& out,
+    std::span<const ast::Content> content,
+    Context& context
+)
+{
+    content = trim_blank_text(content);
+
+    struct Visitor {
+        std::pmr::vector<char8_t>& out;
+        std::span<const ast::Content> content;
+        Context& context;
+        std::size_t i;
+
+        void operator()(const ast::Text& text) const
+        {
+            std::u8string_view str = text.get_source();
+            // Note that the following two conditions are not mutually exclusive
+            // when content contains just one element.
+            if (i == 0) {
+                str = trim_ascii_blank_left(str);
+            }
+            if (i + 1 == content.size()) {
+                str = trim_ascii_blank_right(str);
+            }
+            // The trimming above should have gotten rid of entirely empty strings.
+            COWEL_ASSERT(!str.empty());
+            append(out, text.get_source());
+        }
+
+        void operator()(const ast::Generated&) const
+        {
+            COWEL_ASSERT_UNREACHABLE(
+                u8"There should be no generated content in a plaintext context."
+            );
+        }
+
+        void operator()(const ast::Escaped& e) const
+        {
+            out.push_back(e.get_char());
+        }
+
+        void operator()(const ast::Directive& e) const
+        {
+            to_plaintext(out, e, context);
+        }
+    };
+
+    for (std::size_t i = 0; i < content.size(); ++i) {
+        std::visit(Visitor { out, content, context, i }, content[i]);
+    }
+}
+
 } // namespace
 
 To_Plaintext_Status to_plaintext(
@@ -182,6 +235,11 @@ To_Plaintext_Status to_plaintext(
     To_Plaintext_Mode mode
 )
 {
+    if (mode == To_Plaintext_Mode::trimmed) {
+        to_plaintext_trimmed(out, content, context);
+        return To_Plaintext_Status::ok;
+    }
+
     auto result = To_Plaintext_Status::ok;
     for (const ast::Content& c : content) {
         const auto c_result = to_plaintext(out, c, context, mode);
