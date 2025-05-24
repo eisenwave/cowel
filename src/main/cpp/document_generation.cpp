@@ -14,7 +14,6 @@
 #include "cowel/document_content_behavior.hpp"
 #include "cowel/document_generation.hpp"
 #include "cowel/document_sections.hpp"
-#include "cowel/util/strings.hpp"
 
 namespace cowel {
 

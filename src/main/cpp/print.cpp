@@ -2,10 +2,8 @@
 #include <cstddef>
 #include <cstring>
 #include <iostream>
-#include <memory_resource>
 #include <optional>
 #include <span>
-#include <string>
 #include <string_view>
 
 #include "cowel/util/annotated_string.hpp"
