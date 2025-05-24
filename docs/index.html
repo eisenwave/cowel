@@ -1548,10 +1548,12 @@ h1 {
 <div class=toc-num data-level=3>8.6</div>
 <a href=#special-characters><h3>Special characters</h3></a>
 <div class=toc-num data-level=4>8.6.1</div>
-<a href=#—-code-point-literal><h4><code><h- data-h=mk_tag>\U</h-></code> &mdash; Code point literal</h4></a>
+<a href=#dir-U><h4><code><h- data-h=mk_tag>\U</h-></code> &mdash; Code point literal</h4></a>
 <div class=toc-num data-level=4>8.6.2</div>
-<a href=#dir-Udigits><h4><code><h- data-h=mk_tag>\Udigits</h-></code> &mdash; Digits of code point</h4></a>
+<a href=#dir-N><h4><code><h- data-h=mk_tag>\N</h-></code> &mdash; Code point by name</h4></a>
 <div class=toc-num data-level=4>8.6.3</div>
+<a href=#dir-Udigits><h4><code><h- data-h=mk_tag>\Udigits</h-></code> &mdash; Digits of code point</h4></a>
+<div class=toc-num data-level=4>8.6.4</div>
 <a href=#—-character-references><h4><code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4></a>
 <div class=toc-num data-level=3>8.7</div>
 <a href=#special-blocks><h3>Special blocks</h3></a>
@@ -2582,7 +2584,7 @@ not every text editor handles special characters well.
 <p>To increase portability,
 COWEL has the <code><h- data-h=mk_tag>\U</h-></code> and <code><h- data-h=mk_tag>\c</h-></code> directives.
 </p>
-<h4 id=—-code-point-literal><a class=para href=#—-code-point-literal></a>8.6.1. <code><h- data-h=mk_tag>\U</h-></code> &mdash; Code point literal</h4>
+<h4 id=dir-U><a class=para href=#dir-U></a>8.6.1. <code><h- data-h=mk_tag>\U</h-></code> &mdash; Code point literal</h4>
 
 <p>The input to a <code><h- data-h=mk_tag>\U</h-></code> directive is a plaintext context,
 which should be a sequence of hexadecimal numbers
@@ -2590,14 +2592,36 @@ specifying a <a href=https://infra%2espec%2ewhatwg%2eorg/#scalar-value>Unicode s
 that is, a code point which UTF-8 permits to be encoded.
 </p>
 <example-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{</h->30<h- data-h=sym_brac>}</h-></code> generates '<tt->0</tt->' U+0030 DIGIT ZERO
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{</h->30<h- data-h=sym_brac>}</h-></code> generates '<tt->0</tt->' U+0030 DIGIT ZERO.
 </p></example-block>
 
 <note-block><p><intro-></intro-> 
 Like anywhere else, directives inside of <code><h- data-h=mk_tag>\U</h-></code> are allowed.
 </p></note-block>
 
-<h4 id=dir-Udigits><a class=para href=#dir-Udigits></a>8.6.2. <code><h- data-h=mk_tag>\Udigits</h-></code> &mdash; Digits of code point</h4>
+<h4 id=dir-N><a class=para href=#dir-N></a>8.6.2. <code><h- data-h=mk_tag>\N</h-></code> &mdash; Code point by name</h4>
+
+<p>The <code><h- data-h=mk_tag>\N</h-></code> directive behaves almost identically to <code><h- data-h=mk_tag>\U</h-></code>,
+except that its input has to be a
+<a href=https://www%2eunicode%2eorg/reports/tr34/#Names>Unicode name</a>
+rather than a hex digits.
+That is, the name of a code point,
+or one of its "control", "alternate", or "correction" aliases.
+</p>
+<example-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>N</h-><h- data-h=sym_brac>{</h->DIGIT ZERO<h- data-h=sym_brac>}</h-></code> '<tt->0</tt->' U+0030 DIGIT ZERO.
+</p></example-block>
+
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\N</h-></code> can lead to much more descriptive, human-friendly code, compared to <code><h- data-h=mk_tag>\U</h-></code>.
+</p>
+<p>The main issue with <code><h- data-h=mk_tag>\U</h-></code> is that it is very non-descriptive in source code.
+It simply contains a handful of digits,
+and unless the reader is a Unicode expert who happens to know that sequence,
+they cannot easily tell what the purpose of the character is.
+</p></tip-block>
+
+<h4 id=dir-Udigits><a class=para href=#dir-Udigits></a>8.6.3. <code><h- data-h=mk_tag>\Udigits</h-></code> &mdash; Digits of code point</h4>
 
 <p>The <code><h- data-h=mk_tag>\Udigits</h-></code> directive is essentially the inverse of the <code><h- data-h=mk_tag>\U</h-></code> directive.
 Its input is also a plaintext context;
@@ -2619,6 +2643,13 @@ it will be left-padded with additional '<tt->0</tt->' characters.
 The base of the output digit sequence, in range [2, 16].
 This defaults to 16, meaning that the digits are printed in hexadecimal.
 </dd>
+
+<dt><tt-><h- data-h=mk_attr>lower</h-></tt-></dt>
+<dd>
+A yes/no plaintext argument, defaulting to <tt->no</tt->.
+If <tt->yes</tt-> is specified, digits beyond '<tt->9</tt->' (i.e. '<tt->A</tt->' to '<tt->F</tt->')
+will be output in lower case instead.
+</dd>
 </dd>
 
 <example-block><p><intro-></intro-> 
@@ -2635,6 +2666,18 @@ It is also possible to define a macro if we need this frequently:
 <h- data-h=mk_tag>\code-point</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code-block>
 </example-block>
 
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\Udigits</h-></code> can also be combined with <code><h- data-h=mk_tag>\N</h-></code>
+to produce human-readable descriptions of code points,
+while also keeping our source code readable:
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\named-char</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\Udigits</h-><h- data-h=sym_sqr>[</h->4<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-> <h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\named-char</h-><h- data-h=sym_brac>{</h->SECTION SIGN<h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as:
+<div class=indent>
+U+00A7 SECTION SIGN
+</div>
+</p></tip-block>
+
 <p><code><h- data-h=mk_tag>\Udigits</h-></code> uses only the first code point within the input text,
 even though the entire input text is processed into plaintext.
 </p>
@@ -2648,7 +2691,7 @@ If we provide more than a single code point, some input is discarded:
 ... which corresponds to <code>a</code>, whereas <code>b</code> and <code>c</code> are discarded.
 </p></bug-block>
 
-<h4 id=—-character-references><a class=para href=#—-character-references></a>8.6.3. <code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4>
+<h4 id=—-character-references><a class=para href=#—-character-references></a>8.6.4. <code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4>
 
 <p>The input to a <code><h- data-h=mk_tag>\c</h-></code> directive is a plaintext context,
 where the same content is permitted as for HTML character references, aka. HTML entities,

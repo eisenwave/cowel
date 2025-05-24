@@ -143,6 +143,8 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::in_line };
     Math_Behavior mathblock //
         { Directive_Display::block };
+    Code_Point_By_Name_Behavior N //
+        {};
     Fixed_Name_Passthrough_Behavior noscript //
         { u8"noscript", Directive_Category::pure_html, Directive_Display::block };
     Special_Block_Behavior note //
@@ -211,7 +213,7 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior tt //
         { u8"tt-", Directive_Category::formatting, Directive_Display::in_line };
-    Code_Point_Behavior U //
+    Code_Point_By_Digits_Behavior U //
         {};
     Fixed_Name_Passthrough_Behavior u //
         { u8"u", Directive_Category::formatting, Directive_Display::in_line };
@@ -271,6 +273,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
 {
     // clang-format off
     static constexpr std::u8string_view prefixed_names[] {
+        u8"-N",
         u8"-U",
         u8"-Udigits",
         u8"-abstract",
@@ -541,6 +544,11 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->literally;
         if (name == u8"lorem-ipsum")
             return &m_impl->lorem_ipsum;
+        break;
+
+    case u8'N':
+        if (name == u8"N")
+            return &m_impl->N;
         break;
 
     case u8'm':

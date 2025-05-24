@@ -47,19 +47,34 @@ HTML_Entity_Behavior final : Directive_Behavior {
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
 };
 
-struct [[nodiscard]]
-Code_Point_Behavior final : Directive_Behavior {
+struct [[nodiscard]] Code_Point_Behavior : Directive_Behavior {
 
-    constexpr Code_Point_Behavior()
+    constexpr explicit Code_Point_Behavior()
         : Directive_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
     {
     }
 
+    virtual char32_t get_code_point(const ast::Directive& d, Context& context) const = 0;
+
     void
     generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const override;
+        const final;
 
     void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+};
+
+struct [[nodiscard]]
+Code_Point_By_Digits_Behavior final : Code_Point_Behavior {
+
+    [[nodiscard]]
+    char32_t get_code_point(const ast::Directive& d, Context& context) const final;
+};
+
+struct [[nodiscard]]
+Code_Point_By_Name_Behavior final : Code_Point_Behavior {
+
+    [[nodiscard]]
+    char32_t get_code_point(const ast::Directive& d, Context& context) const final;
 };
 
 struct [[nodiscard]]

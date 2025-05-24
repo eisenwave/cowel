@@ -2,6 +2,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/code_point_names.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
@@ -16,46 +17,38 @@ namespace {
 
 constexpr char32_t error_point = char32_t(-1);
 
+// FIXME: code duplication with syntax highlighting
 [[nodiscard]]
-char32_t get_code_point(const ast::Directive& d, Context& context)
+bool get_yes_no_argument(
+    std::u8string_view name,
+    std::u8string_view diagnostic_id,
+    const ast::Directive& d,
+    const Argument_Matcher& args,
+    Context& context,
+    bool fallback
+)
 {
-    if (!d.get_arguments().empty()) {
-        const Source_Span pos = d.get_arguments().front().get_source_span();
-        context.try_warning(
-            diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."
-        );
+    const int index = args.get_argument_index(name);
+    if (index < 0) {
+        return fallback;
     }
+    const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    to_plaintext(data, d.get_content(), context);
-    const std::u8string_view digits = trim_ascii_blank({ data.data(), data.size() });
-    if (digits.empty()) {
-        context.try_error(
-            diagnostic::U::blank, d.get_source_span(),
-            u8"Expected a sequence of hexadecimal digits, but got a blank string."
-        );
-        return error_point;
+    to_plaintext(data, arg.get_content(), context);
+    const auto string = as_u8string_view(data);
+    if (string == u8"yes") {
+        return true;
     }
-
-    std::optional<std::uint32_t> value = from_chars<std::uint32_t>(digits, 16);
-    if (!value) {
-        context.try_error(
-            diagnostic::U::digits, d.get_source_span(),
-            u8"Expected a sequence of hexadecimal digits."
-        );
-        return error_point;
+    if (string == u8"no") {
+        return false;
     }
-
-    const auto code_point = char32_t(*value);
-    if (!is_scalar_value(code_point)) {
-        context.try_error(
-            diagnostic::U::nonscalar, d.get_source_span(),
-            u8"The given hex sequence is not a Unicode scalar value. "
-            u8"Therefore, it cannot be encoded as UTF-8."
-        );
-        return error_point;
-    }
-
-    return code_point;
+    const std::u8string_view message[] {
+        u8"Argument has to be \"yes\" or \"no\", but \"",
+        string,
+        u8"\" was given.",
+    };
+    context.try_warning(diagnostic_id, arg.get_source_span(), message);
+    return fallback;
 }
 
 } // namespace
@@ -84,6 +77,90 @@ void Code_Point_Behavior::generate_html(HTML_Writer& out, const ast::Directive& 
         return;
     }
     out.write_inner_html(code_point);
+}
+
+[[nodiscard]]
+char32_t
+Code_Point_By_Digits_Behavior::get_code_point(const ast::Directive& d, Context& context) const
+{
+    if (!d.get_arguments().empty()) {
+        const Source_Span pos = d.get_arguments().front().get_source_span();
+        context.try_warning(
+            diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."
+        );
+    }
+    std::pmr::vector<char8_t> data { context.get_transient_memory() };
+    to_plaintext(data, d.get_content(), context);
+    const std::u8string_view digits = trim_ascii_blank({ data.data(), data.size() });
+    if (digits.empty()) {
+        context.try_error(
+            diagnostic::U::blank, d.get_source_span(),
+            u8"Expected a sequence of hexadecimal digits, but got a blank string."
+        );
+        return error_point;
+    }
+
+    std::optional<std::uint32_t> value = from_chars<std::uint32_t>(digits, 16);
+    if (!value) {
+        const std::u8string_view message[] {
+            u8"Expected a sequence of hexadecimal digits, but got \"",
+            digits,
+            u8"\".",
+        };
+        context.try_error(diagnostic::U::digits, d.get_source_span(), message);
+        return error_point;
+    }
+
+    const auto code_point = char32_t(*value);
+    if (!is_scalar_value(code_point)) {
+        const Characters8 chars = to_characters8(code_point);
+        const std::u8string_view message[] {
+            u8"The computed code point U+",
+            chars.as_string(),
+            u8" is not a Unicode scalar value. ",
+            u8"Therefore, it cannot be encoded as UTF-8.",
+        };
+        context.try_error(diagnostic::U::nonscalar, d.get_source_span(), message);
+        return error_point;
+    }
+
+    return code_point;
+}
+
+[[nodiscard]]
+char32_t
+Code_Point_By_Name_Behavior::get_code_point(const ast::Directive& d, Context& context) const
+{
+    if (!d.get_arguments().empty()) {
+        const Source_Span pos = d.get_arguments().front().get_source_span();
+        context.try_warning(
+            diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."
+        );
+    }
+    std::pmr::vector<char8_t> name { context.get_transient_memory() };
+    to_plaintext(name, d.get_content(), context);
+    const std::u8string_view digits = trim_ascii_blank({ name.data(), name.size() });
+    if (digits.empty()) {
+        context.try_error(
+            diagnostic::N::blank, d.get_source_span(),
+            u8"Expected the name of a Unicode code point, but got a blank string."
+        );
+        return error_point;
+    }
+    const auto name_string = as_u8string_view(name);
+
+    const char32_t code_point = code_point_by_name(name_string);
+    if (code_point == error_point) {
+        const std::u8string_view message[] {
+            u8"Expected an (all caps) name of a Unicode code point, but got \"",
+            name_string,
+            u8"\".",
+        };
+        context.try_error(diagnostic::N::invalid, d.get_source_span(), message);
+        return error_point;
+    }
+
+    return code_point;
 }
 
 namespace {
@@ -153,7 +230,7 @@ void Code_Point_Digits_Behavior::generate_plaintext(
     Context& context
 ) const
 {
-    static constexpr std::u8string_view parameters[] { u8"zfill", u8"base" };
+    static constexpr std::u8string_view parameters[] { u8"zfill", u8"base", u8"lower" };
 
     constexpr std::size_t default_zfill = 0;
     constexpr std::size_t min_zfill = 0;
@@ -173,6 +250,9 @@ void Code_Point_Digits_Behavior::generate_plaintext(
     const std::size_t base = get_integer_argument(
         u8"base", diagnostic::Udigits::base_not_an_integer, diagnostic::Udigits::base_range, //
         args, d, context, default_base, min_base, max_base
+    );
+    const bool is_lower = get_yes_no_argument(
+        u8"lower", diagnostic::Udigits::lower_invalid, d, args, context, false
     );
 
     std::pmr::vector<char8_t> input { context.get_transient_memory() };
@@ -211,7 +291,9 @@ void Code_Point_Digits_Behavior::generate_plaintext(
         );
     }
 
-    const Characters8 chars = to_characters8(std::uint32_t(code_point), int(base));
+    const bool convert_to_upper = !is_lower;
+    const Characters8 chars
+        = to_characters8(std::uint32_t(code_point), int(base), convert_to_upper);
     const std::size_t pad_length = std::min(zfill, chars.length);
     out.resize(out.size() + pad_length, u8'0');
     append(out, chars.as_string());

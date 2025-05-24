@@ -8,7 +8,7 @@ not every text editor handles special characters well.
 To increase portability,
 COWEL has the \dir{U} and \dir{c} directives.
 
-\h4{\dir{U} \c{mdash} Code point literal}
+\h4[id=dir-U]{\dir{U} \c{mdash} Code point literal}
 
 The input to a \dir{U} directive is a plaintext context,
 which should be a sequence of hexadecimal numbers
@@ -16,11 +16,33 @@ specifying a \ref[https://infra.spec.whatwg.org/#scalar-value]{Unicode scalar va
 that is, a code point which UTF-8 permits to be encoded.
 
 \example{
-\cm{\\U{30}} generates '\tt{0}' U+0030 DIGIT ZERO
+\cm{\\U{30}} generates '\tt{\U{30}}' U+0030 DIGIT ZERO.
 }
 
 \note{
 Like anywhere else, directives inside of \dir{U} are allowed.
+}
+
+\h4[id=dir-N]{\dir{N} \c{mdash} Code point by name}
+
+The \dir{N} directive behaves almost identically to \dir{U},
+except that its input has to be a
+\ref[https://www.unicode.org/reports/tr34/#Names]{Unicode name}
+rather than a hex digits.
+That is, the name of a code point,
+or one of its "control", "alternate", or "correction" aliases.
+
+\example{
+\cm{\\N{DIGIT ZERO}} '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
+}
+
+\tip{
+\dir{N} can lead to much more descriptive, human-friendly code, compared to \dir{U}.
+
+The main issue with \dir{U} is that it is very non-descriptive in source code.
+It simply contains a handful of digits,
+and unless the reader is a Unicode expert who happens to know that sequence,
+they cannot easily tell what the purpose of the character is.
 }
 
 \h4[id=dir-Udigits]{\dir{Udigits} \c{mdash} Digits of code point}
@@ -45,6 +67,13 @@ it will be left-padded with additional '\tt{0}' characters.
 The base of the output digit sequence, in range [2, 16].
 This defaults to 16, meaning that the digits are printed in hexadecimal.
 }
+
+\dt{\mka{lower}}
+\dd{
+A yes/no plaintext argument, defaulting to \tt{no}.
+If \tt{yes} is specified, digits beyond '\tt{9}' (i.e. '\tt{A}' to '\tt{F}')
+will be output in lower case instead.
+}
 }
 
 \example{
@@ -63,6 +92,20 @@ It is also possible to define a macro if we need this frequently:
 \macro[\code-point]{U+\Udigits{\put}}
 \code-point{x}
 }}
+}
+
+\tip{
+\dir{Udigits} can also be combined with \dir{N}
+to produce human-readable descriptions of code points,
+while also keeping our source code readable:
+\codeblock[cowel]{\literally{
+\macro[\named-char{...}]{U+\Udigits[4]{\N{\put}} \put}
+\named-char{SECTION SIGN}
+}}
+This renders as:
+\indent{
+U+\Udigits[4]{\N{SECTION SIGN}} SECTION SIGN
+}
 }
 
 \dir{Udigits} uses only the first code point within the input text,

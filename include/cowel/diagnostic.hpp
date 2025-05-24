@@ -141,6 +141,15 @@ inline constexpr std::u8string_view nonscalar = u8"U:nonscalar";
 
 } // namespace U
 
+namespace N {
+
+/// @brief In `\\N`, the input is blank.
+inline constexpr std::u8string_view blank = u8"N:blank";
+/// @brief In `\\N`, the given name does not match any Unicode character name.
+inline constexpr std::u8string_view invalid = u8"N:invalid";
+
+} // namespace N
+
 namespace Udigits {
 
 /// @brief In a `\Udigits` directive,
@@ -161,6 +170,9 @@ inline constexpr std::u8string_view zfill_range = u8"Udigits:zfill.range";
 inline constexpr std::u8string_view base_not_an_integer = u8"Udigits:base.parse";
 /// @brief The `base` argument could not be parsed as an integer.
 inline constexpr std::u8string_view base_range = u8"Udigits:base.base";
+
+/// @brief The `lower` argument is neither `yes` nor `no`.
+inline constexpr std::u8string_view lower_invalid = u8"Udigits:lower.invalid";
 
 } // namespace Udigits
 
