@@ -7,26 +7,35 @@ COWEL relies entirely on the browser for properly rendering math as MathML,
 which is very simple and lightweight,
 but not as portable as "baking" the math into an SVG.
 
-\vset[x-over-2]{<math display=inline>
-  <mfrac>
-    <mi>x</mi>
-    <mn>2</mn>
-  </mfrac>
-</math>}
-
 \example{
 If you have existing MathML, you can embed their content using \dir{html} or \dir{htmlblock}:
 \codeblock[cowel]{
 Math
 \\html{
-\vget[x-over-2]
+\code[xml,nested=yes]{<math display=inline>
+  <mfrac>
+    <mi>x</mi>
+    <mn>2</mn>
+  </mfrac>
+</math>}
 }
 in a sentence.
 }
 This renders as:
 \indent{
-Math \html{\vget[x-over-2]} in a sentence.
+Math
+\html{<math display=inline>
+<mfrac>
+  <mi>x</mi>
+  <mn>2</mn>
+</mfrac>
+</math>}
+in a sentence.
 }
+You can also keep the MathML separate within an XML document and \dir{include} it:
+\codeblock[cowel]{\literally{
+Math \html{\include{math.mml}} in a sentence.
+}}
 }
 
 However, hand-writing MathML would be extremely tedious and verbose,
