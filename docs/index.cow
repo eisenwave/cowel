@@ -51,19 +51,6 @@ Hello, \strong{strong} world!
 }
 }
 
-\h2{Getting started}
-
-COWEL is still early in development,
-and not available in any package manager yet.
-To install it and run COWEL:
-\codeblock[sh]{
-git clone https://github.com/Eisenwave/cowel.git --recursive
-cd cowel
-cmake -B build
-cmake --build build
-./build/cowel-cli INPUT.cowel OUTPUT.html
-}
-
 \h2{Motivation}
 
 Many similar tools (mpark/wg21, bikeshed, etc.)
@@ -82,6 +69,28 @@ It makes producing HTML a natural part of the language,
 lets you specify metadata,
 and more, all in one, simple syntax.
 
+\h2{Getting started}
+
+COWEL is still early in development,
+and not available in any package manager yet.
+To install it and run COWEL:
+\codeblock[sh]{
+git clone https://github.com/Eisenwave/cowel.git --recursive
+cd cowel
+cmake -B build
+cmake --build build
+./build/cowel-cli INPUT.cow OUTPUT.html
+}
+
+\tip{
+It is recommended to use a \tt{.cow} or \tt{.cowel} file extension for COWEL documents.
+
+Many text editors support associating such file extensions
+with TeX or LaTeX syntax highlighting,
+whose syntax is similar enough to get \em{some} basic highlighting.
+
+A VSCode plugin for proper highlighting is planned, among other features.
+}
 
 \import{intro/syntax.cow}
 \import{intro/directives.cow}
@@ -103,3 +112,4 @@ and more, all in one, simple syntax.
 \import{directives/sections.cow}
 \import{directives/files.cow}
 \import{directives/macros.cow}
+\import{directives/misc.cow}

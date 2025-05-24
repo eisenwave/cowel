@@ -1,0 +1,57 @@
+\h3{Miscellaneous}
+
+\h4[id=dir-trim]{\dir{trim} \c{mdash} Trim input}
+
+The content of a \dir{text} directive is an HTML context
+(\ref[#contexts-and-output]).
+Its arguments are ignored.
+\dir{text} is a formatting directive.
+
+The process of \dfn{trimming} eliminates leading and trailing whitespace in the input,
+at the COWEL source level.
+
+\example{
+\codeblock[cowel]{\literally{
+Every\trim{ day}
+}}
+This renders as:
+\indent{
+Every\trim{ day}
+}
+}
+
+\tip{
+\dir{trim} is primarily useful inside of macros.
+We might not want to space-separate content if some of it is empty.
+For example, we could define a \dir{Note} macro
+where the user can \em{optionally} provide a number for that note:
+\codeblock[cowel]{\literally{
+\macro[\Note]{\trim{Note \put}:}
+
+\Note Something something.
+
+\Note{1} Something else.
+}}
+This renders as:
+\indent{\paragraphs{
+Note: Something something.
+
+Note 1: Something else.
+}}
+Notice that because \dir{put} expands to no content,
+the trailing space after \cm{Note} is eliminated.
+If it wasn't eliminated, we would end up with
+\code[cowel,prefix=\\trim]{{Note :}},
+but there should never be a space before the colon.
+}
+
+\h4[id=dir-text]{\dir{text} \c{mdash} Plaintext context}
+
+The content of a \dir{text} directive is a plaintext context
+(\ref[#contexts-and-output]).
+Its arguments are ignored.
+
+It simply outputs the input that it was given as text.
+Therefore, it acts as a sort of wrapper for plaintext.
+Notably, this forces the generation of plaintext even when \dir{text}
+is within an HTML context.

@@ -1474,9 +1474,9 @@ h1 {
 <div class=toc><div class=toc-num data-level=2>1</div>
 <a href=#introduction><h2>Introduction</h2></a>
 <div class=toc-num data-level=2>2</div>
-<a href=#getting-started><h2>Getting started</h2></a>
-<div class=toc-num data-level=2>3</div>
 <a href=#motivation><h2>Motivation</h2></a>
+<div class=toc-num data-level=2>3</div>
+<a href=#getting-started><h2>Getting started</h2></a>
 <div class=toc-num data-level=2>4</div>
 <a href=#syntax-in-a-nutshell><h2>Syntax in a nutshell</h2></a>
 <div class=toc-num data-level=3>4.1</div>
@@ -1653,6 +1653,16 @@ h1 {
 <a href=#macros><h3>Macros</h3></a>
 <div class=toc-num data-level=4>8.17.1</div>
 <a href=#dir-def><h4><code><h- data-h=mk_tag>\macro</h-></code> &mdash; Define a macro</h4></a>
+<div class=toc-num data-level=5>8.17.1.1</div>
+<a href=#dir-put><h5><code><h- data-h=mk_tag>\put</h-></code> &mdash; Pseudo-directive for macro content</h5></a>
+<div class=toc-num data-level=5>8.17.1.2</div>
+<a href=#dir-arg><h5><code><h- data-h=mk_tag>\arg</h-></code> &mdash; Pseudo-directive for macro arguments</h5></a>
+<div class=toc-num data-level=3>8.18</div>
+<a href=#miscellaneous><h3>Miscellaneous</h3></a>
+<div class=toc-num data-level=4>8.18.1</div>
+<a href=#dir-trim><h4><code><h- data-h=mk_tag>\trim</h-></code> &mdash; Trim input</h4></a>
+<div class=toc-num data-level=4>8.18.2</div>
+<a href=#dir-text><h4><code><h- data-h=mk_tag>\text</h-></code> &mdash; Plaintext context</h4></a>
 </div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
@@ -1674,18 +1684,7 @@ Hello, <strong>strong</strong> world!
 </div>
 </p></example-block>
 
-<h2 id=getting-started><a class=para href=#getting-started></a>2. Getting started</h2>
-
-<p>COWEL is still early in development,
-and not available in any package manager yet.
-To install it and run COWEL:
-</p><code-block><h- data-h=sh_cmd>git</h-> <h- data-h=str>clone</h-> <h- data-h=str>https://github.com/Eisenwave/cowel.git</h-> <h- data-h=sh-opt>--recursive</h->
-<h- data-h=sh_cmd>cd</h-> <h- data-h=str>cowel</h->
-<h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>-B</h-> <h- data-h=str>build</h->
-<h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>--build</h-> <h- data-h=str>build</h->
-<h- data-h=sh_cmd>./build/cowel-cli</h-> <h- data-h=str>INPUT.cowel</h-> <h- data-h=str>OUTPUT.html</h-></code-block>
-
-<h2 id=motivation><a class=para href=#motivation></a>3. Motivation</h2>
+<h2 id=motivation><a class=para href=#motivation></a>2. Motivation</h2>
 
 <p>Many similar tools (mpark/wg21, bikeshed, etc.)
 are based on Markdown.
@@ -1703,6 +1702,26 @@ It makes producing HTML a natural part of the language,
 lets you specify metadata,
 and more, all in one, simple syntax.
 </p>
+<h2 id=getting-started><a class=para href=#getting-started></a>3. Getting started</h2>
+
+<p>COWEL is still early in development,
+and not available in any package manager yet.
+To install it and run COWEL:
+</p><code-block><h- data-h=sh_cmd>git</h-> <h- data-h=str>clone</h-> <h- data-h=str>https://github.com/Eisenwave/cowel.git</h-> <h- data-h=sh-opt>--recursive</h->
+<h- data-h=sh_cmd>cd</h-> <h- data-h=str>cowel</h->
+<h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>-B</h-> <h- data-h=str>build</h->
+<h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>--build</h-> <h- data-h=str>build</h->
+<h- data-h=sh_cmd>./build/cowel-cli</h-> <h- data-h=str>INPUT.cow</h-> <h- data-h=str>OUTPUT.html</h-></code-block>
+
+<tip-block><p><intro-></intro-> 
+It is recommended to use a <tt->.cow</tt-> or <tt->.cowel</tt-> file extension for COWEL documents.
+</p>
+<p>Many text editors support associating such file extensions
+with TeX or LaTeX syntax highlighting,
+whose syntax is similar enough to get <em>some</em> basic highlighting.
+</p>
+<p>A VSCode plugin for proper highlighting is planned, among other features.
+</p></tip-block>
 
 <h2 id=syntax-in-a-nutshell><a class=para href=#syntax-in-a-nutshell></a>4. Syntax in a nutshell</h2>
 
@@ -2434,30 +2453,32 @@ COWEL relies entirely on the browser for properly rendering math as MathML,
 which is very simple and lightweight,
 but not as portable as "baking" the math into an SVG.
 </p>
-
-
 <example-block><p><intro-></intro-> 
 If you have existing MathML, you can embed their content using <code><h- data-h=mk_tag>\html</h-></code> or <code><h- data-h=mk_tag>\htmlblock</h-></code>:
 </p><code-block>Math
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>html</h-><h- data-h=sym_brac>{</h->
-&lt;math display=inline&gt;
-  &lt;mfrac&gt;
-    &lt;mi&gt;x&lt;/mi&gt;
-    &lt;mn&gt;2&lt;/mn&gt;
-  &lt;/mfrac&gt;
-&lt;/math&gt;
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>math</h-> <h- data-h=mk_attr>display</h-><h- data-h=sym_punc>=</h->inline&gt;
+  <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>mfrac</h-><h- data-h=sym_punc>&gt;</h->
+    <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>mi</h-><h- data-h=sym_punc>&gt;</h->x<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>mi</h-><h- data-h=sym_punc>&gt;</h->
+    <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>mn</h-><h- data-h=sym_punc>&gt;</h->2<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>mn</h-><h- data-h=sym_punc>&gt;</h->
+  <h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>mfrac</h-><h- data-h=sym_punc>&gt;</h->
+<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>math</h-><h- data-h=sym_punc>&gt;</h->
 <h- data-h=sym_brac>}</h->
 in a sentence.</code-block>
 <p>This renders as:
 <div class=indent>
-Math <math display=inline>
-  <mfrac>
-    <mi>x</mi>
-    <mn>2</mn>
-  </mfrac>
-</math> in a sentence.
+Math
+<math display=inline>
+<mfrac>
+  <mi>x</mi>
+  <mn>2</mn>
+</mfrac>
+</math>
+in a sentence.
 </div>
-</p></example-block>
+You can also keep the MathML separate within an XML document and <code><h- data-h=mk_tag>\include</h-></code> it:
+</p><code-block>Math <h- data-h=mk_tag>\html</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\include</h-><h- data-h=sym_brac>{</h->math.mml<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-> in a sentence.</code-block>
+</example-block>
 
 <p>However, hand-writing MathML would be extremely tedious and verbose,
 so COWEL offers some convenience directives, listed below.
@@ -3315,16 +3336,20 @@ but can be used to document how the directive is meant to be used.
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>m</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h-></code-block>
 </note-block>
 
+<h5 id=dir-put><a class=para href=#dir-put></a>8.17.1.1. <code><h- data-h=mk_tag>\put</h-></code> &mdash; Pseudo-directive for macro content</h5>
+
 <p>When a macro is used, the content within the <code><h- data-h=mk_tag>\macro</h-></code> directive is copied.
-Any uses of the <code><h- data-h=mk_tag>\put</h-></code> pseud-directive inside the macro are replaced with copies
+Any uses of the <code><h- data-h=mk_tag>\put</h-></code> pseudo-directive inside the macro are replaced with copies
 of the input content.
 </p>
 <example-block><p><intro-></intro-> 
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>bi</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
-<h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>Now, the following are equivalent:</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>i</h-><h- data-h=sym_brac>{</h->bold and italic<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>bi</h-><h- data-h=sym_brac>{</h->bold and italic<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\bi</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\b</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\i</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Now, the following are equivalent:</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\b</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\i</h-><h- data-h=sym_brac>{</h->bold and italic<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\bi</h-><h- data-h=sym_brac>{</h->bold and italic<h- data-h=sym_brac>}</h-></code-block>
 </example-block>
+
+<h5 id=dir-arg><a class=para href=#dir-arg></a>8.17.1.2. <code><h- data-h=mk_tag>\arg</h-></code> &mdash; Pseudo-directive for macro arguments</h5>
 
 <todo-block><p><intro-></intro-> 
 Currently, macros only support content as input.
@@ -3332,5 +3357,59 @@ Arguments to macros are ignored entirely.
 This should be supported at some point.
 </p></todo-block>
 
-</main></body>
+<h3 id=miscellaneous><a class=para href=#miscellaneous></a>8.18. Miscellaneous</h3>
+
+<h4 id=dir-trim><a class=para href=#dir-trim></a>8.18.1. <code><h- data-h=mk_tag>\trim</h-></code> &mdash; Trim input</h4>
+
+<p>The content of a <code><h- data-h=mk_tag>\text</h-></code> directive is an HTML context
+(<a href=#contexts-and-output>§6. Contexts and output</a>).
+Its arguments are ignored.
+<code><h- data-h=mk_tag>\text</h-></code> is a formatting directive.
+</p>
+<p>The process of <dfn>trimming</dfn> eliminates leading and trailing whitespace in the input,
+at the COWEL source level.
+</p>
+<example-block><p><intro-></intro-> 
+</p><code-block>Every<h- data-h=mk_tag>\trim</h-><h- data-h=sym_brac>{</h-> day<h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as:
+<div class=indent>
+Everyday
+</div>
+</p></example-block>
+
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\trim</h-></code> is primarily useful inside of macros.
+We might not want to space-separate content if some of it is empty.
+For example, we could define a <code><h- data-h=mk_tag>\Note</h-></code> macro
+where the user can <em>optionally</em> provide a number for that note:
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\Note</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\trim</h-><h- data-h=sym_brac>{</h->Note <h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h->:<h- data-h=sym_brac>}</h->
+
+<h- data-h=mk_tag>\Note</h-> Something something.
+
+<h- data-h=mk_tag>\Note</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-> Something else.</code-block>
+<p>This renders as:
+<div class=indent>
+<p>Note: Something something.
+</p>
+<p>Note 1: Something else.
+</p></div>
+Notice that because <code><h- data-h=mk_tag>\put</h-></code> expands to no content,
+the trailing space after <code>Note</code> is eliminated.
+If it wasn't eliminated, we would end up with
+<code><h- data-h=sym_brac>{</h->Note :<h- data-h=sym_brac>}</h-></code>,
+but there should never be a space before the colon.
+</p></tip-block>
+
+<h4 id=dir-text><a class=para href=#dir-text></a>8.18.2. <code><h- data-h=mk_tag>\text</h-></code> &mdash; Plaintext context</h4>
+
+<p>The content of a <code><h- data-h=mk_tag>\text</h-></code> directive is a plaintext context
+(<a href=#contexts-and-output>§6. Contexts and output</a>).
+Its arguments are ignored.
+</p>
+<p>It simply outputs the input that it was given as text.
+Therefore, it acts as a sort of wrapper for plaintext.
+Notably, this forces the generation of plaintext even when <code><h- data-h=mk_tag>\text</h-></code>
+is within an HTML context.
+
+</p></main></body>
 </html>
