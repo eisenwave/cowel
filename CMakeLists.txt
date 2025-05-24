@@ -33,6 +33,7 @@ set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
 include_directories(${INCLUDE_DIRS})
 
 add_library(cowel STATIC
+    src/main/cpp/util/code_point_names.cpp
     src/main/cpp/util/draft_uris.cpp
     src/main/cpp/util/html_writer.cpp
     src/main/cpp/util/html_entities.cpp
