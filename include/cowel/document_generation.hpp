@@ -1,7 +1,6 @@
 #ifndef COWEL_DOCUMENT_GENERATION_HPP
 #define COWEL_DOCUMENT_GENERATION_HPP
 
-#include <filesystem>
 #include <memory_resource>
 #include <span>
 #include <string_view>
@@ -26,8 +25,6 @@ struct Generation_Options {
     /// when directive processing runs into an error.
     Directive_Behavior* error_behavior = nullptr;
 
-    /// @brief The path of the source file.
-    const std::filesystem::path& path;
     /// @brief The highlight theme source.
     std::u8string_view highlight_theme_source;
 

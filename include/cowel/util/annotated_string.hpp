@@ -1,5 +1,5 @@
-#ifndef COWEL_CODE_STRING_HPP
-#define COWEL_CODE_STRING_HPP
+#ifndef COWEL_ANNOTATED_STRING_HPP
+#define COWEL_ANNOTATED_STRING_HPP
 
 #include <cstddef>
 #include <memory_resource>

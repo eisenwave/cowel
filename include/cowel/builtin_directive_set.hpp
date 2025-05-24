@@ -1,6 +1,7 @@
 #ifndef COWEL_BUILTIN_DIRECTIVE_SET
 #define COWEL_BUILTIN_DIRECTIVE_SET
 
+#include <memory>
 #include <string_view>
 
 #include "cowel/util/html_writer.hpp"

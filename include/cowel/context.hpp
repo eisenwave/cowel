@@ -1,7 +1,6 @@
 #ifndef COWEL_CONTEXT_HPP
 #define COWEL_CONTEXT_HPP
 
-#include <filesystem>
 #include <memory_resource>
 #include <string>
 #include <string_view>

@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <filesystem>
 #include <map>
 #include <memory_resource>
 #include <string_view>
@@ -223,7 +224,6 @@ int main(int argc, const char* const* argv)
                                        .root_behavior = behavior,
                                        .root_content = root_content,
                                        .builtin_behavior = builtin_directives,
-                                       .path = in_path,
                                        .highlight_theme_source = theme_source,
                                        .file_loader = file_loader,
                                        .logger = logger,

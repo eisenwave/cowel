@@ -140,7 +140,6 @@ struct Doc_Gen_Test : testing::Test {
                                            .root_content = content,
                                            .builtin_behavior = builtin_directives,
                                            .error_behavior = &error_behavior,
-                                           .path = file_path,
                                            .highlight_theme_source = theme_source_string,
                                            .logger = logger,
                                            .highlighter = test_highlighter,
