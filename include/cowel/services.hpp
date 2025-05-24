@@ -2,6 +2,7 @@
 #define COWEL_SERVICES_HPP
 
 #include <memory_resource>
+#include <optional>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -140,17 +141,41 @@ struct Bibliography {
     virtual void clear() = 0;
 };
 
+struct File_Entry {
+    std::u8string_view source;
+    std::u8string_view name;
+};
+
+/// @brief This class loads files into memory and stores their text data persistently,
+/// so that AST nodes can keep non-owning views into such text data.
 struct File_Loader {
+    /// @brief Loads a file into memory.
+    /// If successful, returns a new file entry,
+    /// which has non-owning views into the file's loaded source text and name.
+    ///
+    /// Note that the entry name must not be the same as `path`
+    /// because there is no assurance that `path` will remain valid in the long term.
     [[nodiscard]]
-    virtual bool operator()(std::pmr::vector<char8_t>& out, std::u8string_view path)
+    virtual std::optional<File_Entry> load(std::u8string_view path)
+        = 0;
+
+    /// @brief Returns an existing entry that was previously loaded with the same path.
+    [[nodiscard]]
+    virtual std::optional<File_Entry> find(std::u8string_view path) const
         = 0;
 };
 
 struct Always_Failing_File_Loader final : File_Loader {
     [[nodiscard]]
-    bool operator()(std::pmr::vector<char8_t>&, std::u8string_view) final
+    std::optional<File_Entry> load(std::u8string_view) final
     {
-        return false;
+        return {};
+    }
+
+    [[nodiscard]]
+    std::optional<File_Entry> find(std::u8string_view) const final
+    {
+        return {};
     }
 };
 

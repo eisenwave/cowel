@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <map>
 #include <memory_resource>
 #include <string_view>
 #include <vector>
@@ -18,20 +19,67 @@
 namespace cowel {
 namespace {
 
-struct Relative_File_Loader final : File_Loader {
-    std::filesystem::path base;
+struct File_Loader_Less {
+    using is_transparent = void;
 
-    explicit Relative_File_Loader(std::filesystem::path&& base)
+    [[nodiscard]]
+    bool operator()(const auto& x, const auto& y) const noexcept
+    {
+        return std::u8string_view { x.data(), x.size() }
+        < std::u8string_view { y.data(), y.size() };
+    }
+};
+
+struct Relative_File_Loader final : File_Loader {
+    using map_type
+        = std::pmr::map<std::pmr::vector<char8_t>, std::pmr::vector<char8_t>, File_Loader_Less>;
+
+    std::filesystem::path base;
+    map_type entries;
+
+    explicit Relative_File_Loader(std::filesystem::path&& base, std::pmr::memory_resource* memory)
         : base { std::move(base) }
+        , entries { memory }
     {
     }
 
     [[nodiscard]]
-    bool operator()(std::pmr::vector<char8_t>& out, std::u8string_view u8path) final
+    std::optional<File_Entry> load(std::u8string_view path) final
     {
-        const std::filesystem::path relative { u8path, std::filesystem::path::generic_format };
+        const std::filesystem::path relative { path, std::filesystem::path::generic_format };
         const std::filesystem::path resolved = base / relative;
-        return load_utf8_file(out, resolved.generic_u8string()).has_value();
+
+        if (std::optional<File_Entry> _ = find(path)) {
+            return {};
+        }
+
+        std::pmr::memory_resource* const memory = entries.get_allocator().resource();
+        Result<std::pmr::vector<char8_t>, IO_Error_Code> result
+            = load_utf8_file(resolved.generic_u8string(), memory);
+        if (!result) {
+            return {};
+        }
+        std::pmr::vector<char8_t> file { path.begin(), path.end(), memory };
+        const auto [it, success] = entries.emplace(std::move(file), std::move(*result));
+        COWEL_ASSERT(success);
+
+        return to_file_entry(it);
+    }
+
+    [[nodiscard]]
+    std::optional<File_Entry> find(std::u8string_view path) const final
+    {
+        const auto it = entries.find(path);
+        if (it == entries.end()) {
+            return {};
+        }
+        return to_file_entry(it);
+    }
+
+    static File_Entry to_file_entry(map_type::const_iterator it)
+    {
+        return File_Entry { .source = as_u8string_view(it->second),
+                            .name = as_u8string_view(it->first) };
     }
 };
 
@@ -62,12 +110,14 @@ std::u8string_view severity_tag(Severity severity)
 }
 
 struct Stderr_Logger final : Logger {
+    File_Loader& file_loader;
     Diagnostic_String out;
     bool any_errors = false;
 
     [[nodiscard]]
-    constexpr Stderr_Logger(std::pmr::memory_resource* memory)
+    constexpr Stderr_Logger(File_Loader& file_loader, std::pmr::memory_resource* memory)
         : Logger { Severity::min }
+        , file_loader { file_loader }
         , out { memory }
     {
     }
@@ -97,12 +147,12 @@ struct Stderr_Logger final : Logger {
         out.append(u8']');
         out.append(ansi::reset);
         out.append(u8'\n');
-        // FIXME: reimplement for multi-file logging
-        /*
         if (!diagnostic.location.empty()) {
-            print_affected_line(out, source, diagnostic.location);
+            const std::optional<File_Entry> entry = file_loader.find(diagnostic.location.file_name);
+            if (entry) {
+                print_affected_line(out, entry->source, diagnostic.location);
+            }
         }
-        */
         print_code_string_stderr(out);
         out.clear();
     }
@@ -158,8 +208,8 @@ int main(int argc, const char* const* argv)
 
     Builtin_Directive_Set builtin_directives {};
     Document_Content_Behavior behavior { builtin_directives.get_macro_behavior() };
-    Relative_File_Loader file_loader { std::move(in_path_directory) };
-    Stderr_Logger logger { &memory };
+    Relative_File_Loader file_loader { std::move(in_path_directory), &memory };
+    Stderr_Logger logger { file_loader, &memory };
     static constinit Ulight_Syntax_Highlighter highlighter;
 
     const std::pmr::vector<ast::Content> root_content = parse_and_build(
