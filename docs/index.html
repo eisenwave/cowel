@@ -1659,6 +1659,8 @@ h1 {
 <a href=#dir-put><h5><code><h- data-h=mk_tag>\put</h-></code> &mdash; Pseudo-directive for macro content</h5></a>
 <div class=toc-num data-level=5>8.17.1.2</div>
 <a href=#dir-arg><h5><code><h- data-h=mk_tag>\arg</h-></code> &mdash; Pseudo-directive for macro arguments</h5></a>
+<div class=toc-num data-level=4>8.17.2</div>
+<a href=#avoiding-name-collisions><h4>Avoiding name collisions</h4></a>
 <div class=toc-num data-level=3>8.18</div>
 <a href=#miscellaneous><h3>Miscellaneous</h3></a>
 <div class=toc-num data-level=4>8.18.1</div>
@@ -3399,6 +3401,24 @@ Currently, macros only support content as input.
 Arguments to macros are ignored entirely.
 This should be supported at some point.
 </p></todo-block>
+
+<h4 id=avoiding-name-collisions><a class=para href=#avoiding-name-collisions></a>8.17.2. Avoiding name collisions</h4>
+
+<p>Since COWEL continuously adds more directives in the future,
+you should try to avoid names that may collide with those when defining your own macros.
+COWEL builtin directive names only use alphanumeric characters and '<tt->-</tt->',
+so you can use some of other character for disambiguation.
+</p>
+<tip-block><p><intro-></intro-> 
+The '<tt->.</tt->' and '<tt->_</tt->' characters can be used as part of directive names,
+and COWEL will never use this in its own names.
+Therefore, you should try to "namespace" your own macros like:
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\abc.i</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->macro definition here ...<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\abc.i</h->
+
+<h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\abc_i</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->macro definition here ...<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\abc_i</h-></code-block>
+</tip-block>
 
 <h3 id=miscellaneous><a class=para href=#miscellaneous></a>8.18. Miscellaneous</h3>
 

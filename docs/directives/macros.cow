@@ -39,3 +39,23 @@ Currently, macros only support content as input.
 Arguments to macros are ignored entirely.
 This should be supported at some point.
 }
+
+\h4{Avoiding name collisions}
+
+Since COWEL continuously adds more directives in the future,
+you should try to avoid names that may collide with those when defining your own macros.
+COWEL builtin directive names only use alphanumeric characters and '\tt{-}',
+so you can use some of other character for disambiguation.
+
+\tip{
+The '\tt{.}' and '\tt{_}' characters can be used as part of directive names,
+and COWEL will never use this in its own names.
+Therefore, you should try to "namespace" your own macros like:
+\codeblock[cowel]{\literally{
+\macro[\abc.i]{macro definition here ...}
+\abc.i
+
+\macro[\abc_i]{macro definition here ...}
+\abc_i
+}}
+}
