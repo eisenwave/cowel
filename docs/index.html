@@ -1667,6 +1667,20 @@ h1 {
 <a href=#dir-trim><h4><code><h- data-h=mk_tag>\trim</h-></code> &mdash; Trim input</h4></a>
 <div class=toc-num data-level=4>8.18.2</div>
 <a href=#dir-text><h4><code><h- data-h=mk_tag>\text</h-></code> &mdash; Plaintext context</h4></a>
+<div class=toc-num data-level=3>8.19</div>
+<a href=#variables-and-calculations><h3>Variables and calculations</h3></a>
+<div class=toc-num data-level=4>8.19.1</div>
+<a href=#dir-Vset><h4><code><h- data-h=mk_tag>\Vset</h-></code> &mdash; Set a variable</h4></a>
+<div class=toc-num data-level=4>8.19.2</div>
+<a href=#dir-Vget><h4><code><h- data-h=mk_tag>\Vget</h-></code> &mdash; Get a variable</h4></a>
+<div class=toc-num data-level=4>8.19.3</div>
+<a href=#dir-Cadd><h4><code><h- data-h=mk_tag>\Cadd</h-></code> &mdash; Perform addition</h4></a>
+<div class=toc-num data-level=4>8.19.4</div>
+<a href=#dir-Csub><h4><code><h- data-h=mk_tag>\Csub</h-></code> &mdash; Perform subtraction</h4></a>
+<div class=toc-num data-level=4>8.19.5</div>
+<a href=#dir-Cmul><h4><code><h- data-h=mk_tag>\Cmul</h-></code> &mdash; Perform multiplication</h4></a>
+<div class=toc-num data-level=4>8.19.6</div>
+<a href=#dir-Cdiv><h4><code><h- data-h=mk_tag>\Cdiv</h-></code> &mdash; Perform division</h4></a>
 </div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
@@ -3482,5 +3496,115 @@ Therefore, it acts as a sort of wrapper for plaintext.
 Notably, this forces the generation of plaintext even when <code><h- data-h=mk_tag>\text</h-></code>
 is within an HTML context.
 
-</p></main></body>
+</p><h3 id=variables-and-calculations><a class=para href=#variables-and-calculations></a>8.19. Variables and calculations</h3>
+
+<p>While COWEL is not intended to be general purpose programming language,
+and more advanced interactive features are better suited for JavaScript,
+it does provide a few ways to perform calculations.
+</p>
+<h4 id=dir-Vset><a class=para href=#dir-Vset></a>8.19.1. <code><h- data-h=mk_tag>\Vset</h-></code> &mdash; Set a variable</h4>
+
+<p><code><h- data-h=mk_tag>\Vset</h-></code> sets the value of a variable to some provided plaintext.
+It displays as a meta directive.
+</p>
+<p>It takes a single <tt-><h- data-h=mk_attr>var</h-></tt-> argument,
+which is a plaintext context for the name of the variable.
+The directive content is also a plaintext context,
+and provides the value of the variable.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Sets x = 123</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\Vset</h-><h- data-h=sym_sqr>[</h->x<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->123<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Accesses the value of x, which is 123</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\Vget</h-><h- data-h=sym_sqr>[</h->x<h- data-h=sym_sqr>]</h-></code-block>
+<p>This renders as:
+<div class=indent>
+
+
+
+
+123
+</div>
+</p></example-block>
+
+<h4 id=dir-Vget><a class=para href=#dir-Vget></a>8.19.2. <code><h- data-h=mk_tag>\Vget</h-></code> &mdash; Get a variable</h4>
+
+<p><code><h- data-h=mk_tag>\Vget</h-></code> obtains the value of a variable,
+and displays as inline.
+Its content is ignored.
+</p>
+<p>It takes a single <tt-><h- data-h=mk_attr>var</h-></tt-> argument,
+which is a plaintext context for the name of the variable.
+See above for an example.
+</p>
+<p>If the variable denoted by the <tt-><h- data-h=mk_attr>var</h-></tt-> argument does not exist,
+<code><h- data-h=mk_tag>\Vget</h-></code> expands to nothing.
+</p>
+<h4 id=dir-Cadd><a class=para href=#dir-Cadd></a>8.19.3. <code><h- data-h=mk_tag>\Cadd</h-></code> &mdash; Perform addition</h4>
+
+<p>The <code><h- data-h=mk_tag>\Cadd</h-></code> directive performs an integer addition between its (nameless) arguments.
+Its content is ignored, and it displays as inline.
+</p>
+<p>Each of its arguments is a plaintext context,
+where the argument is interpreted as an integer, and then summed.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\Cadd</h-><h- data-h=sym_sqr>[</h->1<h- data-h=sym_punc>,</h-> 2<h- data-h=sym_punc>,</h-> 3<h- data-h=sym_punc>,</h-> -1<h- data-h=sym_sqr>]</h-> <h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>1 + 2 + 3 + (-1)</h-><h- data-h=cmt_dlim>}</h-></code-block>
+<p>This renders as:
+<div class=indent>
+5 
+</div>
+</p></example-block>
+
+<tip-block><p><intro-></intro-> 
+You can also combine <code><h- data-h=mk_tag>\Cadd</h-></code> with <code><h- data-h=mk_tag>\Vget</h-></code> and <code><h- data-h=mk_tag>\Vset</h-></code> to store the results
+of your calculations:
+</p><code-block><h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Reset paragraph number</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\Vset</h-><h- data-h=sym_sqr>[</h->index<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Define a macro for automatically incrementing paragraph numbers.</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\p.num</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
+<h- data-h=mk_tag>\Vset</h-><h- data-h=sym_sqr>[</h->index<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\Cadd</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\Vget</h-><h- data-h=sym_sqr>[</h->index<h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>,</h->1<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\Vget</h-><h- data-h=sym_sqr>[</h->index<h- data-h=sym_sqr>]</h->
+<h- data-h=sym_brac>}</h->
+
+Paragraph <h- data-h=mk_tag>\p.num</h->
+
+Paragraph <h- data-h=mk_tag>\p.num</h-></code-block>
+<p>This renders as:
+<div class=indent>
+<p>Paragraph 1
+</p>
+<p>Paragraph 2
+</p></div>
+</p></tip-block>
+
+<note-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\Cadd</h-></code> and other calculation directives are mainly intended
+for incrementing paragraph numbers and other basic tasks.
+</p></note-block>
+
+<h4 id=dir-Csub><a class=para href=#dir-Csub></a>8.19.4. <code><h- data-h=mk_tag>\Csub</h-></code> &mdash; Perform subtraction</h4>
+
+<p>The <code><h- data-h=mk_tag>\Csub</h-></code> directive behaves like the <code><h- data-h=mk_tag>\Cadd</h-></code> directive,
+except that it performs subtraction instead of addition.
+</p>
+<h4 id=dir-Cmul><a class=para href=#dir-Cmul></a>8.19.5. <code><h- data-h=mk_tag>\Cmul</h-></code> &mdash; Perform multiplication</h4>
+
+<p>The <code><h- data-h=mk_tag>\Cmul</h-></code> directive behaves like the <code><h- data-h=mk_tag>\Cadd</h-></code> directive,
+except that it performs multiplication instead of addition.
+</p>
+<h4 id=dir-Cdiv><a class=para href=#dir-Cdiv></a>8.19.6. <code><h- data-h=mk_tag>\Cdiv</h-></code> &mdash; Perform division</h4>
+
+<p>The <code><h- data-h=mk_tag>\Cdiv</h-></code> directive behaves like the <code><h- data-h=mk_tag>\Cdiv</h-></code> directive,
+except that it performs division instead of addition.
+</p>
+<warning-block><p><intro-></intro-> 
+Division by zero results in an error.
+</p></warning-block>
+
+</main></body>
 </html>

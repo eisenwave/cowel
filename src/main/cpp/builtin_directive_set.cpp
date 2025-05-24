@@ -36,6 +36,14 @@ struct Builtin_Directive_Set::Impl {
         { u8"bug-block" };
     HTML_Entity_Behavior c //
         {};
+    Expression_Behavior Cadd //
+        { Expression_Type::add };
+    Expression_Behavior Cdiv //
+        { Expression_Type::divide };
+    Expression_Behavior Cmul //
+        { Expression_Type::multiply };
+    Expression_Behavior Csub //
+        { Expression_Type::subtract };
     Fixed_Name_Passthrough_Behavior caption //
         { u8"caption", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior cite //
@@ -227,9 +235,9 @@ struct Builtin_Directive_Set::Impl {
         {};
     Fixed_Name_Passthrough_Behavior var //
         { u8"var", Directive_Category::formatting, Directive_Display::in_line };
-    Get_Variable_Behavior vget //
+    Get_Variable_Behavior Vget //
         {};
-    Modify_Variable_Behavior vset //
+    Modify_Variable_Behavior Vset //
         { Variable_Operation::set };
     Special_Block_Behavior warning //
         { u8"warning-block" };
@@ -273,9 +281,15 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
 {
     // clang-format off
     static constexpr std::u8string_view prefixed_names[] {
+        u8"-Cadd",
+        u8"-Cdiv",
+        u8"-Cmul",
+        u8"-Csub",
         u8"-N",
         u8"-U",
         u8"-Udigits",
+        u8"-Vget",
+        u8"-Vset",
         u8"-abstract",
         u8"-b",
         u8"-bib",
@@ -371,8 +385,6 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-unprocessed",
         u8"-url",
         u8"-var",
-        u8"-vget",
-        u8"-vset",
         u8"-warning",
         u8"-wbr",
         u8"-wg21-example",
@@ -433,6 +445,17 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->br;
         if (name == u8"bug")
             return &m_impl->bug;
+        break;
+
+    case u8'C':
+        if (name == u8"Cadd")
+            return &m_impl->Cadd;
+        if (name == u8"Cdiv")
+            return &m_impl->Cdiv;
+        if (name == u8"Cmul")
+            return &m_impl->Cmul;
+        if (name == u8"Csub")
+            return &m_impl->Csub;
         break;
 
     case u8'c':
@@ -675,13 +698,16 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->url;
         break;
 
+    case u8'V':
+        if (name == u8"Vget")
+            return &m_impl->Vget;
+        if (name == u8"Vset")
+            return &m_impl->Vset;
+        break;
+
     case u8'v':
         if (name == u8"var")
             return &m_impl->var;
-        if (name == u8"vget")
-            return &m_impl->vget;
-        if (name == u8"vset")
-            return &m_impl->vset;
         break;
 
     case u8'w':

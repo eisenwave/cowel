@@ -99,6 +99,11 @@ inline constexpr std::u8string_view highlight_malformed = u8"highlight.malformed
 /// something went wrong.
 inline constexpr std::u8string_view highlight_error = u8"highlight.error";
 
+/// @brief Unable to perform arithmetic due to a parse error.
+inline constexpr std::u8string_view arithmetic_parse = u8"arithmetic.parse";
+/// @brief Division by zero in arithmetic.
+inline constexpr std::u8string_view arithmetic_div_by_zero = u8"arithmetic.div-by-zero";
+
 // DIRECTIVE-SPECIFIC DIAGNOSTICS ==================================================================
 
 namespace c {

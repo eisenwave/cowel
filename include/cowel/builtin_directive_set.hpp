@@ -281,9 +281,37 @@ protected:
         = 0;
 };
 
+enum struct Expression_Type : Default_Underlying {
+    add,
+    subtract,
+    multiply,
+    divide,
+};
+
+[[nodiscard]]
+constexpr int expression_type_neutral_element(Expression_Type e)
+{
+    return e == Expression_Type::add || e == Expression_Type::subtract ? 0 : 1;
+}
+
+struct Expression_Behavior final : Pure_Plaintext_Behavior {
+private:
+    const Expression_Type m_type;
+
+public:
+    constexpr explicit Expression_Behavior(Expression_Type type)
+        : Pure_Plaintext_Behavior { Directive_Display::in_line }
+        , m_type { type }
+    {
+    }
+
+    void generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context& context)
+        const final;
+};
+
 struct Get_Variable_Behavior final : Variable_Behavior {
 
-    constexpr Get_Variable_Behavior()
+    constexpr explicit Get_Variable_Behavior()
         : Variable_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
     {
     }
@@ -320,7 +348,7 @@ private:
     const Variable_Operation m_op;
 
 public:
-    constexpr Modify_Variable_Behavior(Variable_Operation op)
+    constexpr explicit Modify_Variable_Behavior(Variable_Operation op)
         : Variable_Behavior { Directive_Category::meta, Directive_Display::none }
         , m_op { op }
     {

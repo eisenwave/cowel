@@ -1,0 +1,115 @@
+\h3{Variables and calculations}
+
+While COWEL is not intended to be general purpose programming language,
+and more advanced interactive features are better suited for JavaScript,
+it does provide a few ways to perform calculations.
+
+\h4[id=dir-Vset]{\cow.dir{Vset} \c{mdash} Set a variable}
+
+\cow.dir{Vset} sets the value of a variable to some provided plaintext.
+It displays as a meta directive.
+
+It takes a single \cow.attr{var} argument,
+which is a plaintext context for the name of the variable.
+The directive content is also a plaintext context,
+and provides the value of the variable.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\comment{Sets x = 123}
+\Vset[x]{123}
+
+\comment{Accesses the value of x, which is 123}
+\Vget[x]
+}}
+This renders as:
+\indent{
+\comment{Sets x = 123}
+\Vset[x]{123}
+
+\comment{Accesses the value of x, which is 123}
+\Vget[x]
+}
+}
+
+\h4[id=dir-Vget]{\cow.dir{Vget} \c{mdash} Get a variable}
+
+\cow.dir{Vget} obtains the value of a variable,
+and displays as inline.
+Its content is ignored.
+
+It takes a single \cow.attr{var} argument,
+which is a plaintext context for the name of the variable.
+See above for an example.
+
+If the variable denoted by the \cow.attr{var} argument does not exist,
+\cow.dir{Vget} expands to nothing.
+
+\h4[id=dir-Cadd]{\cow.dir{Cadd} \c{mdash} Perform addition}
+
+The \cow.dir{Cadd} directive performs an integer addition between its (nameless) arguments.
+Its content is ignored, and it displays as inline.
+
+Each of its arguments is a plaintext context,
+where the argument is interpreted as an integer, and then summed.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\Cadd[1, 2, 3, -1] \comment{1 + 2 + 3 + (-1)}
+}}
+This renders as:
+\indent{
+\Cadd[1, 2, 3, -1] \comment{1 + 2 + 3 + (-1)}
+}
+}
+
+\tip{
+You can also combine \cow.dir{Cadd} with \cow.dir{Vget} and \cow.dir{Vset} to store the results
+of your calculations:
+\codeblock[cowel]{\literally{
+\comment{Reset paragraph number}
+\Vset[index]{0}
+
+\comment{Define a macro for automatically incrementing paragraph numbers.}
+\macro[\p.num]{
+\Vset[index]{\Cadd[\Vget[index],1]}
+\Vget[index]
+}
+
+Paragraph \p.num
+
+Paragraph \p.num
+}}
+This renders as:
+\indent{\paragraphs{
+Paragraph 1
+
+Paragraph 2
+}}
+}
+
+\note{
+\cow.dir{Cadd} and other calculation directives are mainly intended
+for incrementing paragraph numbers and other basic tasks.
+}
+
+\h4[id=dir-Csub]{\cow.dir{Csub} \c{mdash} Perform subtraction}
+
+The \cow.dir{Csub} directive behaves like the \cow.dir{Cadd} directive,
+except that it performs subtraction instead of addition.
+
+\h4[id=dir-Cmul]{\cow.dir{Cmul} \c{mdash} Perform multiplication}
+
+The \cow.dir{Cmul} directive behaves like the \cow.dir{Cadd} directive,
+except that it performs multiplication instead of addition.
+
+\h4[id=dir-Cdiv]{\cow.dir{Cdiv} \c{mdash} Perform division}
+
+The \cow.dir{Cdiv} directive behaves like the \cow.dir{Cdiv} directive,
+except that it performs division instead of addition.
+
+\warning{
+Division by zero results in an error.
+}

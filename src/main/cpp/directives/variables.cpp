@@ -1,7 +1,9 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/from_chars.hpp"
 #include "cowel/util/strings.hpp"
+#include "cowel/util/to_chars.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/directive_processing.hpp"
@@ -16,7 +18,57 @@ std::pmr::string vec_to_string(const std::pmr::vector<char>& v)
     return { v.data(), v.size(), v.get_allocator() };
 }
 
+long long operate(Expression_Type type, long long x, long long y)
+{
+    switch (type) {
+    case Expression_Type::add: return x + y;
+    case Expression_Type::subtract: return x - y;
+    case Expression_Type::multiply: return x * y;
+    case Expression_Type::divide: return x / y;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid expression type.");
+}
+
 } // namespace
+
+void Expression_Behavior::generate_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Directive& d,
+    Context& context
+) const
+{
+    long long result = expression_type_neutral_element(m_type);
+    for (const ast::Argument& arg : d.get_arguments()) {
+        std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
+        to_plaintext(arg_text, arg.get_content(), context);
+        const auto arg_string = as_u8string_view(arg_text);
+
+        const std::optional x = from_chars<long long>(arg_string);
+        if (!x) {
+            const std::u8string_view message[] {
+                u8"Unable to perform operation because \"",
+                arg_string,
+                u8"\" is not a valid integer.",
+            };
+            context.try_error(diagnostic::arithmetic_parse, arg.get_source_span(), message);
+            try_generate_error_plaintext(out, d, context);
+            return;
+        }
+        if (m_type == Expression_Type::divide && *x == 0) {
+            const std::u8string_view message[] {
+                u8"The dividend \"",
+                arg_string,
+                u8"\" evaluated to zero, and a division by zero would occur.",
+            };
+            context.try_error(diagnostic::arithmetic_div_by_zero, arg.get_source_span(), message);
+            try_generate_error_plaintext(out, d, context);
+            return;
+        }
+        result = operate(m_type, result, *x);
+    }
+    const Characters8 result_chars = to_characters8(result);
+    append(out, result_chars.as_string());
+}
 
 void Variable_Behavior::generate_plaintext(
     std::pmr::vector<char8_t>& out,
