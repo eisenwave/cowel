@@ -17,18 +17,22 @@ but can be used to document how the directive is meant to be used.
 }
 }
 
+\h5[id=dir-put]{\dir{put} \c{mdash} Pseudo-directive for macro content}
+
 When a macro is used, the content within the \dir{macro} directive is copied.
-Any uses of the \dir{put} pseud-directive inside the macro are replaced with copies
+Any uses of the \dir{put} pseudo-directive inside the macro are replaced with copies
 of the input content.
 
 \example{
-\codeblock[cowel]{
-\\macro[\\bi]{\\b{\\i{\\put}}}
-\\comment{Now, the following are equivalent:}
-\\b{\\i{bold and italic}}
-\\bi{bold and italic}
+\codeblock[cowel]{\literally{
+\macro[\bi]{\b{\i{\put}}}
+\comment{Now, the following are equivalent:}
+\b{\i{bold and italic}}
+\bi{bold and italic}
+}}
 }
-}
+
+\h5[id=dir-arg]{\dir{arg} \c{mdash} Pseudo-directive for macro arguments}
 
 \todo{
 Currently, macros only support content as input.
