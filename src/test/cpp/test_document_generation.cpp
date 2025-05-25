@@ -292,6 +292,9 @@ constexpr Basic_Test basic_tests[] {
     { Source { u8"\\code[c]{int \\hl[number]{x}}\n" },
       Source { u8"<code><h- data-h=kw_type>int</h-> <h- data-h=num>x</h-></code>\n" } },
 
+    { Source { u8"\\math{\\mi[id=Z]{x}}\n" },
+      Source { u8"<math display=inline><mi id=Z>x</mi></math>\n" } },
+
     { Source { u8"" },
       Path { u8"document/empty.html" },
       {},
@@ -362,6 +365,16 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
         EXPECT_TRUE(expected == actual);
 
         if (test.expected_diagnostics.size() == 0) {
+            if (!logger.diagnostics.empty()) {
+                Diagnostic_String error { &memory };
+                error.append(
+                    u8"Test failed because an unexpected diagnostic was emitted:\n",
+                    Diagnostic_Highlight::error_text
+                );
+                error.append(logger.diagnostics.front().id);
+                error.append(u8"\n\n");
+                print_code_string_stdout(error);
+            }
             EXPECT_TRUE(logger.diagnostics.empty());
             continue;
         }
