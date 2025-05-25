@@ -112,14 +112,23 @@ std::u8string_view severity_tag(Severity severity)
 }
 
 struct Stderr_Logger final : Logger {
-    File_Loader& file_loader;
+    const File_Loader& file_loader;
+    const std::u8string_view main_file;
+    const std::u8string_view main_source;
     Diagnostic_String out;
     bool any_errors = false;
 
     [[nodiscard]]
-    constexpr Stderr_Logger(File_Loader& file_loader, std::pmr::memory_resource* memory)
+    constexpr Stderr_Logger(
+        File_Loader& file_loader,
+        std::u8string_view main_file,
+        std::u8string_view main_source,
+        std::pmr::memory_resource* memory
+    )
         : Logger { Severity::min }
         , file_loader { file_loader }
+        , main_file { main_file }
+        , main_source { main_source }
         , out { memory }
     {
     }
@@ -150,8 +159,11 @@ struct Stderr_Logger final : Logger {
         out.append(ansi::reset);
         out.append(u8'\n');
         if (!diagnostic.location.empty()) {
-            const std::optional<File_Entry> entry = file_loader.find(diagnostic.location.file_name);
-            if (entry) {
+            if (diagnostic.location.file_name == main_file) {
+                print_affected_line(out, main_source, diagnostic.location);
+            }
+            else if (const std::optional<File_Entry> entry
+                     = file_loader.find(diagnostic.location.file_name)) {
                 print_affected_line(out, entry->source, diagnostic.location);
             }
         }
@@ -213,7 +225,7 @@ int main(int argc, const char* const* argv)
     Builtin_Directive_Set builtin_directives {};
     Document_Content_Behavior behavior { builtin_directives.get_macro_behavior() };
     Relative_File_Loader file_loader { std::move(in_path_directory), &memory };
-    Stderr_Logger logger { file_loader, &memory };
+    Stderr_Logger logger { file_loader, in_path_u8, in_source, &memory };
     static constinit Ulight_Syntax_Highlighter highlighter;
 
     const std::pmr::vector<ast::Content> root_content = parse_and_build(
