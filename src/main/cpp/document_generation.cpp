@@ -4,8 +4,8 @@
 #include "cowel/theme_to_css.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/html_writer.hpp"
-#include "cowel/util/io.hpp"
 
+#include "cowel/assets.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_behavior.hpp"
 #include "cowel/context.hpp"
@@ -41,19 +41,6 @@ void generate_document(const Generation_Options& options)
 }
 
 namespace {
-
-[[nodiscard]]
-Result<void, IO_Error_Code>
-file_to_inner_html(HTML_Writer& out, std::u8string_view path, Context& context)
-{
-    const Result<std::pmr::vector<char8_t>, IO_Error_Code> result
-        = load_utf8_file(path, context.get_transient_memory());
-    if (!result) {
-        return result.error();
-    }
-    out.write_inner_html(std::u8string_view { result->data(), result->size() });
-    return {};
-}
 
 // See also `reference_section`.
 // The point of all this is that references to other sections are encoded using a section name,
@@ -198,11 +185,9 @@ void Head_Body_Content_Behavior::generate_html(
     std::pmr::unordered_set<const void*> visited(context.get_transient_memory());
     visited.insert(html_section);
 
-    if (!content.empty()) {
-        // TODO: this way of obtaining the file is kinda unclean ...
-        const std::u8string_view file = ast::get_source_span(content.front(), u8"").file_name;
-        Reference_Resolver { out.get_output(), visited, context }(html_string, file);
-    }
+    const std::u8string_view file
+        = content.empty() ? u8"<no file>" : ast::get_source_span(content.front(), u8"").file_name;
+    Reference_Resolver { out.get_output(), visited, context }(html_string, file);
 }
 
 constexpr std::u8string_view indent = u8"  ";
@@ -281,16 +266,15 @@ void Document_Content_Behavior::generate_head(
         .write_href(google_fonts_url)
         .end_empty();
 
-    const auto include_css_or_js = [&](std::u8string_view tag, std::u8string_view path) {
+    const auto include_css_or_js = [&](std::u8string_view tag, std::u8string_view source) {
         out.write_inner_html(newline_indent);
         out.open_tag(tag);
         out.write_inner_html(u8'\n');
-        const Result<void, IO_Error_Code> r = file_to_inner_html(out, path, context);
-        COWEL_ASSERT(r);
+        out.write_inner_html(source);
         out.write_inner_html(indent);
         out.close_tag(tag);
     };
-    include_css_or_js(u8"style", u8"assets/main.css");
+    include_css_or_js(u8"style", assets::main_css);
     {
         out.write_inner_text(newline_indent);
         out.open_tag(u8"style");
@@ -307,7 +291,7 @@ void Document_Content_Behavior::generate_head(
         out.close_tag(u8"style");
     }
 
-    include_css_or_js(u8"script", u8"assets/light-dark.js");
+    include_css_or_js(u8"script", assets::light_dark_js);
     out.write_inner_html(u8'\n');
 }
 
@@ -317,9 +301,7 @@ void Document_Content_Behavior::generate_body(
     Context& context
 ) const
 {
-    const Result<void, IO_Error_Code> r
-        = file_to_inner_html(out, u8"assets/settings-widget.html", context);
-    COWEL_ASSERT(r);
+    out.write_inner_html(assets::settings_widget_html);
     out.open_tag(u8"main");
     out.write_inner_html(u8'\n');
     to_html(out, content, context, To_HTML_Mode::paragraphs);
