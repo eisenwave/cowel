@@ -3,8 +3,11 @@
 #include "ulight/impl/platform.h"
 
 ULIGHT_DIAGNOSTIC_PUSH()
+ULIGHT_DIAGNOSTIC_IGNORED("-Wconversion")
 ULIGHT_DIAGNOSTIC_IGNORED("-Wsign-conversion")
+#ifdef ULIGHT_CLANG
 ULIGHT_DIAGNOSTIC_IGNORED("-Wshorten-64-to-32")
+#endif
 #include "cowel/cedilla/name_to_cp.hpp"
 ULIGHT_DIAGNOSTIC_POP()
 
