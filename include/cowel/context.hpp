@@ -12,6 +12,7 @@
 #include "cowel/util/transparent_comparison.hpp"
 #include "cowel/util/typo.hpp"
 
+#include "cowel/ast.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/document_sections.hpp"
 #include "cowel/fwd.hpp"
@@ -55,7 +56,7 @@ public:
         Transparent_String_View_Equals8>;
     using Macro_Map = std::pmr::unordered_map<
         std::pmr::u8string,
-        const ast::Directive*,
+        ast::Directive,
         Transparent_String_View_Hash8,
         Transparent_String_View_Equals8>;
     using ID_Map = std::pmr::unordered_map<
@@ -448,13 +449,14 @@ public:
     const ast::Directive* find_macro(std::u8string_view id) const
     {
         const auto it = m_macros.find(id);
-        return it == m_macros.end() ? nullptr : it->second;
+        return it == m_macros.end() ? nullptr : &it->second;
     }
 
     [[nodiscard]]
-    bool emplace_macro(std::pmr::u8string&& id, const ast::Directive* definition_directive)
+    bool emplace_macro(std::pmr::u8string&& id, ast::Directive&& definition_directive)
     {
-        const auto [it, success] = m_macros.try_emplace(std::move(id), definition_directive);
+        const auto [it, success]
+            = m_macros.try_emplace(std::move(id), std::move(definition_directive));
         return success;
     }
 };

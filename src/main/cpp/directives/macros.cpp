@@ -61,7 +61,7 @@ void Macro_Define_Behavior::evaluate(const ast::Directive& d, Context& context) 
     const std::u8string_view pattern_name = pattern_directive.get_name();
     std::pmr::u8string owned_name { pattern_name, context.get_transient_memory() };
 
-    const bool success = context.emplace_macro(std::move(owned_name), &d);
+    const bool success = context.emplace_macro(std::move(owned_name), auto(d));
     if (!success) {
         const std::u8string_view message[] {
             u8"Redefinition of macro \"",
