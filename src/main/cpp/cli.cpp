@@ -9,6 +9,7 @@
 #include "cowel/util/ansi.hpp"
 #include "cowel/util/strings.hpp"
 
+#include "cowel/assets.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/document_content_behavior.hpp"
@@ -183,7 +184,6 @@ int main(int argc, const char* const* argv)
 
     const std::string_view out_path = argv[2];
     const std::u8string_view out_path_u8 = as_u8string_view(out_path);
-    constexpr std::u8string_view theme_path = u8"ulight/themes/wg21.json";
 
     const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text
         = load_utf8_file(in_path_u8, &memory);
@@ -194,6 +194,7 @@ int main(int argc, const char* const* argv)
         return EXIT_FAILURE;
     }
 
+    /* TODO: eventually reimplement for user-specified themes.
     const Result<std::pmr::vector<char8_t>, IO_Error_Code> theme_json
         = load_utf8_file(theme_path, &memory);
     if (!theme_json) {
@@ -202,10 +203,12 @@ int main(int argc, const char* const* argv)
         print_code_string_stderr(error);
         return EXIT_FAILURE;
     }
+    const std::u8string_view theme_source { theme_json->data(), theme_json->size() };
+    */
 
     std::pmr::vector<char8_t> out_text { &memory };
     const std::u8string_view in_source { in_text->data(), in_text->size() };
-    const std::u8string_view theme_source { theme_json->data(), theme_json->size() };
+    const std::u8string_view theme_source = assets::wg21_json;
 
     Builtin_Directive_Set builtin_directives {};
     Document_Content_Behavior behavior { builtin_directives.get_macro_behavior() };
