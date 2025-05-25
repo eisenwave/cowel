@@ -232,6 +232,14 @@ inline constexpr std::u8string_view no_section = u8"here:no-section";
 
 } // namespace here
 
+namespace math {
+
+/// @brief In a `\math` directive,
+/// text was not properly enclosed in `\mi`, `\mn`, etc.
+inline constexpr std::u8string_view text = u8"math:text";
+
+} // namespace math
+
 namespace ref {
 
 /// @brief In a `\ref` directive,
