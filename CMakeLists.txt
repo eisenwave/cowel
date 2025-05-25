@@ -72,57 +72,22 @@ target_link_libraries(cowel ulight)
 target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
 target_link_options(cowel PUBLIC ${SANITIZER_OPTIONS})
 
-if(DEFINED EMSCRIPTEN)
-    # https://stunlock.gg/posts/emscripten_with_cmake/
-    add_executable(cowel-wasm ${HEADERS}
-        src/main/cpp/wasm.cpp
-    )
-    target_link_libraries(cowel-wasm bm)
-    set_target_properties(cowel-wasm PROPERTIES
-        OUTPUT_NAME "bm"
-        SUFFIX ".wasm"
-    )
-    target_compile_options(cowel-wasm PRIVATE
-        # the SHELL option group prevents de-duplication
-        # https://cmake.org/cmake/help/latest/prop_tgt/COMPILE_OPTIONS.html#option-de-duplication
-        "SHELL:-s SIDE_MODULE=0"
-        "-stdlib=libc++"
-        "-Os"
-#       "-fno-exceptions"
-    )
-    target_link_options(cowel-wasm PRIVATE
-        "-Os"
-#       "-fno-exceptions"
-        "-static-libc++"
-        "-stdlib=libc++"
-        "SHELL:-s WASM=1"
-        "SHELL:-s ENVIRONMENT=web"
-        "SHELL:-s AUTO_JS_LIBRARIES=0"
-        "SHELL:-s SIDE_MODULE=0"
-        "SHELL:-s STANDALONE_WASM=1"
-        "SHELL:-s \"EXPORTED_FUNCTIONS=['_bm_foreign_alloc','_bm_foreign_free','_bm_plus','_bm_length_as_string','_bm_length_as_string_result','_bm_translate_code','_bm_translate_code_result','_bm_syntax_highlight','_bm_syntax_highlight_result']\""
-        "SHELL:-s \"EXPORTED_RUNTIME_METHODS=[]\""
-        "--no-entry"
-    )
+add_executable(cowel-cli ${HEADERS}
+    src/main/cpp/cli.cpp
+)
+target_link_libraries(cowel-cli cowel ulight)
 
-else(NOT DEFINED EMSCRIPTEN)
-    add_executable(cowel-cli ${HEADERS}
-        src/main/cpp/cli.cpp
-    )
-    target_link_libraries(cowel-cli cowel ulight)
-
-    add_executable(cowel-test ${HEADERS}
-        src/test/cpp/document_file_testing.cpp
-        src/test/cpp/main.cpp
-        src/test/cpp/test_chars_strings.cpp
-        src/test/cpp/test_document_generation.cpp
-        src/test/cpp/test_draft_uris.cpp
-        src/test/cpp/test_html_writer.cpp
-        src/test/cpp/test_levenshtein.cpp
-        src/test/cpp/test_parsing.cpp
-        src/test/cpp/test_to_chars.cpp
-        src/test/cpp/test_typo.cpp
-        src/test/cpp/test_valid.cpp
-    )
-    target_link_libraries(cowel-test cowel ulight GTest::GTest GTest::Main)
-endif()
+add_executable(cowel-test ${HEADERS}
+    src/test/cpp/document_file_testing.cpp
+    src/test/cpp/main.cpp
+    src/test/cpp/test_chars_strings.cpp
+    src/test/cpp/test_document_generation.cpp
+    src/test/cpp/test_draft_uris.cpp
+    src/test/cpp/test_html_writer.cpp
+    src/test/cpp/test_levenshtein.cpp
+    src/test/cpp/test_parsing.cpp
+    src/test/cpp/test_to_chars.cpp
+    src/test/cpp/test_typo.cpp
+    src/test/cpp/test_valid.cpp
+)
+target_link_libraries(cowel-test cowel ulight GTest::GTest GTest::Main)
