@@ -11,6 +11,33 @@ if(NOT DEFINED EMSCRIPTEN)
     enable_testing()
 endif()
 
+find_package(Python3 REQUIRED)
+
+set(ASSETS_DIR "${CMAKE_CURRENT_LIST_DIR}/assets")
+set(THEMES_DIR "${CMAKE_CURRENT_LIST_DIR}/ulight/themes")
+set(ASSET_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+function(embed_asset INPUT_FILE VAR_NAME OUT_VAR)
+    get_filename_component(FILENAME_WE "${INPUT_FILE}" NAME_WE)
+    set(OUTPUT_CPP "${ASSET_OUTPUT_DIR}/${VAR_NAME}.cpp")
+
+    add_custom_command(
+        OUTPUT ${OUTPUT_CPP}
+        COMMAND "${CMAKE_COMMAND}" -E make_directory ${ASSET_OUTPUT_DIR}
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/file-to-array.py"
+                "${INPUT_FILE}" "${OUTPUT_CPP}" "${VAR_NAME}"
+        DEPENDS "${INPUT_FILE}" ${CMAKE_CURRENT_LIST_DIR}/file-to-array.py
+        COMMENT "Embedding asset ${INPUT_FILE} as ${VAR_NAME}"
+    )
+
+    set(${OUT_VAR} "${OUTPUT_CPP}" PARENT_SCOPE)
+endfunction()
+
+embed_asset("${ASSETS_DIR}/light-dark.js" light_dark_js LIGHT_DARK_JS_CPP)
+embed_asset("${ASSETS_DIR}/main.css" main_css MAIN_CSS_CPP)
+embed_asset("${ASSETS_DIR}/settings-widget.html" settings_widget_html SETTINGS_WIDGET_HTML_CPP)
+embed_asset("${THEMES_DIR}/wg21.json" wg21_json WG21_JSON_CPP)
+
 set(LLVM_WARNING_OPTIONS -Wall -Wimplicit-fallthrough -Wpedantic -Wextra -Wconversion -Wmissing-declarations -Wno-bit-int-extension)
 
 if(DEFINED EMSCRIPTEN)
@@ -66,6 +93,11 @@ add_library(cowel STATIC
     src/main/cpp/print.cpp
     src/main/cpp/services.cpp
     src/main/cpp/theme_to_css.cpp
+
+    "${LIGHT_DARK_JS_CPP}"
+    "${MAIN_CSS_CPP}"
+    "${SETTINGS_WIDGET_HTML_CPP}"
+    "${WG21_JSON_CPP}"
 )
 
 target_link_libraries(cowel ulight)
