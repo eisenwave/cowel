@@ -48,18 +48,25 @@ void WG21_Head_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d
         );
     }
 
-    std::pmr::vector<char8_t> title_text { context.get_transient_memory() };
-    HTML_Writer title_writer { title_text };
-    to_html(title_writer, d.get_arguments()[std::size_t(title_index)].get_content(), context);
-    const auto title_string = as_u8string_view(title_text);
+    const ast::Argument& title_arg = d.get_arguments()[std::size_t(title_index)];
 
     {
+        // FIXME: multiple evaluations of title input
+        std::pmr::vector<char8_t> title_plaintext { context.get_transient_memory() };
+        to_plaintext(title_plaintext, title_arg.get_content(), context);
+        const auto title_string = as_u8string_view(title_plaintext);
+
         const auto scope = context.get_sections().go_to_scoped(section_name::document_head);
         HTML_Writer head_writer = context.get_sections().current_html();
         head_writer.open_tag(u8"title");
-        head_writer.write_inner_html(title_string);
+        head_writer.write_inner_text(title_string);
         head_writer.close_tag(u8"title");
     }
+
+    std::pmr::vector<char8_t> title_html { context.get_transient_memory() };
+    HTML_Writer title_writer { title_html };
+    to_html(title_writer, title_arg.get_content(), context);
+    const auto title_string = as_u8string_view(title_html);
 
     out.open_tag(u8"h1");
     out.write_inner_html(title_string);
