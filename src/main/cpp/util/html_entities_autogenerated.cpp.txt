@@ -1,5 +1,3 @@
-// NOLINTBEGIN
-// clang-format off
 {u8"AEli",4,{U'\u00C6'}},
 {u8"AElig",5,{U'\u00C6'}},
 {u8"AM",2,{U'\u0026'}},
@@ -2231,5 +2229,3 @@
 {u8"zscr",4,{U'\U0001D4CF'}},
 {u8"zwj",3,{U'\u200D'}},
 {u8"zwnj",4,{U'\u200C'}},
-// clang-format on
-// NOLINTEND
