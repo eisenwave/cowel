@@ -1,0 +1,70 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    timeout-minutes: 15
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        build_type: [Debug]
+        compiler: [gcc, clang]
+        include:
+          - compiler: gcc
+            c_compiler: gcc-13
+            cpp_compiler: g++-13
+          - compiler: clang
+            c_compiler: clang-19
+            cpp_compiler: clang++-19
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Dump info
+      run: |
+        printf "Workspace: ${{ github.workspace }}\n"
+        printf "Running on ${{ runner.os }}\n"
+        printf "Compilers: ${{ matrix.compiler }} / ${{ matrix.c_compiler }} / ${{ matrix.cpp_compiler }}\n"
+
+    - name: Install dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt update
+        sudo apt install -y ${{ matrix.c_compiler }} libgtest-dev
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "workspace_forward=$(echo '${{ github.workspace }}' | sed 's|\\|/|g')" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
+        -DCMAKE_COLOR_DIAGNOSTICS=ON
+        -DCMAKE_CXX_FLAGS="-fdiagnostics-color=always"
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: >
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}
+        --config ${{ matrix.build_type }}
+        --verbose
+
+    - name: Test
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ctest --build-config ${{ matrix.build_type }}
+      timeout-minutes: 5
