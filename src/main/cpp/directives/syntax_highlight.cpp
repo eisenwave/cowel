@@ -90,7 +90,7 @@ void Syntax_Highlight_Behavior::generate_plaintext(
 ) const
 {
     if (display == Directive_Display::in_line) {
-        to_plaintext(out, d, context);
+        to_plaintext(out, d.get_content(), context);
     }
 }
 
