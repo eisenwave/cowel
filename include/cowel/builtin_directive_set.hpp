@@ -14,6 +14,44 @@ namespace cowel {
 inline constexpr char8_t builtin_directive_prefix = u8'-';
 inline constexpr std::u8string_view html_tag_prefix = u8"html-";
 
+struct Deprecated_Behavior : Directive_Behavior {
+private:
+    const Directive_Behavior& m_behavior;
+    const std::u8string_view m_replacement;
+
+public:
+    constexpr Deprecated_Behavior(const Directive_Behavior& other, std::u8string_view replacement)
+        : Directive_Behavior { other.category, other.display }
+        , m_behavior { other }
+        , m_replacement { replacement }
+    {
+    }
+
+    void
+    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
+        const override
+    {
+        warn(d, context);
+        m_behavior.generate_plaintext(out, d, context);
+    }
+
+    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final
+    {
+        warn(d, context);
+        m_behavior.generate_html(out, d, context);
+    }
+
+    void warn(const ast::Directive& d, Context& context) const
+    {
+        const std::u8string_view message[] {
+            u8"This directive is deprecated; use \\",
+            m_replacement,
+            u8" instead.",
+        };
+        context.try_warning(diagnostic::deprecated, d.get_name_span(), message);
+    }
+};
+
 /// @brief Behavior for `\\error` directives.
 /// Does not processing.
 /// Generates no plaintext.
