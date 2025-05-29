@@ -121,6 +121,9 @@ Result<void, IO_Error_Code> file_to_bytes(std::vector<Byte, Alloc>& out, std::u8
 {
     return file_to_bytes_chunked(
         [&out](std::span<const std::byte> chunk) -> void {
+            if (chunk.empty()) {
+                return;
+            }
             const std::size_t old_size = out.size();
             out.resize(out.size() + chunk.size());
             std::memcpy(out.data() + old_size, chunk.data(), chunk.size());
