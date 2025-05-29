@@ -46,5 +46,10 @@ This is done by applying a \code[css,prefix=x\{]{white-space: nowrap;} style its
 
 \tip{
 Another way to prevent word-breaking is to use non-breaking spaces.
-You can insert these using \cow.c{Combined\\c{nbsp}Word}.
+You can insert these using
+\ul{
+\li{\cow.c{Combined\\c{nbsp}Word},}
+\li{\cow.c{Combined\\N{NO-BREAK SPACE}Word}, or}
+\li{\cow.c{Combined\\U{\Udigits{\N{NO-BREAK SPACE}}}Word}.}
+}
 }
