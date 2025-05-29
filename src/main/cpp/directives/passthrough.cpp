@@ -189,9 +189,6 @@ void Self_Closing_Behavior::generate_html(
 
 void List_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
 {
-    static Fixed_Name_Passthrough_Behavior item_behavior { u8"li", Directive_Category::pure_html,
-                                                           Directive_Display::block };
-
     Attribute_Writer attributes = out.open_tag_with_attributes(m_tag_name);
     arguments_to_attributes(attributes, d, context);
     attributes.end();
@@ -199,7 +196,11 @@ void List_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Con
         if (const auto* const directive = std::get_if<ast::Directive>(&c)) {
             const std::u8string_view name = directive->get_name();
             if (name == u8"item" || name == u8"-item") {
-                item_behavior.generate_html(out, *directive, context);
+                context.try_warning(
+                    diagnostic::deprecated, directive->get_name_span(),
+                    u8"Use of \\item is deprecated. Use \\li in lists instead."
+                );
+                m_item_behavior.generate_html(out, *directive, context);
             }
             else {
                 to_html(out, *directive, context);

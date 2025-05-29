@@ -62,6 +62,9 @@ namespace diagnostic {
 
 // GENERAL DIAGNOSTICS =============================================================================
 
+/// @brief A deprecated feature was used.
+inline constexpr std::u8string_view deprecated = u8"deprecated";
+
 /// @brief A duplicate `id` attribute would have been generated.
 inline constexpr std::u8string_view duplicate_id = u8"id.duplicate";
 

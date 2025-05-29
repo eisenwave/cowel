@@ -613,11 +613,16 @@ struct Bibliography_Add_Behavior final : Meta_Behavior {
 struct List_Behavior final : Pure_HTML_Behavior {
 private:
     const std::u8string_view m_tag_name;
+    const Directive_Behavior& m_item_behavior;
 
 public:
-    constexpr explicit List_Behavior(std::u8string_view tag_name)
+    constexpr explicit List_Behavior(
+        std::u8string_view tag_name,
+        const Directive_Behavior& item_behavior
+    )
         : Pure_HTML_Behavior { Directive_Display::block }
         , m_tag_name { tag_name }
+        , m_item_behavior { item_behavior }
     {
     }
 

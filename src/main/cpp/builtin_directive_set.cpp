@@ -130,6 +130,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"ins", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
         { u8"kbd", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior li //
+        { u8"li", Directive_Category::pure_html, Directive_Display::block };
     Literally_Behavior literally //
         { Directive_Display::in_line };
     Lorem_Ipsum_Behavior lorem_ipsum //
@@ -160,7 +162,7 @@ struct Builtin_Directive_Set::Impl {
     In_Tag_Behavior o //
         { u8"span", u8"oblique", Directive_Category::formatting, Directive_Display::in_line };
     List_Behavior ol //
-        { u8"ol" };
+        { u8"ol", li };
     Fixed_Name_Passthrough_Behavior p //
         { u8"p", Directive_Category::pure_html, Directive_Display::block };
     HTML_Wrapper_Behavior paragraphs //
@@ -230,7 +232,7 @@ struct Builtin_Directive_Set::Impl {
     Code_Point_Digits_Behavior Udigits //
         {};
     List_Behavior ul //
-        { u8"ul" };
+        { u8"ul", li };
     Unprocessed_Behavior unprocessed //
         { Directive_Display::in_line };
     URL_Behavior url //
@@ -342,6 +344,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-item",
         u8"-k",
         u8"-kbd",
+        u8"-li",
         u8"-literally",
         u8"-lorem-ipsum",
         u8"-macro",
@@ -569,6 +572,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'l':
+        if (name == u8"li")
+            return &m_impl->li;
         if (name == u8"literally")
             return &m_impl->literally;
         if (name == u8"lorem-ipsum")
