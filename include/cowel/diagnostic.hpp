@@ -83,6 +83,9 @@ inline constexpr std::u8string_view theme_conversion = u8"theme.conversion";
 /// @brief Directive lookup failed.
 inline constexpr std::u8string_view directive_lookup_unresolved = u8"directive-lookup.unresolved";
 
+/// @brief Duplicate arguments to a directive were provided.
+inline constexpr std::u8string_view duplicate_args = u8"duplicate.args";
+
 /// @brief Arguments to a directive were ignored.
 inline constexpr std::u8string_view ignored_args = u8"ignored.args";
 

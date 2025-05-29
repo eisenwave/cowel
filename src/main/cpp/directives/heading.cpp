@@ -132,9 +132,10 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
             has_id = !id_data.empty();
         }
     }
-    arguments_to_attributes(attributes, d, context, [](std::u8string_view name) {
-        return !std::ranges::contains(parameters, name);
-    });
+    named_arguments_to_attributes(attributes, d, args, context, Argument_Subset::unmatched_named);
+    warn_ignored_argument_subset(
+        d.get_arguments(), args, context, Argument_Subset::unmatched_positional
+    );
     attributes.end();
 
     // 2. Generate user content in the heading.

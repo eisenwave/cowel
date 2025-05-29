@@ -14,8 +14,9 @@ void WG21_Block_Behavior::generate_html(HTML_Writer& out, const ast::Directive& 
     constexpr std::u8string_view tag = u8"wg21-block";
 
     Attribute_Writer attributes = out.open_tag_with_attributes(tag);
-    arguments_to_attributes(attributes, d, context);
+    named_arguments_to_attributes(attributes, d, context);
     attributes.end();
+    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
 
     out.write_inner_html(u8"[<i>");
     out.write_inner_text(m_prefix);

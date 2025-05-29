@@ -83,8 +83,9 @@ void HTML_Raw_Text_Behavior::generate_html(
     warn_all_args_ignored(d, context);
 
     Attribute_Writer attributes = out.open_tag_with_attributes(m_tag_name);
-    arguments_to_attributes(attributes, d, context);
+    named_arguments_to_attributes(attributes, d, context);
     attributes.end();
+    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
 
     std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
     to_plaintext(buffer, d.get_content(), context);

@@ -983,7 +983,51 @@ if (previous_span != nullptr) {
 }
 #endif
 
-void arguments_to_attributes(
+void warn_ignored_argument_subset(
+    std::span<const ast::Argument> args,
+    const Argument_Matcher& matcher,
+    Context& context,
+    Argument_Subset ignored_subset
+)
+{
+    const std::span<const Argument_Status> statuses = matcher.argument_statuses();
+    COWEL_ASSERT(args.size() == statuses.size());
+
+    for (std::size_t i = 0; i < args.size(); ++i) {
+        const auto& arg = args[i];
+        const bool is_matched = statuses[i] != Argument_Status::unmatched;
+        const bool is_named = arg.has_name();
+        const Argument_Subset subset = argument_subset_matched_named(is_matched, is_named);
+        if (argument_subset_contains(ignored_subset, subset)) {
+            context.try_warning(
+                diagnostic::ignored_args, arg.get_source_span(), u8"This argument was ignored."
+            );
+        }
+    }
+}
+
+void warn_ignored_argument_subset(
+    std::span<const ast::Argument> args,
+    Context& context,
+    Argument_Subset ignored_subset
+)
+{
+    COWEL_ASSERT(
+        argument_subset_contains(ignored_subset, Argument_Subset::matched)
+        == argument_subset_contains(ignored_subset, Argument_Subset::unmatched)
+    );
+
+    for (const auto& arg : args) {
+        const auto subset = arg.has_name() ? Argument_Subset::named : Argument_Subset::positional;
+        if (argument_subset_contains(ignored_subset, subset)) {
+            context.try_warning(
+                diagnostic::ignored_args, arg.get_source_span(), u8"This argument was ignored."
+            );
+        }
+    }
+}
+
+void named_arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     Context& context,
@@ -991,12 +1035,53 @@ void arguments_to_attributes(
     Attribute_Style style
 )
 {
-    for (const ast::Argument& a : d.get_arguments()) {
-        argument_to_attribute(out, a, context, filter, style);
+    const std::span<const ast::Argument> args = d.get_arguments();
+    for (std::size_t i = 0; i < args.size(); ++i) {
+        const ast::Argument& a = args[i];
+        if (!a.has_name()) {
+            continue;
+        }
+        bool duplicate = false;
+        for (std::size_t j = 0; j < i; ++j) {
+            if (args[j].get_name() == a.get_name()) {
+                const std::u8string_view message[]
+                    = { u8"This argument is a duplicate of a previous named argument also named \"",
+                        args[j].get_name(), u8"\", and will be ignored." };
+                context.try_warning(diagnostic::duplicate_args, args[j].get_source_span(), message);
+                duplicate = true;
+                break;
+            }
+        }
+        if (!duplicate) {
+            named_argument_to_attribute(out, a, context, filter, style);
+        }
     }
 }
 
-bool argument_to_attribute(
+void named_arguments_to_attributes(
+    Attribute_Writer& out,
+    const ast::Directive& d,
+    const Argument_Matcher& matcher,
+    Context& context,
+    Argument_Subset subset,
+    Attribute_Style style
+)
+{
+    COWEL_ASSERT(!argument_subset_intersects(subset, Argument_Subset::positional));
+
+    named_arguments_to_attributes(
+        out, d, context,
+        [&](std::u8string_view name) {
+            const int index = matcher.get_argument_index(name);
+            const auto arg_subset
+                = index < 0 ? Argument_Subset::unmatched_named : Argument_Subset::matched_named;
+            return argument_subset_contains(subset, arg_subset);
+        },
+        style
+    );
+}
+
+bool named_argument_to_attribute(
     Attribute_Writer& out,
     const ast::Argument& a,
     Context& context,
@@ -1004,21 +1089,15 @@ bool argument_to_attribute(
     Attribute_Style style
 )
 {
+    COWEL_ASSERT(a.has_name());
     std::pmr::vector<char8_t> value { context.get_transient_memory() };
     // TODO: error handling
     value.clear();
     to_plaintext(value, a.get_content(), context);
     const std::u8string_view value_string { value.data(), value.size() };
-    if (a.has_name()) {
-        const std::u8string_view name = a.get_name();
-        if (!filter || filter(name)) {
-            out.write_attribute(name, value_string, style);
-            return true;
-        }
-    }
-    // TODO: what if the positional argument cannot be used as an attribute name
-    else if (!filter || filter(value_string)) {
-        out.write_empty_attribute(value_string, style);
+    const std::u8string_view name = a.get_name();
+    if (!filter || filter(name)) {
+        out.write_attribute(name, value_string, style);
         return true;
     }
     return false;

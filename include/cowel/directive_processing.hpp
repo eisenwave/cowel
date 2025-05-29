@@ -172,7 +172,65 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     To_HTML_Mode mode = To_HTML_Mode::direct
 );
 
-void arguments_to_attributes(
+enum struct Argument_Subset : Default_Underlying {
+    none = 0,
+    unmatched_positional = 1 << 0,
+    matched_positional = 1 << 1,
+    positional = unmatched_positional | matched_positional,
+    unmatched_named = 1 << 2,
+    unmatched = unmatched_positional | unmatched_named,
+    matched_named = 1 << 3,
+    matched = matched_positional | matched_named,
+    named = unmatched_named | matched_named,
+    all = unmatched | matched,
+};
+
+constexpr Argument_Subset operator|(Argument_Subset x, Argument_Subset y)
+{
+    return Argument_Subset(std::to_underlying(x) | std::to_underlying(y));
+}
+
+constexpr Argument_Subset operator&(Argument_Subset x, Argument_Subset y)
+{
+    return Argument_Subset(std::to_underlying(x) & std::to_underlying(y));
+}
+
+constexpr Argument_Subset argument_subset_matched_named(bool is_matched, bool is_named)
+{
+    return (is_matched ? Argument_Subset::matched : Argument_Subset::unmatched)
+        & (is_named ? Argument_Subset::named : Argument_Subset::positional);
+}
+
+constexpr bool argument_subset_contains(Argument_Subset x, Argument_Subset y)
+{
+    return (x | y) == x;
+}
+
+constexpr bool argument_subset_intersects(Argument_Subset x, Argument_Subset y)
+{
+    return (x & y) != Argument_Subset::none;
+}
+
+/// @brief Emits a warning for all ignored arguments,
+/// where the caller can specify what subset of arguments were ignored.
+void warn_ignored_argument_subset(
+    std::span<const ast::Argument> args,
+    const Argument_Matcher& matcher,
+    Context& context,
+    Argument_Subset ignored_subset
+);
+
+/// @brief Emits a warning for all ignored arguments,
+/// where the caller can specify what subset of arguments were ignored.
+/// The given subset has to include either both `matched` and `unmatched`,
+/// or be `none`.
+void warn_ignored_argument_subset(
+    std::span<const ast::Argument> args,
+    Context& context,
+    Argument_Subset ignored_subset
+);
+
+void named_arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     Context& context,
@@ -180,7 +238,16 @@ void arguments_to_attributes(
     Attribute_Style style = Attribute_Style::double_if_needed
 );
 
-bool argument_to_attribute(
+void named_arguments_to_attributes(
+    Attribute_Writer& out,
+    const ast::Directive& d,
+    const Argument_Matcher& matcher,
+    Context& context,
+    Argument_Subset subset,
+    Attribute_Style style = Attribute_Style::double_if_needed
+);
+
+bool named_argument_to_attribute(
     Attribute_Writer& out,
     const ast::Argument& a,
     Context& context,

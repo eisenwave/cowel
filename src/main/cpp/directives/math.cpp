@@ -103,8 +103,10 @@ void to_math_html(
             continue;
         }
         Attribute_Writer attributes = out.open_tag_with_attributes(name);
-        arguments_to_attributes(attributes, *d, context);
+        named_arguments_to_attributes(attributes, *d, context);
         attributes.end();
+        warn_ignored_argument_subset(d->get_arguments(), context, Argument_Subset::positional);
+
         const bool child_permits_text = mathml_permits_text_bits[std::size_t(index)];
         to_math_html(out, d->get_content(), context, child_permits_text);
         out.close_tag(name);
@@ -121,8 +123,9 @@ void Math_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Con
 
     Attribute_Writer attributes = out.open_tag_with_attributes(tag_name);
     attributes.write_attribute(u8"display", display_string);
-    arguments_to_attributes(attributes, d, context);
+    named_arguments_to_attributes(attributes, d, context);
     attributes.end();
+    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
 
     to_math_html(out, d.get_content(), context);
 

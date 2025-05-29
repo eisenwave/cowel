@@ -77,8 +77,9 @@ void Passthrough_Behavior::generate_html(
     }
     else {
         Attribute_Writer attributes = out.open_tag_with_attributes(name);
-        arguments_to_attributes(attributes, d, context);
+        named_arguments_to_attributes(attributes, d, context);
         attributes.end();
+        warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
     }
     to_html(out, d.get_content(), context);
     out.close_tag(name);
@@ -104,9 +105,10 @@ void In_Tag_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, C
     const
 {
     Attribute_Writer attributes = out.open_tag_with_attributes(m_tag_name);
-    arguments_to_attributes(attributes, d, context);
+    named_arguments_to_attributes(attributes, d, context);
     attributes.write_class(m_class_name);
     attributes.end();
+    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
 
     to_html(out, d.get_content(), context);
     out.close_tag(m_tag_name);
@@ -127,13 +129,11 @@ void Special_Block_Behavior::generate_html(
     Context& context
 ) const
 {
-    if (d.get_arguments().empty()) {
-        out.open_tag(m_name);
-    }
-    else {
-        Attribute_Writer attributes = out.open_tag_with_attributes(m_name);
-        arguments_to_attributes(attributes, d, context);
-    }
+    Attribute_Writer attributes = out.open_tag_with_attributes(m_name);
+    named_arguments_to_attributes(attributes, d, context);
+    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+    attributes.end();
+
     auto initial_state = Paragraphs_State::outside;
     if (m_emit_intro) {
         initial_state = Paragraphs_State::inside;
@@ -155,10 +155,11 @@ void URL_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Cont
     const auto url_string = as_u8string_view(url);
 
     Attribute_Writer attributes = out.open_tag_with_attributes(u8"a");
-    arguments_to_attributes(attributes, d, context);
+    named_arguments_to_attributes(attributes, d, context);
     attributes.write_href(url_string);
     attributes.write_class(u8"sans");
     attributes.end();
+    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
 
     COWEL_ASSERT(url_string.length() >= m_url_prefix.length());
     out.write_inner_text(url_string.substr(m_url_prefix.length()));
@@ -183,15 +184,18 @@ void Self_Closing_Behavior::generate_html(
     }
 
     Attribute_Writer attributes = out.open_tag_with_attributes(m_tag_name);
-    arguments_to_attributes(attributes, d, context);
+    named_arguments_to_attributes(attributes, d, context);
     attributes.end_empty();
+    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
 }
 
 void List_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const
 {
     Attribute_Writer attributes = out.open_tag_with_attributes(m_tag_name);
-    arguments_to_attributes(attributes, d, context);
+    named_arguments_to_attributes(attributes, d, context);
     attributes.end();
+    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+
     for (const ast::Content& c : d.get_content()) {
         if (const auto* const directive = std::get_if<ast::Directive>(&c)) {
             const std::u8string_view name = directive->get_name();
