@@ -1592,6 +1592,10 @@ h1 {
 <div class=toc-num data-level=4>8.8.2</div>
 <a href=#dir-ol><h4><code><h- data-h=mk_tag>\ol</h-></code> &mdash; Ordered lists</h4></a>
 <div class=toc-num data-level=4>8.8.3</div>
+<a href=#dir-li><h4><code><h- data-h=mk_tag>\li</h-></code> &mdash; List items</h4></a>
+<div class=toc-num data-level=4>8.8.4</div>
+<a href=#dir-item><h4><code><h- data-h=mk_tag>\item</h-></code> &mdash; List item pseudo-directive</h4></a>
+<div class=toc-num data-level=4>8.8.5</div>
 <a href=#dir-dl><h4><code><h- data-h=mk_tag>\dl</h-></code> &mdash; Definition lists</h4></a>
 <div class=toc-num data-level=3>8.9</div>
 <a href=#tables><h3>Tables</h3></a>
@@ -2856,17 +2860,50 @@ Warning blocks warn the reader of some hazard or potential mistake.
 
 <p>The <code><h- data-h=mk_tag>\ul</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_punc>&gt;</h-></code> element,
 and produces an unordered list.
-Within that list,
-you can use the pseudo-directive <code><h- data-h=mk_tag>\item</h-></code> to produce list items.
 </p>
 <h4 id=dir-ol><a class=para href=#dir-ol></a>8.8.2. <code><h- data-h=mk_tag>\ol</h-></code> &mdash; Ordered lists</h4>
 
 <p>The <code><h- data-h=mk_tag>\ol</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ol</h-><h- data-h=sym_punc>&gt;</h-></code> element,
 and produces an ordered list.
-Within that list,
-you can use the pseudo-directive <code><h- data-h=mk_tag>\item</h-></code> to produce list items.
 </p>
-<h4 id=dir-dl><a class=para href=#dir-dl></a>8.8.3. <code><h- data-h=mk_tag>\dl</h-></code> &mdash; Definition lists</h4>
+<h4 id=dir-li><a class=para href=#dir-li></a>8.8.3. <code><h- data-h=mk_tag>\li</h-></code> &mdash; List items</h4>
+
+<p>The <code><h- data-h=mk_tag>\li</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>li</h-><h- data-h=sym_punc>&gt;</h-></code> element,
+and produces a list item with <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_punc>&gt;</h-></code> or <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ol</h-><h- data-h=sym_punc>&gt;</h-></code>.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\ul</h-><h- data-h=sym_brac>{</h->
+    <h- data-h=mk_tag>\li</h-><h- data-h=sym_brac>{</h->first bullet<h- data-h=sym_brac>}</h->
+    <h- data-h=mk_tag>\li</h-><h- data-h=sym_brac>{</h->second bullet<h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\hr</h->
+<h- data-h=mk_tag>\ol</h-><h- data-h=sym_brac>{</h->
+    <h- data-h=mk_tag>\li</h-><h- data-h=sym_brac>{</h->first bullet<h- data-h=sym_brac>}</h->
+    <h- data-h=mk_tag>\li</h-><h- data-h=sym_brac>{</h->second bullet<h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as:
+</p><ul>
+    <li>first bullet</li>
+    <li>second bullet</li>
+</ul>
+<hr/>
+<ol>
+    <li>first bullet</li>
+    <li>second bullet</li>
+</ol>
+</example-block>
+
+<h4 id=dir-item><a class=para href=#dir-item></a>8.8.4. <code><h- data-h=mk_tag>\item</h-></code> &mdash; List item pseudo-directive</h4>
+
+<warning-block><p><intro-></intro-> 
+This directive is deprecated and will be removed in a future version.
+</p></warning-block>
+
+<p>Within <code><h- data-h=mk_tag>\ul</h-></code> and <code><h- data-h=mk_tag>\ol</h-></code>,
+the <code><h- data-h=mk_tag>\item</h-></code> pseudo-directive can also be used instead of <code><h- data-h=mk_tag>\li</h-></code>.
+</p>
+<h4 id=dir-dl><a class=para href=#dir-dl></a>8.8.5. <code><h- data-h=mk_tag>\dl</h-></code> &mdash; Definition lists</h4>
 
 <p>The <code><h- data-h=mk_tag>\dl</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>dl</h-><h- data-h=sym_punc>&gt;</h-></code> element,
 and produces a definition list.

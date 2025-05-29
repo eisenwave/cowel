@@ -4,15 +4,50 @@
 
 The \cow.dir{ul} directive corresponds to the \cow.html{<ul>} element,
 and produces an unordered list.
-Within that list,
-you can use the pseudo-directive \cow.dir{item} to produce list items.
 
 \h4[id=dir-ol]{\cow.dir{ol} \c{mdash} Ordered lists}
 
 The \cow.dir{ol} directive corresponds to the \cow.html{<ol>} element,
 and produces an ordered list.
-Within that list,
-you can use the pseudo-directive \cow.dir{item} to produce list items.
+
+\h4[id=dir-li]{\cow.dir{li} \c{mdash} List items}
+
+The \cow.dir{li} directive corresponds to the \cow.html{<li>} element,
+and produces a list item with \cow.html{<ul>} or \cow.html{<ol>}.
+
+\example{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\ul{
+    \li{first bullet}
+    \li{second bullet}
+}
+\hr
+\ol{
+    \li{first bullet}
+    \li{second bullet}
+}
+}}
+This renders as:
+\ul{
+    \li{first bullet}
+    \li{second bullet}
+}
+\hr
+\ol{
+    \li{first bullet}
+    \li{second bullet}
+}
+}
+
+\h4[id=dir-item]{\cow.dir{item} \c{mdash} List item pseudo-directive}
+
+\warning{
+This directive is deprecated and will be removed in a future version.
+}
+
+Within \cow.dir{ul} and \cow.dir{ol},
+the \cow.dir{item} pseudo-directive can also be used instead of \cow.dir{li}.
 
 \h4[id=dir-dl]{\cow.dir{dl} \c{mdash} Definition lists}
 
@@ -20,8 +55,8 @@ The \cow.dir{dl} directive corresponds to the \cow.html{<dl>} element,
 and produces a definition list.
 Within that list, you can use
 \ul{
-\item{\cow.dir{dt} for \dfn{definition terms}, and}
-\item{\cow.dir{dd} for \dfn{definition descriptions}.}
+\li{\cow.dir{dt} for \dfn{definition terms}, and}
+\li{\cow.dir{dd} for \dfn{definition descriptions}.}
 }
 
 \h3{Tables}

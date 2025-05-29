@@ -3,9 +3,9 @@
 COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 \ul{
-\item{\cow.c{\\various-directives[positional args, named-args = 0]{and content}}}
-\item{\cow.c{Text.}}
-\item{Escape sequences, such as \cow.c{\\\U{7B}}, \cow.c{\\\U{7D}}, \cow.c{\\\\}, etc.}
+\li{\cow.c{\\various-directives[positional args, named-args = 0]{and content}}}
+\li{\cow.c{Text.}}
+\li{Escape sequences, such as \cow.c{\\\U{7B}}, \cow.c{\\\U{7D}}, \cow.c{\\\\}, etc.}
 }
 
 There is no special syntax besides that,
@@ -45,12 +45,12 @@ Certain directives (e.g. \cow.dir{comment}) that don't generate anything rendere
 
 The process of paragraph splitting works as follows:
 \ul{
-\item{
+\li{
 Blank-line-separated blocks of inline content is wrapped in in \cow.html{<p>...</p>} tags.
 Meta content is not counted as a blank line, so it "continues" inline content,
 but no effort is made to wrap it in \cow.html{<p>...</p>}.
 }
-\item{
+\li{
 Block content stays untouched, i.e. it is not wrapped in \cow.html{<p>...</p>}.
 However, it also terminates prior inline content, like a blank line.
 }

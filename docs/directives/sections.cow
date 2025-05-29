@@ -18,11 +18,11 @@ inside \cow.html{<body>}, inside \cow.html{html}.
 \cow.dir{there} allows you to write outside of the \cow.html{<main>} element:
 
 \ul{
-\item{
+\li{
 \cow.c{\\there[std.head]{text}} will write \cow.c{text}
 inside of the \cow.html{<head>} element (following auto-generated content).
 }
-\item{
+\li{
 \cow.c{\\there[std.body]{text}} will write \cow.c{text}
 inside of the \cow.html{<body>} element (following \cow.html{<main>}
 and other automatically inserted elements).

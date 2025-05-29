@@ -10,11 +10,11 @@ The content is an HTML context, and is what actually gets displayed.
 If no content is provided, it can be synthesized from the following types of references:
 
 \ul{
-\item{\tt{mailto} URLs (e-mail addresses)}
-\item{\tt{tel} URLs (telephone numbers)}
-\item{\tt{http} and \tt{https} URLs}
-\item{Anchors (\tt{#id}) for some heading in the document}
-\item{Anything defined in the bibliography using \cow.dir{bib}}
+\li{\tt{mailto} URLs (e-mail addresses)}
+\li{\tt{tel} URLs (telephone numbers)}
+\li{\tt{http} and \tt{https} URLs}
+\li{Anchors (\tt{#id}) for some heading in the document}
+\li{Anything defined in the bibliography using \cow.dir{bib}}
 }
 
 \example{

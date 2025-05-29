@@ -132,11 +132,11 @@ between '\tt{&}' and '\tt{;}'.
 \example{
 Using \cow.dir{U} and \cow.dir{c}, the '\tt{&}' character can be produced in a number of ways:
 \ul{
-    \item{Literally '\tt{&}' in text}
-    \item{\cow.c{\\U{26}} (code point literal for U+0026)}
-    \item{\cow.c{\\c{amp}} (like \cow.html{&amp;}, named character reference)}
-    \item{\cow.c{\\c{#38}} (like \cow.html{&38;}, decimal character reference)}
-    \item{\cow.c{\\c{#x26}} (like \cow.html{&x26;}, hexadecimal character reference)}
+    \li{Literally '\tt{&}' in text}
+    \li{\cow.c{\\U{26}} (code point literal for U+0026)}
+    \li{\cow.c{\\c{amp}} (like \cow.html{&amp;}, named character reference)}
+    \li{\cow.c{\\c{#38}} (like \cow.html{&38;}, decimal character reference)}
+    \li{\cow.c{\\c{#x26}} (like \cow.html{&x26;}, hexadecimal character reference)}
 }
 }
 

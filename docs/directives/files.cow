@@ -57,15 +57,15 @@ It has no arguments, and its content is a plaintext context in which the path is
 While \cow.dir{import} and \cow.dir{include} are similar,
 there are some stark differences:
 \ul{
-\item{
+\li{
 \cow.dir{import} is used for COWEL documents,
 while \cow.dir{include} is used for anything else.
 }
-\item{
+\li{
 \cow.dir{import} doesn't just load the text from another file,
 but parses it and ensures that the contents are a valid COWEL document.
 }
-\item{
+\li{
 \cow.dir{include} is a plaintext directive, and interops nicely with syntax highlighting.
 It is also possible to \cow.dir{include} COWEL files into code blocks without
 any regards as to their contents.

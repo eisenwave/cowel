@@ -5,12 +5,12 @@ You can think of it as a "command" or "function call".
 
 Every directive has three parts:
 \ul{
-\item{The \cow.c{\\directive-name} selects a specific directive to be processed.}
-\item{
+\li{The \cow.c{\\directive-name} selects a specific directive to be processed.}
+\li{
 An optional \cow.c{[comma-separated, positional arguments, named-arguments = ...]}
 provides additional inputs to the directive.
 }
-\item{
+\li{
 An optional \cow.c{{block of content}} provides a "main input" to a directive.
 }
 }
