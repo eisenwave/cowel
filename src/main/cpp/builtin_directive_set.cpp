@@ -72,6 +72,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"dfn", Directive_Category::formatting, Directive_Display::in_line };
     Special_Block_Behavior diff //
         { u8"diff-block", false };
+    Fixed_Name_Passthrough_Behavior div //
+        { u8"div", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dl //
         { u8"dl", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dt //
@@ -181,6 +183,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"f-serif", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior small //
         { u8"small", Directive_Category::formatting, Directive_Display::in_line };
+    Fixed_Name_Passthrough_Behavior span //
+        { u8"span", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior strong //
         { u8"strong", Directive_Category::formatting, Directive_Display::in_line };
     HTML_Raw_Text_Behavior style //
@@ -308,6 +312,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-details",
         u8"-dfn",
         u8"-diff",
+        u8"-div",
         u8"-dl",
         u8"-dt",
         u8"-em",
@@ -360,6 +365,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-script",
         u8"-serif",
         u8"-small",
+        u8"-span",
         u8"-strong",
         u8"-style",
         u8"-sub",
@@ -486,6 +492,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->dfn;
         if (name == u8"diff")
             return &m_impl->diff;
+        if (name == u8"div")
+            return &m_impl->div;
         if (name == u8"dl")
             return &m_impl->dl;
         if (name == u8"dt")
@@ -635,6 +643,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
             return &m_impl->serif;
         if (name == u8"small")
             return &m_impl->small;
+        if (name == u8"span")
+            return &m_impl->span;
         if (name == u8"strong")
             return &m_impl->strong;
         if (name == u8"style")

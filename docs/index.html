@@ -1664,8 +1664,10 @@ h1 {
 <div class=toc-num data-level=3>8.18</div>
 <a href=#miscellaneous><h3>Miscellaneous</h3></a>
 <div class=toc-num data-level=4>8.18.1</div>
-<a href=#dir-trim><h4><code><h- data-h=mk_tag>\trim</h-></code> &mdash; Trim input</h4></a>
+<a href=#dir-div><h4><code><h- data-h=mk_tag>\div</h-></code> &mdash; Content division</h4></a>
 <div class=toc-num data-level=4>8.18.2</div>
+<a href=#dir-trim><h4><code><h- data-h=mk_tag>\trim</h-></code> &mdash; Trim input</h4></a>
+<div class=toc-num data-level=4>8.18.3</div>
 <a href=#dir-text><h4><code><h- data-h=mk_tag>\text</h-></code> &mdash; Plaintext context</h4></a>
 <div class=toc-num data-level=3>8.19</div>
 <a href=#variables-and-calculations><h3>Variables and calculations</h3></a>
@@ -2150,6 +2152,11 @@ You can rely on this when adding custom CSS.
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
     <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>small</h-><h- data-h=sym_punc>&gt;</h-></code></td>
     <td><sub>Small text</sub></td>
+</tr>
+<tr id=dir-span>
+    <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>span</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
+    <td><code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>span</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>span</h-><h- data-h=sym_punc>&gt;</h-></code></td>
+    <td>(No change in formatting)</td>
 </tr>
 <tr id=dir-sub>
     <td><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>sub</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code></td>
@@ -3444,7 +3451,14 @@ Therefore, you should try to "namespace" your own macros like:
 
 <h3 id=miscellaneous><a class=para href=#miscellaneous></a>8.18. Miscellaneous</h3>
 
-<h4 id=dir-trim><a class=para href=#dir-trim></a>8.18.1. <code><h- data-h=mk_tag>\trim</h-></code> &mdash; Trim input</h4>
+<h4 id=dir-div><a class=para href=#dir-div></a>8.18.1. <code><h- data-h=mk_tag>\div</h-></code> &mdash; Content division</h4>
+
+<p>The <code><h- data-h=mk_tag>\div</h-></code> directive surrounds its contents in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>div</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>div</h-><h- data-h=sym_punc>&gt;</h-></code>
+tags.
+It displays as a block, and its content is an HTML context.
+<code><h- data-h=mk_tag>\div</h-></code>'s named arguments are turned into HTML attributes.
+</p>
+<h4 id=dir-trim><a class=para href=#dir-trim></a>8.18.2. <code><h- data-h=mk_tag>\trim</h-></code> &mdash; Trim input</h4>
 
 <p>The content of a <code><h- data-h=mk_tag>\text</h-></code> directive is an HTML context
 (<a href=#contexts-and-output>§6. Contexts and output</a>).
@@ -3485,7 +3499,7 @@ If it wasn't eliminated, we would end up with
 but there should never be a space before the colon.
 </p></tip-block>
 
-<h4 id=dir-text><a class=para href=#dir-text></a>8.18.2. <code><h- data-h=mk_tag>\text</h-></code> &mdash; Plaintext context</h4>
+<h4 id=dir-text><a class=para href=#dir-text></a>8.18.3. <code><h- data-h=mk_tag>\text</h-></code> &mdash; Plaintext context</h4>
 
 <p>The content of a <code><h- data-h=mk_tag>\text</h-></code> directive is a plaintext context
 (<a href=#contexts-and-output>§6. Contexts and output</a>).

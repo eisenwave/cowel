@@ -96,6 +96,11 @@ You can rely on this when adding custom CSS.
     \td{\cow.html{<small>...</small>}}
     \td{\sub{Small text}}
 }
+\tr[id=dir-span]{
+    \td{\cow.c{\\span{...}}}
+    \td{\cow.html{<span>...</span>}}
+    \td{(No change in formatting)}
+}
 \tr[id=dir-sub]{
     \td{\cow.c{\\sub{...}}}
     \td{\cow.html{<sub>...</sub>}}

@@ -1,5 +1,12 @@
 \h3{Miscellaneous}
 
+\h4[id=dir-div]{\cow.dir{div} \c{mdash} Content division}
+
+The \cow.dir{div} directive surrounds its contents in \cow.html{<div>...</div>}
+tags.
+It displays as a block, and its content is an HTML context.
+\cow.dir{div}'s named arguments are turned into HTML attributes.
+
 \h4[id=dir-trim]{\cow.dir{trim} \c{mdash} Trim input}
 
 The content of a \cow.dir{text} directive is an HTML context
