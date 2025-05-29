@@ -62,8 +62,6 @@ struct Builtin_Directive_Set::Impl {
         { u8"dd", Directive_Category::pure_html, Directive_Display::block };
     Special_Block_Behavior decision //
         { u8"decision-block" };
-    Macro_Define_Behavior def //
-        {};
     Fixed_Name_Passthrough_Behavior del //
         { u8"del", Directive_Category::formatting, Directive_Display::in_line };
     Special_Block_Behavior delblock //
