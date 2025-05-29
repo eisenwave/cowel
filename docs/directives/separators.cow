@@ -37,9 +37,9 @@ If you want to provide a word break hint but have a hyphen at the end of the lin
 use \cow.c{\\U{AD}} or \cow.c{\\c{shy}} to output a U+00AD SOFT HYPHEN.
 }
 
-\h4[id=dir-word]{\cow.dir{word} \c{mdash} Unbroken words}
+\h4[id=dir-nobr]{\cow.dir{nobr} \c{mdash} Unbroken words}
 
-The \cow.dir{word} directive is a formatting directive
+The \cow.dir{nobr} directive is a formatting directive
 which prevents word breaks within its content.
 Its content is an HTML context.
 This is done by applying a \code[css,prefix=x\{]{white-space: nowrap;} style its content.
@@ -53,3 +53,9 @@ You can insert these using
 \li{\cow.c{Combined\\U{\Udigits{\N{NO-BREAK SPACE}}}Word}.}
 }
 }
+
+\h4[id=dir-word]{\cow.dir{word} \c{mdash} Deprecated alias for \cow.dir{nobr}}
+
+\warning{This directive is deprecated and will be removed in the future.}
+
+The \cow.dir{word} directive has the same effect as \cow.dir{nobr}.

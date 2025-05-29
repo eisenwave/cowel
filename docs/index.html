@@ -1544,7 +1544,9 @@ h1 {
 <div class=toc-num data-level=4>8.5.3</div>
 <a href=#dir-wbr><h4><code><h- data-h=mk_tag>\wbr</h-></code> &mdash; Word break opportunity</h4></a>
 <div class=toc-num data-level=4>8.5.4</div>
-<a href=#dir-word><h4><code><h- data-h=mk_tag>\word</h-></code> &mdash; Unbroken words</h4></a>
+<a href=#dir-nobr><h4><code><h- data-h=mk_tag>\nobr</h-></code> &mdash; Unbroken words</h4></a>
+<div class=toc-num data-level=4>8.5.5</div>
+<a href=#dir-word><h4><code><h- data-h=mk_tag>\word</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\nobr</h-></code></h4></a>
 <div class=toc-num data-level=3>8.6</div>
 <a href=#special-characters><h3>Special characters</h3></a>
 <div class=toc-num data-level=4>8.6.1</div>
@@ -2592,9 +2594,9 @@ If you want to provide a word break hint but have a hyphen at the end of the lin
 use <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{</h->AD<h- data-h=sym_brac>}</h-></code> or <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->shy<h- data-h=sym_brac>}</h-></code> to output a U+00AD SOFT HYPHEN.
 </p></tip-block>
 
-<h4 id=dir-word><a class=para href=#dir-word></a>8.5.4. <code><h- data-h=mk_tag>\word</h-></code> &mdash; Unbroken words</h4>
+<h4 id=dir-nobr><a class=para href=#dir-nobr></a>8.5.4. <code><h- data-h=mk_tag>\nobr</h-></code> &mdash; Unbroken words</h4>
 
-<p>The <code><h- data-h=mk_tag>\word</h-></code> directive is a formatting directive
+<p>The <code><h- data-h=mk_tag>\nobr</h-></code> directive is a formatting directive
 which prevents word breaks within its content.
 Its content is an HTML context.
 This is done by applying a <code><h- data-h=mk_attr>white-space</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>nowrap</h-><h- data-h=sym_punc>;</h-></code> style its content.
@@ -2609,7 +2611,13 @@ You can insert these using
 </ul>
 </tip-block>
 
-<h3 id=special-characters><a class=para href=#special-characters></a>8.6. Special characters</h3>
+<h4 id=dir-word><a class=para href=#dir-word></a>8.5.5. <code><h- data-h=mk_tag>\word</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\nobr</h-></code></h4>
+
+<warning-block><p><intro-></intro-> This directive is deprecated and will be removed in the future.</p></warning-block>
+
+<p>The <code><h- data-h=mk_tag>\word</h-></code> directive has the same effect as <code><h- data-h=mk_tag>\nobr</h-></code>.
+
+</p><h3 id=special-characters><a class=para href=#special-characters></a>8.6. Special characters</h3>
 
 <p>It is quite common that a text document should include special characters.
 While COWEL is built on UTF-8,

@@ -155,6 +155,8 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::block };
     Code_Point_By_Name_Behavior N //
         {};
+    In_Tag_Behavior nobr //
+        { u8"span", u8"word", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior noscript //
         { u8"noscript", Directive_Category::pure_html, Directive_Display::block };
     Special_Block_Behavior note //
@@ -255,10 +257,15 @@ struct Builtin_Directive_Set::Impl {
         {};
     WG21_Block_Behavior wg21_note //
         { u8"Note", u8"end note" };
-    In_Tag_Behavior word //
-        { u8"span", u8"word", Directive_Category::formatting, Directive_Display::in_line };
+
+    Deprecated_Behavior word //
+        { nobr, u8"nobr" };
 
     Impl() = default;
+    ~Impl() = default;
+
+    Impl(const Impl&) = delete;
+    Impl& operator=(const Impl&) = delete;
 };
 
 Builtin_Directive_Set::Builtin_Directive_Set()
