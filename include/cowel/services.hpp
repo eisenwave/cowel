@@ -146,6 +146,19 @@ struct File_Entry {
     std::u8string_view name;
 };
 
+enum struct File_Load_Error : Default_Underlying {
+    /// @brief Generic I/O error.
+    error,
+    /// @brief File was not found.
+    not_found,
+    /// @brief I/O (disk) error when reading the file.
+    read_error,
+    /// @brief No permissions to read the file.
+    permissions,
+    /// @brief File contains corrupted UTF-8 data.
+    corrupted,
+};
+
 /// @brief This class loads files into memory and stores their text data persistently,
 /// so that AST nodes can keep non-owning views into such text data.
 struct File_Loader {
@@ -156,7 +169,7 @@ struct File_Loader {
     /// Note that the entry name must not be the same as `path`
     /// because there is no assurance that `path` will remain valid in the long term.
     [[nodiscard]]
-    virtual std::optional<File_Entry> load(std::u8string_view path)
+    virtual Result<File_Entry, File_Load_Error> load(std::u8string_view path)
         = 0;
 
     /// @brief Returns an existing entry that was previously loaded with the same path.
@@ -167,9 +180,9 @@ struct File_Loader {
 
 struct Always_Failing_File_Loader final : File_Loader {
     [[nodiscard]]
-    std::optional<File_Entry> load(std::u8string_view) final
+    Result<File_Entry, File_Load_Error> load(std::u8string_view) final
     {
-        return {};
+        return File_Load_Error::error;
     }
 
     [[nodiscard]]

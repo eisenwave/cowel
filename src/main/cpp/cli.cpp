@@ -32,6 +32,17 @@ struct File_Loader_Less {
     }
 };
 
+[[nodiscard]]
+constexpr File_Load_Error io_error_to_file_load_error(IO_Error_Code error)
+{
+    switch (error) {
+    case IO_Error_Code::read_error: return File_Load_Error::read_error;
+    case IO_Error_Code::cannot_open: return File_Load_Error::not_found;
+    case IO_Error_Code::corrupted: return File_Load_Error::corrupted;
+    default: return File_Load_Error::error;
+    }
+}
+
 struct Relative_File_Loader final : File_Loader {
     using map_type
         = std::pmr::map<std::pmr::vector<char8_t>, std::pmr::vector<char8_t>, File_Loader_Less>;
@@ -46,20 +57,20 @@ struct Relative_File_Loader final : File_Loader {
     }
 
     [[nodiscard]]
-    std::optional<File_Entry> load(std::u8string_view path) final
+    Result<File_Entry, File_Load_Error> load(std::u8string_view path) final
     {
+        if (std::optional<File_Entry> cached = find(path)) {
+            return *cached;
+        }
+
         const std::filesystem::path relative { path, std::filesystem::path::generic_format };
         const std::filesystem::path resolved = base / relative;
-
-        if (std::optional<File_Entry> _ = find(path)) {
-            return {};
-        }
 
         std::pmr::memory_resource* const memory = entries.get_allocator().resource();
         Result<std::pmr::vector<char8_t>, IO_Error_Code> result
             = load_utf8_file(resolved.generic_u8string(), memory);
         if (!result) {
-            return {};
+            return io_error_to_file_load_error(result.error());
         }
         std::pmr::vector<char8_t> file { path.begin(), path.end(), memory };
         const auto [it, success] = entries.emplace(std::move(file), std::move(*result));
