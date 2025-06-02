@@ -404,6 +404,10 @@ main {
     margin-right: auto;
 }
 
+p {
+    text-align: justify;
+}
+
 abstract-block,
 blockquote,
 bug-block,
