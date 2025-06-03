@@ -91,7 +91,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
         u8"listed", diagnostic::h::listed_invalid, d, args, context, listed_by_default
     );
     const bool is_number_shown = get_yes_no_argument(
-        u8"show-number", diagnostic::h::listed_invalid, d, args, context, listed_by_default
+        u8"show-number", diagnostic::h::show_number_invalid, d, args, context, listed_by_default
     );
 
     if (is_listed) {
