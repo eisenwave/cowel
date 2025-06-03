@@ -15,10 +15,10 @@ The \cow.dir{code} directive produced syntax-highlighted text in code font.
 \dt{Arguments}
 \dd{
 \ul{
-\li{\tt{lang} (plaintext) \c{mdash} the syntax highlighting language.}
-\li{\tt{nested} (yes/no) \c{mdash} whether whether to omit \cow.html{<code>} tags.}
-\li{\tt{prefix} (plaintext) \c{mdash} code before the input from the view of the highlighter.}
-\li{\tt{suffix} (plaintext) \c{mdash} code after input from the view of the highlighter.}
+\li{\cow.attr{lang} (plaintext) \c{mdash} the syntax highlighting language.}
+\li{\cow.attr{nested} (yes/no) \c{mdash} whether whether to omit \cow.html{<code>} tags.}
+\li{\cow.attr{prefix} (plaintext) \c{mdash} code before the input from the view of the highlighter.}
+\li{\cow.attr{suffix} (plaintext) \c{mdash} code after input from the view of the highlighter.}
 }
 }
 
