@@ -271,6 +271,29 @@ bool argument_to_plaintext(
     Context& context
 );
 
+[[nodiscard]]
+bool get_yes_no_argument(
+    std::u8string_view name,
+    std::u8string_view diagnostic_id,
+    const ast::Directive& d,
+    const Argument_Matcher& args,
+    Context& context,
+    bool fallback
+);
+
+[[nodiscard]]
+std::size_t get_integer_argument(
+    std::u8string_view name,
+    std::u8string_view parse_error_diagnostic,
+    std::u8string_view range_error_diagnostic,
+    const Argument_Matcher& args,
+    const ast::Directive& d,
+    Context& context,
+    std::size_t fallback,
+    std::size_t min = 0,
+    std::size_t max = std::size_t(-1)
+);
+
 /// @brief If there is an error behavior in the `context`,
 /// uses that behavior's `generate_plaintext` on the directive.
 void try_generate_error_plaintext(

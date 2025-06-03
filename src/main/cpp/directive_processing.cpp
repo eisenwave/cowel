@@ -11,10 +11,12 @@
 #include "cowel/fwd.hpp"
 #include "cowel/parse_utils.hpp"
 #include "cowel/util/assert.hpp"
+#include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/source_position.hpp"
 #include "cowel/util/strings.hpp"
+#include "cowel/util/to_chars.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/context.hpp"
@@ -1119,6 +1121,94 @@ bool argument_to_plaintext(
     // TODO: warn when pure HTML argument was used as variable name
     to_plaintext(out, arg.get_content(), context);
     return true;
+}
+
+bool get_yes_no_argument(
+    std::u8string_view name,
+    std::u8string_view diagnostic_id,
+    const ast::Directive& d,
+    const Argument_Matcher& args,
+    Context& context,
+    bool fallback
+)
+{
+    const int index = args.get_argument_index(name);
+    if (index < 0) {
+        return fallback;
+    }
+    const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
+    std::pmr::vector<char8_t> data { context.get_transient_memory() };
+    to_plaintext(data, arg.get_content(), context);
+    const auto string = as_u8string_view(data);
+    if (string == u8"yes") {
+        return true;
+    }
+    if (string == u8"no") {
+        return false;
+    }
+    const std::u8string_view message[] {
+        u8"Argument has to be \"yes\" or \"no\", but \"",
+        string,
+        u8"\" was given.",
+    };
+    context.try_warning(diagnostic_id, arg.get_source_span(), message);
+    return fallback;
+}
+
+std::size_t get_integer_argument(
+    std::u8string_view name,
+    std::u8string_view parse_error_diagnostic,
+    std::u8string_view range_error_diagnostic,
+    const Argument_Matcher& args,
+    const ast::Directive& d,
+    Context& context,
+    std::size_t fallback,
+    std::size_t min,
+    std::size_t max
+)
+{
+    COWEL_ASSERT(fallback >= min && fallback <= max);
+
+    const int index = args.get_argument_index(name);
+    if (index < 0) {
+        return fallback;
+    }
+    const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
+    std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
+    to_plaintext(arg_text, arg.get_content(), context);
+    const auto arg_string = as_u8string_view(arg_text);
+
+    const std::optional<std::size_t> value = from_chars<std::size_t>(arg_string);
+    if (!value) {
+        const std::u8string_view message[] {
+            u8"The specified ",
+            name,
+            u8" \"",
+            arg_string,
+            u8"\" is ignored because it could not be parsed as a (positive) integer.",
+        };
+        context.try_warning(parse_error_diagnostic, arg.get_source_span(), message);
+        return fallback;
+    }
+    if (value < min || value > max) {
+        const Characters8 min_chars = to_characters8(min);
+        const Characters8 max_chars = to_characters8(max);
+        const std::u8string_view message[] {
+            u8"The specified ",
+            name,
+            u8" \"",
+            arg_string,
+            u8"\" is ignored because it is outside of the valid range [",
+            min_chars.as_string(),
+            u8", ",
+            max_chars.as_string(),
+            u8"].",
+        };
+        context.try_warning(range_error_diagnostic, arg.get_source_span(), message);
+        return fallback;
+    }
+
+    return *value;
 }
 
 void try_generate_error_plaintext(

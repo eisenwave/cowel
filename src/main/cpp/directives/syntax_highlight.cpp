@@ -115,39 +115,6 @@ String_Argument get_string_argument(
     return result;
 }
 
-[[nodiscard]]
-bool get_yes_no_argument(
-    std::u8string_view name,
-    std::u8string_view diagnostic_id,
-    const ast::Directive& d,
-    const Argument_Matcher& args,
-    Context& context,
-    bool fallback
-)
-{
-    const int index = args.get_argument_index(name);
-    if (index < 0) {
-        return fallback;
-    }
-    const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
-    std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    to_plaintext(data, arg.get_content(), context);
-    const auto string = as_u8string_view(data);
-    if (string == u8"yes") {
-        return true;
-    }
-    if (string == u8"no") {
-        return false;
-    }
-    const std::u8string_view message[] {
-        u8"Argument has to be \"yes\" or \"no\", but \"",
-        string,
-        u8"\" was given.",
-    };
-    context.try_warning(diagnostic_id, arg.get_source_span(), message);
-    return fallback;
-}
-
 } // namespace
 
 void Syntax_Highlight_Behavior::generate_html(
