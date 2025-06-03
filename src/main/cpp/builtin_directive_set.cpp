@@ -361,6 +361,7 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         u8"-mark",
         u8"-math",
         u8"-mathblock",
+        u8"-nobr",
         u8"-noscript",
         u8"-note",
         u8"-ol",
@@ -610,6 +611,8 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
         break;
 
     case u8'n':
+        if (name == u8"nobr")
+            return &m_impl->nobr;
         if (name == u8"noscript")
             return &m_impl->noscript;
         if (name == u8"note")
