@@ -187,6 +187,13 @@ inline constexpr std::u8string_view lower_invalid = u8"Udigits:lower.invalid";
 
 } // namespace Udigits
 
+namespace h {
+
+/// @brief In `\hN` headings, the given `listed` parameter is not `yes` or `no`.
+inline constexpr std::u8string_view listed_invalid = u8"h:listed.invalid";
+
+} // namespace h
+
 namespace hl {
 
 /// @brief In a `\hl` directive,
