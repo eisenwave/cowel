@@ -411,6 +411,10 @@ main {
     margin-right: auto;
 }
 
+p {
+    text-align: justify;
+}
+
 abstract-block,
 blockquote,
 bug-block,
@@ -1221,6 +1225,8 @@ h-[data-h^=null] { color:#00607c; }
 h-[data-h^=bool] { color:#9f6807; }
 h-[data-h^=this] { color:#00607c; }
 h-[data-h^=mac] { color:#6f4e37; }
+h-[data-h^=id] { color:#000000; }
+h-[data-h^=id_labl] { color:#517a0b; }
 h-[data-h^=kw] { color:#00607c; }
 h-[data-h^=sym] { color:#570057; }
 h-[data-h^=sym_punc] { color:#000000; }
@@ -1254,6 +1260,8 @@ h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:underline line
 h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
 h-[data-h^=sh_cmd] { color:#00607c; }
 h-[data-h^=sh-opt] { color:#000000; }
+h-[data-h^=asm_ins] { color:#00607c; }
+h-[data-h^=asm_ins_psu] { color:#9f6807; }
 }
 @media (prefers-color-scheme: dark) {
 h-[data-h^=err] { color:#ff0000; }
@@ -1271,6 +1279,8 @@ h-[data-h^=null] { color:#62ded6; }
 h-[data-h^=bool] { color:#f2d18d; }
 h-[data-h^=this] { color:#62ded6; }
 h-[data-h^=mac] { color:#cc946e; }
+h-[data-h^=id] { color:#f0f0f0; }
+h-[data-h^=id_labl] { color:#d8eda6; }
 h-[data-h^=kw] { color:#62ded6; }
 h-[data-h^=sym] { color:#baa6b9; }
 h-[data-h^=sym_punc] { color:#d0d0d0; }
@@ -1303,7 +1313,9 @@ h-[data-h^=mk_emph_ulin_strk] { font-style:italic; text-decoration:underline lin
 h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:underline line-through; }
 h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
 h-[data-h^=sh_cmd] { color:#62ded6; }
-h-[data-h^=sh-opt] { color:#d0d0d0; }
+h-[data-h^=sh-opt] { color:#f0f0f0; }
+h-[data-h^=asm_ins] { color:#62ded6; }
+h-[data-h^=asm_ins_psu] { color:#e6aee6; }
 }
 
 html.light h-[data-h^=err] { color:#ff0000; }
@@ -1317,6 +1329,8 @@ html.light h-[data-h^=null] { color:#00607c; }
 html.light h-[data-h^=bool] { color:#9f6807; }
 html.light h-[data-h^=this] { color:#00607c; }
 html.light h-[data-h^=mac] { color:#6f4e37; }
+html.light h-[data-h^=id] { color:#000000; }
+html.light h-[data-h^=id_labl] { color:#517a0b; }
 html.light h-[data-h^=kw] { color:#00607c; }
 html.light h-[data-h^=sym] { color:#570057; }
 html.light h-[data-h^=sym_punc] { color:#000000; }
@@ -1350,6 +1364,8 @@ html.light h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:und
 html.light h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
 html.light h-[data-h^=sh_cmd] { color:#00607c; }
 html.light h-[data-h^=sh-opt] { color:#000000; }
+html.light h-[data-h^=asm_ins] { color:#00607c; }
+html.light h-[data-h^=asm_ins_psu] { color:#9f6807; }
 
 html.dark h-[data-h^=err] { color:#ff0000; }
 html.dark h-[data-h^=cmt] { color:#a2e08d; font-style:italic; }
@@ -1366,6 +1382,8 @@ html.dark h-[data-h^=null] { color:#62ded6; }
 html.dark h-[data-h^=bool] { color:#f2d18d; }
 html.dark h-[data-h^=this] { color:#62ded6; }
 html.dark h-[data-h^=mac] { color:#cc946e; }
+html.dark h-[data-h^=id] { color:#f0f0f0; }
+html.dark h-[data-h^=id_labl] { color:#d8eda6; }
 html.dark h-[data-h^=kw] { color:#62ded6; }
 html.dark h-[data-h^=sym] { color:#baa6b9; }
 html.dark h-[data-h^=sym_punc] { color:#d0d0d0; }
@@ -1398,7 +1416,9 @@ html.dark h-[data-h^=mk_emph_ulin_strk] { font-style:italic; text-decoration:und
 html.dark h-[data-h^=mk_stro_ulin_strk] { font-weight:bold; text-decoration:underline line-through; }
 html.dark h-[data-h^=mk_emph_stro_ulin_strk] { font-weight:bold; font-style:italic; text-decoration:underline line-through; }
 html.dark h-[data-h^=sh_cmd] { color:#62ded6; }
-html.dark h-[data-h^=sh-opt] { color:#d0d0d0; }
+html.dark h-[data-h^=sh-opt] { color:#f0f0f0; }
+html.dark h-[data-h^=asm_ins] { color:#62ded6; }
+html.dark h-[data-h^=asm_ins_psu] { color:#e6aee6; }
   </style>
   <script>
 const theme = localStorage.getItem("cowel-theme");
@@ -1560,33 +1580,61 @@ h1 {
 <div class=toc-num data-level=3>8.7</div>
 <a href=#special-blocks><h3>Special blocks</h3></a>
 <div class=toc-num data-level=4>8.7.1</div>
-<a href=#dir-abstract><h4><code><h- data-h=mk_tag>\abstract</h-></code> &mdash; Abstract blocks</h4></a>
+<a href=#dir-Babstract><h4><code><h- data-h=mk_tag>\Babstract</h-></code> &mdash; Abstract blocks</h4></a>
 <div class=toc-num data-level=4>8.7.2</div>
-<a href=#dir-blockquote><h4><code><h- data-h=mk_tag>\blockquote</h-></code> &mdash; Quote blocks</h4></a>
+<a href=#dir-Bquote><h4><code><h- data-h=mk_tag>\Bquote</h-></code> &mdash; Quote blocks</h4></a>
 <div class=toc-num data-level=4>8.7.3</div>
-<a href=#dir-bug><h4><code><h- data-h=mk_tag>\bug</h-></code> &mdash; Bug blocks</h4></a>
+<a href=#dir-blockquote><h4><code><h- data-h=mk_tag>\blockquote</h-></code> &mdash; Alias for <code><h- data-h=mk_tag>\Bquote</h-></code></h4></a>
 <div class=toc-num data-level=4>8.7.4</div>
-<a href=#dir-decision><h4><code><h- data-h=mk_tag>\decision</h-></code> &mdash; Decision blocks</h4></a>
+<a href=#dir-Bug><h4><code><h- data-h=mk_tag>\Bug</h-></code> &mdash; Bug blocks</h4></a>
 <div class=toc-num data-level=4>8.7.5</div>
-<a href=#dir-delblock><h4><code><h- data-h=mk_tag>\delblock</h-></code> &mdash; Deletion blocks</h4></a>
+<a href=#dir-Bdecision><h4><code><h- data-h=mk_tag>\Bdecision</h-></code> &mdash; Decision blocks</h4></a>
 <div class=toc-num data-level=4>8.7.6</div>
-<a href=#dir-details><h4><code><h- data-h=mk_tag>\details</h-></code> &mdash; Details blocks aka spoilers</h4></a>
+<a href=#dir-Bdel><h4><code><h- data-h=mk_tag>\Bdel</h-></code> &mdash; Deletion blocks</h4></a>
 <div class=toc-num data-level=4>8.7.7</div>
-<a href=#dir-diff><h4><code><h- data-h=mk_tag>\diff</h-></code> &mdash; Difference blocks</h4></a>
+<a href=#dir-Bdetails><h4><code><h- data-h=mk_tag>\Bdetails</h-></code> &mdash; Details blocks aka spoilers</h4></a>
 <div class=toc-num data-level=4>8.7.8</div>
-<a href=#dir-example><h4><code><h- data-h=mk_tag>\example</h-></code> &mdash; Example blocks</h4></a>
+<a href=#dir-details><h4><code><h- data-h=mk_tag>\details</h-></code> &mdash; Alias for <code><h- data-h=mk_tag>\Bdetails</h-></code></h4></a>
 <div class=toc-num data-level=4>8.7.9</div>
-<a href=#dir-insblock><h4><code><h- data-h=mk_tag>\insblock</h-></code> &mdash; Insertion blocks</h4></a>
+<a href=#dir-Bdiff><h4><code><h- data-h=mk_tag>\Bdiff</h-></code> &mdash; Difference blocks</h4></a>
 <div class=toc-num data-level=4>8.7.10</div>
-<a href=#dir-important><h4><code><h- data-h=mk_tag>\important</h-></code> &mdash; Important blocks</h4></a>
+<a href=#dir-Bex><h4><code><h- data-h=mk_tag>\Bex</h-></code> &mdash; Example blocks</h4></a>
 <div class=toc-num data-level=4>8.7.11</div>
-<a href=#dir-note><h4><code><h- data-h=mk_tag>\note</h-></code> &mdash; Note blocks</h4></a>
+<a href=#dir-Bins><h4><code><h- data-h=mk_tag>\Bins</h-></code> &mdash; Insertion blocks</h4></a>
 <div class=toc-num data-level=4>8.7.12</div>
-<a href=#dir-tip><h4><code><h- data-h=mk_tag>\tip</h-></code> &mdash; Tip blocks</h4></a>
+<a href=#dir-Bimp><h4><code><h- data-h=mk_tag>\Bimp</h-></code> &mdash; Important blocks</h4></a>
 <div class=toc-num data-level=4>8.7.13</div>
-<a href=#dir-todo><h4><code><h- data-h=mk_tag>\todo</h-></code> &mdash; TODO blocks</h4></a>
+<a href=#dir-Bnote><h4><code><h- data-h=mk_tag>\Bnote</h-></code> &mdash; Note blocks</h4></a>
 <div class=toc-num data-level=4>8.7.14</div>
-<a href=#dir-warning><h4><code><h- data-h=mk_tag>\warning</h-></code> &mdash; Warning blocks</h4></a>
+<a href=#dir-Btip><h4><code><h- data-h=mk_tag>\Btip</h-></code> &mdash; Tip blocks</h4></a>
+<div class=toc-num data-level=4>8.7.15</div>
+<a href=#dir-Btodo><h4><code><h- data-h=mk_tag>\Btodo</h-></code> &mdash; TODO blocks</h4></a>
+<div class=toc-num data-level=4>8.7.16</div>
+<a href=#dir-Bwarn><h4><code><h- data-h=mk_tag>\Bwarn</h-></code> &mdash; Warning blocks</h4></a>
+<div class=toc-num data-level=4>8.7.17</div>
+<a href=#deprecated-aliases><h4>Deprecated aliases</h4></a>
+<div class=toc-num data-level=5>8.7.17.1</div>
+<a href=#dir-bug><h5><code><h- data-h=mk_tag>\bug</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bug</h-></code></h5></a>
+<div class=toc-num data-level=5>8.7.17.2</div>
+<a href=#dir-decision><h5><code><h- data-h=mk_tag>\decision</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bdecision</h-></code></h5></a>
+<div class=toc-num data-level=5>8.7.17.3</div>
+<a href=#dir-delblock><h5><code><h- data-h=mk_tag>\delblock</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bdel</h-></code></h5></a>
+<div class=toc-num data-level=5>8.7.17.4</div>
+<a href=#dir-diff><h5><code><h- data-h=mk_tag>\diff</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bdiff</h-></code></h5></a>
+<div class=toc-num data-level=5>8.7.17.5</div>
+<a href=#dir-example><h5><code><h- data-h=mk_tag>\example</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bex</h-></code></h5></a>
+<div class=toc-num data-level=5>8.7.17.6</div>
+<a href=#dir-insblock><h5><code><h- data-h=mk_tag>\insblock</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bins</h-></code></h5></a>
+<div class=toc-num data-level=5>8.7.17.7</div>
+<a href=#dir-important><h5><code><h- data-h=mk_tag>\important</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bimp</h-></code></h5></a>
+<div class=toc-num data-level=5>8.7.17.8</div>
+<a href=#dir-note><h5><code><h- data-h=mk_tag>\note</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bnote</h-></code></h5></a>
+<div class=toc-num data-level=5>8.7.17.9</div>
+<a href=#dir-tip><h5><code><h- data-h=mk_tag>\tip</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Btip</h-></code></h5></a>
+<div class=toc-num data-level=5>8.7.17.10</div>
+<a href=#dir-todo><h5><code><h- data-h=mk_tag>\todo</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Btodo</h-></code></h5></a>
+<div class=toc-num data-level=5>8.7.17.11</div>
+<a href=#dir-warning><h5><code><h- data-h=mk_tag>\warning</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bwarn</h-></code></h5></a>
 <div class=toc-num data-level=3>8.8</div>
 <a href=#lists><h3>Lists</h3></a>
 <div class=toc-num data-level=4>8.8.1</div>
@@ -1705,10 +1753,10 @@ The following COWEL code ...
 <p>... generates the HTML ...
 </p><code-block>Hello, <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h->strong<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h-> world!</code-block>
 <p>... which renders as:
-<div class=indent>
+</p><div class=indent>
 Hello, <strong>strong</strong> world!
 </div>
-</p></example-block>
+</example-block>
 
 <h2 id=motivation><a class=para href=#motivation></a>2. Motivation</h2>
 
@@ -1778,8 +1826,8 @@ because line breaks render like spaces.</code-block>
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->This displays on one line
 because line breaks render like spaces.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 <p>Rendered output:
-<div class=indent>This displays on one line because line breaks render like spaces.</div>
-</p></example-block>
+</p><div class=indent>This displays on one line because line breaks render like spaces.</div>
+</example-block>
 
 <h3 id=paragraph-splitting><a class=para href=#paragraph-splitting></a>4.2. Paragraph splitting</h3>
 
@@ -2231,10 +2279,10 @@ deals with modern C++ features correctly.
 <dt>Arguments</dt>
 <dd>
 <ul>
-<li><tt->lang</tt-> (plaintext) &mdash; the syntax highlighting language.</li>
-<li><tt->nested</tt-> (yes/no) &mdash; whether whether to omit <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code> tags.</li>
-<li><tt->prefix</tt-> (plaintext) &mdash; code before the input from the view of the highlighter.</li>
-<li><tt->suffix</tt-> (plaintext) &mdash; code after input from the view of the highlighter.</li>
+<li><tt-><h- data-h=mk_attr>lang</h-></tt-> (plaintext) &mdash; the syntax highlighting language.</li>
+<li><tt-><h- data-h=mk_attr>nested</h-></tt-> (yes/no) &mdash; whether whether to omit <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code> tags.</li>
+<li><tt-><h- data-h=mk_attr>prefix</h-></tt-> (plaintext) &mdash; code before the input from the view of the highlighter.</li>
+<li><tt-><h- data-h=mk_attr>suffix</h-></tt-> (plaintext) &mdash; code after input from the view of the highlighter.</li>
 </ul>
 </dd>
 
@@ -2281,10 +2329,10 @@ directives.
 You can nest JSON inside of a C++ string literal as follows:
 </p><code-block>Call: <h- data-h=mk_tag>\code</h-><h- data-h=sym_sqr>[</h->cpp<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->out.write_json("<h- data-h=mk_tag>\code</h-><h- data-h=sym_sqr>[</h->json<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>nested</h-><h- data-h=sym_punc>=</h->yes<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->{"x":123,"y":true,"z":null}<h- data-h=sym_brac>}</h->")<h- data-h=sym_brac>}</h-></code-block>
 <p>This renders as follows:
-<div class=indent>
+</p><div class=indent>
 Call: <code><h- data-h=id>out</h-><h- data-h=sym_op>.</h-><h- data-h=id>write_json</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_attr>"x"</h-><h- data-h=sym_punc>:</h-><h- data-h=num>123</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>"y"</h-><h- data-h=sym_punc>:</h-><h- data-h=bool>true</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>"z"</h-><h- data-h=sym_punc>:</h-><h- data-h=null>null</h-><h- data-h=sym_brac>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code>
 </div>
-</p></example-block>
+</example-block>
 
 <p>Note that by default,
 you may often not even notice a visual difference between using the <tt->nested</tt->
@@ -2310,10 +2358,10 @@ we can control whether a JSON string is interpreted as a markup key,
 or as a string value:
 </p><code-block>In JSON, there are <h- data-h=mk_tag>\code</h-><h- data-h=sym_sqr>[</h->json<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>prefix</h-><h- data-h=sym_punc>=</h-><h- data-h=esc>\{</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->"keys"<h- data-h=sym_brac>}</h-> and <h- data-h=mk_tag>\code</h-><h- data-h=sym_sqr>[</h->json<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->"values"<h- data-h=sym_brac>}</h->.</code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 In JSON, there are <code><h- data-h=mk_attr>"keys"</h-></code> and <code><h- data-h=str_dlim>"</h-><h- data-h=str>values</h-><h- data-h=str_dlim>"</h-></code>.
 </div>
-Notice that the color of <code><h- data-h=mk_attr>"keys"</h-></code> is different because it is interpreted
+<p>Notice that the color of <code><h- data-h=mk_attr>"keys"</h-></code> is different because it is interpreted
 as if it was positioned like:
 </p><code-block><h- data-h=sym_brac>{</h-><h- data-h=mk_attr>"keys"</h-></code-block>
 </example-block>
@@ -2498,7 +2546,7 @@ If you have existing MathML, you can embed their content using <code><h- data-h=
 <h- data-h=sym_brac>}</h->
 in a sentence.</code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 Math
 <math display=inline>
 <mfrac>
@@ -2508,7 +2556,7 @@ Math
 </math>
 in a sentence.
 </div>
-You can also keep the MathML separate within an XML document and <code><h- data-h=mk_tag>\include</h-></code> it:
+<p>You can also keep the MathML separate within an XML document and <code><h- data-h=mk_tag>\include</h-></code> it:
 </p><code-block>Math <h- data-h=mk_tag>\html</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\include</h-><h- data-h=sym_brac>{</h->math.mml<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-> in a sentence.</code-block>
 </example-block>
 
@@ -2543,10 +2591,10 @@ you can define a convenience macro:
 
 The sum of <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mathsqr</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-> and <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mathsqr</h-><h- data-h=sym_brac>{</h->y<h- data-h=sym_brac>}</h-> …</code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 The sum of <math display=inline><msup><mi>x</mi><mn>2</mn></msup></math> and <math display=inline><msup><mi>y</mi><mn>2</mn></msup></math> &mldr;
 </div>
-</p></tip-block>
+</tip-block>
 
 <h4 id=dir-mathblock><a class=para href=#dir-mathblock></a>8.4.2. <code><h- data-h=mk_tag>\mathblock</h-></code> &mdash; Math blocks</h4>
 
@@ -2699,10 +2747,10 @@ will be output in lower case instead.
 COWEL markup:
 </p><code-block>U+<h- data-h=mk_tag>\Udigits</h-><h- data-h=sym_sqr>[</h->4<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 U+0078
 </div>
-Note that U+0078 is the usual way in which Unicode code points are represented.
+<p>Note that U+0078 is the usual way in which Unicode code points are represented.
 That is, <tt->U+</tt->, followed by at least four hexadecimal digits.
 It is also possible to define a macro if we need this frequently:
 </p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\code-point</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\Udigits</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
@@ -2716,10 +2764,10 @@ while also keeping our source code readable:
 </p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\named-char</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\Udigits</h-><h- data-h=sym_sqr>[</h->4<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-> <h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h->
 <h- data-h=mk_tag>\named-char</h-><h- data-h=sym_brac>{</h->SECTION SIGN<h- data-h=sym_brac>}</h-></code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 U+00A7 SECTION SIGN
 </div>
-</p></tip-block>
+</tip-block>
 
 <p><code><h- data-h=mk_tag>\Udigits</h-></code> uses only the first code point within the input text,
 even though the entire input text is processed into plaintext.
@@ -2728,10 +2776,10 @@ even though the entire input text is processed into plaintext.
 If we provide more than a single code point, some input is discarded:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Udigits</h-><h- data-h=sym_brac>{</h->abc<h- data-h=sym_brac>}</h-></code-block>
 <p>This renders as
-<div class=indent>
+</p><div class=indent>
 61
 </div>
-... which corresponds to <code>a</code>, whereas <code>b</code> and <code>c</code> are discarded.
+<p>... which corresponds to <code>a</code>, whereas <code>b</code> and <code>c</code> are discarded.
 </p></bug-block>
 
 <h4 id=—-character-references><a class=para href=#—-character-references></a>8.6.4. <code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4>
@@ -2769,13 +2817,13 @@ which wrap their content in a block, with background color, borders, etc.
 they all convert their arguments to HTML attributes,
 and they all display as block content.
 </p>
-<h4 id=dir-abstract><a class=para href=#dir-abstract></a>8.7.1. <code><h- data-h=mk_tag>\abstract</h-></code> &mdash; Abstract blocks</h4>
+<h4 id=dir-Babstract><a class=para href=#dir-Babstract></a>8.7.1. <code><h- data-h=mk_tag>\Babstract</h-></code> &mdash; Abstract blocks</h4>
 
 <abstract-block><p><intro-></intro-> 
 Abstracts provide a summary of the document.
 </p></abstract-block>
 
-<h4 id=dir-blockquote><a class=para href=#dir-blockquote></a>8.7.2. <code><h- data-h=mk_tag>\blockquote</h-></code> &mdash; Quote blocks</h4>
+<h4 id=dir-Bquote><a class=para href=#dir-Bquote></a>8.7.2. <code><h- data-h=mk_tag>\Bquote</h-></code> &mdash; Quote blocks</h4>
 
 <p>The <code><h- data-h=mk_tag>\blockquote</h-></code> directive directly corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h-></code> element.
 </p>
@@ -2783,30 +2831,34 @@ Abstracts provide a summary of the document.
 <p>Quotes blocks or "block quotes" display quoted text.
 </p></blockquote>
 
-<h4 id=dir-bug><a class=para href=#dir-bug></a>8.7.3. <code><h- data-h=mk_tag>\bug</h-></code> &mdash; Bug blocks</h4>
+<h4 id=dir-blockquote><a class=para href=#dir-blockquote></a>8.7.3. <code><h- data-h=mk_tag>\blockquote</h-></code> &mdash; Alias for <code><h- data-h=mk_tag>\Bquote</h-></code></h4>
+
+<p>The <code><h- data-h=mk_tag>\blockquote</h-></code> directive is equivalent to the <code><h- data-h=mk_tag>\Bquote</h-></code> directive.
+</p>
+<h4 id=dir-Bug><a class=para href=#dir-Bug></a>8.7.4. <code><h- data-h=mk_tag>\Bug</h-></code> &mdash; Bug blocks</h4>
 
 <bug-block><p><intro-></intro-> 
 A bug block contains the description of a bug.
 This often includes a code block which demonstrates how to reproduce the bug.
 </p></bug-block>
 
-<h4 id=dir-decision><a class=para href=#dir-decision></a>8.7.4. <code><h- data-h=mk_tag>\decision</h-></code> &mdash; Decision blocks</h4>
+<h4 id=dir-Bdecision><a class=para href=#dir-Bdecision></a>8.7.5. <code><h- data-h=mk_tag>\Bdecision</h-></code> &mdash; Decision blocks</h4>
 
 <decision-block><p><intro-></intro-> 
 A decision block indicates that a decision needs to be made.
 </p></decision-block>
 
-<h4 id=dir-delblock><a class=para href=#dir-delblock></a>8.7.5. <code><h- data-h=mk_tag>\delblock</h-></code> &mdash; Deletion blocks</h4>
+<h4 id=dir-Bdel><a class=para href=#dir-Bdel></a>8.7.6. <code><h- data-h=mk_tag>\Bdel</h-></code> &mdash; Deletion blocks</h4>
 
 <del-block>
 <p>A deletion block acts as a wrapper for a large amount of deleted content.
 It is typically used when individual <code><h- data-h=mk_tag>\del</h-></code> directives would be too tedious to use.
 </p></del-block>
 
-<h4 id=dir-details><a class=para href=#dir-details></a>8.7.6. <code><h- data-h=mk_tag>\details</h-></code> &mdash; Details blocks aka spoilers</h4>
+<h4 id=dir-Bdetails><a class=para href=#dir-Bdetails></a>8.7.7. <code><h- data-h=mk_tag>\Bdetails</h-></code> &mdash; Details blocks aka spoilers</h4>
 
-<p>The <code><h- data-h=mk_tag>\details</h-></code> directive directly corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>details</h-><h- data-h=sym_punc>&gt;</h-></code> element.
-Within <code><h- data-h=mk_tag>\details</h-></code>,
+<p>The <code><h- data-h=mk_tag>\Bdetails</h-></code> directive directly corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>details</h-><h- data-h=sym_punc>&gt;</h-></code> element.
+Within <code><h- data-h=mk_tag>\Bdetails</h-></code>,
 the <code><h- data-h=mk_tag>\summary</h-></code> directive can be used to specify <dfn>summary text</dfn>.
 </p>
 <details>
@@ -2815,57 +2867,83 @@ A details block contains details which need to be revealed by the user.
 This is also referred to as "spoiler".
 </details>
 
-<h4 id=dir-diff><a class=para href=#dir-diff></a>8.7.7. <code><h- data-h=mk_tag>\diff</h-></code> &mdash; Difference blocks</h4>
+<h4 id=dir-details><a class=para href=#dir-details></a>8.7.8. <code><h- data-h=mk_tag>\details</h-></code> &mdash; Alias for <code><h- data-h=mk_tag>\Bdetails</h-></code></h4>
+
+<p>The <code><h- data-h=mk_tag>\details</h-></code> directive is equivalent to the <code><h- data-h=mk_tag>\Bdetails</h-></code> directive.
+</p>
+<h4 id=dir-Bdiff><a class=para href=#dir-Bdiff></a>8.7.9. <code><h- data-h=mk_tag>\Bdiff</h-></code> &mdash; Difference blocks</h4>
 
 <diff-block>
 <p>A difference block contains changes,
 where some content within is typically <del>deleted</del> or <ins>inserted</ins>.
 </p></diff-block>
 
-<h4 id=dir-example><a class=para href=#dir-example></a>8.7.8. <code><h- data-h=mk_tag>\example</h-></code> &mdash; Example blocks</h4>
+<h4 id=dir-Bex><a class=para href=#dir-Bex></a>8.7.10. <code><h- data-h=mk_tag>\Bex</h-></code> &mdash; Example blocks</h4>
 
 <example-block><p><intro-></intro-> 
 An example block contains examples.
 </p></example-block>
 
-<h4 id=dir-insblock><a class=para href=#dir-insblock></a>8.7.9. <code><h- data-h=mk_tag>\insblock</h-></code> &mdash; Insertion blocks</h4>
+<h4 id=dir-Bins><a class=para href=#dir-Bins></a>8.7.11. <code><h- data-h=mk_tag>\Bins</h-></code> &mdash; Insertion blocks</h4>
 
 <ins-block>
 <p>A deletion block acts as a wrapper for a large amount of inserted content.
 It is typically used when individual <code><h- data-h=mk_tag>\ins</h-></code> directives would be too tedious to use.
 </p></ins-block>
 
-<h4 id=dir-important><a class=para href=#dir-important></a>8.7.10. <code><h- data-h=mk_tag>\important</h-></code> &mdash; Important blocks</h4>
+<h4 id=dir-Bimp><a class=para href=#dir-Bimp></a>8.7.12. <code><h- data-h=mk_tag>\Bimp</h-></code> &mdash; Important blocks</h4>
 
 <important-block><p><intro-></intro-> 
 Important blocks contain especially important information.
 </p></important-block>
 
-<h4 id=dir-note><a class=para href=#dir-note></a>8.7.11. <code><h- data-h=mk_tag>\note</h-></code> &mdash; Note blocks</h4>
+<h4 id=dir-Bnote><a class=para href=#dir-Bnote></a>8.7.13. <code><h- data-h=mk_tag>\Bnote</h-></code> &mdash; Note blocks</h4>
 
 <note-block><p><intro-></intro-> 
 Note blocks contain less important information,
 which can often be skipped over by readers.
 </p></note-block>
 
-<h4 id=dir-tip><a class=para href=#dir-tip></a>8.7.12. <code><h- data-h=mk_tag>\tip</h-></code> &mdash; Tip blocks</h4>
+<h4 id=dir-Btip><a class=para href=#dir-Btip></a>8.7.14. <code><h- data-h=mk_tag>\Btip</h-></code> &mdash; Tip blocks</h4>
 
 <tip-block><p><intro-></intro-> 
 Tip blocks contain useful advice.
 </p></tip-block>
 
-<h4 id=dir-todo><a class=para href=#dir-todo></a>8.7.13. <code><h- data-h=mk_tag>\todo</h-></code> &mdash; TODO blocks</h4>
+<h4 id=dir-Btodo><a class=para href=#dir-Btodo></a>8.7.15. <code><h- data-h=mk_tag>\Btodo</h-></code> &mdash; TODO blocks</h4>
 
 <todo-block><p><intro-></intro-> 
 TODO blocks contain actions that remain to be done.
 They may indicate that a part of a project is incomplete.
 </p></todo-block>
 
-<h4 id=dir-warning><a class=para href=#dir-warning></a>8.7.14. <code><h- data-h=mk_tag>\warning</h-></code> &mdash; Warning blocks</h4>
+<h4 id=dir-Bwarn><a class=para href=#dir-Bwarn></a>8.7.16. <code><h- data-h=mk_tag>\Bwarn</h-></code> &mdash; Warning blocks</h4>
 
 <warning-block><p><intro-></intro-> 
 Warning blocks warn the reader of some hazard or potential mistake.
 </p></warning-block>
+
+<h4 id=deprecated-aliases><a class=para href=#deprecated-aliases></a>8.7.17. Deprecated aliases</h4>
+
+<p>Some of the special blocks also have alternative spellings
+which only exist for compatibility with past versions.
+The new naming scheme is for all special blocks to have a <code><h- data-h=mk_tag>\B*</h-></code> name.
+</p>
+<warning-block><p><intro-></intro-> 
+These directives are deprecated and will be removed in a future version.
+</p></warning-block>
+
+<h5 id=dir-bug><a class=para href=#dir-bug></a>8.7.17.1. <code><h- data-h=mk_tag>\bug</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bug</h-></code></h5>
+<h5 id=dir-decision><a class=para href=#dir-decision></a>8.7.17.2. <code><h- data-h=mk_tag>\decision</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bdecision</h-></code></h5>
+<h5 id=dir-delblock><a class=para href=#dir-delblock></a>8.7.17.3. <code><h- data-h=mk_tag>\delblock</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bdel</h-></code></h5>
+<h5 id=dir-diff><a class=para href=#dir-diff></a>8.7.17.4. <code><h- data-h=mk_tag>\diff</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bdiff</h-></code></h5>
+<h5 id=dir-example><a class=para href=#dir-example></a>8.7.17.5. <code><h- data-h=mk_tag>\example</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bex</h-></code></h5>
+<h5 id=dir-insblock><a class=para href=#dir-insblock></a>8.7.17.6. <code><h- data-h=mk_tag>\insblock</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bins</h-></code></h5>
+<h5 id=dir-important><a class=para href=#dir-important></a>8.7.17.7. <code><h- data-h=mk_tag>\important</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bimp</h-></code></h5>
+<h5 id=dir-note><a class=para href=#dir-note></a>8.7.17.8. <code><h- data-h=mk_tag>\note</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bnote</h-></code></h5>
+<h5 id=dir-tip><a class=para href=#dir-tip></a>8.7.17.9. <code><h- data-h=mk_tag>\tip</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Btip</h-></code></h5>
+<h5 id=dir-todo><a class=para href=#dir-todo></a>8.7.17.10. <code><h- data-h=mk_tag>\todo</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Btodo</h-></code></h5>
+<h5 id=dir-warning><a class=para href=#dir-warning></a>8.7.17.11. <code><h- data-h=mk_tag>\warning</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bwarn</h-></code></h5>
 
 <h3 id=lists><a class=para href=#lists></a>8.8. Lists</h3>
 
@@ -2947,14 +3025,21 @@ use a <code><h- data-h=mk_tag>\style</h-></code> directive.
 <code><h- data-h=mk_tag>\h1</h-></code>, <code><h- data-h=mk_tag>\h2</h-></code>, <code><h- data-h=mk_tag>\h3</h-></code>, <code><h- data-h=mk_tag>\h4</h-></code>, <code><h- data-h=mk_tag>\h5</h-></code>, and <code><h- data-h=mk_tag>\h6</h-></code> directives to
 produce the corresponding HTML tags with the same name.
 </p>
-<p>Headings take a <tt->listed</tt-> argument, which is a yes/no plaintext argument.
+<p>Headings take a <tt-><h- data-h=mk_attr>listed</h-></tt-> argument, which is a yes/no plaintext argument.
 Unless its value is <tt->no</tt->, headings are numbered and added to the table of contents
 (<a href=#dir-make-contents>§8.10.1. <code><h- data-h=mk_tag>\make-contents</h-></code> &mdash; Make table of contents</a>) automatically.
 </p>
-<p>Other arguments to these headings are converted into attributes of the corresponding HTML element.
-An <tt->id</tt-> argument can be provided explicitly.
+<p>Headings also take a <tt-><h- data-h=mk_attr>show-number</h-></tt-> argument, which is a yes/no plaintext argument.
+Unless this is <tt->no</tt->,
+the heading number will be included in the title, in the format <tt->1.2.3. Title</tt->.
+However, even if <tt-><h- data-h=mk_attr>show-number</h-></tt-> is <tt->no</tt->,
+the number heading is internally numbered as usual,
+and its number can be seen in the table of contents.
 </p>
-<p>If none is provided, an <tt->id</tt-> is synthesized from the content within the heading.
+<p>Other arguments to these headings are converted into attributes of the corresponding HTML element.
+An <tt-><h- data-h=mk_attr>id</h-></tt-> argument can be provided explicitly.
+</p>
+<p>If none is provided, an <tt-><h- data-h=mk_attr>id</h-></tt-> is synthesized from the content within the heading.
 </p>
 <tip-block><p><intro-></intro-> 
 Headings can be referenced using the <code><h- data-h=mk_tag>\ref</h-></code> directive:
@@ -3109,10 +3194,10 @@ COWEL markup:
 C++ standard draft links can be synthesized into human-readable descriptions.
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->https://eel.is/c++draft/expr#1<h- data-h=sym_sqr>]</h-></code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 <a href=https://eel%2eis/c++draft/expr#1>[expr] paragraph 1</a>
 </div>
-</p></example-block>
+</example-block>
 
 <h4 id=dir-mail><a class=para href=#dir-mail></a>8.12.2. <code><h- data-h=mk_tag>\mail</h-></code> &mdash; E-Mail addresses</h4>
 
@@ -3521,10 +3606,10 @@ at the COWEL source level.
 <example-block><p><intro-></intro-> 
 </p><code-block>Every<h- data-h=mk_tag>\trim</h-><h- data-h=sym_brac>{</h-> day<h- data-h=sym_brac>}</h-></code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 Everyday
 </div>
-</p></example-block>
+</example-block>
 
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\trim</h-></code> is primarily useful inside of macros.
@@ -3537,12 +3622,12 @@ where the user can <em>optionally</em> provide a number for that note:
 
 <h- data-h=mk_tag>\Note</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-> Something else.</code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 <p>Note: Something something.
 </p>
 <p>Note 1: Something else.
 </p></div>
-Notice that because <code><h- data-h=mk_tag>\put</h-></code> expands to no content,
+<p>Notice that because <code><h- data-h=mk_tag>\put</h-></code> expands to no content,
 the trailing space after <code>Note</code> is eliminated.
 If it wasn't eliminated, we would end up with
 <code><h- data-h=sym_brac>{</h->Note :<h- data-h=sym_brac>}</h-></code>,
@@ -3584,14 +3669,14 @@ COWEL markup:
 <h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Accesses the value of x, which is 123</h-><h- data-h=cmt_dlim>}</h->
 <h- data-h=mk_tag>\Vget</h-><h- data-h=sym_sqr>[</h->x<h- data-h=sym_sqr>]</h-></code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 
 
 
 
 123
 </div>
-</p></example-block>
+</example-block>
 
 <h4 id=dir-Vget><a class=para href=#dir-Vget></a>8.19.2. <code><h- data-h=mk_tag>\Vget</h-></code> &mdash; Get a variable</h4>
 
@@ -3618,10 +3703,10 @@ where the argument is interpreted as an integer, and then summed.
 COWEL markup:
 </p><code-block><h- data-h=mk_tag>\Cadd</h-><h- data-h=sym_sqr>[</h->1<h- data-h=sym_punc>,</h-> 2<h- data-h=sym_punc>,</h-> 3<h- data-h=sym_punc>,</h-> -1<h- data-h=sym_sqr>]</h-> <h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>1 + 2 + 3 + (-1)</h-><h- data-h=cmt_dlim>}</h-></code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 5 
 </div>
-</p></example-block>
+</example-block>
 
 <tip-block><p><intro-></intro-> 
 You can also combine <code><h- data-h=mk_tag>\Cadd</h-></code> with <code><h- data-h=mk_tag>\Vget</h-></code> and <code><h- data-h=mk_tag>\Vset</h-></code> to store the results
@@ -3639,12 +3724,12 @@ Paragraph <h- data-h=mk_tag>\p.num</h->
 
 Paragraph <h- data-h=mk_tag>\p.num</h-></code-block>
 <p>This renders as:
-<div class=indent>
+</p><div class=indent>
 <p>Paragraph 1
 </p>
 <p>Paragraph 2
 </p></div>
-</p></tip-block>
+</tip-block>
 
 <note-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\Cadd</h-></code> and other calculation directives are mainly intended
