@@ -1,8 +1,8 @@
-\macro[\cow.c{...}]{\code[cowel]{\put}}
-\macro[\cow.html{...}]{\code[html]{\put}}
-\macro[\cow.dir{...}]{\cow.c{\hl[markup-tag]{\\\put}}}
-\macro[\cow.cp{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}
-\macro[\cow.attr{...}]{\tt{\hl[markup-attr]{\put}}}
+\macro[\cow_c{...}]{\code[cowel]{\put}}
+\macro[\cow_html{...}]{\code[html]{\put}}
+\macro[\cow_dir{...}]{\cow_c{\hl[markup-tag]{\\\put}}}
+\macro[\cow_cp{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}
+\macro[\cow_attr{...}]{\tt{\hl[markup-attr]{\put}}}
 
 \there[std.head]{
 \html-title{COWEL - Compact Web Language Documentation}

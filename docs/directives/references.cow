@@ -1,10 +1,10 @@
 \h3{References}
 
-\h4[id=dir-ref]{\cow.dir{ref} \c{mdash} References}
+\h4[id=dir-ref]{\cow_dir{ref} \c{mdash} References}
 
-The \cow.dir{ref} directive takes a single \tt{to} argument,
+The \cow_dir{ref} directive takes a single \tt{to} argument,
 which can be a URL, anchor, or something else.
-It produces an \cow.html{<a>} tag with some content inside.
+It produces an \cow_html{<a>} tag with some content inside.
 
 The content is an HTML context, and is what actually gets displayed.
 If no content is provided, it can be synthesized from the following types of references:
@@ -14,7 +14,7 @@ If no content is provided, it can be synthesized from the following types of ref
 \li{\tt{tel} URLs (telephone numbers)}
 \li{\tt{http} and \tt{https} URLs}
 \li{Anchors (\tt{#id}) for some heading in the document}
-\li{Anything defined in the bibliography using \cow.dir{bib}}
+\li{Anything defined in the bibliography using \cow_dir{bib}}
 }
 
 \Bex{
@@ -22,7 +22,7 @@ COWEL markup:
 \codeblock[cowel]{
 \\ref[mail:john@us.gov]
 }
-HTML output (\cow.html{<a>} tag may have additional attributes):
+HTML output (\cow_html{<a>} tag may have additional attributes):
 \codeblock[html]{
 <a href=mail:john@us.gov>john@us.gov</a>
 }
@@ -39,9 +39,9 @@ This renders as:
 }
 }
 
-\h4[id=dir-mail]{\cow.dir{mail} \c{mdash} E-Mail addresses}
+\h4[id=dir-mail]{\cow_dir{mail} \c{mdash} E-Mail addresses}
 
-A \cow.dir{mail} directive behaves the same \cow.dir{ref} directive that is given a \tt{mailto} URL.
+A \cow_dir{mail} directive behaves the same \cow_dir{ref} directive that is given a \tt{mailto} URL.
 However, the input is provided as content instead of an argument,
 and the displayed text cannot be customized.
 
@@ -53,9 +53,9 @@ Please contact \\ref[mailto:john@us.gov].
 }
 }
 
-\h4[id=dir-tel]{\cow.dir{tel} \c{mdash} Telephone numbers}
+\h4[id=dir-tel]{\cow_dir{tel} \c{mdash} Telephone numbers}
 
-A \cow.dir{tel} directive behaves the same \cow.dir{ref} directive that is given a \tt{tel} URL.
+A \cow_dir{tel} directive behaves the same \cow_dir{ref} directive that is given a \tt{tel} URL.
 However, the input is provided as content instead of an argument,
 and the displayed text cannot be customized.
 

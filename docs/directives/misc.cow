@@ -1,18 +1,18 @@
 \h3{Miscellaneous}
 
-\h4[id=dir-div]{\cow.dir{div} \c{mdash} Content division}
+\h4[id=dir-div]{\cow_dir{div} \c{mdash} Content division}
 
-The \cow.dir{div} directive surrounds its contents in \cow.html{<div>...</div>}
+The \cow_dir{div} directive surrounds its contents in \cow_html{<div>...</div>}
 tags.
 It displays as a block, and its content is an HTML context.
-\cow.dir{div}'s named arguments are turned into HTML attributes.
+\cow_dir{div}'s named arguments are turned into HTML attributes.
 
-\h4[id=dir-trim]{\cow.dir{trim} \c{mdash} Trim input}
+\h4[id=dir-trim]{\cow_dir{trim} \c{mdash} Trim input}
 
-The content of a \cow.dir{text} directive is an HTML context
+The content of a \cow_dir{text} directive is an HTML context
 (\ref[#contexts-and-output]).
 Its arguments are ignored.
-\cow.dir{text} is a formatting directive.
+\cow_dir{text} is a formatting directive.
 
 The process of \dfn{trimming} eliminates leading and trailing whitespace in the input,
 at the COWEL source level.
@@ -28,9 +28,9 @@ Every\trim{ day}
 }
 
 \Btip{
-\cow.dir{trim} is primarily useful inside of macros.
+\cow_dir{trim} is primarily useful inside of macros.
 We might not want to space-separate content if some of it is empty.
-For example, we could define a \cow.dir{Note} macro
+For example, we could define a \cow_dir{Note} macro
 where the user can \em{optionally} provide a number for that note:
 \codeblock[cowel]{\literally{
 \macro[\Note]{\trim{Note \put}:}
@@ -45,20 +45,20 @@ Note: Something something.
 
 Note 1: Something else.
 }}
-Notice that because \cow.dir{put} expands to no content,
-the trailing space after \cow.c{Note} is eliminated.
+Notice that because \cow_dir{put} expands to no content,
+the trailing space after \cow_c{Note} is eliminated.
 If it wasn't eliminated, we would end up with
 \code[cowel,prefix=\\trim]{{Note :}},
 but there should never be a space before the colon.
 }
 
-\h4[id=dir-text]{\cow.dir{text} \c{mdash} Plaintext context}
+\h4[id=dir-text]{\cow_dir{text} \c{mdash} Plaintext context}
 
-The content of a \cow.dir{text} directive is a plaintext context
+The content of a \cow_dir{text} directive is a plaintext context
 (\ref[#contexts-and-output]).
 Its arguments are ignored.
 
 It simply outputs the input that it was given as text.
 Therefore, it acts as a sort of wrapper for plaintext.
-Notably, this forces the generation of plaintext even when \cow.dir{text}
+Notably, this forces the generation of plaintext even when \cow_dir{text}
 is within an HTML context.

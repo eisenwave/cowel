@@ -1900,6 +1900,14 @@ You can use an empty block of content to "cut a name short":
 <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>wbr</h-></code> and <code>longword</code> immediately following one another.
 </p></tip-block>
 
+<warning-block><p><intro-></intro-> 
+The use of '.' (period) characters in directive names is deprecated.
+Currently, <code><h- data-h=mk_tag>\a.b</h-></code> would get parsed as a directive name,
+but this behavior will be removed in the future.
+This will result in <code><h- data-h=mk_tag>\a</h-></code> being parsed as a directive name,
+followed by plaintext <tt->.b</tt->.
+</p></warning-block>
+
 <h3 id=directive-arguments><a class=para href=#directive-arguments></a>5.2. Directive arguments</h3>
 
 <p><dfn>Directive arguments</dfn> can be <dfn>positional arguments</dfn> or <dfn>named arguments</dfn>.
@@ -3570,17 +3578,13 @@ This should be supported at some point.
 
 <p>Since COWEL continuously adds more directives in the future,
 you should try to avoid names that may collide with those when defining your own macros.
-COWEL builtin directive names only use alphanumeric characters and '<tt->-</tt->',
-so you can use some of other character for disambiguation.
+COWEL builtin directive names only use alphanumeric characters and '<tt->-</tt->'.
 </p>
 <tip-block><p><intro-></intro-> 
-The '<tt->.</tt->' and '<tt->_</tt->' characters can be used as part of directive names,
+The '<tt->_</tt->' character can be used as part of directive names,
 and COWEL will never use this in its own names.
 Therefore, you should try to "namespace" your own macros like:
-</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\abc.i</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->macro definition here ...<h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\abc.i</h->
-
-<h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\abc_i</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->macro definition here ...<h- data-h=sym_brac>}</h->
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\abc_i</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->macro definition here ...<h- data-h=sym_brac>}</h->
 <h- data-h=mk_tag>\abc_i</h-></code-block>
 </tip-block>
 

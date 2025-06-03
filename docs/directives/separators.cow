@@ -1,45 +1,45 @@
 \h3{Separators and word breaking}
 
-\h4[id=dir-br]{\cow.dir{br} \c{mdash} Break line}
+\h4[id=dir-br]{\cow_dir{br} \c{mdash} Break line}
 
-The \cow.dir{br} directive produces a line break,
-and corresponds to the HTML element \cow.html{<br/>}.
+The \cow_dir{br} directive produces a line break,
+and corresponds to the HTML element \cow_html{<br/>}.
 It displays as inline content, and its input content is ignored.
 
-\cow.dir{br} is particularly useful when line breaks are treated same as spaces,
+\cow_dir{br} is particularly useful when line breaks are treated same as spaces,
 which is the case in most HTML content.
 
-\h4[id=dir-hr]{\cow.dir{hr} \c{mdash} Horizontal rule}
+\h4[id=dir-hr]{\cow_dir{hr} \c{mdash} Horizontal rule}
 
-The \cow.dir{hr} directive produces a horizontal rule,
-and corresponds to the HTML element \cow.html{<hr/>}.
+The \cow_dir{hr} directive produces a horizontal rule,
+and corresponds to the HTML element \cow_html{<hr/>}.
 It displays as block content, and its input content is ignored.
 
 Here is an example:
 \hr
 
-\h4[id=dir-wbr]{\cow.dir{wbr} \c{mdash} Word break opportunity}
+\h4[id=dir-wbr]{\cow_dir{wbr} \c{mdash} Word break opportunity}
 
-The \cow.dir{wbr} directive produces a word break opportunity,
-and corresponds to the HTML element \cow.html{<wbr>}.
+The \cow_dir{wbr} directive produces a word break opportunity,
+and corresponds to the HTML element \cow_html{<wbr>}.
 It displays as inline content, and its input content is ignored.
 
-\cow.html{<wbr>} elements can be inserted into the middle of long words,
+\cow_html{<wbr>} elements can be inserted into the middle of long words,
 which, if they don't fit on one line,
-will be broken at the point of the \cow.html{<wbr>} element
+will be broken at the point of the \cow_html{<wbr>} element
 (without a hyphen at the end of the line).
 
-Since µlight only supports UTF-8 output, \cow.dir{wbr} is equivalent to \cow.c{\\U{200B}},
+Since µlight only supports UTF-8 output, \cow_dir{wbr} is equivalent to \cow_c{\\U{200B}},
 which outputs a U+200B ZERO-WIDTH SPACE code point.
 
 \Btip{
 If you want to provide a word break hint but have a hyphen at the end of the line,
-use \cow.c{\\U{AD}} or \cow.c{\\c{shy}} to output a U+00AD SOFT HYPHEN.
+use \cow_c{\\U{AD}} or \cow_c{\\c{shy}} to output a U+00AD SOFT HYPHEN.
 }
 
-\h4[id=dir-nobr]{\cow.dir{nobr} \c{mdash} Unbroken words}
+\h4[id=dir-nobr]{\cow_dir{nobr} \c{mdash} Unbroken words}
 
-The \cow.dir{nobr} directive is a formatting directive
+The \cow_dir{nobr} directive is a formatting directive
 which prevents word breaks within its content.
 Its content is an HTML context.
 This is done by applying a \code[css,prefix=x\{]{white-space: nowrap;} style its content.
@@ -48,14 +48,14 @@ This is done by applying a \code[css,prefix=x\{]{white-space: nowrap;} style its
 Another way to prevent word-breaking is to use non-breaking spaces.
 You can insert these using
 \ul{
-\li{\cow.c{Combined\\c{nbsp}Word},}
-\li{\cow.c{Combined\\N{NO-BREAK SPACE}Word}, or}
-\li{\cow.c{Combined\\U{\Udigits{\N{NO-BREAK SPACE}}}Word}.}
+\li{\cow_c{Combined\\c{nbsp}Word},}
+\li{\cow_c{Combined\\N{NO-BREAK SPACE}Word}, or}
+\li{\cow_c{Combined\\U{\Udigits{\N{NO-BREAK SPACE}}}Word}.}
 }
 }
 
-\h4[id=dir-word]{\cow.dir{word} \c{mdash} Deprecated alias for \cow.dir{nobr}}
+\h4[id=dir-word]{\cow_dir{word} \c{mdash} Deprecated alias for \cow_dir{nobr}}
 
 \Bwarn{This directive is deprecated and will be removed in the future.}
 
-The \cow.dir{word} directive has the same effect as \cow.dir{nobr}.
+The \cow_dir{word} directive has the same effect as \cow_dir{nobr}.

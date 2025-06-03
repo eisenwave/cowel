@@ -133,6 +133,27 @@ bool Reference_Resolver::operator()(std::u8string_view text, std::u8string_view 
     return success;
 }
 
+void warn_periods_in_directives(std::span<const ast::Content> content, Context& context)
+{
+    for (const ast::Content& c : content) {
+        if (const auto* const d = std::get_if<ast::Directive>(&c)) {
+            if (d->get_name().contains(u8'.')) {
+                context.try_warning(
+                    diagnostic::deprecated, d->get_name_span(),
+                    u8"The use of '.' in directive names is deprecated. You may have done this "
+                    u8"accidentally by putting a directive at the end of a sentence. "
+                    u8"Note that you can put {} immediately following the directive name to "
+                    u8"separate it from the period."
+                );
+            }
+            for (const ast::Argument& arg : d->get_arguments()) {
+                warn_periods_in_directives(arg.get_content(), context);
+            }
+            warn_periods_in_directives(d->get_content(), context);
+        }
+    }
+}
+
 } // namespace
 
 void Head_Body_Content_Behavior::generate_html(
@@ -141,6 +162,8 @@ void Head_Body_Content_Behavior::generate_html(
     Context& context
 ) const
 {
+    warn_periods_in_directives(content, context);
+
     Document_Sections& sections = context.get_sections();
 
     const Document_Sections::entry_type* html_section = nullptr;

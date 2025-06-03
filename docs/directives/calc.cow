@@ -4,12 +4,12 @@ While COWEL is not intended to be general purpose programming language,
 and more advanced interactive features are better suited for JavaScript,
 it does provide a few ways to perform calculations.
 
-\h4[id=dir-Vset]{\cow.dir{Vset} \c{mdash} Set a variable}
+\h4[id=dir-Vset]{\cow_dir{Vset} \c{mdash} Set a variable}
 
-\cow.dir{Vset} sets the value of a variable to some provided plaintext.
+\cow_dir{Vset} sets the value of a variable to some provided plaintext.
 It displays as a meta directive.
 
-It takes a single \cow.attr{var} argument,
+It takes a single \cow_attr{var} argument,
 which is a plaintext context for the name of the variable.
 The directive content is also a plaintext context,
 and provides the value of the variable.
@@ -33,22 +33,22 @@ This renders as:
 }
 }
 
-\h4[id=dir-Vget]{\cow.dir{Vget} \c{mdash} Get a variable}
+\h4[id=dir-Vget]{\cow_dir{Vget} \c{mdash} Get a variable}
 
-\cow.dir{Vget} obtains the value of a variable,
+\cow_dir{Vget} obtains the value of a variable,
 and displays as inline.
 Its content is ignored.
 
-It takes a single \cow.attr{var} argument,
+It takes a single \cow_attr{var} argument,
 which is a plaintext context for the name of the variable.
 See above for an example.
 
-If the variable denoted by the \cow.attr{var} argument does not exist,
-\cow.dir{Vget} expands to nothing.
+If the variable denoted by the \cow_attr{var} argument does not exist,
+\cow_dir{Vget} expands to nothing.
 
-\h4[id=dir-Cadd]{\cow.dir{Cadd} \c{mdash} Perform addition}
+\h4[id=dir-Cadd]{\cow_dir{Cadd} \c{mdash} Perform addition}
 
-The \cow.dir{Cadd} directive performs an integer addition between its (nameless) arguments.
+The \cow_dir{Cadd} directive performs an integer addition between its (nameless) arguments.
 Its content is ignored, and it displays as inline.
 
 Each of its arguments is a plaintext context,
@@ -66,7 +66,7 @@ This renders as:
 }
 
 \Btip{
-You can also combine \cow.dir{Cadd} with \cow.dir{Vget} and \cow.dir{Vset} to store the results
+You can also combine \cow_dir{Cadd} with \cow_dir{Vget} and \cow_dir{Vset} to store the results
 of your calculations:
 \codeblock[cowel]{\literally{
 \comment{Reset paragraph number}
@@ -91,23 +91,23 @@ Paragraph 2
 }
 
 \Bnote{
-\cow.dir{Cadd} and other calculation directives are mainly intended
+\cow_dir{Cadd} and other calculation directives are mainly intended
 for incrementing paragraph numbers and other basic tasks.
 }
 
-\h4[id=dir-Csub]{\cow.dir{Csub} \c{mdash} Perform subtraction}
+\h4[id=dir-Csub]{\cow_dir{Csub} \c{mdash} Perform subtraction}
 
-The \cow.dir{Csub} directive behaves like the \cow.dir{Cadd} directive,
+The \cow_dir{Csub} directive behaves like the \cow_dir{Cadd} directive,
 except that it performs subtraction instead of addition.
 
-\h4[id=dir-Cmul]{\cow.dir{Cmul} \c{mdash} Perform multiplication}
+\h4[id=dir-Cmul]{\cow_dir{Cmul} \c{mdash} Perform multiplication}
 
-The \cow.dir{Cmul} directive behaves like the \cow.dir{Cadd} directive,
+The \cow_dir{Cmul} directive behaves like the \cow_dir{Cadd} directive,
 except that it performs multiplication instead of addition.
 
-\h4[id=dir-Cdiv]{\cow.dir{Cdiv} \c{mdash} Perform division}
+\h4[id=dir-Cdiv]{\cow_dir{Cdiv} \c{mdash} Perform division}
 
-The \cow.dir{Cdiv} directive behaves like the \cow.dir{Cdiv} directive,
+The \cow_dir{Cdiv} directive behaves like the \cow_dir{Cdiv} directive,
 except that it performs division instead of addition.
 
 \Bwarn{

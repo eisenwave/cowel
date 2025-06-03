@@ -1,8 +1,8 @@
 \h3{Macros}
 
-\h4[id=dir-def]{\cow.dir{macro} \c{mdash} Define a macro}
+\h4[id=dir-def]{\cow_dir{macro} \c{mdash} Define a macro}
 
-The \cow.dir{macro} directive defines a \dfn{macro},
+The \cow_dir{macro} directive defines a \dfn{macro},
 which is basically a user-defined directive.
 It has a single \tt{pattern} argument,
 which shall be a single \dfn{pattern directive} which describes the defined directive.
@@ -17,10 +17,10 @@ but can be used to document how the directive is meant to be used.
 }
 }
 
-\h5[id=dir-put]{\cow.dir{put} \c{mdash} Pseudo-directive for macro content}
+\h5[id=dir-put]{\cow_dir{put} \c{mdash} Pseudo-directive for macro content}
 
-When a macro is used, the content within the \cow.dir{macro} directive is copied.
-Any uses of the \cow.dir{put} pseudo-directive inside the macro are replaced with copies
+When a macro is used, the content within the \cow_dir{macro} directive is copied.
+Any uses of the \cow_dir{put} pseudo-directive inside the macro are replaced with copies
 of the input content.
 
 \Bex{
@@ -32,7 +32,7 @@ of the input content.
 }}
 }
 
-\h5[id=dir-arg]{\cow.dir{arg} \c{mdash} Pseudo-directive for macro arguments}
+\h5[id=dir-arg]{\cow_dir{arg} \c{mdash} Pseudo-directive for macro arguments}
 
 \Btodo{
 Currently, macros only support content as input.
@@ -44,17 +44,13 @@ This should be supported at some point.
 
 Since COWEL continuously adds more directives in the future,
 you should try to avoid names that may collide with those when defining your own macros.
-COWEL builtin directive names only use alphanumeric characters and '\tt{-}',
-so you can use some of other character for disambiguation.
+COWEL builtin directive names only use alphanumeric characters and '\tt{-}'.
 
 \Btip{
-The '\tt{.}' and '\tt{_}' characters can be used as part of directive names,
+The '\tt{_}' character can be used as part of directive names,
 and COWEL will never use this in its own names.
 Therefore, you should try to "namespace" your own macros like:
 \codeblock[cowel]{\literally{
-\macro[\abc.i]{macro definition here ...}
-\abc.i
-
 \macro[\abc_i]{macro definition here ...}
 \abc_i
 }}

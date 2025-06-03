@@ -6,26 +6,26 @@ and in theory one could just write the character directly into the source code,
 not every text editor handles special characters well.
 
 To increase portability,
-COWEL has the \cow.dir{U} and \cow.dir{c} directives.
+COWEL has the \cow_dir{U} and \cow_dir{c} directives.
 
-\h4[id=dir-U]{\cow.dir{U} \c{mdash} Code point literal}
+\h4[id=dir-U]{\cow_dir{U} \c{mdash} Code point literal}
 
-The input to a \cow.dir{U} directive is a plaintext context,
+The input to a \cow_dir{U} directive is a plaintext context,
 which should be a sequence of hexadecimal numbers
 specifying a \ref[https://infra.spec.whatwg.org/#scalar-value]{Unicode scalar value};
 that is, a code point which UTF-8 permits to be encoded.
 
 \Bex{
-\cow.c{\\U{30}} generates '\tt{\U{30}}' U+0030 DIGIT ZERO.
+\cow_c{\\U{30}} generates '\tt{\U{30}}' U+0030 DIGIT ZERO.
 }
 
 \Bnote{
-Like anywhere else, directives inside of \cow.dir{U} are allowed.
+Like anywhere else, directives inside of \cow_dir{U} are allowed.
 }
 
-\h4[id=dir-N]{\cow.dir{N} \c{mdash} Code point by name}
+\h4[id=dir-N]{\cow_dir{N} \c{mdash} Code point by name}
 
-The \cow.dir{N} directive behaves almost identically to \cow.dir{U},
+The \cow_dir{N} directive behaves almost identically to \cow_dir{U},
 except that its input has to be a
 \ref[https://www.unicode.org/reports/tr34/#Names]{Unicode name}
 rather than a hex digits.
@@ -33,42 +33,42 @@ That is, the name of a code point,
 or one of its "control", "alternate", or "correction" aliases.
 
 \Bex{
-\cow.c{\\N{DIGIT ZERO}} generates '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
+\cow_c{\\N{DIGIT ZERO}} generates '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
 }
 
 \Btip{
-\cow.dir{N} can lead to much more descriptive, human-friendly code, compared to \cow.dir{U}.
+\cow_dir{N} can lead to much more descriptive, human-friendly code, compared to \cow_dir{U}.
 
-The main issue with \cow.dir{U} is that it is very non-descriptive in source code.
+The main issue with \cow_dir{U} is that it is very non-descriptive in source code.
 It simply contains a handful of digits,
 and unless the reader is a Unicode expert who happens to know that sequence,
 they cannot easily tell what the purpose of the character is.
 }
 
-\h4[id=dir-Udigits]{\cow.dir{Udigits} \c{mdash} Digits of code point}
+\h4[id=dir-Udigits]{\cow_dir{Udigits} \c{mdash} Digits of code point}
 
-The \cow.dir{Udigits} directive is essentially the inverse of the \cow.dir{U} directive.
+The \cow_dir{Udigits} directive is essentially the inverse of the \cow_dir{U} directive.
 Its input is also a plaintext context;
 rather than producing a code point from a digit sequence,
 it produces a digit sequence from its input code point.
 
 This can be fine-tuned with the following parameters:
 \dd{
-\dt{\cow.attr{zfill}}
+\dt{\cow_attr{zfill}}
 \dd{
 The minimum amount of digits that should be produced.
 This is an integer argument in range [0, 1024], and defaults to zero.
-If the amount of digits is less than \cow.attr{zfill},
+If the amount of digits is less than \cow_attr{zfill},
 it will be left-padded with additional '\tt{0}' characters.
 }
 
-\dt{\cow.attr{base}}
+\dt{\cow_attr{base}}
 \dd{
 The base of the output digit sequence, in range [2, 16].
 This defaults to 16, meaning that the digits are printed in hexadecimal.
 }
 
-\dt{\cow.attr{lower}}
+\dt{\cow_attr{lower}}
 \dd{
 A yes/no plaintext argument, defaulting to \tt{no}.
 If \tt{yes} is specified, digits beyond '\tt{9}' (i.e. '\tt{A}' to '\tt{F}')
@@ -95,7 +95,7 @@ It is also possible to define a macro if we need this frequently:
 }
 
 \Btip{
-\cow.dir{Udigits} can also be combined with \cow.dir{N}
+\cow_dir{Udigits} can also be combined with \cow_dir{N}
 to produce human-readable descriptions of code points,
 while also keeping our source code readable:
 \codeblock[cowel]{\literally{
@@ -108,7 +108,7 @@ U+\Udigits[4]{\N{SECTION SIGN}} SECTION SIGN
 }
 }
 
-\cow.dir{Udigits} uses only the first code point within the input text,
+\cow_dir{Udigits} uses only the first code point within the input text,
 even though the entire input text is processed into plaintext.
 
 \Bug{
@@ -120,30 +120,30 @@ This renders as
 \Bindent{
 \Udigits{a}
 }
-... which corresponds to \cow.c{a}, whereas \cow.c{b} and \cow.c{c} are discarded.
+... which corresponds to \cow_c{a}, whereas \cow_c{b} and \cow_c{c} are discarded.
 }
 
-\h4{\cow.dir{c} \c{mdash} Character references}
+\h4{\cow_dir{c} \c{mdash} Character references}
 
-The input to a \cow.dir{c} directive is a plaintext context,
+The input to a \cow_dir{c} directive is a plaintext context,
 where the same content is permitted as for HTML character references, aka. HTML entities,
 between '\tt{&}' and '\tt{;}'.
 
 \Bex{
-Using \cow.dir{U} and \cow.dir{c}, the '\tt{&}' character can be produced in a number of ways:
+Using \cow_dir{U} and \cow_dir{c}, the '\tt{&}' character can be produced in a number of ways:
 \ul{
     \li{Literally '\tt{&}' in text}
-    \li{\cow.c{\\U{26}} (code point literal for U+0026)}
-    \li{\cow.c{\\c{amp}} (like \cow.html{&amp;}, named character reference)}
-    \li{\cow.c{\\c{#38}} (like \cow.html{&38;}, decimal character reference)}
-    \li{\cow.c{\\c{#x26}} (like \cow.html{&x26;}, hexadecimal character reference)}
+    \li{\cow_c{\\U{26}} (code point literal for U+0026)}
+    \li{\cow_c{\\c{amp}} (like \cow_html{&amp;}, named character reference)}
+    \li{\cow_c{\\c{#38}} (like \cow_html{&38;}, decimal character reference)}
+    \li{\cow_c{\\c{#x26}} (like \cow_html{&x26;}, hexadecimal character reference)}
 }
 }
 
-In an HTML context, \cow.c{\\c{xyz}} is literally translated into \cow.html{&xyz;}.
+In an HTML context, \cow_c{\\c{xyz}} is literally translated into \cow_html{&xyz;}.
 In a plaintext context, the character reference is mapped onto its corresponding code point(s),
 and those code points are output directly.
 
 \Bnote{
-Like anywhere else, directives inside of \cow.dir{c} are allowed.
+Like anywhere else, directives inside of \cow_dir{c} are allowed.
 }
