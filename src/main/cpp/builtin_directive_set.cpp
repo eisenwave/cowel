@@ -262,34 +262,25 @@ struct Builtin_Directive_Set::Impl {
     WG21_Block_Behavior wg21_note //
         { u8"Note", u8"end note" };
 
-    Deprecated_Behavior abstract //
-        { Babstract, u8"Babstract" };
-    Deprecated_Behavior bug //
-        { Bug, u8"Bug" };
-    Deprecated_Behavior decision //
-        { Bdecision, u8"Bdecision" };
-    Deprecated_Behavior delblock //
-        { Bdel, u8"Bdel" };
-    Deprecated_Behavior diff //
-        { Bdiff, u8"Bdiff" };
-    Deprecated_Behavior example //
-        { Bex, u8"Bex" };
-    Deprecated_Behavior indent //
-        { Bindent, u8"Bindent" };
-    Deprecated_Behavior important //
-        { Bimp, u8"important" };
-    Deprecated_Behavior insblock //
-        { Bins, u8"insblock" };
-    Deprecated_Behavior note //
-        { Bnote, u8"Bnote" };
-    Deprecated_Behavior tip //
-        { Btip, u8"Btip" };
-    Deprecated_Behavior todo //
-        { Btodo, u8"Btip" };
-    Deprecated_Behavior warning //
-        { Bwarn, u8"Bwarn" };
-    Deprecated_Behavior word //
-        { nobr, u8"nobr" };
+    // clang-format off
+#define COWEL_DEPRECATED_ALIAS(name, use_instead)                                                  \
+    Deprecated_Behavior name { use_instead, u8## #use_instead }
+    // clang-format on
+
+    COWEL_DEPRECATED_ALIAS(abstract, Babstract);
+    COWEL_DEPRECATED_ALIAS(bug, Bug);
+    COWEL_DEPRECATED_ALIAS(decision, Bdecision);
+    COWEL_DEPRECATED_ALIAS(delblock, Bdel);
+    COWEL_DEPRECATED_ALIAS(diff, Bdiff);
+    COWEL_DEPRECATED_ALIAS(example, Bex);
+    COWEL_DEPRECATED_ALIAS(indent, Bindent);
+    COWEL_DEPRECATED_ALIAS(important, Bimp);
+    COWEL_DEPRECATED_ALIAS(insblock, Bins);
+    COWEL_DEPRECATED_ALIAS(note, Bnote);
+    COWEL_DEPRECATED_ALIAS(tip, Btip);
+    COWEL_DEPRECATED_ALIAS(todo, Btodo);
+    COWEL_DEPRECATED_ALIAS(warning, Bwarn);
+    COWEL_DEPRECATED_ALIAS(word, nobr);
 
     Impl() = default;
     ~Impl() = default;
