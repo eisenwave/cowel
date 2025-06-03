@@ -20,20 +20,46 @@
 namespace cowel {
 
 struct Builtin_Directive_Set::Impl {
-    Special_Block_Behavior abstract //
-        { u8"abstract-block" };
     Fixed_Name_Passthrough_Behavior b //
         { u8"b", Directive_Category::formatting, Directive_Display::in_line };
+    Special_Block_Behavior Babstract //
+        { u8"abstract-block" };
+    Special_Block_Behavior Bdecision //
+        { u8"decision-block" };
+    Special_Block_Behavior Bdel //
+        { u8"del-block", false };
+    Fixed_Name_Passthrough_Behavior Bdetails //
+        { u8"details", Directive_Category::pure_html, Directive_Display::block };
+    Special_Block_Behavior Bdiff //
+        { u8"diff-block", false };
+    Special_Block_Behavior Bex //
+        { u8"example-block" };
     Bibliography_Add_Behavior bib //
         {};
+    Special_Block_Behavior Bimp //
+        { u8"important-block" };
+    In_Tag_Behavior Bindent //
+        { u8"div", u8"indent", Directive_Category::pure_html, Directive_Display::block };
+    Special_Block_Behavior Bins //
+        { u8"ins-block", false };
     HTML_Wrapper_Behavior block //
         { Directive_Category::formatting, Directive_Display::block, To_HTML_Mode::direct };
     Special_Block_Behavior blockquote //
         { u8"blockquote", false };
+    Special_Block_Behavior Bnote //
+        { u8"note-block" };
+    Special_Block_Behavior Bquote //
+        { u8"blockquote", false };
     Self_Closing_Behavior br //
         { u8"br", Directive_Display::in_line };
-    Special_Block_Behavior bug //
+    Special_Block_Behavior Btip //
+        { u8"tip-block" };
+    Special_Block_Behavior Btodo //
+        { u8"todo-block" };
+    Special_Block_Behavior Bug //
         { u8"bug-block" };
+    Special_Block_Behavior Bwarn //
+        { u8"warning-block" };
     HTML_Entity_Behavior c //
         {};
     Expression_Behavior Cadd //
@@ -60,18 +86,12 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Category::meta, Directive_Display::none };
     Fixed_Name_Passthrough_Behavior dd //
         { u8"dd", Directive_Category::pure_html, Directive_Display::block };
-    Special_Block_Behavior decision //
-        { u8"decision-block" };
     Fixed_Name_Passthrough_Behavior del //
         { u8"del", Directive_Category::formatting, Directive_Display::in_line };
-    Special_Block_Behavior delblock //
-        { u8"del-block", false };
     Fixed_Name_Passthrough_Behavior details //
         { u8"details", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dfn //
         { u8"dfn", Directive_Category::formatting, Directive_Display::in_line };
-    Special_Block_Behavior diff //
-        { u8"diff-block", false };
     Fixed_Name_Passthrough_Behavior div //
         { u8"div", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dl //
@@ -82,8 +102,6 @@ struct Builtin_Directive_Set::Impl {
         { u8"em", Directive_Category::formatting, Directive_Display::in_line };
     Error_Behavior error //
         {};
-    Special_Block_Behavior example //
-        { u8"example-block" };
     Fixed_Name_Passthrough_Behavior gterm //
         { u8"g-term", Directive_Category::formatting, Directive_Display::in_line };
     Heading_Behavior h1 //
@@ -114,16 +132,10 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Category::pure_html, Directive_Display::block, html_tag_prefix };
     Fixed_Name_Passthrough_Behavior i //
         { u8"i", Directive_Category::formatting, Directive_Display::in_line };
-    Special_Block_Behavior insblock //
-        { u8"ins-block", false };
     Import_Behavior import //
         {};
-    Special_Block_Behavior important //
-        { u8"important-block" };
     Include_Behavior //
         include { Directive_Display::in_line };
-    In_Tag_Behavior indent //
-        { u8"div", u8"indent", Directive_Category::pure_html, Directive_Display::block };
     HTML_Wrapper_Behavior in_line //
         { Directive_Category::formatting, Directive_Display::in_line, To_HTML_Mode::direct };
     Fixed_Name_Passthrough_Behavior ins //
@@ -159,8 +171,6 @@ struct Builtin_Directive_Set::Impl {
         { u8"span", u8"word", Directive_Category::formatting, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior noscript //
         { u8"noscript", Directive_Category::pure_html, Directive_Display::block };
-    Special_Block_Behavior note //
-        { u8"note-block" };
     In_Tag_Behavior o //
         { u8"span", u8"oblique", Directive_Category::formatting, Directive_Display::in_line };
     List_Behavior ol //
@@ -217,10 +227,6 @@ struct Builtin_Directive_Set::Impl {
         { u8"thead", Directive_Category::pure_html, Directive_Display::block };
     There_Behavior there //
         {};
-    Special_Block_Behavior tip //
-        { u8"tip-block" };
-    Special_Block_Behavior todo //
-        { u8"todo-block" };
     Fixed_Name_Passthrough_Behavior tr //
         { u8"tr", Directive_Category::pure_html, Directive_Display::block };
     Trim_Behavior trim //
@@ -245,8 +251,6 @@ struct Builtin_Directive_Set::Impl {
         {};
     Modify_Variable_Behavior Vset //
         { Variable_Operation::set };
-    Special_Block_Behavior warning //
-        { u8"warning-block" };
     Self_Closing_Behavior wbr //
         { u8"wbr", Directive_Display::in_line };
     WG21_Block_Behavior wg21_example //
@@ -258,6 +262,32 @@ struct Builtin_Directive_Set::Impl {
     WG21_Block_Behavior wg21_note //
         { u8"Note", u8"end note" };
 
+    Deprecated_Behavior abstract //
+        { Babstract, u8"Babstract" };
+    Deprecated_Behavior bug //
+        { Bug, u8"Bug" };
+    Deprecated_Behavior decision //
+        { Bdecision, u8"Bdecision" };
+    Deprecated_Behavior delblock //
+        { Bdel, u8"Bdel" };
+    Deprecated_Behavior diff //
+        { Bdiff, u8"Bdiff" };
+    Deprecated_Behavior example //
+        { Bex, u8"Bex" };
+    Deprecated_Behavior indent //
+        { Bindent, u8"Bindent" };
+    Deprecated_Behavior important //
+        { Bimp, u8"important" };
+    Deprecated_Behavior insblock //
+        { Bins, u8"insblock" };
+    Deprecated_Behavior note //
+        { Bnote, u8"Bnote" };
+    Deprecated_Behavior tip //
+        { Btip, u8"Btip" };
+    Deprecated_Behavior todo //
+        { Btodo, u8"Btip" };
+    Deprecated_Behavior warning //
+        { Bwarn, u8"Bwarn" };
     Deprecated_Behavior word //
         { nobr, u8"nobr" };
 
@@ -292,6 +322,21 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
 {
     // clang-format off
     static constexpr std::u8string_view prefixed_names[] {
+        u8"-Babstract",
+        u8"-Bdecision",
+        u8"-Bdel",
+        u8"-Bdetails",
+        u8"-Bdiff",
+        u8"-Bex",
+        u8"-Bimp",
+        u8"-Bindent",
+        u8"-Bins",
+        u8"-Bnote",
+        u8"-Bquote",
+        u8"-Btip",
+        u8"-Btodo",
+        u8"-Bug",
+        u8"-Bwarn",
         u8"-Cadd",
         u8"-Cdiv",
         u8"-Cmul",
@@ -445,6 +490,39 @@ Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) c
     case u8'a':
         if (name == u8"abstract")
             return &m_impl->abstract;
+        break;
+
+    case u8'B':
+        if (name == u8"Babstract")
+            return &m_impl->Babstract;
+        if (name == u8"Bdecision")
+            return &m_impl->Bdecision;
+        if (name == u8"Bdel")
+            return &m_impl->Bdel;
+        if (name == u8"Bdetails")
+            return &m_impl->Bdetails;
+        if (name == u8"Bdiff")
+            return &m_impl->Bdiff;
+        if (name == u8"Bex")
+            return &m_impl->Bex;
+        if (name == u8"Bimp")
+            return &m_impl->Bimp;
+        if (name == u8"Bindent")
+            return &m_impl->Bindent;
+        if (name == u8"Bins")
+            return &m_impl->Bins;
+        if (name == u8"Bnote")
+            return &m_impl->Bnote;
+        if (name == u8"Bquote")
+            return &m_impl->Bquote;
+        if (name == u8"Btip")
+            return &m_impl->Btip;
+        if (name == u8"Btodo")
+            return &m_impl->Btodo;
+        if (name == u8"Bug")
+            return &m_impl->Bug;
+        if (name == u8"Bwarn")
+            return &m_impl->Bwarn;
         break;
 
     case u8'b':

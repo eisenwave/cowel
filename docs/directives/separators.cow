@@ -32,7 +32,7 @@ will be broken at the point of the \cow.html{<wbr>} element
 Since µlight only supports UTF-8 output, \cow.dir{wbr} is equivalent to \cow.c{\\U{200B}},
 which outputs a U+200B ZERO-WIDTH SPACE code point.
 
-\tip{
+\Btip{
 If you want to provide a word break hint but have a hyphen at the end of the line,
 use \cow.c{\\U{AD}} or \cow.c{\\c{shy}} to output a U+00AD SOFT HYPHEN.
 }
@@ -44,7 +44,7 @@ which prevents word breaks within its content.
 Its content is an HTML context.
 This is done by applying a \code[css,prefix=x\{]{white-space: nowrap;} style its content.
 
-\tip{
+\Btip{
 Another way to prevent word-breaking is to use non-breaking spaces.
 You can insert these using
 \ul{
@@ -56,6 +56,6 @@ You can insert these using
 
 \h4[id=dir-word]{\cow.dir{word} \c{mdash} Deprecated alias for \cow.dir{nobr}}
 
-\warning{This directive is deprecated and will be removed in the future.}
+\Bwarn{This directive is deprecated and will be removed in the future.}
 
 The \cow.dir{word} directive has the same effect as \cow.dir{nobr}.

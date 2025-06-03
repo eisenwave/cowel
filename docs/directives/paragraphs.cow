@@ -13,7 +13,7 @@ The \cow.dir{p} directive surrounds its content in \cow.html{<p>...</p>} tags.
 The \cow.dir{paragraphs} directive activates paragraph splitting.
 This may be useful in places where it is not active by default.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \\ul{
@@ -41,7 +41,7 @@ Generated HTML:
 The \cow.dir{block} directive doesn't add any HTML itself,
 but causes its contents to be considered block content.
 
-\example{
+\Bex{
 \cow.dir{block} can be used to suppress automatic paragraph splitting:
 \codeblock[cowel]{
 \\comment{No <p> tags will be added here}

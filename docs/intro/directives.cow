@@ -27,7 +27,7 @@ This includes any alphanumeric ASCII characters,
 \cow.cp{002D}, \cow.cp{002E}, \cow.cp{005F},
 and various Unicode characters.
 
-\tip{
+\Btip{
 You can use an empty block of content to "cut a name short":
 \codeblock[cowel]{
 Thisisavery\\wbr{}longword.
@@ -44,7 +44,7 @@ Unlike anywhere else, whitespace surrounding directive arguments is ignored.
 
 Arguments provide additional information to a directive.
 
-\example{
+\Bex{
 Often, arguments are converted to HTML attributes.
 \codeblock[cowel]{
 \\b[id = abc]{Bold text.}
@@ -78,7 +78,7 @@ U+0020\c{nbsp}SPACE,
 \cow.cp{007D},
 and noncharacters.
 
-\tip{
+\Btip{
 If you want to provide a positional argument that is \cow.c{name = value} instead,
 you can do so by writing:
 \codeblock[cowel]{
@@ -97,7 +97,7 @@ Positional arguments are content just like any other content,
 except that an unbalanced closing \cow.cp{005D} or a \cow.cp{002C}
 ends the content.
 
-\tip{
+\Btip{
 You can use escape sequences to continue otherwise ended content.
 \codeblock[cowel]{
 \\xyz[hello, world]  \\comment{Two positional arguments}
@@ -117,7 +117,7 @@ It is delimited by a '\tt{\{}' and ends with a \em{matching} closing '\tt{\}}'.
 This means that you can have opening and closing braces inside text,
 but they need to be balanced.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \\b{Bold text { with braces }.}
@@ -130,7 +130,7 @@ Generated HTML:
 
 Escape sequences don't participate in this "brace matching",
 so they can be used to literally produce a brace character.
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \\b{Bold text \\\U{7B} with brace.}
@@ -143,7 +143,7 @@ Generated HTML:
 
 Unlike in the directive arguments,
 whitespace is not trimmed.
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \\b{bold} \\i{ italic }
@@ -154,7 +154,7 @@ Generated HTML:
 }
 }
 
-\note{
+\Bnote{
 Only one such block of content can be provided, unlike in TeX,
 which has a similar syntax,
 but permits multiple blocks. Each block is separated by a pair of braces.
@@ -197,7 +197,7 @@ just like \cow.dir{comment} yourself:
 There are two types of contexts: \dfn{plaintext contexts} and \dfn{HTML contexts}.
 These control what directives (and other content) will generate.
 
-\example{
+\Bex{
 The COWEL text \cow.c{&} will be converted to \tt{&} literally in a plaintext context,
 and to \cow.html{&amp;} in an HTML context.
 }
@@ -206,7 +206,7 @@ and to \cow.html{&amp;} in an HTML context.
 Any directive is capable of generating either plaintext or HTML,
 and the output may be substantially different depending on the context.
 
-\example{
+\Bex{
 The \cow.dir{c} directive is used to generate HTML character references, aka "HTML entities".
 It converts its input to plaintext to determine the chosen character.
 Within such a plaintext context,

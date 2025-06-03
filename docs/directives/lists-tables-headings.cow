@@ -15,7 +15,7 @@ and produces an ordered list.
 The \cow.dir{li} directive corresponds to the \cow.html{<li>} element,
 and produces a list item with \cow.html{<ul>} or \cow.html{<ol>}.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{\literally{
 \ul{
@@ -42,7 +42,7 @@ This renders as:
 
 \h4[id=dir-item]{\cow.dir{item} \c{mdash} List item pseudo-directive}
 
-\warning{
+\Bwarn{
 This directive is deprecated and will be removed in a future version.
 }
 
@@ -68,7 +68,7 @@ Tables are simply produced by using the
 and \cow.dir{caption} directives to
 produce the corresponding HTML tags with the same name.
 
-\tip{
+\Btip{
 To perform advanced styling,
 like controlling alignment within columns,
 use a \cow.dir{style} directive.
@@ -96,7 +96,7 @@ An \cow.attr{id} argument can be provided explicitly.
 
 If none is provided, an \cow.attr{id} is synthesized from the content within the heading.
 
-\tip{
+\Btip{
 Headings can be referenced using the \cow.dir{ref} directive:
 \codeblock[cowel]{
 \\h2{Heading with synthesized id}
@@ -117,7 +117,7 @@ It displays as a block.
 The table of contents is is populated by headings (\ref[#headings])
 as the document is processed.
 
-\tip{
+\Btip{
 Since the table of contents should usually not be listed within itself,
 an unlisted heading may be used:
 \codeblock[cowel]{
@@ -129,7 +129,7 @@ However, using \cow.dir{html-h2} will also not emit a link icon in the gutter,
 and it will not synthesize an \cow.attr{id} for that heading.
 }
 
-\note{
+\Bnote{
 The underlying contents can be obtained with \cow.c{\\here[std.contents]}.
 \cow.dir{make-contents} additionally wraps those contents in HTML elements to
 chang their visual appearance.
@@ -218,7 +218,7 @@ That is, the bibliography is not automatically sorted for you;
 the order in which \cow.dir{bib} directives are used is also the order in which the bibliography
 entries are generated.
 
-\note{
+\Bnote{
 Similar to \cow.dir{make-contents},
 it is a wrapper for the underlying \tt{std.bib} section.
 }

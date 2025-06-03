@@ -17,7 +17,7 @@ If no content is provided, it can be synthesized from the following types of ref
 \li{Anything defined in the bibliography using \cow.dir{bib}}
 }
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \\ref[mail:john@us.gov]
@@ -28,13 +28,13 @@ HTML output (\cow.html{<a>} tag may have additional attributes):
 }
 }
 
-\example{
+\Bex{
 C++ standard draft links can be synthesized into human-readable descriptions.
 \codeblock[cowel]{
 \\ref[https://eel.is/c++draft/expr#1]
 }
 This renders as:
-\indent{
+\Bindent{
 \ref[https://eel.is/c++draft/expr#1]
 }
 }
@@ -45,7 +45,7 @@ A \cow.dir{mail} directive behaves the same \cow.dir{ref} directive that is give
 However, the input is provided as content instead of an argument,
 and the displayed text cannot be customized.
 
-\example{
+\Bex{
 The following two lines produce the same output:
 \codeblock[cowel]{
 Please contact \\mail{john@us.gov}.
@@ -59,7 +59,7 @@ A \cow.dir{tel} directive behaves the same \cow.dir{ref} directive that is given
 However, the input is provided as content instead of an argument,
 and the displayed text cannot be customized.
 
-\example{
+\Bex{
 The following two lines produce the same output:
 \codeblock[cowel]{
 Please contact \\tel{+1234}.

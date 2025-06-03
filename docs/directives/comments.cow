@@ -9,7 +9,7 @@ However, there exists a \cow.dir{comment} directive which you can use to put com
 The \cow.dir{comment} directive does not process its arguments or content.
 It outputs no plaintext or HTML.
 
-\example{
+\Bex{
 While comments don't output anything,
 \ref[#paragraph-splitting] is based on blank lines in the source,
 so comments don't split paragraphs:

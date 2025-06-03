@@ -19,7 +19,7 @@ COWEL translates very directly into HTML.
 Any whitespace in text is preserved exactly as is.
 The way that whitespace is processed then depends on the produced HTML and how it is CSS-styled.
 
-\example{
+\Bex{
 At a top level, whitespace is merged and line breaks are rendered like spaces:
 \codeblock[cowel]{
 This displays on one line
@@ -31,7 +31,7 @@ Generated HTML:
 because line breaks render like spaces.</p>
 }
 Rendered output:
-\indent{This displays on one line because line breaks render like spaces.}
+\Bindent{This displays on one line because line breaks render like spaces.}
 }
 
 \h3{Paragraph splitting}
@@ -56,7 +56,7 @@ However, it also terminates prior inline content, like a blank line.
 }
 }
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 First paragraph.

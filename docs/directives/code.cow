@@ -45,7 +45,7 @@ In a plaintext context, \cow.dir{code} simply outputs the input source code.
 \dd{Inline}
 }
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \\code[cpp]{123}
@@ -65,13 +65,13 @@ When enabled, the surrounding \cow.html{<code>} tags are omitted,
 which makes it suitable for nesting languages within other \cow.dir{code} or \cow.dir{codeblock}
 directives.
 
-\example{
+\Bex{
 You can nest JSON inside of a C++ string literal as follows:
 \codeblock[cowel]{\unprocessed{
 Call: \code[cpp]{out.write_json("\code[json,nested=yes]{{"x":123,"y":true,"z":null}}")}
 }}
 This renders as follows:
-\indent{
+\Bindent{
 Call: \code[cpp]{out.write_json("\code[json,nested=yes]{{"x":123,"y":true,"z":null}}")}
 }
 }
@@ -94,7 +94,7 @@ the highlighting depends on the surrounding code.
 \tt{prefix} and \tt{suffix} can be used to provide that surrounding code,
 without becoming part of the highlighted output.
 
-\example{
+\Bex{
 Using \tt{prefix},
 we can control whether a JSON string is interpreted as a markup key,
 or as a string value:
@@ -102,7 +102,7 @@ or as a string value:
 In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
 }}
 This renders as:
-\indent{
+\Bindent{
 In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
 }
 Notice that the color of \code[json,prefix=\{]{"keys"} is different because it is interpreted
@@ -115,7 +115,7 @@ as if it was positioned like:
 
 \h5{Further advice on highlighting}
 
-\tip{
+\Btip{
 Writing \cow.dir{code} directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:
 \codeblock[cowel]{
@@ -133,7 +133,7 @@ but it is a block directive, not an inline directive.
 Additionally, code blocks render using borders and a dark background by default.
 This can be controlled using the \tt{borders}.
 
-\example{
+\Bex{
 \codeblock[cowel]{
 \\codeblock[js]{
 // Borders enabled
@@ -169,7 +169,7 @@ from the definition of \code[cpp]{enum ulight_highlight_type}.
 The long name is the enumerator name without the \tt{ULIGHT_HL} prefix,
 all lowercase, and with hyphens instead of underscores.
 
-\example{
+\Bex{
 It is possible to mix automatic syntax highlighting with manual overrides:
 \codeblock[cowel]{
 \\comment{_Int128 is manually highlighted as a type keyword,
@@ -183,7 +183,7 @@ This generates the HTML (subject to change):
 It renders as \code[c]{\hl[keyword-type]{_Int128} x}.
 }
 
-\note{
+\Bnote{
 While it is also possible to produce the highlighting tags using
 \cow.c{\\html-h-[data-h=kw_type]{_Int128}},
 the "short names" (\cow.c{kw_type}) are not stable, i.e. they are more likely to change.
@@ -195,7 +195,7 @@ Only µlight long names should be used directly.
 The \cow.dir{pre} directive contains pre-formatted content.
 It can be used to contain code, however, there is no syntax highlighting in a \cow.dir{pre} block.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \\pre{
@@ -212,7 +212,7 @@ Hello, world!
 }
 }
 
-\todo{
+\Btodo{
 Unlike \cow.dir{codeblock}, \cow.dir{pre} currently does not support the \tt{borders=no} option.
 This will be added in the future.
 }
@@ -226,7 +226,7 @@ It outputs the given input source code as text.
 Its content is an unprocessed context,
 and it takes no arguments.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \literally{\pre{\literally{
@@ -239,7 +239,7 @@ This \comment{comment} \{ is taken literally \}!
 }}
 }
 
-\note{
+\Bnote{
 \cow.dir{put} pseudo-directives in macros are still processed,
 even inside \cow.dir{literally} blocks
 because \cow.dir{macro} replaces any appearances of \cow.dir{put} with the given content,
@@ -251,7 +251,7 @@ disregarding the semantics of any directives nested within.
 The \cow.dir{unprocessed} directive works just like \cow.dir{literally},
 except that escape sequences are processed into their escaped characters.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{\literally{
 \pre{\unprocessed{
@@ -264,7 +264,7 @@ This \comment{comment} \{ is unprocessed \}!
 }}
 }
 
-\tip{
+\Btip{
 \cow.dir{unprocessed} and (to a lesser extent) \cow.dir{literally} are very useful for nesting
 code inside COWEL that already contains underscores.
 For example, \cow.c{\\n} is an escape sequence for newline characters in many languages,
@@ -285,7 +285,7 @@ because the source characters of \cow.dir{nLines} are taken as text,
 and then split up according to C++ syntax.
 }
 
-\note{
+\Bnote{
 \cow.dir{put} pseudo-directives in macros are still processed,
 even inside \cow.dir{unprocessed} blocks
 because \cow.dir{macro} replaces any appearances of \cow.dir{put} with the given content,

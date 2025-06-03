@@ -6,7 +6,7 @@ The \cow.dir{html} directive can be used to output HTML literally.
 Its content is a plaintext context,
 and it displays as inline content.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 This is \\html{<b>bold text</b>}.
@@ -17,7 +17,7 @@ This is <b>bold text</b>.
 }
 }
 
-\warning{
+\Bwarn{
 The \cow.dir{html} directive can produce malformed HTML content if you're not careful.
 See, \ref[#dir-html-element] for a safer option.
 }
@@ -27,7 +27,7 @@ See, \ref[#dir-html-element] for a safer option.
 The \cow.dir{htmlblock} directive works exactly like the \cow.dir{html} directive,
 but displays as block content instead of inline content.
 
-\warning{
+\Bwarn{
 The \cow.dir{htmlblock} directive can produce malformed HTML content if you're not careful.
 See, \ref[#dir-html-element] for a safer option.
 }
@@ -40,7 +40,7 @@ Its content is a plaintext context,
 and it displays as inline content.
 Arguments are converted to HTML attributes of the produced tag.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 This is \\html-span[id=abc]{a span}.
@@ -59,7 +59,7 @@ and surrounded in \cow.html{<script>/*...*/</script>} tags.
 
 \cow.dir{script} displays as meta content (like \cow.dir{comment}).
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \\script{
@@ -87,7 +87,7 @@ where the input is treated as JavaScript code and surrounded in \cow.html{<style
 
 \cow.dir{style} displays as meta content (like \cow.dir{comment}).
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \\style{

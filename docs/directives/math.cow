@@ -7,7 +7,7 @@ COWEL relies entirely on the browser for properly rendering math as MathML,
 which is very simple and lightweight,
 but not as portable as "baking" the math into an SVG.
 
-\example{
+\Bex{
 If you have existing MathML, you can embed their content using \cow.dir{html} or \cow.dir{htmlblock}:
 \codeblock[cowel]{
 Math
@@ -22,7 +22,7 @@ Math
 in a sentence.
 }
 This renders as:
-\indent{
+\Bindent{
 Math
 \html{<math display=inline>
 <mfrac>
@@ -55,7 +55,7 @@ Essentially, this allows you to build MathML using COWEL syntax.
 See \ref[https://developer.mozilla.org/en-US/docs/Web/MathML/Reference/Element]{Mozilla's MathML elements reference}
 for a list of supported elements/directives.
 
-\example{
+\Bex{
 The previous example in \ref[#math] could also be written like:
 \codeblock[cowel]{
 Math
@@ -64,7 +64,7 @@ in a sentence.
 }
 }
 
-\tip{
+\Btip{
 If you frequently use math inside plain sentences,
 you can define a convenience macro:
 \codeblock[cowel]{
@@ -73,7 +73,7 @@ you can define a convenience macro:
 The sum of \\mathsqr{x} and \\mathsqr{y} \c{mldr}
 }
 This renders as:
-\indent{
+\Bindent{
 The sum of \math{\msup{\mi{x}\mn{2}}} and \math{\msup{\mi{y}\mn{2}}} \c{mldr}
 }
 }

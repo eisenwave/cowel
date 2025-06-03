@@ -17,17 +17,17 @@ Its arguments are ignored.
 The process of \dfn{trimming} eliminates leading and trailing whitespace in the input,
 at the COWEL source level.
 
-\example{
+\Bex{
 \codeblock[cowel]{\literally{
 Every\trim{ day}
 }}
 This renders as:
-\indent{
+\Bindent{
 Every\trim{ day}
 }
 }
 
-\tip{
+\Btip{
 \cow.dir{trim} is primarily useful inside of macros.
 We might not want to space-separate content if some of it is empty.
 For example, we could define a \cow.dir{Note} macro
@@ -40,7 +40,7 @@ where the user can \em{optionally} provide a number for that note:
 \Note{1} Something else.
 }}
 This renders as:
-\indent{\paragraphs{
+\Bindent{\paragraphs{
 Note: Something something.
 
 Note 1: Something else.

@@ -15,7 +15,7 @@ relative to the directory of the document.
 
 It has no arguments, and its content is a plaintext context in which the path is specified.
 
-\example{
+\Bex{
 Say we have a JavaScript file \tt{example.js} which we want to keep separate from the document.
 We can then include it into a \cow.dir{script} block to use it as a script,
 or we can include it into a \cow.dir{codeblock} to display its contents.
@@ -34,7 +34,7 @@ this renders as:
 }
 }
 
-\note{
+\Bnote{
 Directives and any other COWEL content within the file are not processed.
 \cow.dir{include} simply takes the text content of the file and generates plaintext from it.
 
@@ -74,7 +74,7 @@ is subject to the same rules as the surrounding document.
 }
 }
 
-\example{
+\Bex{
 Say we have another \tt{test.cow} files containing:
 \codeblock[cowel]{\literally{
 Hello, \strong{imports}!
@@ -97,7 +97,7 @@ Hello, <strong>imports</strong>!</p>
 }
 }
 
-\tip{
+\Btip{
 It is common practice to collect macros and other reusable components in separate documents,
 and to \cow.dir{import} them when needed.
 This can help you avoid copying boilerplate between multiple documents.

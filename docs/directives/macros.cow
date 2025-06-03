@@ -7,7 +7,7 @@ which is basically a user-defined directive.
 It has a single \tt{pattern} argument,
 which shall be a single \dfn{pattern directive} which describes the defined directive.
 
-\note{
+\Bnote{
 The arguments and content of the pattern directive are not processed,
 but can be used to document how the directive is meant to be used.
 \codeblock[cowel]{
@@ -23,7 +23,7 @@ When a macro is used, the content within the \cow.dir{macro} directive is copied
 Any uses of the \cow.dir{put} pseudo-directive inside the macro are replaced with copies
 of the input content.
 
-\example{
+\Bex{
 \codeblock[cowel]{\literally{
 \macro[\bi]{\b{\i{\put}}}
 \comment{Now, the following are equivalent:}
@@ -34,7 +34,7 @@ of the input content.
 
 \h5[id=dir-arg]{\cow.dir{arg} \c{mdash} Pseudo-directive for macro arguments}
 
-\todo{
+\Btodo{
 Currently, macros only support content as input.
 Arguments to macros are ignored entirely.
 This should be supported at some point.
@@ -47,7 +47,7 @@ you should try to avoid names that may collide with those when defining your own
 COWEL builtin directive names only use alphanumeric characters and '\tt{-}',
 so you can use some of other character for disambiguation.
 
-\tip{
+\Btip{
 The '\tt{.}' and '\tt{_}' characters can be used as part of directive names,
 and COWEL will never use this in its own names.
 Therefore, you should try to "namespace" your own macros like:

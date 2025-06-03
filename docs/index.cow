@@ -36,7 +36,7 @@ mainly for proposals and technical text.
 Many of its features are purpose-built for use in WG21,
 such as for writing C++ proposals.
 
-\example{
+\Bex{
 The following COWEL code ...
 \codeblock[cowel]{
 Hello, \\strong{strong} world!
@@ -46,7 +46,7 @@ Hello, \\strong{strong} world!
 Hello, <strong>strong</strong> world!
 }
 ... which renders as:
-\indent{
+\Bindent{
 Hello, \strong{strong} world!
 }
 }
@@ -82,7 +82,7 @@ cmake --build build
 ./build/cowel-cli INPUT.cow OUTPUT.html
 }
 
-\tip{
+\Btip{
 It is recommended to use a \tt{.cow} or \tt{.cowel} file extension for COWEL documents.
 
 Many text editors support associating such file extensions

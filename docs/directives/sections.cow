@@ -29,7 +29,7 @@ and other automatically inserted elements).
 }
 }
 
-\tip{
+\Btip{
 You can change the title of the document as follows:
 \codeblock[cowel]{
 \\there[std.head]{
@@ -49,7 +49,7 @@ The \tt{section} argument is a plaintext context.
 All references produced by \cow.dir{here} are resolved in a post-processing step,
 which allows forward-references.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{
 \\there[sec]{before/}

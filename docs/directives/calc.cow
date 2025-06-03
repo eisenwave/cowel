@@ -14,7 +14,7 @@ which is a plaintext context for the name of the variable.
 The directive content is also a plaintext context,
 and provides the value of the variable.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{\literally{
 \comment{Sets x = 123}
@@ -24,7 +24,7 @@ COWEL markup:
 \Vget[x]
 }}
 This renders as:
-\indent{
+\Bindent{
 \comment{Sets x = 123}
 \Vset[x]{123}
 
@@ -54,18 +54,18 @@ Its content is ignored, and it displays as inline.
 Each of its arguments is a plaintext context,
 where the argument is interpreted as an integer, and then summed.
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{\literally{
 \Cadd[1, 2, 3, -1] \comment{1 + 2 + 3 + (-1)}
 }}
 This renders as:
-\indent{
+\Bindent{
 \Cadd[1, 2, 3, -1] \comment{1 + 2 + 3 + (-1)}
 }
 }
 
-\tip{
+\Btip{
 You can also combine \cow.dir{Cadd} with \cow.dir{Vget} and \cow.dir{Vset} to store the results
 of your calculations:
 \codeblock[cowel]{\literally{
@@ -83,14 +83,14 @@ Paragraph \p.num
 Paragraph \p.num
 }}
 This renders as:
-\indent{\paragraphs{
+\Bindent{\paragraphs{
 Paragraph 1
 
 Paragraph 2
 }}
 }
 
-\note{
+\Bnote{
 \cow.dir{Cadd} and other calculation directives are mainly intended
 for incrementing paragraph numbers and other basic tasks.
 }
@@ -110,6 +110,6 @@ except that it performs multiplication instead of addition.
 The \cow.dir{Cdiv} directive behaves like the \cow.dir{Cdiv} directive,
 except that it performs division instead of addition.
 
-\warning{
+\Bwarn{
 Division by zero results in an error.
 }

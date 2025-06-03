@@ -15,11 +15,11 @@ which should be a sequence of hexadecimal numbers
 specifying a \ref[https://infra.spec.whatwg.org/#scalar-value]{Unicode scalar value};
 that is, a code point which UTF-8 permits to be encoded.
 
-\example{
+\Bex{
 \cow.c{\\U{30}} generates '\tt{\U{30}}' U+0030 DIGIT ZERO.
 }
 
-\note{
+\Bnote{
 Like anywhere else, directives inside of \cow.dir{U} are allowed.
 }
 
@@ -32,11 +32,11 @@ rather than a hex digits.
 That is, the name of a code point,
 or one of its "control", "alternate", or "correction" aliases.
 
-\example{
+\Bex{
 \cow.c{\\N{DIGIT ZERO}} generates '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
 }
 
-\tip{
+\Btip{
 \cow.dir{N} can lead to much more descriptive, human-friendly code, compared to \cow.dir{U}.
 
 The main issue with \cow.dir{U} is that it is very non-descriptive in source code.
@@ -76,13 +76,13 @@ will be output in lower case instead.
 }
 }
 
-\example{
+\Bex{
 COWEL markup:
 \codeblock[cowel]{\literally{
 U+\Udigits[4]{x}
 }}
 This renders as:
-\indent{
+\Bindent{
 U+\Udigits[4]{x}
 }
 Note that U+0078 is the usual way in which Unicode code points are represented.
@@ -94,7 +94,7 @@ It is also possible to define a macro if we need this frequently:
 }}
 }
 
-\tip{
+\Btip{
 \cow.dir{Udigits} can also be combined with \cow.dir{N}
 to produce human-readable descriptions of code points,
 while also keeping our source code readable:
@@ -103,7 +103,7 @@ while also keeping our source code readable:
 \named-char{SECTION SIGN}
 }}
 This renders as:
-\indent{
+\Bindent{
 U+\Udigits[4]{\N{SECTION SIGN}} SECTION SIGN
 }
 }
@@ -111,13 +111,13 @@ U+\Udigits[4]{\N{SECTION SIGN}} SECTION SIGN
 \cow.dir{Udigits} uses only the first code point within the input text,
 even though the entire input text is processed into plaintext.
 
-\bug{
+\Bug{
 If we provide more than a single code point, some input is discarded:
 \codeblock[cowel]{
 \\Udigits{abc}
 }
 This renders as
-\indent{
+\Bindent{
 \Udigits{a}
 }
 ... which corresponds to \cow.c{a}, whereas \cow.c{b} and \cow.c{c} are discarded.
@@ -129,7 +129,7 @@ The input to a \cow.dir{c} directive is a plaintext context,
 where the same content is permitted as for HTML character references, aka. HTML entities,
 between '\tt{&}' and '\tt{;}'.
 
-\example{
+\Bex{
 Using \cow.dir{U} and \cow.dir{c}, the '\tt{&}' character can be produced in a number of ways:
 \ul{
     \li{Literally '\tt{&}' in text}
@@ -144,6 +144,6 @@ In an HTML context, \cow.c{\\c{xyz}} is literally translated into \cow.html{&xyz
 In a plaintext context, the character reference is mapped onto its corresponding code point(s),
 and those code points are output directly.
 
-\note{
+\Bnote{
 Like anywhere else, directives inside of \cow.dir{c} are allowed.
 }

@@ -136,7 +136,7 @@ You can rely on this when adding custom CSS.
 All such \dfn{formatting directives}
 convert all named arguments directly into HTML attributes.
 
-\note{
+\Bnote{
 By default, a substantial amount of directives are styled the same way.
 For example, \cow.dir{cite}, \cow.dir{var}, \cow.dir{i} and \cow.dir{em} are all italic.
 Both \cow.dir{strong} and \cow.dir{b} are bold.
@@ -145,7 +145,7 @@ Both \cow.dir{tt} and \cow.dir{samp} use teletype font.
 However, you can customize the style; see \ref[#dir-style].
 }
 
-\note{
+\Bnote{
 The difference between oblique (\cow.dir{o}) and italic (\cow.dir{i}) text
 is that oblique text is merely slanted,
 while italic text is fundamentally a different font with different characters.
