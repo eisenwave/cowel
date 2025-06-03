@@ -76,7 +76,7 @@ constexpr int max_listing_level = 6;
 void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, Context& context)
     const
 {
-    static constexpr std::u8string_view parameters[] { u8"id", u8"listed" };
+    static constexpr std::u8string_view parameters[] { u8"id", u8"listed", u8"show-number" };
 
     const auto level_char = char8_t(int(u8'0') + m_level);
     const char8_t tag_name_data[2] { u8'h', level_char };
@@ -86,25 +86,13 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
     args.match(d.get_arguments(), Parameter_Match_Mode::only_named);
 
     // Determine whether the heading should be listed in the table of contents.
-    const auto is_listed = [&] -> bool {
-        // h1 headings are not listed by default because it would be silly
-        // for the top-level heading to re-appear in the table of contents.
-        // Also, low-level headings like h5 and h6 are typically not relevant.
-        bool listed_by_default = m_level >= min_listing_level && m_level <= max_listing_level;
-        std::pmr::vector<char8_t> listed_data { context.get_transient_memory() };
-        if (!argument_to_plaintext(listed_data, d, args, u8"listed", context)) {
-            return listed_by_default;
-        }
-        const auto listed_string = as_u8string_view(listed_data);
-        if (listed_string == u8"no") {
-            return false;
-        }
-        if (listed_string == u8"yes") {
-            return true;
-        }
-        // TODO: add invalid enum diagnostics
-        return listed_by_default;
-    }();
+    const bool listed_by_default = m_level >= min_listing_level && m_level <= max_listing_level;
+    const bool is_listed = get_yes_no_argument(
+        u8"listed", diagnostic::h::listed_invalid, d, args, context, listed_by_default
+    );
+    const bool is_number_shown = get_yes_no_argument(
+        u8"show-number", diagnostic::h::listed_invalid, d, args, context, listed_by_default
+    );
 
     if (is_listed) {
         // Update heading numbers.
@@ -181,7 +169,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
             to.write_inner_html(to_characters8(counter).as_string());
         }
     };
-    if (is_listed) {
+    if (is_listed && is_number_shown) {
         write_numbers(out);
         out.write_inner_html(u8". ");
     }
@@ -201,7 +189,7 @@ void Heading_Behavior::generate_html(HTML_Writer& out, const ast::Directive& d, 
         const auto scope = sections.go_to_scoped(section_name);
         HTML_Writer id_preview_out = sections.current_html();
         id_preview_out.write_inner_html(u8"§");
-        if (is_listed) {
+        if (is_listed && is_number_shown) {
             write_numbers(id_preview_out);
             id_preview_out.write_inner_html(u8". ");
         }

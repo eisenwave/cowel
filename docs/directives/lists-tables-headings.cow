@@ -80,14 +80,21 @@ Headings can be produced using the
 \cow.dir{h1}, \cow.dir{h2}, \cow.dir{h3}, \cow.dir{h4}, \cow.dir{h5}, and \cow.dir{h6} directives to
 produce the corresponding HTML tags with the same name.
 
-Headings take a \tt{listed} argument, which is a yes/no plaintext argument.
+Headings take a \cow.attr{listed} argument, which is a yes/no plaintext argument.
 Unless its value is \tt{no}, headings are numbered and added to the table of contents
 (\ref[#dir-make-contents]) automatically.
 
-Other arguments to these headings are converted into attributes of the corresponding HTML element.
-An \tt{id} argument can be provided explicitly.
+Headings also take a \cow.attr{show-number} argument, which is a yes/no plaintext argument.
+Unless this is \tt{no},
+the heading number will be included in the title, in the format \tt{1.2.3. Title}.
+However, even if \cow.attr{show-number} is \tt{no},
+the number heading is internally numbered as usual,
+and its number can be seen in the table of contents.
 
-If none is provided, an \tt{id} is synthesized from the content within the heading.
+Other arguments to these headings are converted into attributes of the corresponding HTML element.
+An \cow.attr{id} argument can be provided explicitly.
+
+If none is provided, an \cow.attr{id} is synthesized from the content within the heading.
 
 \tip{
 Headings can be referenced using the \cow.dir{ref} directive:
