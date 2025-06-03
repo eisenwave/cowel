@@ -123,7 +123,7 @@ struct Builtin_Directive_Set::Impl {
     Include_Behavior //
         include { Directive_Display::in_line };
     In_Tag_Behavior indent //
-        { u8"div", u8"indent", Directive_Category::pure_html, Directive_Display::in_line };
+        { u8"div", u8"indent", Directive_Category::pure_html, Directive_Display::block };
     HTML_Wrapper_Behavior in_line //
         { Directive_Category::formatting, Directive_Display::in_line, To_HTML_Mode::direct };
     Fixed_Name_Passthrough_Behavior ins //
