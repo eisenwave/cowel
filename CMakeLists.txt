@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT DEFINED EMSCRIPTEN)
     find_package(GTest REQUIRED)
+    include(GoogleTest)
     enable_testing()
 endif()
 
@@ -104,22 +105,29 @@ target_link_libraries(cowel ulight)
 target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
 target_link_options(cowel PUBLIC ${SANITIZER_OPTIONS})
 
-add_executable(cowel-cli ${HEADERS}
-    src/main/cpp/cli.cpp
-)
-target_link_libraries(cowel-cli cowel ulight)
+if(NOT DEFINED EMSCRIPTEN)
+    add_executable(cowel-cli ${HEADERS}
+        src/main/cpp/cli.cpp
+    )
+    target_link_libraries(cowel-cli cowel ulight)
 
-add_executable(cowel-test ${HEADERS}
-    src/test/cpp/document_file_testing.cpp
-    src/test/cpp/main.cpp
-    src/test/cpp/test_chars_strings.cpp
-    src/test/cpp/test_document_generation.cpp
-    src/test/cpp/test_draft_uris.cpp
-    src/test/cpp/test_html_writer.cpp
-    src/test/cpp/test_levenshtein.cpp
-    src/test/cpp/test_parsing.cpp
-    src/test/cpp/test_to_chars.cpp
-    src/test/cpp/test_typo.cpp
-    src/test/cpp/test_valid.cpp
-)
-target_link_libraries(cowel-test cowel ulight GTest::GTest GTest::Main)
+    add_executable(cowel-test ${HEADERS}
+        src/test/cpp/document_file_testing.cpp
+        src/test/cpp/main.cpp
+        src/test/cpp/test_chars_strings.cpp
+        src/test/cpp/test_document_generation.cpp
+        src/test/cpp/test_draft_uris.cpp
+        src/test/cpp/test_html_writer.cpp
+        src/test/cpp/test_levenshtein.cpp
+        src/test/cpp/test_parsing.cpp
+        src/test/cpp/test_to_chars.cpp
+        src/test/cpp/test_typo.cpp
+        src/test/cpp/test_valid.cpp
+    )
+
+    target_link_libraries(cowel-test cowel ulight GTest::GTest GTest::Main)
+    gtest_discover_tests(cowel-test
+        WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
+        DISCOVERY_TIMEOUT 30
+    )
+endif()
