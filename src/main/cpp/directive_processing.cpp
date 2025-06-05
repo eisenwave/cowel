@@ -407,7 +407,7 @@ public:
             text = trim_ascii_blank_left(text);
         }
         if (trim_right) {
-            text = trim_ascii_blank_left(text);
+            text = trim_ascii_blank_right(text);
         }
         if (text.empty()) {
             return;
