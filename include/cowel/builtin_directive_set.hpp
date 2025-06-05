@@ -151,6 +151,9 @@ struct Lorem_Ipsum_Behavior final : Directive_Behavior {
     }
 };
 
+// TODO: use this for \pre directives too.
+enum struct Pre_Trimming : bool { no, yes };
+
 /// @brief Responsible for syntax-highlighted directives like `\code` or `\codeblock`.
 struct [[nodiscard]] Syntax_Highlight_Behavior : Parametric_Behavior {
 private:
@@ -170,17 +173,17 @@ private:
     // clang-format on
 
     const std::u8string_view m_tag_name;
-    const To_HTML_Mode m_to_html_mode;
+    const bool m_pre_compat_trim = false;
 
 public:
     constexpr explicit Syntax_Highlight_Behavior(
         std::u8string_view tag_name,
         Directive_Display d,
-        To_HTML_Mode mode
+        Pre_Trimming pre_compat_trim
     )
         : Parametric_Behavior { Directive_Category::pure_html, d, parameters }
         , m_tag_name { tag_name }
-        , m_to_html_mode { mode }
+        , m_pre_compat_trim { pre_compat_trim == Pre_Trimming::yes }
     {
     }
 

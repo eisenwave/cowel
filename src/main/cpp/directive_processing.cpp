@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <cstddef>
+#include <cstring>
 #include <ranges>
 #include <span>
 #include <string_view>
@@ -14,7 +16,6 @@
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
-#include "cowel/util/source_position.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
 
@@ -248,132 +249,6 @@ To_Plaintext_Status to_plaintext(
         result = To_Plaintext_Status(std::max(int(result), int(c_result)));
     }
     return result;
-}
-
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    const ast::Content& c,
-    Context& context
-)
-{
-    std::visit(
-        [&]<typename T>(const T& x) {
-            if constexpr (std::is_same_v<T, ast::Generated>) {
-                COWEL_ASSERT_UNREACHABLE(u8"Generated content during syntax highlighting?!");
-            }
-            else {
-                to_plaintext_mapped_for_highlighting(out, out_mapping, x, context);
-            }
-        },
-        c
-    );
-}
-
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    const ast::Text& t,
-    [[maybe_unused]] Context& context
-)
-{
-    // TODO: to be accurate, we would have to process HTML entities here so that syntax highlighting
-    //       sees them as a character rather than attempting to highlight the original entity.
-    //       For example, `&lt;` should be highlighted like a `<` operator.
-    const std::u8string_view text = t.get_source();
-    out.insert(out.end(), text.begin(), text.end());
-
-    const Source_Span pos = t.get_source_span();
-    COWEL_ASSERT(pos.length == text.length());
-
-    const std::size_t initial_size = out_mapping.size();
-    out_mapping.reserve(initial_size + pos.length);
-    for (std::size_t i = pos.begin; i < pos.end(); ++i) {
-        out_mapping.push_back(i);
-    }
-    COWEL_ASSERT(out_mapping.size() - initial_size == text.size());
-}
-
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    const ast::Escaped& e,
-    [[maybe_unused]] Context& context
-)
-{
-    out.push_back(e.get_char());
-    out_mapping.push_back(e.get_char_index());
-}
-
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    const ast::Directive& d,
-    Context& context
-)
-{
-    Directive_Behavior* const behavior = context.find_directive(d);
-    if (!behavior) {
-        return;
-    }
-    switch (behavior->category) {
-    // Meta directives such as comments cannot generate plaintext anyway.
-    case Directive_Category::meta:
-    // Pure HTML directives don't interoperate with syntax highlighting at all.
-    case Directive_Category::pure_html: {
-        break;
-    }
-    // Formatting directives such as `\b` are very special;
-    // it is guaranteed that we can apply syntax highlighting to the content within,
-    // and feed that back into the formatting directive.
-    //
-    // In this function, we just recurse into the directive's contents so we know which piece of
-    // content within produced what syntax-highlighted part.
-    case Directive_Category::formatting: {
-        to_plaintext_mapped_for_highlighting(out, out_mapping, d.get_content(), context);
-        break;
-    }
-    // For macro expansions, text or directives inside the macro
-    // are not actually within the source highlighting block.
-    // However, that's not really a problem; subsequent functionality can deal with that.
-    case Directive_Category::macro: {
-        const std::pmr::vector<ast::Content> instance = behavior->instantiate(d, context);
-        to_plaintext_mapped_for_highlighting(out, out_mapping, instance, context);
-        break;
-    }
-    // For pure plaintext directives, we just run plaintext generation.
-    // This also means that we don't know exactly which generated character belongs to
-    // which source character, but it doesn't really matter.
-    // We never run HTML generation afterwards and substitute the plaintext directive
-    // with various syntax-highlighted content.
-    case Directive_Category::pure_plaintext: {
-        const std::size_t initial_out_size = out.size();
-        const std::size_t initial_mapping_size = out_mapping.size();
-        behavior->generate_plaintext(out, d, context);
-        COWEL_ASSERT(out.size() >= initial_out_size);
-        const std::size_t out_growth = out.size() - initial_out_size;
-        out_mapping.reserve(out_mapping.size() + out_growth);
-        const std::size_t d_begin = d.get_source_span().begin;
-        for (std::size_t i = initial_out_size; i < out.size(); ++i) {
-            out_mapping.push_back(d_begin);
-        }
-        const std::size_t mapping_growth = out_mapping.size() - initial_mapping_size;
-        COWEL_ASSERT(out_growth == mapping_growth);
-        break;
-    }
-    }
-}
-
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    std::span<const ast::Content> content,
-    Context& context
-)
-{
-    for (const ast::Content& c : content) {
-        to_plaintext_mapped_for_highlighting(out, out_mapping, c, context);
-    }
 }
 
 void to_html(HTML_Writer& out, const ast::Content& c, Context& context)
@@ -688,214 +563,284 @@ void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, 
 
 namespace {
 
-constexpr std::u8string_view highlighting_tag = u8"h-";
+struct Index_Range {
+    std::size_t begin;
+    std::size_t length;
 
-/// @brief Returns an `ast::Generated` element
-/// containing a highlighting element or simply the given text,
-/// depending on whether `span` is null.
-[[nodiscard]]
-ast::Generated make_generated_highlight(
-    std::u8string_view inner_text,
-    const Highlight_Span* span,
-    std::pmr::memory_resource* memory
-)
-{
-    std::pmr::vector<char8_t> span_data { memory };
-    HTML_Writer span_writer { span_data };
-
-    if (span) {
-        const std::u8string_view id
-            = ulight::highlight_type_short_string_u8(ulight::Highlight_Type(span->type));
-
-        span_writer.open_tag_with_attributes(highlighting_tag)
-            .write_attribute(u8"data-h", id, Attribute_Style::double_if_needed)
-            .end();
-    }
-    span_writer.write_inner_text(inner_text);
-    if (span) {
-        span_writer.close_tag(highlighting_tag);
-    }
-
-    return ast::Generated { std::move(span_data), ast::Generated_Type::html,
-                            Directive_Display::in_line };
-}
-
-std::pmr::vector<ast::Content> copy_highlighted(
-    std::span<const ast::Content> content,
-    std::u8string_view highlighted_text,
-    std::span<const std::size_t> to_source_index,
-    std::span<const Highlight_Span*> to_highlight_span,
-    Context& context
-);
-
-struct [[nodiscard]] Highlighted_AST_Copier {
-    std::pmr::vector<ast::Content>& out;
-
-    const std::u8string_view source;
-    const std::span<const std::size_t> to_document_index;
-    const std::span<const Highlight_Span*> to_highlight;
-    Context& context;
-
-    std::size_t index = 0;
-
-    void operator()(const ast::Escaped& e)
+    [[nodiscard]]
+    constexpr std::size_t end() const
     {
-        append_highlighted_text_in(e.get_source_span());
+        return begin + length;
     }
 
-    void operator()(const ast::Text& t)
+    [[nodiscard]]
+    constexpr bool empty() const
     {
-        append_highlighted_text_in(t.get_source_span());
+        return length == 0;
     }
 
-    void operator()(const ast::Generated&)
+    [[nodiscard]]
+    constexpr bool intersects(Index_Range other) const
     {
-        COWEL_ASSERT_UNREACHABLE(u8"Generated content during highlighting?");
-    }
-
-    void operator()(const ast::Directive& directive)
-    {
-        const Directive_Behavior* const behavior = context.find_directive(directive);
-        if (!behavior) {
-            // Lookup is going to fail again later,
-            // but we don't care about that while we're performing AST copies yet.
-            // Remember that we are not doing generation (and therefore processing).
-            out.push_back(directive);
-            return;
-        }
-        switch (behavior->category) {
-        case Directive_Category::meta:
-        case Directive_Category::pure_html: {
-            // Boring cases.
-            // These kinds of directives don't participate in syntax highlighting.
-            out.push_back(directive);
-            return;
-        }
-        case Directive_Category::pure_plaintext: {
-            // Pure plaintext directives should have already been processed previously,
-            // so their output is actually present within the highlighted source.
-            // Furthermore, they are "pure" in the sense that they can have no side effects,
-            // so they can be processed in any order, or not processed at all, but replaced with
-            // the equivalent output.
-            // For that reason, we can simply treat these directives as if they were text.
-            append_highlighted_text_in(directive.get_source_span());
-            return;
-        }
-        case Directive_Category::formatting: {
-            // Formatting directive are the most crazy and special in how they're handled here.
-            // Formatting directives promise that their contents can be manipulated at will,
-            // i.e. they are "transparent to syntax highlighting".
-            // Therefore, we apply AST copying recursively within the directive,
-            // and synthesize a new formatting directive.
-
-            std::pmr::vector<ast::Content> inner_content;
-            Highlighted_AST_Copier inner_copier { .out = inner_content,
-                                                  .source = source,
-                                                  .to_document_index = to_document_index,
-                                                  .to_highlight = to_highlight,
-                                                  .context = context,
-                                                  .index = index };
-            for (const auto& c : directive.get_content()) {
-                std::visit(inner_copier, c);
-            }
-            COWEL_ASSERT(inner_copier.index >= index);
-            index = inner_copier.index;
-
-            std::pmr::vector<ast::Argument> copied_arguments { directive.get_arguments().begin(),
-                                                               directive.get_arguments().end(),
-                                                               context.get_transient_memory() };
-
-            out.push_back(ast::Directive { directive.get_source_span(), directive.get_source(),
-                                           directive.get_name(), std::move(copied_arguments),
-                                           std::move(inner_content) });
-            return;
-        }
-        case Directive_Category::macro: {
-            const std::pmr::vector<ast::Content> instance
-                = behavior->instantiate(directive, context);
-            for (const auto& content : instance) {
-                std::visit(*this, content);
-            }
-        }
-        }
-    }
-
-private:
-    void append_highlighted_text_in(const Source_Span& document_span)
-    {
-        COWEL_DEBUG_ASSERT(source.size() == to_document_index.size());
-        COWEL_DEBUG_ASSERT(source.size() == to_highlight.size());
-
-        const std::size_t limit = source.size();
-        for (std::size_t index = 0; index < limit;) {
-            // TODO: There are a few possible optimizations here.
-            //       Firstly, we can early-quit once we're past the end of the contiguous
-            //       highlighted snippets that fall into document_span.
-            //       Secondly, instead of starting the search at zero,
-            //       we can use a hint and later restart if nothing was found.
-            //       That is because it's very likely that two document spans and their generated
-            //       source are contiguous.
-            //       Macros break this mold.
-            if (!document_span.contains(to_document_index[index])) {
-                ++index;
-                continue;
-            }
-            const Highlight_Span* const current_span = to_highlight[index];
-            const std::size_t snippet_begin = index++;
-            for (; index < limit; ++index) {
-                if (!document_span.contains(to_document_index[index])
-                    || to_highlight[index] != current_span) {
-                    break;
-                }
-            };
-            out.push_back(make_generated_highlight(
-                source.substr(snippet_begin, index - snippet_begin), current_span,
-                context.get_transient_memory()
-            ));
-        }
+        return begin < other.end() && other.begin < end();
     }
 };
 
-/// @brief Creates a copy of the given `content`
-// using the specified syntax highlighting information.
-/// @param content The content to copy.
-/// @param highlighted_text The highlighted source code.
-/// @param to_source_index A mapping of each code unit in `highlighted_source`
-/// to the index in the document source code.
-/// @param to_highlight_span A mapping of each code unit in `highlighted_source`
-/// to a pointer to the highlighting span,
-/// or to a null pointer if that part of `highlighted_source` is not highlighted.
-/// @param context The context.
-/// @returns A new vector of `ast::Content`,
-/// where text and escape sequences are replaced with `Behaved_Content`
-/// wherever syntax highlighting information appears.
-/// Furthermore, `pure_plaintext` directives are replaced the same way as text,
-/// and the contents of `formatting` directives are replaced, recursively.
-std::pmr::vector<ast::Content> copy_highlighted(
+[[maybe_unused]]
+constexpr char32_t private_use_area_min
+    = 0xE000;
+[[maybe_unused]]
+constexpr char32_t private_use_area_max
+    = 0xF8FF;
+
+void reference_highlighted(HTML_Writer& out, std::size_t begin, std::size_t length)
+{
+    using Array = std::array<char8_t, sizeof(Index_Range)>;
+
+    out.write_inner_html(private_use_area_min);
+    const Index_Range range { begin, length };
+    const auto chars = std::bit_cast<Array>(range);
+    out.write_inner_html(as_u8string_view(chars));
+}
+
+void to_html_with_source_references(
+    HTML_Writer& out,
+    std::pmr::vector<char8_t>& out_code,
+    const ast::Content& content,
+    Context& context
+);
+
+/// @brief Like to_html,
+/// but highlightable content is is not directly written to out;
+/// instead, highlightable content is stored inside of `out_code` and an `Index_Range`
+/// is encoded within `out`,
+/// where the index range stores the range of code that has been written to `out_code`.
+///
+/// This process allows running all the highlightable content through a syntax highlighter
+/// and replacing the source code references in a post-processing pass.
+///
+/// The following content is highlightable:
+/// - plaintext
+/// - escape sequences
+/// - the text produced by plaintext directives
+/// - the contents of formatting directives
+/// - any of the above, expanded from macros
+///
+/// Any non-highlightable content is converted to HTML as usual.
+void to_html_with_source_references(
+    HTML_Writer& out,
+    std::pmr::vector<char8_t>& out_code,
     std::span<const ast::Content> content,
-    std::u8string_view highlighted_text,
-    std::span<const std::size_t> to_source_index,
-    std::span<const Highlight_Span*> to_highlight_span,
     Context& context
 )
 {
-    COWEL_ASSERT(to_source_index.size() == highlighted_text.size());
-    COWEL_ASSERT(to_highlight_span.size() == highlighted_text.size());
+    for (const ast::Content& c : content) {
+        to_html_with_source_references(out, out_code, c, context);
+    }
+}
 
-    std::pmr::vector<ast::Content> result { context.get_transient_memory() };
-    result.reserve(content.size());
+void to_html_with_source_references(
+    HTML_Writer& out,
+    std::pmr::vector<char8_t>&,
+    const ast::Generated& generated,
+    [[maybe_unused]] Context& context
+)
+{
+    out.write_inner_html(generated.as_string());
+}
 
-    Highlighted_AST_Copier copier { .out = result,
-                                    .source = highlighted_text,
-                                    .to_document_index = to_source_index,
-                                    .to_highlight = to_highlight_span,
-                                    .context = context };
+void to_html_with_source_references(
+    HTML_Writer& out,
+    std::pmr::vector<char8_t>& out_code,
+    const ast::Text& t,
+    [[maybe_unused]] Context& context
+)
+{
+    const std::size_t initial_size = out_code.size();
+    const std::u8string_view text = t.get_source();
+    COWEL_ASSERT(!text.empty());
+    out_code.insert(out_code.end(), text.begin(), text.end());
+    reference_highlighted(out, initial_size, text.length());
+}
 
-    for (const auto& c : content) {
-        std::visit(copier, c);
+void to_html_with_source_references(
+    HTML_Writer& out,
+    std::pmr::vector<char8_t>& out_code,
+    const ast::Escaped& e,
+    [[maybe_unused]] Context& context
+)
+{
+    const std::size_t initial_size = out_code.size();
+    out_code.push_back(e.get_char());
+    reference_highlighted(out, initial_size, 1);
+}
+
+void to_html_with_source_references(
+    HTML_Writer& out,
+    std::pmr::vector<char8_t>& out_code,
+    const ast::Directive& d,
+    Context& context
+)
+{
+    Directive_Behavior* const behavior = context.find_directive(d);
+    if (!behavior) {
+        return;
+    }
+    switch (behavior->category) {
+    case Directive_Category::meta:
+    case Directive_Category::pure_html: {
+        behavior->generate_html(out, d, context);
+        break;
+    }
+    case Directive_Category::formatting: {
+        auto generated = [&] {
+            std::pmr::vector<char8_t> generated_html { context.get_transient_memory() };
+            HTML_Writer generated_writer { generated_html };
+            to_html_with_source_references(generated_writer, out_code, d.get_content(), context);
+            return ast::Generated { std::move(generated_html), ast::Generated_Type::html,
+                                    Directive_Display::in_line };
+        }();
+        // TODO: this could be sped up if we don't clone all th content just to clear() it
+        auto clone = d;
+        clone.get_content().clear();
+        clone.get_content().push_back(std::move(generated));
+        behavior->generate_html(out, clone, context);
+        break;
+    }
+    case Directive_Category::macro: {
+        const std::pmr::vector<ast::Content> instance = behavior->instantiate(d, context);
+        to_html_with_source_references(out, out_code, instance, context);
+        break;
+    }
+    case Directive_Category::pure_plaintext: {
+        const std::size_t initial_size = out_code.size();
+        behavior->generate_plaintext(out_code, d, context);
+        COWEL_ASSERT(out_code.size() >= initial_size);
+        const std::size_t length = out_code.size() - initial_size;
+        reference_highlighted(out, initial_size, length);
+        break;
+    }
+    }
+}
+
+void to_html_with_source_references(
+    HTML_Writer& out,
+    std::pmr::vector<char8_t>& out_code,
+    const ast::Content& content,
+    Context& context
+)
+{
+    const auto visitor = [&](const auto& c) { //
+        to_html_with_source_references(out, out_code, c, context);
+    };
+    std::visit(visitor, content);
+}
+
+constexpr std::u8string_view highlighting_tag = u8"h-";
+constexpr std::u8string_view highlighting_attribute = u8"data-h";
+constexpr auto highlighting_attribute_style = Attribute_Style::double_if_needed;
+
+/// @brief Writes HTML containing syntax highlighting elements to `out`.
+/// @param out The writer.
+/// @param code_range The range of indices within the given source.
+/// @param code The highlighted source code.
+/// @param highlights The highlights for `source`.
+void generate_highlighted_html(
+    HTML_Writer& out,
+    Index_Range code_range,
+    std::u8string_view code,
+    std::span<const Highlight_Span> highlights
+)
+{
+    COWEL_ASSERT(!code_range.empty());
+    COWEL_ASSERT(code_range.begin < code.length());
+    COWEL_ASSERT(code_range.begin + code_range.length <= code.length());
+
+    constexpr auto projection
+        = [](const Highlight_Span& highlight) { return highlight.begin + highlight.length; };
+    auto it = std::ranges::upper_bound(highlights, code_range.begin, {}, projection);
+    std::size_t index = code_range.begin;
+
+    for (; it != highlights.end() && code_range.intersects({ it->begin, it->length }); ++it) {
+        const Highlight_Span& highlight = *it;
+        COWEL_ASSERT(highlight.begin < code.length());
+        COWEL_ASSERT(highlight.begin + highlight.length <= code.length());
+
+        // Leading non-highlighted content.
+        if (highlight.begin > index) {
+            out.write_inner_text(code.substr(index, highlight.begin - index));
+            index = highlight.begin;
+        }
+        // This length limit is necessary because it is possible that the source reference ends
+        // in the middle of a highlight, like:
+        //     \i{in}t x = 0
+        // where the keyword highlight for "int" would extend further than the reference for "in".
+        const std::size_t actual_end
+            = std::min(code_range.end(), highlight.begin + highlight.length);
+        if (index >= actual_end) {
+            // TODO: investigate whether this is actually possible;
+            //       I suspect this could be an assertion.
+            break;
+        }
+
+        const std::u8string_view id
+            = ulight::highlight_type_short_string_u8(ulight::Highlight_Type(highlight.type));
+        out.open_tag_with_attributes(highlighting_tag)
+            .write_attribute(highlighting_attribute, id, highlighting_attribute_style)
+            .end();
+        out.write_inner_text(code.substr(index, actual_end - index));
+        out.close_tag(highlighting_tag);
+        index = actual_end;
     }
 
-    return result;
+    // Trailing non-highlighted content, but still within the code range.
+    const std::size_t code_range_end = code_range.begin + code_range.length;
+    COWEL_ASSERT(index <= code_range_end);
+    if (index < code_range_end) {
+        out.write_inner_text(code.substr(index, code_range_end - index));
+    }
+}
+
+/// @brief Resolves references to syntax-highlighted code within the given `generated` markup.
+/// @param generated The generated HTML, possibly containing source code references.
+/// @param start The first index in `generated` which may contain source code references.
+/// @param code The highlighted source code.
+/// @param highlights The highlights for `code`.
+void resolve_source_references(
+    std::pmr::vector<char8_t>& generated,
+    const std::size_t start,
+    const std::u8string_view code,
+    const std::span<const Highlight_Span> highlights
+)
+{
+    COWEL_ASSERT(start <= generated.size());
+    std::pmr::vector<char8_t> buffer { generated.get_allocator() };
+
+    for (std::size_t i = start; i < generated.size();) {
+        const auto remainder_string = as_u8string_view(generated).substr(i);
+        const auto [code_point, length] = utf8::decode_and_length_or_throw(remainder_string);
+        COWEL_ASSERT(length > 0);
+        if (code_point < private_use_area_min || code_point > private_use_area_max) {
+            i += std::size_t(length);
+            continue;
+        }
+        COWEL_ASSERT(code_point == private_use_area_min);
+        COWEL_ASSERT(i + std::size_t(length) <= generated.size());
+
+        Index_Range range;
+        std::memcpy(&range, generated.data() + i + length, sizeof(range));
+
+        buffer.clear();
+        HTML_Writer buffer_writer { buffer };
+        generate_highlighted_html(buffer_writer, range, code, highlights);
+
+        const auto post_erased = generated.erase(
+            generated.begin() + std::ptrdiff_t(i),
+            generated.begin() + std::ptrdiff_t(i) + length + sizeof(range)
+        );
+        generated.insert(post_erased, buffer.begin(), buffer.end());
+        i += buffer.size();
+    }
 }
 
 } // namespace
@@ -906,84 +851,29 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     std::u8string_view language,
     Context& context,
     std::u8string_view prefix,
-    std::u8string_view suffix,
-    To_HTML_Mode mode
+    std::u8string_view suffix
 )
 {
-    COWEL_ASSERT(!to_html_mode_is_paragraphed(mode));
+    const std::size_t initial_size = out.get_output().size();
 
-    std::pmr::vector<char8_t> plaintext { context.get_transient_memory() };
-    std::pmr::vector<std::size_t> plaintext_to_document_index { context.get_transient_memory() };
+    std::pmr::vector<char8_t> code { context.get_transient_memory() };
+    code.insert(code.end(), prefix.begin(), prefix.end());
+    to_html_with_source_references(out, code, content, context);
+    code.insert(code.end(), suffix.begin(), suffix.end());
 
-    // 0 is a safe value for document index mapping
-    // because it's impossible to provide input to syntax highlighting at the zeroth index.
-    plaintext.insert(plaintext.end(), prefix.begin(), prefix.end());
-    plaintext_to_document_index.resize(prefix.size(), 0);
-    to_plaintext_mapped_for_highlighting(plaintext, plaintext_to_document_index, content, context);
-    plaintext.insert(plaintext.end(), suffix.begin(), suffix.end());
-    plaintext_to_document_index.resize(plaintext_to_document_index.size() + suffix.size(), 0);
-    COWEL_ASSERT(plaintext.size() == plaintext_to_document_index.size());
-
-    std::pmr::vector<Highlight_Span> spans { context.get_transient_memory() };
-    const std::u8string_view plaintext_str { plaintext.data(), plaintext.size() };
+    const auto code_string = as_u8string_view(code);
 
     Syntax_Highlighter& highlighter = context.get_highlighter();
-    const Result<void, Syntax_Highlight_Error> result
-        = highlighter(spans, plaintext_str, language, context.get_transient_memory());
-    if (!result) {
-        return result.error();
-    }
-
-    std::pmr::vector<const Highlight_Span*> plaintext_to_span { context.get_transient_memory() };
-    plaintext_to_span.resize(plaintext.size());
-    for (const Highlight_Span& span : spans) {
-        for (std::size_t i = 0; i < span.length; ++i) {
-            plaintext_to_span[i + span.begin] = &span;
-        }
-    }
-
-    const std::pmr::vector<ast::Content> highlighted_content = copy_highlighted(
-        content, plaintext_str, plaintext_to_document_index, plaintext_to_span, context
-    );
-    to_html(out, highlighted_content, context, mode);
-    return {};
+    std::pmr::vector<Highlight_Span> highlights { context.get_transient_memory() };
+    Result<void, Syntax_Highlight_Error> result
+        = highlighter(highlights, code_string, language, context.get_transient_memory());
+    // Even if the result is an error,
+    // we need to carry on as usual and resolve all the references,
+    // which will simply be considered references to non-highlighted content and emit
+    // as if highlighting was never attempted.
+    resolve_source_references(out.get_output(), initial_size, code_string, highlights);
+    return result;
 }
-
-// Code stash:
-// The process for syntax highlighting is relatively complicated because it accounts for directives
-// that interleave with the highlighted content.
-// However, for the common case of highlighted content that contains no directives,
-// we could simplify and generate directly.
-#if 0 // NOLINT
-const HLJS_Annotation_Span* previous_span = nullptr;
-for (; index < to_source_index.size(); ++index) {
-    const std::size_t source_index = to_source_index[index];
-    if (source_index < source_span.begin) {
-        continue;
-    }
-    if (source_index >= source_span.end()) {
-        break;
-    }
-    if (previous_span != to_span[index]) {
-        if (previous_span) {
-            out.close_tag(highlighting_tag);
-        }
-        if (to_span[index]) {
-            out.open_tag_with_attributes(highlighting_tag)
-                .write_attribute(
-                    u8"class", hljs_scope_css_classes(to_span[index]->value),
-                    Attribute_Style::always_double
-                )
-                .end();
-            previous_span = to_span[index];
-        }
-    }
-    out.write_inner_text(source[index]);
-}
-if (previous_span != nullptr) {
-    out.close_tag(highlighting_tag);
-}
-#endif
 
 void warn_ignored_argument_subset(
     std::span<const ast::Argument> args,

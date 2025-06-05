@@ -145,12 +145,30 @@ void Syntax_Highlight_Behavior::generate_html(
         attributes.end();
     }
 
+    std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
+    HTML_Writer buffer_writer { buffer };
+    HTML_Writer& chosen_writer = m_pre_compat_trim ? buffer_writer : out;
+
     const Result<void, Syntax_Highlight_Error> result = to_html_syntax_highlighted(
-        out, d.get_content(), lang.string, context, prefix.string, suffix.string, m_to_html_mode
+        chosen_writer, d.get_content(), lang.string, context, prefix.string, suffix.string
     );
     if (!result) {
-        to_html(out, d.get_content(), context, m_to_html_mode);
         diagnose(result.error(), lang.string, d, context);
+    }
+    if (m_pre_compat_trim) {
+        // In HTML, a browser is permitted (but not required) to
+        // ignore the newline following <pre>,
+        // and the newline preceding </pre>.
+        // The same applies to any elements styled "white-space: pre".
+        // To ensure portability, we need to trim away newlines (if any).
+        auto inner_html = as_u8string_view(buffer);
+        if (inner_html.starts_with(u8'\n')) {
+            inner_html.remove_prefix(1);
+        }
+        if (inner_html.ends_with(u8'\n')) {
+            inner_html.remove_suffix(1);
+        }
+        out.write_inner_html(inner_html);
     }
 
     if (!is_nested) {

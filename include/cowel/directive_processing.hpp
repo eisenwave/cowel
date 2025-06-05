@@ -64,51 +64,6 @@ To_Plaintext_Status to_plaintext(
     To_Plaintext_Mode mode = To_Plaintext_Mode::normal
 );
 
-/// @brief Like `to_plaintext`,
-/// but ignores directives other than `pure_plaintext` and `formatting`, and
-/// also appends the source code index of the piece of content that is responsible for each
-/// character.
-/// When performing syntax highlighting,
-/// this subsequently allows to wrap text in synthesized directives.
-///
-/// Note that for directives with `Directive_Category::pure_html` or `Directive_Category::mixed`,
-/// no plaintext is generated in general.
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    const ast::Content& c,
-    Context& context
-);
-
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    const ast::Text& t,
-    Context& context
-);
-
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    const ast::Escaped& e,
-    Context& context
-);
-
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    const ast::Directive& d,
-    Context& context
-);
-
-/// @brief Calls `to_plaintext_mapped_for_highlighting` for each piece of content.
-void to_plaintext_mapped_for_highlighting(
-    std::pmr::vector<char8_t>& out,
-    std::pmr::vector<std::size_t>& out_mapping,
-    std::span<const ast::Content> content,
-    Context& context
-);
-
 void to_html(HTML_Writer& out, const ast::Content&, Context&);
 void to_html(HTML_Writer& out, const ast::Escaped&, Context&);
 void to_html(HTML_Writer& out, const ast::Text&, Context&);
@@ -168,8 +123,7 @@ Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
     std::u8string_view language,
     Context& context,
     std::u8string_view prefix = u8"",
-    std::u8string_view suffix = u8"",
-    To_HTML_Mode mode = To_HTML_Mode::direct
+    std::u8string_view suffix = u8""
 );
 
 enum struct Argument_Subset : Default_Underlying {
