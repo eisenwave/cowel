@@ -156,16 +156,16 @@ void Syntax_Highlight_Behavior::generate_html(
         diagnose(result.error(), lang.string, d, context);
     }
     if (m_pre_compat_trim) {
-        // In HTML, a browser is permitted (but not required) to
-        // ignore the newline following <pre>,
-        // and the newline preceding </pre>.
+        // https://html.spec.whatwg.org/dev/grouping-content.html#the-pre-element
+        // Leading newlines immediately following <pre> are stripped anyway.
         // The same applies to any elements styled "white-space: pre".
+        // In general, it is best to remove these.
         // To ensure portability, we need to trim away newlines (if any).
         auto inner_html = as_u8string_view(buffer);
-        if (inner_html.starts_with(u8'\n')) {
+        while (inner_html.starts_with(u8'\n')) {
             inner_html.remove_prefix(1);
         }
-        if (inner_html.ends_with(u8'\n')) {
+        while (inner_html.ends_with(u8'\n')) {
             inner_html.remove_suffix(1);
         }
         out.write_inner_html(inner_html);
