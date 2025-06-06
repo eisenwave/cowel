@@ -165,10 +165,9 @@ void substitute_in_macro(
             it += std::ptrdiff_t(arg_content.size());
         };
 
-        it = content.erase(it);
-
         // Simple case like \put where we expand the given contents.
         if (selection.empty()) {
+            it = content.erase(it);
             it = content.insert(it, provided_content.begin(), provided_content.end());
             // We must skip over substituted content,
             // otherwise we risk expanding a \put directive that was passed to the macro,
@@ -181,6 +180,7 @@ void substitute_in_macro(
         // Variadic \put{...} case.
         // Handling depends on the context.
         if (selection_string == u8"...") {
+            it = content.erase(it);
             if (on_variadic_put(*d) == Put_Response::abort) {
                 return;
             }
@@ -191,6 +191,7 @@ void substitute_in_macro(
         // possibly with a fallback like \put[else=abc]{0}.
         const std::optional<std::size_t> arg_index = from_chars<std::size_t>(selection_string);
         if (!arg_index) {
+            it = content.erase(it);
             context.try_error(
                 diagnostic::macro::put_invalid, d->get_source_span(),
                 u8"The argument to this \\put pseudo-directive is invalid."
@@ -216,10 +217,14 @@ void substitute_in_macro(
                 );
                 continue;
             }
-            const ast::Argument& else_arg = d->get_arguments()[std::size_t(else_index)];
+            // It is very important that we do it in this order because erase(it)
+            // also kills d.
+            ast::Argument else_arg = std::move(d->get_arguments()[std::size_t(else_index)]);
+            it = content.erase(it);
             substitute_arg(else_arg);
             continue;
         }
+        it = content.erase(it);
         substitute_arg(provided_arguments[*arg_index]);
     }
 }
