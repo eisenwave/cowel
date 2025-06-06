@@ -110,7 +110,7 @@ void substitute_in_macro(
             // Regular case where we just have some content in directive arguments that we
             // run substitution on, recursively.
             if (arg_content.size() != 1
-                || std::holds_alternative<ast::Directive>(arg_content.front())) {
+                || !std::holds_alternative<ast::Directive>(arg_content.front())) {
                 substitute_in_macro(
                     arg_content, provided_arguments, provided_content, context, on_variadic_put
                 );
@@ -126,9 +126,10 @@ void substitute_in_macro(
                 // This just gets rid of the \put{...} argument,
                 // to be replaced with expanded arguments.
                 arg_it = d_arguments.erase(arg_it);
-                for (const ast::Argument& put_arg : provided_arguments) {
-                    arg_it = d_arguments.insert(arg_it, put_arg);
-                }
+                arg_it = d_arguments.insert(
+                    arg_it, provided_arguments.begin(), provided_arguments.end()
+                );
+                arg_it += std::ptrdiff_t(provided_arguments.size());
                 variadically_expanded = true;
                 return Put_Response::abort;
             };
@@ -220,10 +221,6 @@ void substitute_in_macro(
             continue;
         }
         substitute_arg(provided_arguments[*arg_index]);
-        const ast::Argument& arg = provided_arguments[*arg_index];
-        const std::span<const ast::Content> selected_content = arg.get_content();
-        it = content.insert(it, selected_content.begin(), selected_content.end());
-        it += std::ptrdiff_t(selected_content.size());
     }
 }
 
