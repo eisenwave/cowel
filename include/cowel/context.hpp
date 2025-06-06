@@ -31,10 +31,10 @@ using Suppress_Unused_Include_Transparent_Equals = Basic_Transparent_String_View
 struct Name_Resolver {
     [[nodiscard]]
     virtual Distant<std::u8string_view>
-    fuzzy_lookup_name(std::u8string_view name, std::pmr::memory_resource* memory) const = 0;
+    fuzzy_lookup_name(std::u8string_view name, Context& context) const = 0;
 
     [[nodiscard]]
-    virtual Directive_Behavior* operator()(std::u8string_view name) const
+    virtual Directive_Behavior* operator()(std::u8string_view name, Context& context) const
         = 0;
 };
 
@@ -425,11 +425,11 @@ public:
     /// @param name the name of the directive
     /// @return the behavior for the given name, or `nullptr` if none could be found
     [[nodiscard]]
-    Directive_Behavior* find_directive(string_view_type name) const;
+    Directive_Behavior* find_directive(string_view_type name);
 
     /// @brief Equivalent to `find_directive(directive.get_name(source))`.
     [[nodiscard]]
-    Directive_Behavior* find_directive(const ast::Directive& directive) const;
+    Directive_Behavior* find_directive(const ast::Directive& directive);
 
     [[nodiscard]]
     const Referred* find_id(std::u8string_view id) const
@@ -458,6 +458,26 @@ public:
         const auto [it, success]
             = m_macros.try_emplace(std::move(id), std::move(definition_directive));
         return success;
+    }
+};
+
+struct Macro_Name_Resolver final : Name_Resolver {
+    Directive_Behavior& m_macro_behavior;
+
+    Macro_Name_Resolver(Directive_Behavior& macro_behavior)
+        : m_macro_behavior { macro_behavior }
+    {
+    }
+
+    Distant<std::u8string_view> fuzzy_lookup_name(std::u8string_view, Context&) const final
+    {
+        COWEL_ASSERT_UNREACHABLE(u8"Unimplemented.");
+    }
+
+    [[nodiscard]]
+    Directive_Behavior* operator()(std::u8string_view name, Context& context) const final
+    {
+        return context.find_macro(name) ? &m_macro_behavior : nullptr;
     }
 };
 

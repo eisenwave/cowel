@@ -28,17 +28,17 @@
 
 namespace cowel {
 
-Directive_Behavior* Context::find_directive(std::u8string_view name) const
+Directive_Behavior* Context::find_directive(std::u8string_view name)
 {
     for (const Name_Resolver* const resolver : std::views::reverse(m_name_resolvers)) {
-        if (Directive_Behavior* const result = (*resolver)(name)) {
+        if (Directive_Behavior* const result = (*resolver)(name, *this)) {
             return result;
         }
     }
     return nullptr;
 }
 
-Directive_Behavior* Context::find_directive(const ast::Directive& directive) const
+Directive_Behavior* Context::find_directive(const ast::Directive& directive)
 {
     return find_directive(directive.get_name());
 }
@@ -1099,6 +1099,42 @@ std::size_t get_integer_argument(
     }
 
     return *value;
+}
+
+namespace {
+
+[[nodiscard]]
+std::u8string_view argument_to_plaintext_or(
+    std::pmr::vector<char8_t>& out,
+    std::u8string_view parameter_name,
+    std::u8string_view fallback,
+    const ast::Directive& directive,
+    const Argument_Matcher& args,
+    Context& context
+)
+{
+    const int index = args.get_argument_index(parameter_name);
+    if (index < 0) {
+        return fallback;
+    }
+    to_plaintext(out, directive.get_arguments()[std::size_t(index)].get_content(), context);
+    return { out.data(), out.size() };
+}
+
+} // namespace
+
+String_Argument get_string_argument(
+    std::u8string_view name,
+    const ast::Directive& d,
+    const Argument_Matcher& args,
+    Context& context,
+    std::u8string_view fallback
+)
+{
+    String_Argument result { .data = std::pmr::vector<char8_t>(context.get_transient_memory()),
+                             .string = {} };
+    result.string = argument_to_plaintext_or(result.data, name, fallback, d, args, context);
+    return result;
 }
 
 void try_generate_error_plaintext(

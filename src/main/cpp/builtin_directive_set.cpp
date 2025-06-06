@@ -2,7 +2,6 @@
 #include <array>
 #include <cstddef>
 #include <memory>
-#include <memory_resource>
 #include <ranges>
 #include <span>
 #include <string>
@@ -306,10 +305,8 @@ Directive_Behavior& Builtin_Directive_Set::get_macro_behavior() noexcept
     return m_impl->macro_instantiate;
 }
 
-Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
-    std::u8string_view name,
-    std::pmr::memory_resource* memory
-) const
+Distant<std::u8string_view>
+Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& context) const
 {
     // clang-format off
     static constexpr std::u8string_view prefixed_names[] {
@@ -458,20 +455,22 @@ Distant<std::u8string_view> Builtin_Directive_Set::fuzzy_lookup_name(
         );
         return result;
     }();
-    const Distant<std::size_t> result = closest_match(all_names, name, memory);
+    const Distant<std::size_t> result
+        = closest_match(all_names, name, context.get_transient_memory());
     if (!result) {
         return {};
     }
     return { .value = all_names[result.value], .distance = result.distance };
 }
 
-Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) const
+Directive_Behavior*
+Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) const
 {
     // Any builtin names should be found with both `\\-directive` and `\\directive`.
     // `\\def` does not permit defining directives with a hyphen prefix,
     // so this lets the user
     if (name.starts_with(builtin_directive_prefix)) {
-        return (*this)(name.substr(1));
+        return (*this)(name.substr(1), context);
     }
     if (name.empty()) {
         return nullptr;

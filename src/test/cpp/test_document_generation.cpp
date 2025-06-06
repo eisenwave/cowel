@@ -34,6 +34,14 @@ namespace {
 using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
 
 struct Trivial_Content_Behavior final : Content_Behavior {
+private:
+    Macro_Name_Resolver m_macro_resolver;
+
+public:
+    constexpr explicit Trivial_Content_Behavior(Directive_Behavior& macro_behavior)
+        : m_macro_resolver { macro_behavior }
+    {
+    }
 
     void generate_plaintext(
         std::pmr::vector<char8_t>& out,
@@ -41,12 +49,14 @@ struct Trivial_Content_Behavior final : Content_Behavior {
         Context& context
     ) const final
     {
+        context.add_resolver(m_macro_resolver);
         to_plaintext(out, content, context);
     }
 
     void generate_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
         const final
     {
+        context.add_resolver(m_macro_resolver);
         to_html(out, content, context);
     }
 };
@@ -77,14 +87,21 @@ struct Empty_Head_Behavior final : Head_Body_Content_Behavior {
     }
 };
 
-constinit Trivial_Content_Behavior trivial_behavior {};
-constinit Paragraphs_Behavior paragraphs_behavior {};
-constinit Empty_Head_Behavior empty_head_behavior {};
+enum struct Test_Behavior : Default_Underlying {
+    trivial,
+    paragraphs,
+    empty_head,
+};
 
 struct Doc_Gen_Test : testing::Test {
     std::pmr::monotonic_buffer_resource memory;
     std::pmr::vector<char8_t> out { &memory };
+
     Builtin_Directive_Set builtin_directives {};
+    Trivial_Content_Behavior trivial_behavior { builtin_directives.get_macro_behavior() };
+    Paragraphs_Behavior paragraphs_behavior {};
+    Empty_Head_Behavior empty_head_behavior {};
+
     std::filesystem::path file_path;
     std::pmr::vector<char8_t> source { &memory };
     std::pmr::vector<char8_t> theme_source { &memory };
@@ -98,6 +115,17 @@ struct Doc_Gen_Test : testing::Test {
     {
         const bool theme_loaded = load_theme();
         COWEL_ASSERT(theme_loaded);
+    }
+
+    [[nodiscard]]
+    Content_Behavior& get_behavior(Test_Behavior behavior)
+    {
+        switch (behavior) {
+        case Test_Behavior::trivial: return trivial_behavior;
+        case Test_Behavior::paragraphs: return paragraphs_behavior;
+        case Test_Behavior::empty_head: return empty_head_behavior;
+        default: COWEL_ASSERT_UNREACHABLE(u8"Invalid test behavior.");
+        }
     }
 
     [[nodiscard]]
@@ -208,7 +236,7 @@ struct Basic_Test {
     std::variant<Path, Source> document;
     std::variant<Path, Source> expected_html;
     std::initializer_list<std::u8string_view> expected_diagnostics = {};
-    Content_Behavior& behavior = trivial_behavior;
+    Test_Behavior behavior = Test_Behavior::trivial;
 };
 
 // clang-format off
@@ -295,10 +323,13 @@ constexpr Basic_Test basic_tests[] {
     { Source { u8"\\math{\\mi[id=Z]{x}}\n" },
       Source { u8"<math display=inline><mi id=Z>x</mi></math>\n" } },
 
+    { Path { u8"macro/macros.cow" },
+      Path { u8"macro/macros.html" } },
+
     { Source { u8"" },
       Path { u8"document/empty.html" },
       {},
-      empty_head_behavior }
+      Test_Behavior::empty_head }
 };
 // clang-format on
 
@@ -351,7 +382,7 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
             continue;
         }
 
-        const std::u8string_view actual = generate(test.behavior);
+        const std::u8string_view actual = generate(get_behavior(test.behavior));
         if (expected != actual) {
             Diagnostic_String error { &memory };
             error.append(

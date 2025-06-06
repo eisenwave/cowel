@@ -777,10 +777,10 @@ public:
 
     [[nodiscard]]
     Distant<std::u8string_view>
-    fuzzy_lookup_name(std::u8string_view name, std::pmr::memory_resource* memory) const final;
+    fuzzy_lookup_name(std::u8string_view name, Context& context) const final;
 
     [[nodiscard]]
-    Directive_Behavior* operator()(std::u8string_view name) const final;
+    Directive_Behavior* operator()(std::u8string_view name, Context& context) const final;
 };
 
 namespace class_name {

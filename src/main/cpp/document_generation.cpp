@@ -222,30 +222,7 @@ void Document_Content_Behavior::generate_html(
     Context& context
 ) const
 {
-    struct Macro_Name_Resolver final : Name_Resolver {
-        Context& m_context;
-        Directive_Behavior& m_macro_behavior;
-
-        Macro_Name_Resolver(Context& context, Directive_Behavior& macro_behavior)
-            : m_context { context }
-            , m_macro_behavior { macro_behavior }
-        {
-        }
-
-        Distant<std::u8string_view>
-        fuzzy_lookup_name(std::u8string_view, std::pmr::memory_resource*) const final
-        {
-            COWEL_ASSERT_UNREACHABLE(u8"Unimplemented.");
-        }
-
-        [[nodiscard]]
-        Directive_Behavior* operator()(std::u8string_view name) const final
-        {
-            return m_context.find_macro(name) ? &m_macro_behavior : nullptr;
-        }
-
-    } macro_name_resolver { context, m_macro_behavior };
-    context.add_resolver(macro_name_resolver);
+    context.add_resolver(m_macro_resolver);
 
     Head_Body_Content_Behavior::generate_html(out, content, context);
 }

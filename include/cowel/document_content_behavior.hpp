@@ -27,11 +27,11 @@ struct [[nodiscard]] Head_Body_Content_Behavior : Content_Behavior {
 struct [[nodiscard]]
 Document_Content_Behavior final : Head_Body_Content_Behavior {
 private:
-    Directive_Behavior& m_macro_behavior;
+    Macro_Name_Resolver m_macro_resolver;
 
 public:
     constexpr explicit Document_Content_Behavior(Directive_Behavior& macro_behavior)
-        : m_macro_behavior { macro_behavior }
+        : m_macro_resolver { macro_behavior }
     {
     }
 

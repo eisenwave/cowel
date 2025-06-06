@@ -248,6 +248,20 @@ std::size_t get_integer_argument(
     std::size_t max = std::size_t(-1)
 );
 
+struct String_Argument {
+    std::pmr::vector<char8_t> data;
+    std::u8string_view string;
+};
+
+[[nodiscard]]
+String_Argument get_string_argument(
+    std::u8string_view name,
+    const ast::Directive& d,
+    const Argument_Matcher& args,
+    Context& context,
+    std::u8string_view fallback = u8""
+);
+
 /// @brief If there is an error behavior in the `context`,
 /// uses that behavior's `generate_plaintext` on the directive.
 void try_generate_error_plaintext(
