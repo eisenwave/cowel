@@ -17,11 +17,17 @@ but can be used to document how the directive is meant to be used.
 }
 }
 
-\h5[id=dir-put]{\cow_dir{put} \c{mdash} Pseudo-directive for macro content}
+Within macros, uses of the \cow_dir{put} pseudo-directive are replaced with the inputs to
+the macro.
+There are multiple forms of the \cow_dir{put} which expand different parts of the macro input.
 
-When a macro is used, the content within the \cow_dir{macro} directive is copied.
-Any uses of the \cow_dir{put} pseudo-directive inside the macro are replaced with copies
-of the input content.
+The content of a \cow_dir{put} directive is a plaintext context,
+and specifies which part of the provided content or arguments should be used.
+
+\h4{\cow_c{\\put{}} \c{mdash} Replaced with provided content}
+
+A \cow_dir{put} directive with no given content (or empty/blank content)
+is replaced with the content provided to the macro upon use.
 
 \Bex{
 \codeblock[cowel]{\literally{
@@ -32,13 +38,85 @@ of the input content.
 }}
 }
 
-\h5[id=dir-arg]{\cow_dir{arg} \c{mdash} Pseudo-directive for macro arguments}
+\h4{\cow_c{\\put{0}}, \cow_c{\\put{1}}, \N{HORIZONTAL ELLIPSIS} \c{mdash} Replaced with argument}
 
-\Btodo{
-Currently, macros only support content as input.
-Arguments to macros are ignored entirely.
-This should be supported at some point.
+When the content provided to \cow_dir{put} is an integer,
+the corresponding argument is selected,
+where \tt{0} represents the first argument.
+
+Additionally,
+such a \cow_dir{put} directive has an \cow_attr{else} parameter,
+which replaces the \cow_dir{put} directive if not enough positional arguments were provided
+to the macro.
+If there is no \cow_attr{else} argument,
+this would result in an error instead.
+
+\Bex{
+\codeblock[cowel]{\literally{
+\macro[\arg0]{\put[else = otherwise]{0}}
+\arg0[abc]{xyz}
+\arg0{xyz}
+}}
+After macro substitution, this markup is equivalent to:
+\codeblock[cowel]{
+abc
+otherwise
 }
+Notice that \cow_c{xyz} is ignored in either case
+because there is no \cow_c{\\put{}} that would make use of it.
+
+The second macro invocation \cow_c{\\arg0{xyz}} would result in an error if no
+\cow_attr{else} argument was provided.
+}
+
+\h4{\cow_c{\\put{...}} \c{mdash} Forwarding provided arguments}
+
+\cow_c{\\put{...}} (where the given content is three periods)
+expands to \em{all} provided macro arguments.
+It shall only appear as a positional argument to a directive, with no surrounding content.
+That is:
+\ul{
+    \li{\cow_c{\\x[\\put{...}]} is OK,}
+    \li{
+        \cow_c{\\x[a, \\put{...}, b]} is OK
+        because spaces around \cow_c{\\put{...}} are ignored and do not constitute text, but
+    }
+    \li{
+        \cow_c{\\x[a\\put{...}b]} is an error
+        because \cow_c{\\put{...}} is being mixed with other (text) content,
+    }
+    \li{
+        \cow_c{\\x[n=\\put{...}]} is an error
+        because \cow_c{\\put{...}} is used as a named argument, and
+    }
+    \li{
+        \cow_c{\\x{\\put{...}}} is an error
+        because \cow_c{\\put{...}} does not appear as a directive argument.
+    }
+}
+
+\Bex{
+\cow_c{\\put{...}} is especially useful when creating "wrapper macros" for other directives:
+\codeblock[cowel]{\literally{
+\macro[\js_block]{\codeblock[lang=js,\put{...}]{\put}}
+
+\comment{
+  \js_block now acts as a shorthand for JavaScript blocks,
+  and thanks to forward with \put{...}, we can provide further arguments
+  to the underlying \codeblock directive.
+}
+\js_block[borders=no]{
+function sqr(x) { return x * x; }
+}
+}}
+After macro substitution, this markup is equivalent to:
+\codeblock[cowel]{\literally{
+\codeblock[lang=js,borders=no]{
+function sqr(x) { return x * x; }
+}
+}}
+}
+
 
 \h4{Avoiding name collisions}
 

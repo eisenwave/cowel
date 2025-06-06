@@ -1709,11 +1709,13 @@ h1 {
 <a href=#macros><h3>Macros</h3></a>
 <div class=toc-num data-level=4>8.17.1</div>
 <a href=#dir-def><h4><code><h- data-h=mk_tag>\macro</h-></code> &mdash; Define a macro</h4></a>
-<div class=toc-num data-level=5>8.17.1.1</div>
-<a href=#dir-put><h5><code><h- data-h=mk_tag>\put</h-></code> &mdash; Pseudo-directive for macro content</h5></a>
-<div class=toc-num data-level=5>8.17.1.2</div>
-<a href=#dir-arg><h5><code><h- data-h=mk_tag>\arg</h-></code> &mdash; Pseudo-directive for macro arguments</h5></a>
 <div class=toc-num data-level=4>8.17.2</div>
+<a href=#—-replaced-with-provided-content><h4><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code> &mdash; Replaced with provided content</h4></a>
+<div class=toc-num data-level=4>8.17.3</div>
+<a href=#,-,-…-—-replaced-with-argument><h4><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-></code>, <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-></code>, … &mdash; Replaced with argument</h4></a>
+<div class=toc-num data-level=4>8.17.4</div>
+<a href=#—-forwarding-provided-arguments><h4><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> &mdash; Forwarding provided arguments</h4></a>
+<div class=toc-num data-level=4>8.17.5</div>
 <a href=#avoiding-name-collisions><h4>Avoiding name collisions</h4></a>
 <div class=toc-num data-level=3>8.18</div>
 <a href=#miscellaneous><h3>Miscellaneous</h3></a>
@@ -3553,11 +3555,17 @@ but can be used to document how the directive is meant to be used.
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>m</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h-></code-block>
 </note-block>
 
-<h5 id=dir-put><a class=para href=#dir-put></a>8.17.1.1. <code><h- data-h=mk_tag>\put</h-></code> &mdash; Pseudo-directive for macro content</h5>
+<p>Within macros, uses of the <code><h- data-h=mk_tag>\put</h-></code> pseudo-directive are replaced with the inputs to
+the macro.
+There are multiple forms of the <code><h- data-h=mk_tag>\put</h-></code> which expand different parts of the macro input.
+</p>
+<p>The content of a <code><h- data-h=mk_tag>\put</h-></code> directive is a plaintext context,
+and specifies which part of the provided content or arguments should be used.
+</p>
+<h4 id=—-replaced-with-provided-content><a class=para href=#—-replaced-with-provided-content></a>8.17.2. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code> &mdash; Replaced with provided content</h4>
 
-<p>When a macro is used, the content within the <code><h- data-h=mk_tag>\macro</h-></code> directive is copied.
-Any uses of the <code><h- data-h=mk_tag>\put</h-></code> pseudo-directive inside the macro are replaced with copies
-of the input content.
+<p>A <code><h- data-h=mk_tag>\put</h-></code> directive with no given content (or empty/blank content)
+is replaced with the content provided to the macro upon use.
 </p>
 <example-block><p><intro-></intro-> 
 </p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\bi</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\b</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\i</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
@@ -3566,15 +3574,79 @@ of the input content.
 <h- data-h=mk_tag>\bi</h-><h- data-h=sym_brac>{</h->bold and italic<h- data-h=sym_brac>}</h-></code-block>
 </example-block>
 
-<h5 id=dir-arg><a class=para href=#dir-arg></a>8.17.1.2. <code><h- data-h=mk_tag>\arg</h-></code> &mdash; Pseudo-directive for macro arguments</h5>
+<h4 id=,-,-…-—-replaced-with-argument><a class=para href=#,-,-…-—-replaced-with-argument></a>8.17.3. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-></code>, <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-></code>, … &mdash; Replaced with argument</h4>
 
-<todo-block><p><intro-></intro-> 
-Currently, macros only support content as input.
-Arguments to macros are ignored entirely.
-This should be supported at some point.
-</p></todo-block>
+<p>When the content provided to <code><h- data-h=mk_tag>\put</h-></code> is an integer,
+the corresponding argument is selected,
+where <tt->0</tt-> represents the first argument.
+</p>
+<p>Additionally,
+such a <code><h- data-h=mk_tag>\put</h-></code> directive has an <tt-><h- data-h=mk_attr>else</h-></tt-> parameter,
+which replaces the <code><h- data-h=mk_tag>\put</h-></code> directive if not enough positional arguments were provided
+to the macro.
+If there is no <tt-><h- data-h=mk_attr>else</h-></tt-> argument,
+this would result in an error instead.
+</p>
+<example-block><p><intro-></intro-> 
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\arg0</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>else</h-> <h- data-h=sym_punc>=</h-> otherwise<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\arg0</h-><h- data-h=sym_sqr>[</h->abc<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\arg0</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h-></code-block>
+<p>After macro substitution, this markup is equivalent to:
+</p><code-block>abc
+otherwise</code-block>
+<p>Notice that <code>xyz</code> is ignored in either case
+because there is no <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code> that would make use of it.
+</p>
+<p>The second macro invocation <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>arg0</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h-></code> would result in an error if no
+<tt-><h- data-h=mk_attr>else</h-></tt-> argument was provided.
+</p></example-block>
 
-<h4 id=avoiding-name-collisions><a class=para href=#avoiding-name-collisions></a>8.17.2. Avoiding name collisions</h4>
+<h4 id=—-forwarding-provided-arguments><a class=para href=#—-forwarding-provided-arguments></a>8.17.4. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> &mdash; Forwarding provided arguments</h4>
+
+<p><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> (where the given content is three periods)
+expands to <em>all</em> provided macro arguments.
+It shall only appear as a positional argument to a directive, with no surrounding content.
+That is:
+</p><ul>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>x</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-></code> is OK,</li>
+    <li>
+        <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>x</h-><h- data-h=sym_sqr>[</h->a<h- data-h=sym_punc>,</h-> <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_punc>,</h-> b<h- data-h=sym_sqr>]</h-></code> is OK
+        because spaces around <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> are ignored and do not constitute text, but
+    </li>
+    <li>
+        <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>x</h-><h- data-h=sym_sqr>[</h->a<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h->b<h- data-h=sym_sqr>]</h-></code> is an error
+        because <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> is being mixed with other (text) content,
+    </li>
+    <li>
+        <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>x</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>n</h-><h- data-h=sym_punc>=</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-></code> is an error
+        because <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> is used as a named argument, and
+    </li>
+    <li>
+        <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>x</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code> is an error
+        because <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> does not appear as a directive argument.
+    </li>
+</ul>
+
+<example-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> is especially useful when creating "wrapper macros" for other directives:
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\js_block</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\codeblock</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>lang</h-><h- data-h=sym_punc>=</h->js<h- data-h=sym_punc>,</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>
+  \js_block now acts as a shorthand for JavaScript blocks,
+  and thanks to forward with \put{...}, we can provide further arguments
+  to the underlying \codeblock directive.
+</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\js_block</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>borders</h-><h- data-h=sym_punc>=</h->no<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
+function sqr(x) { return x * x; }
+<h- data-h=sym_brac>}</h-></code-block>
+<p>After macro substitution, this markup is equivalent to:
+</p><code-block><h- data-h=mk_tag>\codeblock</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>lang</h-><h- data-h=sym_punc>=</h->js<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>borders</h-><h- data-h=sym_punc>=</h->no<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
+function sqr(x) { return x * x; }
+<h- data-h=sym_brac>}</h-></code-block>
+</example-block>
+
+
+<h4 id=avoiding-name-collisions><a class=para href=#avoiding-name-collisions></a>8.17.5. Avoiding name collisions</h4>
 
 <p>Since COWEL continuously adds more directives in the future,
 you should try to avoid names that may collide with those when defining your own macros.
