@@ -10,24 +10,6 @@
 namespace cowel {
 namespace {
 
-[[nodiscard]]
-std::u8string_view argument_to_plaintext_or(
-    std::pmr::vector<char8_t>& out,
-    std::u8string_view parameter_name,
-    std::u8string_view fallback,
-    const ast::Directive& directive,
-    const Argument_Matcher& args,
-    Context& context
-)
-{
-    const int index = args.get_argument_index(parameter_name);
-    if (index < 0) {
-        return fallback;
-    }
-    to_plaintext(out, directive.get_arguments()[std::size_t(index)].get_content(), context);
-    return { out.data(), out.size() };
-}
-
 void diagnose(
     Syntax_Highlight_Error error,
     std::u8string_view lang,
@@ -93,29 +75,6 @@ void Syntax_Highlight_Behavior::generate_plaintext(
         to_plaintext(out, d.get_content(), context);
     }
 }
-
-namespace {
-
-struct String_Argument {
-    std::pmr::vector<char8_t> data;
-    std::u8string_view string;
-};
-
-String_Argument get_string_argument(
-    std::u8string_view name,
-    const ast::Directive& d,
-    const Argument_Matcher& args,
-    Context& context,
-    std::u8string_view fallback = u8""
-)
-{
-    String_Argument result { .data = std::pmr::vector<char8_t>(context.get_transient_memory()),
-                             .string = {} };
-    result.string = argument_to_plaintext_or(result.data, name, fallback, d, args, context);
-    return result;
-}
-
-} // namespace
 
 void Syntax_Highlight_Behavior::generate_html(
     HTML_Writer& out,

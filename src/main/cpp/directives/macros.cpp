@@ -1,6 +1,10 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/from_chars.hpp"
+#include "cowel/util/strings.hpp"
+#include "cowel/util/to_chars.hpp"
+
 #include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/context.hpp"
@@ -74,13 +78,21 @@ void Macro_Define_Behavior::evaluate(const ast::Directive& d, Context& context) 
 
 namespace {
 
+enum struct Put_Response : bool {
+    normal,
+    abort,
+};
+
 void substitute_in_macro(
     std::pmr::vector<ast::Content>& content,
-    std::span<const ast::Argument> put_arguments,
-    std::span<const ast::Content> put_content,
-    Context& context
+    std::span<const ast::Argument> provided_arguments,
+    std::span<const ast::Content> provided_content,
+    Context& context,
+    Function_Ref<Put_Response(ast::Directive&)> on_variadic_put
 )
 {
+    static constexpr std::u8string_view put_parameters[] { u8"else" };
+
     for (auto it = content.begin(); it != content.end();) {
         auto* const d = std::get_if<ast::Directive>(&*it);
         if (!d) {
@@ -92,25 +104,126 @@ void substitute_in_macro(
         // Before anything else, we have to replace the contents and the arguments of directives.
         // This comes even before the use evaluation of \put and \arg
         // in order to facilitate nesting, like \arg[\arg[0]].
-        for (auto& arg : d->get_arguments()) {
-            substitute_in_macro(arg.get_content(), put_arguments, put_content, context);
+        std::pmr::vector<ast::Argument>& d_arguments = d->get_arguments();
+        for (auto arg_it = d_arguments.begin(); arg_it != d_arguments.end();) {
+            std::pmr::vector<ast::Content>& arg_content = arg_it->get_content();
+            // Regular case where we just have some content in directive arguments that we
+            // run substitution on, recursively.
+            if (arg_content.size() != 1
+                || std::holds_alternative<ast::Directive>(arg_content.front())) {
+                substitute_in_macro(
+                    arg_content, provided_arguments, provided_content, context, on_variadic_put
+                );
+                ++arg_it;
+                continue;
+            }
+            // Special case where we have a single directive argument.
+            // Within that context, \put{...} is treated specially and can be used as
+            // a variadic expansion of the provided arguments.
+            bool variadically_expanded = false;
+            auto variadic_put_expand = [&](const ast::Directive& d) {
+                COWEL_ASSERT(d.get_name() == u8"put");
+                // This just gets rid of the \put{...} argument,
+                // to be replaced with expanded arguments.
+                arg_it = d_arguments.erase(arg_it);
+                for (const ast::Argument& put_arg : provided_arguments) {
+                    arg_it = d_arguments.insert(arg_it, put_arg);
+                }
+                variadically_expanded = true;
+                return Put_Response::abort;
+            };
+            substitute_in_macro(
+                arg_content, provided_arguments, provided_content, context, variadic_put_expand
+            );
+            if (!variadically_expanded) {
+                ++arg_it;
+            }
         }
-        substitute_in_macro(d->get_content(), put_arguments, put_content, context);
 
-        if (d->get_name() == u8"put") {
-            // TODO: there's probably a way to do this faster, in a single step,
-            //       but I couldn't find anything obvious in std::vector's interface.
-            it = content.erase(it);
-            it = content.insert(it, put_content.begin(), put_content.end());
+        substitute_in_macro(
+            d->get_content(), provided_arguments, provided_content, context, on_variadic_put
+        );
+
+        if (d->get_name() != u8"put") {
+            ++it;
+            continue;
+        }
+        Argument_Matcher put_args { put_parameters, context.get_transient_memory() };
+        put_args.match(d->get_arguments());
+        warn_ignored_argument_subset(
+            d->get_arguments(), put_args, context, Argument_Subset::unmatched
+        );
+
+        std::pmr::vector<char8_t> selection { context.get_transient_memory() };
+        to_plaintext(selection, d->get_content(), context);
+        const auto selection_string = trim_ascii_blank(as_u8string_view(selection));
+
+        const auto substitute_arg = [&](const ast::Argument& arg) {
+            const std::span<const ast::Content> arg_content = arg.get_content();
+            it = content.insert(it, arg_content.begin(), arg_content.end());
+            it += std::ptrdiff_t(arg_content.size());
+        };
+
+        it = content.erase(it);
+
+        // Simple case like \put where we expand the given contents.
+        if (selection.empty()) {
+            it = content.insert(it, provided_content.begin(), provided_content.end());
             // We must skip over substituted content,
             // otherwise we risk expanding a \put directive that was passed to the macro,
             // rather than being in the macro definition,
             // and \put is only supposed to have special meaning within the macro definition.
-            it += std::ptrdiff_t(put_content.size());
+            it += std::ptrdiff_t(provided_content.size());
+            continue;
         }
-        else {
-            ++it;
+
+        // Variadic \put{...} case.
+        // Handling depends on the context.
+        if (selection_string == u8"...") {
+            if (on_variadic_put(*d) == Put_Response::abort) {
+                return;
+            }
+            continue;
         }
+
+        // Index case like \put{0} for selecting a given argument,
+        // possibly with a fallback like \put[else=abc]{0}.
+        const std::optional<std::size_t> arg_index = from_chars<std::size_t>(selection_string);
+        if (!arg_index) {
+            context.try_error(
+                diagnostic::macro::put_invalid, d->get_source_span(),
+                u8"The argument to this \\put pseudo-directive is invalid."
+            );
+            continue;
+        }
+        if (*arg_index >= provided_arguments.size()) {
+            const int else_index = put_args.get_argument_index(u8"else");
+            if (else_index < 0) {
+                const Characters8 limit_chars = to_characters8(provided_arguments.size());
+                const std::u8string_view message[] {
+                    u8"This \\put directive is invalid because the positional argument at ",
+                    u8"index [",
+                    selection_string,
+                    u8"] was requested, but only ",
+                    limit_chars.as_string(),
+                    u8"were provided. ",
+                    u8"To make this valid, provide an \"else\" argument, like ",
+                    u8"\\put[else=xyz]{0}."
+                };
+                context.try_error(
+                    diagnostic::macro::put_out_of_range, d->get_source_span(), message
+                );
+                continue;
+            }
+            const ast::Argument& else_arg = d->get_arguments()[std::size_t(else_index)];
+            substitute_arg(else_arg);
+            continue;
+        }
+        substitute_arg(provided_arguments[*arg_index]);
+        const ast::Argument& arg = provided_arguments[*arg_index];
+        const std::span<const ast::Content> selected_content = arg.get_content();
+        it = content.insert(it, selected_content.begin(), selected_content.end());
+        it += std::ptrdiff_t(selected_content.size());
     }
 }
 
@@ -124,7 +237,16 @@ void instantiate_macro(
 {
     const std::span<const ast::Content> content = definition.get_content();
     out.insert(out.end(), content.begin(), content.end());
-    substitute_in_macro(out, put_arguments, put_content, context);
+
+    auto on_variadic_put = [&](const ast::Directive& d) {
+        context.try_error(
+            diagnostic::macro::put_args_outside_args, d.get_source_span(),
+            u8"A \\put[...] pseudo-directive can only be used as the sole positional argument "
+            u8"in a directive."
+        );
+        return Put_Response::normal;
+    };
+    substitute_in_macro(out, put_arguments, put_content, context, on_variadic_put);
 }
 
 } // namespace

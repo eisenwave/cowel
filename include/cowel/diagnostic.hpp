@@ -247,6 +247,21 @@ inline constexpr std::u8string_view no_section = u8"here:no-section";
 
 } // namespace here
 
+namespace macro {
+
+/// @brief A `\put[...]` pseudo-directive was used outside of an argument list,
+/// making expansion impossible.
+inline constexpr std::u8string_view put_args_outside_args = u8"macro:put.args.outside-args";
+
+/// @brief The content of a `\put` directive is invalid.
+inline constexpr std::u8string_view put_invalid = u8"macro:put.invalid";
+
+/// @brief The index of a positional argument was given to a `\put` directive,
+/// but not enough positional arguments were provided.
+inline constexpr std::u8string_view put_out_of_range = u8"macro:put.out-of-range";
+
+} // namespace macro
+
 namespace math {
 
 /// @brief In a `\math` directive,
