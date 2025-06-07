@@ -385,9 +385,9 @@ public:
         }
         else {
             try_lookup_error(d, m_context);
-        }
-        if (Directive_Behavior* const eb = m_context.get_error_behavior()) {
-            on_non_macro_directive(*eb, d);
+            if (Directive_Behavior* const eb = m_context.get_error_behavior()) {
+                on_non_macro_directive(*eb, d);
+            }
         }
     }
 
