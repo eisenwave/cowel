@@ -33,34 +33,6 @@ namespace {
 
 using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
 
-struct Trivial_Content_Behavior final : Content_Behavior {
-private:
-    Macro_Name_Resolver m_macro_resolver;
-
-public:
-    constexpr explicit Trivial_Content_Behavior(Directive_Behavior& macro_behavior)
-        : m_macro_resolver { macro_behavior }
-    {
-    }
-
-    void generate_plaintext(
-        std::pmr::vector<char8_t>& out,
-        std::span<const ast::Content> content,
-        Context& context
-    ) const final
-    {
-        context.add_resolver(m_macro_resolver);
-        to_plaintext(out, content, context);
-    }
-
-    void generate_html(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
-        const final
-    {
-        context.add_resolver(m_macro_resolver);
-        to_html(out, content, context);
-    }
-};
-
 struct Paragraphs_Behavior final : Content_Behavior {
 
     void generate_plaintext(std::pmr::vector<char8_t>&, std::span<const ast::Content>, Context&)
@@ -98,7 +70,7 @@ struct Doc_Gen_Test : testing::Test {
     std::pmr::vector<char8_t> out { &memory };
 
     Builtin_Directive_Set builtin_directives {};
-    Trivial_Content_Behavior trivial_behavior { builtin_directives.get_macro_behavior() };
+    Minimal_Content_Behavior minimal_behavior { builtin_directives.get_macro_behavior() };
     Paragraphs_Behavior paragraphs_behavior {};
     Empty_Head_Behavior empty_head_behavior {};
 
@@ -121,7 +93,7 @@ struct Doc_Gen_Test : testing::Test {
     Content_Behavior& get_behavior(Test_Behavior behavior)
     {
         switch (behavior) {
-        case Test_Behavior::trivial: return trivial_behavior;
+        case Test_Behavior::trivial: return minimal_behavior;
         case Test_Behavior::paragraphs: return paragraphs_behavior;
         case Test_Behavior::empty_head: return empty_head_behavior;
         default: COWEL_ASSERT_UNREACHABLE(u8"Invalid test behavior.");
@@ -136,9 +108,7 @@ struct Doc_Gen_Test : testing::Test {
             return false;
         }
         source_string = { source.data(), source.size() };
-        content = parse_and_build(
-            source_string, path.generic_u8string(), &memory, make_parse_error_consumer()
-        );
+        content = parse_and_build(source_string, File_Id {}, &memory, make_parse_error_consumer());
         return true;
     }
 
@@ -157,7 +127,7 @@ struct Doc_Gen_Test : testing::Test {
     void load_source(std::u8string_view source)
     {
         source_string = source;
-        content = parse_and_build(source, u8"<no file>", &memory, make_parse_error_consumer());
+        content = parse_and_build(source, File_Id {}, &memory, make_parse_error_consumer());
     }
 
     std::u8string_view generate(Content_Behavior& root_behavior)
@@ -179,7 +149,7 @@ struct Doc_Gen_Test : testing::Test {
     Parse_Error_Consumer make_parse_error_consumer()
     {
         constexpr auto invoker = [](void* entity, std::u8string_view id,
-                                    const File_Source_Span8& location, std::u8string_view message) {
+                                    const File_Source_Span& location, std::u8string_view message) {
             auto* const self = static_cast<Doc_Gen_Test*>(entity);
             Diagnostic d { Severity::error, id, location, { &message, 1 } };
             self->logger(d);
@@ -200,7 +170,7 @@ TEST_F(Doc_Gen_Test, empty)
 {
     constexpr std::u8string_view expected;
     ASSERT_TRUE(load_document("empty.cow"));
-    const std::u8string_view actual = generate(trivial_behavior);
+    const std::u8string_view actual = generate(minimal_behavior);
     EXPECT_EQ(expected, actual);
 }
 
@@ -208,7 +178,7 @@ TEST_F(Doc_Gen_Test, text)
 {
     constexpr std::u8string_view expected = u8"Hello, world!\n";
     ASSERT_TRUE(load_document("text.cow"));
-    const std::u8string_view actual = generate(trivial_behavior);
+    const std::u8string_view actual = generate(minimal_behavior);
     EXPECT_EQ(expected, actual);
 }
 
