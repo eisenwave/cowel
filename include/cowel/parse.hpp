@@ -101,14 +101,14 @@ struct AST_Instruction {
 void parse(std::pmr::vector<AST_Instruction>& out, std::u8string_view source);
 
 using Parse_Error_Consumer = Function_Ref<
-    void(std::u8string_view id, const File_Source_Span8& location, std::u8string_view message)>;
+    void(std::u8string_view id, const File_Source_Span& location, std::u8string_view message)>;
 
 /// @brief Builds an AST from a span of instructions,
 /// usually obtained from `parse`.
 void build_ast(
     std::pmr::vector<ast::Content>& out,
     std::u8string_view source,
-    std::u8string_view file,
+    File_Id file,
     std::span<const AST_Instruction> instructions,
     std::pmr::memory_resource* memory,
     Parse_Error_Consumer on_error = {}
@@ -119,7 +119,7 @@ void build_ast(
 [[nodiscard]]
 std::pmr::vector<ast::Content> build_ast(
     std::u8string_view source,
-    std::u8string_view file,
+    File_Id file,
     std::span<const AST_Instruction> instructions,
     std::pmr::memory_resource* memory,
     Parse_Error_Consumer on_error = {}
@@ -129,7 +129,7 @@ std::pmr::vector<ast::Content> build_ast(
 void parse_and_build(
     std::pmr::vector<ast::Content>& out,
     std::u8string_view source,
-    std::u8string_view file,
+    File_Id file,
     std::pmr::memory_resource* memory,
     Parse_Error_Consumer on_error = {}
 );
@@ -138,7 +138,7 @@ void parse_and_build(
 [[nodiscard]]
 std::pmr::vector<ast::Content> parse_and_build(
     std::u8string_view source,
-    std::u8string_view file,
+    File_Id file,
     std::pmr::memory_resource* memory,
     Parse_Error_Consumer on_error = {}
 );

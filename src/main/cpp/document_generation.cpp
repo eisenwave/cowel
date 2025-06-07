@@ -60,10 +60,10 @@ struct Reference_Resolver {
     std::pmr::unordered_set<const void*>& visited;
     Context& context;
 
-    bool operator()(std::u8string_view text, std::u8string_view file);
+    bool operator()(std::u8string_view text, File_Id file);
 };
 
-bool Reference_Resolver::operator()(std::u8string_view text, std::u8string_view file)
+bool Reference_Resolver::operator()(std::u8string_view text, File_Id file)
 {
     bool success = true;
 
@@ -208,8 +208,7 @@ void Head_Body_Content_Behavior::generate_html(
     std::pmr::unordered_set<const void*> visited(context.get_transient_memory());
     visited.insert(html_section);
 
-    const std::u8string_view file
-        = content.empty() ? u8"<no file>" : ast::get_source_span(content.front(), u8"").file_name;
+    const File_Id file = content.empty() ? File_Id {} : ast::get_source_span(content.front()).file;
     Reference_Resolver { out.get_output(), visited, context }(html_string, file);
 }
 
@@ -282,7 +281,7 @@ void Document_Content_Behavior::generate_head(
         const std::u8string_view theme_json = context.get_highlight_theme_source();
         if (!theme_to_css(out.get_output(), theme_json, context.get_transient_memory())) {
             context.try_error(
-                diagnostic::theme_conversion, { {}, u8"<no file>" },
+                diagnostic::theme_conversion, { {}, File_Id {} },
                 u8"Failed to convert the syntax highlight theme to CSS, "
                 u8"possibly because the JSON was malformed."
             );

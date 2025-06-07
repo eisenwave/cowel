@@ -10,6 +10,9 @@
 #include "cowel/fwd.hpp"
 
 namespace cowel {
+namespace detail {
+using Suppress_Unused_Include_Source_Position = Basic_File_Source_Position<void>;
+}
 
 enum struct Severity : Default_Underlying {
     /// @brief Alias for `debug`.
@@ -53,7 +56,7 @@ struct Diagnostic {
     /// dot-separated sequence of identifier for this diagnostic.
     std::u8string_view id;
     /// @brief The span of code that is responsible for this diagnostic.
-    File_Source_Span8 location;
+    File_Source_Span location;
     /// @brief The diagnostic message parts.
     std::span<const std::u8string_view> message;
 };

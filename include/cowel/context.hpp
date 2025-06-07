@@ -266,7 +266,7 @@ public:
     void emit(
         Severity severity,
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         std::span<const string_view_type> message
     )
     {
@@ -275,22 +275,21 @@ public:
 
     void emit_debug(
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         std::span<const string_view_type> message
     )
     {
         emit(Severity::debug, id, location, message);
     }
 
-    void
-    emit_debug(string_view_type id, const File_Source_Span8& location, string_view_type message)
+    void emit_debug(string_view_type id, const File_Source_Span& location, string_view_type message)
     {
         emit_debug(id, location, { &message, 1 });
     }
 
     void emit_soft_warning(
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         std::span<const string_view_type> message
     )
     {
@@ -299,7 +298,7 @@ public:
 
     void emit_soft_warning(
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         string_view_type message
     )
     {
@@ -308,7 +307,7 @@ public:
 
     void emit_warning(
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         std::span<const string_view_type> message
     )
     {
@@ -316,22 +315,21 @@ public:
     }
 
     void
-    emit_warning(string_view_type id, const File_Source_Span8& location, string_view_type message)
+    emit_warning(string_view_type id, const File_Source_Span& location, string_view_type message)
     {
         emit_debug(id, location, { &message, 1 });
     }
 
     void emit_error(
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         std::span<const string_view_type> message
     )
     {
         emit(Severity::error, id, location, message);
     }
 
-    void
-    emit_error(string_view_type id, const File_Source_Span8& location, string_view_type message)
+    void emit_error(string_view_type id, const File_Source_Span& location, string_view_type message)
     {
         emit_error(id, location, { &message, 1 });
     }
@@ -346,7 +344,7 @@ public:
     void try_emit(
         Severity severity,
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         std::span<const string_view_type> message
     )
     {
@@ -357,21 +355,21 @@ public:
 
     void try_debug(
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         std::span<const string_view_type> message
     )
     {
         try_emit(Severity::debug, id, location, message);
     }
 
-    void try_debug(string_view_type id, const File_Source_Span8& location, string_view_type message)
+    void try_debug(string_view_type id, const File_Source_Span& location, string_view_type message)
     {
         try_debug(id, location, { &message, 1 });
     }
 
     void try_soft_warning(
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         std::span<const string_view_type> message
     )
     {
@@ -380,7 +378,7 @@ public:
 
     void try_soft_warning(
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         string_view_type message
     )
     {
@@ -389,7 +387,7 @@ public:
 
     void try_warning(
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         std::span<const string_view_type> message
     )
     {
@@ -397,21 +395,21 @@ public:
     }
 
     void
-    try_warning(string_view_type id, const File_Source_Span8& location, string_view_type message)
+    try_warning(string_view_type id, const File_Source_Span& location, string_view_type message)
     {
         try_warning(id, location, { &message, 1 });
     }
 
     void try_error(
         string_view_type id,
-        const File_Source_Span8& location,
+        const File_Source_Span& location,
         std::span<const string_view_type> message
     )
     {
         try_emit(Severity::error, id, location, message);
     }
 
-    void try_error(string_view_type id, const File_Source_Span8& location, string_view_type message)
+    void try_error(string_view_type id, const File_Source_Span& location, string_view_type message)
     {
         try_error(id, location, { &message, 1 });
     }

@@ -86,7 +86,7 @@ void to_math_html(
                 });
                 if (!is_blank_text) {
                     context.try_warning(
-                        diagnostic::math::text, ast::get_source_span(c, u8"<no file>"),
+                        diagnostic::math::text, ast::get_source_span(c),
                         u8"Text cannot appear in this context. "
                         u8"MathML requires text to be enclosed in <mi>, <mn>, etc., "
                         u8"which correspond to \\mi, \\mn, and other pseudo-directives."

@@ -6,11 +6,11 @@
 #include <utility>
 #include <vector>
 
-#include "cowel/diagnostic.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/source_position.hpp"
 
 #include "cowel/ast.hpp"
+#include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/parse.hpp"
 
@@ -19,9 +19,9 @@ namespace cowel {
 namespace ast {
 
 Argument::Argument(
-    const File_Source_Span8& source_span,
+    const File_Source_Span& source_span,
     std::u8string_view source,
-    const File_Source_Span8& name_span,
+    const File_Source_Span& name_span,
     std::u8string_view name,
     std::pmr::vector<ast::Content>&& children
 )
@@ -37,7 +37,7 @@ Argument::Argument(
 
 [[nodiscard]]
 Argument::Argument(
-    const File_Source_Span8& source_span,
+    const File_Source_Span& source_span,
     std::u8string_view source,
     std::pmr::vector<ast::Content>&& children
 )
@@ -51,7 +51,7 @@ Argument::Argument(
 }
 
 Directive::Directive(
-    const File_Source_Span8& source_span,
+    const File_Source_Span& source_span,
     std::u8string_view source,
     std::u8string_view name,
     std::pmr::vector<Argument>&& args,
@@ -69,7 +69,7 @@ Directive::Directive(
     COWEL_ASSERT(name.length() <= source_span.length);
 }
 
-Text::Text(const File_Source_Span8& source_span, std::u8string_view source)
+Text::Text(const File_Source_Span& source_span, std::u8string_view source)
     : m_source_span { source_span }
     , m_source { source }
 {
@@ -77,7 +77,7 @@ Text::Text(const File_Source_Span8& source_span, std::u8string_view source)
     COWEL_ASSERT(source.length() == source_span.length);
 }
 
-Escaped::Escaped(const File_Source_Span8& source_span, std::u8string_view source)
+Escaped::Escaped(const File_Source_Span& source_span, std::u8string_view source)
     : m_source_span { source_span }
     , m_source { source }
 {
@@ -108,7 +108,7 @@ private:
     using string_view_type = std::u8string_view;
 
     const string_view_type m_source;
-    const string_view_type m_file;
+    const File_Id m_file;
     const std::span<const AST_Instruction> m_instructions;
     std::pmr::memory_resource* const m_memory;
     Parse_Error_Consumer m_on_error;
@@ -119,7 +119,7 @@ private:
 public:
     AST_Builder(
         string_view_type source,
-        string_view_type file,
+        File_Id file,
         std::span<const AST_Instruction> instructions,
         std::pmr::memory_resource* memory,
         Parse_Error_Consumer on_error
@@ -214,7 +214,7 @@ private:
         const AST_Instruction instruction = pop();
         COWEL_ASSERT(instruction.type == AST_Instruction_Type::escape);
 
-        const File_Source_Span8 span { m_pos, instruction.n, m_file };
+        const File_Source_Span span { m_pos, instruction.n, m_file };
         ast::Escaped result { span, extract(span) };
         advance_by(instruction.n);
         return result;
@@ -226,7 +226,7 @@ private:
         const AST_Instruction instruction = pop();
         COWEL_ASSERT(instruction.type == AST_Instruction_Type::text);
 
-        const File_Source_Span8 span { m_pos, instruction.n, m_file };
+        const File_Source_Span span { m_pos, instruction.n, m_file };
         ast::Text result { span, extract(span) };
         advance_by(instruction.n);
         return result;
@@ -252,9 +252,8 @@ private:
         const AST_Instruction pop_instruction = pop();
         COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_directive);
 
-        const File_Source_Span8 source_span { initial_pos, m_pos.begin - initial_pos.begin,
-                                              m_file };
-        const File_Source_Span8 name_span = source_span.to_right(1).with_length(name_length);
+        const File_Source_Span source_span { initial_pos, m_pos.begin - initial_pos.begin, m_file };
+        const File_Source_Span name_span = source_span.to_right(1).with_length(name_length);
         const std::u8string_view name = extract(name_span);
 
         return { source_span, extract(source_span), name, std::move(arguments), std::move(block) };
@@ -320,11 +319,10 @@ private:
             append_content(children);
         }
 
-        const File_Source_Span8 source_span { initial_pos, m_pos.begin - initial_pos.begin,
-                                              m_file };
+        const File_Source_Span source_span { initial_pos, m_pos.begin - initial_pos.begin, m_file };
         const std::u8string_view source = extract(source_span);
         if (name) {
-            const File_Source_Span8 name_span { *name, m_file };
+            const File_Source_Span name_span { *name, m_file };
             out.push_back(ast::Argument {
                 source_span, source, { *name, m_file }, extract(*name), std::move(children) });
         }
@@ -342,7 +340,7 @@ private:
         if (instruction.type == AST_Instruction_Type::error_unclosed_block) {
             if (m_on_error) {
                 constexpr std::u8string_view message = u8"Unclosed block belonging to a directive.";
-                const File_Source_Span8 span { m_pos, 1, m_file };
+                const File_Source_Span span { m_pos, 1, m_file };
                 m_on_error(diagnostic::parse_block_unclosed, span, message);
             }
             pop();
@@ -372,7 +370,7 @@ private:
 void build_ast(
     std::pmr::vector<ast::Content>& out,
     std::u8string_view source,
-    std::u8string_view file,
+    File_Id file,
     std::span<const AST_Instruction> instructions,
     std::pmr::memory_resource* memory,
     Parse_Error_Consumer on_error
@@ -383,7 +381,7 @@ void build_ast(
 
 std::pmr::vector<ast::Content> build_ast(
     std::u8string_view source,
-    std::u8string_view file,
+    File_Id file,
     std::span<const AST_Instruction> instructions,
     std::pmr::memory_resource* memory,
     Parse_Error_Consumer on_error
@@ -397,7 +395,7 @@ std::pmr::vector<ast::Content> build_ast(
 void parse_and_build(
     std::pmr::vector<ast::Content>& out,
     std::u8string_view source,
-    std::u8string_view file,
+    File_Id file,
     std::pmr::memory_resource* memory,
     Parse_Error_Consumer on_error
 )
@@ -410,7 +408,7 @@ void parse_and_build(
 /// @brief Parses a document and runs `build_ast` on the results.
 std::pmr::vector<ast::Content> parse_and_build(
     std::u8string_view source,
-    std::u8string_view file,
+    File_Id file,
     std::pmr::memory_resource* memory,
     Parse_Error_Consumer on_error
 )

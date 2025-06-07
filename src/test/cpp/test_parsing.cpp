@@ -319,7 +319,7 @@ parse_and_build_file(std::u8string_view file, std::pmr::memory_resource* memory)
     const std::u8string_view source_string = parsed->get_source_string();
 
     std::pmr::vector<ast::Content> content
-        = build_ast(source_string, file, parsed->instructions, memory);
+        = build_ast(source_string, File_Id {}, parsed->instructions, memory);
     return Actual_Document { std::move(parsed->source), std::move(content) };
 }
 

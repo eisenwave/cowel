@@ -17,22 +17,27 @@
 #include "cowel/fwd.hpp"
 
 namespace cowel::ast {
+namespace detail {
+
+using Suppress_Unused_Include_Source_Position_2 = Basic_File_Source_Span<void>;
+
+}
 
 struct Argument final {
 private:
-    File_Source_Span8 m_source_span;
+    File_Source_Span m_source_span;
     std::u8string_view m_source;
     std::pmr::vector<Content> m_content;
-    File_Source_Span8 m_name_span;
+    File_Source_Span m_name_span;
     std::u8string_view m_name;
 
 public:
     /// @brief Constructor for named arguments.
     [[nodiscard]]
     Argument(
-        const File_Source_Span8& source_span,
+        const File_Source_Span& source_span,
         std::u8string_view source,
-        const File_Source_Span8& name_span,
+        const File_Source_Span& name_span,
         std::u8string_view name,
         std::pmr::vector<ast::Content>&& children
     );
@@ -40,7 +45,7 @@ public:
     /// @brief Constructor for positional (unnamed) arguments.
     [[nodiscard]]
     Argument(
-        const File_Source_Span8& source_span,
+        const File_Source_Span& source_span,
         std::u8string_view source,
         std::pmr::vector<ast::Content>&& children
     );
@@ -54,7 +59,7 @@ public:
     ~Argument();
 
     [[nodiscard]]
-    File_Source_Span8 get_source_span() const
+    File_Source_Span get_source_span() const
     {
         return m_source_span;
     }
@@ -71,7 +76,7 @@ public:
         return !m_name_span.empty();
     }
     [[nodiscard]]
-    File_Source_Span8 get_name_span() const
+    File_Source_Span get_name_span() const
     {
         return m_name_span;
     }
@@ -91,7 +96,7 @@ public:
 
 struct Directive final {
 private:
-    File_Source_Span8 m_source_span;
+    File_Source_Span m_source_span;
     std::u8string_view m_source;
     std::u8string_view m_name;
 
@@ -101,7 +106,7 @@ private:
 public:
     [[nodiscard]]
     Directive(
-        const File_Source_Span8& source_span,
+        const File_Source_Span& source_span,
         std::u8string_view source,
         std::u8string_view name,
         std::pmr::vector<Argument>&& args,
@@ -117,7 +122,7 @@ public:
     ~Directive();
 
     [[nodiscard]]
-    File_Source_Span8 get_source_span() const
+    File_Source_Span get_source_span() const
     {
         return m_source_span;
     }
@@ -129,7 +134,7 @@ public:
     }
 
     [[nodiscard]]
-    File_Source_Span8 get_name_span() const
+    File_Source_Span get_name_span() const
     {
         return m_source_span.with_length(m_name.length());
     }
@@ -152,15 +157,15 @@ public:
 
 struct Text final {
 private:
-    File_Source_Span8 m_source_span;
+    File_Source_Span m_source_span;
     std::u8string_view m_source;
 
 public:
     [[nodiscard]]
-    Text(const File_Source_Span8& source_span, std::u8string_view source);
+    Text(const File_Source_Span& source_span, std::u8string_view source);
 
     [[nodiscard]]
-    File_Source_Span8 get_source_span() const
+    File_Source_Span get_source_span() const
     {
         return m_source_span;
     }
@@ -175,15 +180,15 @@ public:
 /// @brief An escape sequence, such as `\\{`, `\\}`, or `\\\\`.
 struct Escaped final {
 private:
-    File_Source_Span8 m_source_span;
+    File_Source_Span m_source_span;
     std::u8string_view m_source;
 
 public:
     [[nodiscard]]
-    Escaped(const File_Source_Span8& source_span, std::u8string_view source);
+    Escaped(const File_Source_Span& source_span, std::u8string_view source);
 
     [[nodiscard]]
-    File_Source_Span8 get_source_span() const
+    File_Source_Span get_source_span() const
     {
         return m_source_span;
     }
@@ -341,15 +346,15 @@ inline std::span<Content const> Directive::get_content() const
 }
 
 [[nodiscard]]
-inline File_Source_Span8 get_source_span(const Content& node, std::u8string_view fallback_file)
+inline File_Source_Span get_source_span(const Content& node)
 {
     return visit(
-        [&]<typename T>(const T& v) -> File_Source_Span8 {
+        [&]<typename T>(const T& v) -> File_Source_Span {
             if constexpr (one_of<T, Text, Escaped, Directive>) {
                 return v.get_source_span();
             }
             else {
-                return { {}, fallback_file };
+                return { {}, File_Id { 0 } };
             }
         },
         node

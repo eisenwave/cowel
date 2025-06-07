@@ -94,9 +94,11 @@ void Import_Behavior::instantiate(
               if (!context.emits(severity)) {
                   return;
               }
-              context.emit(Diagnostic { severity, id, { location, entry->name }, { &message, 1 } });
+              const File_Source_Span file_location { location, entry->id };
+              const std::span<const std::u8string_view> message_parts { &message, 1 };
+              context.emit(Diagnostic { severity, id, file_location, message_parts });
           };
-    parse_and_build(out, entry->source, entry->name, context.get_transient_memory(), on_error);
+    parse_and_build(out, entry->source, entry->id, context.get_transient_memory(), on_error);
 }
 
 } // namespace cowel

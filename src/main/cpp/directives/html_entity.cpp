@@ -20,7 +20,7 @@ std::u32string_view as_string_view(const std::array<char32_t, 2>& array)
 void check_arguments(const ast::Directive& d, Context& context)
 {
     if (!d.get_arguments().empty()) {
-        const File_Source_Span8 pos = d.get_arguments().front().get_source_span();
+        const File_Source_Span pos = d.get_arguments().front().get_source_span();
         context.try_warning(
             diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."
         );

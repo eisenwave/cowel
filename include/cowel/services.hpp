@@ -2,7 +2,6 @@
 #define COWEL_SERVICES_HPP
 
 #include <memory_resource>
-#include <optional>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -142,6 +141,7 @@ struct Bibliography {
 };
 
 struct File_Entry {
+    File_Id id;
     std::u8string_view source;
     std::u8string_view name;
 };
@@ -171,11 +171,6 @@ struct File_Loader {
     [[nodiscard]]
     virtual Result<File_Entry, File_Load_Error> load(std::u8string_view path)
         = 0;
-
-    /// @brief Returns an existing entry that was previously loaded with the same path.
-    [[nodiscard]]
-    virtual std::optional<File_Entry> find(std::u8string_view path) const
-        = 0;
 };
 
 struct Always_Failing_File_Loader final : File_Loader {
@@ -183,12 +178,6 @@ struct Always_Failing_File_Loader final : File_Loader {
     Result<File_Entry, File_Load_Error> load(std::u8string_view) final
     {
         return File_Load_Error::error;
-    }
-
-    [[nodiscard]]
-    std::optional<File_Entry> find(std::u8string_view) const final
-    {
-        return {};
     }
 };
 

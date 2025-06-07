@@ -53,6 +53,10 @@ template <typename, typename>
 struct Basic_Annotated_String;
 template <typename Char, std::size_t>
 struct Basic_Characters;
+template <typename File>
+struct Basic_File_Source_Position;
+template <typename File>
+struct Basic_File_Source_Span;
 template <typename>
 struct Basic_Transparent_String_View_Equals;
 template <typename>
@@ -73,6 +77,7 @@ struct Directive_Content_Behavior;
 enum struct Directive_Category : Default_Underlying;
 enum struct Directive_Display : Default_Underlying;
 struct Error_Tag;
+using File_Id = int;
 struct Generation_Options;
 enum struct HLJS_Scope : Default_Underlying;
 struct HTML_Writer;
@@ -92,6 +97,9 @@ struct Success_Tag;
 struct Syntax_Highlighter;
 enum struct Syntax_Highlight_Error : Default_Underlying;
 enum struct To_HTML_Mode : Default_Underlying;
+
+using File_Source_Position = Basic_File_Source_Position<File_Id>;
+using File_Source_Span = Basic_File_Source_Span<File_Id>;
 
 namespace ast {
 

@@ -174,8 +174,7 @@ void Self_Closing_Behavior::generate_html(
 ) const
 {
     if (!d.get_content().empty()) {
-        const auto location
-            = ast::get_source_span(d.get_content().front(), d.get_source_span().file_name);
+        const auto location = ast::get_source_span(d.get_content().front());
         context.try_warning(
             diagnostic::ignored_content, location,
             u8"Content was ignored. Use empty braces,"

@@ -7,7 +7,6 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/io.hpp"
 #include "cowel/util/result.hpp"
-#include "cowel/util/strings.hpp"
 #include "cowel/util/tty.hpp"
 
 #include "cowel/fwd.hpp"
@@ -49,7 +48,7 @@ bool test_validity(std::u8string_view file, Printing_Diagnostic_Policy& policy)
     const std::u8string_view source { source_data.data(), source_data.size() };
     policy.source = source;
 
-    auto doc = parse_and_build(source, as_u8string_view(file), &memory);
+    auto doc = parse_and_build(source, File_Id {}, &memory);
     COWEL_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
 
 // FIXME reimplement
