@@ -85,6 +85,7 @@ add_library(cowel STATIC
 
     src/main/cpp/argument_matching.cpp
     src/main/cpp/build_ast.cpp
+    src/main/cpp/cowel_lib.cpp
     src/main/cpp/directive_processing.cpp
     src/main/cpp/builtin_directive_set.cpp
     src/main/cpp/document_generation.cpp
