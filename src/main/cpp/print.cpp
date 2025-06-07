@@ -67,13 +67,10 @@ std::u8string_view diagnostic_highlight_ansi_sequence(Diagnostic_Highlight type)
 enum struct Error_Line_Type : Default_Underlying { note, error };
 
 struct Error_Line {
-    std::optional<File_Source_Position8> pos {};
+    std::optional<File_Source_Position> pos {};
     std::u8string_view message;
     bool omit_affected_line = false;
 };
-
-constexpr std::u8string_view error_prefix = u8"error:";
-constexpr std::u8string_view note_prefix = u8"note:";
 
 [[nodiscard]]
 std::u8string_view to_prose(IO_Error_Code e)
@@ -90,66 +87,6 @@ std::u8string_view to_prose(IO_Error_Code e)
         return u8"Data in the file is corrupted (not properly encoded).";
     }
     COWEL_ASSERT_UNREACHABLE(u8"invalid error code");
-}
-
-void print_source_position(Diagnostic_String& out, const std::optional<File_Source_Position8>& pos)
-{
-    if (!pos) {
-        out.append(u8"(internal):", Diagnostic_Highlight::code_position);
-    }
-    else {
-        print_file_position(
-            out, pos->file_name, //
-            Source_Position { *pos } // NOLINT(cppcoreguidelines-slicing)
-        );
-    }
-}
-
-void print_diagnostic_prefix(
-    Diagnostic_String& out,
-    Error_Line_Type type,
-    std::optional<File_Source_Position8> pos
-)
-{
-    print_source_position(out, pos);
-    out.append(' ');
-    switch (type) {
-    case Error_Line_Type::error: //
-        out.append(error_prefix, Diagnostic_Highlight::error);
-        break;
-    case Error_Line_Type::note: //
-        out.append(note_prefix, Diagnostic_Highlight::note);
-        break;
-    }
-}
-
-void print_diagnostic_line(
-    Diagnostic_String& out,
-    Error_Line_Type type,
-    const Error_Line& line,
-    std::u8string_view source
-)
-{
-    print_diagnostic_prefix(out, type, line.pos);
-    out.append(u8' ');
-    out.append(line.message, Diagnostic_Highlight::text);
-
-    out.append(u8'\n');
-    if (line.pos && !line.omit_affected_line) {
-        print_affected_line(out, source, *line.pos);
-    }
-}
-
-[[maybe_unused]]
-void print_error_line(Diagnostic_String& out, const Error_Line& line, std::u8string_view source)
-{
-    print_diagnostic_line(out, Error_Line_Type::error, line, source);
-}
-
-[[maybe_unused]]
-void print_note_line(Diagnostic_String& out, const Error_Line& line, std::u8string_view source)
-{
-    print_diagnostic_line(out, Error_Line_Type::note, line, source);
 }
 
 void do_print_affected_line(
