@@ -1,54 +1,54 @@
 #include <cstdio>
 #include <filesystem>
-#include <map>
 #include <memory_resource>
 #include <string_view>
 #include <vector>
 
+#include "cowel/cowel.h"
+#include "cowel/services.hpp"
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
 #include "cowel/util/strings.hpp"
 
 #include "cowel/assets.hpp"
-#include "cowel/builtin_directive_set.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/document_content_behavior.hpp"
-#include "cowel/document_generation.hpp"
-#include "cowel/parse.hpp"
 #include "cowel/print.hpp"
-#include "cowel/ulight_highlighter.hpp"
 
 namespace cowel {
 namespace {
 
-struct File_Loader_Less {
-    using is_transparent = void;
-
-    [[nodiscard]]
-    bool operator()(const auto& x, const auto& y) const noexcept
-    {
-        return std::u8string_view { x.data(), x.size() }
-        < std::u8string_view { y.data(), y.size() };
-    }
-};
+using cowel::as_u8string_view;
 
 [[nodiscard]]
-constexpr File_Load_Error io_error_to_file_load_error(IO_Error_Code error)
+cowel_string_view_u8 as_cowel_string_view(std::u8string_view str)
+{
+    return { str.data(), str.length() };
+}
+
+[[nodiscard]]
+std::u8string_view as_u8string_view(cowel_string_view_u8 str)
+{
+    return { str.text, str.length };
+}
+
+[[nodiscard]]
+constexpr cowel_io_status io_error_to_io_status(IO_Error_Code error)
 {
     switch (error) {
-    case IO_Error_Code::read_error: return File_Load_Error::read_error;
-    case IO_Error_Code::cannot_open: return File_Load_Error::not_found;
-    case IO_Error_Code::corrupted: return File_Load_Error::corrupted;
-    default: return File_Load_Error::error;
+    case IO_Error_Code::read_error: return COWEL_IO_ERROR_READ;
+    case IO_Error_Code::cannot_open: return COWEL_IO_ERROR_NOT_FOUND;
+    default: return COWEL_IO_ERROR;
     }
 }
 
-struct Relative_File_Loader final : File_Loader {
-    using map_type
-        = std::pmr::map<std::pmr::vector<char8_t>, std::pmr::vector<char8_t>, File_Loader_Less>;
+struct Owned_File_Entry {
+    std::pmr::vector<char8_t> name;
+    std::pmr::vector<char8_t> text;
+};
 
+struct Relative_File_Loader {
     std::filesystem::path base;
-    map_type entries;
+    std::pmr::vector<Owned_File_Entry> entries;
 
     explicit Relative_File_Loader(std::filesystem::path&& base, std::pmr::memory_resource* memory)
         : base { std::move(base) }
@@ -57,42 +57,33 @@ struct Relative_File_Loader final : File_Loader {
     }
 
     [[nodiscard]]
-    Result<File_Entry, File_Load_Error> load(std::u8string_view path) final
+    cowel_file_result_u8 load(std::u8string_view path)
     {
-        if (std::optional<File_Entry> cached = find(path)) {
-            return *cached;
-        }
-
         const std::filesystem::path relative { path, std::filesystem::path::generic_format };
         const std::filesystem::path resolved = base / relative;
 
         std::pmr::memory_resource* const memory = entries.get_allocator().resource();
+        std::pmr::vector<char8_t> path_copy { path.begin(), path.end(), memory };
         Result<std::pmr::vector<char8_t>, IO_Error_Code> result
             = load_utf8_file(resolved.generic_u8string(), memory);
+
         if (!result) {
-            return io_error_to_file_load_error(result.error());
+            // Even though loading failed, we store the file as an entry
+            // so that we can later get its name during logging.
+            entries.emplace_back(std::move(path_copy));
+            return {
+                .status = io_error_to_io_status(result.error()),
+                .data = {},
+                .id = File_Id(entries.size() + 1),
+            };
         }
-        std::pmr::vector<char8_t> file { path.begin(), path.end(), memory };
-        const auto [it, success] = entries.emplace(std::move(file), std::move(*result));
-        COWEL_ASSERT(success);
 
-        return to_file_entry(it);
-    }
-
-    [[nodiscard]]
-    std::optional<File_Entry> find(std::u8string_view path) const final
-    {
-        const auto it = entries.find(path);
-        if (it == entries.end()) {
-            return {};
-        }
-        return to_file_entry(it);
-    }
-
-    static File_Entry to_file_entry(map_type::const_iterator it)
-    {
-        return File_Entry { .source = as_u8string_view(it->second),
-                            .name = as_u8string_view(it->first) };
+        auto& entry = entries.emplace_back(std::move(path_copy), std::move(*result));
+        return cowel_file_result_u8 {
+            .status = COWEL_IO_OK,
+            .data = { entry.text.data(), entry.text.size() },
+            .id = File_Id(entries.size() + 1),
+        };
     }
 };
 
@@ -122,61 +113,81 @@ std::u8string_view severity_tag(Severity severity)
     }
 }
 
-struct Stderr_Logger final : Logger {
-    const File_Loader& file_loader;
-    const std::u8string_view main_file;
-    const std::u8string_view main_source;
+[[nodiscard]]
+constexpr File_Source_Span as_file_source_span(const cowel_diagnostic_u8& diagnostic)
+{
+    return {
+        { { .line = diagnostic.line, .column = diagnostic.column, .begin = diagnostic.begin },
+          diagnostic.length },
+        diagnostic.file,
+    };
+}
+
+struct Stderr_Logger {
+    const Relative_File_Loader& file_loader;
+    const std::u8string_view main_file_name;
+    const std::u8string_view main_file_source;
     Diagnostic_String out;
     bool any_errors = false;
 
     [[nodiscard]]
     constexpr Stderr_Logger(
-        File_Loader& file_loader,
-        std::u8string_view main_file,
-        std::u8string_view main_source,
+        Relative_File_Loader& file_loader,
+        std::u8string_view main_file_name,
+        std::u8string_view main_file_source,
         std::pmr::memory_resource* memory
     )
-        : Logger { Severity::min }
-        , file_loader { file_loader }
-        , main_file { main_file }
-        , main_source { main_source }
+        : file_loader { file_loader }
+        , main_file_name { main_file_name }
+        , main_file_source { main_file_source }
         , out { memory }
     {
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
-    void operator()(const Diagnostic& diagnostic) final
+    void operator()(const cowel_diagnostic_u8& diagnostic)
     {
-        any_errors |= diagnostic.severity >= Severity::error;
+        const auto severity = Severity(diagnostic.severity);
+        any_errors |= severity >= Severity::error;
 
-        out.append(severity_highlight(diagnostic.severity));
-        out.append(severity_tag(diagnostic.severity));
+        const auto file_entry = [&] -> File_Entry {
+            if (diagnostic.file <= 0) {
+                return { .id = diagnostic.file,
+                         .source = main_file_source,
+                         .name = main_file_name };
+            }
+            const Owned_File_Entry& result
+                = file_loader.entries.at(std::size_t(diagnostic.file - 1));
+            return { .id = diagnostic.file,
+                     .source = as_u8string_view(result.text),
+                     .name = as_u8string_view(result.name) };
+        }();
+
+        const File_Source_Span location = as_file_source_span(diagnostic);
+
+        out.append(severity_highlight(severity));
+        out.append(severity_tag(severity));
         out.append(ansi::reset);
         out.append(u8": ");
-        if (diagnostic.location.empty()) {
-            print_location_of_file(out, diagnostic.location.file_name);
+        if (diagnostic.length == 0) {
+            print_location_of_file(out, file_entry.name);
         }
         else {
-            print_file_position(out, diagnostic.location.file_name, diagnostic.location);
+            print_file_position(out, file_entry.name, location);
         }
         out.append(u8' ');
-        for (const std::u8string_view part : diagnostic.message) {
+        for (std::size_t i = 0; i < diagnostic.message_parts_size; ++i) {
+            const auto part = as_u8string_view(diagnostic.message_parts[i]);
             out.append(part);
         }
         out.append(ansi::h_black);
         out.append(u8" [");
-        out.append(diagnostic.id);
+        out.append(as_u8string_view(diagnostic.id));
         out.append(u8']');
         out.append(ansi::reset);
         out.append(u8'\n');
-        if (!diagnostic.location.empty()) {
-            if (diagnostic.location.file_name == main_file) {
-                print_affected_line(out, main_source, diagnostic.location);
-            }
-            else if (const std::optional<File_Entry> entry
-                     = file_loader.find(diagnostic.location.file_name)) {
-                print_affected_line(out, entry->source, diagnostic.location);
-            }
+        if (diagnostic.length != 0) {
+            print_affected_line(out, file_entry.source, location);
         }
         print_code_string_stderr(out);
         out.clear();
@@ -216,46 +227,43 @@ int main(int argc, const char* const* argv)
         print_code_string_stderr(error);
         return EXIT_FAILURE;
     }
+    const auto in_source = as_u8string_view(*in_text);
 
-    /* TODO: eventually reimplement for user-specified themes.
-    const Result<std::pmr::vector<char8_t>, IO_Error_Code> theme_json
-        = load_utf8_file(theme_path, &memory);
-    if (!theme_json) {
-        Diagnostic_String error { &memory };
-        print_io_error(error, in_path_u8, in_text.error());
-        print_code_string_stderr(error);
-        return EXIT_FAILURE;
-    }
-    const std::u8string_view theme_source { theme_json->data(), theme_json->size() };
-    */
-
-    std::pmr::vector<char8_t> out_text { &memory };
-    const std::u8string_view in_source { in_text->data(), in_text->size() };
-    const std::u8string_view theme_source = assets::wg21_json;
-
-    Builtin_Directive_Set builtin_directives {};
-    Document_Content_Behavior behavior { builtin_directives.get_macro_behavior() };
     Relative_File_Loader file_loader { std::move(in_path_directory), &memory };
     Stderr_Logger logger { file_loader, in_path_u8, in_source, &memory };
-    static constinit Ulight_Syntax_Highlighter highlighter;
 
-    const std::pmr::vector<ast::Content> root_content = parse_and_build(
-        in_source, in_path_u8, &memory,
-        [&](std::u8string_view id, File_Source_Span8 pos, std::u8string_view message) {
-            logger(Diagnostic { Severity::error, id, pos, { &message, 1 } });
-        }
-    );
+    // TODO: allow custom ulight themes instead of hardcoding wg21.json
 
-    const Generation_Options options { .output = out_text,
-                                       .root_behavior = behavior,
-                                       .root_content = root_content,
-                                       .builtin_behavior = builtin_directives,
-                                       .highlight_theme_source = theme_source,
-                                       .file_loader = file_loader,
-                                       .logger = logger,
-                                       .highlighter = highlighter,
-                                       .memory = &memory };
-    generate_document(options);
+    const cowel_options_u8 options {
+        .source = as_cowel_string_view(in_source),
+        .highlight_theme_json = as_cowel_string_view(assets::wg21_json),
+        .mode = COWEL_MODE_DOCUMENT,
+        .min_log_severity = COWEL_SEVERITY_MIN,
+        .reserved_0 {},
+        .alloc = [](void* self, std::size_t size, std::size_t alignment) -> void* {
+            auto* const memory = static_cast<std::pmr::memory_resource*>(self);
+            return memory->allocate(size, alignment);
+        },
+        .alloc_data = &memory,
+        .free = [](void* self, void* pointer, std::size_t size, std::size_t alignment) -> void {
+            auto* const memory = static_cast<std::pmr::memory_resource*>(self);
+            memory->deallocate(pointer, size, alignment);
+        },
+        .free_data = &memory,
+        .load_file = [](void* self, cowel_string_view_u8 path) -> cowel_file_result_u8 {
+            auto* const file_loader = static_cast<Relative_File_Loader*>(self);
+            return file_loader->load(as_u8string_view(path));
+        },
+        .load_file_data = &file_loader,
+        .log = [](void* self, const cowel_diagnostic_u8* diagnostic) -> void {
+            auto* const logger = static_cast<Stderr_Logger*>(self);
+            (*logger)(*diagnostic);
+        },
+        .log_data = &logger,
+        .reserved_1 {}
+    };
+
+    cowel_mutable_string_view_u8 result = cowel_generate_html_u8(&options);
 
     const auto out_file = fopen_unique(out_path.data(), "wb");
     if (!out_file) {
@@ -266,7 +274,8 @@ int main(int argc, const char* const* argv)
         return EXIT_FAILURE;
     }
 
-    std::fwrite(out_text.data(), 1, out_text.size(), out_file.get());
+    std::fwrite(result.text, 1, result.length, out_file.get());
+    memory.deallocate(result.text, result.length, alignof(char8_t));
 
     return logger.any_errors ? EXIT_FAILURE : EXIT_SUCCESS;
 }
