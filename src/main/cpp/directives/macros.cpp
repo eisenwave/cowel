@@ -209,7 +209,7 @@ void substitute_in_macro(
                     selection_string,
                     u8"] was requested, but only ",
                     limit_chars.as_string(),
-                    u8"were provided. ",
+                    u8" were provided. ",
                     u8"To make this valid, provide an \"else\" argument, like ",
                     u8"\\put[else=xyz]{0}."
                 };
