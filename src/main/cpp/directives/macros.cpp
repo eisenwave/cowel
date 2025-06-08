@@ -85,10 +85,10 @@ enum struct Put_Response : bool {
 
 void substitute_in_macro(
     std::pmr::vector<ast::Content>& content,
-    std::span<const ast::Argument> provided_arguments,
-    std::span<const ast::Content> provided_content,
+    const std::span<const ast::Argument> provided_arguments,
+    const std::span<const ast::Content> provided_content,
     Context& context,
-    Function_Ref<Put_Response(ast::Directive&)> on_variadic_put
+    const Function_Ref<Put_Response(const File_Source_Span&)> on_variadic_put
 )
 {
     static constexpr std::u8string_view put_parameters[] { u8"else" };
@@ -121,8 +121,7 @@ void substitute_in_macro(
             // Within that context, \put{...} is treated specially and can be used as
             // a variadic expansion of the provided arguments.
             bool variadically_expanded = false;
-            auto variadic_put_expand = [&](const ast::Directive& d) {
-                COWEL_ASSERT(d.get_name() == u8"put");
+            auto variadic_put_expand = [&](const File_Source_Span&) {
                 // This just gets rid of the \put{...} argument,
                 // to be replaced with expanded arguments.
                 arg_it = d_arguments.erase(arg_it);
@@ -180,8 +179,10 @@ void substitute_in_macro(
         // Variadic \put{...} case.
         // Handling depends on the context.
         if (selection_string == u8"...") {
+            // important: erasing kills d, so we need to copy its location beforehand
+            const File_Source_Span location = d->get_source_span();
             it = content.erase(it);
-            if (on_variadic_put(*d) == Put_Response::abort) {
+            if (on_variadic_put(location) == Put_Response::abort) {
                 return;
             }
             continue;
@@ -191,11 +192,11 @@ void substitute_in_macro(
         // possibly with a fallback like \put[else=abc]{0}.
         const std::optional<std::size_t> arg_index = from_chars<std::size_t>(selection_string);
         if (!arg_index) {
-            it = content.erase(it);
             context.try_error(
                 diagnostic::macro::put_invalid, d->get_source_span(),
                 u8"The argument to this \\put pseudo-directive is invalid."
             );
+            it = content.erase(it);
             continue;
         }
         if (*arg_index >= provided_arguments.size()) {
@@ -215,6 +216,7 @@ void substitute_in_macro(
                 context.try_error(
                     diagnostic::macro::put_out_of_range, d->get_source_span(), message
                 );
+                it = content.erase(it);
                 continue;
             }
             // It is very important that we do it in this order because erase(it)
@@ -240,9 +242,9 @@ void instantiate_macro(
     const std::span<const ast::Content> content = definition.get_content();
     out.insert(out.end(), content.begin(), content.end());
 
-    auto on_variadic_put = [&](const ast::Directive& d) {
+    auto on_variadic_put = [&](const File_Source_Span& location) {
         context.try_error(
-            diagnostic::macro::put_args_outside_args, d.get_source_span(),
+            diagnostic::macro::put_args_outside_args, location,
             u8"A \\put[...] pseudo-directive can only be used as the sole positional argument "
             u8"in a directive."
         );
