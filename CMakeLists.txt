@@ -124,11 +124,13 @@ if(DEFINED EMSCRIPTEN)
         # https://cmake.org/cmake/help/latest/prop_tgt/COMPILE_OPTIONS.html#option-de-duplication
         "SHELL:-s SIDE_MODULE=0"
         "-stdlib=libc++"
+        "-fno-exceptions"
         "-Os"
         ${WARNING_OPTIONS}
         ${SANITIZER_OPTIONS}
     )
     target_link_options(cowel-wasm PRIVATE
+        "-fno-exceptions"
         "-Os"
         "-stdlib=libc++"
         "-static-libc++"
