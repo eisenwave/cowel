@@ -145,6 +145,9 @@ if(DEFINED EMSCRIPTEN)
         "--no-entry"
         ${SANITIZER_OPTIONS}
     )
+
+    target_compile_options(ulight PRIVATE "-fno-exceptions")
+    target_link_options(ulight PRIVATE "-fno-exceptions")
     target_link_libraries(cowel-wasm ulight)
 else()
     add_library(cowel STATIC ${LIBRARY_SOURCES})
