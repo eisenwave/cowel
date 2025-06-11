@@ -36,6 +36,16 @@ cowel_string_view_u8 as_cowel_string_view(std::u8string_view str)
     return { str.data(), str.length() };
 }
 
+[[noreturn]]
+void allocation_failure()
+{
+#ifdef ULIGHT_EXCEPTIONS
+    throw std::bad_alloc();
+#else
+    COWEL_ASSERT_UNREACHABLE(u8"Allocation failure.");
+#endif
+}
+
 struct Pointer_Memory_Resource final : std::pmr::memory_resource {
 private:
     cowel_alloc_fn* m_alloc;
@@ -70,7 +80,7 @@ public:
     {
         void* const result = m_alloc(m_alloc_data, bytes, alignment);
         if (!result) {
-            throw std::bad_alloc();
+            allocation_failure();
         }
         return result;
     }
@@ -94,7 +104,7 @@ struct Global_Memory_Resource final : std::pmr::memory_resource {
     {
         void* const result = cowel_alloc(bytes, alignment);
         if (!result) {
-            throw std::bad_alloc();
+            allocation_failure();
         }
         return result;
     }
@@ -301,24 +311,32 @@ void cowel_free(void* pointer, size_t size, size_t alignment) noexcept
 
 cowel_mutable_string_view cowel_generate_html(const cowel_options* options) noexcept
 {
+#ifdef ULIGHT_EXCEPTIONS
     try {
+#endif
         COWEL_ASSERT(options != nullptr);
         const cowel_options_u8& options_u8 = std::bit_cast<cowel_options_u8>(*options);
         const cowel_mutable_string_view_u8 result_u8 = cowel_generate_html_u8(&options_u8);
         return std::bit_cast<cowel_mutable_string_view>(result_u8);
+#ifdef ULIGHT_EXCEPTIONS
     } catch (...) {
         return {};
     }
+#endif
 }
 
 cowel_mutable_string_view_u8 cowel_generate_html_u8(const cowel_options_u8* options) noexcept
 {
+#ifdef ULIGHT_EXCEPTIONS
     try {
+#endif
         COWEL_ASSERT(options != nullptr);
         return cowel::do_generate_html(*options);
+#ifdef ULIGHT_EXCEPTIONS
     } catch (...) {
         return {};
     }
+#endif
 }
 
 #ifdef COWEL_EMSCRIPTEN
