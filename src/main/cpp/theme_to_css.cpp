@@ -41,7 +41,8 @@ constexpr auto highlight_type_lookup = []() {
 
 std::optional<ulight::Highlight_Type> highlight_type_by_long_string(std::u8string_view str)
 {
-    const auto* const it = std::ranges::lower_bound(
+    // NOLINTNEXTLINE(readability-qualified-auto)
+    const auto it = std::ranges::lower_bound(
         highlight_type_lookup, str, {}, &Highlight_Lookup_Entry::long_string
     );
     if (it == std::end(highlight_type_lookup) || it->long_string != str) {
