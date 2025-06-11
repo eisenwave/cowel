@@ -253,10 +253,8 @@ cowel_mutable_string_view_u8 cowel_generate_html_u8(const cowel_options_u8* opti
 /// and it is somewhat tedious to allocate individual objects,
 /// so we add a bunch of convenience to make the library easier to use in that environment.
 #ifdef COWEL_EMSCRIPTEN
-COWEL_EXPORT
 extern cowel_options_u8 cowel_global_options;
 
-COWEL_EXPORT
 extern cowel_mutable_string_view_u8 cowel_global_result;
 
 COWEL_EXPORT
