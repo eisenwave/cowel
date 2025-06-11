@@ -55,7 +55,9 @@ static_assert(std::ranges::is_sorted(mathml_names));
 constexpr auto mathml_permits_text_bits = [] { //
     char init[] { COWEL_MATHML_ELEMENT_DATA(COWEL_MATHML_ELEMENT_PERMITS_TEXT) };
     std::ranges::reverse(init);
-    return std::bitset<std::size(mathml_names)>(init, std::size(mathml_names));
+    // Use of std::string is workaround for libc++ bug:
+    // https://github.com/llvm/llvm-project/issues/143684
+    return std::bitset<std::size(init)>(std::string { init, std::size(init) });
 }();
 
 constexpr std::ptrdiff_t mathml_element_index(std::u8string_view name)
