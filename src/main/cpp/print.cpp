@@ -1,3 +1,7 @@
+#include "cowel/fwd.hpp"
+
+#ifndef COWEL_EMSCRIPTEN
+
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
@@ -9,6 +13,7 @@
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
 #include "cowel/util/assert.hpp"
+#include "cowel/util/io.hpp"
 #include "cowel/util/source_position.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
@@ -16,7 +21,6 @@
 
 #include "cowel/ast.hpp"
 #include "cowel/diagnostic_highlight.hpp"
-#include "cowel/fwd.hpp"
 #include "cowel/print.hpp"
 
 namespace cowel {
@@ -476,3 +480,5 @@ void print_code_string_stderr(const Diagnostic_String& string)
 #endif
 
 } // namespace cowel
+
+#endif
