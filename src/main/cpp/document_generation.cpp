@@ -85,7 +85,7 @@ bool Reference_Resolver::operator()(std::u8string_view text, File_Id file)
             continue;
         }
         const auto [code_point, code_units]
-            = utf8::decode_and_length_or_throw(text.substr(plain_length));
+            = utf8::decode_and_length_or_replacement(text.substr(plain_length));
         // This test passes for any code point that is encoded as four UTF-8 code units,
         // so we still need to check if the code point is PUA A.
         if (code_point < supplementary_pua_a_min || code_point > supplementary_pua_a_max) {

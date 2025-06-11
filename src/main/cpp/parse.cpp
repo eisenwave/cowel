@@ -232,7 +232,7 @@ private:
                 // No matter what, a backslash followed by a directive name character forms a
                 // directive because the remaining arguments and the block are optional.
                 // I.e. we can break with certainty despite only having examined one character.
-                const auto [code_point, length] = utf8::decode_and_length_or_throw(remainder);
+                const auto [code_point, length] = utf8::decode_and_length_or_replacement(remainder);
                 if (is_cowel_directive_name(code_point)) {
                     break;
                 }

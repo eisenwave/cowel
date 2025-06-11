@@ -818,7 +818,7 @@ void resolve_source_references(
 
     for (std::size_t i = start; i < generated.size();) {
         const auto remainder_string = as_u8string_view(generated).substr(i);
-        const auto [code_point, length] = utf8::decode_and_length_or_throw(remainder_string);
+        const auto [code_point, length] = utf8::decode_and_length_or_replacement(remainder_string);
         COWEL_ASSERT(length > 0);
         if (code_point < private_use_area_min || code_point > private_use_area_max) {
             i += std::size_t(length);
