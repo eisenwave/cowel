@@ -1,6 +1,12 @@
 #ifndef COWEL_TEST_IO_HPP
 #define COWEL_TEST_IO_HPP
 
+#include "cowel/fwd.hpp"
+
+#ifdef COWEL_EMSCRIPTEN
+#error "This file should not be included when using emscripten."
+#endif
+
 #include <memory_resource>
 #include <string_view>
 #include <vector>
@@ -9,7 +15,6 @@
 #include "cowel/util/io.hpp"
 #include "cowel/util/result.hpp"
 
-#include "cowel/fwd.hpp"
 #include "cowel/print.hpp"
 
 namespace cowel {
