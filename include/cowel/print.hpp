@@ -1,19 +1,20 @@
 #ifndef COWEL_DIAGNOSTICS_HPP
 #define COWEL_DIAGNOSTICS_HPP
 
-#ifndef COWEL_EMSCRIPTEN
-#include <iosfwd>
+#include "cowel/fwd.hpp"
+
+#ifdef COWEL_EMSCRIPTEN
+#error "This header should not be included when using emscripten."
 #endif
 
 #include <cstddef>
+#include <iosfwd>
 #include <span>
 #include <string_view>
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/io.hpp"
 #include "cowel/util/source_position.hpp"
-
-#include "cowel/fwd.hpp"
 
 namespace cowel {
 
