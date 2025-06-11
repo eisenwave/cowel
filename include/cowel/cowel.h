@@ -8,9 +8,8 @@
 #define COWEL_IF_EMSCRIPTEN(...)
 #endif
 
-#ifdef COWEL_EMSCRIPTEN
-#include <emscripten.h>
-#define COWEL_EXPORT EMSCRIPTEN_KEEPALIVE
+#ifdef __GNUC__
+#define COWEL_EXPORT [[gnu::used]]
 #else
 #define COWEL_EXPORT
 #endif
