@@ -322,9 +322,13 @@ cowel_mutable_string_view_u8 cowel_generate_html_u8(const cowel_options_u8* opti
 }
 
 #ifdef COWEL_EMSCRIPTEN
-constinit cowel_options_u8 cowel_global_options;
+// The {} shouldn't be necessary, but it's a workaround for:
+// https://github.com/llvm/llvm-project/issues/143689
+COWEL_EXPORT
+constinit cowel_options_u8 cowel_global_options {};
 
-constinit cowel_mutable_string_view_u8 cowel_global_result;
+COWEL_EXPORT
+constinit cowel_mutable_string_view_u8 cowel_global_result {};
 
 void cowel_global_generate_html(void) noexcept
 {
