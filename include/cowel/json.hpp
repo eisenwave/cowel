@@ -1,6 +1,7 @@
 #ifndef COWEL_JSON_HPP
 #define COWEL_JSON_HPP
 
+#include <algorithm>
 #include <memory_resource>
 #include <optional>
 #include <string>
