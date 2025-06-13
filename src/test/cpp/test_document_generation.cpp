@@ -296,6 +296,13 @@ constexpr Basic_Test basic_tests[] {
     { Path { u8"macro/macros.cow" },
       Path { u8"macro/macros.html" } },
 
+    { Source { u8"\\awoo\n" },
+      Source { u8"<error->\\awoo</error->\n" },
+      { diagnostic::directive_lookup_unresolved } },
+    { Source { u8"\\code[x]{\\awoo}\n" },
+      Source { u8"<code><error->\\awoo</error-></code>\n" },
+      { diagnostic::directive_lookup_unresolved } },
+
     { Source { u8"" },
       Path { u8"document/empty.html" },
       {},

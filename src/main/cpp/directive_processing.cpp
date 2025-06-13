@@ -684,6 +684,8 @@ void to_html_with_source_references(
 {
     Directive_Behavior* const behavior = context.find_directive(d);
     if (!behavior) {
+        try_lookup_error(d, context);
+        try_generate_error_html(out, d, context);
         return;
     }
     switch (behavior->category) {
