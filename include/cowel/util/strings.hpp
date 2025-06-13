@@ -4,7 +4,9 @@
 #include <cstddef>
 #include <span>
 #include <string_view>
+#include <vector>
 
+#include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/unicode.hpp"
 
@@ -157,6 +159,29 @@ constexpr std::u8string_view trim_ascii_blank(std::u8string_view str)
     return trim_ascii_blank_right(trim_ascii_blank_left(str));
 }
 
+template <typename Alloc>
+void trim_left(std::vector<char8_t, Alloc>& text)
+{
+    const std::size_t amount = length_blank_left(as_u8string_view(text));
+    COWEL_ASSERT(amount <= text.size());
+    text.erase(text.begin(), text.begin() + std::ptrdiff_t(amount));
+}
+
+template <typename Alloc>
+void trim_right(std::vector<char8_t, Alloc>& text)
+{
+    const std::size_t amount = length_blank_right(as_u8string_view(text));
+    COWEL_ASSERT(amount <= text.size());
+    text.erase(text.end() - std::ptrdiff_t(amount), text.end());
+}
+
+template <typename Alloc>
+void trim(std::vector<char8_t, Alloc>& text)
+{
+    trim_left(text);
+    trim_right(text);
+}
+
 /// @brief Returns `true` if `str` is a valid HTML tag identifier.
 /// This includes both builtin tag names (which are purely alphabetic)
 /// and custom tag names.
@@ -194,6 +219,30 @@ constexpr bool is_html_unquoted_attribute_value(std::u8string_view str)
 
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
     return detail::all_of(str, predicate);
+}
+
+namespace detail {
+
+static constexpr ulight::Charset256 sanitized_id_set
+    = ulight::is_ascii_alphanumeric_set | ulight::detail::to_charset256(u8"-_.:");
+
+}
+
+template <typename Alloc>
+void sanitize_html_id(std::vector<char8_t, Alloc>& id)
+{
+    trim(id);
+    std::erase_if(id, [](char8_t& c) -> bool {
+        if (is_ascii_upper_alpha(c)) {
+            c = to_ascii_lower(c);
+            return false;
+        }
+        if (is_html_whitespace(c)) {
+            c = u8'-';
+            return false;
+        }
+        return !detail::sanitized_id_set.contains(c);
+    });
 }
 
 } // namespace cowel

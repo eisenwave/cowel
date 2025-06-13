@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "cowel/diagnostic.hpp"
-#include "cowel/util/chars.hpp"
 #include "cowel/util/function_ref.hpp"
 #include "cowel/util/strings.hpp"
 
@@ -15,39 +14,6 @@
 
 namespace cowel {
 namespace {
-
-void trim_left(std::pmr::vector<char8_t>& text)
-{
-    const std::size_t amount = length_blank_left(as_u8string_view(text));
-    COWEL_ASSERT(amount <= text.size());
-    text.erase(text.begin(), text.begin() + std::ptrdiff_t(amount));
-}
-
-void trim_right(std::pmr::vector<char8_t>& text)
-{
-    const std::size_t amount = length_blank_right(as_u8string_view(text));
-    COWEL_ASSERT(amount <= text.size());
-    text.erase(text.end() - std::ptrdiff_t(amount), text.end());
-}
-
-void trim(std::pmr::vector<char8_t>& text)
-{
-    trim_left(text);
-    trim_right(text);
-}
-
-void sanitize_id(std::pmr::vector<char8_t>& id)
-{
-    trim(id);
-    for (char8_t& c : id) {
-        if (is_ascii_upper_alpha(c)) {
-            c = to_ascii_lower(c);
-        }
-        else if (is_html_whitespace(c)) {
-            c = u8'-';
-        }
-    }
-}
 
 bool synthesize_id(
     std::pmr::vector<char8_t>& out,
@@ -61,7 +27,7 @@ bool synthesize_id(
     if (status == To_Plaintext_Status::error) {
         return false;
     }
-    sanitize_id(out);
+    sanitize_html_id(out);
     return true;
 }
 
