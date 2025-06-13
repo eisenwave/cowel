@@ -74,9 +74,10 @@ struct Builtin_Directive_Set::Impl {
     Fixed_Name_Passthrough_Behavior cite //
         { u8"cite", Directive_Category::formatting, Directive_Display::in_line };
     Syntax_Highlight_Behavior code //
-        { u8"code", Directive_Display::in_line, Pre_Trimming::no };
+        { u8"code", Directive_Category::mixed, Directive_Display::in_line, Pre_Trimming::no };
     Syntax_Highlight_Behavior codeblock //
-        { u8"code-block", Directive_Display::block, Pre_Trimming::yes };
+        { u8"code-block", Directive_Category::pure_html, Directive_Display::block,
+          Pre_Trimming::yes };
     Fixed_Name_Passthrough_Behavior col //
         { u8"col", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior colgroup //

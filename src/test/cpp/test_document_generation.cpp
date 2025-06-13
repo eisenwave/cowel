@@ -247,6 +247,8 @@ constexpr Basic_Test basic_tests[] {
 
     { Source { u8"\\h1{Heading}\n" },
       Source { u8"<h1 id=heading><a class=para href=#heading></a>Heading</h1>\n" } },
+    { Source { u8"\\h1{\\code[x]{abcx}}\n" },
+      Source { u8"<h1 id=abcx><a class=para href=#abcx></a><code>abc<h- data-h=kw>x</h-></code></h1>\n" } },
     { Source { u8"\\h2[listed=no]{ }\n" },
       Source { u8"<h2> </h2>\n" } },
     { Source { u8"\\h3[id=user id,listed=no]{Heading}\n" },
