@@ -57,11 +57,18 @@ void Passthrough_Behavior::generate_plaintext(
 {
     switch (category) {
     case Directive_Category::formatting:
-    case Directive_Category::pure_plaintext: to_plaintext(out, d.get_content(), context); break;
-    case Directive_Category::pure_html: break;
+    case Directive_Category::pure_plaintext:
+    case Directive_Category::mixed: {
+        to_plaintext(out, d.get_content(), context);
+        break;
+    }
+    case Directive_Category::pure_html: {
+        break;
+    }
     case Directive_Category::meta:
-    case Directive_Category::macro:
+    case Directive_Category::macro: {
         COWEL_ASSERT_UNREACHABLE(u8"Passthrough_Behavior should not be meta or macro.");
+    }
     }
 }
 
@@ -93,11 +100,18 @@ void In_Tag_Behavior::generate_plaintext(
 {
     switch (category) {
     case Directive_Category::formatting:
-    case Directive_Category::pure_plaintext: to_plaintext(out, d, context); break;
-    case Directive_Category::pure_html: break;
+    case Directive_Category::pure_plaintext:
+    case Directive_Category::mixed: {
+        to_plaintext(out, d.get_content(), context);
+        break;
+    }
+    case Directive_Category::pure_html: {
+        break;
+    }
     case Directive_Category::meta:
-    case Directive_Category::macro:
+    case Directive_Category::macro: {
         COWEL_ASSERT_UNREACHABLE(u8"In_Tag_Behavior should not be meta or macro.");
+    }
     }
 }
 

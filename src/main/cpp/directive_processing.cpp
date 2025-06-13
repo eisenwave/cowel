@@ -207,6 +207,7 @@ To_Plaintext_Status to_plaintext(
     }
 
     switch (behavior->category) {
+    case Directive_Category::mixed:
     case Directive_Category::pure_plaintext: {
         behavior->generate_plaintext(out, d, context);
         return To_Plaintext_Status::ok;
@@ -690,6 +691,7 @@ void to_html_with_source_references(
     }
     switch (behavior->category) {
     case Directive_Category::meta:
+    case Directive_Category::mixed:
     case Directive_Category::pure_html: {
         behavior->generate_html(out, d, context);
         break;

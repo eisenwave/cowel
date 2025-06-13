@@ -28,6 +28,11 @@ enum struct Directive_Category : Default_Underlying {
     /// @brief Purely HTML content, such as `\\html{...}`.
     /// Such content produces no plaintext, and using it as an HTML attribute is erroneous.
     pure_html,
+    /// @brief Directives which don't fall into `pure_plaintext` because they generate markup,
+    /// but are still text-like.
+    /// For example, `\\code` performs syntax highlighting and this involves producing
+    /// HTML elements, but it generally acts as a wrapper for text.
+    mixed,
     /// @brief HTML formatting wrapper for content within.
     /// Using formatting inside of HTML attributes is erroneous.
     ///

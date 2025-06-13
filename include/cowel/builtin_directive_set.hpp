@@ -178,10 +178,11 @@ private:
 public:
     constexpr explicit Syntax_Highlight_Behavior(
         std::u8string_view tag_name,
+        Directive_Category category,
         Directive_Display d,
         Pre_Trimming pre_compat_trim
     )
-        : Parametric_Behavior { Directive_Category::pure_html, d, parameters }
+        : Parametric_Behavior { category, d, parameters }
         , m_tag_name { tag_name }
         , m_pre_compat_trim { pre_compat_trim == Pre_Trimming::yes }
     {
