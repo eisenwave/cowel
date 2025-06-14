@@ -208,8 +208,7 @@ private:
 
 public:
     constexpr explicit Highlight_Behavior()
-        : Parametric_Behavior { Directive_Category::pure_html, Directive_Display::in_line,
-                                parameters }
+        : Parametric_Behavior { Directive_Category::mixed, Directive_Display::in_line, parameters }
     {
     }
 
