@@ -221,12 +221,17 @@ To_Plaintext_Status to_plaintext(
         }
         return To_Plaintext_Status::ok;
     }
-    default: {
+    case Directive_Category::meta:
+    case Directive_Category::pure_html: {
         if (mode != To_Plaintext_Mode::no_side_effects) {
             behavior->generate_plaintext(out, d, context);
             return To_Plaintext_Status::ok;
         }
         return To_Plaintext_Status::some_ignored;
+    }
+    case Directive_Category::macro: {
+        std::pmr::vector<ast::Content> instance = behavior->instantiate(d, context);
+        return to_plaintext(out, instance, context, mode);
     }
     }
     COWEL_ASSERT_UNREACHABLE(u8"Should have returned in switch.");
