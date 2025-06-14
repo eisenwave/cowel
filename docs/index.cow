@@ -8,7 +8,7 @@
 \html-title{COWEL - Compact Web Language Documentation}
 }
 
-\h1{Compact Web Language (COWEL)}
+\h1[id=compact-web-language]{Compact Web Language (COWEL)}
 
 \html-div[id=github]{
 \style{

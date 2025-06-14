@@ -123,7 +123,7 @@ This renders as
 ... which corresponds to \cow_c{a}, whereas \cow_c{b} and \cow_c{c} are discarded.
 }
 
-\h4{\cow_dir{c} \c{mdash} Character references}
+\h4[id=dir-c]{\cow_dir{c} \c{mdash} Character references}
 
 The input to a \cow_dir{c} directive is a plaintext context,
 where the same content is permitted as for HTML character references, aka. HTML entities,
