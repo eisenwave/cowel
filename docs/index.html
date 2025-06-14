@@ -1473,7 +1473,7 @@ if (theme !== null) {
 
 
 
-<h1 id=compact-web-language-(cowel)><a class=para href=#compact-web-language-(cowel)></a>Compact Web Language (COWEL)</h1>
+<h1 id=compact-web-language><a class=para href=#compact-web-language></a>Compact Web Language (COWEL)</h1>
 
 <div id=github>
 <style>
@@ -1526,7 +1526,7 @@ h1 {
 <div class=toc-num data-level=3>8.1</div>
 <a href=#comments><h3>Comments</h3></a>
 <div class=toc-num data-level=4>8.1.1</div>
-<a href=#—-comments><h4><code><h- data-h=mk_tag>\comment</h-></code> &mdash; Comments</h4></a>
+<a href=#dir-comment><h4><code><h- data-h=mk_tag>\comment</h-></code> &mdash; Comments</h4></a>
 <div class=toc-num data-level=3>8.2</div>
 <a href=#text-formatting><h3>Text formatting</h3></a>
 <div class=toc-num data-level=3>8.3</div>
@@ -1576,7 +1576,7 @@ h1 {
 <div class=toc-num data-level=4>8.6.3</div>
 <a href=#dir-Udigits><h4><code><h- data-h=mk_tag>\Udigits</h-></code> &mdash; Digits of code point</h4></a>
 <div class=toc-num data-level=4>8.6.4</div>
-<a href=#—-character-references><h4><code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4></a>
+<a href=#dir-c><h4><code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4></a>
 <div class=toc-num data-level=3>8.7</div>
 <a href=#special-blocks><h3>Special blocks</h3></a>
 <div class=toc-num data-level=4>8.7.1</div>
@@ -1710,11 +1710,11 @@ h1 {
 <div class=toc-num data-level=4>8.17.1</div>
 <a href=#dir-def><h4><code><h- data-h=mk_tag>\macro</h-></code> &mdash; Define a macro</h4></a>
 <div class=toc-num data-level=4>8.17.2</div>
-<a href=#—-replaced-with-provided-content><h4><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code> &mdash; Replaced with provided content</h4></a>
+<a href=#put--replaced-with-provided-content><h4><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code> &mdash; Replaced with provided content</h4></a>
 <div class=toc-num data-level=4>8.17.3</div>
-<a href=#,-,-…-—-replaced-with-argument><h4><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-></code>, <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-></code>, … &mdash; Replaced with argument</h4></a>
+<a href=#put0-put1---replaced-with-argument><h4><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-></code>, <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-></code>, … &mdash; Replaced with argument</h4></a>
 <div class=toc-num data-level=4>8.17.4</div>
-<a href=#—-forwarding-provided-arguments><h4><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> &mdash; Forwarding provided arguments</h4></a>
+<a href=#put%2e%2e%2e--forwarding-provided-arguments><h4><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> &mdash; Forwarding provided arguments</h4></a>
 <div class=toc-num data-level=4>8.17.5</div>
 <a href=#avoiding-name-collisions><h4>Avoiding name collisions</h4></a>
 <div class=toc-num data-level=3>8.18</div>
@@ -2101,7 +2101,7 @@ remember to make them respond to theme and OS preference changes.
 COWEL has no dedicated syntax for comments.
 However, there exists a <code><h- data-h=mk_tag>\comment</h-></code> directive which you can use to put comments into code.
 </p>
-<h4 id=—-comments><a class=para href=#—-comments></a>8.1.1. <code><h- data-h=mk_tag>\comment</h-></code> &mdash; Comments</h4>
+<h4 id=dir-comment><a class=para href=#dir-comment></a>8.1.1. <code><h- data-h=mk_tag>\comment</h-></code> &mdash; Comments</h4>
 
 <p>The <code><h- data-h=mk_tag>\comment</h-></code> directive does not process its arguments or content.
 It outputs no plaintext or HTML.
@@ -2792,7 +2792,7 @@ If we provide more than a single code point, some input is discarded:
 <p>... which corresponds to <code>a</code>, whereas <code>b</code> and <code>c</code> are discarded.
 </p></bug-block>
 
-<h4 id=—-character-references><a class=para href=#—-character-references></a>8.6.4. <code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4>
+<h4 id=dir-c><a class=para href=#dir-c></a>8.6.4. <code><h- data-h=mk_tag>\c</h-></code> &mdash; Character references</h4>
 
 <p>The input to a <code><h- data-h=mk_tag>\c</h-></code> directive is a plaintext context,
 where the same content is permitted as for HTML character references, aka. HTML entities,
@@ -3562,7 +3562,7 @@ There are multiple forms of the <code><h- data-h=mk_tag>\put</h-></code> which e
 <p>The content of a <code><h- data-h=mk_tag>\put</h-></code> directive is a plaintext context,
 and specifies which part of the provided content or arguments should be used.
 </p>
-<h4 id=—-replaced-with-provided-content><a class=para href=#—-replaced-with-provided-content></a>8.17.2. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code> &mdash; Replaced with provided content</h4>
+<h4 id=put--replaced-with-provided-content><a class=para href=#put--replaced-with-provided-content></a>8.17.2. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code> &mdash; Replaced with provided content</h4>
 
 <p>A <code><h- data-h=mk_tag>\put</h-></code> directive with no given content (or empty/blank content)
 is replaced with the content provided to the macro upon use.
@@ -3574,7 +3574,7 @@ is replaced with the content provided to the macro upon use.
 <h- data-h=mk_tag>\bi</h-><h- data-h=sym_brac>{</h->bold and italic<h- data-h=sym_brac>}</h-></code-block>
 </example-block>
 
-<h4 id=,-,-…-—-replaced-with-argument><a class=para href=#,-,-…-—-replaced-with-argument></a>8.17.3. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-></code>, <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-></code>, … &mdash; Replaced with argument</h4>
+<h4 id=put0-put1---replaced-with-argument><a class=para href=#put0-put1---replaced-with-argument></a>8.17.3. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-></code>, <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-></code>, … &mdash; Replaced with argument</h4>
 
 <p>When the content provided to <code><h- data-h=mk_tag>\put</h-></code> is an integer,
 the corresponding argument is selected,
@@ -3601,7 +3601,7 @@ because there is no <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- 
 <tt-><h- data-h=mk_attr>else</h-></tt-> argument was provided.
 </p></example-block>
 
-<h4 id=—-forwarding-provided-arguments><a class=para href=#—-forwarding-provided-arguments></a>8.17.4. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> &mdash; Forwarding provided arguments</h4>
+<h4 id=put...--forwarding-provided-arguments><a class=para href=#put%2e%2e%2e--forwarding-provided-arguments></a>8.17.4. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> &mdash; Forwarding provided arguments</h4>
 
 <p><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> (where the given content is three periods)
 expands to <em>all</em> provided macro arguments.
