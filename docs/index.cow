@@ -4,8 +4,15 @@
 \macro[\cow_cp{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}
 \macro[\cow_attr{...}]{\tt{\hl[markup-attr]{\put}}}
 
+\macro[\og_property]{\html-meta[property=og:\put{0},content=\put]}
+
 \there[std.head]{
 \html-title{COWEL - Compact Web Language Documentation}
+\og_property[title]{Compact Web Language (COWEL)}
+\og_property[description]{COWEL is a markup language with TeX-like syntax, intended to generate HTML documents.}
+\og_property[locale]{en_US}
+\og_property[url]{https://cowel.org/}
+\og_property[type]{website}
 }
 
 \h1[id=compact-web-language]{Compact Web Language (COWEL)}
