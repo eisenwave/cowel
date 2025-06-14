@@ -927,29 +927,15 @@ void named_arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     Context& context,
-    Function_Ref<bool(std::u8string_view)> filter,
+    Argument_Filter filter,
     Attribute_Style style
 )
 {
     const std::span<const ast::Argument> args = d.get_arguments();
     for (std::size_t i = 0; i < args.size(); ++i) {
         const ast::Argument& a = args[i];
-        if (!a.has_name()) {
-            continue;
-        }
-        bool duplicate = false;
-        for (std::size_t j = 0; j < i; ++j) {
-            if (args[j].get_name() == a.get_name()) {
-                const std::u8string_view message[]
-                    = { u8"This argument is a duplicate of a previous named argument also named \"",
-                        args[j].get_name(), u8"\", and will be ignored." };
-                context.try_warning(diagnostic::duplicate_args, args[j].get_source_span(), message);
-                duplicate = true;
-                break;
-            }
-        }
-        if (!duplicate) {
-            named_argument_to_attribute(out, a, context, filter, style);
+        if (a.has_name() && (!filter || filter(i, a))) {
+            named_argument_to_attribute(out, a, context, style);
         }
     }
 }
@@ -965,23 +951,29 @@ void named_arguments_to_attributes(
 {
     COWEL_ASSERT(!argument_subset_intersects(subset, Argument_Subset::positional));
 
-    named_arguments_to_attributes(
-        out, d, context,
-        [&](std::u8string_view name) {
-            const int index = matcher.get_argument_index(name);
-            const auto arg_subset
-                = index < 0 ? Argument_Subset::unmatched_named : Argument_Subset::matched_named;
-            return argument_subset_contains(subset, arg_subset);
-        },
-        style
-    );
+    const auto filter = [&](std::size_t index, const ast::Argument& a) -> bool {
+        const Argument_Status status = matcher.argument_statuses()[index];
+        if (status == Argument_Status::duplicate_named) {
+            const std::u8string_view message[] = {
+                u8"This argument is a duplicate of a previous named argument also named \"",
+                a.get_name(),
+                u8"\", and will be ignored.",
+            };
+            context.try_warning(diagnostic::duplicate_args, a.get_source_span(), message);
+            return false;
+        }
+        const auto arg_subset = status == Argument_Status::unmatched
+            ? Argument_Subset::unmatched_named
+            : Argument_Subset::matched_named;
+        return argument_subset_contains(subset, arg_subset);
+    };
+    named_arguments_to_attributes(out, d, context, filter, style);
 }
 
-bool named_argument_to_attribute(
+void named_argument_to_attribute(
     Attribute_Writer& out,
     const ast::Argument& a,
     Context& context,
-    Function_Ref<bool(std::u8string_view)> filter,
     Attribute_Style style
 )
 {
@@ -992,11 +984,7 @@ bool named_argument_to_attribute(
     to_plaintext(value, a.get_content(), context);
     const std::u8string_view value_string { value.data(), value.size() };
     const std::u8string_view name = a.get_name();
-    if (!filter || filter(name)) {
-        out.write_attribute(name, value_string, style);
-        return true;
-    }
-    return false;
+    out.write_attribute(name, value_string, style);
 }
 
 bool argument_to_plaintext(
