@@ -274,8 +274,10 @@ int main(int argc, const char* const* argv)
         return EXIT_FAILURE;
     }
 
-    std::fwrite(result.text, 1, result.length, out_file.get());
-    memory.deallocate(result.text, result.length, alignof(char8_t));
+    if (result.text != nullptr) {
+        std::fwrite(result.text, 1, result.length, out_file.get());
+        memory.deallocate(result.text, result.length, alignof(char8_t));
+    }
 
     return logger.any_errors ? EXIT_FAILURE : EXIT_SUCCESS;
 }
