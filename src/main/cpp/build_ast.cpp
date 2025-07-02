@@ -77,12 +77,25 @@ Text::Text(const File_Source_Span& source_span, std::u8string_view source)
     COWEL_ASSERT(source.length() == source_span.length);
 }
 
+Comment::Comment(const File_Source_Span& source_span, std::u8string_view source)
+    : m_source_span { source_span }
+    , m_source { source }
+    , m_suffix_length { source.ends_with(u8"\r\n")     ? 2uz
+                            : source.ends_with(u8'\n') ? 1uz
+                                                       : 0uz }
+{
+    COWEL_ASSERT(source.length() == source_span.length);
+    COWEL_ASSERT(source.length() >= 2);
+    COWEL_ASSERT(source.starts_with(u8"\\:"));
+}
+
 Escaped::Escaped(const File_Source_Span& source_span, std::u8string_view source)
     : m_source_span { source_span }
     , m_source { source }
 {
-    COWEL_ASSERT(source_span.length == 2);
-    COWEL_ASSERT(source.length() == 2);
+    COWEL_ASSERT(source.length() == source_span.length);
+    COWEL_ASSERT(source.length() >= 2);
+    COWEL_ASSERT(source.starts_with('\\'));
 }
 
 } // namespace ast
@@ -185,24 +198,33 @@ private:
         const AST_Instruction instruction = peek();
         switch (instruction.type) {
             using enum AST_Instruction_Type;
-        case skip: //
+        case skip: {
             advance_by(instruction.n);
             pop();
             break;
+        }
         case argument_comma:
-        case argument_equal: //
+        case argument_equal: {
             advance_by(1);
             pop();
             break;
-        case escape: //
+        }
+        case escape: {
             out.push_back(build_escape());
             break;
-        case text: //
+        }
+        case text: {
             out.push_back(build_text());
             break;
-        case push_directive: //
+        }
+        case comment: {
+            out.push_back(build_comment());
+            break;
+        }
+        case push_directive: {
             out.push_back(build_directive());
             break;
+        }
 
         default: COWEL_ASSERT_UNREACHABLE(u8"Invalid content creating instruction.");
         }
@@ -228,6 +250,18 @@ private:
 
         const File_Source_Span span { m_pos, instruction.n, m_file };
         ast::Text result { span, extract(span) };
+        advance_by(instruction.n);
+        return result;
+    }
+
+    [[nodiscard]]
+    ast::Comment build_comment()
+    {
+        const AST_Instruction instruction = pop();
+        COWEL_ASSERT(instruction.type == AST_Instruction_Type::comment);
+
+        const File_Source_Span span { m_pos, instruction.n, m_file };
+        ast::Comment result { span, extract(span) };
         advance_by(instruction.n);
         return result;
     }
