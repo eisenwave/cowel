@@ -2523,7 +2523,7 @@ code inside COWEL that already contains underscores.
 For example, <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>n</h-></code> is an escape sequence for newline characters in many languages,
 and it may be annoying if it gets interpreted as an <code><h- data-h=mk_tag>\n</h-></code> directive:
 </p><code-block><h- data-h=mk_tag>\codeblock</h-><h- data-h=sym_sqr>[</h->cpp<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\unprocessed</h-><h- data-h=sym_brac>{</h->
-std::string_view s = "Several<h- data-h=mk_tag>\nLines</h-><h- data-h=mk_tag>\nof</h-><h- data-h=mk_tag>\nCode.</h->";
+std::string_view s = "Several<h- data-h=mk_tag>\nLines</h-><h- data-h=mk_tag>\nof</h-><h- data-h=mk_tag>\nCode</h->.";
 <h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
 <p>This renders as:
 </p><code-block><h- data-h=id>std</h-><h- data-h=sym_op>::</h-><h- data-h=id>string_view</h-> <h- data-h=id>s</h-> <h- data-h=sym_op>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Several</h-><h- data-h=esc>\n</h-><h- data-h=str>Lines</h-><h- data-h=esc>\n</h-><h- data-h=str>of</h-><h- data-h=esc>\n</h-><h- data-h=str>Code.</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
@@ -3794,18 +3794,18 @@ COWEL markup:
 <tip-block><p><intro-></intro-> 
 You can also combine <code><h- data-h=mk_tag>\Cadd</h-></code> with <code><h- data-h=mk_tag>\Vget</h-></code> and <code><h- data-h=mk_tag>\Vset</h-></code> to store the results
 of your calculations:
-</p><code-block><h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Reset paragraph number</h-><h- data-h=cmt_dlim>}</h->
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Reset paragraph number</h->
 <h- data-h=mk_tag>\Vset</h-><h- data-h=sym_sqr>[</h->index<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h->
 
-<h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Define a macro for automatically incrementing paragraph numbers.</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\p.num</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Define a macro for automatically incrementing paragraph numbers.</h->
+<h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\p_num</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
 <h- data-h=mk_tag>\Vset</h-><h- data-h=sym_sqr>[</h->index<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\Cadd</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\Vget</h-><h- data-h=sym_sqr>[</h->index<h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>,</h->1<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>}</h->
 <h- data-h=mk_tag>\Vget</h-><h- data-h=sym_sqr>[</h->index<h- data-h=sym_sqr>]</h->
 <h- data-h=sym_brac>}</h->
 
-Paragraph <h- data-h=mk_tag>\p.num</h->
+Paragraph <h- data-h=mk_tag>\p_num</h->
 
-Paragraph <h- data-h=mk_tag>\p.num</h-></code-block>
+Paragraph <h- data-h=mk_tag>\p_num</h-></code-block>
 <p>This renders as:
 </p><div class=indent>
 <p>Paragraph 1

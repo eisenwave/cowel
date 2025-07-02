@@ -69,18 +69,18 @@ This renders as:
 You can also combine \cow_dir{Cadd} with \cow_dir{Vget} and \cow_dir{Vset} to store the results
 of your calculations:
 \codeblock[cowel]{\literally{
-\comment{Reset paragraph number}
+\: Reset paragraph number
 \Vset[index]{0}
 
-\comment{Define a macro for automatically incrementing paragraph numbers.}
-\macro[\p.num]{
+\: Define a macro for automatically incrementing paragraph numbers.
+\macro[\p_num]{
 \Vset[index]{\Cadd[\Vget[index],1]}
 \Vget[index]
 }
 
-Paragraph \p.num
+Paragraph \p_num
 
-Paragraph \p.num
+Paragraph \p_num
 }}
 This renders as:
 \Bindent{\paragraphs{
