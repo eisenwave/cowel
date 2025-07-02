@@ -308,7 +308,10 @@ constexpr Basic_Test basic_tests[] {
     { Source { u8"" },
       Path { u8"document/empty.html" },
       {},
-      Test_Behavior::empty_head }
+      Test_Behavior::empty_head },
+    
+    { Path { u8"comments.cow" },
+      Path { u8"comments.cow.html" } }
 };
 // clang-format on
 
