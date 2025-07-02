@@ -1,13 +1,13 @@
 \h3{Comments}
 
-In addition to the \cow_c{\\:} syntax for single-line comments,
-there exists a \cow_dir{comment} directive which
+In addition to the \cowdoc_c{\\:} syntax for single-line comments,
+there exists a \cowdoc_dir{comment} directive which
 discards all of its contents.
 This can be used for multi-line comments.
 
-\h4[id=dir-comment]{\cow_dir{comment} \c{mdash} Comments}
+\h4[id=dir-comment]{\cowdoc_dir{comment} \c{mdash} Comments}
 
-The \cow_dir{comment} directive does not process its arguments or content.
+The \cowdoc_dir{comment} directive does not process its arguments or content.
 It outputs no plaintext or HTML.
 
 \Bex{

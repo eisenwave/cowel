@@ -1,19 +1,19 @@
 \h3{Lists}
 
-\h4[id=dir-ul]{\cow_dir{ul} \c{mdash} Unordered lists}
+\h4[id=dir-ul]{\cowdoc_dir{ul} \c{mdash} Unordered lists}
 
-The \cow_dir{ul} directive corresponds to the \cow_html{<ul>} element,
+The \cowdoc_dir{ul} directive corresponds to the \cowdoc_html{<ul>} element,
 and produces an unordered list.
 
-\h4[id=dir-ol]{\cow_dir{ol} \c{mdash} Ordered lists}
+\h4[id=dir-ol]{\cowdoc_dir{ol} \c{mdash} Ordered lists}
 
-The \cow_dir{ol} directive corresponds to the \cow_html{<ol>} element,
+The \cowdoc_dir{ol} directive corresponds to the \cowdoc_html{<ol>} element,
 and produces an ordered list.
 
-\h4[id=dir-li]{\cow_dir{li} \c{mdash} List items}
+\h4[id=dir-li]{\cowdoc_dir{li} \c{mdash} List items}
 
-The \cow_dir{li} directive corresponds to the \cow_html{<li>} element,
-and produces a list item with \cow_html{<ul>} or \cow_html{<ol>}.
+The \cowdoc_dir{li} directive corresponds to the \cowdoc_html{<li>} element,
+and produces a list item with \cowdoc_html{<ul>} or \cowdoc_html{<ol>}.
 
 \Bex{
 COWEL markup:
@@ -40,64 +40,64 @@ This renders as:
 }
 }
 
-\h4[id=dir-item]{\cow_dir{item} \c{mdash} List item pseudo-directive}
+\h4[id=dir-item]{\cowdoc_dir{item} \c{mdash} List item pseudo-directive}
 
 \Bwarn{
 This directive is deprecated and will be removed in a future version.
 }
 
-Within \cow_dir{ul} and \cow_dir{ol},
-the \cow_dir{item} pseudo-directive can also be used instead of \cow_dir{li}.
+Within \cowdoc_dir{ul} and \cowdoc_dir{ol},
+the \cowdoc_dir{item} pseudo-directive can also be used instead of \cowdoc_dir{li}.
 
-\h4[id=dir-dl]{\cow_dir{dl} \c{mdash} Definition lists}
+\h4[id=dir-dl]{\cowdoc_dir{dl} \c{mdash} Definition lists}
 
-The \cow_dir{dl} directive corresponds to the \cow_html{<dl>} element,
+The \cowdoc_dir{dl} directive corresponds to the \cowdoc_html{<dl>} element,
 and produces a definition list.
 Within that list, you can use
 \ul{
-\li{\cow_dir{dt} for \dfn{definition terms}, and}
-\li{\cow_dir{dd} for \dfn{definition descriptions}.}
+\li{\cowdoc_dir{dt} for \dfn{definition terms}, and}
+\li{\cowdoc_dir{dd} for \dfn{definition descriptions}.}
 }
 
 \h3{Tables}
 
 Tables are simply produced by using the
-\cow_dir{table}, \cow_dir{thead}, \cow_dir{tbody}, \cow_dir{tfoot},
-\cow_dir{tr}, \cow_dir{th}, \cow_dir{td},
-\cow_dir{colgroup}, \cow_dir{col},
-and \cow_dir{caption} directives to
+\cowdoc_dir{table}, \cowdoc_dir{thead}, \cowdoc_dir{tbody}, \cowdoc_dir{tfoot},
+\cowdoc_dir{tr}, \cowdoc_dir{th}, \cowdoc_dir{td},
+\cowdoc_dir{colgroup}, \cowdoc_dir{col},
+and \cowdoc_dir{caption} directives to
 produce the corresponding HTML tags with the same name.
 
 \Btip{
 To perform advanced styling,
 like controlling alignment within columns,
-use a \cow_dir{style} directive.
+use a \cowdoc_dir{style} directive.
 }
 
 \h3{Headings}
 
 Headings can be produced using the
-\cow_dir{h1}, \cow_dir{h2}, \cow_dir{h3}, \cow_dir{h4}, \cow_dir{h5}, and \cow_dir{h6} directives to
+\cowdoc_dir{h1}, \cowdoc_dir{h2}, \cowdoc_dir{h3}, \cowdoc_dir{h4}, \cowdoc_dir{h5}, and \cowdoc_dir{h6} directives to
 produce the corresponding HTML tags with the same name.
 
-Headings take a \cow_attr{listed} argument, which is a yes/no plaintext argument.
+Headings take a \cowdoc_attr{listed} argument, which is a yes/no plaintext argument.
 Unless its value is \tt{no}, headings are numbered and added to the table of contents
 (\ref[#dir-make-contents]) automatically.
 
-Headings also take a \cow_attr{show-number} argument, which is a yes/no plaintext argument.
+Headings also take a \cowdoc_attr{show-number} argument, which is a yes/no plaintext argument.
 Unless this is \tt{no},
 the heading number will be included in the title, in the format \tt{1.2.3. Title}.
-However, even if \cow_attr{show-number} is \tt{no},
+However, even if \cowdoc_attr{show-number} is \tt{no},
 the number heading is internally numbered as usual,
 and its number can be seen in the table of contents.
 
 Other arguments to these headings are converted into attributes of the corresponding HTML element.
-An \cow_attr{id} argument can be provided explicitly.
+An \cowdoc_attr{id} argument can be provided explicitly.
 
-If none is provided, an \cow_attr{id} is synthesized from the content within the heading.
+If none is provided, an \cowdoc_attr{id} is synthesized from the content within the heading.
 
 \Btip{
-Headings can be referenced using the \cow_dir{ref} directive:
+Headings can be referenced using the \cowdoc_dir{ref} directive:
 \codeblock[cowel]{
 \\h2{Heading with synthesized id}
 \\h2[id=xyz]{Heading with manual id}
@@ -107,9 +107,9 @@ Headings can be referenced using the \cow_dir{ref} directive:
 }
 }
 
-\h4[id=dir-make-contents]{\cow_dir{make-contents} \c{mdash} Make table of contents}
+\h4[id=dir-make-contents]{\cowdoc_dir{make-contents} \c{mdash} Make table of contents}
 
-The \cow_dir{make-contents} directive generates the table of contents,
+The \cowdoc_dir{make-contents} directive generates the table of contents,
 which is comprised of all the headings within the document.
 It takes no arguments and its content is ignored.
 It displays as a block.
@@ -124,14 +124,14 @@ an unlisted heading may be used:
 \\h2[listed=no]{Contents}
 \\make-contents
 }
-A similar effect can be achieved using \cow_dir{html-h2} (\ref[#dir-html-element]).
-However, using \cow_dir{html-h2} will also not emit a link icon in the gutter,
-and it will not synthesize an \cow_attr{id} for that heading.
+A similar effect can be achieved using \cowdoc_dir{html-h2} (\ref[#dir-html-element]).
+However, using \cowdoc_dir{html-h2} will also not emit a link icon in the gutter,
+and it will not synthesize an \cowdoc_attr{id} for that heading.
 }
 
 \Bnote{
-The underlying contents can be obtained with \cow_c{\\here[std.contents]}.
-\cow_dir{make-contents} additionally wraps those contents in HTML elements to
+The underlying contents can be obtained with \cowdoc_c{\\here[std.contents]}.
+\cowdoc_dir{make-contents} additionally wraps those contents in HTML elements to
 chang their visual appearance.
 }
 
@@ -144,81 +144,81 @@ To support this,
 COWEL provides directives for adding bibliography entries,
 and for generating a bibliography automatically.
 
-\h4[id=dir-bib]{\cow_dir{bib} \c{mdash} Add bibliography entry}
+\h4[id=dir-bib]{\cowdoc_dir{bib} \c{mdash} Add bibliography entry}
 
-The \cow_dir{bib} directive adds a single entry to the bibliography.
+The \cowdoc_dir{bib} directive adds a single entry to the bibliography.
 Its content is ignored, and it displays as a meta directive.
 
 It has a number of parameters,
 each of which is a plaintext context:
 
 \dl{
-\dt{\cow_attr{id}}
+\dt{\cowdoc_attr{id}}
 \dd{
 The identifier of the bibliography entry.
-This can later be referenced using \cow_c{\\ref[id]}.
+This can later be referenced using \cowdoc_c{\\ref[id]}.
 }
 
-\dt{\cow_attr{author}}
+\dt{\cowdoc_attr{author}}
 \dd{
 The name of the author(s).
 This is in no particular format, and if you want to provide multiple authors,
 you can do so via a comma-separated list here.
 }
 
-\dt{\cow_attr{title}}
+\dt{\cowdoc_attr{title}}
 \dd{The title of the cited work.}
 
-\dt{\cow_attr{date}}
+\dt{\cowdoc_attr{date}}
 \dd{
 The date of publication.
 No particular format is enforced; this is simply a string,
 so you can choose some local format.
 }
 
-\dt{\cow_attr{publisher}}
+\dt{\cowdoc_attr{publisher}}
 \dd{The name of the publisher.}
 
-\dt{\cow_attr{link}}
+\dt{\cowdoc_attr{link}}
 \dd{
 The primary link to the document.
-This should typically be a short link because it is copied into each \cow_dir{ref}
+This should typically be a short link because it is copied into each \cowdoc_dir{ref}
 to the bibliography entry.
 }
 
-\dt{\cow_attr{long-link}}
+\dt{\cowdoc_attr{long-link}}
 \dd{
 A "long link" to the document.
 If present, this will be rendered within the bibliography,
-and it is typically meant to be a semantic or more stable link than the \cow_attr{link}.
+and it is typically meant to be a semantic or more stable link than the \cowdoc_attr{link}.
 You can also think of it as a "link for pretty printing".
 }
 
-\dt{\cow_attr{issue-link}}
+\dt{\cowdoc_attr{issue-link}}
 \dd{
 A link to issue tracking for the document.
 For example, in WG21 circles, this may be a link to the GitHub issue where a paper is tracked.
 }
 }
 
-Every argument except the \cow_attr{id} is optional,
-although you will hardly get meaningful bibliography output if only the \cow_attr{id} is specified.
+Every argument except the \cowdoc_attr{id} is optional,
+although you will hardly get meaningful bibliography output if only the \cowdoc_attr{id} is specified.
 
 
-\h4[id=dir-make-bib]{\cow_dir{make-bib} \c{mdash} Generate bibliography}
+\h4[id=dir-make-bib]{\cowdoc_dir{make-bib} \c{mdash} Generate bibliography}
 
-The \cow_dir{make-bib} directive generates a bibliography.
+The \cowdoc_dir{make-bib} directive generates a bibliography.
 This is typically done towards the bottom of the document, but can be done anywhere.
 
 It takes no arguments, its content is ignored,
 and it displays as a block.
 
-The \cow_dir{make-bib} directive is populated by uses of \cow_dir{bib} directives in order of use.
+The \cowdoc_dir{make-bib} directive is populated by uses of \cowdoc_dir{bib} directives in order of use.
 That is, the bibliography is not automatically sorted for you;
-the order in which \cow_dir{bib} directives are used is also the order in which the bibliography
+the order in which \cowdoc_dir{bib} directives are used is also the order in which the bibliography
 entries are generated.
 
 \Bnote{
-Similar to \cow_dir{make-contents},
+Similar to \cowdoc_dir{make-contents},
 it is a wrapper for the underlying \tt{std.bib} section.
 }

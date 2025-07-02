@@ -6,25 +6,25 @@ You can think of it as a "command" or "function call".
 Every directive has three parts:
 \ul{
   \li{
-    The \cow_c{\\directive_name} selects a specific directive to be processed.
+    The \cowdoc_c{\\directive_name} selects a specific directive to be processed.
   }
   \li{
-    An optional \cow_c[prefix=\\d]{[comma-separated, positional arguments, named-arguments = ...]}
+    An optional \cowdoc_c[prefix=\\d]{[comma-separated, positional arguments, named-arguments = ...]}
     provides additional inputs to the directive.
   }
   \li{
-    An optional \cow_c[prefix=\\d]{{block of content}} provides a "main input" to a directive.
+    An optional \cowdoc_c[prefix=\\d]{{block of content}} provides a "main input" to a directive.
   }
 }
 
 \h3{Directive names}
 
 A \dfn{directive name} selects a specific directive to be processed.
-The name begins with a \cow_c{\\} character,
+The name begins with a \cowdoc_c{\\} character,
 followed by a sequence of ASCII alphanumeric characters,
-\cow_cp{002D}, and
-\cow_cp{005F}.
-However, the first character after \cow_c{\\} cannot be an ASCII digit.
+\cowdoc_cp{002D}, and
+\cowdoc_cp{005F}.
+However, the first character after \cowdoc_c{\\} cannot be an ASCII digit.
 
 \Btip{
 You can use an empty block of content to "cut a name short":
@@ -32,14 +32,14 @@ You can use an empty block of content to "cut a name short":
 Thisisavery\\wbr{}longword.
 }
 Doing so is equivalent to writing
-\cow_c{\\wbr} and \cow_c{longword} immediately following one another.
+\cowdoc_c{\\wbr} and \cowdoc_c{longword} immediately following one another.
 }
 
 \Bwarn{
 The use of '-' (hyphen) characters in directive names is deprecated.
-Currently, \cow_dir{a-b} would get parsed as a directive name,
+Currently, \cowdoc_dir{a-b} would get parsed as a directive name,
 but this behavior will be removed in the future.
-This will result in \cow_dir{a} being parsed as a directive name,
+This will result in \cowdoc_dir{a} being parsed as a directive name,
 followed by plaintext \tt{-b}.
 }
 
@@ -65,28 +65,28 @@ Generated HTML:
 \h4{Named arguments}
 
 Named arguments are of the form
-\cow_c{name = value}, where spaces anywhere around \cow_c{name} and \cow_c{value} are ignored.
+\cowdoc_c{name = value}, where spaces anywhere around \cowdoc_c{name} and \cowdoc_c{value} are ignored.
 Named arguments are matched to directive parameters before any positional arguments,
 meaning that positional arguments fill the remaining unmatched arguments.
 
 Argument names can consist of any character, except
 ASCII control characters,
 U+0020\c{nbsp}SPACE,
-\cow_cp{0022},
-\cow_cp{0027},
-\cow_cp{002C},
-\cow_cp{002F},
-\cow_cp{003D},
-\cow_cp{003E},
-\cow_cp{005B},
-\cow_cp{005C},
-\cow_cp{005D},
-\cow_cp{007B},
-\cow_cp{007D},
+\cowdoc_cp{0022},
+\cowdoc_cp{0027},
+\cowdoc_cp{002C},
+\cowdoc_cp{002F},
+\cowdoc_cp{003D},
+\cowdoc_cp{003E},
+\cowdoc_cp{005B},
+\cowdoc_cp{005C},
+\cowdoc_cp{005D},
+\cowdoc_cp{007B},
+\cowdoc_cp{007D},
 and noncharacters.
 
 \Btip{
-If you want to provide a positional argument that is \cow_c{name = value} instead,
+If you want to provide a positional argument that is \cowdoc_c{name = value} instead,
 you can do so by writing:
 \codeblock[cowel]{\literally{
 \: "name = value" as a positional argument
@@ -94,14 +94,14 @@ you can do so by writing:
 \: named argument with name "name" and value "value"
 \xyz[name = value]
 }}
-Only the literal \cow_c{=} character can be used for named arguments,
-not its escaped variant \cow_c{\\=}.
+Only the literal \cowdoc_c{=} character can be used for named arguments,
+not its escaped variant \cowdoc_c{\\=}.
 }
 
 \h4{Positional arguments}
 
 Positional arguments are content just like any other content,
-except that an unbalanced closing \cow_cp{005D} or a \cow_cp{002C}
+except that an unbalanced closing \cowdoc_cp{005D} or a \cowdoc_cp{002C}
 ends the content.
 
 \Btip{
@@ -187,13 +187,13 @@ COWEL follows a different model:
 \codeblock[cowel]{
 \\comment{\\b{x}}
 }
-No \cow_html{<b>} tag is ever generated because \cow_c{\\b{x}} is never processed.
-\cow_dir{comment} is not magical feature;
+No \cowdoc_html{<b>} tag is ever generated because \cowdoc_c{\\b{x}} is never processed.
+\cowdoc_dir{comment} is not magical feature;
 it simply has control over all of its contents and arguments,
 and it can choose not to process them.
 
-You can even make a \cow_dir{comment2} directive that works
-just like \cow_dir{comment} yourself:
+You can even make a \cowdoc_dir{comment2} directive that works
+just like \cowdoc_dir{comment} yourself:
 \codeblock[cowel]{
 \\macro[\\comment2]{}
 }
@@ -204,8 +204,8 @@ There are two types of contexts: \dfn{plaintext contexts} and \dfn{HTML contexts
 These control what directives (and other content) will generate.
 
 \Bex{
-The COWEL text \cow_c{&} will be converted to \tt{&} literally in a plaintext context,
-and to \cow_html{&amp;} in an HTML context.
+The COWEL text \cowdoc_c{&} will be converted to \tt{&} literally in a plaintext context,
+and to \cowdoc_html{&amp;} in an HTML context.
 }
 
 
@@ -213,10 +213,10 @@ Any directive is capable of generating either plaintext or HTML,
 and the output may be substantially different depending on the context.
 
 \Bex{
-The \cow_dir{c} directive is used to generate HTML character references, aka "HTML entities".
+The \cowdoc_dir{c} directive is used to generate HTML character references, aka "HTML entities".
 It converts its input to plaintext to determine the chosen character.
 Within such a plaintext context,
-directives like \cow_dir{b} will simply output their content as plaintext:
+directives like \cowdoc_dir{b} will simply output their content as plaintext:
 \codeblock[cowel]{
 \\c{\\b{Omega}} \\c{Omega}
 }
@@ -224,8 +224,8 @@ Generated HTML:
 \codeblock[html]{
 &Omega; &Omega;
 }
-Also, \cow_dir{c} will only emit an HTML entity in an HTML context.
-In a plaintext context (such as in the input to \cow_dir{c}), it outputs the character directly.
+Also, \cowdoc_dir{c} will only emit an HTML entity in an HTML context.
+In a plaintext context (such as in the input to \cowdoc_dir{c}), it outputs the character directly.
 For example, if we write:
 \codeblock[cowel]{
 \\c{\\c{Omega}}

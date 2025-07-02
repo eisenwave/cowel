@@ -1,19 +1,22 @@
-\macro[\cow_c{...}]{\code[cowel,\put{...}]{\put}}\
-\macro[\cow_html{...}]{\code[html]{\put}}\
-\macro[\cow_dir{...}]{\cow_c{\hl[markup-tag]{\\\put}}}\
-\macro[\cow_cp{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}\
-\macro[\cow_attr{...}]{\tt{\hl[markup-attr]{\put}}}\
-\macro[\cow_esc{...}]{\tt{\hl[escape]{\\\put}}}\
+\macro[\cowdoc_c{...}]{\code[cowel,\put{...}]{\put}}\
+\macro[\cowdoc_html{...}]{\code[html]{\put}}\
+\macro[\cowdoc_dir{...}]{\cowdoc_c{\hl[markup-tag]{\\\put}}}\
+\macro[\cowdoc_cp{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}\
+\macro[\cowdoc_attr{...}]{\tt{\hl[markup-attr]{\put}}}\
+\macro[\cowdoc_esc{...}]{\tt{\hl[escape]{\\\put}}}\
 
-\macro[\og_property]{\html-meta[property=og:\put{0},content=\put]}
+\macro[\cowdoc_og_property]{\html-meta[property=og:\put{0},content=\put]}
 
 \there[std.head]{
 \html-title{COWEL - Compact Web Language Documentation}
-\og_property[title]{Compact Web Language (COWEL)}
-\og_property[description]{COWEL is a markup language with TeX-like syntax, intended to generate HTML documents.}
-\og_property[locale]{en_US}
-\og_property[url]{https://cowel.org/}
-\og_property[type]{website}
+\cowdoc_og_property[title]{Compact Web Language (COWEL)}
+\cowdoc_og_property[description]{\
+COWEL is a markup language with TeX-like syntax, \
+intended to generate HTML documents.\
+}
+\cowdoc_og_property[locale]{en_US}
+\cowdoc_og_property[url]{https://cowel.org/}
+\cowdoc_og_property[type]{website}
 }
 
 \h1[id=compact-web-language]{Compact Web Language (COWEL)}

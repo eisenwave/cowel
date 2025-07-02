@@ -3,28 +3,28 @@
 Often, you want to produce content in one place,
 but have it display in another place within the document.
 A classic example is collecting headings automatically in a table of contents,
-or copying the content of a heading into a preview when referenced by \cow_c{\\ref[#id]}.
+or copying the content of a heading into a preview when referenced by \cowdoc_c{\\ref[#id]}.
 
-\h4[id=dir-there]{\cow_dir{there} \c{mdash} Append content to section}
+\h4[id=dir-there]{\cowdoc_dir{there} \c{mdash} Append content to section}
 
-The \cow_dir{there} directive displays as meta content.
+The \cowdoc_dir{there} directive displays as meta content.
 Basically, it stashes away its input content (which is an HTML context) somewhere else.
 
 It takes a single \tt{section} argument which specifies the name of the section.
 The \tt{section} argument is a plaintext context.
 
-By default, all document content is placed within a \cow_html{<main>} element,
-inside \cow_html{<body>}, inside \cow_html{html}.
-\cow_dir{there} allows you to write outside of the \cow_html{<main>} element:
+By default, all document content is placed within a \cowdoc_html{<main>} element,
+inside \cowdoc_html{<body>}, inside \cowdoc_html{html}.
+\cowdoc_dir{there} allows you to write outside of the \cowdoc_html{<main>} element:
 
 \ul{
 \li{
-\cow_c{\\there[std.head]{text}} will write \cow_c{text}
-inside of the \cow_html{<head>} element (following auto-generated content).
+\cowdoc_c{\\there[std.head]{text}} will write \cowdoc_c{text}
+inside of the \cowdoc_html{<head>} element (following auto-generated content).
 }
 \li{
-\cow_c{\\there[std.body]{text}} will write \cow_c{text}
-inside of the \cow_html{<body>} element (following \cow_html{<main>}
+\cowdoc_c{\\there[std.body]{text}} will write \cowdoc_c{text}
+inside of the \cowdoc_html{<body>} element (following \cowdoc_html{<main>}
 and other automatically inserted elements).
 }
 }
@@ -38,15 +38,15 @@ You can change the title of the document as follows:
 }
 }
 
-\h4[id=dir-here]{\cow_dir{here} \c{mdash} Copy section content}
+\h4[id=dir-here]{\cowdoc_dir{here} \c{mdash} Copy section content}
 
-The \cow_dir{here} directive inserts the content from another section at its location.
+The \cowdoc_dir{here} directive inserts the content from another section at its location.
 It displays as inline content.
 
 It takes a single \tt{section} argument which specifies the name of the section.
 The \tt{section} argument is a plaintext context.
 
-All references produced by \cow_dir{here} are resolved in a post-processing step,
+All references produced by \cowdoc_dir{here} are resolved in a post-processing step,
 which allows forward-references.
 
 \Bex{
@@ -62,7 +62,7 @@ Generated HTML:
 }
 }
 
-\h4[id=dir-hereblock]{\cow_dir{hereblock} \c{mdash} Copy section content in block}
+\h4[id=dir-hereblock]{\cowdoc_dir{hereblock} \c{mdash} Copy section content in block}
 
-The \cow_dir{hereblock} directive functions exactly like the \cow_dir{here} directive,
+The \cowdoc_dir{hereblock} directive functions exactly like the \cowdoc_dir{here} directive,
 but displays as block content instead of inline content.

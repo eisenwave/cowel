@@ -3,14 +3,14 @@
 COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 \ul{
-  \li{\cow_c{\\various-directives[positional args, named-args = 0]{and content}}}
-  \li{\cow_c{Text.}}
-  \li{\cow_c{\\:Comments}}
-  \li{Escape sequences, such as \cow_c{\\\U{7B}}, \cow_c{\\\U{7D}}, \cow_c{\\\\}, etc.}
+  \li{\cowdoc_c{\\various-directives[positional args, named-args = 0]{and content}}}
+  \li{\cowdoc_c{Text.}}
+  \li{\cowdoc_c{\\:Comments}}
+  \li{Escape sequences, such as \cowdoc_c{\\\U{7B}}, \cowdoc_c{\\\U{7D}}, \cowdoc_c{\\\\}, etc.}
 }
 
 There is no special syntax besides that,
-meaning that as long as some bit of code doesn't contain a \cow_c{\\},
+meaning that as long as some bit of code doesn't contain a \cowdoc_c{\\},
 it's all interpreted as plaintext.
 This makes COWEL exceptionally suited to nest other languages inside of it in code blocks etc.
 
@@ -20,12 +20,12 @@ Text is not processed specially;
 what you see is what you get.
 
 However, the output may depend on the context (\ref[#contexts-and-output]).
-For example, \cow_c{<} in text will render as a < character,
-but will be converted to \cow_html{&lt;} in an HTML context.
+For example, \cowdoc_c{<} in text will render as a < character,
+but will be converted to \cowdoc_html{&lt;} in an HTML context.
 
 \h3[id=syntax-comments]{Comments}
 
-Comments begin with \cow_c{\\:} and extend until the end of the line.
+Comments begin with \cowdoc_c{\\:} and extend until the end of the line.
 In almost every context,
 comments are discarded instead of being emitted into the output HTML.
 
@@ -71,7 +71,7 @@ Hello World
 \h3{Escape sequences}
 
 COWEL supports multiple escape sequences,
-all of which begin with a \cow_c{\\} (like directives),
+all of which begin with a \cowdoc_c{\\} (like directives),
 but are followed by some special character.
 The meaning of the escape sequences is described in the table below.
 
@@ -96,15 +96,15 @@ The meaning of the escape sequences is described in the table below.
   }
   \tr{
     \td{
-      \cow_esc{\N{LEFT CURLY BRACKET}},
-      \cow_esc{\N{RIGHT CURLY BRACKET}},
-      \cow_esc{\\},
-      \cow_esc{[},
-      \cow_esc{]},
-      \cow_esc{,},
-      \cow_esc{=},
-      \nobr{\cow_esc{} U+0009 HORIZONTAL TABULATION},
-      \nobr{\cow_esc{} U+0020 SPACE}
+      \cowdoc_esc{\N{LEFT CURLY BRACKET}},
+      \cowdoc_esc{\N{RIGHT CURLY BRACKET}},
+      \cowdoc_esc{\\},
+      \cowdoc_esc{[},
+      \cowdoc_esc{]},
+      \cowdoc_esc{,},
+      \cowdoc_esc{=},
+      \nobr{\cowdoc_esc{} U+0009 HORIZONTAL TABULATION},
+      \nobr{\cowdoc_esc{} U+0020 SPACE}
     }
     \td{
       Expands to the second character in the escape sequence.
@@ -113,27 +113,27 @@ The meaning of the escape sequences is described in the table below.
   }
   \tr{
     \td{
-      \cow_esc{!},
-      \cow_esc{"},
-      \cow_esc{#},
-      \cow_esc{\N{DOLLAR SIGN}},
-      \cow_esc{\N{PERCENT SIGN}},
-      \cow_esc{&},
-      \cow_esc{'},
-      \cow_esc{(},
-      \cow_esc{)},
-      \cow_esc{*},
-      \cow_esc{+},
-      \cow_esc{.},
-      \cow_esc{/},
-      \cow_esc{;},
-      \cow_esc{<},
-      \cow_esc{>},
-      \cow_esc{?},
-      \cow_esc{@},
-      \cow_esc{^},
-      \cow_esc{|},
-      \cow_esc{~}
+      \cowdoc_esc{!},
+      \cowdoc_esc{"},
+      \cowdoc_esc{#},
+      \cowdoc_esc{\N{DOLLAR SIGN}},
+      \cowdoc_esc{\N{PERCENT SIGN}},
+      \cowdoc_esc{&},
+      \cowdoc_esc{'},
+      \cowdoc_esc{(},
+      \cowdoc_esc{)},
+      \cowdoc_esc{*},
+      \cowdoc_esc{+},
+      \cowdoc_esc{.},
+      \cowdoc_esc{/},
+      \cowdoc_esc{;},
+      \cowdoc_esc{<},
+      \cowdoc_esc{>},
+      \cowdoc_esc{?},
+      \cowdoc_esc{@},
+      \cowdoc_esc{^},
+      \cowdoc_esc{|},
+      \cowdoc_esc{~}
     }
     \td{
       Expands to the second character in the escape sequence.
@@ -144,10 +144,10 @@ The meaning of the escape sequences is described in the table below.
   }
   \tr{
     \td{
-      \nobr{\cow_esc{} U+000A LINE FEED},
-      \nobr{\cow_esc{} U+000B VERTICAL TABULATION},
-      \nobr{\cow_esc{} U+000D CARRIAGE RETURN},
-      \nobr{\cow_esc{} U+000A U+000D (CRLF escape)}
+      \nobr{\cowdoc_esc{} U+000A LINE FEED},
+      \nobr{\cowdoc_esc{} U+000B VERTICAL TABULATION},
+      \nobr{\cowdoc_esc{} U+000D CARRIAGE RETURN},
+      \nobr{\cowdoc_esc{} U+000A U+000D (CRLF escape)}
     }
     \td{
       Expands to nothing; feature is stable
@@ -160,7 +160,7 @@ this ambiguity is resolved in favor of a CRLF escape.
 
 \Bnote{
 The purpose of most escapes is to prevent a character from having special meaning.
-For example, the \cow_esc{,} escape prevents a comma from being interpreted
+For example, the \cowdoc_esc{,} escape prevents a comma from being interpreted
 as a separator between directive arguments.
 
 The purpose of the newline escapes is to remove unwanted newlines
@@ -196,17 +196,17 @@ At the top-level in the document and within the content of certain directives,
 All content in COWEL is either \dfn{inline content}, \dfn{block content}, or \dfn{meta content}.
 Text and escape sequences are inline content,
 and directives are sometimes inline and sometimes block content.
-Certain directives (e.g. \cow_dir{comment}) that don't generate anything rendered are meta content.
+Certain directives (e.g. \cowdoc_dir{comment}) that don't generate anything rendered are meta content.
 
 The process of paragraph splitting works as follows:
 \ul{
   \li{
-    Blank-line-separated blocks of inline content is wrapped in in \cow_html{<p>...</p>} tags.
+    Blank-line-separated blocks of inline content is wrapped in in \cowdoc_html{<p>...</p>} tags.
     Meta content is not counted as a blank line, so it "continues" inline content,
-    but no effort is made to wrap it in \cow_html{<p>...</p>}.
+    but no effort is made to wrap it in \cowdoc_html{<p>...</p>}.
   }
   \li{
-    Block content stays untouched, i.e. it is not wrapped in \cow_html{<p>...</p>}.
+    Block content stays untouched, i.e. it is not wrapped in \cowdoc_html{<p>...</p>}.
     However, it also terminates prior inline content, like a blank line.
   }
 }

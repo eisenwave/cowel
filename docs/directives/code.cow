@@ -7,38 +7,38 @@ While the set of supported language is relatively small,
 the highlighter is ultra-light, extremely fast, and
 deals with modern C++ features correctly.
 
-\h4[id=dir-code]{\cow_dir{code} \c{mdash} Inline code}
+\h4[id=dir-code]{\cowdoc_dir{code} \c{mdash} Inline code}
 
-The \cow_dir{code} directive produced syntax-highlighted text in code font.
+The \cowdoc_dir{code} directive produced syntax-highlighted text in code font.
 
 \dl{
 \dt{Arguments}
 \dd{
 \ul{
-\li{\cow_attr{lang} (plaintext) \c{mdash} the syntax highlighting language.}
-\li{\cow_attr{nested} (yes/no) \c{mdash} whether whether to omit \cow_html{<code>} tags.}
-\li{\cow_attr{prefix} (plaintext) \c{mdash} code before the input from the view of the highlighter.}
-\li{\cow_attr{suffix} (plaintext) \c{mdash} code after input from the view of the highlighter.}
+\li{\cowdoc_attr{lang} (plaintext) \c{mdash} the syntax highlighting language.}
+\li{\cowdoc_attr{nested} (yes/no) \c{mdash} whether whether to omit \cowdoc_html{<code>} tags.}
+\li{\cowdoc_attr{prefix} (plaintext) \c{mdash} code before the input from the view of the highlighter.}
+\li{\cowdoc_attr{suffix} (plaintext) \c{mdash} code after input from the view of the highlighter.}
 }
 }
 
 \dt{Input content}
 \dd{
-The input to a \cow_dir{code} directive is a plaintext context.
+The input to a \cowdoc_dir{code} directive is a plaintext context.
 However, there are special rules for formatting directives
 and pure plaintext directives (see below).
 }
 
 \dt{HTML output}
 \dd{
-In an HTML context, the \cow_dir{code} takes the input source code,
+In an HTML context, the \cowdoc_dir{code} takes the input source code,
 applies syntax highlighting,
-and outputs the result surrounded by \cow_html{<code>...</code>}.
+and outputs the result surrounded by \cowdoc_html{<code>...</code>}.
 }
 
 \dt{Plaintext output}
 \dd{
-In a plaintext context, \cow_dir{code} simply outputs the input source code.
+In a plaintext context, \cowdoc_dir{code} simply outputs the input source code.
 }
 
 \dt{Display style}
@@ -51,7 +51,7 @@ COWEL markup:
 \\code[cpp]{123}
 }
 This applies C++ syntax highlighting, and generates HTML.
-The \cow_html{<h->} tags are an implementation detail and may be subject to change.
+The \cowdoc_html{<h->} tags are an implementation detail and may be subject to change.
 \codeblock[html]{
 <code><h- data-h=num>123</h-></code>
 }
@@ -61,8 +61,8 @@ The \cow_html{<h->} tags are an implementation detail and may be subject to chan
 
 The \tt{nested} parameter is a plaintext context,
 which accepts either \tt{yes} or \tt{no}, where \tt{no} is the default.
-When enabled, the surrounding \cow_html{<code>} tags are omitted,
-which makes it suitable for nesting languages within other \cow_dir{code} or \cow_dir{codeblock}
+When enabled, the surrounding \cowdoc_html{<code>} tags are omitted,
+which makes it suitable for nesting languages within other \cowdoc_dir{code} or \cowdoc_dir{codeblock}
 directives.
 
 \Bex{
@@ -79,7 +79,7 @@ Call: \code[cpp]{out.write_json("\code[json,nested=yes]{{"x":123,"y":true,"z":nu
 Note that by default,
 you may often not even notice a visual difference between using the \tt{nested}
 parameter and not using it.
-However, the difference would be obvious once you want to style \cow_html{<code>} elements
+However, the difference would be obvious once you want to style \cowdoc_html{<code>} elements
 to have borders, background color, padding, and other such styling features.
 \tt{nested=yes} directly emits the highlighting HTML elements,
 which is more composable.
@@ -116,7 +116,7 @@ as if it was positioned like:
 \h5{Further advice on highlighting}
 
 \Btip{
-Writing \cow_dir{code} directives directly is often too tedious,
+Writing \cowdoc_dir{code} directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:
 \codeblock[cowel]{\literally{
 \: Defines a \js directive that can be used in place of \code[js] from now on:
@@ -125,9 +125,9 @@ Let's highlight \js{var} in JavaScript.
 }}
 }
 
-\h4[id=dir-codeblock]{\cow_dir{codeblock} \c{mdash} Code blocks}
+\h4[id=dir-codeblock]{\cowdoc_dir{codeblock} \c{mdash} Code blocks}
 
-The \cow_dir{codeblock} directive works exactly like \cow_dir{code},
+The \cowdoc_dir{codeblock} directive works exactly like \cowdoc_dir{code},
 but it is a block directive, not an inline directive.
 
 Additionally, code blocks render using borders and a dark background by default.
@@ -155,9 +155,9 @@ let x = 0;
 }
 }
 
-\h4[id=dir-hl]{\cow_dir{hl} \c{mdash} Syntax highlight override}
+\h4[id=dir-hl]{\cowdoc_dir{hl} \c{mdash} Syntax highlight override}
 
-The \cow_dir{hl} directive forces certain syntax highlighting to be applied to some text;
+The \cowdoc_dir{hl} directive forces certain syntax highlighting to be applied to some text;
 it is a manual override for when automatic syntax highlighting is insufficient or broken.
 It displays as inline content and wraps its content (which is an HTML context)
 in the appropriate syntax highlighting tags.
@@ -185,15 +185,15 @@ It renders as \code[c]{\hl[keyword-type]{_Int128} x}.
 
 \Bnote{
 While it is also possible to produce the highlighting tags using
-\cow_c{\\html-h-[data-h=kw_type]{_Int128}},
-the "short names" (\cow_c{kw_type}) are not stable, i.e. they are more likely to change.
+\cowdoc_c{\\html-h-[data-h=kw_type]{_Int128}},
+the "short names" (\cowdoc_c{kw_type}) are not stable, i.e. they are more likely to change.
 Only µlight long names should be used directly.
 }
 
-\h4[id=dir-pre]{\cow_dir{pre} \c{mdash} Preformatted blocks}
+\h4[id=dir-pre]{\cowdoc_dir{pre} \c{mdash} Preformatted blocks}
 
-The \cow_dir{pre} directive contains pre-formatted content.
-It can be used to contain code, however, there is no syntax highlighting in a \cow_dir{pre} block.
+The \cowdoc_dir{pre} directive contains pre-formatted content.
+It can be used to contain code, however, there is no syntax highlighting in a \cowdoc_dir{pre} block.
 
 \Bex{
 COWEL markup:
@@ -213,13 +213,13 @@ Hello, world!
 }
 
 \Btodo{
-Unlike \cow_dir{codeblock}, \cow_dir{pre} currently does not support the \tt{borders=no} option.
+Unlike \cowdoc_dir{codeblock}, \cowdoc_dir{pre} currently does not support the \tt{borders=no} option.
 This will be added in the future.
 }
 
-\h4[id=dir-literally]{\cow_dir{literally} \c{mdash} Treat input literally as text}
+\h4[id=dir-literally]{\cowdoc_dir{literally} \c{mdash} Treat input literally as text}
 
-The \cow_dir{literally} directive treats its input source code as plain text,
+The \cowdoc_dir{literally} directive treats its input source code as plain text,
 even if it contains directives or escape sequences.
 It outputs the given input source code as text.
 
@@ -242,15 +242,15 @@ This \comment{comment} \{ is taken literally \}!
 }
 
 \Bnote{
-\cow_dir{put} pseudo-directives in macros are still processed,
-even inside \cow_dir{literally} blocks
-because \cow_dir{macro} replaces any appearances of \cow_dir{put} with the given content,
+\cowdoc_dir{put} pseudo-directives in macros are still processed,
+even inside \cowdoc_dir{literally} blocks
+because \cowdoc_dir{macro} replaces any appearances of \cowdoc_dir{put} with the given content,
 disregarding the semantics of any directives nested within.
 }
 
-\h4[id=dir-unprocessed]{\cow_dir{unprocessed} \c{mdash} Suppress directive processing}
+\h4[id=dir-unprocessed]{\cowdoc_dir{unprocessed} \c{mdash} Suppress directive processing}
 
-The \cow_dir{unprocessed} directive works just like \cow_dir{literally},
+The \cowdoc_dir{unprocessed} directive works just like \cowdoc_dir{literally},
 except that escape sequences are processed into their escaped characters.
 
 \Bex{
@@ -268,10 +268,10 @@ This \comment{comment} \{ is unprocessed \}!
 }
 
 \Btip{
-\cow_dir{unprocessed} and (to a lesser extent) \cow_dir{literally} are very useful for nesting
+\cowdoc_dir{unprocessed} and (to a lesser extent) \cowdoc_dir{literally} are very useful for nesting
 code inside COWEL that already contains underscores.
-For example, \cow_c{\\n} is an escape sequence for newline characters in many languages,
-and it may be annoying if it gets interpreted as an \cow_dir{n} directive:
+For example, \cowdoc_c{\\n} is an escape sequence for newline characters in many languages,
+and it may be annoying if it gets interpreted as an \cowdoc_dir{n} directive:
 \codeblock[cowel]{\unprocessed{
 \codeblock[cpp]{\unprocessed{
 std::string_view s = "Several\nLines\nof\nCode.";
@@ -281,16 +281,16 @@ This renders as:
 \codeblock[cpp]{\unprocessed{
 std::string_view s = "Several\nLines\nof\nCode.";
 }}
-Notice that COWEL technically parses a \cow_dir{nLines} directive instead of just \cow_dir{n},
+Notice that COWEL technically parses a \cowdoc_dir{nLines} directive instead of just \cowdoc_dir{n},
 which is the part that turns into a newline escape sequence in the C++ code block.
 However, that is ultimately irrelevant for syntax highlighting
-because the source characters of \cow_dir{nLines} are taken as text,
+because the source characters of \cowdoc_dir{nLines} are taken as text,
 and then split up according to C++ syntax.
 }
 
 \Bnote{
-\cow_dir{put} pseudo-directives in macros are still processed,
-even inside \cow_dir{unprocessed} blocks
-because \cow_dir{macro} replaces any appearances of \cow_dir{put} with the given content,
+\cowdoc_dir{put} pseudo-directives in macros are still processed,
+even inside \cowdoc_dir{unprocessed} blocks
+because \cowdoc_dir{macro} replaces any appearances of \cowdoc_dir{put} with the given content,
 disregarding the semantics of any directives nested within.
 }

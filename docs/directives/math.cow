@@ -8,7 +8,7 @@ which is very simple and lightweight,
 but not as portable as "baking" the math into an SVG.
 
 \Bex{
-If you have existing MathML, you can embed their content using \cow_dir{html} or \cow_dir{htmlblock}:
+If you have existing MathML, you can embed their content using \cowdoc_dir{html} or \cowdoc_dir{htmlblock}:
 \codeblock[cowel]{
 Math
 \\html{
@@ -32,7 +32,7 @@ Math
 </math>}
 in a sentence.
 }
-You can also keep the MathML separate within an XML document and \cow_dir{include} it:
+You can also keep the MathML separate within an XML document and \cowdoc_dir{include} it:
 \codeblock[cowel]{\literally{
 Math \html{\include{math.mml}} in a sentence.
 }}
@@ -41,14 +41,14 @@ Math \html{\include{math.mml}} in a sentence.
 However, hand-writing MathML would be extremely tedious and verbose,
 so COWEL offers some convenience directives, listed below.
 
-\h4[id=dir-math]{\cow_dir{math} \c{mdash} Inline math}
+\h4[id=dir-math]{\cowdoc_dir{math} \c{mdash} Inline math}
 
-A \cow_dir{math} directive surrounds its content with
-\cow_html{<math display=inline>...</math>} tags,
+A \cowdoc_dir{math} directive surrounds its content with
+\cowdoc_html{<math display=inline>...</math>} tags,
 and displays as inline content.
 
 Its content is an HTML context,
-and within it, additional pseudo-directives like \cow_dir{mi} or \cow_dir{mn}
+and within it, additional pseudo-directives like \cowdoc_dir{mi} or \cowdoc_dir{mn}
 corresponding to MathML elements can be used.
 Essentially, this allows you to build MathML using COWEL syntax.
 
@@ -78,9 +78,9 @@ The sum of \math{\msup{\mi{x}\mn{2}}} and \math{\msup{\mi{y}\mn{2}}} \c{mldr}
 }
 }
 
-\h4[id=dir-mathblock]{\cow_dir{mathblock} \c{mdash} Math blocks}
+\h4[id=dir-mathblock]{\cowdoc_dir{mathblock} \c{mdash} Math blocks}
 
-The \cow_dir{mathblock} directive functions almost exactly as the \cow_dir{math} directive,
+The \cowdoc_dir{mathblock} directive functions almost exactly as the \cowdoc_dir{math} directive,
 but it displays as block content instead of inline content,
 and it produces an opening
-\cow_html{<math display=block>} tag.
+\cowdoc_html{<math display=block>} tag.

@@ -4,13 +4,13 @@ In some cases, the automatic \ref[#paragraph-splitting]
 process is not enough.
 To get more fine-tuned control, we have a number of directives.
 
-\h4[id=dir-p]{\cow_dir{p} \c{mdash} Paragraphs}
+\h4[id=dir-p]{\cowdoc_dir{p} \c{mdash} Paragraphs}
 
-The \cow_dir{p} directive surrounds its content in \cow_html{<p>...</p>} tags.
+The \cowdoc_dir{p} directive surrounds its content in \cowdoc_html{<p>...</p>} tags.
 
-\h4[id=dir-paragraphs]{\cow_dir{paragraphs} \c{mdash} Enable paragraph splitting}
+\h4[id=dir-paragraphs]{\cowdoc_dir{paragraphs} \c{mdash} Enable paragraph splitting}
 
-The \cow_dir{paragraphs} directive activates paragraph splitting.
+The \cowdoc_dir{paragraphs} directive activates paragraph splitting.
 This may be useful in places where it is not active by default.
 
 \Bex{
@@ -36,13 +36,13 @@ Generated HTML:
 }
 }
 
-\h4[id=dir-block]{\cow_dir{block} \c{mdash} Display as block content}
+\h4[id=dir-block]{\cowdoc_dir{block} \c{mdash} Display as block content}
 
-The \cow_dir{block} directive doesn't add any HTML itself,
+The \cowdoc_dir{block} directive doesn't add any HTML itself,
 but causes its contents to be considered block content.
 
 \Bex{
-\cow_dir{block} can be used to suppress automatic paragraph splitting:
+\cowdoc_dir{block} can be used to suppress automatic paragraph splitting:
 \codeblock[cowel]{
 \\: No <p> tags will be added here
 \\block{
@@ -53,7 +53,7 @@ Second paragraph.
 }
 }
 
-\h4[id=dir-inline]{\cow_dir{inline} \c{mdash} Display as inline content}
+\h4[id=dir-inline]{\cowdoc_dir{inline} \c{mdash} Display as inline content}
 
-The \cow_dir{inline} directive works like the \cow_dir{block} directive,
+The \cowdoc_dir{inline} directive works like the \cowdoc_dir{block} directive,
 but causes its contents to display as inline content, not as block content.

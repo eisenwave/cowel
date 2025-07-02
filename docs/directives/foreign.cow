@@ -1,8 +1,8 @@
 \h3{Foreign languages}
 
-\h4[id=dir-html]{\cow_dir{html} \c{mdash} Inline HTML}
+\h4[id=dir-html]{\cowdoc_dir{html} \c{mdash} Inline HTML}
 
-The \cow_dir{html} directive can be used to output HTML literally.
+The \cowdoc_dir{html} directive can be used to output HTML literally.
 Its content is a plaintext context,
 and it displays as inline content.
 
@@ -18,23 +18,23 @@ This is <b>bold text</b>.
 }
 
 \Bwarn{
-The \cow_dir{html} directive can produce malformed HTML content if you're not careful.
+The \cowdoc_dir{html} directive can produce malformed HTML content if you're not careful.
 See, \ref[#dir-html-element] for a safer option.
 }
 
-\h4[id=dir-htmlblock]{\cow_dir{htmlblock} \c{mdash} HTML blocks}
+\h4[id=dir-htmlblock]{\cowdoc_dir{htmlblock} \c{mdash} HTML blocks}
 
-The \cow_dir{htmlblock} directive works exactly like the \cow_dir{html} directive,
+The \cowdoc_dir{htmlblock} directive works exactly like the \cowdoc_dir{html} directive,
 but displays as block content instead of inline content.
 
 \Bwarn{
-The \cow_dir{htmlblock} directive can produce malformed HTML content if you're not careful.
+The \cowdoc_dir{htmlblock} directive can produce malformed HTML content if you're not careful.
 See, \ref[#dir-html-element] for a safer option.
 }
 
-\h4[id=dir-html-element]{\cow_dir{html-*} \c{mdash} HTML element literals}
+\h4[id=dir-html-element]{\cowdoc_dir{html-*} \c{mdash} HTML element literals}
 
-Any directive beginning with \cow_dir{html-} can be used to produce an HTML element
+Any directive beginning with \cowdoc_dir{html-} can be used to produce an HTML element
 directly.
 Its content is a plaintext context,
 and it displays as inline content.
@@ -51,13 +51,13 @@ This is <span id=abc>a span</span>.
 }
 }
 
-\h4[id=dir-script]{\cow_dir{script} \c{mdash} JavaScript blocks}
+\h4[id=dir-script]{\cowdoc_dir{script} \c{mdash} JavaScript blocks}
 
-The content of a \cow_dir{script} directive is a plaintext context,
+The content of a \cowdoc_dir{script} directive is a plaintext context,
 where the input is treated as JavaScript code
-and surrounded in \cow_html{<script>/*...*/</script>} tags.
+and surrounded in \cowdoc_html{<script>/*...*/</script>} tags.
 
-\cow_dir{script} displays as meta content (like \cow_dir{comment}).
+\cowdoc_dir{script} displays as meta content (like \cowdoc_dir{comment}).
 
 \Bex{
 COWEL markup:
@@ -74,18 +74,18 @@ console.log("hello");
 }
 }
 
-\h4[id=dir-noscript]{\cow_dir{noscript} \c{mdash} No-JavaScript content}
+\h4[id=dir-noscript]{\cowdoc_dir{noscript} \c{mdash} No-JavaScript content}
 
-The \cow_dir{noscript} directive corresponds to the \cow_html{<noscript>} element.
+The \cowdoc_dir{noscript} directive corresponds to the \cowdoc_html{<noscript>} element.
 Its content is an HTML context,
 and will only be shown by the browser when JavaScript is disabled.
 
-\h4[id=dir-style]{\cow_dir{style} \c{mdash} CSS blocks}
+\h4[id=dir-style]{\cowdoc_dir{style} \c{mdash} CSS blocks}
 
-The content of a \cow_dir{style} directive is a plaintext context,
-where the input is treated as JavaScript code and surrounded in \cow_html{<style>/*...*/</style>} tags.
+The content of a \cowdoc_dir{style} directive is a plaintext context,
+where the input is treated as JavaScript code and surrounded in \cowdoc_html{<style>/*...*/</style>} tags.
 
-\cow_dir{style} displays as meta content (like \cow_dir{comment}).
+\cowdoc_dir{style} displays as meta content (like \cowdoc_dir{comment}).
 
 \Bex{
 COWEL markup:

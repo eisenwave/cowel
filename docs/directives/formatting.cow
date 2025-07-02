@@ -12,123 +12,123 @@ You can rely on this when adding custom CSS.
     \th{Renders as}
 }
 \tr[id=dir-b]{
-    \td{\cow_c{\\b{...}}}
-    \td{\cow_html{<b>...</b>}}
+    \td{\cowdoc_c{\\b{...}}}
+    \td{\cowdoc_html{<b>...</b>}}
     \td{\b{Bold text}}
 }
 \tr[id=dir-cite]{
-    \td{\cow_c{\\cite{...}}}
-    \td{\cow_html{<cite>...</cite>}}
+    \td{\cowdoc_c{\\cite{...}}}
+    \td{\cowdoc_html{<cite>...</cite>}}
     \td{\cite{Name of cited work}}
 }
 \tr[id=dir-del]{
-    \td{\cow_c{\\del{...}}}
-    \td{\cow_html{<del>...</del>}}
+    \td{\cowdoc_c{\\del{...}}}
+    \td{\cowdoc_html{<del>...</del>}}
     \td{\del{Deleted text}}
 }
 \tr[id=dir-dfn]{
-    \td{\cow_c{\\dfn{...}}}
-    \td{\cow_html{<dfn>...</dfn>}}
+    \td{\cowdoc_c{\\dfn{...}}}
+    \td{\cowdoc_html{<dfn>...</dfn>}}
     \td{\dfn{Definition}}
 }
 \tr[id=dir-em]{
-    \td{\cow_c{\\em{...}}}
-    \td{\cow_html{<em>...</em>}}
+    \td{\cowdoc_c{\\em{...}}}
+    \td{\cowdoc_html{<em>...</em>}}
     \td{\em{Emphasized text}}
 }
 \tr[id=dir-gterm]{
-    \td{\cow_c{\\gterm{...}}}
+    \td{\cowdoc_c{\\gterm{...}}}
     \td{\i{unspecified}}
     \td{\gterm{grammar-term}}
 }
 \tr[id=dir-i]{
-    \td{\cow_c{\\i{...}}}
-    \td{\cow_html{<i>...</i>}}
+    \td{\cowdoc_c{\\i{...}}}
+    \td{\cowdoc_html{<i>...</i>}}
     \td{\i{Italic text}}
 }
 \tr[id=dir-ins]{
-    \td{\cow_c{\\ins{...}}}
-    \td{\cow_html{<ins>...</ins>}}
+    \td{\cowdoc_c{\\ins{...}}}
+    \td{\cowdoc_html{<ins>...</ins>}}
     \td{\ins{Inserted text}}
 }
 \tr[id=dir-kbd]{
-    \td{\cow_c{\\kbd{...}}}
-    \td{\cow_html{<kbd>...</kbd>}}
+    \td{\cowdoc_c{\\kbd{...}}}
+    \td{\cowdoc_html{<kbd>...</kbd>}}
     \td{\kbd{Ctrl} + \kbd{Keyboard key}}
 }
 \tr[id=dir-mark]{
-    \td{\cow_c{\\mark{...}}}
-    \td{\cow_html{<mark>...</mark>}}
+    \td{\cowdoc_c{\\mark{...}}}
+    \td{\cowdoc_html{<mark>...</mark>}}
     \td{\mark{Marked/highlighted}}
 }
 \tr[id=dir-o]{
-    \td{\cow_c{\\o{...}}}
+    \td{\cowdoc_c{\\o{...}}}
     \td{\i{unspecified}}
     \td{\o{Oblique text}}
 }
 \tr[id=dir-q]{
-    \td{\cow_c{\\q{...}}}
-    \td{\cow_html{<q>...</q>}}
+    \td{\cowdoc_c{\\q{...}}}
+    \td{\cowdoc_html{<q>...</q>}}
     \td{\q{Quoted text}}
 }
 \tr[id=dir-s]{
-    \td{\cow_c{\\s{...}}}
-    \td{\cow_html{<s>...</s>}}
+    \td{\cowdoc_c{\\s{...}}}
+    \td{\cowdoc_html{<s>...</s>}}
     \td{\s{Struck text}}
 }
 \tr[id=dir-samp]{
-    \td{\cow_c{\\samp{...}}}
-    \td{\cow_html{<samp>...</samp>}}
+    \td{\cowdoc_c{\\samp{...}}}
+    \td{\cowdoc_html{<samp>...</samp>}}
     \td{\samp{Sample output}}
 }
 \tr[id=dir-sans]{
-    \td{\cow_c{\\sans{...}}}
+    \td{\cowdoc_c{\\sans{...}}}
     \td{\i{unspecified}}
     \td{\sans{Sans-serif font}}
 }
 \tr[id=dir-serif]{
-    \td{\cow_c{\\serif{...}}}
+    \td{\cowdoc_c{\\serif{...}}}
     \td{\i{unspecified}}
     \td{\serif{Serif font}}
 }
 \tr[id=dir-small]{
-    \td{\cow_c{\\small{...}}}
-    \td{\cow_html{<small>...</small>}}
+    \td{\cowdoc_c{\\small{...}}}
+    \td{\cowdoc_html{<small>...</small>}}
     \td{\sub{Small text}}
 }
 \tr[id=dir-span]{
-    \td{\cow_c{\\span{...}}}
-    \td{\cow_html{<span>...</span>}}
+    \td{\cowdoc_c{\\span{...}}}
+    \td{\cowdoc_html{<span>...</span>}}
     \td{(No change in formatting)}
 }
 \tr[id=dir-sub]{
-    \td{\cow_c{\\sub{...}}}
-    \td{\cow_html{<sub>...</sub>}}
+    \td{\cowdoc_c{\\sub{...}}}
+    \td{\cowdoc_html{<sub>...</sub>}}
     \td{\sub{Subscript}}
 }
 \tr[id=dir-sup]{
-    \td{\cow_c{\\sup{...}}}
-    \td{\cow_html{<sup>...</sup>}}
+    \td{\cowdoc_c{\\sup{...}}}
+    \td{\cowdoc_html{<sup>...</sup>}}
     \td{\sup{Superscript}}
 }
 \tr[id=dir-strong]{
-    \td{\cow_c{\\strong{...}}}
-    \td{\cow_html{<strong>...</strong>}}
+    \td{\cowdoc_c{\\strong{...}}}
+    \td{\cowdoc_html{<strong>...</strong>}}
     \td{\b{Strong text}}
 }
 \tr[id=dir-tt]{
-    \td{\cow_c{\\tt{...}}}
+    \td{\cowdoc_c{\\tt{...}}}
     \td{\i{unspecified}}
     \td{\tt{Teletype/monospace font}}
 }
 \tr[id=dir-var]{
-    \td{\cow_c{\\var{...}}}
-    \td{\cow_html{<var>...</var>}}
+    \td{\cowdoc_c{\\var{...}}}
+    \td{\cowdoc_html{<var>...</var>}}
     \td{\var{Variable name}}
 }
 \tr[id=dir-u]{
-    \td{\cow_c{\\u{...}}}
-    \td{\cow_html{<u>...</u>}}
+    \td{\cowdoc_c{\\u{...}}}
+    \td{\cowdoc_html{<u>...</u>}}
     \td{\u{Underlined text}}
 }
 }
@@ -138,15 +138,15 @@ convert all named arguments directly into HTML attributes.
 
 \Bnote{
 By default, a substantial amount of directives are styled the same way.
-For example, \cow_dir{cite}, \cow_dir{var}, \cow_dir{i} and \cow_dir{em} are all italic.
-Both \cow_dir{strong} and \cow_dir{b} are bold.
-Both \cow_dir{tt} and \cow_dir{samp} use teletype font.
+For example, \cowdoc_dir{cite}, \cowdoc_dir{var}, \cowdoc_dir{i} and \cowdoc_dir{em} are all italic.
+Both \cowdoc_dir{strong} and \cowdoc_dir{b} are bold.
+Both \cowdoc_dir{tt} and \cowdoc_dir{samp} use teletype font.
 
 However, you can customize the style; see \ref[#dir-style].
 }
 
 \Bnote{
-The difference between oblique (\cow_dir{o}) and italic (\cow_dir{i}) text
+The difference between oblique (\cowdoc_dir{o}) and italic (\cowdoc_dir{i}) text
 is that oblique text is merely slanted,
 while italic text is fundamentally a different font with different characters.
 }
