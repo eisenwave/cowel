@@ -4,9 +4,9 @@
 \macro[\cowdoc_cp{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}\
 \macro[\cowdoc_attr{...}]{\tt{\hl[markup-attr]{\put}}}\
 \macro[\cowdoc_esc{...}]{\tt{\hl[escape]{\\\put}}}\
-
-\macro[\cowdoc_og_property]{\html-meta[property=og:\put{0},content=\put]}
-
+\
+\macro[\cowdoc_og_property]{\html-meta[property=og:\put{0},content=\put]}\
+\
 \there[std.head]{
 \html-title{COWEL - Compact Web Language Documentation}
 \cowdoc_og_property[title]{Compact Web Language (COWEL)}
@@ -17,11 +17,11 @@ intended to generate HTML documents.\
 \cowdoc_og_property[locale]{en_US}
 \cowdoc_og_property[url]{https://cowel.org/}
 \cowdoc_og_property[type]{website}
-}
+}\
 
 \h1[id=compact-web-language]{Compact Web Language (COWEL)}
 
-\html-div[id=github]{
+\div[id=github]{
 \style{
 h1 {
     margin-bottom: 0;
