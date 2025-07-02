@@ -213,6 +213,7 @@ public:
         if (!m_log) {
             return;
         }
+        COWEL_ASSERT(m_message_parts.empty());
         m_message_parts.reserve(diagnostic.message.size());
         for (const std::u8string_view& part : diagnostic.message) {
             m_message_parts.push_back(as_cowel_string_view(part));
@@ -294,6 +295,54 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
     return { output.data(), output.size() };
 }
 
+[[maybe_unused]] [[noreturn]]
+void uncaught_exception(const cowel_options& options)
+{
+    if (!options.log) {
+        std::terminate();
+    }
+    constexpr std::string_view message = "Uncaught exception.";
+    constexpr cowel_string_view cowel_message { message.data(), message.size() };
+
+    const cowel_diagnostic diagnostic {
+        .severity = COWEL_SEVERITY_MAX,
+        .id = { "exception", sizeof("exception") - 1 },
+        .message_parts = &cowel_message,
+        .message_parts_size = 1,
+        .file = 0,
+        .begin = 0,
+        .length = 0,
+        .line = 0,
+        .column = 0,
+    };
+    options.log(options.log_data, &diagnostic);
+    std::terminate();
+}
+
+[[maybe_unused]] [[noreturn]]
+void uncaught_exception_u8(const cowel_options_u8& options)
+{
+    if (!options.log) {
+        std::terminate();
+    }
+    constexpr std::u8string_view message = u8"Uncaught exception.";
+    constexpr cowel_string_view_u8 cowel_message { message.data(), message.size() };
+
+    const cowel_diagnostic_u8 diagnostic {
+        .severity = COWEL_SEVERITY_MAX,
+        .id = { u8"exception", sizeof(u8"exception") - 1 },
+        .message_parts = &cowel_message,
+        .message_parts_size = 1,
+        .file = 0,
+        .begin = 0,
+        .length = 0,
+        .line = 0,
+        .column = 0,
+    };
+    options.log(options.log_data, &diagnostic);
+    std::terminate();
+}
+
 } // namespace
 } // namespace cowel
 
@@ -320,7 +369,7 @@ cowel_mutable_string_view cowel_generate_html(const cowel_options* options) noex
         return std::bit_cast<cowel_mutable_string_view>(result_u8);
 #ifdef ULIGHT_EXCEPTIONS
     } catch (...) {
-        return {};
+        cowel::uncaught_exception(*options);
     }
 #endif
 }
@@ -334,7 +383,7 @@ cowel_mutable_string_view_u8 cowel_generate_html_u8(const cowel_options_u8* opti
         return cowel::do_generate_html(*options);
 #ifdef ULIGHT_EXCEPTIONS
     } catch (...) {
-        return {};
+        cowel::uncaught_exception_u8(*options);
     }
 #endif
 }
