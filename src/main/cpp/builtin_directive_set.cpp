@@ -154,7 +154,7 @@ struct Builtin_Directive_Set::Impl {
         {};
     URL_Behavior mail //
         { u8"mailto:" };
-    Make_Section_Behavior make_bibliography //
+    Make_Section_Behavior make_bib //
         { Directive_Display::block, class_name::bibliography, section_name::bibliography };
     Make_Section_Behavior make_contents //
         { Directive_Display::block, class_name::table_of_contents,
@@ -282,6 +282,14 @@ struct Builtin_Directive_Set::Impl {
     COWEL_DEPRECATED_ALIAS(warning, Bwarn);
     COWEL_DEPRECATED_ALIAS(word, nobr);
 
+    COWEL_DEPRECATED_ALIAS(hyphen_make_bib, make_bib);
+    COWEL_DEPRECATED_ALIAS(hyphen_make_contents, make_contents);
+    COWEL_DEPRECATED_ALIAS(hyphen_lorem_ipsum, lorem_ipsum);
+    COWEL_DEPRECATED_ALIAS(hyphen_wg21_example, wg21_example);
+    COWEL_DEPRECATED_ALIAS(hyphen_wg21_grammar, wg21_grammar);
+    COWEL_DEPRECATED_ALIAS(hyphen_wg21_head, wg21_head);
+    COWEL_DEPRECATED_ALIAS(hyphen_wg21_note, wg21_note);
+
     Impl() = default;
     ~Impl() = default;
 
@@ -388,10 +396,13 @@ Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& conte
         u8"-li",
         u8"-literally",
         u8"-lorem-ipsum",
+        u8"-lorem_ipsum",
         u8"-macro",
         u8"-mail",
         u8"-make-bib",
         u8"-make-contents",
+        u8"-make_bib",
+        u8"-make_contents",
         u8"-mark",
         u8"-math",
         u8"-mathblock",
@@ -440,7 +451,10 @@ Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& conte
         u8"-wg21-grammar",
         u8"-wg21-head",
         u8"-wg21-note",
-        u8"-word",
+        u8"-wg21_example",
+        u8"-wg21_grammar",
+        u8"-wg21_head",
+        u8"-wg21_note",
     };
     // clang-format on
     static_assert(std::ranges::is_sorted(prefixed_names));
@@ -654,6 +668,8 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
         if (name == u8"literally")
             return &m_impl->literally;
         if (name == u8"lorem-ipsum")
+            return &m_impl->hyphen_lorem_ipsum;
+        if (name == u8"lorem_ipsum")
             return &m_impl->lorem_ipsum;
         break;
 
@@ -668,8 +684,12 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
         if (name == u8"mail")
             return &m_impl->mail;
         if (name == u8"make-bib")
-            return &m_impl->make_bibliography;
+            return &m_impl->hyphen_make_bib;
         if (name == u8"make-contents")
+            return &m_impl->hyphen_make_contents;
+        if (name == u8"make_bib")
+            return &m_impl->make_bib;
+        if (name == u8"make_contents")
             return &m_impl->make_contents;
         if (name == u8"mark")
             return &m_impl->mark;
@@ -808,12 +828,20 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
         if (name == u8"wbr")
             return &m_impl->wbr;
         if (name == u8"wg21-example")
-            return &m_impl->wg21_example;
+            return &m_impl->hyphen_wg21_example;
         if (name == u8"wg21-grammar")
-            return &m_impl->wg21_grammar;
+            return &m_impl->hyphen_wg21_grammar;
         if (name == u8"wg21-head")
-            return &m_impl->wg21_head;
+            return &m_impl->hyphen_wg21_head;
         if (name == u8"wg21-note")
+            return &m_impl->hyphen_wg21_note;
+        if (name == u8"wg21_example")
+            return &m_impl->wg21_example;
+        if (name == u8"wg21_grammar")
+            return &m_impl->wg21_grammar;
+        if (name == u8"wg21_head")
+            return &m_impl->wg21_head;
+        if (name == u8"wg21_note")
             return &m_impl->wg21_note;
         if (name == u8"word")
             return &m_impl->word;
