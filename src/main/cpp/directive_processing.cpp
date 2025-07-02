@@ -28,6 +28,13 @@
 
 namespace cowel {
 
+std::u8string_view expand_escape(std::u8string_view escape)
+{
+    COWEL_ASSERT(!escape.empty());
+    COWEL_DEBUG_ASSERT(is_cowel_escapeable(escape[0]));
+    return escape[0] == u8'\r' || escape[0] == u8'\n' ? u8"" : escape;
+}
+
 Directive_Behavior* Context::find_directive(std::u8string_view name)
 {
     for (const Name_Resolver* const resolver : std::views::reverse(m_name_resolvers)) {
@@ -138,6 +145,8 @@ void to_plaintext_trimmed(
             append(out, text.get_source());
         }
 
+        void operator()(const ast::Comment&) const { }
+
         void operator()(const ast::Generated&) const
         {
             COWEL_ASSERT_UNREACHABLE(
@@ -147,7 +156,7 @@ void to_plaintext_trimmed(
 
         void operator()(const ast::Escaped& e) const
         {
-            out.push_back(e.get_char());
+            append(out, expand_escape(e.get_escaped()));
         }
 
         void operator()(const ast::Directive& e) const
@@ -176,7 +185,7 @@ To_Plaintext_Status to_plaintext(
         return To_Plaintext_Status::ok;
     }
     if (const auto* const e = get_if<ast::Escaped>(&c)) {
-        out.push_back(e->get_char());
+        append(out, expand_escape(e->get_escaped()));
         return To_Plaintext_Status::ok;
     }
     if (const auto* const b = get_if<ast::Generated>(&c)) {
@@ -270,8 +279,8 @@ void to_html(HTML_Writer& out, const ast::Text& text, [[maybe_unused]] Context& 
 
 void to_html(HTML_Writer& out, const ast::Escaped& escaped, [[maybe_unused]] Context& context)
 {
-    const char8_t c = escaped.get_char();
-    out.write_inner_text(c);
+    const std::u8string_view expanded = expand_escape(escaped.get_escaped());
+    out.write_inner_text(expanded);
 }
 
 void to_html(HTML_Writer& out, const ast::Generated& content, Context&)
@@ -329,6 +338,8 @@ void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Co
             out.write_inner_text(str);
         }
 
+        void operator()(const ast::Comment&) const { }
+
         void operator()(const ast::Generated& generated) const
         {
             std::u8string_view str = generated.as_string();
@@ -345,7 +356,8 @@ void to_html_trimmed(HTML_Writer& out, std::span<const ast::Content> content, Co
 
         void operator()(const ast::Escaped& e) const
         {
-            out.write_inner_html(e.get_char());
+            const std::u8string_view expanded = expand_escape(e.get_escaped());
+            out.write_inner_html(expanded);
         }
 
         void operator()(const ast::Directive& e) const
@@ -456,6 +468,8 @@ public:
         }
     }
 
+    void operator()(const ast::Comment&) const { }
+
     // Escape sequences are always inline; they're just a single character.
     void operator()(const ast::Escaped& e)
     {
@@ -552,7 +566,8 @@ void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, 
 {
     for (const ast::Content& c : content) {
         if (const auto* const e = get_if<ast::Escaped>(&c)) {
-            out.write_inner_html(e->get_char());
+            const std::u8string_view expanded = expand_escape(e->get_escaped());
+            out.write_inner_html(expanded);
         }
         if (const auto* const t = get_if<ast::Text>(&c)) {
             out.write_inner_html(t->get_source());
@@ -662,9 +677,10 @@ void to_html_with_source_references(
     [[maybe_unused]] Context& context
 )
 {
-    const std::size_t initial_size = out_code.size();
     const std::u8string_view text = t.get_source();
     COWEL_ASSERT(!text.empty());
+
+    const std::size_t initial_size = out_code.size();
     out_code.insert(out_code.end(), text.begin(), text.end());
     reference_highlighted(out, initial_size, text.length());
 }
@@ -676,9 +692,12 @@ void to_html_with_source_references(
     [[maybe_unused]] Context& context
 )
 {
+    const std::u8string_view expanded = expand_escape(e.get_escaped());
+    COWEL_ASSERT(!expanded.empty());
+
     const std::size_t initial_size = out_code.size();
-    out_code.push_back(e.get_char());
-    reference_highlighted(out, initial_size, 1);
+    append(out_code, expanded);
+    reference_highlighted(out, initial_size, expanded.size());
 }
 
 void to_html_with_source_references(

@@ -15,6 +15,23 @@
 
 namespace cowel {
 
+/// @brief Returns a string view to containing code units that `escape` corresponds to.
+/// For most escape sequences, this returns `escape`.
+/// For LF and CRLF escapes, this is an empty string view.
+/// @param escape The escaped character(s), not including the initial `\`.
+[[nodiscard]]
+std::u8string_view expand_escape(std::u8string_view escape);
+
+/// @brief Returns a string view to static storage corresponding to the code units
+/// that `escape` corresponds to.
+/// For most escape sequences, this is simply the character following the initial `\`.
+/// For LF and CRLF escapes, this is an empty string.
+[[nodiscard]]
+inline std::u8string_view expand_escape(const ast::Escaped& escape)
+{
+    return expand_escape(escape.get_escaped());
+}
+
 [[nodiscard]]
 std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content>);
 [[nodiscard]]
@@ -67,6 +84,7 @@ To_Plaintext_Status to_plaintext(
 void to_html(HTML_Writer& out, const ast::Content&, Context&);
 void to_html(HTML_Writer& out, const ast::Escaped&, Context&);
 void to_html(HTML_Writer& out, const ast::Text&, Context&);
+inline void to_html(HTML_Writer&, const ast::Comment&, Context&) { }
 void to_html(HTML_Writer& out, const ast::Directive&, Context&);
 void to_html(HTML_Writer& out, const ast::Generated&, Context&);
 
