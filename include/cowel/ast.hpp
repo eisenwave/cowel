@@ -177,6 +177,54 @@ public:
     }
 };
 
+struct Comment final {
+private:
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+    std::size_t m_suffix_length;
+
+public:
+    [[nodiscard]]
+    Comment(const File_Source_Span& source_span, std::u8string_view source);
+
+    [[nodiscard]]
+    File_Source_Span get_source_span() const
+    {
+        return m_source_span;
+    }
+
+    /// @brief Returns a string containing all the source characters comprising the comment,
+    /// including the `\:` prefix and the LF/CRLF suffix, if any.
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        return m_source;
+    }
+
+    [[nodiscard]]
+    std::size_t get_suffix_length() const
+    {
+        return m_suffix_length;
+    }
+
+    /// @brief Returns the suffix of the comment.
+    /// That is, an empty string (if the comment ends with EOF),
+    /// or a string containing the terminating LF/CRLF.
+    [[nodiscard]]
+    std::u8string_view get_suffix() const
+    {
+        return m_source.substr(m_source.length() - m_suffix_length);
+    }
+
+    /// @brief Returns the text content of the comment, excluding the prefix and suffix.
+    [[nodiscard]]
+    std::u8string_view get_text() const
+    {
+        constexpr std::size_t prefix_length = 2; // \:
+        return m_source.substr(prefix_length, m_source.length() - prefix_length - m_suffix_length);
+    }
+};
+
 /// @brief An escape sequence, such as `\\{`, `\\}`, or `\\\\`.
 struct Escaped final {
 private:
@@ -202,19 +250,19 @@ public:
         return m_source;
     }
 
-    /// @brief Returns the escaped character.
+    /// @brief Returns the source span covering the escaped characters.
     [[nodiscard]]
-    char8_t get_char() const
+    File_Source_Span get_escaped_span() const
     {
-        COWEL_DEBUG_ASSERT(m_source.size() >= 2);
-        return m_source[1];
+        return m_source_span.to_right(1);
     }
 
-    /// @brief Returns the index of the escaped character in the source file.
+    /// @brief Returns the escaped characters.
     [[nodiscard]]
-    std::size_t get_char_index() const
+    std::u8string_view get_escaped() const
     {
-        return m_source_span.begin + 1;
+        COWEL_DEBUG_ASSERT(m_source.size() >= 2);
+        return m_source.substr(1);
     }
 };
 
@@ -282,13 +330,7 @@ public:
     }
 };
 
-template <typename T>
-concept node = one_of<T, Directive, Text, Escaped, Generated>;
-
-template <typename T>
-concept user_written = node<T> && !std::same_as<T, Generated>;
-
-using Content_Variant = std::variant<Directive, Text, Escaped, Generated>;
+using Content_Variant = std::variant<Directive, Text, Comment, Escaped, Generated>;
 
 struct Content : Content_Variant {
     using Content_Variant::variant;
@@ -298,6 +340,14 @@ static_assert(std::is_move_constructible_v<Content>);
 static_assert(std::is_move_constructible_v<Content>);
 static_assert(std::is_copy_assignable_v<Content>);
 static_assert(std::is_move_assignable_v<Content>);
+
+template <typename T>
+concept node = []<typename... Ts>(std::variant<Ts...>*) {
+    return one_of<T, Ts...>;
+}(static_cast<Content_Variant*>(nullptr));
+
+template <typename T>
+concept user_written = node<T> && !std::same_as<T, Generated>;
 
 // Suppress false positive: https://github.com/llvm/llvm-project/issues/130745
 // NOLINTBEGIN(readability-redundant-inline-specifier)
@@ -340,7 +390,7 @@ inline std::pmr::vector<Content>& Directive::get_content()
 {
     return m_content;
 }
-inline std::span<Content const> Directive::get_content() const
+inline std::span<const Content> Directive::get_content() const
 {
     return m_content;
 }
@@ -381,6 +431,7 @@ template <bool constant>
 struct Visitor_Impl {
     using Argument_Type = const_if_t<Argument, constant>;
     using Text_Type = const_if_t<Text, constant>;
+    using Comment_Type = const_if_t<Comment, constant>;
     using Escaped_Type = const_if_t<Escaped, constant>;
     using Directive_Type = const_if_t<Directive, constant>;
     using Generated_Type = const_if_t<Generated, constant>;
@@ -420,6 +471,7 @@ struct Visitor_Impl {
     virtual void visit(Directive_Type& directive) = 0;
     virtual void visit(Generated_Type& generated) = 0;
     virtual void visit(Text_Type& text) = 0;
+    virtual void visit(Comment_Type& text) = 0;
     virtual void visit(Escaped_Type& text) = 0;
 };
 
