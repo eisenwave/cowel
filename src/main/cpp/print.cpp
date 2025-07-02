@@ -302,6 +302,7 @@ public:
         , source { source }
         , options { options }
     {
+        COWEL_ASSERT(options.max_node_text_length >= 3);
     }
 
     void visit(const ast::Text& node) final
@@ -309,6 +310,17 @@ public:
         print_indent();
 
         out.append(u8"Text", Diagnostic_Highlight::tag);
+        out.append(u8'(', Diagnostic_Highlight::punctuation);
+        print_cut_off(out, node.get_source(), std::size_t(options.max_node_text_length));
+        out.append(u8')', Diagnostic_Highlight::punctuation);
+        out.append(u8'\n');
+    }
+
+    void visit(const ast::Comment& node) final
+    {
+        print_indent();
+
+        out.append(u8"Comment", Diagnostic_Highlight::tag);
         out.append(u8'(', Diagnostic_Highlight::punctuation);
         print_cut_off(out, node.get_source(), std::size_t(options.max_node_text_length));
         out.append(u8')', Diagnostic_Highlight::punctuation);
