@@ -44,7 +44,7 @@ but causes its contents to be considered block content.
 \Bex{
 \cow_dir{block} can be used to suppress automatic paragraph splitting:
 \codeblock[cowel]{
-\\comment{No <p> tags will be added here}
+\\: No <p> tags will be added here
 \\block{
 First paragraph.
 

@@ -10,11 +10,11 @@ which shall be a single \dfn{pattern directive} which describes the defined dire
 \Bnote{
 The arguments and content of the pattern directive are not processed,
 but can be used to document how the directive is meant to be used.
-\codeblock[cowel]{
-\\comment{The following two definitions are equivalent:}
-\\macro[\\m{...}]{xyz}
-\\macro[\\m]{xyz}
-}
+\codeblock[cowel]{\literally{
+\: The following two definitions are equivalent:
+\macro[\m{...}]{xyz}
+\macro[\m]{xyz}
+}}
 }
 
 Within macros, uses of the \cow_dir{put} pseudo-directive are replaced with the inputs to
@@ -32,7 +32,7 @@ is replaced with the content provided to the macro upon use.
 \Bex{
 \codeblock[cowel]{\literally{
 \macro[\bi]{\b{\i{\put}}}
-\comment{Now, the following are equivalent:}
+\: Now, the following are equivalent:
 \b{\i{bold and italic}}
 \bi{bold and italic}
 }}
@@ -100,11 +100,9 @@ That is:
 \codeblock[cowel]{\literally{
 \macro[\js_block]{\codeblock[lang=js,\put{...}]{\put}}
 
-\comment{
-  \js_block now acts as a shorthand for JavaScript blocks,
-  and thanks to forward with \put{...}, we can provide further arguments
-  to the underlying \codeblock directive.
-}
+\: \js_block now acts as a shorthand for JavaScript blocks,
+\: and thanks to forward with \put{...}, we can provide further arguments
+\: to the underlying \codeblock directive.
 \js_block[borders=no]{
 function sqr(x) { return x * x; }
 }

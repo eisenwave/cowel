@@ -3,15 +3,152 @@
 COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 \ul{
-\li{\cow_c{\\various-directives[positional args, named-args = 0]{and content}}}
-\li{\cow_c{Text.}}
-\li{Escape sequences, such as \cow_c{\\\U{7B}}, \cow_c{\\\U{7D}}, \cow_c{\\\\}, etc.}
+  \li{\cow_c{\\various-directives[positional args, named-args = 0]{and content}}}
+  \li{\cow_c{Text.}}
+  \li{\cow_c{\\:Comments}}
+  \li{Escape sequences, such as \cow_c{\\\U{7B}}, \cow_c{\\\U{7D}}, \cow_c{\\\\}, etc.}
 }
 
 There is no special syntax besides that,
 meaning that as long as some bit of code doesn't contain a \cow_c{\\},
 it's all interpreted as plaintext.
 This makes COWEL exceptionally suited to nest other languages inside of it in code blocks etc.
+
+\h3{Text}
+
+Text is not processed specially;
+what you see is what you get.
+
+However, the output may depend on the context (\ref[#contexts-and-output]).
+For example, \cow_c{<} in text will render as a < character,
+but will be converted to \cow_html{&lt;} in an HTML context.
+
+\h3[id=syntax-comments]{Comments}
+
+Comments begin with \cow_c{\\:} and extend until the end of the line.
+In almost every context,
+comments are discarded instead of being emitted into the output HTML.
+
+This makes them useful for adding information to the COWEL markup.
+
+\Bnote{
+Comments, just like any other content,
+are actually part of the AST and don't simply get discarded during parsing.
+This means that a comment wrapped in \ref[#dir-literally] will render as expected:
+\codeblock[cowel]{\literally{
+\codeblock[cowel]{\literally{
+\: A comment ...
+}}
+}}
+This renders as:
+\codeblock[cowel]{\literally{
+\: A comment ...
+}}
+}
+
+Comments also "absorb" the trailing newline (LF or CRLF),
+which means that a trailing comment won't add any lines (not even blank lines)
+to the generated markup.
+
+\Bex{
+We can even join words by putting a comment between:
+\codeblock[cowel]{\literally{
+Hello\: this comment will absorb the newline
+World
+
+Hello \: this comment also does, but is preceded by a space
+World
+}}
+
+Generated HTML:
+\codeblock[html]{
+HelloWorld
+
+Hello World
+}
+}
+
+\h3{Escape sequences}
+
+COWEL supports multiple escape sequences,
+all of which begin with a \cow_c{\\} (like directives),
+but are followed by some special character.
+The meaning of the escape sequences is described in the table below.
+
+\table[style=margin-left:auto; margin-right:auto;]{
+  \tr{
+    \th{Escape sequence}
+    \th{Meaning}
+  }
+  \tr{
+    \td{\cow_esc{\N{LEFT CURLY BRACKET}}}
+    \td{Expands to \tt{\N{LEFT CURLY BRACKET}}}
+  }
+  \tr{
+    \td{\cow_esc{\N{RIGHT CURLY BRACKET}}}
+    \td{Expands to \tt{\N{RIGHT CURLY BRACKET}}}
+  }
+  \tr{
+    \td{\cow_esc{\\}}
+    \td{Expands to \tt{\\}}
+  }
+  \tr{
+    \td{\cow_esc{[}}
+    \td{Expands to \tt{[}}
+  }
+  \tr{
+    \td{\cow_esc{]}}
+    \td{Expands to \tt{]}}
+  }
+  \tr{
+    \td{\cow_esc{,}}
+    \td{Expands to \tt{,}}
+  }
+  \tr{
+    \td{\cow_esc{=}}
+    \td{Expands to \tt{=}}
+  }
+  \tr{
+    \td{\cow_esc{}, U+0009 HORIZONTAL TABULATION}
+    \td{Expands to U+0009 HORIZONTAL TABULATION}
+  }
+  \tr{
+    \td{\cow_esc{}, U+000A LINE FEED}
+    \td{Expands to nothing}
+  }
+  \tr{
+    \td{\cow_esc{}, U+000B VERTICAL TABULATION}
+    \td{Expands to nothing}
+  }
+  \tr{
+    \td{\cow_esc{}, U+000D CARRIAGE RETURN}
+    \td{Expands to nothing}
+  }
+  \tr{
+    \td{\cow_esc{}, U+000A, U+000D (CRLF escape)}
+    \td{Expands to nothing}
+  }
+  \tr{
+    \td{\cow_esc{}, U+0020 SPACE}
+    \td{Expands to U+0020 SPACE}
+  }
+  \tr{
+    
+  }
+}
+
+If there is an ambiguity between a CRLF escape and a simple U+000D CARRIAGE RETURN escape,
+this ambiguity is resolved in favor of a CRLF escape.
+
+\Bnote{
+The purpose of most escapes is to prevent a character from having special meaning.
+For example, the \cow_esc{,} escape prevents a comma from being interpreted
+as a separator between directive arguments.
+
+The purpose of the newline escapes is to remove unwanted newlines
+and to join long content that spans multiple lines,
+but without introducing any whitespace in the markup.
+}
 
 \h3{Whitespace}
 
@@ -45,15 +182,15 @@ Certain directives (e.g. \cow_dir{comment}) that don't generate anything rendere
 
 The process of paragraph splitting works as follows:
 \ul{
-\li{
-Blank-line-separated blocks of inline content is wrapped in in \cow_html{<p>...</p>} tags.
-Meta content is not counted as a blank line, so it "continues" inline content,
-but no effort is made to wrap it in \cow_html{<p>...</p>}.
-}
-\li{
-Block content stays untouched, i.e. it is not wrapped in \cow_html{<p>...</p>}.
-However, it also terminates prior inline content, like a blank line.
-}
+  \li{
+    Blank-line-separated blocks of inline content is wrapped in in \cow_html{<p>...</p>} tags.
+    Meta content is not counted as a blank line, so it "continues" inline content,
+    but no effort is made to wrap it in \cow_html{<p>...</p>}.
+  }
+  \li{
+    Block content stays untouched, i.e. it is not wrapped in \cow_html{<p>...</p>}.
+    However, it also terminates prior inline content, like a blank line.
+  }
 }
 
 \Bex{

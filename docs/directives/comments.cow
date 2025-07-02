@@ -1,8 +1,9 @@
 \h3{Comments}
 
-Unlike many other markup languages,
-COWEL has no dedicated syntax for comments.
-However, there exists a \cow_dir{comment} directive which you can use to put comments into code.
+In addition to the \cow_c{\\:} syntax for single-line comments,
+there exists a \cow_dir{comment} directive which
+discards all of its contents.
+This can be used for multi-line comments.
 
 \h4[id=dir-comment]{\cow_dir{comment} \c{mdash} Comments}
 

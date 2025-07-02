@@ -5,27 +5,26 @@ You can think of it as a "command" or "function call".
 
 Every directive has three parts:
 \ul{
-\li{The \cow_c{\\directive-name} selects a specific directive to be processed.}
-\li{
-An optional \cow_c{[comma-separated, positional arguments, named-arguments = ...]}
-provides additional inputs to the directive.
-}
-\li{
-An optional \cow_c{{block of content}} provides a "main input" to a directive.
-}
+  \li{
+    The \cow_c{\\directive_name} selects a specific directive to be processed.
+  }
+  \li{
+    An optional \cow_c[prefix=\\d]{[comma-separated, positional arguments, named-arguments = ...]}
+    provides additional inputs to the directive.
+  }
+  \li{
+    An optional \cow_c[prefix=\\d]{{block of content}} provides a "main input" to a directive.
+  }
 }
 
 \h3{Directive names}
 
 A \dfn{directive name} selects a specific directive to be processed.
 The name begins with a \cow_c{\\} character,
-followed by
-\ref[https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name]{
-any character that is valid in an HTML (custom) tag name.
-}
-This includes any alphanumeric ASCII characters,
-\cow_cp{002D}, \cow_cp{002E}, \cow_cp{005F},
-and various Unicode characters.
+followed by a sequence of ASCII alphanumeric characters,
+\cow_cp{002D}, and
+\cow_cp{005F}.
+However, the first character after \cow_c{\\} cannot be an ASCII digit.
 
 \Btip{
 You can use an empty block of content to "cut a name short":
@@ -37,11 +36,11 @@ Doing so is equivalent to writing
 }
 
 \Bwarn{
-The use of '.' (period) characters in directive names is deprecated.
-Currently, \cow_dir{a.b} would get parsed as a directive name,
+The use of '-' (hyphen) characters in directive names is deprecated.
+Currently, \cow_dir{a-b} would get parsed as a directive name,
 but this behavior will be removed in the future.
 This will result in \cow_dir{a} being parsed as a directive name,
-followed by plaintext \tt{.b}.
+followed by plaintext \tt{-b}.
 }
 
 \h3{Directive arguments}
@@ -89,12 +88,12 @@ and noncharacters.
 \Btip{
 If you want to provide a positional argument that is \cow_c{name = value} instead,
 you can do so by writing:
-\codeblock[cowel]{
-\\comment{"name = value" as a positional argument}
-\\xyz[name \\= value]
-\\comment{named argument with name "name" and value "value"}
-\\xyz[name = value]
-}
+\codeblock[cowel]{\literally{
+\: "name = value" as a positional argument
+\xyz[name \\= value]
+\: named argument with name "name" and value "value"
+\xyz[name = value]
+}}
 Only the literal \cow_c{=} character can be used for named arguments,
 not its escaped variant \cow_c{\\=}.
 }
@@ -107,15 +106,14 @@ ends the content.
 
 \Btip{
 You can use escape sequences to continue otherwise ended content.
-\codeblock[cowel]{
-\\xyz[hello, world]  \\comment{Two positional arguments}
-\\xyz[hello\\, world] \\comment{One positional argument containing a comma.}
-
-\\xyz[hello[]world]  \\comment{OK, [] is balanced and included in single argument}
-\\xyz[hello\\]world]  \\comment{OK}
-\\xyz[hello\\[world]  \\comment{OK}
-\\xyz[hello[world]   \\comment{error: unterminated arguments}
-}
+\codeblock[cowel]{\literally{
+\xyz[hello, world]   \: Two positional arguments
+\xyz[hello\, world]  \: One positional argument containing a comma.
+\xyz[hello[]world]   \: OK, [] is balanced and included in single argument
+\xyz[hello\]world]   \: OK
+\xyz[hello\[world]   \: OK
+\xyz[hello[world]    \: error: unterminated arguments
+}}
 }
 
 \h3{Directive content}

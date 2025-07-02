@@ -1470,13 +1470,8 @@ if (theme !== null) {
     </script>
 </div>
 <main>
-
-
-
-
-
-
-
+<p>
+</p>
 
 
 
@@ -1507,8 +1502,14 @@ h1 {
 <div class=toc-num data-level=2>4</div>
 <a href=#syntax-in-a-nutshell><h2>Syntax in a nutshell</h2></a>
 <div class=toc-num data-level=3>4.1</div>
-<a href=#whitespace><h3>Whitespace</h3></a>
+<a href=#text><h3>Text</h3></a>
 <div class=toc-num data-level=3>4.2</div>
+<a href=#syntax-comments><h3>Comments</h3></a>
+<div class=toc-num data-level=3>4.3</div>
+<a href=#escape-sequences><h3>Escape sequences</h3></a>
+<div class=toc-num data-level=3>4.4</div>
+<a href=#whitespace><h3>Whitespace</h3></a>
+<div class=toc-num data-level=3>4.5</div>
 <a href=#paragraph-splitting><h3>Paragraph splitting</h3></a>
 <div class=toc-num data-level=2>5</div>
 <a href=#directives><h2>Directives</h2></a>
@@ -1811,9 +1812,10 @@ whose syntax is similar enough to get <em>some</em> basic highlighting.
 <p>COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 </p><ul>
-<li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>various-directives</h-><h- data-h=sym_sqr>[</h->positional args<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> 0<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
-<li><code>Text.</code></li>
-<li>Escape sequences, such as <code><h- data-h=esc>\</h-><h- data-h=esc>{</h-></code>, <code><h- data-h=esc>\</h-><h- data-h=esc>}</h-></code>, <code><h- data-h=esc>\</h-><h- data-h=esc>\</h-></code>, etc.</li>
+  <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>various-directives</h-><h- data-h=sym_sqr>[</h->positional args<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> 0<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
+  <li><code>Text.</code></li>
+  <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt>Comments</h-></code></li>
+  <li>Escape sequences, such as <code><h- data-h=esc>\</h-><h- data-h=esc>{</h-></code>, <code><h- data-h=esc>\</h-><h- data-h=esc>}</h-></code>, <code><h- data-h=esc>\</h-><h- data-h=esc>\</h-></code>, etc.</li>
 </ul>
 
 <p>There is no special syntax besides that,
@@ -1821,7 +1823,135 @@ meaning that as long as some bit of code doesn't contain a <code>\</code>,
 it's all interpreted as plaintext.
 This makes COWEL exceptionally suited to nest other languages inside of it in code blocks etc.
 </p>
-<h3 id=whitespace><a class=para href=#whitespace></a>4.1. Whitespace</h3>
+<h3 id=text><a class=para href=#text></a>4.1. Text</h3>
+
+<p>Text is not processed specially;
+what you see is what you get.
+</p>
+<p>However, the output may depend on the context (<a href=#contexts-and-output>§6. Contexts and output</a>).
+For example, <code>&lt;</code> in text will render as a &lt; character,
+but will be converted to <code><h- data-h=esc>&amp;lt;</h-></code> in an HTML context.
+</p>
+<h3 id=syntax-comments><a class=para href=#syntax-comments></a>4.2. Comments</h3>
+
+<p>Comments begin with <code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-></code> and extend until the end of the line.
+In almost every context,
+comments are discarded instead of being emitted into the output HTML.
+</p>
+<p>This makes them useful for adding information to the COWEL markup.
+</p>
+<note-block><p><intro-></intro-> 
+Comments, just like any other content,
+are actually part of the AST and don't simply get discarded during parsing.
+This means that a comment wrapped in <a href=#dir-literally>§8.3.5. <code><h- data-h=mk_tag>\literally</h-></code> &mdash; Treat input literally as text</a> will render as expected:
+</p><code-block><h- data-h=mk_tag>\codeblock</h-><h- data-h=sym_sqr>[</h->cowel<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\literally</h-><h- data-h=sym_brac>{</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> A comment ...</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as:
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> A comment ...</h-></code-block>
+</note-block>
+
+<p>Comments also "absorb" the trailing newline (LF or CRLF),
+which means that a trailing comment won't add any lines (not even blank lines)
+to the generated markup.
+</p>
+<example-block><p><intro-></intro-> 
+We can even join words by putting a comment between:
+</p><code-block>Hello<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> this comment will absorb the newline</h->
+World
+
+Hello <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> this comment also does, but is preceded by a space</h->
+World</code-block>
+
+<p>Generated HTML:
+</p><code-block>HelloWorld
+
+Hello World</code-block>
+</example-block>
+
+<h3 id=escape-sequences><a class=para href=#escape-sequences></a>4.3. Escape sequences</h3>
+
+<p>COWEL supports multiple escape sequences,
+all of which begin with a <code>\</code> (like directives),
+but are followed by some special character.
+The meaning of the escape sequences is described in the table below.
+</p>
+<table style="margin-left:auto; margin-right:auto;">
+  <tr>
+    <th>Escape sequence</th>
+    <th>Meaning</th>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\{</h-></tt-></td>
+    <td>Expands to <tt->{</tt-></td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\}</h-></tt-></td>
+    <td>Expands to <tt->}</tt-></td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\\</h-></tt-></td>
+    <td>Expands to <tt->\</tt-></td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\[</h-></tt-></td>
+    <td>Expands to <tt->[</tt-></td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\]</h-></tt-></td>
+    <td>Expands to <tt->]</tt-></td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\,</h-></tt-></td>
+    <td>Expands to <tt->,</tt-></td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\=</h-></tt-></td>
+    <td>Expands to <tt->=</tt-></td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\</h-></tt->, U+0009 HORIZONTAL TABULATION</td>
+    <td>Expands to U+0009 HORIZONTAL TABULATION</td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\</h-></tt->, U+000A LINE FEED</td>
+    <td>Expands to nothing</td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\</h-></tt->, U+000B VERTICAL TABULATION</td>
+    <td>Expands to nothing</td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\</h-></tt->, U+000D CARRIAGE RETURN</td>
+    <td>Expands to nothing</td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\</h-></tt->, U+000A, U+000D (CRLF escape)</td>
+    <td>Expands to nothing</td>
+  </tr>
+  <tr>
+    <td><tt-><h- data-h=esc>\</h-></tt->, U+0020 SPACE</td>
+    <td>Expands to U+0020 SPACE</td>
+  </tr>
+  <tr>
+    
+  </tr>
+</table>
+
+<p>If there is an ambiguity between a CRLF escape and a simple U+000D CARRIAGE RETURN escape,
+this ambiguity is resolved in favor of a CRLF escape.
+</p>
+<note-block><p><intro-></intro-> 
+The purpose of most escapes is to prevent a character from having special meaning.
+For example, the <tt-><h- data-h=esc>\,</h-></tt-> escape prevents a comma from being interpreted
+as a separator between directive arguments.
+</p>
+<p>The purpose of the newline escapes is to remove unwanted newlines
+and to join long content that spans multiple lines,
+but without introducing any whitespace in the markup.
+</p></note-block>
+
+<h3 id=whitespace><a class=para href=#whitespace></a>4.4. Whitespace</h3>
 
 <p>COWEL translates very directly into HTML.
 Any whitespace in text is preserved exactly as is.
@@ -1838,7 +1968,7 @@ because line breaks render like spaces.<h- data-h=sym_punc>&lt;/</h-><h- data-h=
 </p><div class=indent>This displays on one line because line breaks render like spaces.</div>
 </example-block>
 
-<h3 id=paragraph-splitting><a class=para href=#paragraph-splitting></a>4.2. Paragraph splitting</h3>
+<h3 id=paragraph-splitting><a class=para href=#paragraph-splitting></a>4.5. Paragraph splitting</h3>
 
 <p>At the top-level in the document and within the content of certain directives,
 <dfn>paragraph splitting</dfn> takes place.
@@ -1849,15 +1979,15 @@ Certain directives (e.g. <code><h- data-h=mk_tag>\comment</h-></code>) that don'
 </p>
 <p>The process of paragraph splitting works as follows:
 </p><ul>
-<li>
-Blank-line-separated blocks of inline content is wrapped in in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
-Meta content is not counted as a blank line, so it "continues" inline content,
-but no effort is made to wrap it in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
-</li>
-<li>
-Block content stays untouched, i.e. it is not wrapped in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
-However, it also terminates prior inline content, like a blank line.
-</li>
+  <li>
+    Blank-line-separated blocks of inline content is wrapped in in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
+    Meta content is not counted as a blank line, so it "continues" inline content,
+    but no effort is made to wrap it in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
+  </li>
+  <li>
+    Block content stays untouched, i.e. it is not wrapped in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
+    However, it also terminates prior inline content, like a blank line.
+  </li>
 </ul>
 
 <example-block><p><intro-></intro-> 
@@ -1880,27 +2010,26 @@ You can think of it as a "command" or "function call".
 </p>
 <p>Every directive has three parts:
 </p><ul>
-<li>The <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive-name</h-></code> selects a specific directive to be processed.</li>
-<li>
-An optional <code>[comma-separated, positional arguments, named-arguments = ...]</code>
-provides additional inputs to the directive.
-</li>
-<li>
-An optional <code>{block of content}</code> provides a "main input" to a directive.
-</li>
+  <li>
+    The <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_name</h-></code> selects a specific directive to be processed.
+  </li>
+  <li>
+    An optional <code><h- data-h=sym_sqr>[</h->comma-separated<h- data-h=sym_punc>,</h-> positional arguments<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-arguments</h-> <h- data-h=sym_punc>=</h-> ...<h- data-h=sym_sqr>]</h-></code>
+    provides additional inputs to the directive.
+  </li>
+  <li>
+    An optional <code><h- data-h=sym_brac>{</h->block of content<h- data-h=sym_brac>}</h-></code> provides a "main input" to a directive.
+  </li>
 </ul>
 
 <h3 id=directive-names><a class=para href=#directive-names></a>5.1. Directive names</h3>
 
 <p>A <dfn>directive name</dfn> selects a specific directive to be processed.
 The name begins with a <code>\</code> character,
-followed by
-<a href=https://html%2espec%2ewhatwg%2eorg/dev/custom-elements%2ehtml#valid-custom-element-name>
-any character that is valid in an HTML (custom) tag name.
-</a>
-This includes any alphanumeric ASCII characters,
-U+002D&nbsp;(<tt->-</tt->), U+002E&nbsp;(<tt->.</tt->), U+005F&nbsp;(<tt->_</tt->),
-and various Unicode characters.
+followed by a sequence of ASCII alphanumeric characters,
+U+002D&nbsp;(<tt->-</tt->), and
+U+005F&nbsp;(<tt->_</tt->).
+However, the first character after <code>\</code> cannot be an ASCII digit.
 </p>
 <tip-block><p><intro-></intro-> 
 You can use an empty block of content to "cut a name short":
@@ -1910,11 +2039,11 @@ You can use an empty block of content to "cut a name short":
 </p></tip-block>
 
 <warning-block><p><intro-></intro-> 
-The use of '.' (period) characters in directive names is deprecated.
-Currently, <code><h- data-h=mk_tag>\a.b</h-></code> would get parsed as a directive name,
+The use of '-' (hyphen) characters in directive names is deprecated.
+Currently, <code><h- data-h=mk_tag>\a-b</h-></code> would get parsed as a directive name,
 but this behavior will be removed in the future.
 This will result in <code><h- data-h=mk_tag>\a</h-></code> being parsed as a directive name,
-followed by plaintext <tt->.b</tt->.
+followed by plaintext <tt->-b</tt->.
 </p></warning-block>
 
 <h3 id=directive-arguments><a class=para href=#directive-arguments></a>5.2. Directive arguments</h3>
@@ -1958,10 +2087,10 @@ and noncharacters.
 <tip-block><p><intro-></intro-> 
 If you want to provide a positional argument that is <code>name = value</code> instead,
 you can do so by writing:
-</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>"name = value" as a positional argument</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>xyz</h-><h- data-h=sym_sqr>[</h->name <h- data-h=esc>\</h-><h- data-h=esc>=</h-> value<h- data-h=sym_sqr>]</h->
-<h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>named argument with name "name" and value "value"</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>xyz</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> value<h- data-h=sym_sqr>]</h-></code-block>
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> "name = value" as a positional argument</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_sqr>[</h->name <h- data-h=esc>\\</h->= value<h- data-h=sym_sqr>]</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> named argument with name "name" and value "value"</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> value<h- data-h=sym_sqr>]</h-></code-block>
 <p>Only the literal <code>=</code> character can be used for named arguments,
 not its escaped variant <code><h- data-h=esc>\</h-><h- data-h=esc>=</h-></code>.
 </p></tip-block>
@@ -1974,13 +2103,12 @@ ends the content.
 </p>
 <tip-block><p><intro-></intro-> 
 You can use escape sequences to continue otherwise ended content.
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>xyz</h-><h- data-h=sym_sqr>[</h->hello<h- data-h=sym_punc>,</h-> world<h- data-h=sym_sqr>]</h->  <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>Two positional arguments</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>xyz</h-><h- data-h=sym_sqr>[</h->hello<h- data-h=esc>\</h-><h- data-h=esc>,</h-> world<h- data-h=sym_sqr>]</h-> <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>One positional argument containing a comma.</h-><h- data-h=cmt_dlim>}</h->
-
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>xyz</h-><h- data-h=sym_sqr>[</h->hello[]world<h- data-h=sym_sqr>]</h->  <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>OK, [] is balanced and included in single argument</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>xyz</h-><h- data-h=sym_sqr>[</h->hello<h- data-h=esc>\</h-><h- data-h=esc>]</h->world<h- data-h=sym_sqr>]</h->  <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>OK</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>xyz</h-><h- data-h=sym_sqr>[</h->hello<h- data-h=esc>\</h-><h- data-h=esc>[</h->world<h- data-h=sym_sqr>]</h->  <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>OK</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>xyz</h-><h- data-h=sym_sqr>[</h->hello[world]   <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>error: unterminated arguments</h-><h- data-h=cmt_dlim>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\xyz</h-><h- data-h=sym_sqr>[</h->hello<h- data-h=sym_punc>,</h-> world<h- data-h=sym_sqr>]</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Two positional arguments</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_sqr>[</h->hello<h- data-h=esc>\,</h-> world<h- data-h=sym_sqr>]</h->  <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> One positional argument containing a comma.</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_sqr>[</h->hello[]world<h- data-h=sym_sqr>]</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, [] is balanced and included in single argument</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_sqr>[</h->hello<h- data-h=esc>\]</h->world<h- data-h=sym_sqr>]</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_sqr>[</h->hello<h- data-h=esc>\[</h->world<h- data-h=sym_sqr>]</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_sqr>[</h->hello[world]    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: unterminated arguments</h-></code-block>
 </tip-block>
 
 <h3 id=directive-content><a class=para href=#directive-content></a>5.3. Directive content</h3>
@@ -2104,9 +2232,10 @@ remember to make them respond to theme and OS preference changes.
 
 <h3 id=comments><a class=para href=#comments></a>8.1. Comments</h3>
 
-<p>Unlike many other markup languages,
-COWEL has no dedicated syntax for comments.
-However, there exists a <code><h- data-h=mk_tag>\comment</h-></code> directive which you can use to put comments into code.
+<p>In addition to the <code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-></code> syntax for single-line comments,
+there exists a <code><h- data-h=mk_tag>\comment</h-></code> directive which
+discards all of its contents.
+This can be used for multi-line comments.
 </p>
 <h4 id=dir-comment><a class=para href=#dir-comment></a>8.1.1. <code><h- data-h=mk_tag>\comment</h-></code> &mdash; Comments</h4>
 
@@ -2115,7 +2244,7 @@ It outputs no plaintext or HTML.
 </p>
 <example-block><p><intro-></intro-> 
 While comments don't output anything,
-<a href=#paragraph-splitting>§4.2. Paragraph splitting</a> is based on blank lines in the source,
+<a href=#paragraph-splitting>§4.5. Paragraph splitting</a> is based on blank lines in the source,
 so comments don't split paragraphs:
 </p><code-block>Text
 <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>This is </h-><h- data-h=cmt>\</h-><h- data-h=cmt>directive{comment} content.</h-><h- data-h=cmt_dlim>}</h->
@@ -2389,9 +2518,9 @@ as if it was positioned like:
 <tip-block><p><intro-></intro-> 
 Writing <code><h- data-h=mk_tag>\code</h-></code> directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:
-</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>Defines a </h-><h- data-h=cmt>\</h-><h- data-h=cmt>js directive that can be used in place of </h-><h- data-h=cmt>\</h-><h- data-h=cmt>code[js] from now on:</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>js</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_sqr>[</h->js<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
-Let's highlight <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>js</h-><h- data-h=sym_brac>{</h->var<h- data-h=sym_brac>}</h-> in JavaScript.</code-block>
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Defines a \js directive that can be used in place of \code[js] from now on:</h->
+<h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\js</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\code</h-><h- data-h=sym_sqr>[</h->js<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+Let's highlight <h- data-h=mk_tag>\js</h-><h- data-h=sym_brac>{</h->var<h- data-h=sym_brac>}</h-> in JavaScript.</code-block>
 </tip-block>
 
 <h4 id=dir-codeblock><a class=para href=#dir-codeblock></a>8.3.2. <code><h- data-h=mk_tag>\codeblock</h-></code> &mdash; Code blocks</h4>
@@ -2434,9 +2563,9 @@ all lowercase, and with hyphens instead of underscores.
 </p>
 <example-block><p><intro-></intro-> 
 It is possible to mix automatic syntax highlighting with manual overrides:
-</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>_Int128 is manually highlighted as a type keyword,
-          and x is automatically highlighted as an identifier</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_sqr>[</h->c<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>hl</h-><h- data-h=sym_sqr>[</h->keyword-type<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-> x<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> _Int128 is manually highlighted as a type keyword,</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> and x is automatically highlighted as an identifier.</h->
+<h- data-h=mk_tag>\code</h-><h- data-h=sym_sqr>[</h->c<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\hl</h-><h- data-h=sym_sqr>[</h->keyword-type<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-> x<h- data-h=sym_brac>}</h-></code-block>
 <p>This generates the HTML (subject to change):
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data</h-><h- data-h=sym_punc>=</h-><h- data-h=str>h</h->=kw_type&gt;_Int128<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-> <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>id</h-><h- data-h=sym_punc>&gt;</h->x<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 <p>It renders as <code><h- data-h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>.
@@ -2486,10 +2615,12 @@ and it takes no arguments.
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block><h- data-h=mk_tag>\pre</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\literally</h-><h- data-h=sym_brac>{</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Even comments are preserved!</h->
 This <h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>comment</h-><h- data-h=cmt_dlim>}</h-> <h- data-h=esc>\{</h-> is taken literally <h- data-h=esc>\}</h->!
 <h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
 <p>This renders as:
 </p><pre>
+\: Even comments are preserved!
 This \comment{comment} \{ is taken literally \}!
 </pre>
 </example-block>
@@ -2509,6 +2640,7 @@ except that escape sequences are processed into their escaped characters.
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block><h- data-h=mk_tag>\pre</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\unprocessed</h-><h- data-h=sym_brac>{</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Unlike in \literally, comments are ignored.</h->
 This <h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>comment</h-><h- data-h=cmt_dlim>}</h-> <h- data-h=esc>\{</h-> is unprocessed <h- data-h=esc>\}</h->!
 <h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
 <p>This renders as:
@@ -3330,7 +3462,7 @@ body { color: red; }
 
 <h3 id=paragraph-control><a class=para href=#paragraph-control></a>8.14. Paragraph control</h3>
 
-<p>In some cases, the automatic <a href=#paragraph-splitting>§4.2. Paragraph splitting</a>
+<p>In some cases, the automatic <a href=#paragraph-splitting>§4.5. Paragraph splitting</a>
 process is not enough.
 To get more fine-tuned control, we have a number of directives.
 </p>
@@ -3369,7 +3501,7 @@ but causes its contents to be considered block content.
 </p>
 <example-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\block</h-></code> can be used to suppress automatic paragraph splitting:
-</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>No &lt;p&gt; tags will be added here</h-><h- data-h=cmt_dlim>}</h->
+</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> No &lt;p&gt; tags will be added here</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>block</h-><h- data-h=sym_brac>{</h->
 First paragraph.
 
@@ -3557,9 +3689,9 @@ which shall be a single <dfn>pattern directive</dfn> which describes the defined
 <note-block><p><intro-></intro-> 
 The arguments and content of the pattern directive are not processed,
 but can be used to document how the directive is meant to be used.
-</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>The following two definitions are equivalent:</h-><h- data-h=cmt_dlim>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>m</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>m</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> The following two definitions are equivalent:</h->
+<h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\m</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\m</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->xyz<h- data-h=sym_brac>}</h-></code-block>
 </note-block>
 
 <p>Within macros, uses of the <code><h- data-h=mk_tag>\put</h-></code> pseudo-directive are replaced with the inputs to
@@ -3576,7 +3708,7 @@ is replaced with the content provided to the macro upon use.
 </p>
 <example-block><p><intro-></intro-> 
 </p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\bi</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\b</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\i</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
-<h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Now, the following are equivalent:</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Now, the following are equivalent:</h->
 <h- data-h=mk_tag>\b</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\i</h-><h- data-h=sym_brac>{</h->bold and italic<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
 <h- data-h=mk_tag>\bi</h-><h- data-h=sym_brac>{</h->bold and italic<h- data-h=sym_brac>}</h-></code-block>
 </example-block>
@@ -3638,11 +3770,9 @@ That is:
 <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code> is especially useful when creating "wrapper macros" for other directives:
 </p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\js_block</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\codeblock</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>lang</h-><h- data-h=sym_punc>=</h->js<h- data-h=sym_punc>,</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
 
-<h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>
-  \js_block now acts as a shorthand for JavaScript blocks,
-  and thanks to forward with \put{...}, we can provide further arguments
-  to the underlying \codeblock directive.
-</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> \js_block now acts as a shorthand for JavaScript blocks,</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> and thanks to forward with \put{...}, we can provide further arguments</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> to the underlying \codeblock directive.</h->
 <h- data-h=mk_tag>\js_block</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>borders</h-><h- data-h=sym_punc>=</h->no<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
 function sqr(x) { return x * x; }
 <h- data-h=sym_brac>}</h-></code-block>
@@ -3746,15 +3876,13 @@ and provides the value of the variable.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Sets x = 123</h-><h- data-h=cmt_dlim>}</h->
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Sets x = 123.</h->
 <h- data-h=mk_tag>\Vset</h-><h- data-h=sym_sqr>[</h->x<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->123<h- data-h=sym_brac>}</h->
 
-<h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>Accesses the value of x, which is 123</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Accesses the value of x, which is 123.</h->
 <h- data-h=mk_tag>\Vget</h-><h- data-h=sym_sqr>[</h->x<h- data-h=sym_sqr>]</h-></code-block>
 <p>This renders as:
 </p><div class=indent>
-
-
 
 
 123
@@ -3784,11 +3912,10 @@ where the argument is interpreted as an integer, and then summed.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\Cadd</h-><h- data-h=sym_sqr>[</h->1<h- data-h=sym_punc>,</h-> 2<h- data-h=sym_punc>,</h-> 3<h- data-h=sym_punc>,</h-> -1<h- data-h=sym_sqr>]</h-> <h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>1 + 2 + 3 + (-1)</h-><h- data-h=cmt_dlim>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\Cadd</h-><h- data-h=sym_sqr>[</h->1<h- data-h=sym_punc>,</h-> 2<h- data-h=sym_punc>,</h-> 3<h- data-h=sym_punc>,</h-> -1<h- data-h=sym_sqr>]</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> 1 + 2 + 3 + (-1)</h-></code-block>
 <p>This renders as:
 </p><div class=indent>
-5 
-</div>
+5 </div>
 </example-block>
 
 <tip-block><p><intro-></intro-> 

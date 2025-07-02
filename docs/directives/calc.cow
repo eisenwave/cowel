@@ -17,18 +17,18 @@ and provides the value of the variable.
 \Bex{
 COWEL markup:
 \codeblock[cowel]{\literally{
-\comment{Sets x = 123}
+\: Sets x = 123.
 \Vset[x]{123}
 
-\comment{Accesses the value of x, which is 123}
+\: Accesses the value of x, which is 123.
 \Vget[x]
 }}
 This renders as:
 \Bindent{
-\comment{Sets x = 123}
+\: Sets x = 123
 \Vset[x]{123}
 
-\comment{Accesses the value of x, which is 123}
+\: Accesses the value of x, which is 123.
 \Vget[x]
 }
 }
@@ -57,11 +57,11 @@ where the argument is interpreted as an integer, and then summed.
 \Bex{
 COWEL markup:
 \codeblock[cowel]{\literally{
-\Cadd[1, 2, 3, -1] \comment{1 + 2 + 3 + (-1)}
+\Cadd[1, 2, 3, -1] \: 1 + 2 + 3 + (-1)
 }}
 This renders as:
 \Bindent{
-\Cadd[1, 2, 3, -1] \comment{1 + 2 + 3 + (-1)}
+\Cadd[1, 2, 3, -1] \: 1 + 2 + 3 + (-1)
 }
 }
 

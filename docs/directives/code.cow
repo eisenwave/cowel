@@ -118,11 +118,11 @@ as if it was positioned like:
 \Btip{
 Writing \cow_dir{code} directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:
-\codeblock[cowel]{
-\\comment{Defines a \\js directive that can be used in place of \\code[js] from now on:}
-\\macro[\\js]{\\code[js]{\\put}}
-Let's highlight \\js{var} in JavaScript.
-}
+\codeblock[cowel]{\literally{
+\: Defines a \js directive that can be used in place of \code[js] from now on:
+\macro[\js]{\code[js]{\put}}
+Let's highlight \js{var} in JavaScript.
+}}
 }
 
 \h4[id=dir-codeblock]{\cow_dir{codeblock} \c{mdash} Code blocks}
@@ -171,11 +171,11 @@ all lowercase, and with hyphens instead of underscores.
 
 \Bex{
 It is possible to mix automatic syntax highlighting with manual overrides:
-\codeblock[cowel]{
-\\comment{_Int128 is manually highlighted as a type keyword,
-          and x is automatically highlighted as an identifier}
-\\code[c]{\\hl[keyword-type]{_Int128} x}
-}
+\codeblock[cowel]{\literally{
+\: _Int128 is manually highlighted as a type keyword,
+\: and x is automatically highlighted as an identifier.
+\code[c]{\hl[keyword-type]{_Int128} x}
+}}
 This generates the HTML (subject to change):
 \codeblock[html]{
 <code><h- data=h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>
@@ -230,11 +230,13 @@ and it takes no arguments.
 COWEL markup:
 \codeblock[cowel]{
 \literally{\pre{\literally{
+\: Even comments are preserved!
 This \comment{comment} \{ is taken literally \}!
 }}}
 }
 This renders as:
 \pre{\literally{
+\: Even comments are preserved!
 This \comment{comment} \{ is taken literally \}!
 }}
 }
@@ -255,6 +257,7 @@ except that escape sequences are processed into their escaped characters.
 COWEL markup:
 \codeblock[cowel]{\literally{
 \pre{\unprocessed{
+\: Unlike in \literally, comments are ignored.
 This \comment{comment} \{ is unprocessed \}!
 }}
 }}
