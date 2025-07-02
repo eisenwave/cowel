@@ -71,10 +71,12 @@ struct Relative_File_Loader {
             // Even though loading failed, we store the file as an entry
             // so that we can later get its name during logging.
             entries.emplace_back(std::move(path_copy));
+            // Using entries.size() as the id is correct because id 0 refers to the main file,
+            // whereas the first loaded file gets id 1.
             return {
                 .status = io_error_to_io_status(result.error()),
                 .data = {},
-                .id = File_Id(entries.size() + 1),
+                .id = File_Id(entries.size()),
             };
         }
 
@@ -82,7 +84,7 @@ struct Relative_File_Loader {
         return cowel_file_result_u8 {
             .status = COWEL_IO_OK,
             .data = { entry.text.data(), entry.text.size() },
-            .id = File_Id(entries.size() + 1),
+            .id = File_Id(entries.size()),
         };
     }
 };
