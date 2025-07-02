@@ -470,11 +470,17 @@ public:
 
     void operator()(const ast::Comment&) const { }
 
-    // Escape sequences are always inline; they're just a single character.
+    // Some escapes expand to nothing, such as LF or CRLF escapes.
+    // These should have no effect on paragraph splitting.
+    // Most other escapes expand to oen character,
+    // and these should be treated same as single-character text.
     void operator()(const ast::Escaped& e)
     {
-        transition(Directive_Display::in_line);
-        to_html(m_out, e, m_context);
+        const std::u8string_view expanded = expand_escape(e.get_escaped());
+        if (!expanded.empty()) {
+            transition(Directive_Display::in_line);
+            m_out.write_inner_text(expanded);
+        }
     }
 
     void flush()
@@ -490,14 +496,14 @@ private:
             return;
         }
         case Directive_Display::in_line: {
-            if (m_state == Paragraphs_State::outside && display == Directive_Display::in_line) {
+            if (m_state == Paragraphs_State::outside) {
                 m_out.open_tag(u8"p");
                 m_state = Paragraphs_State::inside;
             }
             return;
         }
         case Directive_Display::block: {
-            if (m_state == Paragraphs_State::inside && display == Directive_Display::block) {
+            if (m_state == Paragraphs_State::inside) {
                 m_out.close_tag(u8"p");
                 m_state = Paragraphs_State::outside;
             }
