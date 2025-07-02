@@ -2016,7 +2016,6 @@ Second paragraph.
 <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Second paragraph.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
 <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h->This is a block directive.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
-
 <h2 id=directives><a class=para href=#directives></a>5. Directives</h2>
 
 <p>A <dfn>directive</dfn> is a way of generating plaintext, HTML, both, or neither.
@@ -2218,7 +2217,6 @@ For example, if we write:
 <p>The generated (malformed) HTML is:
 </p><code-block>&amp;Ω;</code-block>
 </example-block>
-
 <h2 id=themes><a class=para href=#themes></a>7. Themes</h2>
 
 <p>COWEL outputs documents that can be viewed in <dfn>light mode</dfn> and <dfn>dark mode</dfn>.
@@ -2240,7 +2238,6 @@ remember to make them respond to theme and OS preference changes.
 </p>
 <p>For reference, you can look at the CSS in the COWEL source code to see how it's done properly.
 </p></important-block>
-
 
 <h2 id=list-of-directives><a class=para href=#list-of-directives></a>8. List of directives</h2>
 
@@ -2268,7 +2265,6 @@ Text</code-block>
 
 Text<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
-
 <h3 id=text-formatting><a class=para href=#text-formatting></a>8.2. Text formatting</h3>
 
 <p>COWEL allows for basic text formatting using various directives.
@@ -2421,7 +2417,6 @@ The difference between oblique (<code><h- data-h=mk_tag>\o</h-></code>) and ital
 is that oblique text is merely slanted,
 while italic text is fundamentally a different font with different characters.
 </p></note-block>
-
 <h3 id=code><a class=para href=#code></a>8.3. Code and syntax highlighting</h3>
 
 <p>COWEL uses
@@ -2686,7 +2681,6 @@ even inside <code><h- data-h=mk_tag>\unprocessed</h-></code> blocks
 because <code><h- data-h=mk_tag>\macro</h-></code> replaces any appearances of <code><h- data-h=mk_tag>\put</h-></code> with the given content,
 disregarding the semantics of any directives nested within.
 </p></note-block>
-
 <h3 id=math><a class=para href=#math></a>8.4. Math</h3>
 
 <p>In recent years, browser support for
@@ -2765,7 +2759,6 @@ The sum of <math display=inline><msup><mi>x</mi><mn>2</mn></msup></math> and <ma
 but it displays as block content instead of inline content,
 and it produces an opening
 <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>math</h-> <h- data-h=mk_attr>display</h-><h- data-h=sym_punc>=</h-><h- data-h=str>block</h-><h- data-h=sym_punc>&gt;</h-></code> tag.
-
 </p><h3 id=separators-and-word-breaking><a class=para href=#separators-and-word-breaking></a>8.5. Separators and word breaking</h3>
 
 <h4 id=dir-br><a class=para href=#dir-br></a>8.5.1. <code><h- data-h=mk_tag>\br</h-></code> &mdash; Break line</h4>
@@ -2827,7 +2820,6 @@ You can insert these using
 <warning-block><p><intro-></intro-> This directive is deprecated and will be removed in the future.</p></warning-block>
 
 <p>The <code><h- data-h=mk_tag>\word</h-></code> directive has the same effect as <code><h- data-h=mk_tag>\nobr</h-></code>.
-
 </p><h3 id=special-characters><a class=para href=#special-characters></a>8.6. Special characters</h3>
 
 <p>It is quite common that a text document should include special characters.
@@ -2969,7 +2961,6 @@ and those code points are output directly.
 <note-block><p><intro-></intro-> 
 Like anywhere else, directives inside of <code><h- data-h=mk_tag>\c</h-></code> are allowed.
 </p></note-block>
-
 <h3 id=special-blocks><a class=para href=#special-blocks></a>8.7. Special blocks</h3>
 
 <p>Often, the content we write falls into some special category like "example", "note", etc.
@@ -3107,7 +3098,6 @@ These directives are deprecated and will be removed in a future version.
 <h5 id=dir-tip><a class=para href=#dir-tip></a>8.7.17.9. <code><h- data-h=mk_tag>\tip</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Btip</h-></code></h5>
 <h5 id=dir-todo><a class=para href=#dir-todo></a>8.7.17.10. <code><h- data-h=mk_tag>\todo</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Btodo</h-></code></h5>
 <h5 id=dir-warning><a class=para href=#dir-warning></a>8.7.17.11. <code><h- data-h=mk_tag>\warning</h-></code> &mdash; Deprecated alias for <code><h- data-h=mk_tag>\Bwarn</h-></code></h5>
-
 <h3 id=lists><a class=para href=#lists></a>8.8. Lists</h3>
 
 <h4 id=dir-ul><a class=para href=#dir-ul></a>8.8.1. <code><h- data-h=mk_tag>\ul</h-></code> &mdash; Unordered lists</h4>
@@ -3326,7 +3316,6 @@ entries are generated.
 Similar to <code><h- data-h=mk_tag>\make-contents</h-></code>,
 it is a wrapper for the underlying <tt->std.bib</tt-> section.
 </p></note-block>
-
 <h3 id=references><a class=para href=#references></a>8.12. References</h3>
 
 <h4 id=dir-ref><a class=para href=#dir-ref></a>8.12.1. <code><h- data-h=mk_tag>\ref</h-></code> &mdash; References</h4>
@@ -3385,7 +3374,6 @@ The following two lines produce the same output:
 </p><code-block>Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>tel</h-><h- data-h=sym_brac>{</h->+1234<h- data-h=sym_brac>}</h->.
 Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->tel:+1234<h- data-h=sym_sqr>]</h->.</code-block>
 </example-block>
-
 <h3 id=foreign-languages><a class=para href=#foreign-languages></a>8.13. Foreign languages</h3>
 
 <h4 id=dir-html><a class=para href=#dir-html></a>8.13.1. <code><h- data-h=mk_tag>\html</h-></code> &mdash; Inline HTML</h4>
@@ -3473,7 +3461,6 @@ body { color: red; }
 <h- data-h=mk_tag>body</h-> <h- data-h=sym_brac>{</h-> <h- data-h=mk_attr>color</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>red</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
 <h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
-
 <h3 id=paragraph-control><a class=para href=#paragraph-control></a>8.14. Paragraph control</h3>
 
 <p>In some cases, the automatic <a href=#paragraph-splitting>§4.5. Paragraph splitting</a>
@@ -3527,7 +3514,6 @@ Second paragraph.
 
 <p>The <code><h- data-h=mk_tag>\inline</h-></code> directive works like the <code><h- data-h=mk_tag>\block</h-></code> directive,
 but causes its contents to display as inline content, not as block content.
-
 </p><h3 id=sections><a class=para href=#sections></a>8.15. Sections</h3>
 
 <p>Often, you want to produce content in one place,
@@ -3590,7 +3576,6 @@ COWEL markup:
 
 <p>The <code><h- data-h=mk_tag>\hereblock</h-></code> directive functions exactly like the <code><h- data-h=mk_tag>\here</h-></code> directive,
 but displays as block content instead of inline content.
-
 </p><h3 id=file-management><a class=para href=#file-management></a>8.16. File management</h3>
 
 <p>Once projects get larger,
@@ -3690,7 +3675,6 @@ This can help you avoid copying boilerplate between multiple documents.
 <p>It is also common to split documents into multiple files that are combined using a sequence
 of <code><h- data-h=mk_tag>\import</h-></code>s.
 </p></tip-block>
-
 <h3 id=macros><a class=para href=#macros></a>8.17. Macros</h3>
 
 <h4 id=dir-def><a class=para href=#dir-def></a>8.17.1. <code><h- data-h=mk_tag>\macro</h-></code> &mdash; Define a macro</h4>
@@ -3810,7 +3794,6 @@ Therefore, you should try to "namespace" your own macros like:
 </p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\abc_i</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->macro definition here ...<h- data-h=sym_brac>}</h->
 <h- data-h=mk_tag>\abc_i</h-></code-block>
 </tip-block>
-
 <h3 id=miscellaneous><a class=para href=#miscellaneous></a>8.18. Miscellaneous</h3>
 
 <h4 id=dir-div><a class=para href=#dir-div></a>8.18.1. <code><h- data-h=mk_tag>\div</h-></code> &mdash; Content division</h4>
@@ -3871,7 +3854,6 @@ Its arguments are ignored.
 Therefore, it acts as a sort of wrapper for plaintext.
 Notably, this forces the generation of plaintext even when <code><h- data-h=mk_tag>\text</h-></code>
 is within an HTML context.
-
 </p><h3 id=variables-and-calculations><a class=para href=#variables-and-calculations></a>8.19. Variables and calculations</h3>
 
 <p>While COWEL is not intended to be general purpose programming language,
@@ -3978,6 +3960,5 @@ except that it performs division instead of addition.
 <warning-block><p><intro-></intro-> 
 Division by zero results in an error.
 </p></warning-block>
-
 </main></body>
 </html>
