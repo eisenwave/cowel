@@ -75,65 +75,83 @@ all of which begin with a \cow_c{\\} (like directives),
 but are followed by some special character.
 The meaning of the escape sequences is described in the table below.
 
-\table[style=margin-left:auto; margin-right:auto;]{
+\style{
+  #escapes-table {
+    margin-left:auto;
+    margin-right:auto;
+    table-layout: fixed;
+  }
+  #escapes-table td {
+    border-top: 1px solid var(--border-color);
+  }
+  #escapes-table td:first-child {
+    width: 40%;
+  }
+}
+
+\table[id=escapes-table]{
   \tr{
     \th{Escape sequence}
     \th{Meaning}
   }
   \tr{
-    \td{\cow_esc{\N{LEFT CURLY BRACKET}}}
-    \td{Expands to \tt{\N{LEFT CURLY BRACKET}}}
+    \td{
+      \cow_esc{\N{LEFT CURLY BRACKET}},
+      \cow_esc{\N{RIGHT CURLY BRACKET}},
+      \cow_esc{\\},
+      \cow_esc{[},
+      \cow_esc{]},
+      \cow_esc{,},
+      \cow_esc{=},
+      \nobr{\cow_esc{} U+0009 HORIZONTAL TABULATION},
+      \nobr{\cow_esc{} U+0020 SPACE}
+    }
+    \td{
+      Expands to the second character in the escape sequence.
+      These sequences are stable.
+    }
   }
   \tr{
-    \td{\cow_esc{\N{RIGHT CURLY BRACKET}}}
-    \td{Expands to \tt{\N{RIGHT CURLY BRACKET}}}
+    \td{
+      \cow_esc{!},
+      \cow_esc{"},
+      \cow_esc{#},
+      \cow_esc{\N{DOLLAR SIGN}},
+      \cow_esc{\N{PERCENT SIGN}},
+      \cow_esc{&},
+      \cow_esc{'},
+      \cow_esc{(},
+      \cow_esc{)},
+      \cow_esc{*},
+      \cow_esc{+},
+      \cow_esc{.},
+      \cow_esc{/},
+      \cow_esc{;},
+      \cow_esc{<},
+      \cow_esc{>},
+      \cow_esc{?},
+      \cow_esc{@},
+      \cow_esc{^},
+      \cow_esc{|},
+      \cow_esc{~}
+    }
+    \td{
+      Expands to the second character in the escape sequence.
+      \strong{These sequences are unstable},
+      meaning that they could be given a different meaning in the future.
+      \strong{Use with caution!}
+    }
   }
   \tr{
-    \td{\cow_esc{\\}}
-    \td{Expands to \tt{\\}}
-  }
-  \tr{
-    \td{\cow_esc{[}}
-    \td{Expands to \tt{[}}
-  }
-  \tr{
-    \td{\cow_esc{]}}
-    \td{Expands to \tt{]}}
-  }
-  \tr{
-    \td{\cow_esc{,}}
-    \td{Expands to \tt{,}}
-  }
-  \tr{
-    \td{\cow_esc{=}}
-    \td{Expands to \tt{=}}
-  }
-  \tr{
-    \td{\cow_esc{}, U+0009 HORIZONTAL TABULATION}
-    \td{Expands to U+0009 HORIZONTAL TABULATION}
-  }
-  \tr{
-    \td{\cow_esc{}, U+000A LINE FEED}
-    \td{Expands to nothing}
-  }
-  \tr{
-    \td{\cow_esc{}, U+000B VERTICAL TABULATION}
-    \td{Expands to nothing}
-  }
-  \tr{
-    \td{\cow_esc{}, U+000D CARRIAGE RETURN}
-    \td{Expands to nothing}
-  }
-  \tr{
-    \td{\cow_esc{}, U+000A, U+000D (CRLF escape)}
-    \td{Expands to nothing}
-  }
-  \tr{
-    \td{\cow_esc{}, U+0020 SPACE}
-    \td{Expands to U+0020 SPACE}
-  }
-  \tr{
-    
+    \td{
+      \nobr{\cow_esc{} U+000A LINE FEED},
+      \nobr{\cow_esc{} U+000B VERTICAL TABULATION},
+      \nobr{\cow_esc{} U+000D CARRIAGE RETURN},
+      \nobr{\cow_esc{} U+000A U+000D (CRLF escape)}
+    }
+    \td{
+      Expands to nothing; feature is stable
+    }
   }
 }
 

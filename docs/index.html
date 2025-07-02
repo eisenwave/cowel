@@ -1876,65 +1876,83 @@ all of which begin with a <code>\</code> (like directives),
 but are followed by some special character.
 The meaning of the escape sequences is described in the table below.
 </p>
-<table style="margin-left:auto; margin-right:auto;">
+<style>
+  #escapes-table {
+    margin-left:auto;
+    margin-right:auto;
+    table-layout: fixed;
+  }
+  #escapes-table td {
+    border-top: 1px solid var(--border-color);
+  }
+  #escapes-table td:first-child {
+    width: 40%;
+  }
+</style>
+
+<table id=escapes-table>
   <tr>
     <th>Escape sequence</th>
     <th>Meaning</th>
   </tr>
   <tr>
-    <td><tt-><h- data-h=esc>\{</h-></tt-></td>
-    <td>Expands to <tt->{</tt-></td>
+    <td>
+      <tt-><h- data-h=esc>\{</h-></tt->,
+      <tt-><h- data-h=esc>\}</h-></tt->,
+      <tt-><h- data-h=esc>\\</h-></tt->,
+      <tt-><h- data-h=esc>\[</h-></tt->,
+      <tt-><h- data-h=esc>\]</h-></tt->,
+      <tt-><h- data-h=esc>\,</h-></tt->,
+      <tt-><h- data-h=esc>\=</h-></tt->,
+      <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+0009 HORIZONTAL TABULATION</span>,
+      <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+0020 SPACE</span>
+    </td>
+    <td>
+      Expands to the second character in the escape sequence.
+      These sequences are stable.
+    </td>
   </tr>
   <tr>
-    <td><tt-><h- data-h=esc>\}</h-></tt-></td>
-    <td>Expands to <tt->}</tt-></td>
+    <td>
+      <tt-><h- data-h=esc>\!</h-></tt->,
+      <tt-><h- data-h=esc>\"</h-></tt->,
+      <tt-><h- data-h=esc>\#</h-></tt->,
+      <tt-><h- data-h=esc>\$</h-></tt->,
+      <tt-><h- data-h=esc>\%</h-></tt->,
+      <tt-><h- data-h=esc>\&amp;</h-></tt->,
+      <tt-><h- data-h=esc>\'</h-></tt->,
+      <tt-><h- data-h=esc>\(</h-></tt->,
+      <tt-><h- data-h=esc>\)</h-></tt->,
+      <tt-><h- data-h=esc>\*</h-></tt->,
+      <tt-><h- data-h=esc>\+</h-></tt->,
+      <tt-><h- data-h=esc>\.</h-></tt->,
+      <tt-><h- data-h=esc>\/</h-></tt->,
+      <tt-><h- data-h=esc>\;</h-></tt->,
+      <tt-><h- data-h=esc>\&lt;</h-></tt->,
+      <tt-><h- data-h=esc>\&gt;</h-></tt->,
+      <tt-><h- data-h=esc>\?</h-></tt->,
+      <tt-><h- data-h=esc>\@</h-></tt->,
+      <tt-><h- data-h=esc>\^</h-></tt->,
+      <tt-><h- data-h=esc>\|</h-></tt->,
+      <tt-><h- data-h=esc>\~</h-></tt->
+    </td>
+    <td>
+      Expands to the second character in the escape sequence.
+      <strong>These sequences are unstable</strong>,
+      meaning that they could be given a different meaning in the future.
+      <strong>Use with caution!</strong>
+    </td>
   </tr>
   <tr>
-    <td><tt-><h- data-h=esc>\\</h-></tt-></td>
-    <td>Expands to <tt->\</tt-></td>
-  </tr>
-  <tr>
-    <td><tt-><h- data-h=esc>\[</h-></tt-></td>
-    <td>Expands to <tt->[</tt-></td>
-  </tr>
-  <tr>
-    <td><tt-><h- data-h=esc>\]</h-></tt-></td>
-    <td>Expands to <tt->]</tt-></td>
-  </tr>
-  <tr>
-    <td><tt-><h- data-h=esc>\,</h-></tt-></td>
-    <td>Expands to <tt->,</tt-></td>
-  </tr>
-  <tr>
-    <td><tt-><h- data-h=esc>\=</h-></tt-></td>
-    <td>Expands to <tt->=</tt-></td>
-  </tr>
-  <tr>
-    <td><tt-><h- data-h=esc>\</h-></tt->, U+0009 HORIZONTAL TABULATION</td>
-    <td>Expands to U+0009 HORIZONTAL TABULATION</td>
-  </tr>
-  <tr>
-    <td><tt-><h- data-h=esc>\</h-></tt->, U+000A LINE FEED</td>
-    <td>Expands to nothing</td>
-  </tr>
-  <tr>
-    <td><tt-><h- data-h=esc>\</h-></tt->, U+000B VERTICAL TABULATION</td>
-    <td>Expands to nothing</td>
-  </tr>
-  <tr>
-    <td><tt-><h- data-h=esc>\</h-></tt->, U+000D CARRIAGE RETURN</td>
-    <td>Expands to nothing</td>
-  </tr>
-  <tr>
-    <td><tt-><h- data-h=esc>\</h-></tt->, U+000A, U+000D (CRLF escape)</td>
-    <td>Expands to nothing</td>
-  </tr>
-  <tr>
-    <td><tt-><h- data-h=esc>\</h-></tt->, U+0020 SPACE</td>
-    <td>Expands to U+0020 SPACE</td>
-  </tr>
-  <tr>
-    
+    <td>
+      <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+000A LINE FEED</span>,
+      <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+000B VERTICAL TABULATION</span>,
+      <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+000D CARRIAGE RETURN</span>,
+      <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+000A U+000D (CRLF escape)</span>
+    </td>
+    <td>
+      Expands to nothing; feature is stable
+    </td>
   </tr>
 </table>
 
