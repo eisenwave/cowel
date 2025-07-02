@@ -19,10 +19,13 @@ enum struct AST_Instruction_Type : Default_Underlying {
     /// This is used only within directive arguments,
     /// where leading and trailing whitespace generally doesn't matter.
     skip,
-    /// @brief The next `n` characters are an escape sequence (e.g. `\\{`).
+    /// @brief The next `n` characters are an escape sequence (e.g. `\{`).
     escape,
     /// @brief The next `n` characters are literal text.
     text,
+    /// @brief The next `n` characters are a comment,
+    /// including the `\:` prefix and the terminating newline, if any.
+    comment,
     /// @brief The next `n` characters are an argument name.
     argument_name,
     /// @brief Advance past `=` following an argument name.

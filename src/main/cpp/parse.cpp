@@ -207,7 +207,7 @@ private:
     [[nodiscard]]
     bool try_match_content(Content_Context context, Bracket_Levels& levels)
     {
-        if (peek(u8'\\') && (try_match_escaped() || try_match_directive())) {
+        if (peek(u8'\\') && (try_match_escaped() || try_match_comment() || try_match_directive())) {
             return true;
         }
 
@@ -223,17 +223,7 @@ private:
                 if (remainder.empty()) {
                     continue;
                 }
-                // Escape sequence such as `\{`.
-                // We treat these as separate in the AST, not as content.
-                if (is_cowel_escapeable(remainder.front())) {
-                    break;
-                }
-                // Directive names; also not part of content.
-                // No matter what, a backslash followed by a directive name character forms a
-                // directive because the remaining arguments and the block are optional.
-                // I.e. we can break with certainty despite only having examined one character.
-                const auto [code_point, length] = utf8::decode_and_length_or_replacement(remainder);
-                if (is_cowel_directive_name(code_point)) {
+                if (is_cowel_allowed_after_backslash(remainder.front())) {
                     break;
                 }
                 continue;
@@ -309,7 +299,7 @@ private:
         Scoped_Attempt a = attempt();
 
         if (!expect(u8'[')) {
-            return {};
+            return false;
         }
         const std::size_t arguments_instruction_index = m_out.size();
         m_out.push_back({ AST_Instruction_Type::push_arguments, 0 });
@@ -330,20 +320,35 @@ private:
             );
         }
 
-        return false;
+        return true;
     }
 
     [[nodiscard]]
     bool try_match_escaped()
     {
-        constexpr std::size_t sequence_length = 2;
+        const std::u8string_view remainder = m_source.substr(m_pos);
+        if (const std::size_t length = ulight::cowel::match_escape(remainder)) {
+            m_pos += length;
+            m_out.push_back({ AST_Instruction_Type::escape, length });
+            return true;
+        }
+        return false;
+    }
 
-        if (m_pos + sequence_length < m_source.size() //
-            && m_source[m_pos] == u8'\\' //
-            && is_cowel_escapeable(char8_t(m_source[m_pos + 1]))) //
-        {
-            m_pos += sequence_length;
-            m_out.push_back({ AST_Instruction_Type::escape, sequence_length });
+    [[nodiscard]]
+    bool try_match_comment()
+    {
+        const std::u8string_view remainder = m_source.substr(m_pos);
+        if (const std::size_t length = ulight::cowel::match_line_comment(remainder)) {
+            COWEL_ASSERT(remainder.starts_with(u8"\\:"));
+            const std::u8string_view suffix = remainder.substr(length);
+            const std::size_t suffix_length = //
+                suffix.starts_with(u8"\r\n") ? 2
+                : suffix.starts_with(u8'\n') ? 1
+                                             : 0;
+
+            m_pos += length + suffix_length;
+            m_out.push_back({ AST_Instruction_Type::comment, length + suffix_length });
             return true;
         }
         return false;
@@ -517,6 +522,7 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         COWEL_ENUM_STRING_CASE8(skip);
         COWEL_ENUM_STRING_CASE8(escape);
         COWEL_ENUM_STRING_CASE8(text);
+        COWEL_ENUM_STRING_CASE8(comment);
         COWEL_ENUM_STRING_CASE8(argument_name);
         COWEL_ENUM_STRING_CASE8(argument_equal);
         COWEL_ENUM_STRING_CASE8(argument_comma);
