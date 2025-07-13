@@ -1,4 +1,5 @@
 #include <bit>
+#include <exception>
 #include <memory_resource>
 #include <new>
 
