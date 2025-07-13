@@ -7,9 +7,14 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT DEFINED EMSCRIPTEN)
-    find_package(GTest REQUIRED)
-    include(GoogleTest)
-    enable_testing()
+    find_package(GTest QUIET)
+    if (GTest_FOUND)
+        message(STATUS "GTest found. Building tests.")
+        include(GoogleTest)
+        enable_testing()
+    else()
+        message(STATUS "GTest not found. Skipping tests.")
+    endif()
 endif()
 
 find_package(Python3 REQUIRED)
@@ -160,23 +165,25 @@ else()
     )
     target_link_libraries(cowel-cli cowel ulight)
 
-    add_executable(cowel-test ${HEADERS}
-        src/test/cpp/document_file_testing.cpp
-        src/test/cpp/main.cpp
-        src/test/cpp/test_chars_strings.cpp
-        src/test/cpp/test_document_generation.cpp
-        src/test/cpp/test_draft_uris.cpp
-        src/test/cpp/test_html_writer.cpp
-        src/test/cpp/test_levenshtein.cpp
-        src/test/cpp/test_parsing.cpp
-        src/test/cpp/test_to_chars.cpp
-        src/test/cpp/test_typo.cpp
-        src/test/cpp/test_valid.cpp
-    )
+    if (GTest_FOUND)
+        add_executable(cowel-test ${HEADERS}
+            src/test/cpp/document_file_testing.cpp
+            src/test/cpp/main.cpp
+            src/test/cpp/test_chars_strings.cpp
+            src/test/cpp/test_document_generation.cpp
+            src/test/cpp/test_draft_uris.cpp
+            src/test/cpp/test_html_writer.cpp
+            src/test/cpp/test_levenshtein.cpp
+            src/test/cpp/test_parsing.cpp
+            src/test/cpp/test_to_chars.cpp
+            src/test/cpp/test_typo.cpp
+            src/test/cpp/test_valid.cpp
+        )
 
-    target_link_libraries(cowel-test cowel ulight GTest::GTest GTest::Main)
-    gtest_discover_tests(cowel-test
-        WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
-        DISCOVERY_TIMEOUT 30
-    )
+        target_link_libraries(cowel-test cowel ulight GTest::GTest GTest::Main)
+        gtest_discover_tests(cowel-test
+            WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
+            DISCOVERY_TIMEOUT 30
+        )
+    endif()
 endif()
