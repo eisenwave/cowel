@@ -8,7 +8,6 @@
 
 #include "cowel/util/function_ref.hpp"
 #include "cowel/util/html_writer.hpp"
-#include "cowel/util/result.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/fwd.hpp"
@@ -53,40 +52,64 @@ enum struct To_Plaintext_Status : Default_Underlying { //
     error
 };
 
-/// @brief Converts content to plaintext.
-/// For text, this outputs that text literally.
-/// For escaped characters, this outputs the escaped character.
-/// For directives, this runs `generate_plaintext` using the behavior of that directive,
-/// looked up via context.
-/// @param context the current processing context
-To_Plaintext_Status to_plaintext(
-    std::pmr::vector<char8_t>& out,
-    const ast::Content& c,
-    Context& context,
-    To_Plaintext_Mode mode = To_Plaintext_Mode::normal
-);
+[[nodiscard]]
+Content_Status apply_behavior(Content_Policy& out, const ast::Directive& d, Context& context);
 
-To_Plaintext_Status to_plaintext(
-    std::pmr::vector<char8_t>& out,
-    const ast::Directive& d,
-    Context& context,
-    To_Plaintext_Mode mode = To_Plaintext_Mode::normal
-);
+template <std::ranges::input_range R, typename Consumer>
+    requires std::is_invocable_r_v<Content_Status, Consumer, std::ranges::range_reference_t<R>>
+[[nodiscard]]
+// NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward)
+Content_Status process_greedy(R&& content, Consumer consumer)
+{
+    bool error = false;
+    for (auto& c : content) {
+        const auto status = consumer(c);
+        switch (status) {
+        case Content_Status::ok: continue;
+        case Content_Status::abandon:
+            return error ? Content_Status::error_abandon : Content_Status::abandon;
+        case Content_Status::error: error = true; continue;
+        case Content_Status::error_abandon:
+        case Content_Status::fatal: return status;
+        }
+    }
+    return error ? Content_Status::error : Content_Status::ok;
+}
 
-/// @brief Calls `to_plaintext` for each piece of content.
-To_Plaintext_Status to_plaintext(
+template <std::ranges::input_range R, typename Consumer>
+    requires std::is_invocable_r_v<Content_Status, Consumer, std::ranges::range_reference_t<R>>
+[[nodiscard]]
+// NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward)
+Content_Status process_lazy(R&& content, Consumer consumer)
+{
+    for (auto& c : content) {
+        const auto status = consumer(c);
+        if (status != Content_Status::ok) {
+            return status;
+        }
+    }
+    return Content_Status::ok;
+}
+
+[[nodiscard]]
+inline Content_Status
+consume_all(Content_Policy& out, std::span<const ast::Content> content, Context& context)
+{
+    return process_greedy(content, [&](const ast::Content& c) {
+        return out.consume_content(c, context);
+    });
+}
+
+[[nodiscard]]
+Content_Status
+consume_all_trimmed(Content_Policy& out, std::span<const ast::Content> content, Context& context);
+
+[[nodiscard]]
+Content_Status to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
-    Context& context,
-    To_Plaintext_Mode mode = To_Plaintext_Mode::normal
+    Context& context
 );
-
-void to_html(HTML_Writer& out, const ast::Content&, Context&);
-void to_html(HTML_Writer& out, const ast::Escaped&, Context&);
-void to_html(HTML_Writer& out, const ast::Text&, Context&);
-inline void to_html(HTML_Writer&, const ast::Comment&, Context&) { }
-void to_html(HTML_Writer& out, const ast::Directive&, Context&);
-void to_html(HTML_Writer& out, const ast::Generated&, Context&);
 
 enum struct To_HTML_Mode : Default_Underlying {
     direct,
@@ -111,38 +134,6 @@ enum struct Paragraphs_State : bool {
     outside,
     inside,
 };
-
-/// @brief Converts the `content` to HTML,
-/// and depending on `mode`,
-/// possibly performing transformations like content trimming or paragraph splitting.
-/// @param out Output.
-/// @param content The content used to generate HTML.
-/// @param context The context.
-/// @param mode Unless set to `direct`, performs additional transformations.
-/// @param paragraphs_state Only meaningful when `to_html_mode_is_paragraphed(mode)` is `true`.
-/// If `inside` is given, it is assumed that the output already contains an opening `<p>` tag,
-/// and this content generation begins somewhere in the middle of the paragraph.
-void to_html(
-    HTML_Writer& out,
-    std::span<const ast::Content> content,
-    Context& context,
-    To_HTML_Mode mode = To_HTML_Mode::direct,
-    Paragraphs_State paragraphs_state = Paragraphs_State::outside
-);
-
-/// @brief Converts the source code of the content to HTML without any processing.
-void to_html_literally(HTML_Writer& out, const ast::Content& content, Context& context);
-
-void to_html_literally(HTML_Writer& out, std::span<const ast::Content> content, Context& context);
-
-Result<void, Syntax_Highlight_Error> to_html_syntax_highlighted(
-    HTML_Writer& out,
-    std::span<const ast::Content> content,
-    std::u8string_view language,
-    Context& context,
-    std::u8string_view prefix = u8"",
-    std::u8string_view suffix = u8""
-);
 
 enum struct Argument_Subset : Default_Underlying {
     none = 0,
@@ -204,7 +195,8 @@ void warn_ignored_argument_subset(
 
 using Argument_Filter = Function_Ref<bool(std::size_t index, const ast::Argument& argument) const>;
 
-void named_arguments_to_attributes(
+[[nodiscard]]
+Content_Status named_arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     Context& context,
@@ -212,7 +204,8 @@ void named_arguments_to_attributes(
     Attribute_Style style = Attribute_Style::double_if_needed
 );
 
-void named_arguments_to_attributes(
+[[nodiscard]]
+Content_Status named_arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     const Argument_Matcher& matcher,
@@ -221,22 +214,22 @@ void named_arguments_to_attributes(
     Attribute_Style style = Attribute_Style::double_if_needed
 );
 
-void named_argument_to_attribute(
+[[nodiscard]]
+Content_Status named_argument_to_attribute(
     Attribute_Writer& out,
     const ast::Argument& a,
     Context& context,
     Attribute_Style style = Attribute_Style::double_if_needed
 );
 
-/// @brief Converts a specified argument to plaintext.
+/// @brief Converts a the content of the argument matching the given parameter.
 /// @param out The vector into which generated plaintext should be written.
 /// @param d The directive.
 /// @param args The arguments. Matching must have already taken place.
 /// @param parameter The name of the parameter to which the argument belongs.
 /// @param context The context.
-/// @returns `true` iff the argument was matched.
 [[nodiscard]]
-bool argument_to_plaintext(
+Result<bool, Content_Status> argument_to_plaintext(
     std::pmr::vector<char8_t>& out,
     const ast::Directive& d,
     const Argument_Matcher& args,
@@ -245,7 +238,7 @@ bool argument_to_plaintext(
 );
 
 [[nodiscard]]
-bool get_yes_no_argument(
+Result<bool, Content_Status> get_yes_no_argument(
     std::u8string_view name,
     std::u8string_view diagnostic_id,
     const ast::Directive& d,
@@ -255,7 +248,7 @@ bool get_yes_no_argument(
 );
 
 [[nodiscard]]
-std::size_t get_integer_argument(
+Result<std::size_t, Content_Status> get_integer_argument(
     std::u8string_view name,
     std::u8string_view parse_error_diagnostic,
     std::u8string_view range_error_diagnostic,
@@ -273,7 +266,7 @@ struct String_Argument {
 };
 
 [[nodiscard]]
-String_Argument get_string_argument(
+Result<String_Argument, Content_Status> get_string_argument(
     std::u8string_view name,
     const ast::Directive& d,
     const Argument_Matcher& args,
@@ -281,17 +274,23 @@ String_Argument get_string_argument(
     std::u8string_view fallback = u8""
 );
 
-/// @brief If there is an error behavior in the `context`,
-/// uses that behavior's `generate_plaintext` on the directive.
-void try_generate_error_plaintext(
-    std::pmr::vector<char8_t>& out,
+/// @brief Uses the error behavior provided by `context` to process `d`.
+/// Returns `on_success` if that generation succeeded.
+[[nodiscard]]
+Content_Status try_generate_error(
+    Content_Policy& out,
     const ast::Directive& d,
-    Context& context
+    Context& context,
+    Content_Status on_success = Content_Status::error
 );
 
-/// @brief If there is an error behavior in the `context`,
-/// uses that behavior's `generate_html` on the directive.
-void try_generate_error_html(HTML_Writer& out, const ast::Directive& d, Context& context);
+/// @brief If `out` is a `Paragraph_Split_Content_Policy`
+/// calls `out.enter_paragraph()`.
+void try_enter_paragraph(Content_Policy& out);
+
+/// @brief If `out` is a `Paragraph_Split_Content_Policy`
+/// calls `out.leave_paragraph()`.
+void try_leave_paragraph(Content_Policy& out);
 
 } // namespace cowel
 

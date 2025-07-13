@@ -1,29 +1,32 @@
 #include <memory_resource>
 #include <unordered_set>
 
-#include "cowel/theme_to_css.hpp"
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
+#include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 
 #include "cowel/assets.hpp"
 #include "cowel/builtin_directive_set.hpp"
-#include "cowel/content_behavior.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/document_content_behavior.hpp"
 #include "cowel/document_generation.hpp"
 #include "cowel/document_sections.hpp"
+#include "cowel/theme_to_css.hpp"
+
+using namespace std::string_view_literals;
 
 namespace cowel {
 
-void generate_document(const Generation_Options& options)
+Content_Status
+run_generation(Function_Ref<Content_Status(Context&)> generate, const Generation_Options& options)
 {
+    COWEL_ASSERT(generate);
     COWEL_ASSERT(options.memory != nullptr);
 
     std::pmr::unsynchronized_pool_resource transient_memory { options.memory };
-
-    HTML_Writer writer { options.output };
 
     Context context { options.highlight_theme_source, //
                       options.error_behavior, //
@@ -34,10 +37,9 @@ void generate_document(const Generation_Options& options)
                       options.memory, //
                       &transient_memory };
     context.add_resolver(options.builtin_behavior);
-
-    options.root_behavior.generate_html(writer, options.root_content, context);
-
+    const auto result = generate(context);
     context.get_bibliography().clear();
+    return result;
 }
 
 namespace {
@@ -107,7 +109,9 @@ bool Reference_Resolver::operator()(std::u8string_view text, File_Id file)
                 section_name,
                 u8"\".",
             };
-            context.try_error(diagnostic::section_ref_not_found, { {}, file }, message);
+            context.try_error(
+                diagnostic::section_ref_not_found, { {}, file }, joined_char_sequence(message)
+            );
             section_success = false;
         }
         else if (const auto [_, insert_success] = visited.insert(entry); !insert_success) {
@@ -116,12 +120,15 @@ bool Reference_Resolver::operator()(std::u8string_view text, File_Id file)
                 section_name,
                 u8"\".",
             };
-            context.try_error(diagnostic::section_ref_circular, { {}, file }, message);
+            context.try_error(
+                diagnostic::section_ref_circular, { {}, file }, joined_char_sequence(message)
+            );
             section_success = false;
         }
         text.remove_prefix(4 + reference_length);
         if (section_success) {
-            const std::u8string_view referenced_text { entry->second.data(), entry->second.size() };
+            const std::u8string_view referenced_text { entry->second.m_data(),
+                                                       entry->second.size() };
             (*this)(referenced_text, file);
         }
         else {
@@ -141,7 +148,7 @@ void warn_deprecated_directive_names(std::span<const ast::Content> content, Cont
             if (d->get_name().contains(u8'-')) {
                 context.try_warning(
                     diagnostic::deprecated, d->get_name_span(),
-                    u8"The use of '-' in directive names is deprecated."
+                    u8"The use of '-' in directive names is deprecated."sv
                 );
             }
             for (const ast::Argument& arg : d->get_arguments()) {
@@ -174,16 +181,18 @@ void Head_Body_Content_Behavior::generate_html(
     auto& html_text = [&] -> std::pmr::vector<char8_t>& {
         const auto scope = sections.go_to_scoped(section_name::document_html);
 
-        HTML_Writer current_out = sections.current_html();
+        Content_Policy& current_out = sections.current_policy();
+        HTML_Writer current_writer { current_out };
+
         const auto open_and_close = [&](std::u8string_view tag, auto f) {
-            current_out.open_tag(tag);
-            current_out.write_inner_html(u8'\n');
+            current_writer.open_tag(tag);
+            current_writer.write_inner_html(u8'\n');
             f();
-            current_out.close_tag(tag);
-            current_out.write_inner_html(u8'\n');
+            current_writer.close_tag(tag);
+            current_writer.write_inner_html(u8'\n');
         };
 
-        current_out.write_preamble();
+        current_writer.write_preamble();
         open_and_close(u8"html", [&] {
             open_and_close(u8"head", [&] {
                 reference_section(current_out, section_name::document_head);
@@ -287,7 +296,7 @@ void Document_Content_Behavior::generate_head(
             context.try_error(
                 diagnostic::theme_conversion, { {}, File_Id {} },
                 u8"Failed to convert the syntax highlight theme to CSS, "
-                u8"possibly because the JSON was malformed."
+                u8"possibly because the JSON was malformed."sv
             );
         }
         out.write_inner_html(indent);

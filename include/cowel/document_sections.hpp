@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/chars.hpp"
-#include "cowel/util/html_writer.hpp"
 #include "cowel/util/transparent_comparison.hpp"
-#include "cowel/util/unicode.hpp"
+
+#include "cowel/policy/capture.hpp"
+#include "cowel/policy/html.hpp"
 
 #include "cowel/fwd.hpp"
 
@@ -25,13 +27,38 @@ using Suppress_Unused_Include_Transparent_Less = Basic_Transparent_String_View_L
 
 } // namespace detail
 
+struct Section_Content {
+private:
+    std::pmr::vector<char8_t> m_data;
+    Capturing_Ref_Text_Sink m_sink { m_data, Output_Language::html };
+    HTML_Content_Policy m_policy { m_sink };
+
+public:
+    [[nodiscard]]
+    explicit Section_Content(std::pmr::memory_resource* memory)
+        : m_data { memory }
+    {
+    }
+
+    [[nodiscard]]
+    Content_Policy& policy()
+    {
+        return m_policy;
+    }
+    [[nodiscard]]
+    const Content_Policy& policy() const
+    {
+        return m_policy;
+    }
+};
+
 struct Document_Sections {
 public:
     // The choice of std::map over std::unordered_map is deliberate:
     // We require iterator and reference stability in some cases,
     // and std::unordered_map can invalidate iterators and references on rehashing.
-    using map_type = std::pmr::
-        map<std::pmr::u8string, std::pmr::vector<char8_t>, Transparent_String_View_Less8>;
+    using map_type
+        = std::pmr::map<std::pmr::u8string, Section_Content, Transparent_String_View_Less8>;
     using entry_type = map_type::value_type;
 
     struct [[nodiscard]] Scoped_Section {
@@ -206,23 +233,9 @@ public:
 
     /// @brief Returns the output characters of the current section.
     [[nodiscard]]
-    std::pmr::vector<char8_t>& current_text() noexcept
+    Content_Policy& current_policy() noexcept
     {
-        return current().second;
-    }
-
-    /// @brief Returns the output characters of the current section.
-    [[nodiscard]]
-    const std::pmr::vector<char8_t>& current_text() const noexcept
-    {
-        return current().second;
-    }
-
-    /// @brief Equivalent to `HTML_Writer { current_text() }`.
-    [[nodiscard]]
-    HTML_Writer current_html() noexcept
-    {
-        return HTML_Writer { current_text() };
+        return current().second.policy();
     }
 };
 
@@ -233,23 +246,17 @@ public:
 /// The given name is then appended as is.
 /// @returns `name.size() <= 65635`.
 /// A name beyond that size cannot be encoded as a section reference.
-inline bool reference_section(std::pmr::vector<char8_t>& out, std::u8string_view name)
+inline bool reference_section(Content_Policy& out, Char_Sequence8 name)
 {
     constexpr std::size_t max_length = supplementary_pua_a_max - supplementary_pua_a_min;
     if (name.size() > max_length) {
         return false;
     }
 
-    const utf8::Code_Units_And_Length units_and_length
-        = utf8::encode8_unchecked(supplementary_pua_a_min + char32_t(name.size()));
-    out.insert(out.end(), units_and_length.begin(), units_and_length.end());
-    out.insert(out.end(), name.begin(), name.end());
+    const char32_t first_point = supplementary_pua_a_min + char32_t(name.size());
+    out.write(make_char_sequence(first_point), Output_Language::html);
+    out.write(name, Output_Language::html);
     return true;
-}
-
-inline bool reference_section(HTML_Writer& out, std::u8string_view name)
-{
-    return reference_section(out.get_output(), name);
 }
 
 } // namespace cowel

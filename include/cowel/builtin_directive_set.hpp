@@ -4,9 +4,9 @@
 #include <memory>
 #include <string_view>
 
+#include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 
-#include "cowel/base_behaviors.hpp"
 #include "cowel/directive_behavior.hpp"
 
 namespace cowel {
@@ -20,25 +20,18 @@ private:
     const std::u8string_view m_replacement;
 
 public:
-    constexpr Deprecated_Behavior(const Directive_Behavior& other, std::u8string_view replacement)
-        : Directive_Behavior { other.category, other.display }
-        , m_behavior { other }
+    constexpr Deprecated_Behavior(const Deprecated_Behavior& other, std::u8string_view replacement)
+        : m_behavior { other }
         , m_replacement { replacement }
     {
     }
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const override
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override
     {
         warn(d, context);
-        m_behavior.generate_plaintext(out, d, context);
-    }
-
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final
-    {
-        warn(d, context);
-        m_behavior.generate_html(out, d, context);
+        return m_behavior(out, d, context);
     }
 
     void warn(const ast::Directive& d, Context& context) const
@@ -48,7 +41,9 @@ public:
             m_replacement,
             u8" instead.",
         };
-        context.try_warning(diagnostic::deprecated, d.get_name_span(), message);
+        context.try_warning(
+            diagnostic::deprecated, d.get_name_span(), joined_char_sequence(message)
+        );
     }
 };
 
@@ -56,77 +51,76 @@ public:
 /// Does not processing.
 /// Generates no plaintext.
 /// Generates HTML with the source code of the contents wrapped in an `<error->` custom tag.
-struct Error_Behavior : Do_Nothing_Behavior {
+struct Error_Behavior_2 : Directive_Behavior {
     static constexpr std::u8string_view id = u8"error-";
 
-    constexpr Error_Behavior()
-        : Do_Nothing_Behavior { Directive_Category::pure_html, Directive_Display::in_line }
-    {
-    }
+    constexpr explicit Error_Behavior_2() = default;
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context&) const override
+    [[nodiscard]]
+    Content_Status operator()(Content_Policy& out, const ast::Directive& d, Context&) const override
     {
-        out.open_tag(id);
-        out.write_inner_text(d.get_source());
-        out.close_tag(id);
+        // TODO: inline display
+        switch (out.get_language()) {
+        case Output_Language::none: {
+            return Content_Status::ok;
+        }
+        case Output_Language::html: {
+            HTML_Writer writer { out };
+            writer.open_tag(id);
+            writer.write_inner_text(d.get_source());
+            writer.close_tag(id);
+            return Content_Status::ok;
+        }
+        default: {
+            return Content_Status::ok;
+        }
+        }
     }
 };
 
 struct [[nodiscard]]
-HTML_Entity_Behavior final : Directive_Behavior {
-    constexpr HTML_Entity_Behavior()
-        : Directive_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
-    {
-    }
+Char_By_Entity_Behavior final : Directive_Behavior {
+    constexpr explicit Char_By_Entity_Behavior() = default;
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const override;
-
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context&) const override;
 };
 
 struct [[nodiscard]] Code_Point_Behavior : Directive_Behavior {
 
-    constexpr explicit Code_Point_Behavior()
-        : Directive_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
-    {
-    }
-
-    virtual char32_t get_code_point(const ast::Directive& d, Context& context) const = 0;
-
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const final;
-
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
-};
-
-struct [[nodiscard]]
-Code_Point_By_Digits_Behavior final : Code_Point_Behavior {
+    virtual Result<char32_t, Content_Status>
+    get_code_point(const ast::Directive& d, Context& context) const = 0;
 
     [[nodiscard]]
-    char32_t get_code_point(const ast::Directive& d, Context& context) const final;
+    Content_Status operator()(Content_Policy& out, const ast::Directive& d, Context&) const final;
 };
 
 struct [[nodiscard]]
-Code_Point_By_Name_Behavior final : Code_Point_Behavior {
+Char_By_Num_Behavior final : Code_Point_Behavior {
+    constexpr explicit Char_By_Num_Behavior() = default;
 
     [[nodiscard]]
-    char32_t get_code_point(const ast::Directive& d, Context& context) const final;
+    Result<char32_t, Content_Status>
+    get_code_point(const ast::Directive& d, Context& context) const final;
 };
 
 struct [[nodiscard]]
-Code_Point_Digits_Behavior final : Pure_Plaintext_Behavior {
+Char_By_Name_Behavior final : Code_Point_Behavior {
+    constexpr explicit Char_By_Name_Behavior() = default;
 
-    constexpr Code_Point_Digits_Behavior()
-        : Pure_Plaintext_Behavior { Directive_Display::in_line }
-    {
-    }
+    [[nodiscard]]
+    Result<char32_t, Content_Status>
+    get_code_point(const ast::Directive& d, Context& context) const final;
+};
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const override;
+struct [[nodiscard]]
+Char_Get_Num_Behavior final : Directive_Behavior {
+
+    constexpr explicit Char_Get_Num_Behavior() = default;
+
+    [[nodiscard]]
+    Content_Status operator()(Content_Policy& out, const ast::Directive& d, Context&) const final;
 };
 
 // clang-format off
@@ -134,20 +128,23 @@ inline constexpr std::u8string_view lorem_ipsum = u8"Lorem ipsum dolor sit amet,
 // clang-format on
 
 struct Lorem_Ipsum_Behavior final : Directive_Behavior {
-    constexpr Lorem_Ipsum_Behavior()
-        : Directive_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
-    {
-    }
+    constexpr explicit Lorem_Ipsum_Behavior() = default;
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context&) const final
+    [[nodiscard]]
+    Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override
     {
-        append(out, lorem_ipsum);
-    }
-
-    void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const final
-    {
-        out.write_inner_html(lorem_ipsum);
+        // TODO: inline display
+        switch (out.get_language()) {
+        case Output_Language::none: {
+            return Content_Status::ok;
+        }
+        case Output_Language::text:
+        case Output_Language::html: {
+            out.write(lorem_ipsum, Output_Language::text);
+            return Content_Status::ok;
+        }
+        }
+        return Content_Status::ok;
     }
 };
 
@@ -155,7 +152,7 @@ struct Lorem_Ipsum_Behavior final : Directive_Behavior {
 enum struct Pre_Trimming : bool { no, yes };
 
 /// @brief Responsible for syntax-highlighted directives like `\code` or `\codeblock`.
-struct [[nodiscard]] Syntax_Highlight_Behavior : Parametric_Behavior {
+struct [[nodiscard]] Code_Behavior : Directive_Behavior {
 private:
     static constexpr std::u8string_view lang_parameter = u8"lang";
     static constexpr std::u8string_view nested_parameter = u8"nested";
@@ -176,86 +173,54 @@ private:
     const bool m_pre_compat_trim = false;
 
 public:
-    constexpr explicit Syntax_Highlight_Behavior(
-        std::u8string_view tag_name,
-        Directive_Category category,
-        Directive_Display d,
-        Pre_Trimming pre_compat_trim
-    )
-        : Parametric_Behavior { category, d, parameters }
-        , m_tag_name { tag_name }
+    constexpr explicit Code_Behavior(std::u8string_view tag_name, Pre_Trimming pre_compat_trim)
+        : m_tag_name { tag_name }
         , m_pre_compat_trim { pre_compat_trim == Pre_Trimming::yes }
     {
     }
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive&, const Argument_Matcher&, Context&)
-        const override;
-
-    void generate_html(
-        HTML_Writer& out,
-        const ast::Directive& d,
-        const Argument_Matcher& args,
-        Context& context
-    ) const override;
+    [[nodiscard]]
+    Content_Status operator()(Content_Policy&, const ast::Directive&, Context&) const override;
 };
 
 /// @brief Forces a certain highlight to be applied.
-struct [[nodiscard]] Highlight_Behavior : Parametric_Behavior {
+struct [[nodiscard]] Highlight_As_Behavior : Directive_Behavior {
 private:
     static constexpr std::u8string_view name_parameter = u8"name";
     static constexpr std::u8string_view parameters[] { name_parameter };
 
 public:
-    constexpr explicit Highlight_Behavior()
-        : Parametric_Behavior { Directive_Category::mixed, Directive_Display::in_line, parameters }
-    {
-    }
+    constexpr explicit Highlight_As_Behavior() = default;
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>&, const ast::Directive&, const Argument_Matcher&, Context&)
-        const override;
-
-    void generate_html(
-        HTML_Writer& out,
-        const ast::Directive& d,
-        const Argument_Matcher& args,
-        Context& context
-    ) const override;
+    [[nodiscard]]
+    Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
-struct Literally_Behavior : Pure_Plaintext_Behavior {
+struct Literally_Behavior : Directive_Behavior {
 
-    constexpr explicit Literally_Behavior(Directive_Display display)
-        : Pure_Plaintext_Behavior { display }
-    {
-    }
+    constexpr explicit Literally_Behavior() = default;
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const override;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct Unprocessed_Behavior : Pure_Plaintext_Behavior {
+struct Unprocessed_Behavior : Directive_Behavior {
 
-    constexpr explicit Unprocessed_Behavior(Directive_Display display)
-        : Pure_Plaintext_Behavior { display }
-    {
-    }
+    constexpr explicit Unprocessed_Behavior() = default;
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const override;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct HTML_Literal_Behavior : Pure_HTML_Behavior {
+struct HTML_Behavior : Directive_Behavior {
 
-    constexpr explicit HTML_Literal_Behavior(Directive_Display display)
-        : Pure_HTML_Behavior { display }
-    {
-    }
+    constexpr explicit HTML_Behavior() = default;
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
 /// @brief Common behavior for generating `<script>` and `<style>` elements
@@ -267,55 +232,36 @@ struct HTML_Literal_Behavior : Pure_HTML_Behavior {
 /// so the output is not escaped in the usual way but taken quite literally,
 /// similar to `HTML_Literal_Behavior`.
 struct [[nodiscard]]
-HTML_Raw_Text_Behavior final : Pure_HTML_Behavior {
+HTML_Raw_Text_Behavior final : Directive_Behavior {
 private:
     const std::u8string_view m_tag_name;
 
 public:
     constexpr explicit HTML_Raw_Text_Behavior(std::u8string_view tag_name)
-        : Pure_HTML_Behavior { Directive_Display::block }
-        , m_tag_name { tag_name }
+        : m_tag_name { tag_name }
     {
         COWEL_ASSERT(tag_name == u8"style" || tag_name == u8"script");
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct Variable_Behavior : Parametric_Behavior {
+struct Variable_Behavior : Directive_Behavior {
     static constexpr std::u8string_view var_parameter = u8"var";
     static constexpr std::u8string_view parameters[] { var_parameter };
 
-    constexpr Variable_Behavior(Directive_Category c, Directive_Display d)
-        : Parametric_Behavior { c, d, parameters }
-    {
-    }
+    constexpr explicit Variable_Behavior() = default;
 
-    void generate_plaintext(
-        std::pmr::vector<char8_t>& out,
-        const ast::Directive& d,
-        const Argument_Matcher& args,
-        Context& context
-    ) const override;
-
-    void generate_html(
-        HTML_Writer& out,
-        const ast::Directive& d,
-        const Argument_Matcher& args,
-        Context& context
-    ) const override;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 
 protected:
-    virtual void generate_var_plaintext(
-        std::pmr::vector<char8_t>& out,
-        const ast::Directive& d,
-        std::u8string_view var,
-        Context& context
-    ) const
-        = 0;
-
-    virtual void generate_var_html(
-        HTML_Writer& out,
+    [[nodiscard]]
+    virtual Content_Status generate_var(
+        Content_Policy& out,
         const ast::Directive& d,
         std::u8string_view var,
         Context& context
@@ -336,37 +282,29 @@ constexpr int expression_type_neutral_element(Expression_Type e)
     return e == Expression_Type::add || e == Expression_Type::subtract ? 0 : 1;
 }
 
-struct Expression_Behavior final : Pure_Plaintext_Behavior {
+struct Expression_Behavior final : Directive_Behavior {
 private:
     const Expression_Type m_type;
 
 public:
+    [[nodiscard]]
     constexpr explicit Expression_Behavior(Expression_Type type)
-        : Pure_Plaintext_Behavior { Directive_Display::in_line }
-        , m_type { type }
+        : m_type { type }
     {
     }
 
-    void generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context& context)
-        const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive&, Context& context) const final;
 };
 
 struct Get_Variable_Behavior final : Variable_Behavior {
 
-    constexpr explicit Get_Variable_Behavior()
-        : Variable_Behavior { Directive_Category::pure_plaintext, Directive_Display::in_line }
-    {
-    }
+    constexpr explicit Get_Variable_Behavior() = default;
 
-    void generate_var_plaintext(
-        std::pmr::vector<char8_t>& out,
-        const ast::Directive&,
-        std::u8string_view var,
-        Context& context
-    ) const final;
-
-    void generate_var_html(
-        HTML_Writer& out,
+    [[nodiscard]]
+    Content_Status generate_var(
+        Content_Policy& out,
         const ast::Directive&,
         std::u8string_view var,
         Context& context
@@ -378,7 +316,8 @@ enum struct Variable_Operation : Default_Underlying {
     set
 };
 
-void process(
+[[nodiscard]]
+Content_Status set_variable_to_op_result(
     Variable_Operation op,
     const ast::Directive& d,
     std::u8string_view var,
@@ -390,30 +329,18 @@ private:
     const Variable_Operation m_op;
 
 public:
+    [[nodiscard]]
     constexpr explicit Modify_Variable_Behavior(Variable_Operation op)
-        : Variable_Behavior { Directive_Category::meta, Directive_Display::none }
-        , m_op { op }
+        : m_op { op }
     {
     }
 
-    void generate_var_plaintext(
-        std::pmr::vector<char8_t>&,
-        const ast::Directive& d,
-        std::u8string_view var,
-        Context& context
-    ) const final
+    [[nodiscard]]
+    Content_Status
+    generate_var(Content_Policy&, const ast::Directive& d, std::u8string_view var, Context& context)
+        const final
     {
-        process(m_op, d, var, context);
-    }
-
-    void generate_var_html(
-        HTML_Writer&,
-        const ast::Directive& d,
-        std::u8string_view var,
-        Context& context
-    ) const final
-    {
-        process(m_op, d, var, context);
+        return set_variable_to_op_result(m_op, d, var, context);
     }
 };
 
@@ -422,65 +349,41 @@ private:
     const To_HTML_Mode m_to_html_mode;
 
 public:
-    constexpr explicit HTML_Wrapper_Behavior(
-        Directive_Category category,
-        Directive_Display display,
-        To_HTML_Mode to_html_mode
-    )
-        : Directive_Behavior { category, display }
-        , m_to_html_mode { to_html_mode }
+    constexpr explicit HTML_Wrapper_Behavior(To_HTML_Mode to_html_mode)
+        : m_to_html_mode { to_html_mode }
     {
     }
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const final;
-
-    void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct Plaintext_Wrapper_Behavior : Pure_Plaintext_Behavior {
+struct Plaintext_Wrapper_Behavior : Directive_Behavior {
 
-    constexpr explicit Plaintext_Wrapper_Behavior(Directive_Display display)
-        : Pure_Plaintext_Behavior(display)
-    {
-    }
+    constexpr explicit Plaintext_Wrapper_Behavior() = default;
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const override;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
 struct Trim_Behavior : Directive_Behavior {
 
-    constexpr explicit Trim_Behavior(Directive_Category category, Directive_Display display)
-        : Directive_Behavior { category, display }
-    {
-    }
+    constexpr explicit Trim_Behavior() = default;
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const final;
-
-    void generate_html(HTML_Writer& out, const ast::Directive&, Context&) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
 struct Passthrough_Behavior : Directive_Behavior {
 
-    constexpr Passthrough_Behavior(Directive_Category category, Directive_Display display)
-        : Directive_Behavior { category, display }
-    {
-        COWEL_ASSERT(
-            category == Directive_Category::formatting || category == Directive_Category::pure_html
-            || category == Directive_Category::pure_plaintext
-        );
-    }
+    constexpr Passthrough_Behavior() = default;
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const override;
-
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 
     [[nodiscard]]
     virtual std::u8string_view get_name(const ast::Directive& d) const
@@ -493,42 +396,31 @@ private:
     const std::u8string_view m_class_name;
 
 public:
-    constexpr In_Tag_Behavior(
-        std::u8string_view tag_name,
-        std::u8string_view class_name,
-        Directive_Category category,
-        Directive_Display display
-    )
-        : Directive_Behavior { category, display }
-        , m_tag_name { tag_name }
+    constexpr In_Tag_Behavior(std::u8string_view tag_name, std::u8string_view class_name)
+        : m_tag_name { tag_name }
         , m_class_name { class_name }
     {
-        COWEL_ASSERT(
-            category == Directive_Category::formatting || category == Directive_Category::pure_html
-            || category == Directive_Category::pure_plaintext
-        );
     }
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive& d, Context& context)
-        const override;
-
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const override;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
 /// @brief Behavior for self-closing tags, like `<br/>` and `<hr/>`.
-struct Self_Closing_Behavior final : Pure_HTML_Behavior {
+struct Self_Closing_Behavior final : Directive_Behavior {
 private:
     const std::u8string_view m_tag_name;
 
 public:
-    constexpr Self_Closing_Behavior(std::u8string_view tag_name, Directive_Display display)
-        : Pure_HTML_Behavior { display }
-        , m_tag_name { tag_name }
+    constexpr Self_Closing_Behavior(std::u8string_view tag_name)
+        : m_tag_name { tag_name }
     {
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
 /// @brief Behavior for any formatting tags that are mapped onto HTML with the same name.
@@ -545,13 +437,8 @@ private:
     const std::u8string_view m_name_prefix;
 
 public:
-    constexpr Directive_Name_Passthrough_Behavior(
-        Directive_Category category,
-        Directive_Display display,
-        const std::u8string_view name_prefix = u8""
-    )
-        : Passthrough_Behavior { category, display }
-        , m_name_prefix { name_prefix }
+    constexpr Directive_Name_Passthrough_Behavior(const std::u8string_view name_prefix = u8"")
+        : m_name_prefix { name_prefix }
     {
     }
 
@@ -564,13 +451,8 @@ private:
     const std::u8string_view m_name;
 
 public:
-    constexpr explicit Fixed_Name_Passthrough_Behavior(
-        std::u8string_view name,
-        Directive_Category category,
-        Directive_Display display
-    )
-        : Passthrough_Behavior { category, display }
-        , m_name { name }
+    constexpr explicit Fixed_Name_Passthrough_Behavior(std::u8string_view name)
+        : m_name { name }
     {
     }
 
@@ -581,178 +463,208 @@ public:
     }
 };
 
-struct Special_Block_Behavior final : Pure_HTML_Behavior {
+struct Special_Block_Behavior final : Directive_Behavior {
 private:
     const std::u8string_view m_name;
     const bool m_emit_intro;
 
 public:
     constexpr explicit Special_Block_Behavior(std::u8string_view name, bool emit_intro = true)
-        : Pure_HTML_Behavior { Directive_Display::block }
-        , m_name { name }
+        : m_name { name }
         , m_emit_intro { emit_intro }
     {
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
-struct WG21_Block_Behavior final : Pure_HTML_Behavior {
+struct WG21_Block_Behavior final : Directive_Behavior {
 private:
     const std::u8string_view m_prefix;
     const std::u8string_view m_suffix;
 
 public:
+    [[nodiscard]]
     constexpr explicit WG21_Block_Behavior(std::u8string_view prefix, std::u8string_view suffix)
-        : Pure_HTML_Behavior { Directive_Display::in_line }
-        , m_prefix { prefix }
+        : m_prefix { prefix }
         , m_suffix { suffix }
     {
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
-struct WG21_Head_Behavior final : Pure_HTML_Behavior {
+struct WG21_Head_Behavior final : Directive_Behavior {
+    [[nodiscard]]
     constexpr explicit WG21_Head_Behavior()
-        : Pure_HTML_Behavior { Directive_Display::in_line }
-    {
-    }
+        = default;
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
-struct URL_Behavior final : Pure_HTML_Behavior {
+struct URL_Behavior final : Directive_Behavior {
 private:
     const std::u8string_view m_url_prefix;
 
 public:
+    [[nodiscard]]
     constexpr explicit URL_Behavior(std::u8string_view url_prefix = u8"")
-        : Pure_HTML_Behavior { Directive_Display::in_line }
-        , m_url_prefix { url_prefix }
+        : m_url_prefix { url_prefix }
     {
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
-struct Ref_Behavior final : Pure_HTML_Behavior {
-
+struct Ref_Behavior final : Directive_Behavior {
+    [[nodiscard]]
     constexpr explicit Ref_Behavior()
-        : Pure_HTML_Behavior(Directive_Display::in_line)
-    {
-    }
+        = default;
 
-    void generate_html(HTML_Writer&, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy&, const ast::Directive& d, Context& context) const final;
 };
 
-struct Bibliography_Add_Behavior final : Meta_Behavior {
+struct Bibliography_Add_Behavior final : Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Bibliography_Add_Behavior()
+        = default;
 
-    void evaluate(const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
-struct List_Behavior final : Pure_HTML_Behavior {
+struct List_Behavior final : Directive_Behavior {
 private:
     const std::u8string_view m_tag_name;
     const Directive_Behavior& m_item_behavior;
 
 public:
+    [[nodiscard]]
     constexpr explicit List_Behavior(
         std::u8string_view tag_name,
         const Directive_Behavior& item_behavior
     )
-        : Pure_HTML_Behavior { Directive_Display::block }
-        , m_tag_name { tag_name }
+        : m_tag_name { tag_name }
         , m_item_behavior { item_behavior }
     {
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct Heading_Behavior final : Pure_HTML_Behavior {
+struct Heading_Behavior final : Directive_Behavior {
 private:
     const int m_level;
 
 public:
-    constexpr Heading_Behavior(int level)
-        : Pure_HTML_Behavior { Directive_Display::block }
-        , m_level { level }
+    [[nodiscard]]
+    constexpr explicit Heading_Behavior(int level)
+        : m_level { level }
     {
         COWEL_ASSERT(m_level >= 1 && level <= 6);
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct There_Behavior final : Meta_Behavior {
+struct There_Behavior final : Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit There_Behavior()
+        = default;
 
-    void evaluate(const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct Here_Behavior final : Pure_HTML_Behavior {
-    constexpr explicit Here_Behavior(Directive_Display display)
-        : Pure_HTML_Behavior { display }
-    {
-    }
+struct Here_Behavior final : Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Here_Behavior()
+        = default;
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct Make_Section_Behavior final : Pure_HTML_Behavior {
+struct Make_Section_Behavior final : Directive_Behavior {
 private:
     const std::u8string_view m_class_name;
     const std::u8string_view m_section_name;
 
 public:
     constexpr explicit Make_Section_Behavior(
-        Directive_Display display,
         std::u8string_view class_name,
         std::u8string_view section_name
     )
-        : Pure_HTML_Behavior { display }
-        , m_class_name { class_name }
+        : m_class_name { class_name }
         , m_section_name { section_name }
     {
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct Math_Behavior final : Pure_HTML_Behavior {
+struct Math_Behavior final : Directive_Behavior {
+private:
+    const bool is_inline;
 
-    constexpr Math_Behavior(Directive_Display display)
-        : Pure_HTML_Behavior { display }
+public:
+    [[nodiscard]]
+    constexpr explicit Math_Behavior(bool is_inline)
+        : is_inline { is_inline }
     {
     }
 
-    void generate_html(HTML_Writer& out, const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct Include_Behavior final : Pure_Plaintext_Behavior {
+struct Include_Behavior final : Directive_Behavior {
 
-    constexpr Include_Behavior(Directive_Display display)
-        : Pure_Plaintext_Behavior { display }
-    {
-    }
+    constexpr explicit Include_Behavior() = default;
 
-    void
-    generate_plaintext(std::pmr::vector<char8_t>& out, const ast::Directive&, Context&) const final;
+    [[nodiscard]]
+    Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
-struct Import_Behavior final : Instantiated_Behavior {
+struct Import_Behavior final : Directive_Behavior {
 
-    void instantiate(std::pmr::vector<ast::Content>&, const ast::Directive&, Context&) const final;
+    constexpr explicit Import_Behavior() = default;
+
+    [[nodiscard]]
+    Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
-struct Macro_Define_Behavior final : Meta_Behavior {
+struct Macro_Define_Behavior final : Directive_Behavior {
 
-    void evaluate(const ast::Directive& d, Context& context) const final;
+    [[nodiscard]]
+    Content_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct Macro_Instantiate_Behavior final : Instantiated_Behavior {
+struct Macro_Instantiate_Behavior final : Directive_Behavior {
 
-    void instantiate(std::pmr::vector<ast::Content>&, const ast::Directive&, Context&) const final;
+    [[nodiscard]]
+    Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
 struct [[nodiscard]]

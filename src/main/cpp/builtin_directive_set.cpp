@@ -10,7 +10,6 @@
 
 #include "cowel/util/typo.hpp"
 
-#include "cowel/base_behaviors.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/directive_behavior.hpp"
 #include "cowel/directive_processing.hpp"
@@ -73,9 +72,9 @@ struct Builtin_Directive_Set::Impl {
         { u8"caption", Directive_Category::pure_html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior cite //
         { u8"cite", Directive_Category::formatting, Directive_Display::in_line };
-    Syntax_Highlight_Behavior code //
+    Code_Behavior code //
         { u8"code", Directive_Category::mixed, Directive_Display::in_line, Pre_Trimming::no };
-    Syntax_Highlight_Behavior codeblock //
+    Code_Behavior codeblock //
         { u8"code-block", Directive_Category::pure_html, Directive_Display::block,
           Pre_Trimming::yes };
     Fixed_Name_Passthrough_Behavior col //

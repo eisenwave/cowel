@@ -134,7 +134,7 @@ struct Doc_Gen_Test : testing::Test {
     {
         Directive_Behavior& error_behavior = builtin_directives.get_error_behavior();
         const Generation_Options options { .output = out,
-                                           .root_behavior = root_behavior,
+                                           .root_policy = root_behavior,
                                            .root_content = content,
                                            .builtin_behavior = builtin_directives,
                                            .error_behavior = &error_behavior,
@@ -151,7 +151,7 @@ struct Doc_Gen_Test : testing::Test {
         constexpr auto invoker = [](void* entity, std::u8string_view id,
                                     const File_Source_Span& location, std::u8string_view message) {
             auto* const self = static_cast<Doc_Gen_Test*>(entity);
-            Diagnostic d { Severity::error, id, location, { &message, 1 } };
+            Diagnostic d { Severity::error, id, location, message };
             self->logger(d);
         };
         return Parse_Error_Consumer { invoker, this };
