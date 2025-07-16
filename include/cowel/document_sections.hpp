@@ -47,6 +47,12 @@ public:
     }
 
     [[nodiscard]]
+    std::pmr::vector<char8_t>& output() &
+    {
+        return m_data;
+    }
+
+    [[nodiscard]]
     Content_Policy& policy()
     {
         return m_policy;
@@ -235,6 +241,12 @@ public:
     std::u8string_view current_name() const noexcept
     {
         return current().first;
+    }
+
+    [[nodiscard]]
+    std::pmr::vector<char8_t>& current_output() noexcept
+    {
+        return current().second.output();
     }
 
     /// @brief Returns the output characters of the current section.
