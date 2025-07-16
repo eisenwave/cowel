@@ -577,7 +577,7 @@ public:
     Basic_Attribute_Writer& end_empty()
     {
         if (m_unsafe_slash) {
-            m_writer.do_write(u8' ');
+            m_writer.m_out(u8' ');
         }
         m_writer.end_empty_tag_attributes();
         return *this;
