@@ -6,12 +6,13 @@
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 
+#include "cowel/policy/paragraph_split.hpp"
+
 #include "cowel/assets.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
-#include "cowel/document_content_behavior.hpp"
 #include "cowel/document_generation.hpp"
 #include "cowel/document_sections.hpp"
 #include "cowel/theme_to_css.hpp"
@@ -127,8 +128,7 @@ bool Reference_Resolver::operator()(std::u8string_view text, File_Id file)
         }
         text.remove_prefix(4 + reference_length);
         if (section_success) {
-            const std::u8string_view referenced_text { entry->second.m_data(),
-                                                       entry->second.size() };
+            const std::u8string_view referenced_text = entry->second.text();
             (*this)(referenced_text, file);
         }
         else {
@@ -163,11 +163,8 @@ constexpr bool enable_warn_deprecated_directive_names = false;
 
 } // namespace
 
-void Head_Body_Content_Behavior::generate_html(
-    HTML_Writer& out,
-    std::span<const ast::Content> content,
-    Context& context
-) const
+Content_Policy
+generate_head_body(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
 {
     // TODO: Enable once it's no longer necessary to have hyphens in directive names.
     //       This will require changing directives like \html-X or \wg21-link.
@@ -210,12 +207,12 @@ void Head_Body_Content_Behavior::generate_html(
     {
         const auto scope = sections.go_to_scoped(section_name::document_head);
         HTML_Writer current_out = sections.current_html();
-        generate_head(current_out, content, context);
+        write_wg21_head_contents(current_out, content, context);
     }
     {
         const auto scope = sections.go_to_scoped(section_name::document_body);
         HTML_Writer current_out = sections.current_html();
-        generate_body(current_out, content, context);
+        write_wg21_body_contents(current_out, content, context);
     }
 
     std::pmr::unordered_set<const void*> visited(context.get_transient_memory());
@@ -228,23 +225,18 @@ void Head_Body_Content_Behavior::generate_html(
 constexpr std::u8string_view indent = u8"  ";
 constexpr std::u8string_view newline_indent = u8"\n  ";
 
-void Document_Content_Behavior::generate_html(
-    HTML_Writer& out,
-    std::span<const ast::Content> content,
-    Context& context
-) const
+Content_Status
+generate_document(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
 {
     context.add_resolver(m_macro_resolver);
 
     Head_Body_Content_Behavior::generate_html(out, content, context);
 }
 
-void Document_Content_Behavior::generate_head(
-    HTML_Writer& out,
-    std::span<const ast::Content>,
-    Context& context
-) const
+Content_Status
+write_wg21_head_contents(Text_Sink& out, std::span<const ast::Content>, Context& context)
 {
+    HTML_Writer writer { out };
     constexpr std::u8string_view google_fonts_url
         = u8"https://fonts.googleapis.com/css2"
           u8"?family=Fira+Code:wght@300..700"
@@ -252,72 +244,85 @@ void Document_Content_Behavior::generate_head(
           u8"&family=Noto+Serif:ital,wght@0,100..900;1,100..900"
           u8"&display=swap";
 
-    out.write_inner_html(indent);
+    writer.write_inner_html(indent);
 
-    out.open_tag_with_attributes(u8"meta") //
+    writer
+        .open_tag_with_attributes(u8"meta") //
         .write_charset(u8"UTF-8")
         .end_empty();
-    out.open_tag_with_attributes(u8"meta") //
+    writer
+        .open_tag_with_attributes(u8"meta") //
         .write_name(u8"viewport")
         .write_content(u8"width=device-width, initial-scale=1")
         .end_empty();
 
-    out.open_tag_with_attributes(u8"link") //
+    writer
+        .open_tag_with_attributes(u8"link") //
         .write_rel(u8"preconnent")
         .write_href(u8"https://fonts.googleapis.com")
         .end_empty();
-    out.write_inner_html(newline_indent);
-    out.open_tag_with_attributes(u8"link") //
+    writer.write_inner_html(newline_indent);
+    writer
+        .open_tag_with_attributes(u8"link") //
         .write_rel(u8"preconnent")
         .write_href(u8"https://fonts.gstatic.com")
         .write_crossorigin()
         .end_empty();
-    out.write_inner_html(newline_indent);
-    out.open_tag_with_attributes(u8"link") //
+    writer.write_inner_html(newline_indent);
+    writer
+        .open_tag_with_attributes(u8"link") //
         .write_rel(u8"stylesheet")
         .write_href(google_fonts_url)
         .end_empty();
 
     const auto include_css_or_js = [&](std::u8string_view tag, std::u8string_view source) {
-        out.write_inner_html(newline_indent);
-        out.open_tag(tag);
-        out.write_inner_html(u8'\n');
-        out.write_inner_html(source);
-        out.write_inner_html(indent);
-        out.close_tag(tag);
+        writer.write_inner_html(newline_indent);
+        writer.open_tag(tag);
+        writer.write_inner_html(u8'\n');
+        writer.write_inner_html(source);
+        writer.write_inner_html(indent);
+        writer.close_tag(tag);
     };
     include_css_or_js(u8"style", assets::main_css);
     {
-        out.write_inner_text(newline_indent);
-        out.open_tag(u8"style");
-        out.write_inner_html(u8'\n');
+        writer.write_inner_text(newline_indent);
+        writer.open_tag(u8"style");
+        writer.write_inner_html(u8'\n');
         const std::u8string_view theme_json = context.get_highlight_theme_source();
-        if (!theme_to_css(out.get_output(), theme_json, context.get_transient_memory())) {
+        std::pmr::vector<char8_t> css { context.get_transient_memory() };
+        if (theme_to_css(css, theme_json, context.get_transient_memory())) {
+            writer.write_inner_html(as_u8string_view(css));
+        }
+        else {
             context.try_error(
                 diagnostic::theme_conversion, { {}, File_Id {} },
                 u8"Failed to convert the syntax highlight theme to CSS, "
                 u8"possibly because the JSON was malformed."sv
             );
+            return Content_Status::error;
         }
-        out.write_inner_html(indent);
-        out.close_tag(u8"style");
+        writer.write_inner_html(indent);
+        writer.close_tag(u8"style");
     }
 
     include_css_or_js(u8"script", assets::light_dark_js);
-    out.write_inner_html(u8'\n');
+    writer.write_inner_html(u8'\n');
+    return Content_Status::ok;
 }
 
-void Document_Content_Behavior::generate_body(
-    HTML_Writer& out,
+Content_Status write_wg21_body_contents(
+    Content_Policy& out,
     std::span<const ast::Content> content,
     Context& context
-) const
+)
 {
-    out.write_inner_html(assets::settings_widget_html);
-    out.open_tag(u8"main");
-    out.write_inner_html(u8'\n');
-    to_html(out, content, context, To_HTML_Mode::paragraphs);
-    out.close_tag(u8"main");
+    HTML_Writer writer { out };
+    writer.write_inner_html(assets::settings_widget_html);
+    writer.open_tag(u8"main");
+    writer.write_inner_html(u8'\n');
+    const Content_Status result = consume_all(out, content, context);
+    writer.close_tag(u8"main");
+    return result;
 }
 
 } // namespace cowel

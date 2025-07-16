@@ -2,9 +2,12 @@
 #define COWEL_DOCUMENT_GENERATION_HPP
 
 #include <memory_resource>
+#include <span>
 #include <string_view>
 
 #include "cowel/util/function_ref.hpp"
+
+#include "cowel/policy/content_policy.hpp"
 
 #include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
@@ -37,6 +40,17 @@ struct Generation_Options {
 /// @returns The result returned by `generate`.
 Content_Status
 run_generation(Function_Ref<Content_Status(Context&)> generate, const Generation_Options& options);
+
+[[nodiscard]]
+Content_Status
+write_wg21_head_contents(Text_Sink& out, std::span<const ast::Content>, Context& context);
+
+[[nodiscard]]
+Content_Status write_wg21_body_contents(
+    Content_Policy& out,
+    std::span<const ast::Content> content,
+    Context& context
+);
 
 } // namespace cowel
 

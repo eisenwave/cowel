@@ -8,7 +8,6 @@
 #include "cowel/assets.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/cowel.h"
-#include "cowel/document_content_behavior.hpp"
 #include "cowel/document_generation.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/services.hpp"
@@ -264,13 +263,10 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
     // have been performed using that.
     alignas(output_type) std::byte output_storage[sizeof(output_type)];
     output_type& output = *new (output_storage) output_type { memory };
+    Capturing_Ref_Text_Sink html_sink { output, Output_Language::html };
+    HTML_Content_Policy html_policy { html_sink };
 
     Builtin_Directive_Set builtin_behavior {};
-    Document_Content_Behavior document_behavior { builtin_behavior.get_macro_behavior() };
-    Minimal_Content_Behavior minimal_behavior { builtin_behavior.get_macro_behavior() };
-    Content_Behavior& root_behavior = options.mode == COWEL_MODE_MINIMAL
-        ? static_cast<Content_Behavior&>(minimal_behavior)
-        : static_cast<Content_Behavior&>(document_behavior);
 
     File_Loader_From_Options file_loader { options.load_file, options.load_file_data };
     Logger_From_Options logger { options, memory };
@@ -289,10 +285,7 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
         ? assets::wg21_json
         : as_u8string_view(options.highlight_theme_json);
 
-    const Generation_Options gen_options { .output = output,
-                                           .root_policy = root_behavior,
-                                           .root_content = root_content,
-                                           .builtin_behavior = builtin_behavior,
+    const Generation_Options gen_options { .builtin_behavior = builtin_behavior,
                                            .error_behavior = &builtin_behavior.get_error_behavior(),
                                            .highlight_theme_source = highlight_theme_source,
                                            .file_loader = file_loader,
@@ -300,7 +293,14 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
                                            .highlighter = highlighter,
                                            .memory = memory };
 
-    generate_document(gen_options);
+    run_generation(
+        [&](Context& context) -> Content_Status {
+            if (options.mode == COWEL_MODE_MINIMAL) {
+                return consume_all(html_policy, root_content, context);
+            }
+        },
+        gen_options
+    );
 
     // This is safe because output is never destroyed,
     // so we keep its allocation alive.
