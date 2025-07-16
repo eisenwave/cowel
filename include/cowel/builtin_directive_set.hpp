@@ -4,6 +4,7 @@
 #include <memory>
 #include <string_view>
 
+#include "cowel/directive_display.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 
@@ -14,13 +15,34 @@ namespace cowel {
 inline constexpr char8_t builtin_directive_prefix = u8'-';
 inline constexpr std::u8string_view html_tag_prefix = u8"html-";
 
+/// @brief Indicates which `Content_Policy` should be used by the directive.
+enum struct Policy_Usage : bool {
+    /// @brief The given policy should be used directly.
+    /// This results in applying syntax highlighting and other transformations on content
+    /// if the surrounding policy does that.
+    inherit,
+    /// @brief The content should be processed by an `HTML_Content_Policy`,
+    /// which results in the given policy being fed nothing but "HTML blobs".
+    /// This is desirable for directives that are not subject to syntax highlighting,
+    /// like `\ul`, `\li`, etc.
+    html,
+};
+
+/// @brief Indicates whether an intro for "special blocks", i.e. notes, examples, etc.
+/// should be emitted.
+/// That is, a short text snippet at the start of the text content, like "Note:".
+enum struct Intro_Policy : bool {
+    no,
+    yes,
+};
+
 struct Deprecated_Behavior : Directive_Behavior {
 private:
     const Directive_Behavior& m_behavior;
     const std::u8string_view m_replacement;
 
 public:
-    constexpr Deprecated_Behavior(const Deprecated_Behavior& other, std::u8string_view replacement)
+    constexpr Deprecated_Behavior(const Directive_Behavior& other, std::u8string_view replacement)
         : m_behavior { other }
         , m_replacement { replacement }
     {
@@ -51,10 +73,10 @@ public:
 /// Does not processing.
 /// Generates no plaintext.
 /// Generates HTML with the source code of the contents wrapped in an `<error->` custom tag.
-struct Error_Behavior_2 : Directive_Behavior {
+struct Error_Behavior : Directive_Behavior {
     static constexpr std::u8string_view id = u8"error-";
 
-    constexpr explicit Error_Behavior_2() = default;
+    constexpr explicit Error_Behavior() = default;
 
     [[nodiscard]]
     Content_Status operator()(Content_Policy& out, const ast::Directive& d, Context&) const override
@@ -75,6 +97,16 @@ struct Error_Behavior_2 : Directive_Behavior {
             return Content_Status::ok;
         }
         }
+    }
+};
+
+struct Comment_Behavior : Directive_Behavior {
+    constexpr explicit Comment_Behavior() = default;
+
+    [[nodiscard]]
+    Content_Status operator()(Content_Policy&, const ast::Directive&, Context&) const override
+    {
+        return Content_Status::ok;
     }
 };
 
@@ -117,7 +149,9 @@ Char_By_Name_Behavior final : Code_Point_Behavior {
 struct [[nodiscard]]
 Char_Get_Num_Behavior final : Directive_Behavior {
 
-    constexpr explicit Char_Get_Num_Behavior() = default;
+    [[nodiscard]]
+    constexpr explicit Char_Get_Num_Behavior()
+        = default;
 
     [[nodiscard]]
     Content_Status operator()(Content_Policy& out, const ast::Directive& d, Context&) const final;
@@ -128,7 +162,9 @@ inline constexpr std::u8string_view lorem_ipsum = u8"Lorem ipsum dolor sit amet,
 // clang-format on
 
 struct Lorem_Ipsum_Behavior final : Directive_Behavior {
-    constexpr explicit Lorem_Ipsum_Behavior() = default;
+    [[nodiscard]]
+    constexpr explicit Lorem_Ipsum_Behavior()
+        = default;
 
     [[nodiscard]]
     Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override
@@ -170,12 +206,19 @@ private:
     // clang-format on
 
     const std::u8string_view m_tag_name;
-    const bool m_pre_compat_trim = false;
+    const Directive_Display m_display;
+    const Pre_Trimming m_pre_compat_trim;
 
 public:
-    constexpr explicit Code_Behavior(std::u8string_view tag_name, Pre_Trimming pre_compat_trim)
+    [[nodiscard]]
+    constexpr explicit Code_Behavior(
+        std::u8string_view tag_name,
+        Directive_Display display,
+        Pre_Trimming pre_compat_trim
+    )
         : m_tag_name { tag_name }
-        , m_pre_compat_trim { pre_compat_trim == Pre_Trimming::yes }
+        , m_display { display }
+        , m_pre_compat_trim { pre_compat_trim }
     {
     }
 
@@ -190,15 +233,18 @@ private:
     static constexpr std::u8string_view parameters[] { name_parameter };
 
 public:
-    constexpr explicit Highlight_As_Behavior() = default;
+    [[nodiscard]]
+    constexpr explicit Highlight_As_Behavior()
+        = default;
 
     [[nodiscard]]
     Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
 struct Literally_Behavior : Directive_Behavior {
-
-    constexpr explicit Literally_Behavior() = default;
+    [[nodiscard]]
+    constexpr explicit Literally_Behavior()
+        = default;
 
     [[nodiscard]]
     Content_Status
@@ -206,8 +252,9 @@ struct Literally_Behavior : Directive_Behavior {
 };
 
 struct Unprocessed_Behavior : Directive_Behavior {
-
-    constexpr explicit Unprocessed_Behavior() = default;
+    [[nodiscard]]
+    constexpr explicit Unprocessed_Behavior()
+        = default;
 
     [[nodiscard]]
     Content_Status
@@ -215,8 +262,15 @@ struct Unprocessed_Behavior : Directive_Behavior {
 };
 
 struct HTML_Behavior : Directive_Behavior {
+private:
+    const Directive_Display m_display;
 
-    constexpr explicit HTML_Behavior() = default;
+public:
+    [[nodiscard]]
+    constexpr explicit HTML_Behavior(Directive_Display display)
+        : m_display { display }
+    {
+    }
 
     [[nodiscard]]
     Content_Status
@@ -237,6 +291,7 @@ private:
     const std::u8string_view m_tag_name;
 
 public:
+    [[nodiscard]]
     constexpr explicit HTML_Raw_Text_Behavior(std::u8string_view tag_name)
         : m_tag_name { tag_name }
     {
@@ -252,7 +307,9 @@ struct Variable_Behavior : Directive_Behavior {
     static constexpr std::u8string_view var_parameter = u8"var";
     static constexpr std::u8string_view parameters[] { var_parameter };
 
-    constexpr explicit Variable_Behavior() = default;
+    [[nodiscard]]
+    constexpr explicit Variable_Behavior()
+        = default;
 
     [[nodiscard]]
     Content_Status
@@ -299,8 +356,9 @@ public:
 };
 
 struct Get_Variable_Behavior final : Variable_Behavior {
-
-    constexpr explicit Get_Variable_Behavior() = default;
+    [[nodiscard]]
+    constexpr explicit Get_Variable_Behavior()
+        = default;
 
     [[nodiscard]]
     Content_Status generate_var(
@@ -346,11 +404,20 @@ public:
 
 struct HTML_Wrapper_Behavior final : Directive_Behavior {
 private:
+    const Policy_Usage m_policy;
+    const Directive_Display m_display;
     const To_HTML_Mode m_to_html_mode;
 
 public:
-    constexpr explicit HTML_Wrapper_Behavior(To_HTML_Mode to_html_mode)
-        : m_to_html_mode { to_html_mode }
+    [[nodiscard]]
+    constexpr explicit HTML_Wrapper_Behavior(
+        Policy_Usage policy,
+        Directive_Display display,
+        To_HTML_Mode to_html_mode
+    )
+        : m_policy { policy }
+        , m_display { display }
+        , m_to_html_mode { to_html_mode }
     {
     }
 
@@ -360,8 +427,15 @@ public:
 };
 
 struct Plaintext_Wrapper_Behavior : Directive_Behavior {
+protected:
+    const Directive_Display m_display;
 
-    constexpr explicit Plaintext_Wrapper_Behavior() = default;
+public:
+    [[nodiscard]]
+    constexpr explicit Plaintext_Wrapper_Behavior(Directive_Display display)
+        : m_display { display }
+    {
+    }
 
     [[nodiscard]]
     Content_Status
@@ -369,8 +443,15 @@ struct Plaintext_Wrapper_Behavior : Directive_Behavior {
 };
 
 struct Trim_Behavior : Directive_Behavior {
+protected:
+    const Directive_Display m_display;
 
-    constexpr explicit Trim_Behavior() = default;
+public:
+    [[nodiscard]]
+    constexpr explicit Trim_Behavior(Directive_Display display)
+        : m_display { display }
+    {
+    }
 
     [[nodiscard]]
     Content_Status
@@ -378,8 +459,17 @@ struct Trim_Behavior : Directive_Behavior {
 };
 
 struct Passthrough_Behavior : Directive_Behavior {
+protected:
+    const Policy_Usage m_policy;
+    const Directive_Display m_display;
 
-    constexpr Passthrough_Behavior() = default;
+public:
+    [[nodiscard]]
+    constexpr explicit Passthrough_Behavior(Policy_Usage policy, Directive_Display display)
+        : m_policy { policy }
+        , m_display { display }
+    {
+    }
 
     [[nodiscard]]
     Content_Status
@@ -391,14 +481,24 @@ struct Passthrough_Behavior : Directive_Behavior {
 };
 
 struct In_Tag_Behavior : Directive_Behavior {
-private:
+protected:
     const std::u8string_view m_tag_name;
     const std::u8string_view m_class_name;
+    const Policy_Usage m_policy;
+    const Directive_Display m_display;
 
 public:
-    constexpr In_Tag_Behavior(std::u8string_view tag_name, std::u8string_view class_name)
+    [[nodiscard]]
+    constexpr explicit In_Tag_Behavior(
+        std::u8string_view tag_name,
+        std::u8string_view class_name,
+        Policy_Usage policy,
+        Directive_Display display
+    )
         : m_tag_name { tag_name }
         , m_class_name { class_name }
+        , m_policy { policy }
+        , m_display { display }
     {
     }
 
@@ -411,10 +511,13 @@ public:
 struct Self_Closing_Behavior final : Directive_Behavior {
 private:
     const std::u8string_view m_tag_name;
+    const Directive_Display m_display;
 
 public:
-    constexpr Self_Closing_Behavior(std::u8string_view tag_name)
+    [[nodiscard]]
+    constexpr explicit Self_Closing_Behavior(std::u8string_view tag_name, Directive_Display display)
         : m_tag_name { tag_name }
+        , m_display { display }
     {
     }
 
@@ -437,8 +540,14 @@ private:
     const std::u8string_view m_name_prefix;
 
 public:
-    constexpr Directive_Name_Passthrough_Behavior(const std::u8string_view name_prefix = u8"")
-        : m_name_prefix { name_prefix }
+    [[nodiscard]]
+    constexpr explicit Directive_Name_Passthrough_Behavior(
+        Policy_Usage policy,
+        Directive_Display display,
+        std::u8string_view name_prefix
+    )
+        : Passthrough_Behavior { policy, display }
+        , m_name_prefix { name_prefix }
     {
     }
 
@@ -451,8 +560,14 @@ private:
     const std::u8string_view m_name;
 
 public:
-    constexpr explicit Fixed_Name_Passthrough_Behavior(std::u8string_view name)
-        : m_name { name }
+    [[nodiscard]]
+    constexpr explicit Fixed_Name_Passthrough_Behavior(
+        std::u8string_view name,
+        Policy_Usage policy,
+        Directive_Display display
+    )
+        : Passthrough_Behavior { policy, display }
+        , m_name { name }
     {
     }
 
@@ -466,12 +581,13 @@ public:
 struct Special_Block_Behavior final : Directive_Behavior {
 private:
     const std::u8string_view m_name;
-    const bool m_emit_intro;
+    const Intro_Policy m_intro;
 
 public:
-    constexpr explicit Special_Block_Behavior(std::u8string_view name, bool emit_intro = true)
+    [[nodiscard]]
+    constexpr explicit Special_Block_Behavior(std::u8string_view name, Intro_Policy intro)
         : m_name { name }
-        , m_emit_intro { emit_intro }
+        , m_intro { intro }
     {
     }
 
@@ -593,9 +709,15 @@ struct There_Behavior final : Directive_Behavior {
 };
 
 struct Here_Behavior final : Directive_Behavior {
+private:
+    const Directive_Display m_display;
+
+public:
     [[nodiscard]]
-    constexpr explicit Here_Behavior()
-        = default;
+    constexpr explicit Here_Behavior(Directive_Display display)
+        : m_display { display }
+    {
+    }
 
     [[nodiscard]]
     Content_Status
@@ -604,15 +726,19 @@ struct Here_Behavior final : Directive_Behavior {
 
 struct Make_Section_Behavior final : Directive_Behavior {
 private:
+    const Directive_Display m_display;
     const std::u8string_view m_class_name;
     const std::u8string_view m_section_name;
 
 public:
+    [[nodiscard]]
     constexpr explicit Make_Section_Behavior(
+        Directive_Display display,
         std::u8string_view class_name,
         std::u8string_view section_name
     )
-        : m_class_name { class_name }
+        : m_display { display }
+        , m_class_name { class_name }
         , m_section_name { section_name }
     {
     }
@@ -624,12 +750,12 @@ public:
 
 struct Math_Behavior final : Directive_Behavior {
 private:
-    const bool is_inline;
+    const Directive_Display m_display;
 
 public:
     [[nodiscard]]
-    constexpr explicit Math_Behavior(bool is_inline)
-        : is_inline { is_inline }
+    constexpr explicit Math_Behavior(Directive_Display display)
+        : m_display { display }
     {
     }
 
@@ -639,16 +765,18 @@ public:
 };
 
 struct Include_Behavior final : Directive_Behavior {
-
-    constexpr explicit Include_Behavior() = default;
+    [[nodiscard]]
+    constexpr explicit Include_Behavior()
+        = default;
 
     [[nodiscard]]
     Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
 struct Import_Behavior final : Directive_Behavior {
-
-    constexpr explicit Import_Behavior() = default;
+    [[nodiscard]]
+    constexpr explicit Import_Behavior()
+        = default;
 
     [[nodiscard]]
     Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
