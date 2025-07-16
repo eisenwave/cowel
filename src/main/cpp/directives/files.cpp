@@ -36,6 +36,8 @@ std::u8string_view file_load_error_explanation(File_Load_Error error)
 Content_Status
 Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
+    // TODO: warn about ignored arguments
+
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
     const auto path_status = to_plaintext(path_data, d.get_content(), context);
     switch (path_status) {
@@ -74,6 +76,8 @@ Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
 Content_Status
 Import_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
+    // TODO: warn about ignored arguments
+
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
     const auto path_status = to_plaintext(path_data, d.get_content(), context);
     switch (path_status) {

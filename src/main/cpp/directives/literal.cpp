@@ -32,7 +32,10 @@ void warn_all_args_ignored(const ast::Directive& d, Context& context)
 Content_Status
 Literally_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
+    warn_all_args_ignored(d, context);
+
     try_enter_paragraph(out);
+
     To_Source_Content_Policy policy { out };
     return consume_all(policy, d.get_content(), context);
 }
@@ -41,7 +44,10 @@ Content_Status
 Unprocessed_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
+    warn_all_args_ignored(d, context);
+
     try_enter_paragraph(out);
+
     Unprocessed_Content_Policy policy { out };
     return consume_all(policy, d.get_content(), context);
 }
@@ -49,6 +55,8 @@ Unprocessed_Behavior::operator()(Content_Policy& out, const ast::Directive& d, C
 Content_Status
 HTML_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
+    warn_all_args_ignored(d, context);
+
     HTML_Literal_Content_Policy policy { out };
     return consume_all(policy, d.get_content(), context);
 }
@@ -59,6 +67,8 @@ HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
 {
     warn_all_args_ignored(d, context);
     warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+
+    try_leave_paragraph(out);
 
     HTML_Writer writer { out };
     Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);

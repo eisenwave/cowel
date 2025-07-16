@@ -109,8 +109,11 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
         d.get_arguments(), args, context, Argument_Subset::unmatched_positional
     );
 
-    HTML_Writer writer { out };
+    // 0. Ensure that headings are not in paragraphs.
+    try_leave_paragraph(out);
+
     // 1. Obtain or synthesize the id.
+    HTML_Writer writer { out };
     Attribute_Writer attributes = writer.open_tag_with_attributes(tag_name);
     if (has_id) {
         attributes.write_id(as_u8string_view(id_data));
@@ -297,6 +300,8 @@ There_Behavior::operator()(Content_Policy&, const ast::Directive& d, Context& co
 Content_Status
 Here_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
+    ensure_paragraph_matches_display(out, m_display);
+
     auto action = [&](std::u8string_view section) {
         reference_section(out, section);
         return Content_Status::ok;
@@ -308,6 +313,8 @@ Content_Status
 Make_Section_Behavior::operator()(Content_Policy& out, const ast::Directive&, Context& context)
     const
 {
+    try_leave_paragraph(out);
+
     context.get_sections().make(m_section_name);
 
     // TODO: warn about ignored arguments and block

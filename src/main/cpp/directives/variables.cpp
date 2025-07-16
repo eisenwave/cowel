@@ -74,6 +74,8 @@ Expression_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
         result = operate(m_type, result, *x);
     }
 
+    try_enter_paragraph(out);
+
     const Characters8 result_chars = to_characters8(result);
     out.write(result_chars.as_string(), Output_Language::text);
     return Content_Status::ok;
@@ -83,6 +85,8 @@ Content_Status
 Variable_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     Argument_Matcher args { parameters, context.get_transient_memory() };
+    args.match(d.get_arguments());
+
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
     if (argument_to_plaintext(data, d, args, var_parameter, context)) {
         return generate_var(out, d, as_u8string_view(data), context);
@@ -97,6 +101,8 @@ Content_Status Get_Variable_Behavior::generate_var(
     Context& context
 ) const
 {
+    try_enter_paragraph(out);
+
     const auto it = context.get_variables().find(var);
     if (it != context.get_variables().end()) {
         out.write(std::u8string_view { it->second }, Output_Language::text);

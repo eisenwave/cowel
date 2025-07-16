@@ -115,18 +115,21 @@ Content_Status
 Code_Point_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
+    // TODO: this warning should use some blanket method
     if (!d.get_arguments().empty()) {
         const File_Source_Span pos = d.get_arguments().front().get_source_span();
         context.try_warning(
             diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."sv
         );
     }
+
     const Result<char32_t, Content_Status> code_point = get_code_point(d, context);
     if (!code_point) {
         return code_point.error();
     }
 
     try_enter_paragraph(out);
+
     out.write(make_char_sequence(*code_point), Output_Language::text);
     return Content_Status::ok;
 }
@@ -235,6 +238,7 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     }
 
     try_enter_paragraph(out);
+
     const bool convert_to_upper = !*is_lower;
     const Characters8 chars
         = to_characters8(std::uint32_t(code_point), int(*base), convert_to_upper);

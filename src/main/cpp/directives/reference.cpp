@@ -141,6 +141,9 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
         );
         return try_generate_error(out, d, context);
     }
+
+    try_enter_paragraph(out);
+
     HTML_Writer writer { out };
 
     const auto target_string = as_u8string_view(target);

@@ -92,8 +92,10 @@ Content_Status
 Char_By_Entity_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
-    // TODO: inline display
     check_arguments(d, context);
+
+    try_enter_paragraph(out);
+
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
     const auto input_status = to_plaintext(data, d.get_content(), context);
     if (input_status != Content_Status::ok) {

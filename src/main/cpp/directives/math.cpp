@@ -130,9 +130,13 @@ Content_Status
 Math_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     constexpr std::u8string_view tag_name = u8"math";
-    const std::u8string_view display_string = is_inline ? u8"inline" : u8"block";
+    const std::u8string_view display_string
+        = m_display == Directive_Display::in_line ? u8"inline" : u8"block";
 
-    HTML_Writer writer { out };
+    ensure_paragraph_matches_display(out, m_display);
+
+    HTML_Content_Policy policy { out };
+    HTML_Writer writer { policy };
     Attribute_Writer attributes = writer.open_tag_with_attributes(tag_name);
     attributes.write_attribute(u8"display", display_string);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
@@ -143,7 +147,7 @@ Math_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
         return attributes_status;
     }
 
-    const auto nested_status = to_math_html(out, d.get_content(), context);
+    const auto nested_status = to_math_html(policy, d.get_content(), context);
     writer.close_tag(tag_name);
     return status_concat(attributes_status, nested_status);
 }

@@ -79,6 +79,7 @@ Content_Status
 Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     Argument_Matcher args { parameters, context.get_transient_memory() };
+    args.match(d.get_arguments());
 
     const Result<String_Argument, Content_Status> lang
         = get_string_argument(lang_parameter, d, args, context);
@@ -87,26 +88,32 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     const Result<String_Argument, Content_Status> suffix
         = get_string_argument(suffix_parameter, d, args, context);
 
-    const bool has_borders = this->display == Directive_Display::in_line
+    const bool has_borders = m_display == Directive_Display::in_line
         || get_yes_no_argument(borders_parameter, diagnostic::codeblock::borders_invalid, d, args,
                                context, true);
 
-    const bool is_nested = this->display == Directive_Display::in_line
+    const bool is_nested = m_display == Directive_Display::in_line
         && get_yes_no_argument(nested_parameter, diagnostic::code::nested_invalid, d, args, context,
                                false);
 
+    ensure_paragraph_matches_display(out, m_display);
+
+    // All content written to out is HTML anyway,
+    // so we don't need an extra HTML_Content_Policy here.
     HTML_Writer writer { out };
     if (!is_nested) {
         Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
         if (!has_borders) {
-            COWEL_ASSERT(display != Directive_Display::in_line);
+            COWEL_ASSERT(m_display != Directive_Display::in_line);
             attributes.write_class(u8"borderless");
         }
         attributes.end();
     }
 
+    const bool should_trim = m_pre_compat_trim == Pre_Trimming::yes;
+
     Vector_Text_Sink buffer_sink { Output_Language::html, context.get_transient_memory() };
-    auto& chosen_sink = m_pre_compat_trim ? buffer_sink : static_cast<Text_Sink&>(out);
+    auto& chosen_sink = should_trim ? buffer_sink : static_cast<Text_Sink&>(out);
 
     Syntax_Highlight_Policy highlight_policy //
         { context.get_transient_memory(), prefix->string, suffix->string };
@@ -117,7 +124,7 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     if (!result) {
         diagnose(result.error(), lang->string, d, context);
     }
-    if (m_pre_compat_trim) {
+    if (should_trim) {
         // https://html.spec.whatwg.org/dev/grouping-content.html#the-pre-element
         // Leading newlines immediately following <pre> are stripped anyway.
         // The same applies to any elements styled "white-space: pre".
