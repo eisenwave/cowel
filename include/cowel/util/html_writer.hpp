@@ -341,7 +341,7 @@ private:
                     break;
                 }
                 case Attribute_Encoding::url: {
-                    url_encode_ascii_if(std::back_inserter(m_out), part, [](char8_t c) {
+                    url_encode_ascii_if(m_out, part, [](char8_t c) {
                         return is_url_always_encoded(c);
                     });
                     break;
@@ -358,7 +358,7 @@ private:
                     break;
                 }
                 case Attribute_Encoding::url: {
-                    url_encode_ascii_if(std::back_inserter(m_out), part, [](char8_t c) {
+                    url_encode_ascii_if(m_out, part, [](char8_t c) {
                         static_assert(is_url_always_encoded(u8'"'));
                         static_assert(!is_url_always_encoded(u8'\''));
                         return c == u8'\'' || is_url_always_encoded(c);
