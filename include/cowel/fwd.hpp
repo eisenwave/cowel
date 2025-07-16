@@ -68,7 +68,6 @@ struct Bibliography;
 struct Document_Info;
 struct Document_Sections;
 struct Directive_Behavior;
-struct Directive_Content_Behavior;
 struct Error_Tag;
 using File_Id = int;
 struct Generation_Options;
