@@ -86,7 +86,7 @@ public:
 
 private:
     map_type m_sections;
-    entry_type* m_current = &*m_sections.emplace().first;
+    entry_type* m_current = &*m_sections.emplace(std::pmr::u8string {}, get_memory()).first;
 
 public:
     [[nodiscard]]
@@ -134,7 +134,7 @@ public:
             return *existing;
         }
         const auto [iter, success] = m_sections.emplace(
-            std::pmr::u8string { section, get_memory() }, std::pmr::vector<char8_t> { get_memory() }
+            std::pmr::u8string { section, get_memory() }, Section_Content { get_memory() }
         );
         COWEL_ASSERT(success);
         return *iter;
@@ -149,7 +149,7 @@ public:
             return *existing;
         }
         const auto [iter, success]
-            = m_sections.emplace(std::move(section), std::pmr::vector<char8_t> { get_memory() });
+            = m_sections.emplace(std::move(section), Section_Content { get_memory() });
         COWEL_ASSERT(success);
         return *iter;
     }
