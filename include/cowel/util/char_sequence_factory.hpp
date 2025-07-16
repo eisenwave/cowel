@@ -82,11 +82,11 @@ using Repeated_Static_String_Char_Source = Repeated_String_Like_Char_Source<Stat
 static_assert(char_source8<Repeated_String_View_Char_Source>);
 static_assert(char_source8<Repeated_Static_String_Char_Source<4>>);
 
-/// @brief A char source which obtains characters from a span of string views.
+/// @brief A character source which obtains characters from a span of string views.
 struct Joined_Char_Source {
 private:
     std::span<const std::u8string_view> m_parts;
-    std::size_t m_offset = 0;
+    std::size_t m_offset_in_front = 0;
 
 public:
     Joined_Char_Source(std::span<const std::u8string_view> parts)
@@ -103,13 +103,53 @@ public:
             COWEL_ASSERT(!m_parts.empty());
 
             const std::u8string_view current = m_parts.front();
-            const std::size_t remaining = std::min(n, current.size() - m_offset);
+            const std::size_t remaining = std::min(n, current.size() - m_offset_in_front);
             std::ranges::copy_n(current.data(), std::ptrdiff_t(remaining), buffer.data() + i);
             i += remaining;
-            m_offset += remaining;
-            if (m_offset == current.size()) {
-                m_offset = 0;
+            m_offset_in_front += remaining;
+            if (m_offset_in_front == current.size()) {
+                m_offset_in_front = 0;
                 m_parts = m_parts.subspan(1);
+            }
+        }
+    }
+};
+
+/// @brief A character source which obtains characters from the UTF-8 code units of a given UTF-32
+/// string.
+struct Code_Points_Char_Source {
+private:
+    std::u32string_view m_string;
+    std::size_t m_offset_in_code_point = 0;
+
+public:
+    [[nodiscard]]
+    Code_Points_Char_Source(std::u32string_view str)
+        : m_string { str }
+    {
+    }
+
+    constexpr void operator()(std::span<char8_t> buffer, std::size_t n)
+    {
+        COWEL_ASSERT(n <= buffer.size());
+        std::size_t i = 0;
+
+        while (i < n) {
+            COWEL_ASSERT(!m_string.empty());
+
+            const char32_t current_point = m_string.front();
+            const auto current = utf8::encode8_unchecked(current_point);
+
+            const std::size_t remaining
+                = std::min(n, std::size_t(current.length) - m_offset_in_code_point);
+            std::ranges::copy_n(
+                current.code_units.data(), std::ptrdiff_t(remaining), buffer.data() + i
+            );
+            i += remaining;
+            m_offset_in_code_point += remaining;
+            if (m_offset_in_code_point == std::size_t(current.length)) {
+                m_offset_in_code_point = 0;
+                m_string.remove_prefix(1);
             }
         }
     }
@@ -177,10 +217,11 @@ constexpr Char_Sequence8 repeated_char_sequence(std::size_t n, char8_t c)
 
 /// @brief Creates a `Char_Sequence` containing the UTF-8 encoded contents of `str`.
 [[nodiscard]]
-constexpr Char_Sequence8 make_char_sequence(std::u32string_view)
+constexpr Deferred_Char_Sequence<Code_Points_Char_Source> make_char_sequence(std::u32string_view str
+)
 {
-    // TODO: implement
-    COWEL_ASSERT_UNREACHABLE(u8"I'll do it later ...");
+    const std::size_t n = utf8::count_code_units_unchecked(str);
+    return { n, Code_Points_Char_Source { str } };
 }
 
 /// @brief Creates a `Char_Sequence` containing a single code point `c`.
