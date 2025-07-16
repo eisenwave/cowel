@@ -313,7 +313,7 @@ Content_Status
 Make_Section_Behavior::operator()(Content_Policy& out, const ast::Directive&, Context& context)
     const
 {
-    try_leave_paragraph(out);
+    ensure_paragraph_matches_display(out, m_display);
 
     context.get_sections().make(m_section_name);
 

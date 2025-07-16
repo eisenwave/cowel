@@ -57,6 +57,8 @@ HTML_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
 {
     warn_all_args_ignored(d, context);
 
+    ensure_paragraph_matches_display(out, m_display);
+
     HTML_Literal_Content_Policy policy { out };
     return consume_all(policy, d.get_content(), context);
 }
