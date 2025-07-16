@@ -41,6 +41,12 @@ public:
     }
 
     [[nodiscard]]
+    std::u8string_view text() const
+    {
+        return as_u8string_view(m_data);
+    }
+
+    [[nodiscard]]
     Content_Policy& policy()
     {
         return m_policy;
