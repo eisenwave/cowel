@@ -6,8 +6,6 @@
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 
-#include "cowel/policy/paragraph_split.hpp"
-
 #include "cowel/assets.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/context.hpp"
@@ -59,7 +57,7 @@ constexpr char8_t supplementary_pua_a_first_code_unit_masked
 static_assert(supplementary_pua_a_first_code_unit_masked == 0b1111'0000);
 
 struct Reference_Resolver {
-    std::pmr::vector<char8_t>& out;
+    Text_Sink& out;
     std::pmr::unordered_set<const void*>& visited;
     Context& context;
 
@@ -73,7 +71,7 @@ bool Reference_Resolver::operator()(std::u8string_view text, File_Id file)
     std::size_t plain_length = 0;
     const auto flush = [&] {
         if (plain_length != 0) {
-            out.insert(out.end(), text.data(), text.data() + plain_length);
+            out.write(text, Output_Language::html);
             text.remove_prefix(plain_length);
             plain_length = 0;
         }
@@ -163,8 +161,8 @@ constexpr bool enable_warn_deprecated_directive_names = false;
 
 } // namespace
 
-Content_Policy
-generate_head_body(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
+Content_Status
+write_wg21_document(Text_Sink& out, std::span<const ast::Content> content, Context& context)
 {
     // TODO: Enable once it's no longer necessary to have hyphens in directive names.
     //       This will require changing directives like \html-X or \wg21-link.
@@ -200,38 +198,41 @@ generate_head_body(HTML_Writer& out, std::span<const ast::Content> content, Cont
         });
 
         html_section = &sections.current();
-        return sections.current_text();
+        return sections.current_output();
     }();
     const std::u8string_view html_string { html_text.data(), html_text.size() };
 
+    auto status = Content_Status::ok;
     {
         const auto scope = sections.go_to_scoped(section_name::document_head);
-        HTML_Writer current_out = sections.current_html();
-        write_wg21_head_contents(current_out, content, context);
+        status = status_concat(
+            status, write_wg21_head_contents(sections.current_policy(), content, context)
+        );
+        if (status_is_break(status)) {
+            return status;
+        }
     }
     {
         const auto scope = sections.go_to_scoped(section_name::document_body);
-        HTML_Writer current_out = sections.current_html();
-        write_wg21_body_contents(current_out, content, context);
+        status = status_concat(
+            status, write_wg21_body_contents(sections.current_policy(), content, context)
+        );
+        if (status_is_break(status)) {
+            return status;
+        }
     }
 
     std::pmr::unordered_set<const void*> visited(context.get_transient_memory());
     visited.insert(html_section);
 
     const File_Id file = content.empty() ? File_Id {} : ast::get_source_span(content.front()).file;
-    Reference_Resolver { out.get_output(), visited, context }(html_string, file);
+    Reference_Resolver { out, visited, context }(html_string, file);
+
+    return status;
 }
 
 constexpr std::u8string_view indent = u8"  ";
 constexpr std::u8string_view newline_indent = u8"\n  ";
-
-Content_Status
-generate_document(HTML_Writer& out, std::span<const ast::Content> content, Context& context)
-{
-    context.add_resolver(m_macro_resolver);
-
-    Head_Body_Content_Behavior::generate_html(out, content, context);
-}
 
 Content_Status
 write_wg21_head_contents(Text_Sink& out, std::span<const ast::Content>, Context& context)
