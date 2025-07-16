@@ -169,17 +169,9 @@ struct Lorem_Ipsum_Behavior final : Directive_Behavior {
     [[nodiscard]]
     Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override
     {
-        // TODO: inline display
-        switch (out.get_language()) {
-        case Output_Language::none: {
-            return Content_Status::ok;
-        }
-        case Output_Language::text:
-        case Output_Language::html: {
-            out.write(lorem_ipsum, Output_Language::text);
-            return Content_Status::ok;
-        }
-        }
+        try_enter_paragraph(out);
+
+        out.write(lorem_ipsum, Output_Language::text);
         return Content_Status::ok;
     }
 };
