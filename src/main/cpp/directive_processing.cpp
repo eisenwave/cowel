@@ -513,4 +513,19 @@ void try_leave_paragraph(Content_Policy& out)
     }
 }
 
+void ensure_paragraph_matches_display(Content_Policy& out, Directive_Display display)
+{
+    switch (display) {
+    case Directive_Display::in_line: {
+        try_enter_paragraph(out);
+        break;
+    }
+    case Directive_Display::block: {
+        try_leave_paragraph(out);
+        break;
+    }
+    case Directive_Display::none: break;
+    }
+}
+
 } // namespace cowel

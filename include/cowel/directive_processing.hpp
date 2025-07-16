@@ -6,6 +6,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/directive_display.hpp"
 #include "cowel/util/function_ref.hpp"
 #include "cowel/util/html_writer.hpp"
 
@@ -291,6 +292,11 @@ void try_enter_paragraph(Content_Policy& out);
 /// @brief If `out` is a `Paragraph_Split_Content_Policy`
 /// calls `out.leave_paragraph()`.
 void try_leave_paragraph(Content_Policy& out);
+
+/// @brief If `display` is `in_line`, calls `try_enter_paragraph(out)`.
+/// If `display` is `block`, calls `try_leave_paragraph(out)`.
+/// Otherwise, has no effect.
+void ensure_paragraph_matches_display(Content_Policy& out, Directive_Display display);
 
 } // namespace cowel
 
