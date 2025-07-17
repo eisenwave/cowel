@@ -251,6 +251,7 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
     }
 
     context.get_bibliography().insert(std::move(result));
+    return Content_Status::ok;
 }
 
 } // namespace cowel
