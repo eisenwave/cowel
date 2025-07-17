@@ -43,6 +43,10 @@ run_generation(Function_Ref<Content_Status(Context&)> generate, const Generation
 
 [[nodiscard]]
 Content_Status
+write_wg21_document(Text_Sink& out, std::span<const ast::Content> content, Context& context);
+
+[[nodiscard]]
+Content_Status
 write_wg21_head_contents(Text_Sink& out, std::span<const ast::Content>, Context& context);
 
 [[nodiscard]]
