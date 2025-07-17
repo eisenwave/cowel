@@ -298,6 +298,8 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
             if (options.mode == COWEL_MODE_MINIMAL) {
                 return consume_all(html_policy, root_content, context);
             }
+            COWEL_ASSERT(options.mode == COWEL_MODE_DOCUMENT);
+            return write_wg21_document(html_policy, root_content, context);
         },
         gen_options
     );
