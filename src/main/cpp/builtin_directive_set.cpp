@@ -42,7 +42,7 @@ struct Builtin_Directive_Set::Impl {
     Special_Block_Behavior Bins //
         { u8"ins-block", Intro_Policy::no };
     HTML_Wrapper_Behavior block //
-        { Policy_Usage::inherit, Directive_Display::block, To_HTML_Mode::direct };
+        { Directive_Display::block, To_HTML_Mode::direct };
     Special_Block_Behavior blockquote //
         { u8"blockquote", Intro_Policy::no };
     Special_Block_Behavior Bnote //
@@ -136,7 +136,7 @@ struct Builtin_Directive_Set::Impl {
     Include_Behavior //
         include {};
     HTML_Wrapper_Behavior in_line //
-        { Policy_Usage::inherit, Directive_Display::in_line, To_HTML_Mode::direct };
+        { Directive_Display::in_line, To_HTML_Mode::direct };
     Fixed_Name_Passthrough_Behavior ins //
         { u8"ins", Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
@@ -177,7 +177,7 @@ struct Builtin_Directive_Set::Impl {
     Fixed_Name_Passthrough_Behavior p //
         { u8"p", Policy_Usage::html, Directive_Display::block };
     HTML_Wrapper_Behavior paragraphs //
-        { Policy_Usage::inherit, Directive_Display::block, To_HTML_Mode::paragraphs };
+        { Directive_Display::block, To_HTML_Mode::paragraphs };
     Fixed_Name_Passthrough_Behavior pre //
         { u8"pre", Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior q //

@@ -396,21 +396,18 @@ public:
 
 struct HTML_Wrapper_Behavior final : Directive_Behavior {
 private:
-    const Policy_Usage m_policy;
     const Directive_Display m_display;
-    const To_HTML_Mode m_to_html_mode;
+    const bool m_is_paragraphed;
 
 public:
     [[nodiscard]]
-    constexpr explicit HTML_Wrapper_Behavior(
-        Policy_Usage policy,
-        Directive_Display display,
-        To_HTML_Mode to_html_mode
-    )
-        : m_policy { policy }
-        , m_display { display }
-        , m_to_html_mode { to_html_mode }
+    constexpr explicit HTML_Wrapper_Behavior(Directive_Display display, To_HTML_Mode to_html_mode)
+        : m_display { display }
+        , m_is_paragraphed { to_html_mode == To_HTML_Mode::paragraphs }
     {
+        COWEL_ASSERT(
+            to_html_mode == To_HTML_Mode::paragraphs || to_html_mode == To_HTML_Mode::direct
+        );
     }
 
     [[nodiscard]]

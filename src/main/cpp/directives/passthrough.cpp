@@ -21,7 +21,9 @@ HTML_Wrapper_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     // TODO: warn about unused arguments
     ensure_paragraph_matches_display(out, m_display);
 
-    HTML_Content_Policy policy { out };
+    Paragraph_Split_Policy split_policy { out, context.get_transient_memory() };
+    auto& policy = m_is_paragraphed ? split_policy : out;
+
     return consume_all(policy, d.get_content(), context);
 }
 
