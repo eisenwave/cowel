@@ -169,6 +169,7 @@ else()
         add_executable(cowel-test ${HEADERS}
             src/test/cpp/document_file_testing.cpp
             src/test/cpp/main.cpp
+            src/test/cpp/test_char_sequence.cpp
             src/test/cpp/test_chars_strings.cpp
             src/test/cpp/test_document_generation.cpp
             src/test/cpp/test_draft_uris.cpp
