@@ -52,6 +52,7 @@ public:
         if (n == 0) {
             return;
         }
+        COWEL_ASSERT(!m_string.empty());
 
         std::size_t i = 0;
 
@@ -230,6 +231,7 @@ constexpr Char_Sequence8 make_char_sequence(char32_t c)
 {
     const utf8::Code_Units_And_Length encoded = utf8::encode8_unchecked(c);
     const auto string = Static_String8<4> { encoded.code_units, std::size_t(encoded.length) };
+    COWEL_ASSERT(!string.empty());
     return Char_Sequence8 { string };
 }
 
@@ -240,7 +242,8 @@ repeated_char_sequence(std::size_t n, char32_t c)
 {
     const utf8::Code_Units_And_Length encoded = utf8::encode8_unchecked(c);
     const auto string = Static_String8<4> { encoded.code_units, std::size_t(encoded.length) };
-    return { n, string };
+    COWEL_ASSERT(!string.empty());
+    return { string.length() * n, string };
 }
 
 } // namespace cowel
