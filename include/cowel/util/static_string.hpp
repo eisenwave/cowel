@@ -40,7 +40,7 @@ public:
     [[nodiscard]]
     constexpr bool empty() const noexcept
     {
-        return m_length;
+        return m_length == 0;
     }
 
     [[nodiscard]]
