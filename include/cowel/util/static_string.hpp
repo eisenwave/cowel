@@ -27,6 +27,14 @@ public:
     {
     }
 
+    [[nodiscard]]
+    constexpr Basic_Static_String(std::basic_string_view<Char> str)
+        : m_length { str.length() }
+    {
+        COWEL_ASSERT(str.length() <= capacity);
+        std::ranges::copy(str, m_buffer.data());
+    }
+
     constexpr Basic_Static_String() = default;
 
     [[nodiscard]]
@@ -124,6 +132,34 @@ public:
     constexpr operator std::basic_string_view<Char>() const
     {
         return as_string();
+    }
+
+    [[nodiscard]]
+    friend constexpr bool
+    operator==(const Basic_Static_String& x, const Basic_Static_String& y) noexcept
+    {
+        return x.as_string() == y.as_string();
+    }
+
+    [[nodiscard]]
+    friend constexpr bool
+    operator==(const Basic_Static_String& x, std::basic_string_view<Char> y) noexcept
+    {
+        return x.as_string() == y;
+    }
+
+    [[nodiscard]]
+    friend constexpr bool
+    operator<=>(const Basic_Static_String& x, const Basic_Static_String& y) noexcept
+    {
+        return x.as_string() <=> y.as_string();
+    }
+
+    [[nodiscard]]
+    friend constexpr bool
+    operator<=>(const Basic_Static_String& x, std::basic_string_view<Char> y) noexcept
+    {
+        return x.as_string() <=> y;
     }
 };
 
