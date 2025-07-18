@@ -599,7 +599,6 @@ struct To_Text_Sink_Consumer {
     To_Text_Sink_Consumer(Text_Sink& out)
         : out { out }
     {
-        COWEL_ASSERT(out.get_language() == Output_Language::html);
     }
 
     void operator()(std::u8string_view str) const
