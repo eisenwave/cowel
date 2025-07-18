@@ -130,7 +130,7 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
         // The same applies to any elements styled "white-space: pre".
         // In general, it is best to remove these.
         // To ensure portability, we need to trim away newlines (if any).
-        auto inner_html = as_u8string_view(*static_cast<Vector_Text_Sink>(buffer_sink));
+        auto inner_html = as_u8string_view(*buffer_sink);
         while (inner_html.starts_with(u8'\n')) {
             inner_html.remove_prefix(1);
         }
