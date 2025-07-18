@@ -45,7 +45,7 @@ private:
     {
         static_assert(N <= sizeof(const void*)); // NOLINT(bugprone-sizeof-expression)
         std::array<char8_t, N> result_array {};
-        std::ranges::copy(storage.code_units, result_array.data());
+        std::ranges::copy_n(storage.code_units.data(), N, result_array.data());
         return Static_String8<N> { result_array, size };
     }
 
