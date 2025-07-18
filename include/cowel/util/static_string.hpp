@@ -25,6 +25,7 @@ public:
         : m_buffer { array }
         , m_length { length }
     {
+        COWEL_ASSERT(length <= capacity);
     }
 
     [[nodiscard]]
