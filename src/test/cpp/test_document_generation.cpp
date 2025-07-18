@@ -39,6 +39,21 @@ enum struct Test_Behavior : Default_Underlying {
     empty_head,
 };
 
+[[nodiscard]]
+Content_Status
+write_empty_head_document(Text_Sink& out, std::span<const ast::Content> content, Context& context)
+{
+    constexpr auto write_head = [](Content_Policy&, std::span<const ast::Content>, Context&) {
+        return Content_Status::ok;
+    };
+    constexpr auto write_body
+        = [](Content_Policy& policy, std::span<const ast::Content> content, Context& context) {
+              return consume_all(policy, content, context);
+          };
+
+    return write_head_body_document(out, content, context, const_v<write_head>, const_v<write_body>);
+}
+
 struct Doc_Gen_Test : testing::Test {
     std::pmr::monotonic_buffer_resource memory;
     std::pmr::vector<char8_t> out { &memory };
@@ -76,7 +91,7 @@ struct Doc_Gen_Test : testing::Test {
                 return consume_all(policy, self->content, context);
             }
             case Test_Behavior::empty_head: {
-                COWEL_ASSERT_UNREACHABLE(u8"To be implemented ..."); // FIXME: implement
+                return write_empty_head_document(sink, self->content, context);
             }
             }
         };
