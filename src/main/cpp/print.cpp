@@ -489,6 +489,17 @@ void print_code_string_stderr(const Diagnostic_String& string)
 {
     print_code_string(std::cerr, string, is_stderr_tty);
 }
+
+void flush_stdout()
+{
+    std::cout.flush();
+}
+
+void flush_stderr()
+{
+    std::cerr.flush();
+}
+
 #endif
 
 } // namespace cowel
