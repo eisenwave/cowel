@@ -293,16 +293,19 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
                                            .highlighter = highlighter,
                                            .memory = memory };
 
-    run_generation(
-        [&](Context& context) -> Content_Status {
-            if (options.mode == COWEL_MODE_MINIMAL) {
-                return consume_all(html_policy, root_content, context);
-            }
-            COWEL_ASSERT(options.mode == COWEL_MODE_DOCUMENT);
-            return write_wg21_document(html_policy, root_content, context);
-        },
-        gen_options
-    );
+    [[maybe_unused]]
+    // FIXME: use the content status somehow
+    const Content_Status status
+        = run_generation(
+            [&](Context& context) -> Content_Status {
+                if (options.mode == COWEL_MODE_MINIMAL) {
+                    return consume_all(html_policy, root_content, context);
+                }
+                COWEL_ASSERT(options.mode == COWEL_MODE_DOCUMENT);
+                return write_wg21_document(html_policy, root_content, context);
+            },
+            gen_options
+        );
 
     // This is safe because output is never destroyed,
     // so we keep its allocation alive.
