@@ -38,6 +38,7 @@ struct Generation_Options {
 
 /// @brief Constructs a `Context` and invokes `generate` with that context.
 /// @returns The result returned by `generate`.
+[[nodiscard]]
 Content_Status
 run_generation(Function_Ref<Content_Status(Context&)> generate, const Generation_Options& options);
 
