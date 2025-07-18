@@ -40,6 +40,14 @@ public:
     {
     }
 
+    Section_Content(const Section_Content&) = delete;
+    Section_Content& operator=(const Section_Content&) = delete;
+
+    Section_Content(Section_Content&&) = default;
+    Section_Content& operator=(Section_Content&&) = delete;
+
+    ~Section_Content() = default;
+
     [[nodiscard]]
     std::u8string_view text() const
     {
@@ -149,9 +157,8 @@ public:
         if (entry_type* const existing = find(section)) {
             return *existing;
         }
-        const auto [iter, success] = m_sections.emplace(
-            std::pmr::u8string { section, get_memory() }, Section_Content { get_memory() }
-        );
+        const auto [iter, success]
+            = m_sections.emplace(std::pmr::u8string { section, get_memory() }, get_memory());
         COWEL_ASSERT(success);
         return *iter;
     }
@@ -164,8 +171,7 @@ public:
         if (entry_type* const existing = find(section)) {
             return *existing;
         }
-        const auto [iter, success]
-            = m_sections.emplace(std::move(section), Section_Content { get_memory() });
+        const auto [iter, success] = m_sections.emplace(std::move(section), get_memory());
         COWEL_ASSERT(success);
         return *iter;
     }
