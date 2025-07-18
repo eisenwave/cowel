@@ -159,6 +159,7 @@ struct Doc_Gen_Test : testing::Test {
         return as_u8string_view(out);
     }
 
+    [[nodiscard]]
     Parse_Error_Consumer make_parse_error_consumer()
     {
         constexpr auto invoker = [](Doc_Gen_Test* self, std::u8string_view id,
