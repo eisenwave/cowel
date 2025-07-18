@@ -85,6 +85,7 @@ public:
         const std::size_t initial_size = m_out.size();
         m_out.resize(initial_size + chars.size());
         chars.extract(std::span { m_out }.subspan(initial_size));
+        COWEL_DEBUG_ASSERT(chars.empty());
         return true;
     }
 };
