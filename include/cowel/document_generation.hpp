@@ -42,12 +42,17 @@ Content_Status
 run_generation(Function_Ref<Content_Status(Context&)> generate, const Generation_Options& options);
 
 [[nodiscard]]
-Content_Status
-write_wg21_document(Text_Sink& out, std::span<const ast::Content> content, Context& context);
+Content_Status write_head_body_document(
+    Text_Sink& out,
+    std::span<const ast::Content> content,
+    Context& context,
+    Function_Ref<Content_Status(Content_Policy&, std::span<const ast::Content>, Context&)> head,
+    Function_Ref<Content_Status(Content_Policy&, std::span<const ast::Content>, Context&)> body
+);
 
 [[nodiscard]]
 Content_Status
-write_wg21_head_contents(Text_Sink& out, std::span<const ast::Content>, Context& context);
+write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Context& context);
 
 [[nodiscard]]
 Content_Status write_wg21_body_contents(
@@ -55,6 +60,15 @@ Content_Status write_wg21_body_contents(
     std::span<const ast::Content> content,
     Context& context
 );
+
+[[nodiscard]]
+inline Content_Status
+write_wg21_document(Text_Sink& out, std::span<const ast::Content> content, Context& context)
+{
+    return write_head_body_document(out, content, context, //
+        const_v<&write_wg21_head_contents>, //
+        const_v<&write_wg21_body_contents>);
+}
 
 } // namespace cowel
 

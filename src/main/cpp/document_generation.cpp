@@ -161,8 +161,13 @@ constexpr bool enable_warn_deprecated_directive_names = false;
 
 } // namespace
 
-Content_Status
-write_wg21_document(Text_Sink& out, std::span<const ast::Content> content, Context& context)
+Content_Status write_head_body_document(
+    Text_Sink& out,
+    std::span<const ast::Content> content,
+    Context& context,
+    Function_Ref<Content_Status(Content_Policy&, std::span<const ast::Content>, Context&)> head,
+    Function_Ref<Content_Status(Content_Policy&, std::span<const ast::Content>, Context&)> body
+)
 {
     // TODO: Enable once it's no longer necessary to have hyphens in directive names.
     //       This will require changing directives like \html-X or \wg21-link.
@@ -205,18 +210,14 @@ write_wg21_document(Text_Sink& out, std::span<const ast::Content> content, Conte
     auto status = Content_Status::ok;
     {
         const auto scope = sections.go_to_scoped(section_name::document_head);
-        status = status_concat(
-            status, write_wg21_head_contents(sections.current_policy(), content, context)
-        );
+        status = status_concat(status, head(sections.current_policy(), content, context));
         if (status_is_break(status)) {
             return status;
         }
     }
     {
         const auto scope = sections.go_to_scoped(section_name::document_body);
-        status = status_concat(
-            status, write_wg21_body_contents(sections.current_policy(), content, context)
-        );
+        status = status_concat(status, body(sections.current_policy(), content, context));
         if (status_is_break(status)) {
             return status;
         }
@@ -235,7 +236,7 @@ constexpr std::u8string_view indent = u8"  ";
 constexpr std::u8string_view newline_indent = u8"\n  ";
 
 Content_Status
-write_wg21_head_contents(Text_Sink& out, std::span<const ast::Content>, Context& context)
+write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Context& context)
 {
     HTML_Writer writer { out };
     constexpr std::u8string_view google_fonts_url
