@@ -27,14 +27,15 @@ void append_html_escaped(Out& out, std::u8string_view text, Predicate p)
             break;
         }
         out(html_entity_of(text.front()));
+        text.remove_prefix(1);
     }
 }
 
-/// @brief Appends text to the vector where characters in `charset`
+/// @brief Appends text to the vector where code units in `charset`
 /// are replaced with their corresponding HTML entities.
 /// For example, if `charset` includes `&`, `&amp;` is appended in its stead.
 ///
-/// Currently, `charset` must be a subset of `&`, `<`, `>`, `'`, `"`.
+/// `charset` shall be a subset of the entities supported by `html_entity_of`.
 template <string_or_char_consumer Out>
 void append_html_escaped_of(Out& out, std::u8string_view text, std::u8string_view charset)
 {
