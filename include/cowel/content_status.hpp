@@ -1,8 +1,11 @@
 #ifndef COWEL_CONTENT_STATUS_HPP
 #define COWEL_CONTENT_STATUS_HPP
 
-#include "cowel/fwd.hpp"
 #include <concepts>
+#include <string_view>
+
+#include "cowel/fwd.hpp"
+#include "cowel/util/assert.hpp"
 
 namespace cowel {
 
@@ -24,6 +27,20 @@ enum struct Content_Status : Default_Underlying {
     /// and generation of the document as a whole has to be abandoned.
     fatal,
 };
+
+[[nodiscard]]
+constexpr std::u8string_view status_name(Content_Status status)
+{
+    using enum Content_Status;
+    switch (status) {
+        COWEL_ENUM_STRING_CASE8(ok);
+        COWEL_ENUM_STRING_CASE8(abandon);
+        COWEL_ENUM_STRING_CASE8(error);
+        COWEL_ENUM_STRING_CASE8(error_abandon);
+        COWEL_ENUM_STRING_CASE8(fatal);
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid status.");
+}
 
 /// @brief Returns `true` iff `status` is a non-error status.
 [[nodiscard]]
