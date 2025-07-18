@@ -107,6 +107,10 @@ public:
     {
     }
 
+    Document_Sections(const Document_Sections&) = delete;
+    Document_Sections& operator=(const Document_Sections&) = delete;
+    ~Document_Sections() = default;
+
     /// @brief Returns the memory resource that this object was constructed with.
     [[nodiscard]]
     std::pmr::memory_resource* get_memory() const
