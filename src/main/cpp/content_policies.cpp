@@ -42,7 +42,7 @@ void generate_highlighted_html(
 )
 {
     COWEL_ASSERT(length != 0);
-    COWEL_ASSERT(length < code.length());
+    COWEL_ASSERT(begin < code.length());
     COWEL_ASSERT(begin + length <= code.length());
 
     constexpr auto projection
