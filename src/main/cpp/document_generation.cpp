@@ -205,7 +205,7 @@ Content_Status write_head_body_document(
         html_section = &sections.current();
         return sections.current_output();
     }();
-    const std::u8string_view html_string { html_text.data(), html_text.size() };
+    const auto html_string = as_u8string_view(html_text);
 
     auto status = Content_Status::ok;
     {
