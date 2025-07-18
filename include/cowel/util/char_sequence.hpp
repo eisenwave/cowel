@@ -50,8 +50,9 @@ private:
     }
 
     template <std::size_t capacity>
-    static constexpr Extractor_Function* static_string_extractor
-        = [](Storage entity, std::span<char8_t> buffer, std::size_t n) -> Storage {
+    static constexpr Storage
+    extract_from_static_string(Storage entity, std::span<char8_t> buffer, std::size_t n)
+    {
         COWEL_ASSERT(n <= buffer.size());
         COWEL_ASSERT(n <= capacity);
         auto entity_as_string = to_static_string<capacity>(entity, n);
@@ -60,8 +61,9 @@ private:
         return to_storage(entity_as_string);
     };
 
-    static constexpr Extractor_Function* string_view_extractor
-        = [](Storage storage, std::span<char8_t> buffer, std::size_t n) -> Storage {
+    static constexpr Storage
+    extract_from_string_view(Storage storage, std::span<char8_t> buffer, std::size_t n)
+    {
         COWEL_ASSERT(n <= buffer.size());
         const auto* const data = static_cast<const char8_t*>(storage.const_pointer);
         std::ranges::copy_n(data, std::ptrdiff_t(n), buffer.data());
@@ -82,7 +84,7 @@ public:
     /// @brief Constructs an empty sequence.
     [[nodiscard]]
     constexpr Char_Sequence8() noexcept
-        : m_extract { string_view_extractor }
+        : m_extract { &extract_from_string_view }
         , m_entity { .const_pointer = nullptr }
     {
     }
@@ -91,7 +93,7 @@ public:
     [[nodiscard]]
     constexpr Char_Sequence8(std::u8string_view str) noexcept
         : m_size { str.size() }
-        , m_extract { string_view_extractor }
+        , m_extract { &extract_from_string_view }
         , m_entity { .const_pointer = str.data() }
     {
     }
@@ -100,7 +102,7 @@ public:
     [[nodiscard]]
     constexpr Char_Sequence8(char8_t c) noexcept
         : m_size { 1 }
-        , m_extract { static_string_extractor<1> }
+        , m_extract { &extract_from_static_string<1> }
         , m_entity { .code_units = { c } }
     {
     }
@@ -132,7 +134,7 @@ public:
     [[nodiscard]]
     constexpr Char_Sequence8(Static_String8<capacity> str) noexcept
         : m_size { str.size() }
-        , m_extract { static_string_extractor<capacity> }
+        , m_extract { &extract_from_static_string<capacity> }
         , m_entity { to_storage(str) }
     {
     }
@@ -239,26 +241,26 @@ public:
     [[nodiscard]]
     constexpr const char8_t* as_contiguous() const noexcept
     {
-        if (m_extract == string_view_extractor) {
+        if (m_extract == &extract_from_string_view) {
             return static_cast<const char8_t*>(m_entity.const_pointer);
         }
         if constexpr (sizeof(const void*) >= 2) {
-            if (m_extract == static_string_extractor<1> //
-                || m_extract == static_string_extractor<2>) {
+            if (m_extract == &extract_from_static_string<1> //
+                || m_extract == &extract_from_static_string<2>) {
                 return m_entity.code_units.data();
             }
         }
         if constexpr (sizeof(const void*) >= 4) {
-            if (m_extract == static_string_extractor<3> //
-                || m_extract == static_string_extractor<4>) {
+            if (m_extract == &extract_from_static_string<3> //
+                || m_extract == &extract_from_static_string<4>) {
                 return m_entity.code_units.data();
             }
         }
         if constexpr (sizeof(const void*) >= 8) {
-            if (m_extract == static_string_extractor<5> //
-                || m_extract == static_string_extractor<6> //
-                || m_extract == static_string_extractor<7> //
-                || m_extract == static_string_extractor<8>) {
+            if (m_extract == &extract_from_static_string<5> //
+                || m_extract == &extract_from_static_string<6> //
+                || m_extract == &extract_from_static_string<7> //
+                || m_extract == &extract_from_static_string<8>) {
                 return m_entity.code_units.data();
             }
         }
