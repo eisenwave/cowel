@@ -33,7 +33,7 @@ Result<char32_t, Content_Status> code_point_by_generated_digits(
         return status;
     }
 
-    const std::u8string_view digits = trim_ascii_blank({ data.data(), data.size() });
+    const std::u8string_view digits = trim_ascii_blank(as_u8string_view(data));
     if (digits.empty()) {
         context.try_error(
             diagnostic::U::blank, source_span,
@@ -42,7 +42,7 @@ Result<char32_t, Content_Status> code_point_by_generated_digits(
         return Content_Status::error;
     }
 
-    std::optional<std::uint32_t> value = from_chars<std::uint32_t>(digits, 16);
+    const std::optional<std::uint32_t> value = from_chars<std::uint32_t>(digits, 16);
     if (!value) {
         const std::u8string_view message[] {
             u8"Expected a sequence of hexadecimal digits, but got \""sv,
@@ -83,8 +83,9 @@ Result<char32_t, Content_Status> code_point_by_generated_name(
     if (status != Content_Status::ok) {
         return status;
     }
+    const auto name_string = as_u8string_view(name);
 
-    const std::u8string_view digits = trim_ascii_blank({ name.data(), name.size() });
+    const std::u8string_view digits = trim_ascii_blank(name_string);
     if (digits.empty()) {
         context.try_error(
             diagnostic::N::blank, source_span,
@@ -92,7 +93,6 @@ Result<char32_t, Content_Status> code_point_by_generated_name(
         );
         return Content_Status::error;
     }
-    const auto name_string = as_u8string_view(name);
 
     const char32_t code_point = code_point_by_name(name_string);
     if (code_point == error_point) {
@@ -105,7 +105,7 @@ Result<char32_t, Content_Status> code_point_by_generated_name(
         return Content_Status::error;
     }
 
-    return Content_Status::error;
+    return code_point;
 }
 
 } // namespace
