@@ -341,7 +341,7 @@ Result<bool, Content_Status> argument_to_plaintext(
     return true;
 }
 
-Result<bool, Content_Status> get_yes_no_argument(
+Greedy_Result<bool> get_yes_no_argument(
     std::u8string_view name,
     std::u8string_view diagnostic_id,
     const ast::Directive& d,
@@ -358,7 +358,7 @@ Result<bool, Content_Status> get_yes_no_argument(
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
     const auto text_status = to_plaintext(data, arg.get_content(), context);
     if (text_status != Content_Status::ok) {
-        return text_status;
+        return { fallback, text_status };
     }
 
     const auto string = as_u8string_view(data);
@@ -377,7 +377,7 @@ Result<bool, Content_Status> get_yes_no_argument(
     return fallback;
 }
 
-Result<std::size_t, Content_Status> get_integer_argument(
+Greedy_Result<std::size_t> get_integer_argument(
     std::u8string_view name,
     std::u8string_view parse_error_diagnostic,
     std::u8string_view range_error_diagnostic,
@@ -399,7 +399,7 @@ Result<std::size_t, Content_Status> get_integer_argument(
     std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
     const auto text_status = to_plaintext(arg_text, arg.get_content(), context);
     if (text_status != Content_Status::ok) {
-        return text_status;
+        return { fallback, text_status };
     }
     const auto arg_string = as_u8string_view(arg_text);
 
@@ -440,33 +440,7 @@ Result<std::size_t, Content_Status> get_integer_argument(
     return *value;
 }
 
-namespace {
-
-[[nodiscard]]
-Result<std::u8string_view, Content_Status> argument_to_plaintext_or(
-    std::pmr::vector<char8_t>& out,
-    std::u8string_view parameter_name,
-    std::u8string_view fallback,
-    const ast::Directive& directive,
-    const Argument_Matcher& args,
-    Context& context
-)
-{
-    const int index = args.get_argument_index(parameter_name);
-    if (index < 0) {
-        return fallback;
-    }
-    const auto status
-        = to_plaintext(out, directive.get_arguments()[std::size_t(index)].get_content(), context);
-    if (status != Content_Status::ok) {
-        return status;
-    }
-    return std::u8string_view { out.data(), out.size() };
-}
-
-} // namespace
-
-Result<String_Argument, Content_Status> get_string_argument(
+Greedy_Result<String_Argument> get_string_argument(
     std::u8string_view name,
     const ast::Directive& d,
     const Argument_Matcher& args,
@@ -476,12 +450,18 @@ Result<String_Argument, Content_Status> get_string_argument(
 {
     String_Argument result { .data = std::pmr::vector<char8_t>(context.get_transient_memory()),
                              .string = {} };
-    const Result<std::u8string_view, Content_Status> plaintext_result
-        = argument_to_plaintext_or(result.data, name, fallback, d, args, context);
-    if (!plaintext_result) {
-        return plaintext_result.error();
+    const int index = args.get_argument_index(name);
+    if (index < 0) {
+        result.string = fallback;
+        return result;
     }
-    result.string = *plaintext_result;
+    const auto status
+        = to_plaintext(result.data, d.get_arguments()[std::size_t(index)].get_content(), context);
+    if (status != Content_Status::ok) {
+        result.string = fallback;
+        return { result, status };
+    }
+    result.string = as_u8string_view(result.data);
     return result;
 }
 

@@ -223,6 +223,69 @@ Content_Status named_argument_to_attribute(
     Attribute_Style style = Attribute_Style::double_if_needed
 );
 
+/// @brief Similar to `Result`,
+/// but does not behave like a union,
+/// but rather always contains a value.
+template <typename T>
+struct Greedy_Result {
+private:
+    T m_value;
+    Content_Status m_status = Content_Status::ok;
+
+public:
+    [[nodiscard]]
+    Greedy_Result(const T& value, Content_Status status = Content_Status::ok)
+        : m_value { value }
+        , m_status { status }
+    {
+    }
+
+    [[nodiscard]]
+    Greedy_Result(T&& value, Content_Status status = Content_Status::ok)
+        : m_value { std::move(value) }
+        , m_status { status }
+    {
+    }
+
+    [[nodiscard]]
+    constexpr explicit operator bool() const
+    {
+        return m_status == Content_Status::ok;
+    }
+
+    [[nodiscard]]
+    constexpr T& operator*()
+    {
+        COWEL_ASSERT(m_status == Content_Status::ok);
+        return m_value;
+    }
+    [[nodiscard]]
+    constexpr const T& operator*() const
+    {
+        COWEL_ASSERT(m_status == Content_Status::ok);
+        return m_value;
+    }
+
+    [[nodiscard]]
+    constexpr T* operator->()
+    {
+        COWEL_ASSERT(m_status == Content_Status::ok);
+        return std::addressof(m_value);
+    }
+    [[nodiscard]]
+    constexpr const T* operator->() const
+    {
+        COWEL_ASSERT(m_status == Content_Status::ok);
+        return std::addressof(m_value);
+    }
+
+    [[nodiscard]]
+    constexpr Content_Status status() const
+    {
+        return m_status;
+    }
+};
+
 /// @brief Converts a the content of the argument matching the given parameter.
 /// @param out The vector into which generated plaintext should be written.
 /// @param d The directive.
@@ -239,7 +302,7 @@ Result<bool, Content_Status> argument_to_plaintext(
 );
 
 [[nodiscard]]
-Result<bool, Content_Status> get_yes_no_argument(
+Greedy_Result<bool> get_yes_no_argument(
     std::u8string_view name,
     std::u8string_view diagnostic_id,
     const ast::Directive& d,
@@ -249,7 +312,7 @@ Result<bool, Content_Status> get_yes_no_argument(
 );
 
 [[nodiscard]]
-Result<std::size_t, Content_Status> get_integer_argument(
+Greedy_Result<std::size_t> get_integer_argument(
     std::u8string_view name,
     std::u8string_view parse_error_diagnostic,
     std::u8string_view range_error_diagnostic,
@@ -267,7 +330,7 @@ struct String_Argument {
 };
 
 [[nodiscard]]
-Result<String_Argument, Content_Status> get_string_argument(
+Greedy_Result<String_Argument> get_string_argument(
     std::u8string_view name,
     const ast::Directive& d,
     const Argument_Matcher& args,
