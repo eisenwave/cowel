@@ -210,6 +210,10 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     const std::u8string_view short_name = ulight::highlight_type_short_string_u8(*type);
     COWEL_ASSERT(!short_name.empty());
 
+    // FIXME: using an HTML policy here also prevents e.g. force-highlighted content from being
+    //        used inside of id synthesis etc.
+    //        Perhaps a better approach would be to check the output language,
+    //        and if the out consumes plaintext, then we could just write directly to out.
     HTML_Content_Policy policy { out };
     HTML_Writer writer { policy };
     writer
