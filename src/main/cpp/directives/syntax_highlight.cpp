@@ -210,12 +210,13 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     const std::u8string_view short_name = ulight::highlight_type_short_string_u8(*type);
     COWEL_ASSERT(!short_name.empty());
 
-    HTML_Writer writer { out };
+    HTML_Content_Policy policy { out };
+    HTML_Writer writer { policy };
     writer
         .open_tag_with_attributes(u8"h-") //
         .write_attribute(u8"data-h", short_name)
         .end();
-    const Content_Status result = consume_all(out, d.get_content(), context);
+    const Content_Status result = consume_all(policy, d.get_content(), context);
     if (status_is_break(result)) {
         return result;
     }
