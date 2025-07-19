@@ -232,7 +232,7 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior tt //
         { u8"tt-", Policy_Usage::inherit, Directive_Display::in_line };
-    Char_By_Name_Behavior U //
+    Char_By_Num_Behavior U //
         {};
     Fixed_Name_Passthrough_Behavior u //
         { u8"u", Policy_Usage::inherit, Directive_Display::in_line };
