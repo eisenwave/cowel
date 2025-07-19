@@ -81,29 +81,55 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     Argument_Matcher args { parameters, context.get_transient_memory() };
     args.match(d.get_arguments());
 
-    const Result<String_Argument, Content_Status> lang
+    const Greedy_Result<String_Argument> lang
         = get_string_argument(lang_parameter, d, args, context);
-    const Result<String_Argument, Content_Status> prefix
+    if (status_is_break(lang.status())) {
+        return lang.status();
+    }
+
+    const Greedy_Result<String_Argument> prefix
         = get_string_argument(prefix_parameter, d, args, context);
-    const Result<String_Argument, Content_Status> suffix
+    if (status_is_break(prefix.status())) {
+        return prefix.status();
+    }
+
+    const Greedy_Result<String_Argument> suffix
         = get_string_argument(suffix_parameter, d, args, context);
+    if (status_is_break(suffix.status())) {
+        return suffix.status();
+    }
 
-    const bool has_borders = m_display == Directive_Display::in_line
-        || get_yes_no_argument(borders_parameter, diagnostic::codeblock::borders_invalid, d, args,
-                               context, true);
+    const auto borders = m_display == Directive_Display::in_line
+        ? Greedy_Result<bool> { true }
+        : get_yes_no_argument(
+              borders_parameter, diagnostic::codeblock::borders_invalid, d, args, context, true
+          );
+    if (status_is_break(borders.status())) {
+        return borders.status();
+    }
 
-    const bool is_nested = m_display == Directive_Display::in_line
-        && get_yes_no_argument(nested_parameter, diagnostic::code::nested_invalid, d, args, context,
-                               false);
+    const auto nested = m_display == Directive_Display::in_line
+        ? Greedy_Result<bool> { false }
+        : get_yes_no_argument(
+              nested_parameter, diagnostic::code::nested_invalid, d, args, context, false
+          );
+    if (status_is_break(nested.status())) {
+        return nested.status();
+    }
+    const Content_Status args_status = status_concat(
+        lang.status(), prefix.status(), suffix.status(), borders.status(), nested.status()
+    );
 
     ensure_paragraph_matches_display(out, m_display);
 
     // All content written to out is HTML anyway,
     // so we don't need an extra HTML_Content_Policy here.
     HTML_Writer writer { out };
-    if (!is_nested) {
+    const bool has_tags = !*nested;
+
+    if (has_tags) {
         Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
-        if (!has_borders) {
+        if (!*borders) {
             COWEL_ASSERT(m_display != Directive_Display::in_line);
             attributes.write_class(u8"borderless");
         }
@@ -117,7 +143,7 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
 
     Syntax_Highlight_Policy highlight_policy //
         { context.get_transient_memory(), prefix->string, suffix->string };
-    const auto status = consume_all(highlight_policy, d.get_content(), context);
+    const auto highlight_status = consume_all(highlight_policy, d.get_content(), context);
 
     const Result<void, Syntax_Highlight_Error> result
         = highlight_policy.write_highlighted(chosen_sink, context, lang->string);
@@ -140,11 +166,11 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
         out.write(inner_html, Output_Language::html);
     }
 
-    if (!is_nested) {
+    if (has_tags) {
         writer.close_tag(m_tag_name);
     }
 
-    return status;
+    return status_concat(args_status, highlight_status);
 }
 
 Content_Status

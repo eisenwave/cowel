@@ -56,29 +56,26 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     Argument_Matcher args { parameters, context.get_transient_memory() };
     args.match(d.get_arguments(), Parameter_Match_Mode::only_named);
 
-    auto current_status = Content_Status::ok;
     // Determine whether the heading should be listed in the table of contents.
     const bool listed_by_default = m_level >= min_listing_level && m_level <= max_listing_level;
-    const Result<bool, Content_Status> is_listed_result = get_yes_no_argument(
+    const Greedy_Result<bool> is_listed_result = get_yes_no_argument(
         u8"listed", diagnostic::h::listed_invalid, d, args, context, listed_by_default
     );
-    if (!is_listed_result) {
-        if (status_is_break(is_listed_result.error())) {
-            return is_listed_result.error();
-        }
-        current_status = Content_Status::error;
+    if (status_is_break(is_listed_result.status())) {
+        return is_listed_result.status();
     }
 
-    const Result<bool, Content_Status> is_number_shown_result = get_yes_no_argument(
+    const Greedy_Result<bool> is_number_shown_result = get_yes_no_argument(
         u8"show-number", diagnostic::h::show_number_invalid, d, args, context, listed_by_default
     );
-    if (!is_number_shown_result) {
-        if (status_is_break(is_number_shown_result.error())) {
-            return is_number_shown_result.error();
-        }
-        current_status = Content_Status::error;
+    if (status_is_break(is_number_shown_result.status())) {
+        return is_number_shown_result.status();
     }
+    Content_Status current_status
+        = status_concat(is_listed_result.status(), is_number_shown_result.status());
 
+    // TODO: now that we use Greedy_Result, we should be able to get rid of these
+    //       extra variables, but it's not worth the trouble right now ...
     const bool is_listed = is_listed_result ? *is_listed_result : listed_by_default;
     const bool is_number_shown
         = is_number_shown_result ? *is_number_shown_result : listed_by_default;

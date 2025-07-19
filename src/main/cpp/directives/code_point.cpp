@@ -166,39 +166,29 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     Argument_Matcher args { parameters, context.get_transient_memory() };
     args.match(d.get_arguments());
 
-    bool args_error = false;
-    const Result<std::size_t, Content_Status> zfill = get_integer_argument(
+    const Greedy_Result<std::size_t> zfill = get_integer_argument(
         u8"zfill", diagnostic::Udigits::zfill_not_an_integer, diagnostic::Udigits::zfill_range, //
         args, d, context, default_zfill, min_zfill, max_zfill
     );
-    if (!zfill) {
-        if (status_is_break(zfill.error())) {
-            return zfill.error();
-        }
-        args_error = true;
+    if (status_is_break(zfill.status())) {
+        return zfill.status();
     }
 
-    const Result<std::size_t, Content_Status> base = get_integer_argument(
+    const Greedy_Result<std::size_t> base = get_integer_argument(
         u8"base", diagnostic::Udigits::base_not_an_integer, diagnostic::Udigits::base_range, //
         args, d, context, default_base, min_base, max_base
     );
-    if (!base) {
-        if (status_is_break(base.error())) {
-            return base.error();
-        }
-        args_error = true;
+    if (status_is_break(base.status())) {
+        return base.status();
     }
 
-    const Result<bool, Content_Status> is_lower = get_yes_no_argument(
+    const Greedy_Result<bool> is_lower = get_yes_no_argument(
         u8"lower", diagnostic::Udigits::lower_invalid, d, args, context, false
     );
-    if (!is_lower) {
-        if (status_is_break(is_lower.error())) {
-            return is_lower.error();
-        }
-        args_error = true;
+    if (status_is_break(is_lower.status())) {
+        return is_lower.status();
     }
-    const auto args_status = args_error ? Content_Status::error : Content_Status::ok;
+    const auto args_status = status_concat(zfill.status(), base.status(), is_lower.status());
 
     std::pmr::vector<char8_t> input { context.get_transient_memory() };
     const auto input_status = to_plaintext(input, d.get_content(), context);
@@ -246,6 +236,7 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     const std::size_t pad_length = std::min(*zfill, chars.length());
     out.write(repeated_char_sequence(pad_length, u8'0'), Output_Language::text);
     out.write(chars.as_string(), Output_Language::text);
+
     return status_concat(args_status, input_status);
 }
 
