@@ -2,6 +2,7 @@
 #define COWEL_CHAR_SEQUENCES_HPP
 
 #include <algorithm>
+#include <initializer_list>
 #include <span>
 #include <string_view>
 
@@ -187,7 +188,7 @@ make_char_sequence(std::size_t n, std::u8string_view str)
     return { n, str };
 }
 
-/// @brief Creates a `Char_Sequence` containing `str`.
+/// @brief Creates a `Char_Sequence` containing `strings`, concatenated.
 [[nodiscard]]
 constexpr Deferred_Char_Sequence<Joined_Char_Source>
 joined_char_sequence(std::span<const std::u8string_view> strings)
@@ -200,6 +201,14 @@ joined_char_sequence(std::span<const std::u8string_view> strings)
         return sum;
     }();
     return { total_length, strings };
+}
+
+/// @brief Creates a `Char_Sequence` containing `strings`, concatenated.
+[[nodiscard]]
+constexpr Deferred_Char_Sequence<Joined_Char_Source>
+joined_char_sequence(std::initializer_list<std::u8string_view> strings)
+{
+    return joined_char_sequence(std::span<const std::u8string_view> { strings });
 }
 
 /// @brief Creates a `Char_Sequence` containing a single code unit `c`.
