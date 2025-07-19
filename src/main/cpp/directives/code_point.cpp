@@ -125,7 +125,8 @@ Code_Point_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
 
     const Result<char32_t, Content_Status> code_point = get_code_point(d, context);
     if (!code_point) {
-        return code_point.error();
+        COWEL_ASSERT(code_point.error() != Content_Status::ok);
+        return try_generate_error(out, d, context, code_point.error());
     }
 
     try_enter_paragraph(out);
