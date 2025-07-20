@@ -34,7 +34,7 @@ struct Name_Resolver {
     fuzzy_lookup_name(std::u8string_view name, Context& context) const = 0;
 
     [[nodiscard]]
-    virtual Directive_Behavior* operator()(std::u8string_view name, Context& context) const
+    virtual const Directive_Behavior* operator()(std::u8string_view name, Context& context) const
         = 0;
 };
 
@@ -81,7 +81,7 @@ private:
     /// to information about the reference.
     ID_Map m_id_references { m_transient_memory };
     Macro_Map m_macros { m_transient_memory };
-    Directive_Behavior* m_error_behavior;
+    const Directive_Behavior* m_error_behavior;
 
     File_Loader& m_file_loader;
     Logger& m_logger;
@@ -106,7 +106,7 @@ public:
     /// destruction of the context.
     explicit Context(
         string_view_type highlight_theme_source,
-        Directive_Behavior* error_behavior,
+        const Directive_Behavior* error_behavior,
         File_Loader& file_loader,
         Logger& logger,
         Syntax_Highlighter& highlighter,
@@ -231,7 +231,7 @@ public:
     }
 
     [[nodiscard]]
-    Directive_Behavior* get_error_behavior() const
+    const Directive_Behavior* get_error_behavior() const
     {
         return m_error_behavior;
     }
@@ -343,11 +343,11 @@ public:
     /// @param name the name of the directive
     /// @return the behavior for the given name, or `nullptr` if none could be found
     [[nodiscard]]
-    Directive_Behavior* find_directive(string_view_type name);
+    const Directive_Behavior* find_directive(string_view_type name);
 
     /// @brief Equivalent to `find_directive(directive.get_name(source))`.
     [[nodiscard]]
-    Directive_Behavior* find_directive(const ast::Directive& directive);
+    const Directive_Behavior* find_directive(const ast::Directive& directive);
 
     [[nodiscard]]
     const Referred* find_id(std::u8string_view id) const
@@ -380,20 +380,22 @@ public:
 };
 
 struct Macro_Name_Resolver final : Name_Resolver {
-    Directive_Behavior& m_macro_behavior;
+    const Directive_Behavior& m_macro_behavior;
 
-    Macro_Name_Resolver(Directive_Behavior& macro_behavior)
+    [[nodiscard]]
+    explicit Macro_Name_Resolver(const Directive_Behavior& macro_behavior)
         : m_macro_behavior { macro_behavior }
     {
     }
 
+    [[nodiscard]]
     Distant<std::u8string_view> fuzzy_lookup_name(std::u8string_view, Context&) const final
     {
         COWEL_ASSERT_UNREACHABLE(u8"Unimplemented.");
     }
 
     [[nodiscard]]
-    Directive_Behavior* operator()(std::u8string_view name, Context& context) const final
+    const Directive_Behavior* operator()(std::u8string_view name, Context& context) const final
     {
         return context.find_macro(name) ? &m_macro_behavior : nullptr;
     }

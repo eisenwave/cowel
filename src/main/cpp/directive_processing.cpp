@@ -33,17 +33,17 @@ std::u8string_view expand_escape(std::u8string_view escape)
     return escape[0] == u8'\r' || escape[0] == u8'\n' ? u8"" : escape;
 }
 
-Directive_Behavior* Context::find_directive(std::u8string_view name)
+const Directive_Behavior* Context::find_directive(std::u8string_view name)
 {
     for (const Name_Resolver* const resolver : std::views::reverse(m_name_resolvers)) {
-        if (Directive_Behavior* const result = (*resolver)(name, *this)) {
+        if (const Directive_Behavior* const result = (*resolver)(name, *this)) {
             return result;
         }
     }
     return nullptr;
 }
 
-Directive_Behavior* Context::find_directive(const ast::Directive& directive)
+const Directive_Behavior* Context::find_directive(const ast::Directive& directive)
 {
     return find_directive(directive.get_name());
 }
@@ -196,7 +196,7 @@ Content_Status to_plaintext(
 
 Content_Status apply_behavior(Content_Policy& out, const ast::Directive& d, Context& context)
 {
-    Directive_Behavior* const behavior = context.find_directive(d);
+    const Directive_Behavior* const behavior = context.find_directive(d);
     if (!behavior) {
         try_lookup_error(d, context);
         if (const Content_Status s = try_generate_error(out, d, context); s != Content_Status::ok) {

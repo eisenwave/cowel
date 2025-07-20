@@ -799,17 +799,17 @@ public:
     ~Builtin_Directive_Set();
 
     [[nodiscard]]
-    Directive_Behavior& get_error_behavior() noexcept;
+    const Directive_Behavior& get_error_behavior() const noexcept;
 
     [[nodiscard]]
-    Directive_Behavior& get_macro_behavior() noexcept;
+    const Directive_Behavior& get_macro_behavior() const noexcept;
 
     [[nodiscard]]
     Distant<std::u8string_view>
     fuzzy_lookup_name(std::u8string_view name, Context& context) const final;
 
     [[nodiscard]]
-    Directive_Behavior* operator()(std::u8string_view name, Context& context) const final;
+    const Directive_Behavior* operator()(std::u8string_view name, Context& context) const final;
 };
 
 namespace class_name {
