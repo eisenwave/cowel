@@ -303,12 +303,12 @@ Builtin_Directive_Set::Builtin_Directive_Set()
 
 Builtin_Directive_Set::~Builtin_Directive_Set() = default;
 
-Directive_Behavior& Builtin_Directive_Set::get_error_behavior() noexcept
+const Directive_Behavior& Builtin_Directive_Set::get_error_behavior() const noexcept
 {
     return m_impl->error;
 }
 
-Directive_Behavior& Builtin_Directive_Set::get_macro_behavior() noexcept
+const Directive_Behavior& Builtin_Directive_Set::get_macro_behavior() const noexcept
 {
     return m_impl->macro_instantiate;
 }
@@ -477,7 +477,7 @@ Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& conte
     return { .value = all_names[result.value], .distance = result.distance };
 }
 
-Directive_Behavior*
+const Directive_Behavior*
 Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) const
 {
     // Any builtin names should be found with both `\\-directive` and `\\directive`.
