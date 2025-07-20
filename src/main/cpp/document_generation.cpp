@@ -35,7 +35,6 @@ run_generation(Function_Ref<Content_Status(Context&)> generate, const Generation
                       options.bibliography, //
                       options.memory, //
                       &transient_memory };
-    context.add_resolver(options.builtin_behavior);
     const auto result = generate(context);
     context.get_bibliography().clear();
     return result;

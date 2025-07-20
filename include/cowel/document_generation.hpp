@@ -17,11 +17,9 @@
 namespace cowel {
 
 struct Generation_Options {
-    /// @brief Name resolver for builtin behavior (without macro definitions, etc.).
-    const Name_Resolver& builtin_behavior;
     /// @brief To be used for generating error content within the document
     /// when directive processing runs into an error.
-    Directive_Behavior* error_behavior = nullptr;
+    const Directive_Behavior* error_behavior = nullptr;
 
     /// @brief The highlight theme source.
     std::u8string_view highlight_theme_source;
