@@ -332,15 +332,15 @@ constexpr Basic_Test basic_tests[] {
 
     { Source { u8"" },
       Path { u8"document/empty.html" },
-      Content_Status::error,
+      Content_Status::ok,
       {},
       Test_Behavior::empty_head },
     
     { Path { u8"empty.cow" },
-      Source { u8"Hello, world!\n" } },
+      Source { u8"" } },
     
     { Path { u8"text.cow" },
-      Source { u8"" } },
+      Source { u8"Hello, world!\n" } },
     
     { Path { u8"comments.cow" },
       Path { u8"comments.cow.html" } },
