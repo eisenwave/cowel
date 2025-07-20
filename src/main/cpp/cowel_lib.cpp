@@ -266,7 +266,7 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
     Capturing_Ref_Text_Sink html_sink { output, Output_Language::html };
     HTML_Content_Policy html_policy { html_sink };
 
-    Builtin_Directive_Set builtin_behavior {};
+    const Builtin_Directive_Set builtin_behavior {};
 
     File_Loader_From_Options file_loader { options.load_file, options.load_file_data };
     Logger_From_Options logger { options, memory };
@@ -285,8 +285,7 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
         ? assets::wg21_json
         : as_u8string_view(options.highlight_theme_json);
 
-    const Generation_Options gen_options { .builtin_behavior = builtin_behavior,
-                                           .error_behavior = &builtin_behavior.get_error_behavior(),
+    const Generation_Options gen_options { .error_behavior = &builtin_behavior.get_error_behavior(),
                                            .highlight_theme_source = highlight_theme_source,
                                            .file_loader = file_loader,
                                            .logger = logger,
@@ -298,6 +297,10 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
     const Content_Status status
         = run_generation(
             [&](Context& context) -> Content_Status {
+                const Macro_Name_Resolver macro_resolver { builtin_behavior.get_macro_behavior() };
+                context.add_resolver(builtin_behavior);
+                context.add_resolver(macro_resolver);
+
                 if (options.mode == COWEL_MODE_MINIMAL) {
                     return consume_all(html_policy, root_content, context);
                 }

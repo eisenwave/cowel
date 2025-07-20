@@ -80,6 +80,10 @@ struct Doc_Gen_Test : testing::Test {
     Function_Ref<Content_Status(Context&)> get_behavior_impl()
     {
         constexpr auto action = [](Doc_Gen_Test* self, Context& context) -> Content_Status {
+            Macro_Name_Resolver macro_resolver { self->builtin_directives.get_macro_behavior() };
+            context.add_resolver(self->builtin_directives);
+            context.add_resolver(macro_resolver);
+
             Capturing_Ref_Text_Sink sink { self->out, Output_Language::html };
             switch (behavior) {
             case Test_Behavior::trivial: {
@@ -142,9 +146,8 @@ struct Doc_Gen_Test : testing::Test {
     [[nodiscard]]
     Content_Status generate(Test_Behavior behavior)
     {
-        Directive_Behavior& error_behavior = builtin_directives.get_error_behavior();
-        const Generation_Options options { .builtin_behavior = builtin_directives,
-                                           .error_behavior = &error_behavior,
+        const Directive_Behavior& error_behavior = builtin_directives.get_error_behavior();
+        const Generation_Options options { .error_behavior = &error_behavior,
                                            .highlight_theme_source = theme_source_string,
                                            .logger = logger,
                                            .highlighter = test_highlighter,
