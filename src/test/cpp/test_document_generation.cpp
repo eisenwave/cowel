@@ -430,25 +430,24 @@ void append_test_details(Diagnostic_String& out, const Basic_Test& test)
 
 TEST_F(Doc_Gen_Test, basic_directive_tests)
 {
+    bool success = true;
     for (const Basic_Test& test : basic_tests) {
         clear();
 
         const bool load_success = load_basic_test_input(*this, test);
-        EXPECT_TRUE(load_success);
         if (!load_success) {
+            success = false;
             continue;
         }
 
         std::pmr::vector<char8_t> expectation_storage { &memory };
         const std::u8string_view expected
             = load_basic_test_expectations(expectation_storage, test, &memory);
-        EXPECT_FALSE(expected.empty());
-        if (expected.empty()) {
-            continue;
-        }
+        COWEL_ASSERT(!expected.empty());
 
         const Content_Status status = generate(test.behavior);
         if (status != test.expected_status) {
+            success = false;
             Diagnostic_String error { &memory };
             append_test_details(error, test);
             error.build(Diagnostic_Highlight::error_text)
@@ -458,11 +457,10 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
                 .append(status_name(test.expected_status))
                 .append(u8')');
             error.append(u8'\n');
-            print_code_string_stdout(error);
-            flush_stdout();
+            print_flush_code_string_stdout(error);
         }
-        EXPECT_TRUE(status == test.expected_status);
         if (expected != output_text()) {
+            success = false;
             Diagnostic_String error { &memory };
             append_test_details(error, test);
             error.append(
@@ -471,31 +469,41 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
             );
             print_lines_diff(error, output_text(), expected);
             error.append(u8'\n');
-            print_code_string_stdout(error);
-            flush_stdout();
+            print_flush_code_string_stdout(error);
         }
-        EXPECT_TRUE(expected == output_text());
 
         if (test.expected_diagnostics.size() == 0) {
             if (!logger.diagnostics.empty()) {
+                success = false;
                 Diagnostic_String error { &memory };
                 append_test_details(error, test);
                 error.append(
                     u8"Test failed because an unexpected diagnostic was emitted:\n",
                     Diagnostic_Highlight::error_text
                 );
-                error.append(logger.diagnostics.front().id);
-                error.append(u8"\n\n");
-                print_code_string_stdout(error);
-                flush_stdout();
+                error.append(logger.diagnostics.front().id, Diagnostic_Highlight::code_citation);
+                error.append(u8"\n");
+                print_flush_code_string_stdout(error);
             }
-            EXPECT_TRUE(logger.diagnostics.empty());
             continue;
         }
         for (const std::u8string_view id : test.expected_diagnostics) {
-            EXPECT_TRUE(logger.was_logged(id));
+            if (logger.was_logged(id)) {
+                continue;
+            }
+            success = false;
+            Diagnostic_String error { &memory };
+            append_test_details(error, test);
+            error.append(
+                u8"Test failed because an expected diagnostic was not emitted: ",
+                Diagnostic_Highlight::error_text
+            );
+            error.append(logger.diagnostics.front().id, Diagnostic_Highlight::code_citation);
+            error.append(u8"\n");
+            print_flush_code_string_stdout(error);
         }
     }
+    EXPECT_TRUE(success);
 }
 
 } // namespace
