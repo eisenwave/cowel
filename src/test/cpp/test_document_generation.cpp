@@ -182,37 +182,6 @@ struct Doc_Gen_Test : testing::Test {
     }
 };
 
-TEST_F(Doc_Gen_Test, empty)
-{
-    constexpr std::u8string_view expected;
-    ASSERT_TRUE(load_document("empty.cow"));
-    const Content_Status status = generate(Test_Behavior::trivial);
-    EXPECT_EQ(status, Content_Status::ok);
-    EXPECT_EQ(expected, output_text());
-}
-
-TEST_F(Doc_Gen_Test, text)
-{
-    constexpr std::u8string_view expected = u8"Hello, world!\n";
-    ASSERT_TRUE(load_document("text.cow"));
-    const Content_Status status = generate(Test_Behavior::trivial);
-    EXPECT_EQ(status, Content_Status::ok);
-    EXPECT_EQ(expected, output_text());
-}
-
-TEST_F(Doc_Gen_Test, paragraphs)
-{
-    constexpr std::u8string_view expected = u8R"(<p>This is
-a paragraph.
-</p>
-<p>This is another paragraph.
-</p>)";
-    ASSERT_TRUE(load_document("paragraphs.cow"));
-    const Content_Status status = generate(Test_Behavior::paragraphs);
-    EXPECT_EQ(status, Content_Status::ok);
-    EXPECT_EQ(expected, output_text());
-}
-
 struct Path {
     std::u8string_view value;
 };
@@ -367,8 +336,20 @@ constexpr Basic_Test basic_tests[] {
       {},
       Test_Behavior::empty_head },
     
+    { Path { u8"empty.cow" },
+      Source { u8"Hello, world!\n" } },
+    
+    { Path { u8"text.cow" },
+      Source { u8"" } },
+    
     { Path { u8"comments.cow" },
-      Path { u8"comments.cow.html" } }
+      Path { u8"comments.cow.html" } },
+    
+    { Path { u8"paragraphs.cow" },
+      Path { u8"paragraphs.cow.html" },
+      Content_Status::ok,
+      {},
+      Test_Behavior::paragraphs }
 };
 // clang-format on
 
