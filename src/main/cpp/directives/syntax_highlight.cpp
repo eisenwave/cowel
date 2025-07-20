@@ -120,6 +120,16 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
         lang.status(), prefix.status(), suffix.status(), borders.status(), nested.status()
     );
 
+    // While syntax highlighting generally outputs HTML,
+    // when plaintext content is needed (e.g. for ID synthesis),
+    // we still want \code to be "transparent" by simply outputting plaintext.
+    // Note that for consistent side effects,
+    // we still process all the arguments above.
+    if (out.get_language() == Output_Language::text) {
+        const Content_Status text_status = consume_all(out, d.get_content(), context);
+        return status_concat(args_status, text_status);
+    }
+
     ensure_paragraph_matches_display(out, m_display);
 
     // All content written to out is HTML anyway,
@@ -210,10 +220,11 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     const std::u8string_view short_name = ulight::highlight_type_short_string_u8(*type);
     COWEL_ASSERT(!short_name.empty());
 
-    // FIXME: using an HTML policy here also prevents e.g. force-highlighted content from being
-    //        used inside of id synthesis etc.
-    //        Perhaps a better approach would be to check the output language,
-    //        and if the out consumes plaintext, then we could just write directly to out.
+    // We do the same special casing as for \code (see above for explanation).
+    if (out.get_language() == Output_Language::text) {
+        return consume_all(out, d.get_content(), context);
+    }
+
     HTML_Content_Policy policy { out };
     HTML_Writer writer { policy };
     writer
