@@ -85,6 +85,18 @@ void print_code_string_stderr(const Diagnostic_String&);
 void flush_stdout();
 void flush_stderr();
 
+inline void print_flush_code_string_stdout(const Diagnostic_String& str)
+{
+    print_code_string_stdout(str);
+    flush_stdout();
+}
+
+inline void print_flush_code_string_stderr(const Diagnostic_String& str)
+{
+    print_code_string_stderr(str);
+    flush_stderr();
+}
+
 #endif
 
 } // namespace cowel
