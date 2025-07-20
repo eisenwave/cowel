@@ -196,11 +196,17 @@ Content_Status to_plaintext(
 
 Content_Status apply_behavior(Content_Policy& out, const ast::Directive& d, Context& context)
 {
+    constexpr auto status_on_error_generated = Content_Status::ok;
+
     const Directive_Behavior* const behavior = context.find_directive(d);
     if (!behavior) {
         try_lookup_error(d, context);
-        if (const Content_Status s = try_generate_error(out, d, context); s != Content_Status::ok) {
-            // TODO: error message
+        const auto status = try_generate_error(out, d, context, status_on_error_generated);
+        if (status != status_on_error_generated) {
+            context.try_error(
+                diagnostic::error_error, d.get_source_span(),
+                u8"A fatal error was raised because producing a non-fatal error failed."sv
+            );
             return Content_Status::fatal;
         }
         return Content_Status::error;

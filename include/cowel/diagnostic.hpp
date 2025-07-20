@@ -65,6 +65,9 @@ namespace diagnostic {
 
 // GENERAL DIAGNOSTICS =============================================================================
 
+/// @brief A (non-fatal) error could not be produced.
+inline constexpr std::u8string_view error_error = u8"error.error";
+
 /// @brief A deprecated feature was used.
 inline constexpr std::u8string_view deprecated = u8"deprecated";
 
