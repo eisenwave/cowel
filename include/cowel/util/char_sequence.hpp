@@ -59,7 +59,7 @@ private:
         std::ranges::copy(entity_as_string, buffer.data());
         entity_as_string.remove_prefix(n);
         return to_storage(entity_as_string);
-    };
+    }
 
     static constexpr Storage
     extract_from_string_view(Storage storage, std::span<char8_t> buffer, std::size_t n)
@@ -68,7 +68,7 @@ private:
         const auto* const data = static_cast<const char8_t*>(storage.const_pointer);
         std::ranges::copy_n(data, std::ptrdiff_t(n), buffer.data());
         return { .const_pointer = data + n };
-    };
+    }
 
 public:
     using iterator = Char_Sequence8_Iterator;
