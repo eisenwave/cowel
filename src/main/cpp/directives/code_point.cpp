@@ -233,8 +233,9 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     const bool convert_to_upper = !*is_lower;
     const Characters8 chars
         = to_characters8(std::uint32_t(code_point), int(*base), convert_to_upper);
-    const std::size_t pad_length = std::min(*zfill, chars.length());
-    out.write(repeated_char_sequence(pad_length, u8'0'), Output_Language::text);
+    if (const std::size_t pad_length = std::min(*zfill, chars.length())) {
+        out.write(repeated_char_sequence(pad_length, u8'0'), Output_Language::text);
+    }
     out.write(chars.as_string(), Output_Language::text);
 
     return status_concat(args_status, input_status);
