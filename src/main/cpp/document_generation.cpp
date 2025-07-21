@@ -1,6 +1,7 @@
 #include <memory_resource>
 #include <unordered_set>
 
+#include "cowel/policy/paragraph_split.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
@@ -321,7 +322,11 @@ Content_Status write_wg21_body_contents(
     writer.write_inner_html(assets::settings_widget_html);
     writer.open_tag(u8"main");
     writer.write_inner_html(u8'\n');
-    const Content_Status result = consume_all(out, content, context);
+
+    Paragraph_Split_Policy policy { out, context.get_transient_memory() };
+    const Content_Status result = consume_all(policy, content, context);
+    policy.leave_paragraph();
+
     writer.close_tag(u8"main");
     return result;
 }
