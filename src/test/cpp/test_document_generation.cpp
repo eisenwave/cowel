@@ -61,15 +61,20 @@ struct Doc_Gen_Test : testing::Test {
     Builtin_Directive_Set builtin_directives {};
 
     std::filesystem::path file_path;
+
+private:
     std::pmr::vector<char8_t> source { &memory };
     std::pmr::vector<char8_t> theme_source { &memory };
+
+public:
     std::u8string_view source_string {};
     std::u8string_view theme_source_string {};
     std::pmr::vector<ast::Content> content { &memory };
 
     Collecting_Logger logger { &memory };
 
-    Doc_Gen_Test()
+    [[nodiscard]]
+    explicit Doc_Gen_Test()
     {
         const bool theme_loaded = load_theme();
         COWEL_ASSERT(theme_loaded);
@@ -92,7 +97,9 @@ struct Doc_Gen_Test : testing::Test {
             }
             case Test_Behavior::paragraphs: {
                 Paragraph_Split_Policy policy { sink, context.get_transient_memory() };
-                return consume_all(policy, self->content, context);
+                const Content_Status result = consume_all(policy, self->content, context);
+                policy.leave_paragraph();
+                return result;
             }
             case Test_Behavior::empty_head: {
                 return write_empty_head_document(sink, self->content, context);
@@ -120,9 +127,15 @@ struct Doc_Gen_Test : testing::Test {
         if (!load_utf8_file_or_error(source, file_path.generic_u8string(), &memory)) {
             return false;
         }
-        source_string = { source.data(), source.size() };
+        source_string = as_u8string_view(source);
         content = parse_and_build(source_string, File_Id {}, &memory, make_parse_error_consumer());
         return true;
+    }
+
+    void load_source(std::u8string_view source)
+    {
+        source_string = source;
+        content = parse_and_build(source, File_Id {}, &memory, make_parse_error_consumer());
     }
 
     [[nodiscard]]
@@ -135,12 +148,6 @@ struct Doc_Gen_Test : testing::Test {
         }
         theme_source_string = { source.data(), source.size() };
         return true;
-    }
-
-    void load_source(std::u8string_view source)
-    {
-        source_string = source;
-        content = parse_and_build(source, File_Id {}, &memory, make_parse_error_consumer());
     }
 
     [[nodiscard]]
@@ -427,7 +434,7 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
         std::pmr::vector<char8_t> expectation_storage { &memory };
         const std::u8string_view expected
             = load_basic_test_expectations(expectation_storage, test, &memory);
-        COWEL_ASSERT(!expected.empty());
+        COWEL_ASSERT(source_string.empty() || !expected.empty());
 
         const Content_Status status = generate(test.behavior);
         if (status != test.expected_status) {
