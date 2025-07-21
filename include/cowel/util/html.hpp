@@ -21,10 +21,12 @@ void append_html_escaped(Out& out, std::u8string_view text, Predicate p)
 {
     while (!text.empty()) {
         const std::size_t safe_length = ulight::ascii::length_if_not(text, p);
-        out(text.substr(0, safe_length));
-        text.remove_prefix(safe_length);
-        if (text.empty()) {
-            break;
+        if (safe_length != 0) {
+            out(text.substr(0, safe_length));
+            text.remove_prefix(safe_length);
+            if (text.empty()) {
+                break;
+            }
         }
         out(html_entity_of(text.front()));
         text.remove_prefix(1);
