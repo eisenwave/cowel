@@ -24,7 +24,12 @@ HTML_Wrapper_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     Paragraph_Split_Policy split_policy { out, context.get_transient_memory() };
     auto& policy = m_is_paragraphed ? split_policy : out;
 
-    return consume_all(policy, d.get_content(), context);
+    const Content_Status result = consume_all(policy, d.get_content(), context);
+    if (m_is_paragraphed) {
+        split_policy.leave_paragraph();
+    }
+
+    return result;
 }
 
 Content_Status Plaintext_Wrapper_Behavior::operator()(
