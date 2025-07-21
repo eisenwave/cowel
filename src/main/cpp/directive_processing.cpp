@@ -485,6 +485,13 @@ Content_Status try_generate_error(
     return on_success;
 }
 
+void try_activate_paragraphs_in_directive(Content_Policy& out)
+{
+    if (auto* const derived = dynamic_cast<Paragraph_Split_Policy*>(&out)) {
+        derived->activate_paragraphs_in_directive();
+    }
+}
+
 void try_enter_paragraph(Content_Policy& out)
 {
     if (auto* const derived = dynamic_cast<Paragraph_Split_Policy*>(&out)) {

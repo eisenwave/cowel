@@ -16,12 +16,58 @@ namespace cowel {
 
 struct Paragraph_Split_Policy final : virtual HTML_Content_Policy {
 private:
+    struct Directive_Depth_Guard;
+
     static constexpr std::u8string_view opening_tag = u8"<p>";
     static constexpr std::u8string_view closing_tag = u8"</p>";
 
     Paragraphs_State m_state;
-    bool m_in_directive = false;
     std::pmr::memory_resource* m_memory;
+
+    // The following two members have vaguely similar purposes,
+    // but they need to be distinct
+    // because when the current guard is released, the depth goes down,
+    // but the guard remains in place until it actually goes out of scope.
+    // This makes it possible to safely call
+    // `activate_paragraphs_in_directive()` multiple times in a row.
+
+    std::size_t m_directive_depth = 0;
+    Directive_Depth_Guard* m_current_guard = nullptr;
+
+    struct Directive_Depth_Guard {
+    private:
+        Paragraph_Split_Policy& m_self;
+        Directive_Depth_Guard* m_parent_guard;
+        bool released = false;
+
+    public:
+        [[nodiscard]]
+        explicit Directive_Depth_Guard(Paragraph_Split_Policy& self) noexcept
+            : m_self { self }
+            , m_parent_guard { self.m_current_guard }
+        {
+            ++m_self.m_directive_depth;
+            m_self.m_current_guard = this;
+        }
+
+        Directive_Depth_Guard(const Directive_Depth_Guard&) = delete;
+        Directive_Depth_Guard& operator=(const Directive_Depth_Guard&) = delete;
+
+        ~Directive_Depth_Guard() noexcept(false)
+        {
+            release();
+            m_self.m_current_guard = m_parent_guard;
+        }
+
+        void release()
+        {
+            if (!released) {
+                released = true;
+                COWEL_ASSERT(m_self.m_directive_depth != 0);
+                --m_self.m_directive_depth;
+            }
+        }
+    };
 
 public:
     [[nodiscard]]
@@ -40,7 +86,7 @@ public:
 
     bool write(Char_Sequence8 chars, Output_Language language) override
     {
-        if (m_in_directive || language != Output_Language::text) {
+        if (m_directive_depth != 0 || language != Output_Language::text) {
             return HTML_Content_Policy::write(chars, language);
         }
         if (chars.empty()) {
@@ -54,11 +100,12 @@ public:
     [[nodiscard]]
     Content_Status consume(const ast::Text& t, Context&) override
     {
-        if (m_in_directive) {
+        if (m_directive_depth != 0) {
             write(t.get_source(), Output_Language::text);
-            return Content_Status::ok;
         }
-        split_into_paragraphs(t.get_source());
+        else {
+            split_into_paragraphs(t.get_source());
+        }
         return Content_Status::ok;
     }
 
@@ -83,10 +130,18 @@ public:
     [[nodiscard]]
     Content_Status consume(const ast::Directive& directive, Context& context) override
     {
-        m_in_directive = true;
-        const Content_Status result = apply_behavior(*this, directive, context);
-        m_in_directive = false;
-        return result;
+        // The purpose of m_directive_depth is to prevent malformed output which results
+        // from directives directly feeding their contents into this policy,
+        // interleaved with their own tags.
+        //
+        // For example, \i{...} should not produce <i><p>...</i> or <i>...</p></i>.
+        //
+        // Since consume() may be entered recursively for the same policy
+        // (e.g. in \paragraphs{\i{\b{...}}}),
+        // a simple bool is insufficient to keep track of whether we are in a directive.
+
+        Directive_Depth_Guard depth_guard { *this };
+        return apply_behavior(*this, directive, context);
     }
 
     [[nodiscard]]
@@ -96,6 +151,24 @@ public:
         return Content_Status::ok;
     }
 
+    /// @brief Enables paragraph splitting to take place inside a directive.
+    ///
+    /// By default, directives are treated as black boxes,
+    /// and their contents are not split since this could easily result in corrupted HTML.
+    /// However, certain directives like \import rely on paragraph splitting
+    /// from the surroundings to apply to any imported content.
+    /// Such directives can explicitly opt into paragraph splitting using this member function.
+    void activate_paragraphs_in_directive()
+    {
+        COWEL_ASSERT(m_current_guard != nullptr);
+        m_current_guard->release();
+    }
+
+    // FIXME: these should not function when the directive depth is more than 1
+    //        because otherwise, we may enter a situation like \x{\y{...}}
+    //        where \x has no paragraph interaction and \y calls leave_paragraph(),
+    //        resulting in:
+    //            <x></p><y>...</y></x>
     void enter_paragraph()
     {
         if (m_state == Paragraphs_State::outside) {
