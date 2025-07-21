@@ -122,6 +122,8 @@ Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
 {
     warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
 
+    try_leave_paragraph(out);
+
     const bool emit_intro = m_intro == Intro_Policy::yes;
     const auto initial_state = emit_intro ? Paragraphs_State::inside : Paragraphs_State::outside;
 
