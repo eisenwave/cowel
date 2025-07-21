@@ -208,10 +208,10 @@ struct Basic_Test {
 // clang-format off
 constexpr Basic_Test basic_tests[] {
     { Source {u8"\\c{#x41}\\c{#x42}\\c{#x43}\n"},
-      Source{ u8"&#x41;&#x42;&#x43;\n" } },
+      Source{ u8"ABC\n" } },
 
     { Source{ u8"\\c{#x00B6}\n" },
-      Source { u8"&#x00B6;\n" } },
+      Source { u8"\N{PILCROW SIGN}\n" } },
 
     { Source{ u8"\\c{}\n" },
       Source { u8"<error->\\c{}</error->\n" },
