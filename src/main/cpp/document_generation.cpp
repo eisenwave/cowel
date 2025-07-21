@@ -70,7 +70,7 @@ bool Reference_Resolver::operator()(std::u8string_view text, File_Id file)
     std::size_t plain_length = 0;
     const auto flush = [&] {
         if (plain_length != 0) {
-            out.write(text, Output_Language::html);
+            out.write(text.substr(0, plain_length), Output_Language::html);
             text.remove_prefix(plain_length);
             plain_length = 0;
         }
