@@ -107,24 +107,7 @@ Char_By_Entity_Behavior::operator()(Content_Policy& out, const ast::Directive& d
     if (code_points[0] == 0) {
         return try_generate_error(out, d, context);
     }
-    switch (out.get_language()) {
-    case Output_Language::none: {
-        break;
-    }
-    case Output_Language::text: {
-        out.write(make_char_sequence(as_string_view(code_points)), Output_Language::text);
-        break;
-    }
-    case Output_Language::html: {
-        out.write(u8'&', Output_Language::html);
-        out.write(trimmed_text, Output_Language::html);
-        out.write(u8';', Output_Language::html);
-        break;
-    }
-    default: {
-        return Content_Status::ok;
-    }
-    }
+    out.write(make_char_sequence(as_string_view(code_points)), Output_Language::text);
     return Content_Status::ok;
 }
 
