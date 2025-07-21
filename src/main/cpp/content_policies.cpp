@@ -1,11 +1,15 @@
-#include "cowel/parse_utils.hpp"
-#include "cowel/util/char_sequence.hpp"
-#include "cowel/util/char_sequence_ops.hpp"
+#include <cstddef>
+#include <string_view>
 
 #include "cowel/policy/paragraph_split.hpp"
 #include "cowel/policy/syntax_highlight.hpp"
 
+#include "cowel/util/char_sequence.hpp"
+#include "cowel/util/char_sequence_ops.hpp"
+
 #include "cowel/fwd.hpp"
+#include "cowel/parse_utils.hpp"
+#include "cowel/settings.hpp"
 
 namespace cowel {
 
@@ -94,20 +98,27 @@ void generate_highlighted_html(
 
 bool Syntax_Highlight_Policy::write(Char_Sequence8 chars, Output_Language language)
 {
+    const std::size_t chars_size = chars.size();
+    if constexpr (enable_empty_string_assertions) {
+        COWEL_ASSERT(chars_size != 0);
+    }
+
     switch (language) {
     case Output_Language::none: {
         COWEL_ASSERT_UNREACHABLE(u8"None input.");
     }
     case Output_Language::text: {
         const std::size_t initial_size = m_highlighted_text.size();
-        m_spans.push_back({ Span_Type::highlight, initial_size, chars.size() });
+        m_spans.push_back({ Span_Type::highlight, initial_size, chars_size });
         append(m_highlighted_text, chars);
+        COWEL_ASSERT(m_highlighted_text.size() == initial_size + chars_size);
         return true;
     }
     case Output_Language::html: {
         const std::size_t initial_size = m_html_text.size();
-        m_spans.push_back({ Span_Type::html, initial_size, chars.size() });
+        m_spans.push_back({ Span_Type::html, initial_size, chars_size });
         append(m_html_text, chars);
+        COWEL_ASSERT(m_html_text.size() == initial_size + chars_size);
         return true;
     }
     default: {
