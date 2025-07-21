@@ -108,7 +108,7 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
         return borders.status();
     }
 
-    const auto nested = m_display == Directive_Display::in_line
+    const auto nested = m_display == Directive_Display::block
         ? Greedy_Result<bool> { false }
         : get_yes_no_argument(
               nested_parameter, diagnostic::code::nested_invalid, d, args, context, false
