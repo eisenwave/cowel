@@ -566,6 +566,10 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
             return &m_impl->code;
         if (name == u8"codeblock")
             return &m_impl->codeblock;
+        if (name == u8"col")
+            return &m_impl->col;
+        if (name == u8"colgroup")
+            return &m_impl->colgroup;
         if (name == u8"comment")
             return &m_impl->comment;
         break;
