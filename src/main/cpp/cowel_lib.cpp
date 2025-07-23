@@ -247,7 +247,7 @@ public:
 };
 
 [[nodiscard]]
-cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
+cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 {
     Pointer_Memory_Resource pointer_memory { options };
     Global_Memory_Resource global_memory;
@@ -294,9 +294,9 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
 
     [[maybe_unused]]
     // FIXME: use the content status somehow
-    const Content_Status status
+    const Processing_Status status
         = run_generation(
-            [&](Context& context) -> Content_Status {
+            [&](Context& context) -> Processing_Status {
                 const Macro_Name_Resolver macro_resolver { builtin_behavior.get_macro_behavior() };
                 context.add_resolver(builtin_behavior);
                 context.add_resolver(macro_resolver);
@@ -312,7 +312,11 @@ cowel_mutable_string_view_u8 do_generate_html(const cowel_options_u8& options)
 
     // This is safe because output is never destroyed,
     // so we keep its allocation alive.
-    return { output.data(), output.size() };
+
+    return {
+        .status = static_cast<cowel_processing_status>(status),
+        .output = { output.data(), output.size() },
+    };
 }
 
 [[maybe_unused]] [[noreturn]]
@@ -376,15 +380,15 @@ void cowel_free(void* pointer, size_t size, size_t alignment) noexcept
     ::operator delete(pointer, size, std::align_val_t(alignment));
 }
 
-cowel_mutable_string_view cowel_generate_html(const cowel_options* options) noexcept
+cowel_gen_result cowel_generate_html(const cowel_options* options) noexcept
 {
 #ifdef ULIGHT_EXCEPTIONS
     try {
 #endif
         COWEL_ASSERT(options != nullptr);
         const cowel_options_u8& options_u8 = std::bit_cast<cowel_options_u8>(*options);
-        const cowel_mutable_string_view_u8 result_u8 = cowel_generate_html_u8(&options_u8);
-        return std::bit_cast<cowel_mutable_string_view>(result_u8);
+        const cowel_gen_result_u8 result_u8 = cowel_generate_html_u8(&options_u8);
+        return std::bit_cast<cowel_gen_result>(result_u8);
 #ifdef ULIGHT_EXCEPTIONS
     } catch (...) {
         cowel::uncaught_exception(*options);
@@ -392,7 +396,7 @@ cowel_mutable_string_view cowel_generate_html(const cowel_options* options) noex
 #endif
 }
 
-cowel_mutable_string_view_u8 cowel_generate_html_u8(const cowel_options_u8* options) noexcept
+cowel_gen_result_u8 cowel_generate_html_u8(const cowel_options_u8* options) noexcept
 {
 #ifdef ULIGHT_EXCEPTIONS
     try {

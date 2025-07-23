@@ -60,6 +60,26 @@ enum cowel_severity {
     COWEL_SEVERITY_NONE = 4,
 };
 
+// NOLINTNEXTLINE(performance-enum-size)
+enum cowel_processing_status {
+    /// @brief Content could be produced successfully,
+    /// and generation should continue.
+    COWEL_PROCESSING_OK,
+    /// @brief Content generation was aborted (due to a break/return-like construct).
+    /// However, this is not an error.
+    COWEL_PROCESSING_BREAK,
+    /// @brief An error occurred,
+    /// but that error is recoverable.
+    COWEL_PROCESSING_ERROR,
+    /// @brief An error occurred,
+    /// but processing continued until `COWEL_GEN_BREAK` was produced.
+    /// This is effectively a combination of `COWEL_GEN_ERROR` and `COWEL_GEN_BREAK`.
+    COWEL_PROCESSING_ERROR_BREAK,
+    /// @brief An unrecoverable error occurred,
+    /// and generation of the document as a whole has to be abandoned.
+    COWEL_PROCESSING_FATAL,
+};
+
 /// @brief A container for a string and a length.
 /// The string does not have to be null-terminated.
 struct cowel_string_view {
@@ -232,16 +252,26 @@ void* cowel_alloc(size_t size, size_t alignment) COWEL_NOEXCEPT;
 COWEL_EXPORT
 void cowel_free(void* pointer, size_t size, size_t alignment) COWEL_NOEXCEPT;
 
+struct cowel_gen_result {
+    cowel_processing_status status;
+    cowel_mutable_string_view output;
+};
+
+struct cowel_gen_result_u8 {
+    cowel_processing_status status;
+    cowel_mutable_string_view_u8 output;
+};
+
 /// @brief Runs document generation using the specified options.
 /// The result is a string containing the generated HTML,
 /// allocated using `options.alloc`,
 /// or using `cowel_alloc` if `options.alloc` is null.
 COWEL_EXPORT
-cowel_mutable_string_view cowel_generate_html(const cowel_options* options) COWEL_NOEXCEPT;
+cowel_gen_result cowel_generate_html(const cowel_options* options) COWEL_NOEXCEPT;
 
 /// @brief See `cowel_run`.
 COWEL_EXPORT
-cowel_mutable_string_view_u8 cowel_generate_html_u8(const cowel_options_u8* options) COWEL_NOEXCEPT;
+cowel_gen_result_u8 cowel_generate_html_u8(const cowel_options_u8* options) COWEL_NOEXCEPT;
 
 /// @brief In WASM, there is no multi-threading,
 /// and it is somewhat tedious to allocate individual objects,
