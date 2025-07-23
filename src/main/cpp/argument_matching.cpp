@@ -57,8 +57,8 @@ void match_parameters_and_arguments(
                 if (out_indices[i] == -1) {
                     out_indices[i] = int(arg_index);
                     out_status[arg_index] = Argument_Status::ok;
+                    break;
                 }
-                break;
             }
         }
     }
