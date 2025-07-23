@@ -241,7 +241,6 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
                 .end();
             section_writer.set_depth(0);
         }
-        return Processing_Status::ok;
     }
 
     {
