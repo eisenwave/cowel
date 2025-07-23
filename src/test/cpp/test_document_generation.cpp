@@ -95,12 +95,16 @@ public:
                 HTML_Content_Policy policy { sink };
                 return consume_all(policy, self->content, context);
             }
+
             case Test_Behavior::paragraphs: {
-                Paragraph_Split_Policy policy { sink, context.get_transient_memory() };
+                Vector_Text_Sink buffer { Output_Language::html, context.get_transient_memory() };
+                Paragraph_Split_Policy policy { buffer, context.get_transient_memory() };
                 const Processing_Status result = consume_all(policy, self->content, context);
                 policy.leave_paragraph();
+                resolve_references(sink, as_u8string_view(*buffer), context, File_Id {});
                 return result;
             }
+
             case Test_Behavior::empty_head: {
                 return write_empty_head_document(sink, self->content, context);
             }
