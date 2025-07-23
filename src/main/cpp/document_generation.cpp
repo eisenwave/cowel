@@ -60,7 +60,7 @@ static_assert(supplementary_pua_a_first_code_unit_masked == 0b1111'0000);
 
 struct Reference_Resolver {
     Text_Sink& out;
-    std::pmr::unordered_set<const void*>& visited;
+    std::pmr::unordered_set<const Document_Sections::entry_type*>& visited;
     Context& context;
 
     bool operator()(std::u8string_view text, File_Id file);
@@ -225,13 +225,22 @@ Processing_Status write_head_body_document(
         }
     }
 
-    std::pmr::unordered_set<const void*> visited(context.get_transient_memory());
-    visited.insert(html_section);
-
     const File_Id file = content.empty() ? File_Id {} : ast::get_source_span(content.front()).file;
-    Reference_Resolver { out, visited, context }(html_string, file);
+    const bool res_success = resolve_references(out, html_string, context, file);
+    const auto res_status = res_success ? Processing_Status::ok : Processing_Status::error;
+    status = status_concat(status, res_status);
 
     return status;
+}
+
+bool resolve_references(Text_Sink& out, std::u8string_view text, Context& context, File_Id file)
+{
+    std::pmr::unordered_set<const Document_Sections::entry_type*> visited(
+        context.get_transient_memory()
+    );
+    visited.insert(&context.get_sections().current());
+
+    return Reference_Resolver { out, visited, context }(text, file);
 }
 
 constexpr std::u8string_view indent = u8"  ";

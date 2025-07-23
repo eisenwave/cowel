@@ -42,6 +42,9 @@ Processing_Status run_generation(
     const Generation_Options& options
 );
 
+/// @brief Resolves references previously written via `reference_section`, recursively.
+bool resolve_references(Text_Sink& out, std::u8string_view text, Context& context, File_Id file);
+
 [[nodiscard]]
 Processing_Status write_head_body_document(
     Text_Sink& out,
