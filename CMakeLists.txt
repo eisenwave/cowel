@@ -44,7 +44,16 @@ embed_asset("${ASSETS_DIR}/main.css" main_css MAIN_CSS_CPP)
 embed_asset("${ASSETS_DIR}/settings-widget.html" settings_widget_html SETTINGS_WIDGET_HTML_CPP)
 embed_asset("${THEMES_DIR}/wg21.json" wg21_json WG21_JSON_CPP)
 
-set(LLVM_WARNING_OPTIONS -Wall -Wimplicit-fallthrough -Wpedantic -Wextra -Wconversion -Wmissing-declarations -Wno-bit-int-extension)
+set(LLVM_WARNING_OPTIONS
+  -Wall
+  -Wimplicit-fallthrough
+  -Wpedantic
+  -Wextra
+  -Wconversion
+  -Wmissing-declarations
+  -Wunreachable-code
+  -Wunreachable-code-return
+  -Wno-bit-int-extension)
 
 set(ASAN_ENABLED OFF)
 
