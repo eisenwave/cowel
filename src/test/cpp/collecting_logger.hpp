@@ -17,6 +17,7 @@ namespace cowel {
 struct Collected_Diagnostic {
     Severity severity;
     std::pmr::u8string id;
+    std::pmr::u8string message;
 };
 
 struct Collecting_Logger final : Logger {
@@ -32,7 +33,11 @@ struct Collecting_Logger final : Logger {
     void operator()(Diagnostic diagnostic) final
     {
         std::pmr::memory_resource* const memory = diagnostics.get_allocator().resource();
-        diagnostics.emplace_back(diagnostic.severity, to_string(diagnostic.id, memory));
+        diagnostics.emplace_back(
+            diagnostic.severity, //
+            to_string(diagnostic.id, memory), //
+            to_string(diagnostic.message, memory)
+        );
     }
 
     [[nodiscard]]
