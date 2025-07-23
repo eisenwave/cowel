@@ -1,172 +1,137 @@
-\h2{Directives}
+\h2{Document processing}
 
-A \dfn{directive} is a way of generating plaintext, HTML, both, or neither.
-You can think of it as a "command" or "function call".
+A COWEL document is processed from top to bottom,
+left to right,
+where each piece of content is fed into the current content policy.
 
-Every directive has three parts:
-\ul{
-  \li{
-    The \cowdoc_c{\\directive_name} selects a specific directive to be processed.
+There exists a \dfn{top-level content policy} which takes its input
+and writes it to the output HTML file.
+
+\h3[id=contexts-and-output]{Content policies}
+
+A \dfn{content policy} dictates how each pice of content
+(text, comments, escapes, directives)
+is transformed into HTML or consumed in some other way.
+For example, most content policies ignore comments,
+process directives, etc.,
+but other policies can process all these pieces of content into text.
+
+Content policies are \dfn{piped},
+meaning that the output of one policy is used as the input to another policy.
+In a COWEL document, it is common to create long pipes of content policies.
+These ultimately terminate in the top-level content policy
+or in a policy which captures the output and writes it to memory for further processing.
+
+The following builtin content policies exist:
+
+\dl{
+
+  \dt{HTML policy}
+  \dd{
+    Comments are ignored,
+    escape sequences are expanded,
+    text is sanitized and converted to "inner HTML" text for elements, and
+    directives are processed as usual.
+    Received HTML is taken literally,
+    and received plaintext is sanitized like text.
   }
-  \li{
-    An optional \cowdoc_c[prefix=\\d]{[comma-separated, positional arguments, named-arguments = ...]}
-    provides additional inputs to the directive.
+
+  \dt{Syntax highlighting policy}
+  \dd{
+    Like an HTML policy,
+    but any text content and any received plaintext
+    has syntax highlighting applied to it.
   }
-  \li{
-    An optional \cowdoc_c[prefix=\\d]{{block of content}} provides a "main input" to a directive.
+
+  \dt{Paragraphs policy}
+  \dd{
+    Like an HTML policy,
+    but surrounds given text content in paragraphs,
+    and treats blank lines in text as paragraph separators.
+    See \ref[#paragraph-splitting] for details.
+  }
+
+  \dt{Unprocessed policy}
+  \dd{
+    Like an HTML policy,
+    but directives are not processed.
+    Instead, the source code of directives is taken, sanitized,
+    and fed as HTML into the surrounding policy.
+  }
+
+  \dt{Plaintext policy}
+  \dd{
+    Comments are ignored,
+    escape sequences are expanded,
+    text is taken literally, and
+    directives are processed as usual.
+    HTML content fed into this policy is ignored.
+  }
+
+  \dt{HTML literal policy}
+  \dd{
+    Like a plaintext policy,
+    but instead of feeding its parent policy with the generated plaintext,
+    all plaintext is reinterpreted as HTML before being fed into the parent policy.
+  }
+
+  \dt{Literally policy}
+  \dd{
+    The source code of all processed content is interpreted as plaintext
+    and fed into the surrounding policy.
+    This includes comments.
   }
 }
 
-\h3{Directive names}
+To \dfn{process directives as usual} means that when a directive is encountered,
+a definition matching the directive name is looked up,
+and the definition is invoked with the arguments and content of the directive.
 
-A \dfn{directive name} selects a specific directive to be processed.
-The name begins with a \cowdoc_c{\\} character,
-followed by a sequence of ASCII alphanumeric characters,
-\cowdoc_cp{002D}, and
-\cowdoc_cp{005F}.
-However, the first character after \cowdoc_c{\\} cannot be an ASCII digit.
-
-\Btip{
-You can use an empty block of content to "cut a name short":
-\codeblock[cowel]{
-Thisisavery\\wbr{}longword.
-}
-Doing so is equivalent to writing
-\cowdoc_c{\\wbr} and \cowdoc_c{longword} immediately following one another.
-}
-
-\Bwarn{
-The use of '-' (hyphen) characters in directive names is deprecated.
-Currently, \cowdoc_dir{a-b} would get parsed as a directive name,
-but this behavior will be removed in the future.
-This will result in \cowdoc_dir{a} being parsed as a directive name,
-followed by plaintext \tt{-b}.
-}
-
-\h3{Directive arguments}
-
-\dfn{Directive arguments} can be \dfn{positional arguments} or \dfn{named arguments}.
-Arguments are separated by commas.
-Unlike anywhere else, whitespace surrounding directive arguments is ignored.
-
-Arguments provide additional information to a directive.
-
-\Bex{
-Often, arguments are converted to HTML attributes.
-\codeblock[cowel]{
-\\b[id = abc]{Bold text.}
-}
-Generated HTML:
-\codeblock[html]{
-<b id=abc>Bold text.</b>
-}
-}
-
-\h4{Named arguments}
-
-Named arguments are of the form
-\cowdoc_c{name = value}, where spaces anywhere around \cowdoc_c{name} and \cowdoc_c{value} are ignored.
-Named arguments are matched to directive parameters before any positional arguments,
-meaning that positional arguments fill the remaining unmatched arguments.
-
-Argument names can consist of any character, except
-ASCII control characters,
-U+0020\c{nbsp}SPACE,
-\cowdoc_cp{0022},
-\cowdoc_cp{0027},
-\cowdoc_cp{002C},
-\cowdoc_cp{002F},
-\cowdoc_cp{003D},
-\cowdoc_cp{003E},
-\cowdoc_cp{005B},
-\cowdoc_cp{005C},
-\cowdoc_cp{005D},
-\cowdoc_cp{007B},
-\cowdoc_cp{007D},
-and noncharacters.
-
-\Btip{
-If you want to provide a positional argument that is \cowdoc_c{name = value} instead,
-you can do so by writing:
-\codeblock[cowel]{\literally{
-\: "name = value" as a positional argument
-\xyz[name \\= value]
-\: named argument with name "name" and value "value"
-\xyz[name = value]
-}}
-Only the literal \cowdoc_c{=} character can be used for named arguments,
-not its escaped variant \cowdoc_c{\\=}.
-}
-
-\h4{Positional arguments}
-
-Positional arguments are content just like any other content,
-except that an unbalanced closing \cowdoc_cp{005D} or a \cowdoc_cp{002C}
-ends the content.
-
-\Btip{
-You can use escape sequences to continue otherwise ended content.
-\codeblock[cowel]{\literally{
-\xyz[hello, world]   \: Two positional arguments
-\xyz[hello\, world]  \: One positional argument containing a comma.
-\xyz[hello[]world]   \: OK, [] is balanced and included in single argument
-\xyz[hello\]world]   \: OK
-\xyz[hello\[world]   \: OK
-\xyz[hello[world]    \: error: unterminated arguments
-}}
-}
-
-\h3{Directive content}
-
-The \dfn{directive content} is the primary input to a directive.
-It is delimited by a '\tt{\{}' and ends with a \em{matching} closing '\tt{\}}'.
-This means that you can have opening and closing braces inside text,
-but they need to be balanced.
-
-\Bex{
-COWEL markup:
-\codeblock[cowel]{
-\\b{Bold text { with braces }.}
-}
-Generated HTML:
-\codeblock[html]{
-<b>Bold text { with braces }.</b>
-}
-}
-
-Escape sequences don't participate in this "brace matching",
-so they can be used to literally produce a brace character.
-\Bex{
-COWEL markup:
-\codeblock[cowel]{
-\\b{Bold text \\\U{7B} with brace.}
-}
-Generated HTML:
-\codeblock[html]{
-<b>Bold text \U{7B} with brace.</b>
-}
-}
-
-Unlike in the directive arguments,
-whitespace is not trimmed.
-\Bex{
-COWEL markup:
-\codeblock[cowel]{
-\\b{bold} \\i{ italic }
-}
-Generated HTML:
-\codeblock[html]{
-<b>bold</b> <i> italic </i>
-}
-}
-
-\Bnote{
-Only one such block of content can be provided, unlike in TeX,
-which has a similar syntax,
-but permits multiple blocks. Each block is separated by a pair of braces.
-}
+The top-level content policy within a document is a
+paragraph split content policy,
+feeding content into an HTML content policy.
 
 \h3{Directive processing}
+
+The job of directives is to feed the current content policy with content.
+Unlike text or escape sequences,
+directives can do so programmatically.
+
+\Bex{
+In the COWEL snippet \cowdoc_c{\\b{x}},
+the \cowdoc_dir{b} directive feeds the current content policy with
+\ul{
+  \li{an opening \cowdoc_html{<b>} tag,}
+  \li{all content within \cowdoc_c{\\b{x}}, i.e. the text \cowdoc_c{x}, and}
+  \li{a closing \cowdoc_html{</b>} tag.}
+}
+
+Content policies differ in how they treat the content they're fed:
+\ul{
+  \li{
+    At a top level within the document,
+    the opening \cowdoc_html{<b>} and closing \cowdoc_html{</b>}
+    are simply written as HTML to the output file.
+    The given text \cowdoc_c{x} is sanitized (i.e. characters like \tt{<} are escaped)
+    and turned into inner HTML content.
+    The result is simply \cowdoc_html{<b>x</b>}.
+  }
+  \li{
+    When fed into a syntax highlighting policy,
+    HTML tags are interpreted literally in the same way.
+    However, syntax highlighting is applied to the given input text,
+    resulting in \cowdoc_html{<b>\i{syntax highlighted x}</b>}.
+  }
+  \li{
+    A literally content policy would not have processed \cowdoc_c{\\b{x}} in the first place,
+    but taken its source code interpreted as text,
+    and fed that into the surrounding policy.
+  }
+  \li{\N{HORIZONTAL ELLIPSIS}}
+}
+}
+
+\h4{Lazy processing}
 
 Unlike in typical programming languages,
 where the input to a function is processed at the call site and the resulting values
@@ -198,40 +163,3 @@ just like \cowdoc_dir{comment} yourself:
 \\macro[\\comment2]{}
 }
 
-\h2{Contexts and output}
-
-There are two types of contexts: \dfn{plaintext contexts} and \dfn{HTML contexts}.
-These control what directives (and other content) will generate.
-
-\Bex{
-The COWEL text \cowdoc_c{&} will be converted to \tt{&} literally in a plaintext context,
-and to \cowdoc_html{&amp;} in an HTML context.
-}
-
-
-Any directive is capable of generating either plaintext or HTML,
-and the output may be substantially different depending on the context.
-
-\Bex{
-The \cowdoc_dir{c} directive is used to generate HTML character references, aka "HTML entities".
-It converts its input to plaintext to determine the chosen character.
-Within such a plaintext context,
-directives like \cowdoc_dir{b} will simply output their content as plaintext:
-\codeblock[cowel]{
-\\c{\\b{Omega}} \\c{Omega}
-}
-Generated HTML:
-\codeblock[html]{
-&Omega; &Omega;
-}
-Also, \cowdoc_dir{c} will only emit an HTML entity in an HTML context.
-In a plaintext context (such as in the input to \cowdoc_dir{c}), it outputs the character directly.
-For example, if we write:
-\codeblock[cowel]{
-\\c{\\c{Omega}}
-}
-The generated (malformed) HTML is:
-\codeblock[html]{
-&\c{Omega};
-}
-}

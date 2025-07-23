@@ -125,6 +125,8 @@ This renders as
 
 \h4[id=dir-c]{\cowdoc_dir{c} \c{mdash} Character references}
 
+The \cowdoc_dir{c} directive takes the name of a character and outputs the respective code points.
+
 The input to a \cowdoc_dir{c} directive is a plaintext context,
 where the same content is permitted as for HTML character references, aka. HTML entities,
 between '\tt{&}' and '\tt{;}'.
@@ -139,10 +141,6 @@ Using \cowdoc_dir{U} and \cowdoc_dir{c}, the '\tt{&}' character can be produced 
     \li{\cowdoc_c{\\c{#x26}} (like \cowdoc_html{&x26;}, hexadecimal character reference)}
 }
 }
-
-In an HTML context, \cowdoc_c{\\c{xyz}} is literally translated into \cowdoc_html{&xyz;}.
-In a plaintext context, the character reference is mapped onto its corresponding code point(s),
-and those code points are output directly.
 
 \Bnote{
 Like anywhere else, directives inside of \cowdoc_dir{c} are allowed.

@@ -1,4 +1,4 @@
-\h2{Syntax in a nutshell}
+\h2{Syntax}
 
 COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
@@ -226,4 +226,172 @@ Generated HTML:
 <p>Second paragraph.</p>
 <blockquote>This is a block directive.</blockquote>
 }
+}
+
+\h3{Directives}
+
+A \dfn{directive} is a way of generating plaintext, HTML, both, or neither.
+You can think of it as a "command" or "function call".
+
+Every directive has three parts:
+\ul{
+  \li{
+    The \cowdoc_c{\\directive_name} selects a specific directive to be processed.
+  }
+  \li{
+    An optional \cowdoc_c[prefix=\\d]{[comma-separated, positional arguments, named-arguments = ...]}
+    provides additional inputs to the directive.
+  }
+  \li{
+    An optional \cowdoc_c[prefix=\\d]{{block of content}} provides a "main input" to a directive.
+  }
+}
+
+\h4{Directive names}
+
+A \dfn{directive name} selects a specific directive to be processed.
+The name begins with a \cowdoc_c{\\} character,
+followed by a sequence of ASCII alphanumeric characters,
+\cowdoc_cp{002D}, and
+\cowdoc_cp{005F}.
+However, the first character after \cowdoc_c{\\} cannot be an ASCII digit.
+
+\Btip{
+You can use an empty block of content to "cut a name short":
+\codeblock[cowel]{
+Thisisavery\\wbr{}longword.
+}
+Doing so is equivalent to writing
+\cowdoc_c{\\wbr} and \cowdoc_c{longword} immediately following one another.
+}
+
+\Bwarn{
+The use of '-' (hyphen) characters in directive names is deprecated.
+Currently, \cowdoc_dir{a-b} would get parsed as a directive name,
+but this behavior will be removed in the future.
+This will result in \cowdoc_dir{a} being parsed as a directive name,
+followed by plaintext \tt{-b}.
+}
+
+\h4{Directive arguments}
+
+\dfn{Directive arguments} can be \dfn{positional arguments} or \dfn{named arguments}.
+Arguments are separated by commas.
+Unlike anywhere else, whitespace surrounding directive arguments is ignored.
+
+Arguments provide additional information to a directive.
+
+\Bex{
+Often, arguments are converted to HTML attributes.
+\codeblock[cowel]{
+\\b[id = abc]{Bold text.}
+}
+Generated HTML:
+\codeblock[html]{
+<b id=abc>Bold text.</b>
+}
+}
+
+\h5{Named arguments}
+
+Named arguments are of the form
+\cowdoc_c{name = value}, where spaces anywhere around \cowdoc_c{name} and \cowdoc_c{value} are ignored.
+Named arguments are matched to directive parameters before any positional arguments,
+meaning that positional arguments fill the remaining unmatched arguments.
+
+Argument names can consist of any character, except
+ASCII control characters,
+U+0020\c{nbsp}SPACE,
+\cowdoc_cp{0022},
+\cowdoc_cp{0027},
+\cowdoc_cp{002C},
+\cowdoc_cp{002F},
+\cowdoc_cp{003D},
+\cowdoc_cp{003E},
+\cowdoc_cp{005B},
+\cowdoc_cp{005C},
+\cowdoc_cp{005D},
+\cowdoc_cp{007B},
+\cowdoc_cp{007D},
+and noncharacters.
+
+\Btip{
+If you want to provide a positional argument that is \cowdoc_c{name = value} instead,
+you can do so by writing:
+\codeblock[cowel]{\literally{
+\: "name = value" as a positional argument
+\xyz[name \\= value]
+\: named argument with name "name" and value "value"
+\xyz[name = value]
+}}
+Only the literal \cowdoc_c{=} character can be used for named arguments,
+not its escaped variant \cowdoc_c{\\=}.
+}
+
+\h5{Positional arguments}
+
+Positional arguments are content just like any other content,
+except that an unbalanced closing \cowdoc_cp{005D} or a \cowdoc_cp{002C}
+ends the content.
+
+\Btip{
+You can use escape sequences to continue otherwise ended content.
+\codeblock[cowel]{\literally{
+\xyz[hello, world]   \: Two positional arguments
+\xyz[hello\, world]  \: One positional argument containing a comma.
+\xyz[hello[]world]   \: OK, [] is balanced and included in single argument
+\xyz[hello\]world]   \: OK
+\xyz[hello\[world]   \: OK
+\xyz[hello[world]    \: error: unterminated arguments
+}}
+}
+
+\h4{Directive content}
+
+The \dfn{directive content} is the primary input to a directive.
+It is delimited by a '\tt{\{}' and ends with a \em{matching} closing '\tt{\}}'.
+This means that you can have opening and closing braces inside text,
+but they need to be balanced.
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{
+\\b{Bold text { with braces }.}
+}
+Generated HTML:
+\codeblock[html]{
+<b>Bold text { with braces }.</b>
+}
+}
+
+Escape sequences don't participate in this "brace matching",
+so they can be used to literally produce a brace character.
+\Bex{
+COWEL markup:
+\codeblock[cowel]{
+\\b{Bold text \\\U{7B} with brace.}
+}
+Generated HTML:
+\codeblock[html]{
+<b>Bold text \U{7B} with brace.</b>
+}
+}
+
+Unlike in the directive arguments,
+whitespace is not trimmed.
+\Bex{
+COWEL markup:
+\codeblock[cowel]{
+\\b{bold} \\i{ italic }
+}
+Generated HTML:
+\codeblock[html]{
+<b>bold</b> <i> italic </i>
+}
+}
+
+\Bnote{
+Only one such block of content can be provided, unlike in TeX,
+which has a similar syntax,
+but permits multiple blocks. Each block is separated by a pair of braces.
 }
