@@ -49,7 +49,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override
     {
         warn(d, context);
@@ -79,22 +79,23 @@ struct Error_Behavior : Directive_Behavior {
     constexpr explicit Error_Behavior() = default;
 
     [[nodiscard]]
-    Content_Status operator()(Content_Policy& out, const ast::Directive& d, Context&) const override
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context&) const override
     {
         // TODO: inline display
         switch (out.get_language()) {
         case Output_Language::none: {
-            return Content_Status::ok;
+            return Processing_Status::ok;
         }
         case Output_Language::html: {
             HTML_Writer writer { out };
             writer.open_tag(id);
             writer.write_inner_text(d.get_source());
             writer.close_tag(id);
-            return Content_Status::ok;
+            return Processing_Status::ok;
         }
         default: {
-            return Content_Status::ok;
+            return Processing_Status::ok;
         }
         }
     }
@@ -104,9 +105,9 @@ struct Comment_Behavior : Directive_Behavior {
     constexpr explicit Comment_Behavior() = default;
 
     [[nodiscard]]
-    Content_Status operator()(Content_Policy&, const ast::Directive&, Context&) const override
+    Processing_Status operator()(Content_Policy&, const ast::Directive&, Context&) const override
     {
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 };
 
@@ -115,17 +116,18 @@ Char_By_Entity_Behavior final : Directive_Behavior {
     constexpr explicit Char_By_Entity_Behavior() = default;
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context&) const override;
 };
 
 struct [[nodiscard]] Code_Point_Behavior : Directive_Behavior {
 
-    virtual Result<char32_t, Content_Status>
+    virtual Result<char32_t, Processing_Status>
     get_code_point(const ast::Directive& d, Context& context) const = 0;
 
     [[nodiscard]]
-    Content_Status operator()(Content_Policy& out, const ast::Directive& d, Context&) const final;
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context&) const final;
 };
 
 struct [[nodiscard]]
@@ -133,7 +135,7 @@ Char_By_Num_Behavior final : Code_Point_Behavior {
     constexpr explicit Char_By_Num_Behavior() = default;
 
     [[nodiscard]]
-    Result<char32_t, Content_Status>
+    Result<char32_t, Processing_Status>
     get_code_point(const ast::Directive& d, Context& context) const final;
 };
 
@@ -142,7 +144,7 @@ Char_By_Name_Behavior final : Code_Point_Behavior {
     constexpr explicit Char_By_Name_Behavior() = default;
 
     [[nodiscard]]
-    Result<char32_t, Content_Status>
+    Result<char32_t, Processing_Status>
     get_code_point(const ast::Directive& d, Context& context) const final;
 };
 
@@ -154,7 +156,8 @@ Char_Get_Num_Behavior final : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status operator()(Content_Policy& out, const ast::Directive& d, Context&) const final;
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context&) const final;
 };
 
 // clang-format off
@@ -167,12 +170,13 @@ struct Lorem_Ipsum_Behavior final : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive&, Context&) const override
     {
         try_enter_paragraph(out);
 
         out.write(lorem_ipsum, Output_Language::text);
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 };
 
@@ -215,7 +219,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status operator()(Content_Policy&, const ast::Directive&, Context&) const override;
+    Processing_Status operator()(Content_Policy&, const ast::Directive&, Context&) const override;
 };
 
 /// @brief Forces a certain highlight to be applied.
@@ -230,7 +234,8 @@ public:
         = default;
 
     [[nodiscard]]
-    Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
 struct Literally_Behavior : Directive_Behavior {
@@ -239,7 +244,7 @@ struct Literally_Behavior : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -249,7 +254,7 @@ struct Unprocessed_Behavior : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -265,7 +270,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -291,7 +296,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -304,12 +309,12 @@ struct Variable_Behavior : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 
 protected:
     [[nodiscard]]
-    virtual Content_Status generate_var(
+    virtual Processing_Status generate_var(
         Content_Policy& out,
         const ast::Directive& d,
         std::u8string_view var,
@@ -343,7 +348,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive&, Context& context) const final;
 };
 
@@ -353,7 +358,7 @@ struct Get_Variable_Behavior final : Variable_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status generate_var(
+    Processing_Status generate_var(
         Content_Policy& out,
         const ast::Directive&,
         std::u8string_view var,
@@ -367,7 +372,7 @@ enum struct Variable_Operation : Default_Underlying {
 };
 
 [[nodiscard]]
-Content_Status set_variable_to_op_result(
+Processing_Status set_variable_to_op_result(
     Variable_Operation op,
     const ast::Directive& d,
     std::u8string_view var,
@@ -386,7 +391,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     generate_var(Content_Policy&, const ast::Directive& d, std::u8string_view var, Context& context)
         const final
     {
@@ -411,7 +416,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -427,7 +432,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -443,7 +448,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -461,7 +466,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 
     [[nodiscard]]
@@ -492,7 +497,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -511,7 +516,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
@@ -581,7 +586,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
@@ -599,7 +604,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
@@ -609,7 +614,7 @@ struct WG21_Head_Behavior final : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
@@ -625,7 +630,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
@@ -635,7 +640,7 @@ struct Ref_Behavior final : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy&, const ast::Directive& d, Context& context) const final;
 };
 
@@ -645,7 +650,7 @@ struct Bibliography_Add_Behavior final : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const final;
 };
 
@@ -666,7 +671,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -683,7 +688,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -693,7 +698,7 @@ struct There_Behavior final : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -709,7 +714,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -733,7 +738,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -749,7 +754,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
@@ -759,7 +764,8 @@ struct Include_Behavior final : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
 struct Import_Behavior final : Directive_Behavior {
@@ -768,20 +774,22 @@ struct Import_Behavior final : Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
 struct Macro_Define_Behavior final : Directive_Behavior {
 
     [[nodiscard]]
-    Content_Status
+    Processing_Status
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
 struct Macro_Instantiate_Behavior final : Directive_Behavior {
 
     [[nodiscard]]
-    Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
 struct [[nodiscard]]

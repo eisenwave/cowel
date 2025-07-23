@@ -54,46 +54,46 @@ enum struct To_Plaintext_Status : Default_Underlying { //
 };
 
 [[nodiscard]]
-Content_Status apply_behavior(Content_Policy& out, const ast::Directive& d, Context& context);
+Processing_Status apply_behavior(Content_Policy& out, const ast::Directive& d, Context& context);
 
 template <std::ranges::input_range R, typename Consumer>
-    requires std::is_invocable_r_v<Content_Status, Consumer, std::ranges::range_reference_t<R>>
+    requires std::is_invocable_r_v<Processing_Status, Consumer, std::ranges::range_reference_t<R>>
 [[nodiscard]]
 // NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward)
-Content_Status process_greedy(R&& content, Consumer consumer)
+Processing_Status process_greedy(R&& content, Consumer consumer)
 {
     bool error = false;
     for (auto& c : content) {
         const auto status = consumer(c);
         switch (status) {
-        case Content_Status::ok: continue;
-        case Content_Status::abandon:
-            return error ? Content_Status::error_abandon : Content_Status::abandon;
-        case Content_Status::error: error = true; continue;
-        case Content_Status::error_abandon:
-        case Content_Status::fatal: return status;
+        case Processing_Status::ok: continue;
+        case Processing_Status::brk:
+            return error ? Processing_Status::error_brk : Processing_Status::brk;
+        case Processing_Status::error: error = true; continue;
+        case Processing_Status::error_brk:
+        case Processing_Status::fatal: return status;
         }
     }
-    return error ? Content_Status::error : Content_Status::ok;
+    return error ? Processing_Status::error : Processing_Status::ok;
 }
 
 template <std::ranges::input_range R, typename Consumer>
-    requires std::is_invocable_r_v<Content_Status, Consumer, std::ranges::range_reference_t<R>>
+    requires std::is_invocable_r_v<Processing_Status, Consumer, std::ranges::range_reference_t<R>>
 [[nodiscard]]
 // NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward)
-Content_Status process_lazy(R&& content, Consumer consumer)
+Processing_Status process_lazy(R&& content, Consumer consumer)
 {
     for (auto& c : content) {
         const auto status = consumer(c);
-        if (status != Content_Status::ok) {
+        if (status != Processing_Status::ok) {
             return status;
         }
     }
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
 [[nodiscard]]
-inline Content_Status
+inline Processing_Status
 consume_all(Content_Policy& out, std::span<const ast::Content> content, Context& context)
 {
     return process_greedy(content, [&](const ast::Content& c) {
@@ -102,11 +102,11 @@ consume_all(Content_Policy& out, std::span<const ast::Content> content, Context&
 }
 
 [[nodiscard]]
-Content_Status
+Processing_Status
 consume_all_trimmed(Content_Policy& out, std::span<const ast::Content> content, Context& context);
 
 [[nodiscard]]
-Content_Status to_plaintext(
+Processing_Status to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
     Context& context
@@ -197,7 +197,7 @@ void warn_ignored_argument_subset(
 using Argument_Filter = Function_Ref<bool(std::size_t index, const ast::Argument& argument) const>;
 
 [[nodiscard]]
-Content_Status named_arguments_to_attributes(
+Processing_Status named_arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     Context& context,
@@ -206,7 +206,7 @@ Content_Status named_arguments_to_attributes(
 );
 
 [[nodiscard]]
-Content_Status named_arguments_to_attributes(
+Processing_Status named_arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     const Argument_Matcher& matcher,
@@ -216,7 +216,7 @@ Content_Status named_arguments_to_attributes(
 );
 
 [[nodiscard]]
-Content_Status named_argument_to_attribute(
+Processing_Status named_argument_to_attribute(
     Attribute_Writer& out,
     const ast::Argument& a,
     Context& context,
@@ -230,18 +230,18 @@ template <typename T>
 struct Greedy_Result {
 private:
     T m_value;
-    Content_Status m_status = Content_Status::ok;
+    Processing_Status m_status = Processing_Status::ok;
 
 public:
     [[nodiscard]]
-    Greedy_Result(const T& value, Content_Status status = Content_Status::ok)
+    Greedy_Result(const T& value, Processing_Status status = Processing_Status::ok)
         : m_value { value }
         , m_status { status }
     {
     }
 
     [[nodiscard]]
-    Greedy_Result(T&& value, Content_Status status = Content_Status::ok)
+    Greedy_Result(T&& value, Processing_Status status = Processing_Status::ok)
         : m_value { std::move(value) }
         , m_status { status }
     {
@@ -250,37 +250,37 @@ public:
     [[nodiscard]]
     constexpr explicit operator bool() const
     {
-        return m_status == Content_Status::ok;
+        return m_status == Processing_Status::ok;
     }
 
     [[nodiscard]]
     constexpr T& operator*()
     {
-        COWEL_ASSERT(m_status == Content_Status::ok);
+        COWEL_ASSERT(m_status == Processing_Status::ok);
         return m_value;
     }
     [[nodiscard]]
     constexpr const T& operator*() const
     {
-        COWEL_ASSERT(m_status == Content_Status::ok);
+        COWEL_ASSERT(m_status == Processing_Status::ok);
         return m_value;
     }
 
     [[nodiscard]]
     constexpr T* operator->()
     {
-        COWEL_ASSERT(m_status == Content_Status::ok);
+        COWEL_ASSERT(m_status == Processing_Status::ok);
         return std::addressof(m_value);
     }
     [[nodiscard]]
     constexpr const T* operator->() const
     {
-        COWEL_ASSERT(m_status == Content_Status::ok);
+        COWEL_ASSERT(m_status == Processing_Status::ok);
         return std::addressof(m_value);
     }
 
     [[nodiscard]]
-    constexpr Content_Status status() const
+    constexpr Processing_Status status() const
     {
         return m_status;
     }
@@ -293,7 +293,7 @@ public:
 /// @param parameter The name of the parameter to which the argument belongs.
 /// @param context The context.
 [[nodiscard]]
-Result<bool, Content_Status> argument_to_plaintext(
+Result<bool, Processing_Status> argument_to_plaintext(
     std::pmr::vector<char8_t>& out,
     const ast::Directive& d,
     const Argument_Matcher& args,
@@ -341,11 +341,11 @@ Greedy_Result<String_Argument> get_string_argument(
 /// @brief Uses the error behavior provided by `context` to process `d`.
 /// Returns `on_success` if that generation succeeded.
 [[nodiscard]]
-Content_Status try_generate_error(
+Processing_Status try_generate_error(
     Content_Policy& out,
     const ast::Directive& d,
     Context& context,
-    Content_Status on_success = Content_Status::error
+    Processing_Status on_success = Processing_Status::error
 );
 
 /// @brief If `out` is a `Paragraph_Split_Content_Policy`

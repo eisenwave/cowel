@@ -40,11 +40,11 @@ enum struct Test_Behavior : Default_Underlying {
 };
 
 [[nodiscard]]
-Content_Status
+Processing_Status
 write_empty_head_document(Text_Sink& out, std::span<const ast::Content> content, Context& context)
 {
     constexpr auto write_head = [](Content_Policy&, std::span<const ast::Content>, Context&) {
-        return Content_Status::ok;
+        return Processing_Status::ok;
     };
     constexpr auto write_body
         = [](Content_Policy& policy, std::span<const ast::Content> content, Context& context) {
@@ -82,9 +82,9 @@ public:
 
     template <Test_Behavior behavior>
     [[nodiscard]]
-    Function_Ref<Content_Status(Context&)> get_behavior_impl()
+    Function_Ref<Processing_Status(Context&)> get_behavior_impl()
     {
-        constexpr auto action = [](Doc_Gen_Test* self, Context& context) -> Content_Status {
+        constexpr auto action = [](Doc_Gen_Test* self, Context& context) -> Processing_Status {
             Macro_Name_Resolver macro_resolver { self->builtin_directives.get_macro_behavior() };
             context.add_resolver(self->builtin_directives);
             context.add_resolver(macro_resolver);
@@ -97,7 +97,7 @@ public:
             }
             case Test_Behavior::paragraphs: {
                 Paragraph_Split_Policy policy { sink, context.get_transient_memory() };
-                const Content_Status result = consume_all(policy, self->content, context);
+                const Processing_Status result = consume_all(policy, self->content, context);
                 policy.leave_paragraph();
                 return result;
             }
@@ -106,11 +106,11 @@ public:
             }
             }
         };
-        return Function_Ref<Content_Status(Context&)> { const_v<action>, this };
+        return Function_Ref<Processing_Status(Context&)> { const_v<action>, this };
     }
 
     [[nodiscard]]
-    Function_Ref<Content_Status(Context&)> get_behavior(Test_Behavior behavior)
+    Function_Ref<Processing_Status(Context&)> get_behavior(Test_Behavior behavior)
     {
         switch (behavior) {
         case Test_Behavior::trivial: return get_behavior_impl<Test_Behavior::trivial>();
@@ -151,7 +151,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status generate(Test_Behavior behavior)
+    Processing_Status generate(Test_Behavior behavior)
     {
         const Directive_Behavior& error_behavior = builtin_directives.get_error_behavior();
         const Generation_Options options { .error_behavior = &error_behavior,
@@ -159,7 +159,7 @@ public:
                                            .logger = logger,
                                            .highlighter = test_highlighter,
                                            .memory = &memory };
-        const Function_Ref<Content_Status(Context&)> f = get_behavior(behavior);
+        const Function_Ref<Processing_Status(Context&)> f = get_behavior(behavior);
         return run_generation(f, options);
     }
 
@@ -200,7 +200,7 @@ struct Source {
 struct Basic_Test {
     std::variant<Path, Source> document;
     std::variant<Path, Source> expected_html;
-    Content_Status expected_status = Content_Status::ok;
+    Processing_Status expected_status = Processing_Status::ok;
     std::initializer_list<std::u8string_view> expected_diagnostics = {};
     Test_Behavior behavior = Test_Behavior::trivial;
 };
@@ -215,22 +215,22 @@ constexpr Basic_Test basic_tests[] {
 
     { Source{ u8"\\c{}\n" },
       Source { u8"<error->\\c{}</error->\n" },
-      Content_Status::error,
+      Processing_Status::error,
       { diagnostic::c::blank } },
 
     { Source{ u8"\\c{ }\n" },
       Source { u8"<error->\\c{ }</error->\n" },
-      Content_Status::error,
+      Processing_Status::error,
       { diagnostic::c::blank } },
 
     { Source{ u8"\\c{#zzz}\n" },
       Source { u8"<error->\\c{#zzz}</error->\n" },
-      Content_Status::error,
+      Processing_Status::error,
       { diagnostic::c::digits } },
 
     { Source{ u8"\\c{#xD800}\n" },
       Source { u8"<error->\\c{#xD800}</error->\n" },
-      Content_Status::error,
+      Processing_Status::error,
       { diagnostic::c::nonscalar } },
     
     { Path { u8"U/ascii.cow" },
@@ -241,22 +241,22 @@ constexpr Basic_Test basic_tests[] {
 
     { Source { u8"\\U{}\n" },
       Source { u8"<error->\\U{}</error->\n" },
-      Content_Status::error,
+      Processing_Status::error,
       { diagnostic::U::blank } },
 
     { Source { u8"\\U{ }\n" },
       Source { u8"<error->\\U{ }</error->\n" },
-      Content_Status::error,
+      Processing_Status::error,
       { diagnostic::U::blank } },
 
     { Source { u8"\\U{zzz}\n" },
       Source { u8"<error->\\U{zzz}</error->\n" },
-      Content_Status::error,
+      Processing_Status::error,
       { diagnostic::U::digits } },
 
     { Source { u8"\\U{D800}\n" },
       Source { u8"<error->\\U{D800}</error->\n" },
-      Content_Status::error,
+      Processing_Status::error,
       { diagnostic::U::nonscalar } },
 
     { Source { u8"\\h1{Heading}\n" },
@@ -285,7 +285,7 @@ constexpr Basic_Test basic_tests[] {
 
     { Source { u8"\\code{}\n" },
       Source { u8"<code></code>\n" },
-      Content_Status::ok,
+      Processing_Status::ok,
       { diagnostic::highlight_language } },
 
     { Source { u8"\\code[x]{}\n" },
@@ -329,17 +329,17 @@ constexpr Basic_Test basic_tests[] {
 
     { Source { u8"\\awoo\n" },
       Source { u8"<error->\\awoo</error->\n" },
-      Content_Status::error,
+      Processing_Status::error,
       { diagnostic::directive_lookup_unresolved } },
 
     { Source { u8"\\code[x]{\\awoo}\n" },
       Source { u8"<code><error->\\awoo</error-></code>\n" },
-      Content_Status::error,
+      Processing_Status::error,
       { diagnostic::directive_lookup_unresolved } },
 
     { Source { u8"" },
       Path { u8"document/empty.html" },
-      Content_Status::ok,
+      Processing_Status::ok,
       {},
       Test_Behavior::empty_head },
     
@@ -354,7 +354,7 @@ constexpr Basic_Test basic_tests[] {
     
     { Path { u8"paragraphs.cow" },
       Path { u8"paragraphs.cow.html" },
-      Content_Status::ok,
+      Processing_Status::ok,
       {},
       Test_Behavior::paragraphs }
 };
@@ -436,7 +436,7 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
             = load_basic_test_expectations(expectation_storage, test, &memory);
         COWEL_ASSERT(source_string.empty() || !expected.empty());
 
-        const Content_Status status = generate(test.behavior);
+        const Processing_Status status = generate(test.behavior);
         if (status != test.expected_status) {
             success = false;
             Diagnostic_String error { &memory };

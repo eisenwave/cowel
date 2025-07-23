@@ -114,7 +114,7 @@ void try_lookup_error(const ast::Directive& directive, Context& context)
 
 } // namespace
 
-Content_Status
+Processing_Status
 consume_all_trimmed(Content_Policy& out, std::span<const ast::Content> content, Context& context)
 {
     content = trim_blank_text(content);
@@ -141,49 +141,52 @@ consume_all_trimmed(Content_Policy& out, std::span<const ast::Content> content, 
         }
 
         [[nodiscard]]
-        Content_Status operator()(const ast::Text& text) const
+        Processing_Status operator()(const ast::Text& text) const
         {
             write_trimmed(text.get_source());
-            return Content_Status::ok;
+            return Processing_Status::ok;
         }
 
         [[nodiscard]]
-        Content_Status operator()(const ast::Comment& c) const
+        Processing_Status operator()(const ast::Comment& c) const
         {
             return out.consume(c, context);
         }
 
         [[nodiscard]]
-        Content_Status operator()(const ast::Generated& g) const
+        Processing_Status operator()(const ast::Generated& g) const
         {
             if (g.get_type() == Output_Language::text) {
                 write_trimmed(g.as_string());
-                return Content_Status::ok;
+                return Processing_Status::ok;
             }
             return out.consume(g, context);
         }
 
         [[nodiscard]]
-        Content_Status operator()(const ast::Escaped& e) const
+        Processing_Status operator()(const ast::Escaped& e) const
         {
             return out.consume(e, context);
         }
 
         [[nodiscard]]
-        Content_Status operator()(const ast::Directive& e) const
+        Processing_Status operator()(const ast::Directive& e) const
         {
             return out.consume(e, context);
         }
     };
 
-    return process_greedy(content, [&, i = 0uz](const ast::Content& c) mutable -> Content_Status {
-        const auto result = std::visit(Visitor { out, context, i, content.size() }, c);
-        ++i;
-        return result;
-    });
+    return process_greedy(
+        content,
+        [&, i = 0uz](const ast::Content& c) mutable -> Processing_Status {
+            const auto result = std::visit(Visitor { out, context, i, content.size() }, c);
+            ++i;
+            return result;
+        }
+    );
 }
 
-Content_Status to_plaintext(
+Processing_Status to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
     Context& context
@@ -194,9 +197,9 @@ Content_Status to_plaintext(
     return consume_all(policy, content, context);
 }
 
-Content_Status apply_behavior(Content_Policy& out, const ast::Directive& d, Context& context)
+Processing_Status apply_behavior(Content_Policy& out, const ast::Directive& d, Context& context)
 {
-    constexpr auto status_on_error_generated = Content_Status::ok;
+    constexpr auto status_on_error_generated = Processing_Status::ok;
 
     const Directive_Behavior* const behavior = context.find_directive(d);
     if (!behavior) {
@@ -207,9 +210,9 @@ Content_Status apply_behavior(Content_Policy& out, const ast::Directive& d, Cont
                 diagnostic::error_error, d.get_source_span(),
                 u8"A fatal error was raised because producing a non-fatal error failed."sv
             );
-            return Content_Status::fatal;
+            return Processing_Status::fatal;
         }
-        return Content_Status::error;
+        return Processing_Status::error;
     }
     return (*behavior)(out, d, context);
 }
@@ -258,7 +261,7 @@ void warn_ignored_argument_subset(
     }
 }
 
-Content_Status named_arguments_to_attributes(
+Processing_Status named_arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     Context& context,
@@ -268,15 +271,15 @@ Content_Status named_arguments_to_attributes(
 {
     const std::span<const ast::Argument> args = d.get_arguments();
     std::size_t i = 0;
-    return process_greedy(args, [&](const ast::Argument& a) -> Content_Status {
+    return process_greedy(args, [&](const ast::Argument& a) -> Processing_Status {
         const bool passed_filter = a.has_name() && (!filter || filter(i, a));
         ++i;
         return passed_filter ? named_argument_to_attribute(out, a, context, style)
-                             : Content_Status::ok;
+                             : Processing_Status::ok;
     });
 }
 
-Content_Status named_arguments_to_attributes(
+Processing_Status named_arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
     const Argument_Matcher& matcher,
@@ -308,7 +311,7 @@ Content_Status named_arguments_to_attributes(
     return named_arguments_to_attributes(out, d, context, filter, style);
 }
 
-Content_Status named_argument_to_attribute(
+Processing_Status named_argument_to_attribute(
     Attribute_Writer& out,
     const ast::Argument& a,
     Context& context,
@@ -326,7 +329,7 @@ Content_Status named_argument_to_attribute(
     return status;
 }
 
-Result<bool, Content_Status> argument_to_plaintext(
+Result<bool, Processing_Status> argument_to_plaintext(
     std::pmr::vector<char8_t>& out,
     const ast::Directive& d,
     const Argument_Matcher& args,
@@ -341,7 +344,7 @@ Result<bool, Content_Status> argument_to_plaintext(
     const ast::Argument& arg = d.get_arguments()[std::size_t(i)];
     // TODO: warn when pure HTML argument was used as variable name
     const auto status = to_plaintext(out, arg.get_content(), context);
-    if (status != Content_Status::ok) {
+    if (status != Processing_Status::ok) {
         return status;
     }
     return true;
@@ -363,7 +366,7 @@ Greedy_Result<bool> get_yes_no_argument(
     const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
     const auto text_status = to_plaintext(data, arg.get_content(), context);
-    if (text_status != Content_Status::ok) {
+    if (text_status != Processing_Status::ok) {
         return { fallback, text_status };
     }
 
@@ -404,7 +407,7 @@ Greedy_Result<std::size_t> get_integer_argument(
     const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
     std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
     const auto text_status = to_plaintext(arg_text, arg.get_content(), context);
-    if (text_status != Content_Status::ok) {
+    if (text_status != Processing_Status::ok) {
         return { fallback, text_status };
     }
     const auto arg_string = as_u8string_view(arg_text);
@@ -463,7 +466,7 @@ Greedy_Result<String_Argument> get_string_argument(
     }
     const auto status
         = to_plaintext(result.data, d.get_arguments()[std::size_t(index)].get_content(), context);
-    if (status != Content_Status::ok) {
+    if (status != Processing_Status::ok) {
         result.string = fallback;
         return { result, status };
     }
@@ -471,16 +474,16 @@ Greedy_Result<String_Argument> get_string_argument(
     return result;
 }
 
-Content_Status try_generate_error(
+Processing_Status try_generate_error(
     Content_Policy& out,
     const ast::Directive& d,
     Context& context,
-    Content_Status on_success
+    Processing_Status on_success
 )
 {
     if (const Directive_Behavior* const behavior = context.get_error_behavior()) {
-        const Content_Status result = (*behavior)(out, d, context);
-        return result == Content_Status::ok ? on_success : result;
+        const Processing_Status result = (*behavior)(out, d, context);
+        return result == Processing_Status::ok ? on_success : result;
     }
     return on_success;
 }

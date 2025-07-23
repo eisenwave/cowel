@@ -33,7 +33,7 @@ std::u8string_view file_load_error_explanation(File_Load_Error error)
 
 } // namespace
 
-Content_Status
+Processing_Status
 Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     // TODO: warn about ignored arguments
@@ -41,11 +41,11 @@ Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
     const auto path_status = to_plaintext(path_data, d.get_content(), context);
     switch (path_status) {
-    case Content_Status::ok: break;
-    case Content_Status::abandon: return Content_Status::abandon;
-    case Content_Status::error:
-    case Content_Status::error_abandon:
-    case Content_Status::fatal: return Content_Status::fatal;
+    case Processing_Status::ok: break;
+    case Processing_Status::brk: return Processing_Status::brk;
+    case Processing_Status::error:
+    case Processing_Status::error_brk:
+    case Processing_Status::fatal: return Processing_Status::fatal;
     }
 
     if (path_data.empty()) {
@@ -53,7 +53,7 @@ Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
             diagnostic::include::path_missing, d.get_source_span(),
             u8"The given path to include text data from cannot empty."sv
         );
-        return Content_Status::fatal;
+        return Processing_Status::fatal;
     }
 
     const auto path_string = as_u8string_view(path_data);
@@ -67,13 +67,13 @@ Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
         context.try_error(
             diagnostic::include::io, d.get_source_span(), joined_char_sequence(message)
         );
-        return Content_Status::fatal;
+        return Processing_Status::fatal;
     }
     out.write(entry->source, Output_Language::text);
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
-Content_Status
+Processing_Status
 Import_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     // TODO: warn about ignored arguments
@@ -81,11 +81,11 @@ Import_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
     const auto path_status = to_plaintext(path_data, d.get_content(), context);
     switch (path_status) {
-    case Content_Status::ok: break;
-    case Content_Status::abandon: return Content_Status::abandon;
-    case Content_Status::error:
-    case Content_Status::error_abandon:
-    case Content_Status::fatal: return Content_Status::fatal;
+    case Processing_Status::ok: break;
+    case Processing_Status::brk: return Processing_Status::brk;
+    case Processing_Status::error:
+    case Processing_Status::error_brk:
+    case Processing_Status::fatal: return Processing_Status::fatal;
     }
 
     if (path_data.empty()) {
@@ -93,7 +93,7 @@ Import_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
             diagnostic::import::path_missing, d.get_source_span(),
             u8"The given path to include text data from cannot empty."sv
         );
-        return Content_Status::fatal;
+        return Processing_Status::fatal;
     }
 
     const Result<File_Entry, File_Load_Error> entry
@@ -107,7 +107,7 @@ Import_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
         context.try_error(
             diagnostic::import::io, d.get_source_span(), joined_char_sequence(message)
         );
-        return Content_Status::fatal;
+        return Processing_Status::fatal;
     }
 
     auto on_error

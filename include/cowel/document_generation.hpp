@@ -37,31 +37,33 @@ struct Generation_Options {
 /// @brief Constructs a `Context` and invokes `generate` with that context.
 /// @returns The result returned by `generate`.
 [[nodiscard]]
-Content_Status
-run_generation(Function_Ref<Content_Status(Context&)> generate, const Generation_Options& options);
-
-[[nodiscard]]
-Content_Status write_head_body_document(
-    Text_Sink& out,
-    std::span<const ast::Content> content,
-    Context& context,
-    Function_Ref<Content_Status(Content_Policy&, std::span<const ast::Content>, Context&)> head,
-    Function_Ref<Content_Status(Content_Policy&, std::span<const ast::Content>, Context&)> body
+Processing_Status run_generation(
+    Function_Ref<Processing_Status(Context&)> generate,
+    const Generation_Options& options
 );
 
 [[nodiscard]]
-Content_Status
+Processing_Status write_head_body_document(
+    Text_Sink& out,
+    std::span<const ast::Content> content,
+    Context& context,
+    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Content>, Context&)> head,
+    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Content>, Context&)> body
+);
+
+[[nodiscard]]
+Processing_Status
 write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Context& context);
 
 [[nodiscard]]
-Content_Status write_wg21_body_contents(
+Processing_Status write_wg21_body_contents(
     Content_Policy& out,
     std::span<const ast::Content> content,
     Context& context
 );
 
 [[nodiscard]]
-inline Content_Status
+inline Processing_Status
 write_wg21_document(Text_Sink& out, std::span<const ast::Content> content, Context& context)
 {
     return write_head_body_document(out, content, context, //

@@ -88,7 +88,7 @@ get_code_points(std::u8string_view trimmed_text, const ast::Directive& d, Contex
 
 } // namespace
 
-Content_Status
+Processing_Status
 Char_By_Entity_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
@@ -98,7 +98,7 @@ Char_By_Entity_Behavior::operator()(Content_Policy& out, const ast::Directive& d
 
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
     const auto input_status = to_plaintext(data, d.get_content(), context);
-    if (input_status != Content_Status::ok) {
+    if (input_status != Processing_Status::ok) {
         return input_status;
     }
 
@@ -108,7 +108,7 @@ Char_By_Entity_Behavior::operator()(Content_Policy& out, const ast::Directive& d
         return try_generate_error(out, d, context);
     }
     out.write(make_char_sequence(as_string_view(code_points)), Output_Language::text);
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
 } // namespace cowel

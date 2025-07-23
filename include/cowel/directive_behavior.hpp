@@ -13,7 +13,7 @@ struct Directive_Behavior {
     constexpr Directive_Behavior() = default;
 
     [[nodiscard]]
-    virtual Content_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const
+    virtual Processing_Status operator()(Content_Policy& out, const ast::Directive&, Context&) const
         = 0;
 };
 

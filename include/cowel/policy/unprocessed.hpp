@@ -23,36 +23,36 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status consume(const ast::Text& text, Context&) override
+    Processing_Status consume(const ast::Text& text, Context&) override
     {
         write(text.get_source(), Output_Language::text);
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Comment&, Context&) override
+    Processing_Status consume(const ast::Comment&, Context&) override
     {
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Escaped& escape, Context&) override
+    Processing_Status consume(const ast::Escaped& escape, Context&) override
     {
         const std::u8string_view text = expand_escape(escape);
         write(text, Output_Language::text);
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Directive& directive, Context&) override
+    Processing_Status consume(const ast::Directive& directive, Context&) override
     {
         write(directive.get_source(), Output_Language::text);
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Generated&, Context&) override
+    Processing_Status consume(const ast::Generated&, Context&) override
     {
         COWEL_ASSERT_UNREACHABLE(
             u8"Generated content within Unprocessed_Content_Policy should be impossible."
         );
-        return Content_Status::fatal;
+        return Processing_Status::fatal;
     }
 };
 

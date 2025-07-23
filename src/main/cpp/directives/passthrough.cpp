@@ -14,7 +14,7 @@ using namespace std::string_view_literals;
 
 namespace cowel {
 
-Content_Status
+Processing_Status
 HTML_Wrapper_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
@@ -24,7 +24,7 @@ HTML_Wrapper_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     Paragraph_Split_Policy split_policy { out, context.get_transient_memory() };
     auto& policy = m_is_paragraphed ? split_policy : out;
 
-    const Content_Status result = consume_all(policy, d.get_content(), context);
+    const Processing_Status result = consume_all(policy, d.get_content(), context);
     if (m_is_paragraphed) {
         split_policy.leave_paragraph();
     }
@@ -32,7 +32,7 @@ HTML_Wrapper_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     return result;
 }
 
-Content_Status Plaintext_Wrapper_Behavior::operator()(
+Processing_Status Plaintext_Wrapper_Behavior::operator()(
     Content_Policy& out,
     const ast::Directive& d,
     Context& context
@@ -45,7 +45,7 @@ Content_Status Plaintext_Wrapper_Behavior::operator()(
     return consume_all(policy, d.get_content(), context);
 }
 
-Content_Status
+Processing_Status
 Trim_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     // TODO: warn about unused arguments
@@ -54,7 +54,7 @@ Trim_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     return consume_all_trimmed(out, d.get_content(), context);
 }
 
-Content_Status
+Processing_Status
 Passthrough_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
@@ -82,7 +82,7 @@ Passthrough_Behavior::operator()(Content_Policy& out, const ast::Directive& d, C
 
 // TODO: Passthrough_Behavior and In_Tag_Behavior are virtually identical.
 //       It would be better to merge them into one.
-Content_Status
+Processing_Status
 In_Tag_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
@@ -116,7 +116,7 @@ std::u8string_view Directive_Name_Passthrough_Behavior::get_name(const ast::Dire
     return name.substr(m_name_prefix.size());
 }
 
-Content_Status
+Processing_Status
 Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
@@ -152,7 +152,7 @@ Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
     return status_concat(attributes_status, content_status);
 }
 
-Content_Status
+Processing_Status
 URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     // TODO: warn about unused arguments
@@ -162,7 +162,7 @@ URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
     std::pmr::vector<char8_t> url { context.get_transient_memory() };
     append(url, m_url_prefix);
     const auto text_status = to_plaintext(url, d.get_content(), context);
-    if (text_status != Content_Status::ok) {
+    if (text_status != Processing_Status::ok) {
         return text_status;
     }
 
@@ -183,7 +183,7 @@ URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
     return attributes_status;
 }
 
-Content_Status
+Processing_Status
 Self_Closing_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
@@ -208,7 +208,7 @@ Self_Closing_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     return status;
 }
 
-Content_Status
+Processing_Status
 List_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);

@@ -21,7 +21,7 @@ namespace cowel {
 namespace {
 
 [[nodiscard]]
-Result<char32_t, Content_Status> code_point_by_generated_digits(
+Result<char32_t, Processing_Status> code_point_by_generated_digits(
     std::span<const ast::Content> content,
     const File_Source_Span& source_span,
     Context& context
@@ -29,7 +29,7 @@ Result<char32_t, Content_Status> code_point_by_generated_digits(
 {
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
     const auto status = to_plaintext(data, content, context);
-    if (status != Content_Status::ok) {
+    if (status != Processing_Status::ok) {
         return status;
     }
 
@@ -39,7 +39,7 @@ Result<char32_t, Content_Status> code_point_by_generated_digits(
             diagnostic::U::blank, source_span,
             u8"Expected a sequence of hexadecimal digits, but got a blank string."sv
         );
-        return Content_Status::error;
+        return Processing_Status::error;
     }
 
     const std::optional<std::uint32_t> value = from_chars<std::uint32_t>(digits, 16);
@@ -50,7 +50,7 @@ Result<char32_t, Content_Status> code_point_by_generated_digits(
             u8"\"."sv,
         };
         context.try_error(diagnostic::U::digits, source_span, joined_char_sequence(message));
-        return Content_Status::error;
+        return Processing_Status::error;
     }
 
     const auto code_point = char32_t(*value);
@@ -63,14 +63,14 @@ Result<char32_t, Content_Status> code_point_by_generated_digits(
             u8"Therefore, it cannot be encoded as UTF-8.",
         };
         context.try_error(diagnostic::U::nonscalar, source_span, joined_char_sequence(message));
-        return Content_Status::error;
+        return Processing_Status::error;
     }
 
     return code_point;
 }
 
 [[nodiscard]]
-Result<char32_t, Content_Status> code_point_by_generated_name(
+Result<char32_t, Processing_Status> code_point_by_generated_name(
     std::span<const ast::Content> content,
     const File_Source_Span& source_span,
     Context& context
@@ -80,7 +80,7 @@ Result<char32_t, Content_Status> code_point_by_generated_name(
 
     std::pmr::vector<char8_t> name { context.get_transient_memory() };
     const auto status = to_plaintext(name, content, context);
-    if (status != Content_Status::ok) {
+    if (status != Processing_Status::ok) {
         return status;
     }
     const auto name_string = as_u8string_view(name);
@@ -91,7 +91,7 @@ Result<char32_t, Content_Status> code_point_by_generated_name(
             diagnostic::N::blank, source_span,
             u8"Expected the name of a Unicode code point, but got a blank string."sv
         );
-        return Content_Status::error;
+        return Processing_Status::error;
     }
 
     const char32_t code_point = code_point_by_name(name_string);
@@ -102,7 +102,7 @@ Result<char32_t, Content_Status> code_point_by_generated_name(
             u8"\".",
         };
         context.try_error(diagnostic::N::invalid, source_span, joined_char_sequence(message));
-        return Content_Status::error;
+        return Processing_Status::error;
     }
 
     return code_point;
@@ -111,7 +111,7 @@ Result<char32_t, Content_Status> code_point_by_generated_name(
 } // namespace
 
 [[nodiscard]]
-Content_Status
+Processing_Status
 Code_Point_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
@@ -123,33 +123,33 @@ Code_Point_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
         );
     }
 
-    const Result<char32_t, Content_Status> code_point = get_code_point(d, context);
+    const Result<char32_t, Processing_Status> code_point = get_code_point(d, context);
     if (!code_point) {
-        COWEL_ASSERT(code_point.error() != Content_Status::ok);
+        COWEL_ASSERT(code_point.error() != Processing_Status::ok);
         return try_generate_error(out, d, context, code_point.error());
     }
 
     try_enter_paragraph(out);
 
     out.write(make_char_sequence(*code_point), Output_Language::text);
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
 [[nodiscard]]
-Result<char32_t, Content_Status>
+Result<char32_t, Processing_Status>
 Char_By_Num_Behavior::get_code_point(const ast::Directive& d, Context& context) const
 {
     return code_point_by_generated_digits(d.get_content(), d.get_source_span(), context);
 }
 
 [[nodiscard]]
-Result<char32_t, Content_Status>
+Result<char32_t, Processing_Status>
 Char_By_Name_Behavior::get_code_point(const ast::Directive& d, Context& context) const
 {
     return code_point_by_generated_name(d.get_content(), d.get_source_span(), context);
 }
 
-Content_Status
+Processing_Status
 Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
@@ -192,7 +192,7 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
 
     std::pmr::vector<char8_t> input { context.get_transient_memory() };
     const auto input_status = to_plaintext(input, d.get_content(), context);
-    if (input_status != Content_Status::ok) {
+    if (input_status != Processing_Status::ok) {
         return status_concat(args_status, input_status);
     }
 

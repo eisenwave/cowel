@@ -75,7 +75,7 @@ void diagnose(
 
 } // namespace
 
-Content_Status
+Processing_Status
 Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     Argument_Matcher args { parameters, context.get_transient_memory() };
@@ -116,7 +116,7 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     if (status_is_break(nested.status())) {
         return nested.status();
     }
-    const Content_Status args_status = status_concat(
+    const Processing_Status args_status = status_concat(
         lang.status(), prefix.status(), suffix.status(), borders.status(), nested.status()
     );
 
@@ -126,7 +126,7 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     // Note that for consistent side effects,
     // we still process all the arguments above.
     if (out.get_language() == Output_Language::text) {
-        const Content_Status text_status = consume_all(out, d.get_content(), context);
+        const Processing_Status text_status = consume_all(out, d.get_content(), context);
         return status_concat(args_status, text_status);
     }
 
@@ -183,14 +183,14 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     return status_concat(args_status, highlight_status);
 }
 
-Content_Status
+Processing_Status
 Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
     Argument_Matcher args { parameters, context.get_transient_memory() };
 
     std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
-    const Result<bool, Content_Status> has_name_result
+    const Result<bool, Processing_Status> has_name_result
         = argument_to_plaintext(name_data, d, args, name_parameter, context);
     if (!has_name_result) {
         return has_name_result.error();
@@ -231,7 +231,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
         .open_tag_with_attributes(u8"h-") //
         .write_attribute(u8"data-h", short_name)
         .end();
-    const Content_Status result = consume_all(policy, d.get_content(), context);
+    const Processing_Status result = consume_all(policy, d.get_content(), context);
     if (status_is_break(result)) {
         return result;
     }

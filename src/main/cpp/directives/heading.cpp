@@ -20,7 +20,7 @@ namespace cowel {
 namespace {
 
 [[nodiscard]]
-Content_Status synthesize_id(
+Processing_Status synthesize_id(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
     Context& context
@@ -29,11 +29,11 @@ Content_Status synthesize_id(
     // TODO: diagnostic on bad status
     // TODO: disallow side effects, or maybe use content policies to pull out just the text?
     const auto status = to_plaintext(out, content, context);
-    if (status != Content_Status::ok) {
+    if (status != Processing_Status::ok) {
         return status;
     }
     sanitize_html_id(out);
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
 // TODO: this should be done via variables and the context or something
@@ -44,7 +44,7 @@ constexpr int max_listing_level = 6;
 
 } // namespace
 
-Content_Status
+Processing_Status
 Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     static constexpr std::u8string_view parameters[] { u8"id", u8"listed", u8"show-number" };
@@ -71,7 +71,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     if (status_is_break(is_number_shown_result.status())) {
         return is_number_shown_result.status();
     }
-    Content_Status current_status
+    Processing_Status current_status
         = status_concat(is_listed_result.status(), is_number_shown_result.status());
 
     // TODO: now that we use Greedy_Result, we should be able to get rid of these
@@ -88,7 +88,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     }
 
     std::pmr::vector<char8_t> id_data { context.get_transient_memory() };
-    const auto id_status = [&] -> Content_Status {
+    const auto id_status = [&] -> Processing_Status {
         const int id_index = args.get_argument_index(u8"id");
         if (id_index < 0) {
             return synthesize_id(id_data, d.get_content(), context);
@@ -100,7 +100,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     if (status_is_break(id_status)) {
         return current_status;
     }
-    const bool has_id = id_status == Content_Status::ok && !id_data.empty();
+    const bool has_id = id_status == Processing_Status::ok && !id_data.empty();
 
     warn_ignored_argument_subset(
         d.get_arguments(), args, context, Argument_Subset::unmatched_positional
@@ -245,11 +245,11 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
 namespace {
 
 [[nodiscard]]
-Content_Status with_section_name(
+Processing_Status with_section_name(
     const ast::Directive& d,
     Context& context,
     std::u8string_view no_section_diagnostic,
-    Function_Ref<Content_Status(std::u8string_view section)> action
+    Function_Ref<Processing_Status(std::u8string_view section)> action
 )
 {
     static constexpr std::u8string_view parameters[] { u8"section" };
@@ -261,13 +261,13 @@ Content_Status with_section_name(
         context.try_error(
             no_section_diagnostic, d.get_source_span(), u8"No section was provided."sv
         );
-        return Content_Status::error;
+        return Processing_Status::error;
     }
 
     std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
     const ast::Argument& arg = d.get_arguments()[std::size_t(arg_index)];
     const auto name_status = to_plaintext(name_data, arg.get_content(), context);
-    if (name_status != Content_Status::ok) {
+    if (name_status != Processing_Status::ok) {
         return name_status;
     }
 
@@ -276,7 +276,7 @@ Content_Status with_section_name(
         context.try_error(
             no_section_diagnostic, d.get_source_span(), u8"No section was provided."sv
         );
-        return Content_Status::error;
+        return Processing_Status::error;
     }
 
     return action(section_string);
@@ -284,7 +284,7 @@ Content_Status with_section_name(
 
 } // namespace
 
-Content_Status
+Processing_Status
 There_Behavior::operator()(Content_Policy&, const ast::Directive& d, Context& context) const
 {
     auto action = [&](std::u8string_view section) {
@@ -294,19 +294,19 @@ There_Behavior::operator()(Content_Policy&, const ast::Directive& d, Context& co
     return with_section_name(d, context, diagnostic::there::no_section, action);
 }
 
-Content_Status
+Processing_Status
 Here_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     ensure_paragraph_matches_display(out, m_display);
 
     auto action = [&](std::u8string_view section) {
         reference_section(out, section);
-        return Content_Status::ok;
+        return Processing_Status::ok;
     };
     return with_section_name(d, context, diagnostic::there::no_section, action);
 }
 
-Content_Status
+Processing_Status
 Make_Section_Behavior::operator()(Content_Policy& out, const ast::Directive&, Context& context)
     const
 {
@@ -322,7 +322,7 @@ Make_Section_Behavior::operator()(Content_Policy& out, const ast::Directive&, Co
         .end();
     reference_section(out, m_section_name);
     writer.close_tag(u8"div");
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
 } // namespace cowel

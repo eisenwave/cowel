@@ -29,7 +29,7 @@ void warn_all_args_ignored(const ast::Directive& d, Context& context)
 
 } // namespace
 
-Content_Status
+Processing_Status
 Literally_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     warn_all_args_ignored(d, context);
@@ -40,7 +40,7 @@ Literally_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Con
     return consume_all(policy, d.get_content(), context);
 }
 
-Content_Status
+Processing_Status
 Unprocessed_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
@@ -52,7 +52,7 @@ Unprocessed_Behavior::operator()(Content_Policy& out, const ast::Directive& d, C
     return consume_all(policy, d.get_content(), context);
 }
 
-Content_Status
+Processing_Status
 HTML_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     warn_all_args_ignored(d, context);
@@ -63,7 +63,7 @@ HTML_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     return consume_all(policy, d.get_content(), context);
 }
 
-Content_Status
+Processing_Status
 HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {

@@ -11,7 +11,7 @@ using namespace std::string_view_literals;
 
 namespace cowel {
 
-Content_Status
+Processing_Status
 WG21_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
@@ -45,7 +45,7 @@ WG21_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
     return status_concat(attributes_status, content_status);
 }
 
-Content_Status
+Processing_Status
 WG21_Head_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     static constexpr std::u8string_view parameters[] { u8"title" };
@@ -75,7 +75,7 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Con
         // FIXME: multiple evaluations of title input
         std::pmr::vector<char8_t> title_plaintext { context.get_transient_memory() };
         const auto status = to_plaintext(title_plaintext, title_arg.get_content(), context);
-        if (status != Content_Status::ok) {
+        if (status != Processing_Status::ok) {
             writer.close_tag(u8"div");
             return status;
         }

@@ -4,39 +4,30 @@
 #include <concepts>
 #include <string_view>
 
-#include "cowel/fwd.hpp"
 #include "cowel/util/assert.hpp"
+
+#include "cowel/cowel.h"
+#include "cowel/fwd.hpp"
 
 namespace cowel {
 
-enum struct Content_Status : Default_Underlying {
-    /// @brief Content could be produced successfully,
-    /// and generation should continue.
-    ok,
-    /// @brief Content generation was aborted (due to a break/return-like construct).
-    /// However, this is not an error.
-    abandon,
-    /// @brief An error occurred,
-    /// but that error is recoverable.
-    error,
-    /// @brief An error occurred,
-    /// but processing continued until `abandon` was returned.
-    /// This is effectively a combination of `error` and `abandon`.
-    error_abandon,
-    /// @brief An unrecoverable error occurred,
-    /// and generation of the document as a whole has to be abandoned.
-    fatal,
+enum struct Processing_Status : Default_Underlying {
+    ok = COWEL_PROCESSING_OK,
+    brk = COWEL_PROCESSING_BREAK,
+    error = COWEL_PROCESSING_ERROR,
+    error_brk = COWEL_PROCESSING_ERROR_BREAK,
+    fatal = COWEL_PROCESSING_FATAL,
 };
 
 [[nodiscard]]
-constexpr std::u8string_view status_name(Content_Status status)
+constexpr std::u8string_view status_name(Processing_Status status)
 {
-    using enum Content_Status;
+    using enum Processing_Status;
     switch (status) {
         COWEL_ENUM_STRING_CASE8(ok);
-        COWEL_ENUM_STRING_CASE8(abandon);
+        COWEL_ENUM_STRING_CASE8(brk);
         COWEL_ENUM_STRING_CASE8(error);
-        COWEL_ENUM_STRING_CASE8(error_abandon);
+        COWEL_ENUM_STRING_CASE8(error_brk);
         COWEL_ENUM_STRING_CASE8(fatal);
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid status.");
@@ -44,51 +35,52 @@ constexpr std::u8string_view status_name(Content_Status status)
 
 /// @brief Returns `true` iff `status` is a non-error status.
 [[nodiscard]]
-constexpr bool status_is_ok(Content_Status status) noexcept
+constexpr bool status_is_ok(Processing_Status status) noexcept
 {
-    return status < Content_Status::error;
+    return status < Processing_Status::error;
 }
 
 /// @brief Returns `true` iff `status` is an error status.
 [[nodiscard]]
-constexpr bool status_is_error(Content_Status status) noexcept
+constexpr bool status_is_error(Processing_Status status) noexcept
 {
-    return status >= Content_Status::error;
+    return status >= Processing_Status::error;
 }
 
 /// @brief Returns `true` iff `status` indicates that control flow should continue,
 /// regardless whether the status is successful or an error.
 [[nodiscard]]
-constexpr bool status_is_continue(Content_Status status) noexcept
+constexpr bool status_is_continue(Processing_Status status) noexcept
 {
-    return status == Content_Status::ok || status == Content_Status::error;
+    return status == Processing_Status::ok || status == Processing_Status::error;
 }
 
 /// @brief Retruns `true` iff `status` indicates that control flow should break,
 /// regardless whether the status is successful or an error.
 [[nodiscard]]
-constexpr bool status_is_break(Content_Status status) noexcept
+constexpr bool status_is_break(Processing_Status status) noexcept
 {
-    return status == Content_Status::abandon //
-        || status == Content_Status::error_abandon //
-        || status == Content_Status::fatal;
+    return status == Processing_Status::brk //
+        || status == Processing_Status::error_brk //
+        || status == Processing_Status::fatal;
 }
 
 [[nodiscard]]
-constexpr Content_Status status_concat(Content_Status first, Content_Status second) noexcept
+constexpr Processing_Status
+status_concat(Processing_Status first, Processing_Status second) noexcept
 {
-    return status_is_break(first)           ? first
-        : first == Content_Status::ok       ? second
-        : second == Content_Status::ok      ? Content_Status::error
-        : second == Content_Status::abandon ? Content_Status::error_abandon
-                                            : second;
+    return status_is_break(first)          ? first
+        : first == Processing_Status::ok   ? second
+        : second == Processing_Status::ok  ? Processing_Status::error
+        : second == Processing_Status::brk ? Processing_Status::error_brk
+                                           : second;
 }
 
-template <std::same_as<Content_Status>... S>
+template <std::same_as<Processing_Status>... S>
 [[nodiscard]]
-constexpr Content_Status status_concat(S... s) noexcept
+constexpr Processing_Status status_concat(S... s) noexcept
 {
-    Content_Status result = Content_Status::ok;
+    Processing_Status result = Processing_Status::ok;
     ((result = status_concat(result, s)), ...);
     return result;
 }

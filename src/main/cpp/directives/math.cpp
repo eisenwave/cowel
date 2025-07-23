@@ -75,14 +75,14 @@ static_assert(mathml_permits_text_bits[mathml_element_index(u8"mi")]);
 static_assert(!mathml_permits_text_bits[mathml_element_index(u8"munderover")]);
 
 [[nodiscard]]
-Content_Status to_math_html(
+Processing_Status to_math_html(
     Content_Policy& out,
     std::span<const ast::Content> contents,
     Context& context,
     bool permit_text = false
 )
 {
-    return process_greedy(contents, [&](const ast::Content& c) -> Content_Status {
+    return process_greedy(contents, [&](const ast::Content& c) -> Processing_Status {
         const auto* const d = std::get_if<ast::Directive>(&c);
         if (!d) {
             if (!permit_text) {
@@ -126,7 +126,7 @@ Content_Status to_math_html(
 
 } // namespace
 
-Content_Status
+Processing_Status
 Math_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     constexpr std::u8string_view tag_name = u8"math";

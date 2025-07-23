@@ -98,7 +98,7 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status consume(const ast::Text& t, Context&) override
+    Processing_Status consume(const ast::Text& t, Context&) override
     {
         if (m_directive_depth != 0) {
             write(t.get_source(), Output_Language::text);
@@ -106,29 +106,29 @@ public:
         else {
             split_into_paragraphs(t.get_source());
         }
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 
     [[nodiscard]]
-    Content_Status consume(const ast::Comment&, Context&) override
+    Processing_Status consume(const ast::Comment&, Context&) override
     {
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 
     [[nodiscard]]
-    Content_Status consume(const ast::Escaped& escape, Context&) override
+    Processing_Status consume(const ast::Escaped& escape, Context&) override
     {
         const std::u8string_view text = expand_escape(escape);
         if (text.empty()) {
-            return Content_Status::ok;
+            return Processing_Status::ok;
         }
         enter_paragraph();
         HTML_Content_Policy::write(text, Output_Language::text);
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 
     [[nodiscard]]
-    Content_Status consume(const ast::Directive& directive, Context& context) override
+    Processing_Status consume(const ast::Directive& directive, Context& context) override
     {
         // The purpose of m_directive_depth is to prevent malformed output which results
         // from directives directly feeding their contents into this policy,
@@ -145,10 +145,10 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status consume(const ast::Generated& generated, Context&) override
+    Processing_Status consume(const ast::Generated& generated, Context&) override
     {
         write(generated.as_string(), generated.get_type());
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 
     /// @brief Enables paragraph splitting to take place inside a directive.

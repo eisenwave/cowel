@@ -81,33 +81,33 @@ public:
     }
 
     [[nodiscard]]
-    Content_Status consume(const ast::Text& text, Context&) override
+    Processing_Status consume(const ast::Text& text, Context&) override
     {
         write(text.get_source(), Output_Language::text);
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Comment&, Context&) override
+    Processing_Status consume(const ast::Comment&, Context&) override
     {
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Escaped& escape, Context&) override
+    Processing_Status consume(const ast::Escaped& escape, Context&) override
     {
         const std::u8string_view text = expand_escape(escape);
         write(text, Output_Language::text);
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Directive& directive, Context& context) override
+    Processing_Status consume(const ast::Directive& directive, Context& context) override
     {
         return apply_behavior(*this, directive, context);
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Generated& generated, Context&) override
+    Processing_Status consume(const ast::Generated& generated, Context&) override
     {
         write(generated.as_string(), generated.get_type());
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 };
 

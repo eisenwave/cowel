@@ -16,7 +16,7 @@
 using namespace std::string_view_literals;
 namespace cowel {
 
-Content_Status
+Processing_Status
 Macro_Define_Behavior::operator()(Content_Policy&, const ast::Directive& d, Context& context) const
 {
     static const std::u8string_view parameters[] { u8"pattern" };
@@ -29,7 +29,7 @@ Macro_Define_Behavior::operator()(Content_Policy&, const ast::Directive& d, Cont
             diagnostic::macro::no_pattern, d.get_source_span(),
             u8"A directive pattern must be provided when defining a macro."sv
         );
-        return Content_Status::error;
+        return Processing_Status::error;
     }
     const ast::Argument& pattern_arg = d.get_arguments()[std::size_t(pattern_index)];
     if (pattern_arg.get_content().size() != 1
@@ -38,7 +38,7 @@ Macro_Define_Behavior::operator()(Content_Policy&, const ast::Directive& d, Cont
             diagnostic::macro::pattern_no_directive, pattern_arg.get_source_span(),
             u8"The pattern in a macro definition has to be a single directive, nothing else."sv
         );
-        return Content_Status::error;
+        return Processing_Status::error;
     }
 
     const auto& pattern_directive = std::get<ast::Directive>(pattern_arg.get_content()[0]);
@@ -59,7 +59,7 @@ Macro_Define_Behavior::operator()(Content_Policy&, const ast::Directive& d, Cont
             diagnostic::macro::redefinition, d.get_source_span(), joined_char_sequence(message)
         );
     }
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
 namespace {
@@ -70,7 +70,7 @@ enum struct Put_Response : bool {
 };
 
 [[nodiscard]]
-Content_Status substitute_in_macro(
+Processing_Status substitute_in_macro(
     std::pmr::vector<ast::Content>& content,
     const std::span<const ast::Argument> provided_arguments,
     const std::span<const ast::Content> provided_content,
@@ -183,7 +183,7 @@ Content_Status substitute_in_macro(
             const File_Source_Span location = d->get_source_span();
             it = content.erase(it);
             if (on_variadic_put(location) == Put_Response::abort) {
-                return Content_Status::ok;
+                return Processing_Status::ok;
             }
             continue;
         }
@@ -230,11 +230,11 @@ Content_Status substitute_in_macro(
         it = content.erase(it);
         substitute_arg(provided_arguments[*arg_index]);
     }
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
 [[nodiscard]]
-Content_Status instantiate_macro(
+Processing_Status instantiate_macro(
     std::pmr::vector<ast::Content>& out,
     const ast::Directive& definition,
     std::span<const ast::Argument> put_arguments,
@@ -258,7 +258,7 @@ Content_Status instantiate_macro(
 
 } // namespace
 
-Content_Status Macro_Instantiate_Behavior::operator()(
+Processing_Status Macro_Instantiate_Behavior::operator()(
     Content_Policy& out,
     const ast::Directive& d,
     Context& context

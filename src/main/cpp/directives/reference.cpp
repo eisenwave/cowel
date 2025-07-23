@@ -103,7 +103,7 @@ Reference_Classification classify_reference(std::u8string_view ref)
 
 } // namespace
 
-Content_Status
+Processing_Status
 Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     static const std::u8string_view parameters[] { u8"to" };
@@ -131,7 +131,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
     std::pmr::vector<char8_t> target { context.get_transient_memory() };
     const auto target_status
         = to_plaintext(target, d.get_arguments()[std::size_t(to_index)].get_content(), context);
-    if (target_status != Content_Status::ok) {
+    if (target_status != Processing_Status::ok) {
         return target_status;
     }
     if (target.empty()) {
@@ -161,7 +161,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             writer.write_inner_html(u8']');
         }
         writer.write_inner_html(u8"</a>"); // no close_tag to avoid depth check
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 
     if (classification.type == Reference_Type::anchor) {
@@ -169,7 +169,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             .open_tag_with_attributes(u8"a") //
             .write_href(target_string)
             .end();
-        auto status = Content_Status::ok;
+        auto status = Processing_Status::ok;
         if (d.get_content().empty()) {
             const std::u8string_view section_name_parts[] {
                 section_name::id_preview,
@@ -223,7 +223,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             writer.write_inner_text(target_string);
         }
         writer.close_tag(u8"a");
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 
     const std::size_t last_slash_pos = target_string.find_last_of(u8'/');
@@ -268,7 +268,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
         writer.write_inner_text(target_string);
     }
     writer.close_tag(u8"a");
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
 } // namespace cowel

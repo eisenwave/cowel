@@ -113,7 +113,7 @@ void write_bibliography_entry(HTML_Writer& out, const Document_Info& info, Conte
 
 } // namespace
 
-Content_Status
+Processing_Status
 Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, Context& context)
     const
 {
@@ -150,7 +150,7 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
             diagnostic::bib::id_missing, d.get_source_span(),
             u8"An id argument is required to add a bibliography entry."sv
         );
-        return Content_Status::error;
+        return Processing_Status::error;
     }
 
     // The following process of converting directive arguments
@@ -171,7 +171,7 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
         const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
         const std::size_t initial_size = result.text.size();
         const auto status = to_plaintext(result.text, arg.get_content(), context);
-        if (status != Content_Status::ok) {
+        if (status != Processing_Status::ok) {
             return status;
         }
         COWEL_ASSERT(result.text.size() >= initial_size);
@@ -181,7 +181,7 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
                 diagnostic::bib::id_empty, d.get_source_span(),
                 u8"An id argument for a bibliography entry cannot be empty."sv
             );
-            return Content_Status::error;
+            return Processing_Status::error;
         }
 
         string_lengths.push_back(result.text.size() - initial_size);
@@ -205,7 +205,7 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
         context.try_error(
             diagnostic::bib::duplicate, d.get_source_span(), joined_char_sequence(message)
         );
-        return Content_Status::error;
+        return Processing_Status::error;
     }
 
     // To facilitate later referencing,
@@ -241,7 +241,7 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
                 .end();
             section_writer.set_depth(0);
         }
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 
     {
@@ -251,7 +251,7 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
     }
 
     context.get_bibliography().insert(std::move(result));
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
 } // namespace cowel

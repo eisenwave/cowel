@@ -20,8 +20,10 @@ using namespace std::string_view_literals;
 
 namespace cowel {
 
-Content_Status
-run_generation(Function_Ref<Content_Status(Context&)> generate, const Generation_Options& options)
+Processing_Status run_generation(
+    Function_Ref<Processing_Status(Context&)> generate,
+    const Generation_Options& options
+)
 {
     COWEL_ASSERT(generate);
     COWEL_ASSERT(options.memory != nullptr);
@@ -161,12 +163,12 @@ constexpr bool enable_warn_deprecated_directive_names = false;
 
 } // namespace
 
-Content_Status write_head_body_document(
+Processing_Status write_head_body_document(
     Text_Sink& out,
     std::span<const ast::Content> content,
     Context& context,
-    Function_Ref<Content_Status(Content_Policy&, std::span<const ast::Content>, Context&)> head,
-    Function_Ref<Content_Status(Content_Policy&, std::span<const ast::Content>, Context&)> body
+    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Content>, Context&)> head,
+    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Content>, Context&)> body
 )
 {
     // TODO: Enable once it's no longer necessary to have hyphens in directive names.
@@ -207,7 +209,7 @@ Content_Status write_head_body_document(
     }();
     const auto html_string = as_u8string_view(html_text);
 
-    auto status = Content_Status::ok;
+    auto status = Processing_Status::ok;
     {
         const auto scope = sections.go_to_scoped(section_name::document_head);
         status = status_concat(status, head(sections.current_policy(), content, context));
@@ -235,7 +237,7 @@ Content_Status write_head_body_document(
 constexpr std::u8string_view indent = u8"  ";
 constexpr std::u8string_view newline_indent = u8"\n  ";
 
-Content_Status
+Processing_Status
 write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Context& context)
 {
     HTML_Writer writer { out };
@@ -301,7 +303,7 @@ write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Con
                 u8"Failed to convert the syntax highlight theme to CSS, "
                 u8"possibly because the JSON was malformed."sv
             );
-            return Content_Status::error;
+            return Processing_Status::error;
         }
         writer.write_inner_html(indent);
         writer.close_tag(u8"style");
@@ -309,10 +311,10 @@ write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Con
 
     include_css_or_js(u8"script", assets::light_dark_js);
     writer.write_inner_html(u8'\n');
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
-Content_Status write_wg21_body_contents(
+Processing_Status write_wg21_body_contents(
     Content_Policy& out,
     std::span<const ast::Content> content,
     Context& context
@@ -324,7 +326,7 @@ Content_Status write_wg21_body_contents(
     writer.write_inner_html(u8'\n');
 
     Paragraph_Split_Policy policy { out, context.get_transient_memory() };
-    const Content_Status result = consume_all(policy, content, context);
+    const Processing_Status result = consume_all(policy, content, context);
     policy.leave_paragraph();
 
     writer.close_tag(u8"main");

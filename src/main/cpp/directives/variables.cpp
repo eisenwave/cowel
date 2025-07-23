@@ -34,7 +34,7 @@ long long operate(Expression_Type type, long long x, long long y)
 
 } // namespace
 
-Content_Status
+Processing_Status
 Expression_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
@@ -42,7 +42,7 @@ Expression_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
     for (const ast::Argument& arg : d.get_arguments()) {
         std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
         const auto arg_status = to_plaintext(arg_text, arg.get_content(), context);
-        if (arg_status != Content_Status::ok) {
+        if (arg_status != Processing_Status::ok) {
             return arg_status;
         }
         const auto arg_string = as_u8string_view(arg_text);
@@ -78,10 +78,10 @@ Expression_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
 
     const Characters8 result_chars = to_characters8(result);
     out.write(result_chars.as_string(), Output_Language::text);
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
-Content_Status
+Processing_Status
 Variable_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     Argument_Matcher args { parameters, context.get_transient_memory() };
@@ -91,10 +91,10 @@ Variable_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Cont
     if (argument_to_plaintext(data, d, args, var_parameter, context)) {
         return generate_var(out, d, as_u8string_view(data), context);
     }
-    return Content_Status::error;
+    return Processing_Status::error;
 }
 
-Content_Status Get_Variable_Behavior::generate_var(
+Processing_Status Get_Variable_Behavior::generate_var(
     Content_Policy& out,
     const ast::Directive&,
     std::u8string_view var,
@@ -107,10 +107,10 @@ Content_Status Get_Variable_Behavior::generate_var(
     if (it != context.get_variables().end()) {
         out.write(std::u8string_view { it->second }, Output_Language::text);
     }
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
-Content_Status set_variable_to_op_result(
+Processing_Status set_variable_to_op_result(
     Variable_Operation op,
     const ast::Directive& d,
     std::u8string_view var,
@@ -119,7 +119,7 @@ Content_Status set_variable_to_op_result(
 {
     std::pmr::vector<char8_t> body_string { context.get_transient_memory() };
     const auto status = to_plaintext(body_string, d.get_content(), context);
-    if (status != Content_Status::ok) {
+    if (status != Processing_Status::ok) {
         return status;
     }
 
@@ -136,7 +136,7 @@ Content_Status set_variable_to_op_result(
             it->second = std::move(value);
         }
     }
-    return Content_Status::ok;
+    return Processing_Status::ok;
 }
 
 } // namespace cowel
