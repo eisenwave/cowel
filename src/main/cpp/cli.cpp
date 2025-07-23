@@ -262,7 +262,7 @@ int main(int argc, const char* const* argv)
         .reserved_1 {}
     };
 
-    cowel_mutable_string_view_u8 result = cowel_generate_html_u8(&options);
+    const cowel_gen_result_u8 result = cowel_generate_html_u8(&options);
 
     const auto out_file = fopen_unique(out_path.data(), "wb");
     if (!out_file) {
@@ -273,9 +273,9 @@ int main(int argc, const char* const* argv)
         return EXIT_FAILURE;
     }
 
-    if (result.text != nullptr) {
-        std::fwrite(result.text, 1, result.length, out_file.get());
-        memory.deallocate(result.text, result.length, alignof(char8_t));
+    if (result.output.text != nullptr) {
+        std::fwrite(result.output.text, 1, result.output.length, out_file.get());
+        memory.deallocate(result.output.text, result.output.length, alignof(char8_t));
     }
 
     return logger.any_errors ? EXIT_FAILURE : EXIT_SUCCESS;
