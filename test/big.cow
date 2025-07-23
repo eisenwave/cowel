@@ -1,0 +1,228 @@
+\b{bold} test \b{bold}.
+
+\Babstract{Abstract}
+
+\Bdecision{Decision needed}
+
+\Bdel{Deleted content}
+
+\Bdetails{
+  \summary{Summary ...}
+  Details content
+}
+
+\Bdiff{Difference in \del{stuff} \ins{content}}
+
+\Bex{
+For example:
+\codeblock[cpp]{
+int x = 0;
+}
+}
+
+\Bins{Inserted content}
+
+\bib[
+  id = XYZ,
+  title = Sample bibliography item,
+  date = 1970-01-01
+]
+
+\Bimp{Important information!}
+
+\Bindent{
+  Indented content
+}
+
+Block content:\block{not in a paragraph}
+
+\blockquote{Quoted content (blockquote)}
+
+\Bnote{Informative note}
+
+\Bquote{Quoted content (Bquote)}
+
+Awoo\br
+Baka\br
+Chan\br
+Desu.
+
+\Btip{Useful advice}
+
+\Btodo{To be done ...}
+
+\Bug{Something went wrong.}
+
+\Bwarn{Be cautious about this.}
+
+He\c{shy}llo \c{mldr}
+
+Add: \Cadd[8, 2]
+Div: \Cdiv[8, 2]
+Mul: \Cmul[8, 2]
+Sub: \Csub[8, 2]
+
+\caption{Caption}
+
+\cite{Citation} text \cite{citation}.
+
+\code[cpp]{int x;}
+
+\codeblock[cpp]{
+int x = 0;
+}
+
+\colgroup{
+  \col{A}
+  \col{B}
+}
+
+\comment{Ignored content}
+
+\dfn{Definition} text \dfn{definition}.
+
+\div{Divider}
+
+\dl{
+  \dt{Definition term}
+  \dt{Definition description}
+}
+
+\em{Emphasized} text \em{emphasized}.
+
+\error{Error} text \error{error}.
+
+\gterm{grammar-term} text \gterm{grammar-term}.
+
+\h1{H1}
+\h2{H2}
+\h3{H3}
+\h4{H4}
+\h5{H5}
+\h6{H6}
+
+Inline here: \here[here-id]
+
+Block here: \hereblock[here-id]
+
+Goes to here-id: \there[here-id]{Elsewhere}
+
+\html-b{HTML b-tag}
+
+\i{Italic} text \i{italic}
+
+\inline{\block{abc}} inlined content.
+
+\kbd{Keyboard} text \kbd{keyboard}.
+
+\literally{\b{Literal COWEL}}
+
+\lorem_ipsum
+
+\macro[\awoo]{Awoo!}
+
+\awoo
+
+\mail{john@gmail.com}
+
+\make_bib
+
+\make_contents
+
+\mark{Marked} text \mark{marked}.
+
+Inline math: \math{\mi{x}}.
+
+Math block:
+\mathblock{\mi{x}}.
+
+\N{HORIZONTAL ELLIPSIS}
+
+\nobr{Long term}.
+
+\noscript{If JavaScript is disabled.}
+
+\o{Oblique} text \o{oblique}.
+
+\ol{
+  \li{First item.}
+  \li{Second item.}
+}
+
+\p{Paragraph}
+
+\paragraphs{
+First paragraph.
+
+Second paragraph.
+}
+
+\pre{Preformatted content.}
+
+\q{Quoted} text \q{quoted}.
+
+\s{Strike-through} text \s{strike-through}.
+
+\samp{Sample} text \samp{sample}.
+
+\sans{Sans-serif} text \sans{sans-serif}.
+
+\script{
+function f(x, y) { return x > y; }
+}
+
+\serif{Serif} text \serif{serif}.
+
+\style{
+.x>.y {
+  display: block;
+}
+}
+
+\sub{Subscript} text \sub{subscript}.
+
+\sup{Superscript} text \sup{superscript}.
+
+\table{
+  \thead{
+    \tr{
+      \th{A}
+      \th{B}
+    }
+  }
+  \tbody{
+    \tr{
+      \td{a}
+      \td{b}
+    }
+  }
+}
+
+\tel{123}
+
+\text{\b{Plaintext}}
+
+\trim{ trimmed text }
+
+\tt{Teletype} text \tt{teletype}.
+
+Digit zero: \U{30}.
+
+\u{Underlined} text \u{underlined}.
+
+Digits of digit zero: \Udigits{0}.
+
+\url{https://cowel.org}
+
+\var{Variable} text \var{variable}.
+
+\Vset[x]{123}
+\Vget[x]
+
+Long\wbr{}word
+
+\wg21_example{For example.}
+
+\wg21_note{Please note.}
+
+\block{The end.}

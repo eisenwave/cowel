@@ -356,6 +356,12 @@ constexpr Basic_Test basic_tests[] {
       Path { u8"paragraphs.cow.html" },
       Processing_Status::ok,
       {},
+      Test_Behavior::paragraphs },
+
+    { Path { u8"big.cow" },
+      Path { u8"big.cow.html" },
+      Processing_Status::ok,
+      {},
       Test_Behavior::paragraphs }
 };
 // clang-format on
@@ -469,11 +475,18 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
                 Diagnostic_String error { &memory };
                 append_test_details(error, test);
                 error.append(
-                    u8"Test failed because an unexpected diagnostic was emitted:\n",
+                    u8"Test failed because unexpected diagnostics were emitted:\n",
                     Diagnostic_Highlight::error_text
                 );
-                error.append(logger.diagnostics.front().id, Diagnostic_Highlight::code_citation);
-                error.append(u8"\n");
+                for (const Collected_Diagnostic& d : logger.diagnostics) {
+                    error.append(d.message, Diagnostic_Highlight::text);
+                    error.append(u8' ');
+                    error.build(Diagnostic_Highlight::code_position)
+                        .append(u8'[')
+                        .append(logger.diagnostics.front().id)
+                        .append(u8']');
+                    error.append(u8'\n');
+                }
                 print_flush_code_string_stdout(error);
             }
             continue;
