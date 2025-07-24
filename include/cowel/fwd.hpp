@@ -60,6 +60,7 @@ template <typename>
 struct Basic_Transparent_String_View_Hash;
 template <typename>
 struct Basic_Transparent_String_View_Less;
+enum struct Blank_Line_Initial_State : bool;
 enum struct Diagnostic_Highlight : Default_Underlying;
 struct Content_Policy;
 struct Context;

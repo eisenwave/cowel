@@ -14,8 +14,9 @@
 
 namespace cowel {
 
-Blank_Line find_blank_line_sequence // NOLINT(bugprone-exception-escape)
-    (std::u8string_view str) noexcept
+Blank_Line
+// NOLINTNEXTLINE(bugprone-exception-escape)
+find_blank_line_sequence(std::u8string_view str, Blank_Line_Initial_State initial_state) noexcept
 {
     enum struct State : Default_Underlying {
         /// @brief We are at the start of a line.
@@ -25,7 +26,9 @@ Blank_Line find_blank_line_sequence // NOLINT(bugprone-exception-escape)
         /// @brief At least one line is blank.
         blank,
     };
-    State state = State::maybe_blank;
+    static_assert(static_cast<State>(Blank_Line_Initial_State::normal) == State::maybe_blank);
+    static_assert(static_cast<State>(Blank_Line_Initial_State::middle) == State::not_blank);
+    auto state = static_cast<State>(initial_state);
 
     std::size_t blank_begin = 0;
     std::size_t blank_end;
