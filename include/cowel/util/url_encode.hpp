@@ -117,6 +117,21 @@ void url_encode_ascii_if(Output out, std::u8string_view str, F filter)
     }
 }
 
+template <string_or_char_consumer Output, typename F>
+    requires std::is_invocable_r_v<bool, F, char8_t>
+void url_encode_ascii_if(Output out, Char_Sequence8 str, F filter)
+{
+    if (str.is_contiguous()) {
+        url_encode_ascii_if(out, str.as_string_view(), std::move(filter));
+        return;
+    }
+    char8_t buffer[default_char_sequence_buffer_size];
+    while (!str.empty()) {
+        const std::size_t n = str.extract(buffer);
+        url_encode_ascii_if(out, std::u8string_view { buffer, n }, filter);
+    }
+}
+
 } // namespace cowel
 
 #endif
