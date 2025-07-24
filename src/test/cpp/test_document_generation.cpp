@@ -356,17 +356,13 @@ constexpr Basic_Test basic_tests[] {
     { Path { u8"comments.cow" },
       Path { u8"comments.cow.html" } },
     
-    { Path { u8"paragraphs.cow" },
-      Path { u8"paragraphs.cow.html" },
-      Processing_Status::ok,
-      {},
-      Test_Behavior::paragraphs },
+    { .document = Path { u8"paragraphs.cow" },
+      .expected_html = Path { u8"paragraphs.cow.html" },
+      .behavior = Test_Behavior::paragraphs },
 
-    { Path { u8"big.cow" },
-      Path { u8"big.cow.html" },
-      Processing_Status::ok,
-      {},
-      Test_Behavior::paragraphs }
+    { .document = Path { u8"paragraphs_with_comments.cow" },
+      .expected_html = Path { u8"paragraphs_with_comments.cow.html" },
+      .behavior = Test_Behavior::paragraphs }
 };
 // clang-format on
 
