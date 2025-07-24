@@ -360,6 +360,10 @@ constexpr Basic_Test basic_tests[] {
       .expected_html = Path { u8"paragraphs.cow.html" },
       .behavior = Test_Behavior::paragraphs },
 
+    { .document = Path { u8"paragraphs_deep.cow" },
+      .expected_html = Path { u8"paragraphs_deep.cow.html" },
+      .behavior = Test_Behavior::paragraphs },
+
     { .document = Path { u8"paragraphs_with_comments.cow" },
       .expected_html = Path { u8"paragraphs_with_comments.cow.html" },
       .behavior = Test_Behavior::paragraphs }
