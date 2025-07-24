@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <span>
 #include <string_view>
 #include <vector>
 
@@ -18,6 +17,8 @@
 #include "cowel/fwd.hpp"
 
 namespace cowel {
+
+using namespace std::string_view_literals;
 
 enum struct Attribute_Encoding : Default_Underlying {
     text,
@@ -64,7 +65,7 @@ constexpr char8_t attribute_style_quote_char(Attribute_Style style)
     COWEL_ASSERT_UNREACHABLE(u8"Invalid attribute style.");
 }
 
-template <string_or_char_consumer Out>
+template <std::invocable<Char_Sequence8> Out>
 struct Basic_Attribute_Writer;
 
 /// @brief A class which provides member functions for writing HTML content to a stream
@@ -79,7 +80,7 @@ struct Basic_Attribute_Writer;
 /// To correctly use this class, the opening tags must match the closing tags.
 /// I.e. for every `begin_tag(tag, type)` or `begin_tag_with_attributes(tag, type)`,
 /// there must be a matching `end_tag(tag, type)`.
-template <string_or_char_consumer Out>
+template <std::invocable<Char_Sequence8> Out>
 struct Basic_HTML_Writer {
 public:
     friend Basic_Attribute_Writer<Out>;
@@ -151,7 +152,7 @@ public:
     Self& write_preamble()
     {
         COWEL_ASSERT(!m_in_attributes);
-        m_out(u8"<!DOCTYPE html>\n");
+        m_out(u8"<!DOCTYPE html>\n"sv);
         return *this;
     }
 
@@ -163,7 +164,7 @@ public:
 
         m_out(u8'<');
         m_out(id);
-        m_out(u8"/>");
+        m_out(u8"/>"sv);
 
         return *this;
     }
@@ -171,9 +172,9 @@ public:
     /// @brief Writes an HTML comment with the given contents.
     Self& write_comment(std::u8string_view comment)
     {
-        m_out(u8"<!--");
-        append_html_escaped_of(m_out, comment, u8"<>");
-        m_out(u8"-->");
+        m_out(u8"<!--"sv);
+        append_html_escaped_of(m_out, comment, u8"<>"sv);
+        m_out(u8"-->"sv);
         return *this;
     }
 
@@ -199,7 +200,7 @@ public:
 
         m_out(u8'<');
         m_out(id);
-        m_out(u8"></");
+        m_out(u8"></"sv);
         m_out(id);
         m_out(u8'>');
 
@@ -234,7 +235,7 @@ public:
 
         --m_depth;
 
-        m_out(u8"</");
+        m_out(u8"</"sv);
         m_out(id);
         m_out(u8'>');
 
@@ -246,7 +247,7 @@ public:
     void write_inner_text(std::u8string_view text)
     {
         COWEL_ASSERT(!m_in_attributes);
-        append_html_escaped_of(m_out, text, u8"&<>");
+        append_html_escaped_of(m_out, text, u8"&<>"sv);
     }
     void write_inner_text(std::u32string_view text)
     {
@@ -260,62 +261,26 @@ public:
         COWEL_DEBUG_ASSERT(is_ascii(c));
         write_inner_text({ &c, 1 });
     }
-    void write_inner_text(char32_t c)
-    {
-        COWEL_DEBUG_ASSERT(!m_in_attributes);
-        COWEL_DEBUG_ASSERT(is_scalar_value(c));
-        m_out(
-            is_html_min_raw_passthrough_character(c) ? utf8::encode8_unchecked(c).as_string()
-                                                     : html_entity_of(c)
-        );
-    }
 
     /// @brief Writes HTML content between tags.
     /// Unlike `write_inner_text`, does not escape any entities.
     ///
     /// WARNING: Improper use of this function can easily result in incorrect HTML output.
-    void write_inner_html(std::u8string_view text)
+    void write_inner_html(Char_Sequence8 text)
     {
         COWEL_ASSERT(!m_in_attributes);
         m_out(text);
-    }
-    void write_inner_html(std::u32string_view text)
-    {
-        COWEL_ASSERT(!m_in_attributes);
-        for (const char32_t c : text) {
-            write_inner_html(c);
-        }
-    }
-    void write_inner_html(char8_t c)
-    {
-        COWEL_DEBUG_ASSERT(is_ascii(c));
-        m_out(c);
-    }
-    void write_inner_html(char32_t c)
-    {
-        COWEL_DEBUG_ASSERT(!m_in_attributes);
-        COWEL_DEBUG_ASSERT(is_scalar_value(c));
-        m_out(utf8::encode8_unchecked(c).as_string());
     }
 
 private:
     Attribute_Quoting write_attribute(
         std::u8string_view key,
-        std::u8string_view value,
+        Char_Sequence8 value,
         Attribute_Style style,
         Attribute_Encoding encoding
     )
     {
-        return write_attribute(key, { &value, 1 }, style, encoding);
-    }
-    Attribute_Quoting write_attribute(
-        std::u8string_view key,
-        std::span<const std::u8string_view> value_parts,
-        Attribute_Style style,
-        Attribute_Encoding encoding
-    )
-    {
-        if (std::ranges::all_of(value_parts, [](std::u8string_view s) { return s.empty(); })) {
+        if (value.empty()) {
             return write_empty_attribute(key, style);
         }
 
@@ -328,44 +293,39 @@ private:
         const char8_t quote_char = attribute_style_quote_char(style);
         m_out(u8'=');
 
-        const bool omit_quotes = !attribute_style_demands_quotes(style)
-            && std::ranges::all_of(value_parts, [](std::u8string_view s) {
-                   return is_html_unquoted_attribute_value(s);
-               });
+        const bool omit_quotes = !attribute_style_demands_quotes(style) //
+            && value.is_contiguous() //
+            && is_html_unquoted_attribute_value(value.as_string_view());
 
         if (omit_quotes) {
-            for (const std::u8string_view part : value_parts) {
-                switch (encoding) {
-                case Attribute_Encoding::text: {
-                    m_out(part);
-                    break;
-                }
-                case Attribute_Encoding::url: {
-                    url_encode_ascii_if(m_out, part, [](char8_t c) {
-                        return is_url_always_encoded(c);
-                    });
-                    break;
-                }
-                }
+            switch (encoding) {
+            case Attribute_Encoding::text: {
+                m_out(value);
+                break;
+            }
+            case Attribute_Encoding::url: {
+                url_encode_ascii_if(m_out, value, [](char8_t c) {
+                    return is_url_always_encoded(c);
+                });
+                break;
+            }
             }
         }
         else {
             m_out(quote_char);
-            for (const std::u8string_view part : value_parts) {
-                switch (encoding) {
-                case Attribute_Encoding::text: {
-                    append_html_escaped_of(m_out, part, u8"\"'");
-                    break;
-                }
-                case Attribute_Encoding::url: {
-                    url_encode_ascii_if(m_out, part, [](char8_t c) {
-                        static_assert(is_url_always_encoded(u8'"'));
-                        static_assert(!is_url_always_encoded(u8'\''));
-                        return c == u8'\'' || is_url_always_encoded(c);
-                    });
-                    break;
-                }
-                }
+            switch (encoding) {
+            case Attribute_Encoding::text: {
+                append_html_escaped_of(m_out, value, u8"\"'"sv);
+                break;
+            }
+            case Attribute_Encoding::url: {
+                url_encode_ascii_if(m_out, value, [](char8_t c) {
+                    static_assert(is_url_always_encoded(u8'"'));
+                    static_assert(!is_url_always_encoded(u8'\''));
+                    return c == u8'\'' || is_url_always_encoded(c);
+                });
+                break;
+            }
             }
             m_out(quote_char);
         }
@@ -383,11 +343,11 @@ private:
 
         switch (style) {
         case Attribute_Style::always_double: {
-            m_out(u8"=\"\"");
+            m_out(u8"=\"\""sv);
             return Attribute_Quoting::quoted;
         }
         case Attribute_Style::always_single: {
-            m_out(u8"=''");
+            m_out(u8"=''"sv);
             return Attribute_Quoting::quoted;
         }
         default: {
@@ -409,7 +369,7 @@ private:
     {
         COWEL_ASSERT(m_in_attributes);
 
-        m_out(u8"/>");
+        m_out(u8"/>"sv);
         m_in_attributes = false;
 
         return *this;
@@ -418,7 +378,7 @@ private:
 
 /// @brief RAII helper class which lets us write attributes more conveniently.
 /// This class is not intended to be used directly, but with the help of `HTML_Writer`.
-template <string_or_char_consumer Out>
+template <std::invocable<Char_Sequence8> Out>
 struct Basic_Attribute_Writer {
 private:
     Basic_HTML_Writer<Out>& m_writer;
@@ -448,7 +408,7 @@ public:
     /// @return `*this`
     Basic_Attribute_Writer& write_attribute(
         std::u8string_view key,
-        std::u8string_view value,
+        Char_Sequence8 value,
         Attribute_Style style = Attribute_Style::double_if_needed
     )
     {
@@ -458,26 +418,11 @@ public:
         return *this;
     }
 
-    /// @brief Like the overload taking a single `string_view` as a value,
-    /// but allows for the attribute to consist of multiple parts,
-    /// which are joined together.
-    Basic_Attribute_Writer& write_attribute(
-        std::u8string_view key,
-        std::span<const std::u8string_view> value_parts,
-        Attribute_Style style = Attribute_Style::double_if_needed
-    )
-    {
-        const Attribute_Quoting quoting
-            = m_writer.write_attribute(key, value_parts, style, Attribute_Encoding::text);
-        m_unsafe_slash = quoting == Attribute_Quoting::none;
-        return *this;
-    }
-
     /// @brief Like `write_attribute`,
     /// but applies minimal URL encoding to the value.
     Basic_Attribute_Writer& write_url_attribute(
         std::u8string_view key,
-        std::u8string_view value,
+        Char_Sequence8 value,
         Attribute_Style style = Attribute_Style::double_if_needed
     )
     {
@@ -497,69 +442,63 @@ public:
         return *this;
     }
 
-    Basic_Attribute_Writer& write_charset(
-        std::u8string_view value,
-        Attribute_Style style = Attribute_Style::double_if_needed
-    )
+    Basic_Attribute_Writer&
+    write_charset(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"charset", value, style);
+        return write_attribute(u8"charset"sv, value, style);
     }
 
     Basic_Attribute_Writer&
-    write_class(std::u8string_view value, Attribute_Style style = Attribute_Style::double_if_needed)
+    write_class(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"class", value, style);
+        return write_attribute(u8"class"sv, value, style);
     }
 
-    Basic_Attribute_Writer& write_content(
-        std::u8string_view value,
-        Attribute_Style style = Attribute_Style::double_if_needed
-    )
+    Basic_Attribute_Writer&
+    write_content(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"content", value, style);
+        return write_attribute(u8"content"sv, value, style);
     }
 
     Basic_Attribute_Writer& write_crossorigin()
     {
-        return write_empty_attribute(u8"crossorigin");
+        return write_empty_attribute(u8"crossorigin"sv);
     }
 
     Basic_Attribute_Writer&
-    write_href(std::u8string_view value, Attribute_Style style = Attribute_Style::double_if_needed)
+    write_href(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"href", value, style);
+        return write_attribute(u8"href"sv, value, style);
     }
 
     Basic_Attribute_Writer&
-    write_id(std::u8string_view value, Attribute_Style style = Attribute_Style::double_if_needed)
+    write_id(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"id", value, style);
+        return write_attribute(u8"id"sv, value, style);
     }
 
     Basic_Attribute_Writer&
-    write_name(std::u8string_view value, Attribute_Style style = Attribute_Style::double_if_needed)
+    write_name(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"name", value, style);
+        return write_attribute(u8"name"sv, value, style);
     }
 
     Basic_Attribute_Writer&
-    write_rel(std::u8string_view value, Attribute_Style style = Attribute_Style::double_if_needed)
+    write_rel(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"rel", value, style);
+        return write_attribute(u8"rel"sv, value, style);
     }
 
     Basic_Attribute_Writer&
-    write_src(std::u8string_view value, Attribute_Style style = Attribute_Style::double_if_needed)
+    write_src(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"src", value, style);
+        return write_attribute(u8"src"sv, value, style);
     }
 
-    Basic_Attribute_Writer& write_tabindex(
-        std::u8string_view value,
-        Attribute_Style style = Attribute_Style::double_if_needed
-    )
+    Basic_Attribute_Writer&
+    write_tabindex(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"tabindex", value, style);
+        return write_attribute(u8"tabindex"sv, value, style);
     }
 
     /// @brief Writes `>` and finishes writing attributes.
@@ -601,13 +540,9 @@ struct To_Text_Sink_Consumer {
     {
     }
 
-    void operator()(std::u8string_view str) const
+    void operator()(Char_Sequence8 str) const
     {
         out.write(str, Output_Language::html);
-    }
-    void operator()(char8_t c) const
-    {
-        out.write(c, Output_Language::html);
     }
 };
 
