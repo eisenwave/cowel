@@ -290,6 +290,16 @@ constexpr Basic_Test basic_tests[] {
     { Source { u8"\\script{let x = 3 < 5; let y = true && false;}\n" },
       Source { u8"<script>let x = 3 < 5; let y = true && false;</script>\n" } },
 
+    { Source { u8"\\script{</script>}" },
+      Source { u8"<script></script>" },
+      Processing_Status::error,
+      { diagnostic::raw_text_closing } },
+    
+    { Source { u8"\\style{</style>}" },
+      Source { u8"<style></style>" },
+      Processing_Status::error,
+      { diagnostic::raw_text_closing } },
+
     { Source { u8"\\code{}\n" },
       Source { u8"<code></code>\n" },
       Processing_Status::ok,
