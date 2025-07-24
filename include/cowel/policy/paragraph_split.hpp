@@ -172,14 +172,14 @@ public:
         m_current_guard->release();
     }
 
-    // FIXME: these should not function when the directive depth is more than 1
-    //        because otherwise, we may enter a situation like \x{\y{...}}
-    //        where \x has no paragraph interaction and \y calls leave_paragraph(),
-    //        resulting in:
-    //            <x></p><y>...</y></x>
     void enter_paragraph()
     {
-        if (m_state == Paragraphs_State::outside) {
+        // We check for <= 1 depth rather than zero so that a directive can simply call
+        // enter_paragraph() or leave_paragraph() if it appears at the "top level"
+        // relative to the paragraph split policy.
+        //
+        // However, any directives nested within
+        if (m_directive_depth <= 1 && m_state == Paragraphs_State::outside) {
             write(opening_tag, Output_Language::html);
             m_state = Paragraphs_State::inside;
         }
@@ -187,7 +187,7 @@ public:
 
     void leave_paragraph()
     {
-        if (m_state == Paragraphs_State::inside) {
+        if (m_directive_depth <= 1 && m_state == Paragraphs_State::inside) {
             write(closing_tag, Output_Language::html);
             m_state = Paragraphs_State::outside;
         }
