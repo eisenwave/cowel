@@ -10,6 +10,7 @@
 #include "cowel/context.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/output_language.hpp"
+#include "cowel/parse_utils.hpp"
 #include "cowel/util/char_sequence_ops.hpp"
 
 namespace cowel {
@@ -22,6 +23,7 @@ private:
     static constexpr std::u8string_view closing_tag = u8"</p>";
 
     Paragraphs_State m_state;
+    Blank_Line_Initial_State m_line_state = Blank_Line_Initial_State::middle;
     std::pmr::memory_resource* m_memory;
 
     // The following two members have vaguely similar purposes,
@@ -112,12 +114,16 @@ public:
     [[nodiscard]]
     Processing_Status consume(const ast::Comment&, Context&) override
     {
+        // Comments syntactically include the terminating newline,
+        // so a leading newline following a comment would be considered a paragraph break.
+        m_line_state = Blank_Line_Initial_State::normal;
         return Processing_Status::ok;
     }
 
     [[nodiscard]]
     Processing_Status consume(const ast::Escaped& escape, Context&) override
     {
+        m_line_state = Blank_Line_Initial_State::middle;
         const std::u8string_view text = expand_escape(escape);
         if (text.empty()) {
             return Processing_Status::ok;
@@ -139,7 +145,7 @@ public:
         // Since consume() may be entered recursively for the same policy
         // (e.g. in \paragraphs{\i{\b{...}}}),
         // a simple bool is insufficient to keep track of whether we are in a directive.
-
+        m_line_state = Blank_Line_Initial_State::middle;
         Directive_Depth_Guard depth_guard { *this };
         return apply_behavior(*this, directive, context);
     }
@@ -147,6 +153,8 @@ public:
     [[nodiscard]]
     Processing_Status consume(const ast::Generated& generated, Context&) override
     {
+        // We deliberately don't update m_line_state here
+        // because paragraph splitting generally operates on syntactical elements.
         write(generated.as_string(), generated.get_type());
         return Processing_Status::ok;
     }
