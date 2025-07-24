@@ -32,13 +32,15 @@ long long operate(Expression_Type type, long long x, long long y)
     COWEL_ASSERT_UNREACHABLE(u8"Invalid expression type.");
 }
 
-} // namespace
-
-Processing_Status
-Expression_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
-    const
+Result<long long, Processing_Status> compute_expression(
+    Expression_Type type,
+    Content_Policy& out,
+    const ast::Directive& d,
+    Context& context
+)
 {
-    long long result = expression_type_neutral_element(m_type);
+    long long result = expression_type_neutral_element(type);
+    bool first = true;
     for (const ast::Argument& arg : d.get_arguments()) {
         std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
         const auto arg_status = to_plaintext(arg_text, arg.get_content(), context);
@@ -59,7 +61,7 @@ Expression_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
             );
             return try_generate_error(out, d, context);
         }
-        if (m_type == Expression_Type::divide && *x == 0) {
+        if (type == Expression_Type::divide && *x == 0) {
             const std::u8string_view message[] {
                 u8"The dividend \"",
                 arg_string,
@@ -71,12 +73,33 @@ Expression_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
             );
             return try_generate_error(out, d, context);
         }
-        result = operate(m_type, result, *x);
+
+        if (first) {
+            first = false;
+            result = *x;
+        }
+        else {
+            result = operate(type, result, *x);
+        }
+    }
+
+    return result;
+}
+
+} // namespace
+
+Processing_Status
+Expression_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+    const
+{
+    const Result<long long, Processing_Status> result = compute_expression(m_type, out, d, context);
+    if (!result) {
+        return result.error();
     }
 
     try_enter_paragraph(out);
 
-    const Characters8 result_chars = to_characters8(result);
+    const Characters8 result_chars = to_characters8(*result);
     out.write(result_chars.as_string(), Output_Language::text);
     return Processing_Status::ok;
 }
