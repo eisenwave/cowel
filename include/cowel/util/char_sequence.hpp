@@ -267,6 +267,13 @@ public:
         return nullptr;
     }
 
+    /// @brief Equivalent to `as_contiguous() != nullptr`.
+    [[nodiscard]]
+    constexpr bool is_contiguous() const noexcept
+    {
+        return as_contiguous() != nullptr;
+    }
+
     /// @brief If `as_contiguous` returns a non-null pointer,
     /// returns `std::u8string_view{as_contiguous(), size()}`.
     /// Otherwise, returns an empty string view.
