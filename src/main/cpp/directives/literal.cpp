@@ -79,15 +79,32 @@ HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
     if (status_is_break(attributes_status)) {
         return attributes_status;
     }
+    Processing_Status status = attributes_status;
 
     std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
     const auto content_status = to_plaintext(buffer, d.get_content(), context);
+    status = status_concat(status, content_status);
     if (status_is_continue(content_status)) {
-        // FIXME: this could produce malformed HTML if the generated CSS/JS contains a closing tag
-        writer.write_inner_html(as_u8string_view(buffer));
+        COWEL_ASSERT(m_tag_name == u8"style"sv || m_tag_name == u8"script"sv);
+        const std::u8string_view needle
+            = m_tag_name == u8"style"sv ? u8"</style"sv : u8"</script"sv;
+        if (as_u8string_view(buffer).contains(needle)) {
+            context.try_error(
+                diagnostic::raw_text_closing, d.get_source_span(),
+                joined_char_sequence({
+                    u8"The content within this directive unexpectedly contained a closing \"",
+                    needle,
+                    u8"\", which would result in producing malformed HTML.",
+                })
+            );
+            status = status_concat(status, Processing_Status::error);
+        }
+        else {
+            writer.write_inner_html(as_u8string_view(buffer));
+        }
     }
     writer.close_tag(m_tag_name);
-    return status_concat(attributes_status, content_status);
+    return status;
 }
 
 } // namespace cowel
