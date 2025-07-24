@@ -271,12 +271,17 @@ Processing_Status Macro_Instantiate_Behavior::operator()(
     COWEL_ASSERT(definition);
 
     std::pmr::vector<ast::Content> instance { context.get_transient_memory() };
-    const auto status
+    const auto instantiate_status
         = instantiate_macro(instance, *definition, d.get_arguments(), d.get_content(), context);
-    if (status_is_break(status)) {
-        return status;
+    if (status_is_break(instantiate_status)) {
+        return instantiate_status;
     }
-    return consume_all(out, instance, context);
+
+    try_activate_paragraphs_in_directive(out);
+
+    const auto consume_status = consume_all(out, instance, context);
+
+    return status_concat(instantiate_status, consume_status);
 }
 
 } // namespace cowel
