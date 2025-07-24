@@ -172,7 +172,7 @@ URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
     Attribute_Writer attributes = writer.open_tag_with_attributes(u8"a");
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.write_href(url_string);
-    attributes.write_class(u8"sans");
+    attributes.write_class(u8"sans"sv);
     attributes.end();
     warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
 

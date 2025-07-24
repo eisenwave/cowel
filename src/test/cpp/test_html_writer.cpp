@@ -11,6 +11,8 @@
 
 #include "cowel/policy/capture.hpp"
 
+using namespace std::string_view_literals;
+
 namespace cowel {
 namespace {
 
@@ -34,99 +36,99 @@ TEST_F(HTML_Writer_Test, empty)
 
 TEST_F(HTML_Writer_Test, inner_html)
 {
-    constexpr std::u8string_view expected = u8"<html>Hello, world!</html>";
+    constexpr std::u8string_view expected = u8"<html>Hello, world!</html>"sv;
 
-    writer.write_inner_html(u8"<html>Hello, world!</html>");
+    writer.write_inner_html(u8"<html>Hello, world!</html>"sv);
 
     EXPECT_EQ(expected, as_view(*out));
 }
 
 TEST_F(HTML_Writer_Test, inner_text)
 {
-    constexpr std::u8string_view expected = u8"&lt;hello&amp;";
+    constexpr std::u8string_view expected = u8"&lt;hello&amp;"sv;
 
-    writer.write_inner_text(u8"<hello&");
+    writer.write_inner_text(u8"<hello&"sv);
 
     EXPECT_EQ(expected, as_view(*out));
 }
 
 TEST_F(HTML_Writer_Test, tag)
 {
-    constexpr std::u8string_view expected = u8"<b>Hello, world!</b>";
+    constexpr std::u8string_view expected = u8"<b>Hello, world!</b>"sv;
 
-    writer.open_tag(u8"b");
-    writer.write_inner_text(u8"Hello, world!");
-    writer.close_tag(u8"b");
+    writer.open_tag(u8"b"sv);
+    writer.write_inner_text(u8"Hello, world!"sv);
+    writer.close_tag(u8"b"sv);
 
     EXPECT_EQ(expected, as_view(*out));
 }
 
 TEST_F(HTML_Writer_Test, empty_tag)
 {
-    constexpr std::u8string_view expected = u8"<br/>";
+    constexpr std::u8string_view expected = u8"<br/>"sv;
 
-    writer.write_self_closing_tag(u8"br");
+    writer.write_self_closing_tag(u8"br"sv);
 
     EXPECT_EQ(expected, as_view(*out));
 }
 
 TEST_F(HTML_Writer_Test, empty_attributes)
 {
-    constexpr std::u8string_view expected = u8"<x a b=\"\" c></x>";
+    constexpr std::u8string_view expected = u8"<x a b=\"\" c></x>"sv;
 
-    writer.open_tag_with_attributes(u8"x")
-        .write_empty_attribute(u8"a", Attribute_Style::double_if_needed)
-        .write_empty_attribute(u8"b", Attribute_Style::always_double)
-        .write_empty_attribute(u8"c", Attribute_Style::double_if_needed)
+    writer.open_tag_with_attributes(u8"x"sv)
+        .write_empty_attribute(u8"a"sv, Attribute_Style::double_if_needed)
+        .write_empty_attribute(u8"b"sv, Attribute_Style::always_double)
+        .write_empty_attribute(u8"c"sv, Attribute_Style::double_if_needed)
         .end();
-    writer.close_tag(u8"x");
+    writer.close_tag(u8"x"sv);
 
     EXPECT_EQ(expected, as_view(*out));
 }
 
 TEST_F(HTML_Writer_Test, attributes_with_values_quotes_if_needed)
 {
-    constexpr std::u8string_view expected = u8"<x id=name class='a b' hidden></x>";
+    constexpr std::u8string_view expected = u8"<x id=name class='a b' hidden></x>"sv;
 
-    writer.open_tag_with_attributes(u8"x")
-        .write_attribute(u8"id", u8"name", Attribute_Style::single_if_needed)
-        .write_attribute(u8"class", u8"a b", Attribute_Style::single_if_needed)
-        .write_attribute(u8"hidden", u8"", Attribute_Style::single_if_needed)
+    writer.open_tag_with_attributes(u8"x"sv)
+        .write_attribute(u8"id"sv, u8"name"sv, Attribute_Style::single_if_needed)
+        .write_attribute(u8"class"sv, u8"a b"sv, Attribute_Style::single_if_needed)
+        .write_attribute(u8"hidden"sv, u8""sv, Attribute_Style::single_if_needed)
         .end();
-    writer.close_tag(u8"x");
+    writer.close_tag(u8"x"sv);
 
     EXPECT_EQ(expected, as_view(*out));
 }
 
 TEST_F(HTML_Writer_Test, attributes_with_values_always_quotes)
 {
-    constexpr std::u8string_view expected = u8"<x id='name' class='a b' hidden=''></x>";
+    constexpr std::u8string_view expected = u8"<x id='name' class='a b' hidden=''></x>"sv;
 
-    writer.open_tag_with_attributes(u8"x")
-        .write_attribute(u8"id", u8"name", Attribute_Style::always_single)
-        .write_attribute(u8"class", u8"a b", Attribute_Style::always_single)
-        .write_attribute(u8"hidden", u8"", Attribute_Style::always_single)
+    writer.open_tag_with_attributes(u8"x"sv)
+        .write_attribute(u8"id"sv, u8"name"sv, Attribute_Style::always_single)
+        .write_attribute(u8"class"sv, u8"a b"sv, Attribute_Style::always_single)
+        .write_attribute(u8"hidden"sv, u8""sv, Attribute_Style::always_single)
         .end();
-    writer.close_tag(u8"x");
+    writer.close_tag(u8"x"sv);
 
     EXPECT_EQ(expected, as_view(*out));
 }
 
 TEST_F(HTML_Writer_Test, attributes_but_empty)
 {
-    constexpr std::u8string_view expected = u8"<br/>";
+    constexpr std::u8string_view expected = u8"<br/>"sv;
 
-    writer.open_tag_with_attributes(u8"br").end_empty();
+    writer.open_tag_with_attributes(u8"br"sv).end_empty();
 
     EXPECT_EQ(expected, as_view(*out));
 }
 
 TEST_F(HTML_Writer_Test, attributes_escape)
 {
-    constexpr std::u8string_view expected = u8"<x id='&apos;'/>";
+    constexpr std::u8string_view expected = u8"<x id='&apos;'/>"sv;
 
-    writer.open_tag_with_attributes(u8"x")
-        .write_attribute(u8"id", u8"'", Attribute_Style::single_if_needed)
+    writer.open_tag_with_attributes(u8"x"sv)
+        .write_attribute(u8"id"sv, u8"'"sv, Attribute_Style::single_if_needed)
         .end_empty();
 
     EXPECT_EQ(expected, as_view(*out));
@@ -135,7 +137,7 @@ TEST_F(HTML_Writer_Test, attributes_escape)
 TEST(HTML_Entities, empty)
 {
     constexpr std::array<char32_t, 2> expected {};
-    const std::array<char32_t, 2> actual = code_points_by_character_reference_name(u8"");
+    const std::array<char32_t, 2> actual = code_points_by_character_reference_name(u8""sv);
 
     EXPECT_EQ(expected, actual);
 }
@@ -143,7 +145,7 @@ TEST(HTML_Entities, empty)
 TEST(HTML_Entities, amp)
 {
     constexpr std::array<char32_t, 2> expected { U'&' };
-    const std::array<char32_t, 2> actual = code_points_by_character_reference_name(u8"amp");
+    const std::array<char32_t, 2> actual = code_points_by_character_reference_name(u8"amp"sv);
 
     EXPECT_EQ(expected, actual);
 }
@@ -151,7 +153,7 @@ TEST(HTML_Entities, amp)
 TEST(HTML_Entities, bne)
 {
     constexpr std::array<char32_t, 2> expected { U'\u003D', U'\u20E5' };
-    const std::array<char32_t, 2> actual = code_points_by_character_reference_name(u8"bne");
+    const std::array<char32_t, 2> actual = code_points_by_character_reference_name(u8"bne"sv);
 
     EXPECT_EQ(expected, actual);
 }

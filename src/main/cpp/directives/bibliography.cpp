@@ -38,20 +38,20 @@ constexpr auto is_url_always_encoded_lambda = [](char8_t c) { return is_url_alwa
 void write_bibliography_entry(HTML_Writer& out, const Document_Info& info, Context& context)
 {
     const auto open_link_tag = [&](std::u8string_view url, bool link_class = false) {
-        out.write_inner_html(u8"<a href=\"");
+        out.write_inner_html(u8"<a href=\""sv);
         url_encode_to_writer(out, url, context, is_url_always_encoded_lambda);
         out.write_inner_html(u8'"');
         if (link_class) {
-            out.write_inner_html(u8" class=bib-link");
+            out.write_inner_html(u8" class=bib-link"sv);
         }
         out.write_inner_html(u8'>');
     };
 
     const std::u8string_view id_parts[] { bib_item_id_prefix, info.id };
 
-    out.open_tag_with_attributes(u8"div") //
-        .write_attribute(u8"id", id_parts)
-        .write_class(u8"bib-item")
+    out.open_tag_with_attributes(u8"div"sv) //
+        .write_attribute(u8"id"sv, joined_char_sequence(id_parts))
+        .write_class(u8"bib-item"sv)
         .end();
     out.write_inner_html(u8'\n');
 
@@ -65,13 +65,13 @@ void write_bibliography_entry(HTML_Writer& out, const Document_Info& info, Conte
     out.write_inner_html(u8']');
 
     if (!info.link.empty()) {
-        out.write_inner_html(u8"</a>");
+        out.write_inner_html(u8"</a>"sv);
     }
 
     if (!info.author.empty()) {
         out.write_inner_html(u8'\n');
-        out.open_tag_with_attributes(u8"span") //
-            .write_class(u8"bib-author")
+        out.open_tag_with_attributes(u8"span"sv) //
+            .write_class(u8"bib-author"sv)
             .end();
         out.write_inner_text(info.author);
         out.write_inner_html(u8'.');
@@ -79,26 +79,26 @@ void write_bibliography_entry(HTML_Writer& out, const Document_Info& info, Conte
     }
     if (!info.title.empty()) {
         out.write_inner_html(u8'\n');
-        out.open_tag_with_attributes(u8"span") //
-            .write_class(u8"bib-title")
+        out.open_tag_with_attributes(u8"span"sv) //
+            .write_class(u8"bib-title"sv)
             .end();
         out.write_inner_text(info.title);
         out.close_tag(u8"span");
     }
     if (!info.date.empty()) {
-        out.write_inner_html(u8"\n");
-        out.open_tag_with_attributes(u8"span") //
-            .write_class(u8"bib-date")
+        out.write_inner_html(u8"\n"sv);
+        out.open_tag_with_attributes(u8"span"sv) //
+            .write_class(u8"bib-date"sv)
             .end();
         out.write_inner_text(info.date);
-        out.close_tag(u8"span");
+        out.close_tag(u8"span"sv);
     }
 
     const auto write_link = [&](std::u8string_view url) {
         out.write_inner_html(u8'\n');
         open_link_tag(url, true);
         out.write_inner_text(url);
-        out.write_inner_html(u8"</a>");
+        out.write_inner_html(u8"</a>"sv);
     };
 
     if (!info.long_link.empty()) {
@@ -108,7 +108,7 @@ void write_bibliography_entry(HTML_Writer& out, const Document_Info& info, Conte
         write_link(info.link);
     }
 
-    out.close_tag(u8"div");
+    out.close_tag(u8"div"sv);
 }
 
 } // namespace
@@ -224,20 +224,20 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
             // If the document info has a link,
             // then we want references to bibliography entries (e.g. "[N5008]")
             // to use that link.
-            section_writer.write_inner_html(u8"<a href=\"");
+            section_writer.write_inner_html(u8"<a href=\""sv);
             url_encode_to_writer(
                 section_writer, result.info.link, context, is_url_always_encoded_lambda
             );
-            section_writer.write_inner_html(u8"\">");
+            section_writer.write_inner_html(u8"\">"sv);
         }
         else {
             // Otherwise, the reference should redirect down
             // to the respective entry within the bibliography.
             // In any case, it's important to guarantee that an <a> element will be emitted.
-            const std::u8string_view id_parts[] { u8"#", bib_item_id_prefix, result.info.id };
+            const std::u8string_view id_parts[] { u8"#"sv, bib_item_id_prefix, result.info.id };
             section_writer
-                .open_tag_with_attributes(u8"a") //
-                .write_attribute(u8"id", id_parts)
+                .open_tag_with_attributes(u8"a"sv) //
+                .write_attribute(u8"id"sv, joined_char_sequence(id_parts))
                 .end();
             section_writer.set_depth(0);
         }

@@ -160,7 +160,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             writer.write_inner_text(target_string);
             writer.write_inner_html(u8']');
         }
-        writer.write_inner_html(u8"</a>"); // no close_tag to avoid depth check
+        writer.write_inner_html(u8"</a>"sv); // no close_tag to avoid depth check
         return Processing_Status::ok;
     }
 
@@ -204,7 +204,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
         || (url_scheme_is_web(classification.url_scheme)
             && classification.page != Known_Page::eelis_draft);
     if (is_sans) {
-        attributes.write_class(u8"sans");
+        attributes.write_class(u8"sans"sv);
     }
     attributes.end();
 

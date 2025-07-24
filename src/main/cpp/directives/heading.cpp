@@ -162,11 +162,11 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     if (has_valid_id) {
         id_data.insert(id_data.begin(), u8'#');
         writer
-            .open_tag_with_attributes(u8"a") //
-            .write_class(u8"para")
-            .write_url_attribute(u8"href", as_u8string_view(id_data))
+            .open_tag_with_attributes(u8"a"sv) //
+            .write_class(u8"para"sv)
+            .write_url_attribute(u8"href"sv, as_u8string_view(id_data))
             .end();
-        writer.close_tag(u8"a");
+        writer.close_tag(u8"a"sv);
     }
     const auto write_numbers = [&](HTML_Writer& to) {
         for (int i = min_listing_level; i <= m_level; ++i) {
@@ -179,7 +179,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     };
     if (is_listed && is_number_shown) {
         write_numbers(writer);
-        writer.write_inner_html(u8". ");
+        writer.write_inner_html(u8". "sv);
     }
     writer.write_inner_html(heading_html_string);
     writer.close_tag(tag_name);
@@ -196,10 +196,10 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
 
         const auto scope = sections.go_to_scoped(section_name);
         HTML_Writer id_preview_out { sections.current_policy() };
-        id_preview_out.write_inner_html(u8"§");
+        id_preview_out.write_inner_html(u8"§"sv);
         if (is_listed && is_number_shown) {
             write_numbers(id_preview_out);
-            id_preview_out.write_inner_html(u8". ");
+            id_preview_out.write_inner_html(u8". "sv);
         }
         else {
             id_preview_out.write_inner_html(u8' ');
@@ -214,18 +214,18 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
         HTML_Writer toc_writer { sections.current_policy() };
 
         toc_writer
-            .open_tag_with_attributes(u8"div") //
-            .write_class(u8"toc-num")
-            .write_attribute(u8"data-level", tag_name.substr(1))
+            .open_tag_with_attributes(u8"div"sv) //
+            .write_class(u8"toc-num"sv)
+            .write_attribute(u8"data-level"sv, tag_name.substr(1))
             .end();
         write_numbers(toc_writer);
-        toc_writer.close_tag(u8"div");
+        toc_writer.close_tag(u8"div"sv);
         toc_writer.write_inner_html(u8'\n'); // non-functional, purely for prettier HTML output
 
         if (has_valid_id) {
             toc_writer
-                .open_tag_with_attributes(u8"a") //
-                .write_url_attribute(u8"href", as_u8string_view(id_data))
+                .open_tag_with_attributes(u8"a"sv) //
+                .write_url_attribute(u8"href"sv, as_u8string_view(id_data))
                 .end();
         }
 
@@ -234,7 +234,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
         toc_writer.close_tag(tag_name);
 
         if (has_valid_id) {
-            toc_writer.close_tag(u8"a");
+            toc_writer.close_tag(u8"a"sv);
         }
         toc_writer.write_inner_html(u8'\n'); // non-functional, purely for prettier HTML output
     }

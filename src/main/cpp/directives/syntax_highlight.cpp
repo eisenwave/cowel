@@ -141,7 +141,7 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
         Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
         if (!*borders) {
             COWEL_ASSERT(m_display != Directive_Display::in_line);
-            attributes.write_class(u8"borderless");
+            attributes.write_class(u8"borderless"sv);
         }
         attributes.end();
     }

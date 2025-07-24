@@ -260,31 +260,31 @@ write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Con
     writer.write_inner_html(indent);
 
     writer
-        .open_tag_with_attributes(u8"meta") //
-        .write_charset(u8"UTF-8")
+        .open_tag_with_attributes(u8"meta"sv) //
+        .write_charset(u8"UTF-8"sv)
         .end_empty();
     writer
-        .open_tag_with_attributes(u8"meta") //
-        .write_name(u8"viewport")
-        .write_content(u8"width=device-width, initial-scale=1")
+        .open_tag_with_attributes(u8"meta"sv) //
+        .write_name(u8"viewport"sv)
+        .write_content(u8"width=device-width, initial-scale=1"sv)
         .end_empty();
 
     writer
-        .open_tag_with_attributes(u8"link") //
-        .write_rel(u8"preconnent")
-        .write_href(u8"https://fonts.googleapis.com")
+        .open_tag_with_attributes(u8"link"sv) //
+        .write_rel(u8"preconnent"sv)
+        .write_href(u8"https://fonts.googleapis.com"sv)
         .end_empty();
     writer.write_inner_html(newline_indent);
     writer
-        .open_tag_with_attributes(u8"link") //
-        .write_rel(u8"preconnent")
-        .write_href(u8"https://fonts.gstatic.com")
+        .open_tag_with_attributes(u8"link"sv) //
+        .write_rel(u8"preconnent"sv)
+        .write_href(u8"https://fonts.gstatic.com"sv)
         .write_crossorigin()
         .end_empty();
     writer.write_inner_html(newline_indent);
     writer
-        .open_tag_with_attributes(u8"link") //
-        .write_rel(u8"stylesheet")
+        .open_tag_with_attributes(u8"link"sv) //
+        .write_rel(u8"stylesheet"sv)
         .write_href(google_fonts_url)
         .end_empty();
 
