@@ -72,18 +72,6 @@ constexpr std::u8string_view as_u8string_view(std::string_view text)
     return { reinterpret_cast<const char8_t*>(text.data()), text.size() };
 }
 
-[[nodiscard]]
-constexpr bool contains(std::u8string_view str, char8_t c)
-{
-    return str.find(c) != std::u8string_view::npos;
-}
-
-[[nodiscard]]
-constexpr bool contains(std::u32string_view str, char32_t c)
-{
-    return str.find(c) != std::u32string_view::npos;
-}
-
 namespace detail {
 
 /// @brief Rudimentary version of `std::ranges::all_of` to avoid including all of `<algorithm>`

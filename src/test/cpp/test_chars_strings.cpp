@@ -112,98 +112,98 @@ TEST(Chars, is_cowel_directive_name_character)
 TEST(Charsets, all_ascii_digit8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_digit8, c), is_ascii_digit(c));
+        EXPECT_EQ(all_ascii_digit8.contains(c), is_ascii_digit(c));
     }
 }
 
 TEST(Charsets, all_ascii_digit)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_digit, c), is_ascii_digit(c));
+        EXPECT_EQ(all_ascii_digit.contains(c), is_ascii_digit(c));
     }
 }
 
 TEST(Charsets, all_ascii_lower_alpha8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_lower_alpha8, c), is_ascii_lower_alpha(c));
+        EXPECT_EQ(all_ascii_lower_alpha8.contains(c), is_ascii_lower_alpha(c));
     }
 }
 
 TEST(Charsets, all_ascii_lower_alpha)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_lower_alpha, c), is_ascii_lower_alpha(c));
+        EXPECT_EQ(all_ascii_lower_alpha.contains(c), is_ascii_lower_alpha(c));
     }
 }
 
 TEST(Charsets, all_ascii_upper_alpha8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_upper_alpha8, c), is_ascii_upper_alpha(c));
+        EXPECT_EQ(all_ascii_upper_alpha8.contains(c), is_ascii_upper_alpha(c));
     }
 }
 
 TEST(Charsets, all_ascii_upper_alpha)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_upper_alpha, c), is_ascii_upper_alpha(c));
+        EXPECT_EQ(all_ascii_upper_alpha.contains(c), is_ascii_upper_alpha(c));
     }
 }
 
 TEST(Charsets, all_ascii_alpha8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_alpha8, c), is_ascii_alpha(c));
+        EXPECT_EQ(all_ascii_alpha8.contains(c), is_ascii_alpha(c));
     }
 }
 
 TEST(Charsets, all_ascii_alpha)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_alpha, c), is_ascii_alpha(c));
+        EXPECT_EQ(all_ascii_alpha.contains(c), is_ascii_alpha(c));
     }
 }
 
 TEST(Charsets, all_ascii_alphanumeric8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_alphanumeric8, c), is_ascii_alphanumeric(c));
+        EXPECT_EQ(all_ascii_alphanumeric8.contains(c), is_ascii_alphanumeric(c));
     }
 }
 
 TEST(Charsets, all_ascii_alphanumeric)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_alphanumeric, c), is_ascii_alphanumeric(c));
+        EXPECT_EQ(all_ascii_alphanumeric.contains(c), is_ascii_alphanumeric(c));
     }
 }
 
 TEST(Charsets, all_ascii_whitespace8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_whitespace8, c), is_html_whitespace(c));
+        EXPECT_EQ(all_ascii_whitespace8.contains(c), is_html_whitespace(c));
     }
 }
 
 TEST(Charsets, all_ascii_whitespace)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_whitespace, c), is_html_whitespace(c));
+        EXPECT_EQ(all_ascii_whitespace.contains(c), is_html_whitespace(c));
     }
 }
 
 TEST(Charsets, all_ascii_blank8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_blank8, c), is_ascii_blank(c));
+        EXPECT_EQ(all_ascii_blank8.contains(c), is_ascii_blank(c));
     }
 }
 
 TEST(Charsets, all_ascii_blank)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_blank, c), is_ascii_blank(c));
+        EXPECT_EQ(all_ascii_blank.contains(c), is_ascii_blank(c));
     }
 }
 
