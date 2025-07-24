@@ -169,17 +169,23 @@ Result<void, Syntax_Highlight_Error> Syntax_Highlight_Policy::write_highlighted(
 
 void Paragraph_Split_Policy::split_into_paragraphs(std::u8string_view text)
 {
-    // We need to consider the special case of a single leading `\n`.
-    // This is technically a blank line when it appears at the start of a string,
-    // but is irrelevant to forming paragraphs.
-    //
-    // For example, we could have two `\b{}` directives separated by a single newline.
-    // This is a blank line when looking at the contents of the `ast::Text` node,
-    // but isn't a blank line within the context of the document.
-    if (const Blank_Line blank = find_blank_line_sequence(text);
-        blank.begin == 0 && blank.length == 1) {
-        HTML_Content_Policy::write(text[0], Output_Language::html);
-        text.remove_prefix(1);
+    const auto new_state = text.empty()                    ? m_line_state
+        : text.ends_with(u8'\r') || text.ends_with(u8'\n') ? Blank_Line_Initial_State::normal
+                                                           : Blank_Line_Initial_State::middle;
+
+    if (m_line_state == Blank_Line_Initial_State::middle) {
+        // We need to consider the special case of a single leading `\n`.
+        // This is technically a blank line when it appears at the start of a string,
+        // but is irrelevant to forming paragraphs.
+        //
+        // For example, we could have two `\b{}` directives separated by a single newline.
+        // This is a blank line when looking at the contents of the `ast::Text` node,
+        // but isn't a blank line within the context of the document.
+        if (const Blank_Line blank = find_blank_line_sequence(text);
+            blank.begin == 0 && blank.length == 1) {
+            HTML_Content_Policy::write(text[0], Output_Language::html);
+            text.remove_prefix(1);
+        }
     }
 
     while (!text.empty()) {
@@ -204,6 +210,8 @@ void Paragraph_Split_Policy::split_into_paragraphs(std::u8string_view text)
         HTML_Content_Policy::write(text.substr(0, blank.length), Output_Language::text);
         text.remove_prefix(blank.length);
     }
+
+    m_line_state = new_state;
 }
 
 } // namespace cowel
