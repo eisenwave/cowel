@@ -292,27 +292,23 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
                                            .highlighter = highlighter,
                                            .memory = memory };
 
-    [[maybe_unused]]
-    // FIXME: use the content status somehow
-    const Processing_Status status
-        = run_generation(
-            [&](Context& context) -> Processing_Status {
-                const Macro_Name_Resolver macro_resolver { builtin_behavior.get_macro_behavior() };
-                context.add_resolver(builtin_behavior);
-                context.add_resolver(macro_resolver);
+    const Processing_Status status = run_generation(
+        [&](Context& context) -> Processing_Status {
+            const Macro_Name_Resolver macro_resolver { builtin_behavior.get_macro_behavior() };
+            context.add_resolver(builtin_behavior);
+            context.add_resolver(macro_resolver);
 
-                if (options.mode == COWEL_MODE_MINIMAL) {
-                    return consume_all(html_policy, root_content, context);
-                }
-                COWEL_ASSERT(options.mode == COWEL_MODE_DOCUMENT);
-                return write_wg21_document(html_policy, root_content, context);
-            },
-            gen_options
-        );
+            if (options.mode == COWEL_MODE_MINIMAL) {
+                return consume_all(html_policy, root_content, context);
+            }
+            COWEL_ASSERT(options.mode == COWEL_MODE_DOCUMENT);
+            return write_wg21_document(html_policy, root_content, context);
+        },
+        gen_options
+    );
 
     // This is safe because output is never destroyed,
     // so we keep its allocation alive.
-
     return {
         .status = static_cast<cowel_processing_status>(status),
         .output = { output.data(), output.size() },
