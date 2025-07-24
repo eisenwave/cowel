@@ -527,7 +527,7 @@ public:
     Basic_Attribute_Writer&
     write_href(std::u8string_view value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_url_attribute(u8"href", value, style);
+        return write_attribute(u8"href", value, style);
     }
 
     Basic_Attribute_Writer&

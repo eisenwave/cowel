@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset=UTF-8 /><meta name=viewport content="width=device-width, initial-scale=1"/><link rel=preconnent href=https://fonts%2egoogleapis%2ecom />
-  <link rel=preconnent href=https://fonts%2egstatic%2ecom crossorigin/>
-  <link rel=stylesheet href="https://fonts%2egoogleapis%2ecom/css2?family=Fira+Code:wght@300%2e%2e700&family=Noto+Sans:ital,wght@0,100%2e%2e900;1,100%2e%2e900&family=Noto+Serif:ital,wght@0,100%2e%2e900;1,100%2e%2e900&display=swap"/>
+  <meta charset=UTF-8 /><meta name=viewport content="width=device-width, initial-scale=1"/><link rel=preconnent href=https://fonts.googleapis.com />
+  <link rel=preconnent href=https://fonts.gstatic.com crossorigin/>
+  <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap"/>
   <style>
 html {
     --sans-serif-family: "Noto Sans", sans-serif;
@@ -1484,7 +1484,7 @@ h1 {
     margin-bottom: 3em;
 }
 </style>
-<a href=https://github%2ecom/eisenwave/cowel class=sans>github.com/eisenwave/cowel</a>
+<a href=https://github.com/eisenwave/cowel class=sans>github.com/eisenwave/cowel</a>
 </div>
 
 <h2 id=contents><a class=para href=#contents></a>Contents</h2>
@@ -2528,7 +2528,7 @@ while italic text is fundamentally a different font with different characters.
 <h3 id=code><a class=para href=#code></a>7.3. Code and syntax highlighting</h3>
 
 <p>COWEL uses
-<a href=https://github%2ecom/Eisenwave/ulight>µlight</a>
+<a href=https://github.com/Eisenwave/ulight>µlight</a>
 for syntax highlighting.
 While the set of supported language is relatively small,
 the highlighter is ultra-light, extremely fast, and
@@ -2673,7 +2673,7 @@ in the appropriate syntax highlighting tags.
 </p>
 <p>It has a single <tt->name</tt-> argument, which is the µlight <dfn>long name</dfn> for a highlight type.
 You can obtain a list of possible long names at
-<a href=https://github%2ecom/Eisenwave/ulight/blob/main/include/ulight/ulight%2eh><tt->ulight.h</tt-></a>
+<a href=https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h><tt->ulight.h</tt-></a>
 from the definition of <code><h- data-h=kw>enum</h-> <h- data-h=id>ulight_highlight_type</h-></code>.
 The long name is the enumerator name without the <tt->ULIGHT_HL</tt-> prefix,
 all lowercase, and with hyphens instead of underscores.
@@ -2792,7 +2792,7 @@ disregarding the semantics of any directives nested within.
 <h3 id=math><a class=para href=#math></a>7.4. Math</h3>
 
 <p>In recent years, browser support for
-<a href=https://developer%2emozilla%2eorg/en-US/docs/Web/MathML>MathML</a>
+<a href=https://developer.mozilla.org/en-US/docs/Web/MathML>MathML</a>
 within HTML has become widespread.
 COWEL relies entirely on the browser for properly rendering math as MathML,
 which is very simple and lightweight,
@@ -2839,7 +2839,7 @@ and within it, additional pseudo-directives like <code><h- data-h=mk_tag>\mi</h-
 corresponding to MathML elements can be used.
 Essentially, this allows you to build MathML using COWEL syntax.
 </p>
-<p>See <a href=https://developer%2emozilla%2eorg/en-US/docs/Web/MathML/Reference/Element>Mozilla's MathML elements reference</a>
+<p>See <a href=https://developer.mozilla.org/en-US/docs/Web/MathML/Reference/Element>Mozilla's MathML elements reference</a>
 for a list of supported elements/directives.
 </p>
 <example-block><p><intro-></intro-> 
@@ -2942,7 +2942,7 @@ COWEL has the <code><h- data-h=mk_tag>\U</h-></code> and <code><h- data-h=mk_tag
 
 <p>The input to a <code><h- data-h=mk_tag>\U</h-></code> directive is a plaintext context,
 which should be a sequence of hexadecimal numbers
-specifying a <a href=https://infra%2espec%2ewhatwg%2eorg/#scalar-value>Unicode scalar value</a>;
+specifying a <a href=https://infra.spec.whatwg.org/#scalar-value>Unicode scalar value</a>;
 that is, a code point which UTF-8 permits to be encoded.
 </p>
 <example-block><p><intro-></intro-> 
@@ -2957,7 +2957,7 @@ Like anywhere else, directives inside of <code><h- data-h=mk_tag>\U</h-></code> 
 
 <p>The <code><h- data-h=mk_tag>\N</h-></code> directive behaves almost identically to <code><h- data-h=mk_tag>\U</h-></code>,
 except that its input has to be a
-<a href=https://www%2eunicode%2eorg/reports/tr34/#Names>Unicode name</a>
+<a href=https://www.unicode.org/reports/tr34/#Names>Unicode name</a>
 rather than a hex digits.
 That is, the name of a code point,
 or one of its "control", "alternate", or "correction" aliases.
@@ -3453,7 +3453,7 @@ C++ standard draft links can be synthesized into human-readable descriptions.
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->https://eel.is/c++draft/expr#1<h- data-h=sym_sqr>]</h-></code-block>
 <p>This renders as:
 </p><div class=indent>
-<a href=https://eel%2eis/c++draft/expr#1>[expr] paragraph 1</a>
+<a href=https://eel.is/c++draft/expr#1>[expr] paragraph 1</a>
 </div>
 </example-block>
 
