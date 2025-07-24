@@ -262,6 +262,9 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<error->\\U{D800}</error->\n" },
       Processing_Status::error,
       { diagnostic::U::nonscalar } },
+    
+    { Source { u8"\\url{https://cowel.org}" },
+      Source { u8"<a href=https://cowel.org class=sans>https://cowel.org</a>" } },
 
     { Source { u8"\\h1{Heading}\n" },
       Source { u8"<h1 id=heading><a class=para href=#heading></a>Heading</h1>\n" } },
