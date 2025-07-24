@@ -164,7 +164,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
         writer
             .open_tag_with_attributes(u8"a") //
             .write_class(u8"para")
-            .write_href(as_u8string_view(id_data))
+            .write_url_attribute(u8"href", as_u8string_view(id_data))
             .end();
         writer.close_tag(u8"a");
     }
@@ -225,7 +225,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
         if (has_valid_id) {
             toc_writer
                 .open_tag_with_attributes(u8"a") //
-                .write_href(as_u8string_view(id_data))
+                .write_url_attribute(u8"href", as_u8string_view(id_data))
                 .end();
         }
 
