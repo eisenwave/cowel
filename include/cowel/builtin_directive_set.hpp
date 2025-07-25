@@ -779,9 +779,9 @@ public:
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
-struct Include_Behavior final : Directive_Behavior {
+struct Include_Text_Behavior final : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Include_Behavior()
+    constexpr explicit Include_Text_Behavior()
         = default;
 
     [[nodiscard]]
@@ -789,9 +789,9 @@ struct Include_Behavior final : Directive_Behavior {
     operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
-struct Import_Behavior final : Directive_Behavior {
+struct Include_Behavior final : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Import_Behavior()
+    constexpr explicit Include_Behavior()
         = default;
 
     [[nodiscard]]

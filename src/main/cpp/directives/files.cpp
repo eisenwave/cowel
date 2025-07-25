@@ -34,6 +34,45 @@ std::u8string_view file_load_error_explanation(File_Load_Error error)
 } // namespace
 
 Processing_Status
+Include_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+    const
+{
+    // TODO: warn about ignored arguments
+
+    std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
+    const auto path_status = to_plaintext(path_data, d.get_content(), context);
+    switch (path_status) {
+    case Processing_Status::ok: break;
+    case Processing_Status::brk: return Processing_Status::brk;
+    case Processing_Status::error:
+    case Processing_Status::error_brk:
+    case Processing_Status::fatal: return Processing_Status::fatal;
+    }
+
+    if (path_data.empty()) {
+        context.try_error(
+            diagnostic::file_path_missing, d.get_source_span(),
+            u8"The given path to include text data from cannot empty."sv
+        );
+        return Processing_Status::fatal;
+    }
+
+    const auto path_string = as_u8string_view(path_data);
+    const Result<File_Entry, File_Load_Error> entry = context.get_file_loader().load(path_string);
+    if (!entry) {
+        const std::u8string_view message[] {
+            u8"Failed to include text from file \"", path_string, u8"\". ",
+            file_load_error_explanation(entry.error()),
+            u8" Note that files are loaded relative to the directory of the current document."
+        };
+        context.try_error(diagnostic::file_io, d.get_source_span(), joined_char_sequence(message));
+        return Processing_Status::fatal;
+    }
+    out.write(entry->source, Output_Language::text);
+    return Processing_Status::ok;
+}
+
+Processing_Status
 Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
     // TODO: warn about ignored arguments
@@ -50,47 +89,7 @@ Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
 
     if (path_data.empty()) {
         context.try_error(
-            diagnostic::include::path_missing, d.get_source_span(),
-            u8"The given path to include text data from cannot empty."sv
-        );
-        return Processing_Status::fatal;
-    }
-
-    const auto path_string = as_u8string_view(path_data);
-    const Result<File_Entry, File_Load_Error> entry = context.get_file_loader().load(path_string);
-    if (!entry) {
-        const std::u8string_view message[] {
-            u8"Failed to include text from file \"", path_string, u8"\". ",
-            file_load_error_explanation(entry.error()),
-            u8" Note that files are loaded relative to the directory of the current document."
-        };
-        context.try_error(
-            diagnostic::include::io, d.get_source_span(), joined_char_sequence(message)
-        );
-        return Processing_Status::fatal;
-    }
-    out.write(entry->source, Output_Language::text);
-    return Processing_Status::ok;
-}
-
-Processing_Status
-Import_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
-{
-    // TODO: warn about ignored arguments
-
-    std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
-    const auto path_status = to_plaintext(path_data, d.get_content(), context);
-    switch (path_status) {
-    case Processing_Status::ok: break;
-    case Processing_Status::brk: return Processing_Status::brk;
-    case Processing_Status::error:
-    case Processing_Status::error_brk:
-    case Processing_Status::fatal: return Processing_Status::fatal;
-    }
-
-    if (path_data.empty()) {
-        context.try_error(
-            diagnostic::import::path_missing, d.get_source_span(),
+            diagnostic::file_path_missing, d.get_source_span(),
             u8"The given path to include text data from cannot empty."sv
         );
         return Processing_Status::fatal;
@@ -104,9 +103,7 @@ Import_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
             file_load_error_explanation(entry.error()),
             u8" Note that files are loaded relative to the directory of the current document."
         };
-        context.try_error(
-            diagnostic::import::io, d.get_source_span(), joined_char_sequence(message)
-        );
+        context.try_error(diagnostic::file_io, d.get_source_span(), joined_char_sequence(message));
         return Processing_Status::fatal;
     }
 

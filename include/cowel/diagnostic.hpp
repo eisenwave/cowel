@@ -130,6 +130,14 @@ inline constexpr std::u8string_view html_element_name_missing = u8"html.element.
 /// the provided tag name is invalid.
 inline constexpr std::u8string_view html_element_name_invalid = u8"html.element.name.invalid";
 
+/// @brief In a `\cowel_include` directive,
+/// no file path was provided.
+inline constexpr std::u8string_view file_path_missing = u8"file.path.empty";
+
+/// @brief In a `\cowel_include` directive,
+/// the file could not be loaded.
+inline constexpr std::u8string_view file_io = u8"file.io";
+
 namespace c {
 
 /// @brief In `\\c`, the input is blank.
@@ -224,30 +232,6 @@ inline constexpr std::u8string_view name_missing = u8"hl:name.missing";
 inline constexpr std::u8string_view name_invalid = u8"hl:name.invalid";
 
 } // namespace hl
-
-namespace include {
-
-/// @brief In an `\include` directive,
-/// no file path was provided.
-inline constexpr std::u8string_view path_missing = u8"include:path.empty";
-
-/// @brief In an `\include` directive,
-/// the file could not be loaded.
-inline constexpr std::u8string_view io = u8"include:io";
-
-} // namespace include
-
-namespace import {
-
-/// @brief In an `\import` directive,
-/// no file path was provided.
-inline constexpr std::u8string_view path_missing = u8"import:path.empty";
-
-/// @brief In an `\import` directive,
-/// the file could not be loaded.
-inline constexpr std::u8string_view io = u8"import:io";
-
-} // namespace import
 
 namespace there {
 

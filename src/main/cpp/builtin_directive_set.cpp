@@ -19,11 +19,17 @@
 namespace cowel {
 
 struct Builtin_Directive_Set::Impl {
+    // New directives
     HTML_Element_Behavior cowel_html_element //
         { HTML_Element_Self_Closing::normal };
     HTML_Element_Behavior cowel_html_self_closing_element //
         { HTML_Element_Self_Closing::self_closing };
+    Include_Behavior cowel_include //
+        {};
+    Include_Text_Behavior cowel_include_text //
+        {};
 
+    // Legacy directives
     Fixed_Name_Passthrough_Behavior b //
         { u8"b", Policy_Usage::inherit, Directive_Display::in_line };
     Special_Block_Behavior Babstract //
@@ -136,10 +142,6 @@ struct Builtin_Directive_Set::Impl {
         { Policy_Usage::html, Directive_Display::block, html_tag_prefix };
     Fixed_Name_Passthrough_Behavior i //
         { u8"i", Policy_Usage::inherit, Directive_Display::in_line };
-    Import_Behavior import //
-        {};
-    Include_Behavior //
-        include {};
     HTML_Wrapper_Behavior in_line //
         { Directive_Display::in_line, To_HTML_Mode::direct };
     Fixed_Name_Passthrough_Behavior ins //
@@ -293,6 +295,9 @@ struct Builtin_Directive_Set::Impl {
     COWEL_DEPRECATED_ALIAS(hyphen_wg21_grammar, wg21_grammar);
     COWEL_DEPRECATED_ALIAS(hyphen_wg21_head, wg21_head);
     COWEL_DEPRECATED_ALIAS(hyphen_wg21_note, wg21_note);
+
+    COWEL_DEPRECATED_ALIAS(import, cowel_include);
+    COWEL_DEPRECATED_ALIAS(include, cowel_include_text);
 
     Impl() = default;
     ~Impl() = default;
@@ -566,6 +571,10 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
                 return &m_impl->cowel_html_element;
             if (name == u8"cowel_html_self_closing_element")
                 return &m_impl->cowel_html_self_closing_element;
+            if (name == u8"cowel_include")
+                return &m_impl->cowel_include;
+            if (name == u8"cowel_include_text")
+                return &m_impl->cowel_include_text;
         }
         if (name == u8"c")
             return &m_impl->c;
