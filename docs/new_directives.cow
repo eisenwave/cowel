@@ -1,0 +1,82 @@
+\h2{New directives}
+
+Find below a list of builtin directives.
+That is, directives that you can always use
+because they are "built into the language".
+
+\Bnote{
+These builtin directives should rarely be used directly,
+but through macro packages which utilize them.
+
+Even if one wanted to use them,
+builtin directive have long names which make them impractical for direct use in markup.
+However, those long names are self-document, unambiguous,
+and guaranteed not to collide with any user directives.
+}
+
+\h3{HTML utilities}
+
+\h4[
+  id=dir-cowel_html_element
+]{\cowdoc_dir{cowel_html_element} \c{mdash} HTML element}
+
+The \cowdoc_dir{cowel_html_element} directive generates content,
+surrounded in HTML opening and closing HTML tags.
+That is, it
+
+\ul{
+  \li{
+    writes an opening tag,
+    where any named arguments are converted to HTML attributes,
+  }
+  \li{
+    feeds the provided content into the current content policy, and then
+  }
+  \li{
+    writes a closing tag.
+  }
+}
+
+The name of the HTML tag is provided
+as the first positional argument to the directive.
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+This is \cowel_html_element[span, id=abc]{a span}.
+}}
+Generated HTML:
+\codeblock[html]{
+This is <span id=abc>a span</span>.
+}
+}
+
+A \cowdoc_dir{cowel_html_element} directive produces an error if the given
+tag name is not a valid HTML tag name, or
+if any of the argument names are invalid.
+
+\h4[
+  id=dir-cowel_html_self_closing_element
+]{\cowdoc_dir{cowel_html_self_closing_element} \c{mdash} Self-closing HTML element}
+
+The \cowdoc_dir{cowel_html_self_closing_element} directive generates a self-closing HTML element.
+That is, an element with no content,
+and where there is no closing tag.
+Content is ignored.
+
+The name of the tag is provided as the first positional argument,
+and any named arguments are converted to attributes of the tag.
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+Horizontal rule:
+\cowel_html_self_closing_element[hr, id=abc]{ignored}
+}}
+Generated HTML:
+\codeblock[html]{
+Horizontal rule:
+<hr id=abc />
+}
+}
+

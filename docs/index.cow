@@ -106,6 +106,8 @@ A VSCode plugin for proper highlighting is planned, among other features.
 \import{intro/syntax.cow}\
 \import{intro/directives.cow}\
 \import{intro/themes.cow}\
+\
+\import{new_directives.cow}\
 
 \h2{Legacy directives}
 
