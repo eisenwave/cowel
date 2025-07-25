@@ -44,14 +44,14 @@ std::array<char32_t, 2> get_code_points_from_digits(
         const std::u8string_view message = base == 10
             ? u8"Expected a sequence of decimal digits."sv
             : u8"Expected a sequence of hexadecimal digits."sv;
-        context.try_error(diagnostic::c::digits, d.get_source_span(), message);
+        context.try_error(diagnostic::char_digits, d.get_source_span(), message);
         return {};
     }
 
     const auto code_point = char32_t(*value);
     if (!is_scalar_value(code_point)) {
         context.try_error(
-            diagnostic::c::nonscalar, d.get_source_span(),
+            diagnostic::char_nonscalar, d.get_source_span(),
             u8"The given hex sequence is not a Unicode scalar value. "
             u8"Therefore, it cannot be encoded as UTF-8."sv
         );
@@ -67,7 +67,7 @@ get_code_points(std::u8string_view trimmed_text, const ast::Directive& d, Contex
 {
     if (trimmed_text.empty()) {
         context.try_error(
-            diagnostic::c::blank, d.get_source_span(),
+            diagnostic::char_blank, d.get_source_span(),
             u8"Expected an HTML character reference, but got a blank string."sv
         );
         return {};
@@ -80,7 +80,7 @@ get_code_points(std::u8string_view trimmed_text, const ast::Directive& d, Contex
     const std::array<char32_t, 2> result = code_points_by_character_reference_name(trimmed_text);
     if (result[0] == 0) {
         context.try_error(
-            diagnostic::c::name, d.get_source_span(), u8"Invalid named HTML character."sv
+            diagnostic::char_name, d.get_source_span(), u8"Invalid named HTML character."sv
         );
     }
     return result;

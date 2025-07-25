@@ -138,20 +138,6 @@ inline constexpr std::u8string_view file_path_missing = u8"file.path.empty";
 /// the file could not be loaded.
 inline constexpr std::u8string_view file_io = u8"file.io";
 
-namespace c {
-
-/// @brief In `\\c`, the input is blank.
-inline constexpr std::u8string_view blank = u8"c:blank";
-/// @brief In `\\c`, the name is invalid, like `\\c{nonsense}`.
-inline constexpr std::u8string_view name = u8"c:name";
-/// @brief In `\\c`, parsing digits failed, like `\\c{#x1234abc}`.
-inline constexpr std::u8string_view digits = u8"c:digits";
-/// @brief In `\\c`, a nonscalar value would be encoded.
-/// @see is_scalar_value
-inline constexpr std::u8string_view nonscalar = u8"c:nonscalar";
-
-} // namespace c
-
 namespace code {
 
 /// @brief In `\code`, the given `nested` parameter is not `yes` or `no`.
@@ -166,52 +152,32 @@ inline constexpr std::u8string_view borders_invalid = u8"codeblock:borders.inval
 
 } // namespace codeblock
 
-namespace U {
-
-/// @brief In `\\U`, the input is blank.
-inline constexpr std::u8string_view blank = u8"U:blank";
-/// @brief In `\\U`, parsing digits failed, like `\\U{abc}`.
-inline constexpr std::u8string_view digits = u8"U:digits";
-/// @brief In `\\U`, a nonscalar value would be encoded.
-/// @see is_scalar_value
-inline constexpr std::u8string_view nonscalar = u8"U:nonscalar";
-
-} // namespace U
-
-namespace N {
-
-/// @brief In `\\N`, the input is blank.
-inline constexpr std::u8string_view blank = u8"N:blank";
-/// @brief In `\\N`, the given name does not match any Unicode character name.
-inline constexpr std::u8string_view invalid = u8"N:invalid";
-
-} // namespace N
-
-namespace Udigits {
-
-/// @brief In a `\Udigits` directive,
+/// @brief In `\cowel_char`,
 /// the input is blank.
-inline constexpr std::u8string_view blank = u8"Udigits:blank";
-/// @brief In a `\Udigits` directive,
-/// the input malformed text.
-inline constexpr std::u8string_view malformed = u8"Udigits:malformed";
-/// @brief In a `\Udigits` directive,
-/// the input contains code units that were ignored because only the first code point is converted.
-inline constexpr std::u8string_view ignored = u8"Udigits:ignored";
-
+inline constexpr std::u8string_view char_blank = u8"char.blank";
+/// @brief In `\cowel_char`,
+/// parsing digits failed, like `\cowel_char_by_num{abc}`.
+inline constexpr std::u8string_view char_digits = u8"char.digits";
+/// @brief In `\cowel_char`,
+/// the given name does not match any Unicode character name.
+inline constexpr std::u8string_view char_name = u8"char.name";
+/// @brief In `\cowel_char`,
+/// a nonscalar value would be encoded.
+/// @see is_scalar_value
+inline constexpr std::u8string_view char_nonscalar = u8"char.nonscalar";
+/// @brief In a `\cowel_char` directive,
+/// the input is corrupted UTF-8 text.
+inline constexpr std::u8string_view char_corrupted = u8"char.corrupted";
 /// @brief The `zfill` argument could not be parsed as an integer.
-inline constexpr std::u8string_view zfill_not_an_integer = u8"Udigits:zfill.parse";
+inline constexpr std::u8string_view char_zfill_not_an_integer = u8"char.zfill.parse";
 /// @brief The `zfill` argument could not be parsed as an integer.
-inline constexpr std::u8string_view zfill_range = u8"Udigits:zfill.range";
+inline constexpr std::u8string_view char_zfill_range = u8"char.zfill.range";
 /// @brief The `base` argument could not be parsed as an integer.
-inline constexpr std::u8string_view base_not_an_integer = u8"Udigits:base.parse";
+inline constexpr std::u8string_view char_base_not_an_integer = u8"char.base.parse";
 /// @brief The `base` argument could not be parsed as an integer.
-inline constexpr std::u8string_view base_range = u8"Udigits:base.base";
-
+inline constexpr std::u8string_view char_base_range = u8"char.base.range";
 /// @brief The `lower` argument is neither `yes` nor `no`.
-inline constexpr std::u8string_view lower_invalid = u8"Udigits:lower.invalid";
-
-} // namespace Udigits
+inline constexpr std::u8string_view char_lower_invalid = u8"char.lower.invalid";
 
 namespace h {
 
