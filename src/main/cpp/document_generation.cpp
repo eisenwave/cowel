@@ -159,8 +159,6 @@ void warn_deprecated_directive_names(std::span<const ast::Content> content, Cont
     }
 }
 
-constexpr bool enable_warn_deprecated_directive_names = false;
-
 } // namespace
 
 Processing_Status write_head_body_document(
@@ -171,11 +169,7 @@ Processing_Status write_head_body_document(
     Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Content>, Context&)> body
 )
 {
-    // TODO: Enable once it's no longer necessary to have hyphens in directive names.
-    //       This will require changing directives like \html-X or \wg21-link.
-    if constexpr (enable_warn_deprecated_directive_names) {
-        warn_deprecated_directive_names(content, context);
-    }
+    warn_deprecated_directive_names(content, context);
 
     Document_Sections& sections = context.get_sections();
 
