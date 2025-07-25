@@ -5,10 +5,10 @@
 \macro[\cowdoc_attr{...}]{\tt{\hl[markup-attr]{\put}}}\
 \macro[\cowdoc_esc{...}]{\tt{\hl[escape]{\\\put}}}\
 \
-\macro[\cowdoc_og_property]{\html-meta[property=og:\put{0},content=\put]}\
+\macro[\cowdoc_og_property]{\cowel_html_element[meta,property=og:\put{0},content=\put]}\
 \
 \there[std.head]{
-\html-title{COWEL - Compact Web Language Documentation}
+\cowel_html_element[title]{COWEL - Compact Web Language Documentation}
 \cowdoc_og_property[title]{Compact Web Language (COWEL)}
 \cowdoc_og_property[description]{\
 COWEL is a markup language with TeX-like syntax, \
