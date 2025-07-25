@@ -122,6 +122,14 @@ inline constexpr std::u8string_view raw_text_closing = u8"raw-text.closing";
 
 // DIRECTIVE-SPECIFIC DIAGNOSTICS ==================================================================
 
+/// @brief In an HTML element directive,
+/// no tag name/element name was provided.
+inline constexpr std::u8string_view html_element_name_missing = u8"html.element.name.missing";
+
+/// @brief In an HTML element directive,
+/// the provided tag name is invalid.
+inline constexpr std::u8string_view html_element_name_invalid = u8"html.element.name.invalid";
+
 namespace c {
 
 /// @brief In `\\c`, the input is blank.

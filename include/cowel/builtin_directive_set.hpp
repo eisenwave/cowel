@@ -474,6 +474,27 @@ public:
         = 0;
 };
 
+enum struct HTML_Element_Self_Closing : bool {
+    normal,
+    self_closing,
+};
+
+struct HTML_Element_Behavior : Directive_Behavior {
+private:
+    const HTML_Element_Self_Closing m_self_closing;
+
+public:
+    [[nodiscard]]
+    constexpr explicit HTML_Element_Behavior(HTML_Element_Self_Closing self_closing)
+        : m_self_closing { self_closing }
+    {
+    }
+
+    [[nodiscard]]
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
+};
+
 struct In_Tag_Behavior : Directive_Behavior {
 protected:
     const std::u8string_view m_tag_name;

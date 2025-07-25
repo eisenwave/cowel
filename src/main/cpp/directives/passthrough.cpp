@@ -80,6 +80,78 @@ Passthrough_Behavior::operator()(Content_Policy& out, const ast::Directive& d, C
     return status_concat(attributes_status, content_status);
 }
 
+Processing_Status
+HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+    const
+{
+    const ast::Argument* first_positional = nullptr;
+    for (const ast::Argument& arg : d.get_arguments()) {
+        if (arg.has_name()) {
+            continue;
+        }
+        if (!first_positional) {
+            first_positional = &arg;
+            continue;
+        }
+        context.try_warning(
+            diagnostic::ignored_args, arg.get_source_span(),
+            u8"This positional argument is ignored. "
+            u8"Only the first positional argument is used as the tag name, "
+            u8"and only named arguments are converted to HTML attributes."sv
+        );
+    }
+    if (!first_positional) {
+        context.try_error(
+            diagnostic::html_element_name_missing, d.get_name_span(),
+            u8"A tag name must be provided (in the form of a positional argument)."sv
+        );
+        return try_generate_error(out, d, context);
+    }
+
+    std::pmr::vector<char8_t> name_text { context.get_transient_memory() };
+    const Processing_Status name_status
+        = to_plaintext(name_text, first_positional->get_content(), context);
+    if (name_status != Processing_Status::ok) {
+        return name_status;
+    }
+    const auto name_string = as_u8string_view(name_text);
+    if (!is_html_tag_name(name_string)) {
+        context.try_error(
+            diagnostic::html_element_name_invalid, first_positional->get_source_span(),
+            joined_char_sequence({
+                u8"The given tag name \""sv,
+                name_string,
+                u8"\" is not a valid HTML tag name."sv,
+            })
+        );
+        return try_generate_error(out, d, context);
+    }
+
+    HTML_Writer writer { out };
+    Attribute_Writer attributes = writer.open_tag_with_attributes(name_string);
+    auto status = named_arguments_to_attributes(attributes, d, context);
+
+    if (m_self_closing == HTML_Element_Self_Closing::self_closing) {
+        attributes.end_empty();
+        if (!d.get_content().empty()) {
+            context.try_warning(
+                diagnostic::ignored_content, d.get_source_span(),
+                u8"Content in a self-closing HTML element is ignored."sv
+            );
+        }
+    }
+    else {
+        attributes.end();
+        if (status_is_continue(status)) {
+            const auto content_status = consume_all(out, d.get_content(), context);
+            status = status_concat(content_status, status);
+        }
+        writer.close_tag(name_string);
+    }
+
+    return status;
+}
+
 // TODO: Passthrough_Behavior and In_Tag_Behavior are virtually identical.
 //       It would be better to merge them into one.
 Processing_Status

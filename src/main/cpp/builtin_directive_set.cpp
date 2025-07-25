@@ -19,6 +19,11 @@
 namespace cowel {
 
 struct Builtin_Directive_Set::Impl {
+    HTML_Element_Behavior cowel_html_element //
+        { HTML_Element_Self_Closing::normal };
+    HTML_Element_Behavior cowel_html_self_closing_element //
+        { HTML_Element_Self_Closing::self_closing };
+
     Fixed_Name_Passthrough_Behavior b //
         { u8"b", Policy_Usage::inherit, Directive_Display::in_line };
     Special_Block_Behavior Babstract //
@@ -556,6 +561,12 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
         break;
 
     case u8'c':
+        if (name.starts_with(u8"cowel_")) {
+            if (name == u8"cowel_html_element")
+                return &m_impl->cowel_html_element;
+            if (name == u8"cowel_html_self_closing_element")
+                return &m_impl->cowel_html_self_closing_element;
+        }
         if (name == u8"c")
             return &m_impl->c;
         if (name == u8"caption")
