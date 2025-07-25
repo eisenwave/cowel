@@ -354,6 +354,42 @@ constexpr Basic_Test basic_tests[] {
       Processing_Status::error,
       { diagnostic::directive_lookup_unresolved } },
 
+    { Source { u8"\\cowel_html_element[div]" },
+      Source { u8"<div></div>" } },
+
+    { Source { u8"\\cowel_html_element[span, id=abc, x]{span content}" },
+      Source { u8"<span id=abc>span content</span>" },
+      Processing_Status::ok,
+      { diagnostic::ignored_args } },
+
+    { Source { u8"\\cowel_html_element" },
+      Source { u8"<error->\\cowel_html_element</error->" },
+      Processing_Status::error,
+      { diagnostic::html_element_name_missing } },
+
+    { Source { u8"\\cowel_html_element[<]" },
+      Source { u8"<error->\\cowel_html_element[&lt;]</error->" },
+      Processing_Status::error,
+      { diagnostic::html_element_name_invalid } },
+
+    { Source { u8"\\cowel_html_self_closing_element[hr]" },
+      Source { u8"<hr/>" } },
+
+    { Source { u8"\\cowel_html_self_closing_element[hr, id=abc, x]{span content}" },
+      Source { u8"<hr id=abc />" },
+      Processing_Status::ok,
+      { diagnostic::ignored_content, diagnostic::ignored_args } },
+
+    { Source { u8"\\cowel_html_self_closing_element" },
+      Source { u8"<error->\\cowel_html_self_closing_element</error->" },
+      Processing_Status::error,
+      { diagnostic::html_element_name_missing } },
+
+    { Source { u8"\\cowel_html_self_closing_element[<]" },
+      Source { u8"<error->\\cowel_html_self_closing_element[&lt;]</error->" },
+      Processing_Status::error,
+      { diagnostic::html_element_name_invalid } },
+
     { Source { u8"" },
       Path { u8"document/empty.html" },
       Processing_Status::ok,
