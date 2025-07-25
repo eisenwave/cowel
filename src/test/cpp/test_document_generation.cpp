@@ -354,6 +354,11 @@ constexpr Basic_Test basic_tests[] {
       Processing_Status::error,
       { diagnostic::directive_lookup_unresolved } },
 
+    { Source { u8"\\html-div" },
+      Source { u8"<div></div>" },
+      Processing_Status::ok,
+      { diagnostic::deprecated } },
+
     { Source { u8"\\cowel_html_element[div]" },
       Source { u8"<div></div>" } },
 
