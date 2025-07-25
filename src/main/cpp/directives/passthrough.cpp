@@ -65,7 +65,7 @@ Passthrough_Behavior::operator()(Content_Policy& out, const ast::Directive& d, C
     HTML_Content_Policy html_policy { out };
     auto& policy = m_policy == Policy_Usage::html ? html_policy : out;
 
-    const std::u8string_view name = get_name(d);
+    const std::u8string_view name = get_name(d, context);
     HTML_Writer writer { policy };
     Attribute_Writer attributes = writer.open_tag_with_attributes(name);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
@@ -180,7 +180,8 @@ In_Tag_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
 }
 
 [[nodiscard]]
-std::u8string_view Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d) const
+std::u8string_view
+Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d, Context&) const
 {
     const std::u8string_view raw_name = d.get_name();
     const std::u8string_view name

@@ -470,7 +470,7 @@ public:
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 
     [[nodiscard]]
-    virtual std::u8string_view get_name(const ast::Directive& d) const
+    virtual std::u8string_view get_name(const ast::Directive& d, Context& context) const
         = 0;
 };
 
@@ -567,7 +567,7 @@ public:
     }
 
     [[nodiscard]]
-    std::u8string_view get_name(const ast::Directive& d) const override;
+    std::u8string_view get_name(const ast::Directive& d, Context& context) const override;
 };
 
 struct Fixed_Name_Passthrough_Behavior : Passthrough_Behavior {
@@ -587,7 +587,7 @@ public:
     }
 
     [[nodiscard]]
-    std::u8string_view get_name(const ast::Directive&) const override
+    std::u8string_view get_name(const ast::Directive&, Context&) const override
     {
         return m_name;
     }
