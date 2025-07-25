@@ -181,8 +181,14 @@ In_Tag_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
 
 [[nodiscard]]
 std::u8string_view
-Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d, Context&) const
+Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d, Context& context) const
 {
+    context.try_warning(
+        diagnostic::deprecated, d.get_source_span(),
+        u8"\\html-NAME directives are deprecated. "
+        u8"Use \\cowel_html_element[NAME] instead."sv
+    );
+
     const std::u8string_view raw_name = d.get_name();
     const std::u8string_view name
         = raw_name.starts_with(builtin_directive_prefix) ? raw_name.substr(1) : raw_name;
