@@ -15,14 +15,26 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         build_type: [Debug]
-        compiler: [gcc, clang]
+        toolchain: [gcc, clang-libstdc++, clang-libc++]
         include:
-          - compiler: gcc
+          - toolchain: gcc
+            compiler: gcc
             c_compiler: gcc-13
             cpp_compiler: g++-13
-          - compiler: clang
+            stdlib: libstdc++
+            stdlib_package: libstdc++-13-dev
+          - toolchain: clang-libstdc++
+            compiler: clang
             c_compiler: clang-19
             cpp_compiler: clang++-19
+            stdlib: libstdc++
+            stdlib_package: libstdc++-13-dev
+          - toolchain: clang-libc++
+            compiler: clang
+            c_compiler: clang-19
+            cpp_compiler: clang++-19
+            stdlib: libc++
+            stdlib_package: libc++-19-dev
 
     steps:
     - uses: actions/checkout@v4
@@ -31,15 +43,16 @@ jobs:
 
     - name: Dump info
       run: |
-        printf "Workspace: ${{ github.workspace }}\n"
-        printf "Running on ${{ runner.os }}\n"
-        printf "Compilers: ${{ matrix.compiler }} / ${{ matrix.c_compiler }} / ${{ matrix.cpp_compiler }}\n"
+        printf "Workspace:   ${{ github.workspace }}\n"
+        printf "Running on:  ${{ runner.os }}\n"
+        printf "Compilers:   ${{ matrix.compiler }} / ${{ matrix.c_compiler }} / ${{ matrix.cpp_compiler }}\n"
+        printf "Library:     ${{ matrix.stdlib }} / ${{ matrix.stdlib_package }}"
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
       run: |
         sudo apt update
-        sudo apt install -y ${{ matrix.c_compiler }} libgtest-dev
+        sudo apt install -y ${{ matrix.c_compiler }} ${{ matrix.stdlib_package }} libgtest-dev
 
     - name: Set reusable strings
       id: strings
@@ -50,14 +63,22 @@ jobs:
 
     - name: Configure CMake (Linux/macOS)
       if: runner.os != 'Windows'
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
-        -DCMAKE_COLOR_DIAGNOSTICS=ON
-        -DCMAKE_CXX_FLAGS="-fdiagnostics-color=always"
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      run: |
+        COMPILER_FLAGS=""
+        LINKER_FLAGS=""
+        if [[ "${{ matrix.compiler }}" == "clang" && "${{ matrix.stdlib }}" == "libc++" ]]; then
+          COMPILER_FLAGS="-stdlib=libc++"
+          LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi"
+        fi
+
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+        -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
+        -DCMAKE_COLOR_DIAGNOSTICS=ON \
+        -DCMAKE_CXX_FLAGS="-fdiagnostics-color=always $COMPILER_FLAGS" \
+        -DCMAKE_CXX_LINK_FLAGS="$LINKER_FLAGS" \
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
         -S ${{ github.workspace }}
 
     - name: Build

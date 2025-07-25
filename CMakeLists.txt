@@ -7,14 +7,18 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT DEFINED EMSCRIPTEN)
-    find_package(GTest QUIET)
-    if (GTest_FOUND)
-        message(STATUS "GTest found. Building tests.")
-        include(GoogleTest)
-        enable_testing()
-    else()
-        message(STATUS "GTest not found. Skipping tests.")
-    endif()
+    include(FetchContent)
+
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+        DOWNLOAD_EXTRACT_TIMESTAMP true
+    )
+
+    set(INSTALL_GTEST OFF)
+    set(BUILD_GMOCK OFF)
+    set(BUILD_GTEST ON)
+    FetchContent_MakeAvailable(googletest)
 endif()
 
 find_package(Python3 REQUIRED)
@@ -174,26 +178,28 @@ else()
     )
     target_link_libraries(cowel-cli cowel ulight)
 
-    if (GTest_FOUND)
-        add_executable(cowel-test ${HEADERS}
-            src/test/cpp/document_file_testing.cpp
-            src/test/cpp/main.cpp
-            src/test/cpp/test_char_sequence.cpp
-            src/test/cpp/test_chars_strings.cpp
-            src/test/cpp/test_document_generation.cpp
-            src/test/cpp/test_draft_uris.cpp
-            src/test/cpp/test_html_writer.cpp
-            src/test/cpp/test_levenshtein.cpp
-            src/test/cpp/test_parsing.cpp
-            src/test/cpp/test_to_chars.cpp
-            src/test/cpp/test_typo.cpp
-            src/test/cpp/test_valid.cpp
-        )
+    add_executable(cowel-test
+        ${HEADERS}
+        src/test/cpp/document_file_testing.cpp
+        src/test/cpp/main.cpp
+        src/test/cpp/test_char_sequence.cpp
+        src/test/cpp/test_chars_strings.cpp
+        src/test/cpp/test_document_generation.cpp
+        src/test/cpp/test_draft_uris.cpp
+        src/test/cpp/test_html_writer.cpp
+        src/test/cpp/test_levenshtein.cpp
+        src/test/cpp/test_parsing.cpp
+        src/test/cpp/test_to_chars.cpp
+        src/test/cpp/test_typo.cpp
+        src/test/cpp/test_valid.cpp
+    )
 
-        target_link_libraries(cowel-test cowel ulight GTest::GTest GTest::Main)
-        gtest_discover_tests(cowel-test
-            WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
-            DISCOVERY_TIMEOUT 30
-        )
-    endif()
+    include(GoogleTest)
+    enable_testing()
+
+    target_link_libraries(cowel-test cowel ulight gtest gtest_main)
+    gtest_discover_tests(cowel-test
+        WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
+        DISCOVERY_TIMEOUT 30
+    )
 endif()
