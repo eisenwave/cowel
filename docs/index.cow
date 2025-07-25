@@ -5,6 +5,11 @@
 \macro[\cowdoc_attr{...}]{\tt{\hl[markup-attr]{\put}}}\
 \macro[\cowdoc_esc{...}]{\tt{\hl[escape]{\\\put}}}\
 \
+\macro[\c{...}]{\cowel_char_by_entity[\put{...}]{\put}}\
+\macro[\N{...}]{\cowel_char_by_name[\put{...}]{\put}}\
+\macro[\U{...}]{\cowel_char_by_num[\put{...}]{\put}}\
+\macro[\Udigits{...}]{\cowel_char_get_num[\put{...}]{\put}}\
+\
 \macro[\cowdoc_og_property]{\cowel_html_element[meta,property=og:\put{0},content=\put]}\
 \
 \there[std.head]{
