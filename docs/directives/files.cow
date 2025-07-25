@@ -30,7 +30,7 @@ and that loading the file succeeds,
 this renders as: 
 \codeblock[js]{
 // code included from example.js:
-\include{example.js}
+\cowel_include_text{example.js}
 }
 }
 

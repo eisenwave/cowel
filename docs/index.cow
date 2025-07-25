@@ -103,11 +103,11 @@ whose syntax is similar enough to get \em{some} basic highlighting.
 A VSCode plugin for proper highlighting is planned, among other features.
 }
 
-\import{intro/syntax.cow}\
-\import{intro/directives.cow}\
-\import{intro/themes.cow}\
+\cowel_include{intro/syntax.cow}\
+\cowel_include{intro/directives.cow}\
+\cowel_include{intro/themes.cow}\
 \
-\import{new_directives.cow}\
+\cowel_include{new_directives.cow}\
 
 \h2{Legacy directives}
 
@@ -121,19 +121,19 @@ with macro packages that provide additional functionality.
 The documentation for these directives is not actively maintained.
 }
 
-\import{directives/comments.cow}\
-\import{directives/formatting.cow}\
-\import{directives/code.cow}\
-\import{directives/math.cow}\
-\import{directives/separators.cow}\
-\import{directives/chars.cow}\
-\import{directives/special.cow}\
-\import{directives/lists-tables-headings.cow}\
-\import{directives/references.cow}\
-\import{directives/foreign.cow}\
-\import{directives/paragraphs.cow}\
-\import{directives/sections.cow}\
-\import{directives/files.cow}\
-\import{directives/macros.cow}\
-\import{directives/misc.cow}\
-\import{directives/calc.cow}\
+\cowel_include{directives/comments.cow}\
+\cowel_include{directives/formatting.cow}\
+\cowel_include{directives/code.cow}\
+\cowel_include{directives/math.cow}\
+\cowel_include{directives/separators.cow}\
+\cowel_include{directives/chars.cow}\
+\cowel_include{directives/special.cow}\
+\cowel_include{directives/lists-tables-headings.cow}\
+\cowel_include{directives/references.cow}\
+\cowel_include{directives/foreign.cow}\
+\cowel_include{directives/paragraphs.cow}\
+\cowel_include{directives/sections.cow}\
+\cowel_include{directives/files.cow}\
+\cowel_include{directives/macros.cow}\
+\cowel_include{directives/misc.cow}\
+\cowel_include{directives/calc.cow}\
