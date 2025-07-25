@@ -107,7 +107,17 @@ A VSCode plugin for proper highlighting is planned, among other features.
 \import{intro/directives.cow}\
 \import{intro/themes.cow}\
 
-\h2{List of directives}
+\h2{Legacy directives}
+
+\Bwarn{
+The following builtin directives are all considered deprecated,
+but not all have a suitable replacement yet.
+These directives were created during the first iteration of COWEL,
+before plans were made to create a small set of builtin directives,
+with macro packages that provide additional functionality.
+
+The documentation for these directives is not actively maintained.
+}
 
 \import{directives/comments.cow}\
 \import{directives/formatting.cow}\
