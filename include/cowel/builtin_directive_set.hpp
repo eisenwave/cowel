@@ -813,6 +813,42 @@ struct Macro_Instantiate_Behavior final : Directive_Behavior {
     operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
+struct Paragraphs_Behavior final : Directive_Behavior {
+
+    constexpr explicit Paragraphs_Behavior() = default;
+
+    [[nodiscard]]
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
+};
+
+struct Paragraph_Enter_Behavior final : Directive_Behavior {
+
+    constexpr explicit Paragraph_Enter_Behavior() = default;
+
+    [[nodiscard]]
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
+};
+
+struct Paragraph_Leave_Behavior final : Directive_Behavior {
+
+    constexpr explicit Paragraph_Leave_Behavior() = default;
+
+    [[nodiscard]]
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
+};
+
+struct Paragraph_Inherit_Behavior final : Directive_Behavior {
+
+    constexpr explicit Paragraph_Inherit_Behavior() = default;
+
+    [[nodiscard]]
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
+};
+
 struct [[nodiscard]]
 Builtin_Directive_Set final : Name_Resolver {
 private:

@@ -36,6 +36,14 @@ struct Builtin_Directive_Set::Impl {
         {};
     Include_Text_Behavior cowel_include_text //
         {};
+    Paragraphs_Behavior cowel_paragraphs //
+        {};
+    Paragraph_Enter_Behavior cowel_paragraph_enter //
+        {};
+    Paragraph_Inherit_Behavior cowel_paragraph_inherit //
+        {};
+    Paragraph_Leave_Behavior cowel_paragraph_leave //
+        {};
 
     // Legacy directives
     Fixed_Name_Passthrough_Behavior b //
@@ -587,6 +595,14 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
                 return &m_impl->cowel_include;
             if (name == u8"cowel_include_text")
                 return &m_impl->cowel_include_text;
+            if (name == u8"cowel_paragraphs")
+                return &m_impl->cowel_paragraphs;
+            if (name == u8"cowel_paragraph_enter")
+                return &m_impl->cowel_paragraph_enter;
+            if (name == u8"cowel_paragraph_inherit")
+                return &m_impl->cowel_paragraph_inherit;
+            if (name == u8"cowel_paragraph_leave")
+                return &m_impl->cowel_paragraph_leave;
         }
         if (name == u8"c")
             return &m_impl->c;

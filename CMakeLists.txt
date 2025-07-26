@@ -104,6 +104,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/directives/literal.cpp
     src/main/cpp/directives/macros.cpp
     src/main/cpp/directives/math.cpp
+    src/main/cpp/directives/paragraph.cpp
     src/main/cpp/directives/passthrough.cpp
     src/main/cpp/directives/reference.cpp
     src/main/cpp/directives/syntax_highlight.cpp
