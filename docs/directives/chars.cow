@@ -89,8 +89,8 @@ Note that U+0078 is the usual way in which Unicode code points are represented.
 That is, \tt{U+}, followed by at least four hexadecimal digits.
 It is also possible to define a macro if we need this frequently:
 \codeblock[cowel]{\literally{
-\macro[\code-point]{U+\Udigits{\put}}
-\code-point{x}
+\macro[\code_point]{U+\Udigits{\put}}
+\code_point{x}
 }}
 }
 
@@ -99,8 +99,8 @@ It is also possible to define a macro if we need this frequently:
 to produce human-readable descriptions of code points,
 while also keeping our source code readable:
 \codeblock[cowel]{\literally{
-\macro[\named-char{...}]{U+\Udigits[4]{\N{\put}} \put}
-\named-char{SECTION SIGN}
+\macro[\named_char{...}]{U+\Udigits[4]{\N{\put}} \put}
+\named_char{SECTION SIGN}
 }}
 This renders as:
 \Bindent{

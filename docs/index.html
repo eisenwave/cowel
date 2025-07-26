@@ -3501,16 +3501,16 @@ U+0078
 <p>Note that U+0078 is the usual way in which Unicode code points are represented.
 That is, <tt->U+</tt->, followed by at least four hexadecimal digits.
 It is also possible to define a macro if we need this frequently:
-</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\code-point</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\Udigits</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\code-point</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\code_point</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\Udigits</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\code_point</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code-block>
 </example-block>
 
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\Udigits</h-></code> can also be combined with <code><h- data-h=mk_tag>\N</h-></code>
 to produce human-readable descriptions of code points,
 while also keeping our source code readable:
-</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\named-char</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\Udigits</h-><h- data-h=sym_sqr>[</h->4<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-> <h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\named-char</h-><h- data-h=sym_brac>{</h->SECTION SIGN<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\named_char</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\Udigits</h-><h- data-h=sym_sqr>[</h->4<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-> <h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\named_char</h-><h- data-h=sym_brac>{</h->SECTION SIGN<h- data-h=sym_brac>}</h-></code-block>
 <p>This renders as:
 </p><div class=indent>
 U+00A7 SECTION SIGN
