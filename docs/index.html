@@ -1532,21 +1532,37 @@ h1 {
 <div class=toc-num data-level=2>7</div>
 <a href=#new-directives><h2>New directives</h2></a>
 <div class=toc-num data-level=3>7.1</div>
-<a href=#html-utilities><h3>HTML utilities</h3></a>
+<a href=#new-character-utilities><h3>Character utilities</h3></a>
 <div class=toc-num data-level=4>7.1.1</div>
-<a href=#dir-cowel_html_element><h4><code><h- data-h=mk_tag>\cowel_html_element</h-></code> — HTML element</h4></a>
+<a href=#dir-cowel_char_by_entity><h4><code><h- data-h=mk_tag>\cowel_char_by_entity</h-></code> — Character by HTML character reference</h4></a>
 <div class=toc-num data-level=4>7.1.2</div>
-<a href=#dir-cowel_html_self_closing_element><h4><code><h- data-h=mk_tag>\cowel_html_self_closing_element</h-></code> — Self-closing HTML element</h4></a>
+<a href=#dir-cowel_char_by_name><h4><code><h- data-h=mk_tag>\cowel_char_by_name</h-></code> — Character by Unicode name</h4></a>
+<div class=toc-num data-level=4>7.1.3</div>
+<a href=#dir-cowel_char_by_num><h4><code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> — Character by code point number</h4></a>
+<div class=toc-num data-level=4>7.1.4</div>
+<a href=#dir-cowel_char_get_num><h4><code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> — Get digits of character</h4></a>
 <div class=toc-num data-level=3>7.2</div>
-<a href=#new-paragraph-control><h3>Paragraph control</h3></a>
+<a href=#html-utilities><h3>HTML utilities</h3></a>
 <div class=toc-num data-level=4>7.2.1</div>
-<a href=#dir-cowel_paragraphs><h4><code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4></a>
+<a href=#dir-cowel_html_element><h4><code><h- data-h=mk_tag>\cowel_html_element</h-></code> — HTML element</h4></a>
 <div class=toc-num data-level=4>7.2.2</div>
+<a href=#dir-cowel_html_self_closing_element><h4><code><h- data-h=mk_tag>\cowel_html_self_closing_element</h-></code> — Self-closing HTML element</h4></a>
+<div class=toc-num data-level=3>7.3</div>
+<a href=#new-paragraph-control><h3>Paragraph control</h3></a>
+<div class=toc-num data-level=4>7.3.1</div>
+<a href=#dir-cowel_paragraphs><h4><code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4></a>
+<div class=toc-num data-level=4>7.3.2</div>
 <a href=#dir-cowel_paragraph_enter><h4><code><h- data-h=mk_tag>\cowel_paragraph_enter</h-></code> — Enter a paragraph</h4></a>
-<div class=toc-num data-level=4>7.2.3</div>
+<div class=toc-num data-level=4>7.3.3</div>
 <a href=#dir-cowel_paragraph_leave><h4><code><h- data-h=mk_tag>\cowel_paragraph_leave</h-></code> — Leave a paragraph</h4></a>
-<div class=toc-num data-level=4>7.2.4</div>
+<div class=toc-num data-level=4>7.3.4</div>
 <a href=#dir-cowel_paragraph_inherit><h4><code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</h4></a>
+<div class=toc-num data-level=3>7.4</div>
+<a href=#new-file-management><h3>File management</h3></a>
+<div class=toc-num data-level=4>7.4.1</div>
+<a href=#dir-cowel_include><h4><code><h- data-h=mk_tag>\cowel_include</h-></code> — Include a sub-document</h4></a>
+<div class=toc-num data-level=4>7.4.2</div>
+<a href=#dir-cowel_include_text><h4><code><h- data-h=mk_tag>\cowel_include_text</h-></code> — Include text from a file</h4></a>
 <div class=toc-num data-level=2>8</div>
 <a href=#legacy-directives><h2>Legacy directives</h2></a>
 <div class=toc-num data-level=3>8.1</div>
@@ -2380,9 +2396,145 @@ However, those long names are self-document, unambiguous,
 and guaranteed not to collide with any user directives.
 </p></note-block>
 
-<h3 id=html-utilities><a class=para href=#html-utilities></a>7.1. HTML utilities</h3>
+<h3 id=new-character-utilities><a class=para href=#new-character-utilities></a>7.1. Character utilities</h3>
 
-<h4 id=dir-cowel_html_element><a class=para href=#dir-cowel_html_element></a>7.1.1. <code><h- data-h=mk_tag>\cowel_html_element</h-></code> — HTML element</h4>
+<p>It is quite common that a text document should include special characters.
+While COWEL is built on UTF-8 and in theory,
+one could just write the character directly into the source code,
+not every text editor handles special characters well,
+not to mention that some characters are invisible when rendered.
+</p>
+<p>For portability and convenience
+COWEL has builtin directives for generating and querying characters.
+</p>
+<h4 id=dir-cowel_char_by_entity><a class=para href=#dir-cowel_char_by_entity></a>7.1.1. <code><h- data-h=mk_tag>\cowel_char_by_entity</h-></code> — Character by HTML character reference</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_char_by_entity</h-></code> directive takes the name of a character
+and outputs the respective code points as text.
+The input to a <code><h- data-h=mk_tag>\c</h-></code> directive is provided as content,
+which consists of an HTML entity
+without the leading '<tt->&amp;</tt->' and trailing '<tt->;</tt->'.
+All arguments are ignored.
+</p>
+<example-block><p><intro-></intro-> 
+The '<tt->&amp;</tt->' character can be produced in a number of ways:
+</p><ul>
+    <li>Literally '<tt->&amp;</tt->' in text</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->amp<h- data-h=sym_brac>}</h-></code> (like <code><h- data-h=esc>&amp;amp;</h-></code>, named character reference)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->#38<h- data-h=sym_brac>}</h-></code> (like <code><h- data-h=esc>&amp;38;</h-></code>, decimal character reference)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->#x26<h- data-h=sym_brac>}</h-></code> (like <code><h- data-h=esc>&amp;x26;</h-></code>, hexadecimal character reference)</li>
+</ul>
+</example-block>
+
+<h4 id=dir-cowel_char_by_name><a class=para href=#dir-cowel_char_by_name></a>7.1.2. <code><h- data-h=mk_tag>\cowel_char_by_name</h-></code> — Character by Unicode name</h4>
+
+<p>The input to a <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive is text content which should be a
+<a href=https://www.unicode.org/reports/tr34/#Names>Unicode name</a>
+for a code point.
+That is, the name of a code point,
+or one of its "control", "alternate", or "correction" aliases.
+</p>
+<example-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>N</h-><h- data-h=sym_brac>{</h->DIGIT ZERO<h- data-h=sym_brac>}</h-></code> generates '<tt->0</tt->' U+0030 DIGIT ZERO.
+</p></example-block>
+
+<h4 id=dir-cowel_char_by_num><a class=para href=#dir-cowel_char_by_num></a>7.1.3. <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> — Character by code point number</h4>
+
+<p>The input to a <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive is text content
+which should be a sequence of hexadecimal numbers
+specifying a <a href=https://infra.spec.whatwg.org/#scalar-value>Unicode scalar value</a>;
+that is, a code point which UTF-8 permits to be encoded.
+All arguments are ignored.
+</p>
+<example-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{</h->30<h- data-h=sym_brac>}</h-></code> generates '<tt->0</tt->' U+0030 DIGIT ZERO.
+</p></example-block>
+
+<tip-block><p><intro-></intro-> 
+Use of <code><h- data-h=mk_tag>\cowel_char_by_name</h-></code> can lead to much more descriptive,
+human-friendly code, compared to <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code>.
+</p>
+<p>The main issue with <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> is
+that it is very non-descriptive in source code.
+It simply contains a handful of digits,
+and unless the reader is a Unicode expert who happens to know that sequence,
+they cannot easily tell what the purpose of the character is.
+</p></tip-block>
+
+<h4 id=dir-cowel_char_get_num><a class=para href=#dir-cowel_char_get_num></a>7.1.4. <code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> — Get digits of character</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> directive is essentially the
+inverse of the <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive.
+Its input is also plaintext content.
+Rather than producing a code point from a digit sequence,
+it produces a digit sequence from its input code point.
+</p>
+<p>This can be fine-tuned with the following parameters:
+</p><dd>
+  <dt><tt-><h- data-h=mk_attr>zfill</h-></tt-></dt>
+  <dd>
+    The minimum amount of digits that should be produced.
+    This is an integer argument in range [0, 1024], and defaults to zero.
+    If the amount of digits is less than <tt-><h- data-h=mk_attr>zfill</h-></tt->,
+    it will be left-padded with additional '<tt->0</tt->' characters.
+  </dd>
+
+  <dt><tt-><h- data-h=mk_attr>base</h-></tt-></dt>
+  <dd>
+    The base of the output digit sequence, in range [2, 16].
+    This defaults to 16, meaning that the digits are printed in hexadecimal.
+  </dd>
+
+  <dt><tt-><h- data-h=mk_attr>lower</h-></tt-></dt>
+  <dd>
+    A yes/no plaintext argument, defaulting to <tt->no</tt->.
+    If <tt->yes</tt-> is specified, digits beyond '<tt->9</tt->' (i.e. '<tt->A</tt->' to '<tt->F</tt->')
+    will be output in lower case instead.
+</dd>
+</dd>
+
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block>U+<h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_sqr>[</h->4<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as:
+</p><div class=indent>
+U+0078
+</div>
+<p>Note that U+0078 is the usual way in which Unicode code points are represented.
+That is, <tt->U+</tt->, followed by at least four hexadecimal digits.
+It is also possible to define a macro if we need this frequently:
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\code_point</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\code_point</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code-block>
+</example-block>
+
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> can also be combined with <code><h- data-h=mk_tag>\cowel_char_by_name</h-></code>
+to produce human-readable descriptions of code points,
+while also keeping our source code readable:
+</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_tag>\named_char</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_sqr>[</h->4<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-> <h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\named_char</h-><h- data-h=sym_brac>{</h->SECTION SIGN<h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as:
+</p><div class=indent>
+U+00A7 SECTION SIGN
+</div>
+</tip-block>
+
+<p><code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> uses only the first code point within the input text,
+even though the entire input text is processed into plaintext.
+</p>
+<bug-block><p><intro-></intro-> 
+If we provide more than a single code point, some input is discarded:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_get_num</h-><h- data-h=sym_brac>{</h->abc<h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as
+</p><div class=indent>
+61
+</div>
+<p>... which corresponds to <code>a</code>, whereas <code>b</code> and <code>c</code> are discarded.
+</p></bug-block>
+
+<h3 id=html-utilities><a class=para href=#html-utilities></a>7.2. HTML utilities</h3>
+
+<h4 id=dir-cowel_html_element><a class=para href=#dir-cowel_html_element></a>7.2.1. <code><h- data-h=mk_tag>\cowel_html_element</h-></code> — HTML element</h4>
 
 <p>The <code><h- data-h=mk_tag>\cowel_html_element</h-></code> directive generates content,
 surrounded in HTML opening and closing HTML tags.
@@ -2415,7 +2567,7 @@ COWEL markup:
 tag name is not a valid HTML tag name, or
 if any of the argument names are invalid.
 </p>
-<h4 id=dir-cowel_html_self_closing_element><a class=para href=#dir-cowel_html_self_closing_element></a>7.1.2. <code><h- data-h=mk_tag>\cowel_html_self_closing_element</h-></code> — Self-closing HTML element</h4>
+<h4 id=dir-cowel_html_self_closing_element><a class=para href=#dir-cowel_html_self_closing_element></a>7.2.2. <code><h- data-h=mk_tag>\cowel_html_self_closing_element</h-></code> — Self-closing HTML element</h4>
 
 <p>The <code><h- data-h=mk_tag>\cowel_html_self_closing_element</h-></code> directive generates a self-closing HTML element.
 That is, an element with no content,
@@ -2434,7 +2586,7 @@ COWEL markup:
 <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>hr</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-> <h- data-h=sym_punc>/&gt;</h-></code-block>
 </example-block>
 
-<h3 id=new-paragraph-control><a class=para href=#new-paragraph-control></a>7.2. Paragraph control</h3>
+<h3 id=new-paragraph-control><a class=para href=#new-paragraph-control></a>7.3. Paragraph control</h3>
 
 <p>Dividing content into paragraphs manually would take a huge amount of effort,
 so COWEL provides means of doing so semi-automatically.
@@ -2451,7 +2603,7 @@ and they neither begin nor end a paragraph.
 The following paragraph control directives define interactions
 between paragraph splitting and directives.
 </p>
-<h4 id=dir-cowel_paragraphs><a class=para href=#dir-cowel_paragraphs></a>7.2.1. <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4>
+<h4 id=dir-cowel_paragraphs><a class=para href=#dir-cowel_paragraphs></a>7.3.1. <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4>
 
 <p>The <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> directive
 creates a paragraphs policy (<a href=#contexts-and-output>§5.1. Content policies</a>)
@@ -2484,7 +2636,7 @@ so if one wants to have paragraph splitting inside say,
 <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> has to be used.
 </p></note-block>
 
-<h4 id=dir-cowel_paragraph_enter><a class=para href=#dir-cowel_paragraph_enter></a>7.2.2. <code><h- data-h=mk_tag>\cowel_paragraph_enter</h-></code> — Enter a paragraph</h4>
+<h4 id=dir-cowel_paragraph_enter><a class=para href=#dir-cowel_paragraph_enter></a>7.3.2. <code><h- data-h=mk_tag>\cowel_paragraph_enter</h-></code> — Enter a paragraph</h4>
 
 <p>If the current content policy is a paragraphs policy and
 and the paragraph state is "outside",
@@ -2517,7 +2669,7 @@ but from within macros.
 <code><h- data-h=mk_tag>\cowel_para­graph_enter</h-></code> and <code><h- data-h=mk_tag>\cowel_­char_by_name</h-></code>.
 </p></tip-block>
 
-<h4 id=dir-cowel_paragraph_leave><a class=para href=#dir-cowel_paragraph_leave></a>7.2.3. <code><h- data-h=mk_tag>\cowel_paragraph_leave</h-></code> — Leave a paragraph</h4>
+<h4 id=dir-cowel_paragraph_leave><a class=para href=#dir-cowel_paragraph_leave></a>7.3.3. <code><h- data-h=mk_tag>\cowel_paragraph_leave</h-></code> — Leave a paragraph</h4>
 
 <p>If the current content policy is a paragraphs policy and
 and the paragraph state is "inside",
@@ -2557,7 +2709,7 @@ but from within macros.
 <code><h- data-h=mk_tag>\cowel_­html_self_closing_element</h-></code>.
 </p></tip-block>
 
-<h4 id=dir-cowel_paragraph_inherit><a class=para href=#dir-cowel_paragraph_inherit></a>7.2.4. <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</h4>
+<h4 id=dir-cowel_paragraph_inherit><a class=para href=#dir-cowel_paragraph_inherit></a>7.3.4. <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</h4>
 
 <important-block><p><intro-></intro-> 
 There is no support for programmatic directives yet,
@@ -2573,8 +2725,104 @@ However, content expanded from <code><h- data-h=mk_tag>\cowel_include</h-></code
 i.e. any content produced by such directives is fed directly into the paragraphs policy.
 <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> can be used inside programmatic directives
 defined by the user to achieve the same behavior.
+</p>
+<h3 id=new-file-management><a class=para href=#new-file-management></a>7.4. File management</h3>
 
-</p><h2 id=legacy-directives><a class=para href=#legacy-directives></a>8. Legacy directives</h2>
+<p>Once projects get larger,
+it often becomes difficult to manage everything in a single file.
+Also, tooling may benefit from having separate files.
+For example, keeping separate SVG files
+or CSS files may have better IDE support than writing these out directly inside of COWEL.
+</p>
+<p>COWEL provides directives to load content from other files.
+</p>
+<h4 id=dir-cowel_include><a class=para href=#dir-cowel_include></a>7.4.1. <code><h- data-h=mk_tag>\cowel_include</h-></code> — Include a sub-document</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_include</h-></code> directive loads the content from another COWEL document,
+and processes it using the current content policy.
+The path to the document is provided as content to <code><h- data-h=mk_tag>\cowel_include</h-></code>,
+and is assumed to be relative to the current file.
+All arguments are ignored.
+</p>
+<p>If the current content policy is a paragraphs policy (<a href=#contexts-and-output>§5.1. Content policies</a>),
+paragraph splitting of the included sub-document takes place
+as if its contents were expanded directly where <code><h- data-h=mk_tag>\cowel_include</h-></code> appears.
+In other words, <code><h- data-h=mk_tag>\cowel_include</h-></code> inherits the paragraph context,
+or is <em>not</em> a "black box" to paragraph splitting.
+</p>
+<example-block><p><intro-></intro-> 
+Say we have another <tt->test.cow</tt-> files containing:
+</p><code-block>Hello, includes!
+
+Next paragraph.</code-block>
+<p>When using <code><h- data-h=mk_tag>\cowel_include</h-></code>,
+the contents of the other file are substituted where we have written <code><h- data-h=mk_tag>\cowel_include</h-></code>,
+which means that imported content also plays nicely with paragraph splitting:
+</p><code-block>First paragraph.
+<h- data-h=mk_tag>\cowel_include</h-><h- data-h=sym_brac>{</h->test.cow<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->First paragraph.
+Hello, includes!<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
+
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Next paragraph.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<tip-block><p><intro-></intro-> 
+It is common practice to collect macros and other reusable components in separate documents,
+and to <code><h- data-h=mk_tag>\cowel_include</h-></code> them when needed.
+This can help you avoid copying boilerplate between multiple documents.
+</p>
+<p>It is also common to split documents into multiple files that are combined using a sequence
+of <code><h- data-h=mk_tag>\cowel_include</h-></code>s.
+</p></tip-block>
+
+<h4 id=dir-cowel_include_text><a class=para href=#dir-cowel_include_text></a>7.4.2. <code><h- data-h=mk_tag>\cowel_include_text</h-></code> — Include text from a file</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_include_text</h-></code> directive reads the UTF-8 text contents of another file
+and feeds that text into the current content policy.
+The path to the document is provided as content to <code><h- data-h=mk_tag>\cowel_include_text</h-></code>,
+and is assumed to be relative to the current file.
+All arguments are ignored.
+</p>
+<example-block><p><intro-></intro-> 
+Say we have a JavaScript file <tt->example.js</tt-> which we want to keep separate from the document.
+We can then include it into a <code><h- data-h=mk_tag>\script</h-></code> block to use it as a script,
+or we can include it into a <code><h- data-h=mk_tag>\codeblock</h-></code> to display its contents.
+</p><code-block><h- data-h=mk_tag>\codeblock</h-><h- data-h=sym_sqr>[</h->js<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
+// code included from example.js:
+<h- data-h=mk_tag>\cowel_include_text</h-><h- data-h=sym_brac>{</h->example.js<h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h-></code-block>
+<p>Assuming that <tt->example.js</tt-> is located in the same directory as the document
+and that loading the file succeeds,
+this renders as: 
+</p><code-block><h- data-h=cmt_dlim>//</h-><h- data-h=cmt> code included from example.js:</h->
+<h- data-h=kw>function</h-> <h- data-h=id>sqr</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h-></code-block>
+</example-block>
+
+<note-block><p><intro-></intro-> 
+While <code><h- data-h=mk_tag>\cowel_include</h-></code> and <code><h- data-h=mk_tag>\cowel_include_text</h-></code> are similar,
+there are some stark differences:
+</p><ul>
+  <li>
+    <code><h- data-h=mk_tag>\cowel_include</h-></code> is used for COWEL documents,
+    while <code><h- data-h=mk_tag>\cowel_include_text</h-></code> is used for anything else.
+  </li>
+  <li>
+    <code><h- data-h=mk_tag>\cowel_include</h-></code> doesn't just load the text from another file,
+    but parses it and ensures that the contents are a valid COWEL document.
+  </li>
+  <li>
+    <code><h- data-h=mk_tag>\cowel_include</h-></code> feeds content from another document
+    piece by pice into the current content policy.
+    <code><h- data-h=mk_tag>\cowel_include_text</h-></code> reads text
+    and feeds it all in a single block to the content policy.
+  </li>
+</ul>
+</note-block>
+
+<h2 id=legacy-directives><a class=para href=#legacy-directives></a>8. Legacy directives</h2>
 
 <warning-block><p><intro-></intro-> 
 The following builtin directives are all considered deprecated,

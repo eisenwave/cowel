@@ -14,6 +14,158 @@ However, those long names are self-document, unambiguous,
 and guaranteed not to collide with any user directives.
 }
 
+\h3[id=new-character-utilities]{Character utilities}
+
+It is quite common that a text document should include special characters.
+While COWEL is built on UTF-8 and in theory,
+one could just write the character directly into the source code,
+not every text editor handles special characters well,
+not to mention that some characters are invisible when rendered.
+
+For portability and convenience
+COWEL has builtin directives for generating and querying characters.
+
+\h4[
+  id = dir-cowel_char_by_entity
+]{\cowdoc_dir{cowel_char_by_entity} \c{mdash} Character by HTML character reference}
+
+The \cowdoc_dir{cowel_char_by_entity} directive takes the name of a character
+and outputs the respective code points as text.
+The input to a \cowdoc_dir{c} directive is provided as content,
+which consists of an HTML entity
+without the leading '\tt{&}' and trailing '\tt{;}'.
+All arguments are ignored.
+
+\Bex{
+The '\tt{&}' character can be produced in a number of ways:
+\ul{
+    \li{Literally '\tt{&}' in text}
+    \li{\cowdoc_c{\\c{amp}} (like \cowdoc_html{&amp;}, named character reference)}
+    \li{\cowdoc_c{\\c{#38}} (like \cowdoc_html{&38;}, decimal character reference)}
+    \li{\cowdoc_c{\\c{#x26}} (like \cowdoc_html{&x26;}, hexadecimal character reference)}
+}
+}
+
+\h4[
+  id = dir-cowel_char_by_name
+]{\cowdoc_dir{cowel_char_by_name} \c{mdash} Character by Unicode name}
+
+The input to a \cowdoc_dir{cowel_char_by_num} directive is text content which should be a
+\ref[https://www.unicode.org/reports/tr34/#Names]{Unicode name}
+for a code point.
+That is, the name of a code point,
+or one of its "control", "alternate", or "correction" aliases.
+
+\Bex{
+\cowdoc_c{\\N{DIGIT ZERO}} generates '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
+}
+
+\h4[
+  id = dir-cowel_char_by_num
+]{\cowdoc_dir{cowel_char_by_num} \c{mdash} Character by code point number}
+
+The input to a \cowdoc_dir{cowel_char_by_num} directive is text content
+which should be a sequence of hexadecimal numbers
+specifying a \ref[https://infra.spec.whatwg.org/#scalar-value]{Unicode scalar value};
+that is, a code point which UTF-8 permits to be encoded.
+All arguments are ignored.
+
+\Bex{
+\cowdoc_c{\\U{30}} generates '\tt{\U{30}}' U+0030 DIGIT ZERO.
+}
+
+\Btip{
+Use of \cowdoc_dir{cowel_char_by_name} can lead to much more descriptive,
+human-friendly code, compared to \cowdoc_dir{cowel_char_by_num}.
+
+The main issue with \cowdoc_dir{cowel_char_by_num} is
+that it is very non-descriptive in source code.
+It simply contains a handful of digits,
+and unless the reader is a Unicode expert who happens to know that sequence,
+they cannot easily tell what the purpose of the character is.
+}
+
+\h4[
+  id=dir-cowel_char_get_num
+]{\cowdoc_dir{cowel_char_get_num} \c{mdash} Get digits of character}
+
+The \cowdoc_dir{cowel_char_get_num} directive is essentially the
+inverse of the \cowdoc_dir{cowel_char_by_num} directive.
+Its input is also plaintext content.
+Rather than producing a code point from a digit sequence,
+it produces a digit sequence from its input code point.
+
+This can be fine-tuned with the following parameters:
+\dd{
+  \dt{\cowdoc_attr{zfill}}
+  \dd{
+    The minimum amount of digits that should be produced.
+    This is an integer argument in range [0, 1024], and defaults to zero.
+    If the amount of digits is less than \cowdoc_attr{zfill},
+    it will be left-padded with additional '\tt{0}' characters.
+  }
+
+  \dt{\cowdoc_attr{base}}
+  \dd{
+    The base of the output digit sequence, in range [2, 16].
+    This defaults to 16, meaning that the digits are printed in hexadecimal.
+  }
+
+  \dt{\cowdoc_attr{lower}}
+  \dd{
+    A yes/no plaintext argument, defaulting to \tt{no}.
+    If \tt{yes} is specified, digits beyond '\tt{9}' (i.e. '\tt{A}' to '\tt{F}')
+    will be output in lower case instead.
+}
+}
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+U+\cowel_char_get_num[4]{x}
+}}
+This renders as:
+\Bindent{
+U+\cowel_char_get_num[4]{x}
+}
+Note that U+0078 is the usual way in which Unicode code points are represented.
+That is, \tt{U+}, followed by at least four hexadecimal digits.
+It is also possible to define a macro if we need this frequently:
+\codeblock[cowel]{\literally{
+\macro[\code_point]{U+\cowel_char_get_num{\put}}
+\code_point{x}
+}}
+}
+
+\Btip{
+\cowdoc_dir{cowel_char_get_num} can also be combined with \cowdoc_dir{cowel_char_by_name}
+to produce human-readable descriptions of code points,
+while also keeping our source code readable:
+\codeblock[cowel]{\literally{
+\macro[\named_char{...}]{U+\cowel_char_get_num[4]{\N{\put}} \put}
+\named_char{SECTION SIGN}
+}}
+This renders as:
+\Bindent{
+U+\cowel_char_get_num[4]{\N{SECTION SIGN}} SECTION SIGN
+}
+}
+
+\cowdoc_dir{cowel_char_get_num} uses only the first code point within the input text,
+even though the entire input text is processed into plaintext.
+
+\Bug{
+If we provide more than a single code point, some input is discarded:
+\codeblock[cowel]{
+\\cowel_char_get_num{abc}
+}
+This renders as
+\Bindent{
+\cowel_char_get_num{a}
+}
+... which corresponds to \cowdoc_c{a}, whereas \cowdoc_c{b} and \cowdoc_c{c} are discarded.
+}
+
 \h3{HTML utilities}
 
 \h4[
@@ -239,3 +391,111 @@ However, content expanded from \cowdoc_dir{cowel_include} and macros
 i.e. any content produced by such directives is fed directly into the paragraphs policy.
 \cowdoc_dir{cowel_paragraph_inherit} can be used inside programmatic directives
 defined by the user to achieve the same behavior.
+
+\h3[id=new-file-management]{File management}
+
+Once projects get larger,
+it often becomes difficult to manage everything in a single file.
+Also, tooling may benefit from having separate files.
+For example, keeping separate SVG files
+or CSS files may have better IDE support than writing these out directly inside of COWEL.
+
+COWEL provides directives to load content from other files.
+
+\h4[
+  id = dir-cowel_include
+]{\cowdoc_dir{cowel_include} \c{mdash} Include a sub-document}
+
+The \cowdoc_dir{cowel_include} directive loads the content from another COWEL document,
+and processes it using the current content policy.
+The path to the document is provided as content to \cowdoc_dir{cowel_include},
+and is assumed to be relative to the current file.
+All arguments are ignored.
+
+If the current content policy is a paragraphs policy (\ref[#contexts-and-output]),
+paragraph splitting of the included sub-document takes place
+as if its contents were expanded directly where \cowdoc_dir{cowel_include} appears.
+In other words, \cowdoc_dir{cowel_include} inherits the paragraph context,
+or is \em{not} a "black box" to paragraph splitting.
+
+\Bex{
+Say we have another \tt{test.cow} files containing:
+\codeblock[cowel]{\literally{
+Hello, includes!
+
+Next paragraph.
+}}
+When using \cowdoc_dir{cowel_include},
+the contents of the other file are substituted where we have written \cowdoc_dir{cowel_include},
+which means that imported content also plays nicely with paragraph splitting:
+\codeblock[cowel]{\literally{
+First paragraph.
+\cowel_include{test.cow}
+}}
+Generated HTML:
+\codeblock[html]{
+<p>First paragraph.
+Hello, includes!</p>
+
+<p>Next paragraph.</p>
+}
+}
+
+\Btip{
+It is common practice to collect macros and other reusable components in separate documents,
+and to \cowdoc_dir{cowel_include} them when needed.
+This can help you avoid copying boilerplate between multiple documents.
+
+It is also common to split documents into multiple files that are combined using a sequence
+of \cowdoc_dir{cowel_include}s.
+}
+
+\h4[
+  id = dir-cowel_include_text
+]{\cowdoc_dir{cowel_include_text} \c{mdash} Include text from a file}
+
+The \cowdoc_dir{cowel_include_text} directive reads the UTF-8 text contents of another file
+and feeds that text into the current content policy.
+The path to the document is provided as content to \cowdoc_dir{cowel_include_text},
+and is assumed to be relative to the current file.
+All arguments are ignored.
+
+\Bex{
+Say we have a JavaScript file \tt{example.js} which we want to keep separate from the document.
+We can then include it into a \cowdoc_dir{script} block to use it as a script,
+or we can include it into a \cowdoc_dir{codeblock} to display its contents.
+\codeblock[cowel]{\literally{
+\codeblock[js]{
+// code included from example.js:
+\cowel_include_text{example.js}
+}
+}}
+Assuming that \tt{example.js} is located in the same directory as the document
+and that loading the file succeeds,
+this renders as: 
+\codeblock[js]{
+// code included from example.js:
+\cowel_include_text{example.js}
+}
+}
+
+\Bnote{
+While \cowdoc_dir{cowel_include} and \cowdoc_dir{cowel_include_text} are similar,
+there are some stark differences:
+\ul{
+  \li{
+    \cowdoc_dir{cowel_include} is used for COWEL documents,
+    while \cowdoc_dir{cowel_include_text} is used for anything else.
+  }
+  \li{
+    \cowdoc_dir{cowel_include} doesn't just load the text from another file,
+    but parses it and ensures that the contents are a valid COWEL document.
+  }
+  \li{
+    \cowdoc_dir{cowel_include} feeds content from another document
+    piece by pice into the current content policy.
+    \cowdoc_dir{cowel_include_text} reads text
+    and feeds it all in a single block to the content policy.
+  }
+}
+}
