@@ -420,7 +420,11 @@ constexpr Basic_Test basic_tests[] {
 
     { .document = Path { u8"paragraphs_with_comments.cow" },
       .expected_html = Path { u8"paragraphs_with_comments.cow.html" },
-      .behavior = Test_Behavior::paragraphs }
+      .behavior = Test_Behavior::paragraphs },
+    
+    { .document = Path { u8"paragraph_control.cow" },
+      .expected_html = Path { u8"paragraph_control.cow.html" },
+      .behavior = Test_Behavior::paragraphs },
 };
 // clang-format on
 
