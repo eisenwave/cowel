@@ -120,6 +120,8 @@ Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     const std::pmr::vector<ast::Content> imported_content
         = parse_and_build(entry->source, entry->id, context.get_transient_memory(), on_error);
 
+    warn_deprecated_directive_names(imported_content, context);
+
     try_inherit_paragraph(out);
     return consume_all(out, imported_content, context);
 }
