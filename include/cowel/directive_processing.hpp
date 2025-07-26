@@ -194,6 +194,11 @@ void warn_ignored_argument_subset(
     Argument_Subset ignored_subset
 );
 
+/// @brief Emits a warning when directive names containing hyphens are found within `content`.
+/// Those are deprecated.
+/// The search is recursive for the arguments and content of any directive in `content`.
+void warn_deprecated_directive_names(std::span<const ast::Content> content, Context& context);
+
 using Argument_Filter = Function_Ref<bool(std::size_t index, const ast::Argument& argument) const>;
 
 [[nodiscard]]

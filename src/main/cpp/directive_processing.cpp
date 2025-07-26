@@ -261,6 +261,24 @@ void warn_ignored_argument_subset(
     }
 }
 
+void warn_deprecated_directive_names(std::span<const ast::Content> content, Context& context)
+{
+    for (const ast::Content& c : content) {
+        if (const auto* const d = std::get_if<ast::Directive>(&c)) {
+            if (d->get_name().contains(u8'-')) {
+                context.try_warning(
+                    diagnostic::deprecated, d->get_name_span(),
+                    u8"The use of '-' in directive names is deprecated."sv
+                );
+            }
+            for (const ast::Argument& arg : d->get_arguments()) {
+                warn_deprecated_directive_names(arg.get_content(), context);
+            }
+            warn_deprecated_directive_names(d->get_content(), context);
+        }
+    }
+}
+
 Processing_Status named_arguments_to_attributes(
     Attribute_Writer& out,
     const ast::Directive& d,
