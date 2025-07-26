@@ -129,7 +129,7 @@ Code_Point_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
         return try_generate_error(out, d, context, code_point.error());
     }
 
-    try_enter_paragraph(out);
+    ensure_paragraph_matches_display(out, m_display);
 
     out.write(make_char_sequence(*code_point), Output_Language::text);
     return Processing_Status::ok;
@@ -227,7 +227,7 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
         );
     }
 
-    try_enter_paragraph(out);
+    ensure_paragraph_matches_display(out, m_display);
 
     const bool convert_to_upper = !*is_lower;
     const Characters8 chars

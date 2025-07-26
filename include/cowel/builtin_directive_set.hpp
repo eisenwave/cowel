@@ -113,7 +113,15 @@ struct Comment_Behavior : Directive_Behavior {
 
 struct [[nodiscard]]
 Char_By_Entity_Behavior final : Directive_Behavior {
-    constexpr explicit Char_By_Entity_Behavior() = default;
+private:
+    Directive_Display m_display;
+
+public:
+    [[nodiscard]]
+    constexpr explicit Char_By_Entity_Behavior(Directive_Display display = Directive_Display::none)
+        : m_display { display }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status
@@ -121,6 +129,15 @@ Char_By_Entity_Behavior final : Directive_Behavior {
 };
 
 struct [[nodiscard]] Code_Point_Behavior : Directive_Behavior {
+private:
+    Directive_Display m_display;
+
+public:
+    [[nodiscard]]
+    constexpr explicit Code_Point_Behavior(Directive_Display display = Directive_Display::none)
+        : m_display { display }
+    {
+    }
 
     virtual Result<char32_t, Processing_Status>
     get_code_point(const ast::Directive& d, Context& context) const = 0;
@@ -132,7 +149,12 @@ struct [[nodiscard]] Code_Point_Behavior : Directive_Behavior {
 
 struct [[nodiscard]]
 Char_By_Num_Behavior final : Code_Point_Behavior {
-    constexpr explicit Char_By_Num_Behavior() = default;
+
+    [[nodiscard]]
+    constexpr explicit Char_By_Num_Behavior(Directive_Display display = Directive_Display::none)
+        : Code_Point_Behavior { display }
+    {
+    }
 
     [[nodiscard]]
     Result<char32_t, Processing_Status>
@@ -141,7 +163,12 @@ Char_By_Num_Behavior final : Code_Point_Behavior {
 
 struct [[nodiscard]]
 Char_By_Name_Behavior final : Code_Point_Behavior {
-    constexpr explicit Char_By_Name_Behavior() = default;
+
+    [[nodiscard]]
+    constexpr explicit Char_By_Name_Behavior(Directive_Display display = Directive_Display::none)
+        : Code_Point_Behavior { display }
+    {
+    }
 
     [[nodiscard]]
     Result<char32_t, Processing_Status>
@@ -150,10 +177,15 @@ Char_By_Name_Behavior final : Code_Point_Behavior {
 
 struct [[nodiscard]]
 Char_Get_Num_Behavior final : Directive_Behavior {
+private:
+    Directive_Display m_display;
 
+public:
     [[nodiscard]]
-    constexpr explicit Char_Get_Num_Behavior()
-        = default;
+    constexpr explicit Char_Get_Num_Behavior(Directive_Display display = Directive_Display::none)
+        : m_display { display }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status

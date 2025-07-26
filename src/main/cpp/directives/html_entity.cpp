@@ -94,7 +94,7 @@ Char_By_Entity_Behavior::operator()(Content_Policy& out, const ast::Directive& d
 {
     check_arguments(d, context);
 
-    try_enter_paragraph(out);
+    ensure_paragraph_matches_display(out, m_display);
 
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
     const auto input_status = to_plaintext(data, d.get_content(), context);

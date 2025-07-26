@@ -86,6 +86,8 @@ struct Builtin_Directive_Set::Impl {
         { u8"bug-block", Intro_Policy::yes };
     Special_Block_Behavior Bwarn //
         { u8"warning-block", Intro_Policy::yes };
+    Char_By_Entity_Behavior c //
+        { Directive_Display::in_line };
     Expression_Behavior Cadd //
         { Expression_Type::add };
     Expression_Behavior Cdiv //
@@ -185,6 +187,8 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::in_line };
     Math_Behavior mathblock //
         { Directive_Display::block };
+    Char_By_Name_Behavior N //
+        { Directive_Display::in_line };
     In_Tag_Behavior nobr //
         { u8"span", u8"word", Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior noscript //
@@ -255,6 +259,10 @@ struct Builtin_Directive_Set::Impl {
         { u8"u", Policy_Usage::inherit, Directive_Display::in_line };
     List_Behavior ul //
         { u8"ul", li };
+    Char_By_Num_Behavior U //
+        { Directive_Display::in_line };
+    Char_Get_Num_Behavior Udigits //
+        { Directive_Display::in_line };
     Unprocessed_Behavior unprocessed //
         {};
     URL_Behavior url //
@@ -306,10 +314,6 @@ struct Builtin_Directive_Set::Impl {
 
     COWEL_DEPRECATED_ALIAS(import, cowel_include);
     COWEL_DEPRECATED_ALIAS(include, cowel_include_text);
-    COWEL_DEPRECATED_ALIAS(c, cowel_char_by_entity);
-    COWEL_DEPRECATED_ALIAS(N, cowel_char_by_name);
-    COWEL_DEPRECATED_ALIAS(U, cowel_char_by_num);
-    COWEL_DEPRECATED_ALIAS(Udigits, cowel_char_get_num);
 
     Impl() = default;
     ~Impl() = default;
