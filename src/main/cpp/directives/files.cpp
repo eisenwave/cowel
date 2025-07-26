@@ -120,7 +120,7 @@ Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     const std::pmr::vector<ast::Content> imported_content
         = parse_and_build(entry->source, entry->id, context.get_transient_memory(), on_error);
 
-    try_activate_paragraphs_in_directive(out);
+    try_inherit_paragraph(out);
     return consume_all(out, imported_content, context);
 }
 

@@ -350,7 +350,7 @@ Processing_Status try_generate_error(
 
 /// @brief If `out` is a `Paragraph_Split_Content_Policy`
 /// calls `out.activate_paragraphs_in_directive()`.
-void try_activate_paragraphs_in_directive(Content_Policy& out);
+void try_inherit_paragraph(Content_Policy& out);
 
 /// @brief If `out` is a `Paragraph_Split_Content_Policy`
 /// calls `out.enter_paragraph()`.

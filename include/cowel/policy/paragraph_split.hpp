@@ -166,7 +166,7 @@ public:
     /// However, certain directives like \import rely on paragraph splitting
     /// from the surroundings to apply to any imported content.
     /// Such directives can explicitly opt into paragraph splitting using this member function.
-    void activate_paragraphs_in_directive()
+    void inherit_paragraph()
     {
         COWEL_ASSERT(m_current_guard != nullptr);
         m_current_guard->release();

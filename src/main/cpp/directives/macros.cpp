@@ -277,7 +277,7 @@ Processing_Status Macro_Instantiate_Behavior::operator()(
         return instantiate_status;
     }
 
-    try_activate_paragraphs_in_directive(out);
+    try_inherit_paragraph(out);
 
     const auto consume_status = consume_all(out, instance, context);
 
