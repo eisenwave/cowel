@@ -80,3 +80,162 @@ Horizontal rule:
 }
 }
 
+\h3[id=new-paragraph-control]{Paragraph control}
+
+Dividing content into paragraphs manually would take a huge amount of effort,
+so COWEL provides means of doing so semi-automatically.
+Text within in a paragraphs policy (\ref[#contexts-and-output])
+is automatically wrapped in paragraphs (\cowdoc_html{<p>...</p>}),
+divided at blank lines.
+
+While content expanded from macros and from \cowdoc_dir{cowel_include}
+is fed into the surrounding content policy
+(which may be a paragraphs policy) directly,
+directives are generally treated as "black boxes"
+for the purpose of paragraph splitting,
+and they neither begin nor end a paragraph.
+The following paragraph control directives define interactions
+between paragraph splitting and directives.
+
+\h4[
+  id = dir-cowel_paragraphs
+]{\cowdoc_dir{cowel_paragraphs} \c{mdash} Perform paragraph splitting}
+
+The \cowdoc_dir{cowel_paragraphs} directive
+creates a paragraphs policy (\ref[#contexts-and-output])
+and feeds all provided content into that policy.
+The beginning and end of the provided content are considered to be outside a paragraph.
+All arguments are ignored.
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\cowel_paragraphs{
+First paragraph.
+
+Second paragraph.
+}
+}}
+
+Generated HTML:
+\codeblock[html]{
+<p>First paragraph.</p>
+
+<p>Second paragraph.</p>
+}
+}
+
+\Bnote{
+At a top-level within the document,
+paragraph splitting takes place implicitly,
+as if the whole document was wrapped in \cowdoc_dir{cowel_paragraphs}.
+
+However, this does not extend recursively,
+so if one wants to have paragraph splitting inside say,
+\cowdoc_dir{cowel_html_\c{shy}element},
+\cowdoc_dir{cowel_paragraphs} has to be used.
+}
+
+\h4[
+  id = dir-cowel_paragraph_enter
+]{\cowdoc_dir{cowel_paragraph_enter} \c{mdash} Enter a paragraph}
+
+If the current content policy is a paragraphs policy and
+and the paragraph state is "outside",
+the paragraph state becomes "inside",
+and a \cowdoc_html{<p>} tag is emitted.
+Otherwise, has no effect.
+All arguments are ignored.
+
+\Bex{
+COWEL markup, assuming a surrounding paragraphs policy:
+\codeblock[cowel]{\literally{
+\cowel_char_by_name{DIGIT ONE}. First paragraph
+
+\cowel_paragraph_enter\cowel_char_by_name{DIGIT TWO}. Second paragraph
+}}
+
+Generated HTML:
+\codeblock[html]{
+1<p>. First paragraph</p>
+
+<p>2. Second paragraph</p>
+}
+
+As explained, directives are "black boxes" for paragraph splitting,
+so when the paragraphs policy processes \cowdoc_dir{cowel_char_by_name},
+it does not automatically begin a paragraph.
+}
+
+\Btip{
+\cowdoc_dir{cowel_paragraph_enter} should rarely be used directly,
+but from within macros.
+
+For example, the user can define an \cowdoc_dir{N} directive which combines
+\cowdoc_dir{cowel_para\c{shy}graph_enter} and \cowdoc_dir{cowel_\c{shy}char_by_name}.
+}
+
+\h4[
+  id = dir-cowel_paragraph_leave
+]{\cowdoc_dir{cowel_paragraph_leave} \c{mdash} Leave a paragraph}
+
+If the current content policy is a paragraphs policy and
+and the paragraph state is "inside",
+the paragraph state becomes "outside",
+and a closing \cowdoc_html{</p>} tag is emitted.
+Otherwise, has no effect.
+All arguments are ignored.
+
+\Bex{
+COWEL markup, assuming a surrounding paragraphs policy:
+\codeblock[cowel]{\literally{
+Paragraph 1:
+\cowel_html_self_closing_element[hr]
+
+Paragraph 2:
+\cowel_paragraph_leave\cowel_html_self_closing_element[hr]
+}}
+
+Generated HTML:
+\codeblock[html]{
+<p>Paragraph 1:
+<hr/></p>
+
+<p>Paragraph 2:
+</p><hr/>
+}
+
+As explained, directives are "black boxes" for paragraph splitting,
+so when the paragraphs policy processes \cowdoc_dir{cowel_html_self_closing_element},
+it does not automatically leave a paragraph.
+This would be necessary because horizontal rules (\cowdoc_html{<hr/>})
+are not supposed to be inside a paragraph.
+}
+
+\Btip{
+\cowdoc_dir{cowel_paragraph_leave} should rarely be used directly,
+but from within macros.
+
+For example, the user can define a \cowdoc_dir{hr} directive which combines
+\cowdoc_dir{cowel_para\c{shy}graph_leave} and
+\cowdoc_dir{cowel_\c{shy}html_self_closing_element}.
+}
+
+\h4[
+  id = dir-cowel_paragraph_inherit
+]{\cowdoc_dir{cowel_paragraph_inherit} \c{mdash} Activate paragraph splitting inside a directive}
+
+\Bimp{
+There is no support for programmatic directives yet,
+so this directive is currently useless.
+There are plans to add a WASM scripting API from which
+\cowdoc_dir{cowel_paragraph_inherit} may be used to alter behavior.
+}
+
+As already stated,
+paragraph splitting generally treats directives as "black boxes".
+However, content expanded from \cowdoc_dir{cowel_include} and macros
+\dfn{inherits} the surrounding paragraph for splitting,
+i.e. any content produced by such directives is fed directly into the paragraphs policy.
+\cowdoc_dir{cowel_paragraph_inherit} can be used inside programmatic directives
+defined by the user to achieve the same behavior.

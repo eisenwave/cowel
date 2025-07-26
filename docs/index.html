@@ -1537,6 +1537,16 @@ h1 {
 <a href=#dir-cowel_html_element><h4><code><h- data-h=mk_tag>\cowel_html_element</h-></code> — HTML element</h4></a>
 <div class=toc-num data-level=4>7.1.2</div>
 <a href=#dir-cowel_html_self_closing_element><h4><code><h- data-h=mk_tag>\cowel_html_self_closing_element</h-></code> — Self-closing HTML element</h4></a>
+<div class=toc-num data-level=3>7.2</div>
+<a href=#new-paragraph-control><h3>Paragraph control</h3></a>
+<div class=toc-num data-level=4>7.2.1</div>
+<a href=#dir-cowel_paragraphs><h4><code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4></a>
+<div class=toc-num data-level=4>7.2.2</div>
+<a href=#dir-cowel_paragraph_enter><h4><code><h- data-h=mk_tag>\cowel_paragraph_enter</h-></code> — Enter a paragraph</h4></a>
+<div class=toc-num data-level=4>7.2.3</div>
+<a href=#dir-cowel_paragraph_leave><h4><code><h- data-h=mk_tag>\cowel_paragraph_leave</h-></code> — Leave a paragraph</h4></a>
+<div class=toc-num data-level=4>7.2.4</div>
+<a href=#dir-cowel_paragraph_inherit><h4><code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</h4></a>
 <div class=toc-num data-level=2>8</div>
 <a href=#legacy-directives><h2>Legacy directives</h2></a>
 <div class=toc-num data-level=3>8.1</div>
@@ -2424,8 +2434,147 @@ COWEL markup:
 <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>hr</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-> <h- data-h=sym_punc>/&gt;</h-></code-block>
 </example-block>
 
+<h3 id=new-paragraph-control><a class=para href=#new-paragraph-control></a>7.2. Paragraph control</h3>
 
-<h2 id=legacy-directives><a class=para href=#legacy-directives></a>8. Legacy directives</h2>
+<p>Dividing content into paragraphs manually would take a huge amount of effort,
+so COWEL provides means of doing so semi-automatically.
+Text within in a paragraphs policy (<a href=#contexts-and-output>§5.1. Content policies</a>)
+is automatically wrapped in paragraphs (<code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>),
+divided at blank lines.
+</p>
+<p>While content expanded from macros and from <code><h- data-h=mk_tag>\cowel_include</h-></code>
+is fed into the surrounding content policy
+(which may be a paragraphs policy) directly,
+directives are generally treated as "black boxes"
+for the purpose of paragraph splitting,
+and they neither begin nor end a paragraph.
+The following paragraph control directives define interactions
+between paragraph splitting and directives.
+</p>
+<h4 id=dir-cowel_paragraphs><a class=para href=#dir-cowel_paragraphs></a>7.2.1. <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> directive
+creates a paragraphs policy (<a href=#contexts-and-output>§5.1. Content policies</a>)
+and feeds all provided content into that policy.
+The beginning and end of the provided content are considered to be outside a paragraph.
+All arguments are ignored.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_paragraphs</h-><h- data-h=sym_brac>{</h->
+First paragraph.
+
+Second paragraph.
+<h- data-h=sym_brac>}</h-></code-block>
+
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->First paragraph.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
+
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Second paragraph.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<note-block><p><intro-></intro-> 
+At a top-level within the document,
+paragraph splitting takes place implicitly,
+as if the whole document was wrapped in <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code>.
+</p>
+<p>However, this does not extend recursively,
+so if one wants to have paragraph splitting inside say,
+<code><h- data-h=mk_tag>\cowel_html_­element</h-></code>,
+<code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> has to be used.
+</p></note-block>
+
+<h4 id=dir-cowel_paragraph_enter><a class=para href=#dir-cowel_paragraph_enter></a>7.2.2. <code><h- data-h=mk_tag>\cowel_paragraph_enter</h-></code> — Enter a paragraph</h4>
+
+<p>If the current content policy is a paragraphs policy and
+and the paragraph state is "outside",
+the paragraph state becomes "inside",
+and a <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tag is emitted.
+Otherwise, has no effect.
+All arguments are ignored.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup, assuming a surrounding paragraphs policy:
+</p><code-block><h- data-h=mk_tag>\cowel_char_by_name</h-><h- data-h=sym_brac>{</h->DIGIT ONE<h- data-h=sym_brac>}</h->. First paragraph
+
+<h- data-h=mk_tag>\cowel_paragraph_enter</h-><h- data-h=mk_tag>\cowel_char_by_name</h-><h- data-h=sym_brac>{</h->DIGIT TWO<h- data-h=sym_brac>}</h->. Second paragraph</code-block>
+
+<p>Generated HTML:
+</p><code-block>1<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->. First paragraph<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
+
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->2. Second paragraph<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+
+<p>As explained, directives are "black boxes" for paragraph splitting,
+so when the paragraphs policy processes <code><h- data-h=mk_tag>\cowel_char_by_name</h-></code>,
+it does not automatically begin a paragraph.
+</p></example-block>
+
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_paragraph_enter</h-></code> should rarely be used directly,
+but from within macros.
+</p>
+<p>For example, the user can define an <code><h- data-h=mk_tag>\N</h-></code> directive which combines
+<code><h- data-h=mk_tag>\cowel_para­graph_enter</h-></code> and <code><h- data-h=mk_tag>\cowel_­char_by_name</h-></code>.
+</p></tip-block>
+
+<h4 id=dir-cowel_paragraph_leave><a class=para href=#dir-cowel_paragraph_leave></a>7.2.3. <code><h- data-h=mk_tag>\cowel_paragraph_leave</h-></code> — Leave a paragraph</h4>
+
+<p>If the current content policy is a paragraphs policy and
+and the paragraph state is "inside",
+the paragraph state becomes "outside",
+and a closing <code><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tag is emitted.
+Otherwise, has no effect.
+All arguments are ignored.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup, assuming a surrounding paragraphs policy:
+</p><code-block>Paragraph 1:
+<h- data-h=mk_tag>\cowel_html_self_closing_element</h-><h- data-h=sym_sqr>[</h->hr<h- data-h=sym_sqr>]</h->
+
+Paragraph 2:
+<h- data-h=mk_tag>\cowel_paragraph_leave</h-><h- data-h=mk_tag>\cowel_html_self_closing_element</h-><h- data-h=sym_sqr>[</h->hr<h- data-h=sym_sqr>]</h-></code-block>
+
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Paragraph 1:
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>hr</h-><h- data-h=sym_punc>/&gt;</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
+
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Paragraph 2:
+<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>hr</h-><h- data-h=sym_punc>/&gt;</h-></code-block>
+
+<p>As explained, directives are "black boxes" for paragraph splitting,
+so when the paragraphs policy processes <code><h- data-h=mk_tag>\cowel_html_self_closing_element</h-></code>,
+it does not automatically leave a paragraph.
+This would be necessary because horizontal rules (<code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>hr</h-><h- data-h=sym_punc>/&gt;</h-></code>)
+are not supposed to be inside a paragraph.
+</p></example-block>
+
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_paragraph_leave</h-></code> should rarely be used directly,
+but from within macros.
+</p>
+<p>For example, the user can define a <code><h- data-h=mk_tag>\hr</h-></code> directive which combines
+<code><h- data-h=mk_tag>\cowel_para­graph_leave</h-></code> and
+<code><h- data-h=mk_tag>\cowel_­html_self_closing_element</h-></code>.
+</p></tip-block>
+
+<h4 id=dir-cowel_paragraph_inherit><a class=para href=#dir-cowel_paragraph_inherit></a>7.2.4. <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</h4>
+
+<important-block><p><intro-></intro-> 
+There is no support for programmatic directives yet,
+so this directive is currently useless.
+There are plans to add a WASM scripting API from which
+<code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> may be used to alter behavior.
+</p></important-block>
+
+<p>As already stated,
+paragraph splitting generally treats directives as "black boxes".
+However, content expanded from <code><h- data-h=mk_tag>\cowel_include</h-></code> and macros
+<dfn>inherits</dfn> the surrounding paragraph for splitting,
+i.e. any content produced by such directives is fed directly into the paragraphs policy.
+<code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> can be used inside programmatic directives
+defined by the user to achieve the same behavior.
+
+</p><h2 id=legacy-directives><a class=para href=#legacy-directives></a>8. Legacy directives</h2>
 
 <warning-block><p><intro-></intro-> 
 The following builtin directives are all considered deprecated,
