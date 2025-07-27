@@ -84,22 +84,7 @@ Processing_Status
 HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
-    const ast::Argument* first_positional = nullptr;
-    for (const ast::Argument& arg : d.get_arguments()) {
-        if (arg.has_name()) {
-            continue;
-        }
-        if (!first_positional) {
-            first_positional = &arg;
-            continue;
-        }
-        context.try_warning(
-            diagnostic::ignored_args, arg.get_source_span(),
-            u8"This positional argument is ignored. "
-            u8"Only the first positional argument is used as the tag name, "
-            u8"and only named arguments are converted to HTML attributes."sv
-        );
-    }
+    const ast::Argument* first_positional = get_first_positional_warn_rest(d, context);
     if (!first_positional) {
         context.try_error(
             diagnostic::html_element_name_missing, d.get_name_span(),

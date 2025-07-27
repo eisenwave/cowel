@@ -368,6 +368,26 @@ Result<bool, Processing_Status> argument_to_plaintext(
     return true;
 }
 
+const ast::Argument* get_first_positional_warn_rest(const ast::Directive& d, Context& context)
+{
+    const ast::Argument* result = nullptr;
+    for (const ast::Argument& arg : d.get_arguments()) {
+        if (arg.has_name()) {
+            continue;
+        }
+        if (!result) {
+            result = &arg;
+            continue;
+        }
+        context.try_warning(
+            diagnostic::ignored_args, arg.get_source_span(),
+            u8"This positional argument is ignored. "
+            u8"Only the first positional argument is used in this directive."sv
+        );
+    }
+    return result;
+}
+
 Greedy_Result<bool> get_yes_no_argument(
     std::u8string_view name,
     std::u8string_view diagnostic_id,

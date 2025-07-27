@@ -306,6 +306,11 @@ Result<bool, Processing_Status> argument_to_plaintext(
     Context& context
 );
 
+/// @brief Returns the first positional argument of `d`
+/// or a null pointer if there is no positional argument.
+/// Furthermore, emits a warning for any additional positional arguments, if any.
+const ast::Argument* get_first_positional_warn_rest(const ast::Directive& d, Context& context);
+
 [[nodiscard]]
 Greedy_Result<bool> get_yes_no_argument(
     std::u8string_view name,
