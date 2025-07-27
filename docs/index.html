@@ -2227,7 +2227,6 @@ or in a policy which captures the output and writes it to memory for further pro
 <p>The following builtin content policies exist:
 </p>
 <dl>
-
   <dt>HTML policy</dt>
   <dd>
     Comments are ignored,
@@ -2238,7 +2237,7 @@ or in a policy which captures the output and writes it to memory for further pro
     and received plaintext is sanitized like text.
   </dd>
 
-  <dt>Syntax highlighting policy</dt>
+  <dt>Syntax highlight policy</dt>
   <dd>
     Like an HTML policy,
     but any text content and any received plaintext
@@ -2253,7 +2252,7 @@ or in a policy which captures the output and writes it to memory for further pro
     See <a href=#paragraph-splitting>§4.5. Paragraph splitting</a> for details.
   </dd>
 
-  <dt>Unprocessed policy</dt>
+  <dt>No-invoke policy</dt>
   <dd>
     Like an HTML policy,
     but directives are not processed.
@@ -2261,7 +2260,7 @@ or in a policy which captures the output and writes it to memory for further pro
     and fed as HTML into the surrounding policy.
   </dd>
 
-  <dt>Plaintext policy</dt>
+  <dt>Text-only policy</dt>
   <dd>
     Comments are ignored,
     escape sequences are expanded,
@@ -2270,14 +2269,14 @@ or in a policy which captures the output and writes it to memory for further pro
     HTML content fed into this policy is ignored.
   </dd>
 
-  <dt>HTML literal policy</dt>
+  <dt>Text-to-HTML policy</dt>
   <dd>
-    Like a plaintext policy,
+    Like a text-only policy,
     but instead of feeding its parent policy with the generated plaintext,
     all plaintext is reinterpreted as HTML before being fed into the parent policy.
   </dd>
 
-  <dt>Literally policy</dt>
+  <dt>Source-to-text policy</dt>
   <dd>
     The source code of all processed content is interpreted as plaintext
     and fed into the surrounding policy.
