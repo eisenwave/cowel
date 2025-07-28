@@ -1,4 +1,4 @@
 \cowel_highlight[html]{div}
-\cowel_highlight[lang=html,prefix=<]{div}
+\cowel_highlight[lang=html]{\cowel_highlight_phantom{<}div}
 \cowel_highlight[nasm]{mov}
-\cowel_highlight[nasm,suffix=:]{mov}
+\cowel_highlight[nasm]{mov\cowel_highlight_phantom{:}}
