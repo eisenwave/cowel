@@ -25,7 +25,7 @@ or in a policy which captures the output and writes it to memory for further pro
 The following builtin content policies exist:
 
 \dl{
-  \dt{HTML policy}
+  \dt{To-HTML policy}
   \dd{
     Comments are ignored,
     escape sequences are expanded,
@@ -37,14 +37,14 @@ The following builtin content policies exist:
 
   \dt{Syntax highlight policy}
   \dd{
-    Like an HTML policy,
+    Like a to-HTML policy,
     but any text content and any received plaintext
     has syntax highlighting applied to it.
   }
 
   \dt{Paragraphs policy}
   \dd{
-    Like an HTML policy,
+    Like a to-HTML policy,
     but surrounds given text content in paragraphs,
     and treats blank lines in text as paragraph separators.
     See \ref[#paragraph-splitting] for details.
@@ -52,7 +52,7 @@ The following builtin content policies exist:
 
   \dt{No-invoke policy}
   \dd{
-    Like an HTML policy,
+    Like a to-HTML policy,
     but directives are not processed.
     Instead, the source code of directives is taken, sanitized,
     and fed as HTML into the surrounding policy.
@@ -67,14 +67,14 @@ The following builtin content policies exist:
     HTML content fed into this policy is ignored.
   }
 
-  \dt{Text-to-HTML policy}
+  \dt{Text-as-HTML policy}
   \dd{
     Like a text-only policy,
     but instead of feeding its parent policy with the generated plaintext,
     all plaintext is reinterpreted as HTML before being fed into the parent policy.
   }
 
-  \dt{Source-to-text policy}
+  \dt{Source-as-text policy}
   \dd{
     The source code of all processed content is interpreted as plaintext
     and fed into the surrounding policy.
