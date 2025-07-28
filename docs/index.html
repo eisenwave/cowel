@@ -1569,6 +1569,8 @@ h1 {
 <a href=#dir-cowel_highlight><h4><code><h- data-h=mk_tag>\cowel_highlight</h-></code> — Perform syntax highlighting</h4></a>
 <div class=toc-num data-level=5>7.5.1.1</div>
 <a href=#new-highlight-prefix-suffix><h5>Highlighting prefix and suffix</h5></a>
+<div class=toc-num data-level=4>7.5.2</div>
+<a href=#dir-cowel_highlight_as><h4><code><h- data-h=mk_tag>\cowel_highlight_as</h-></code> — Syntax highlight override</h4></a>
 <div class=toc-num data-level=3>7.6</div>
 <a href=#new-paragraph-control><h3>Paragraph control</h3></a>
 <div class=toc-num data-level=4>7.6.1</div>
@@ -2746,7 +2748,8 @@ Use of
 it renders as:
 </p><div class=indent>
 Use of
-<tt-><h- data-h=kw>reinterpret_</h->-<br/><h- data-h=kw>cast</h-></tt-> is discouraged.
+<tt-><h- data-h=kw>reinterpret_</h->-<br/>
+<h- data-h=kw>cast</h-></tt-> is discouraged.
 </div>
 </example-block>
 
@@ -2905,6 +2908,45 @@ as if it was positioned like:
 </p><code-block><h- data-h=sym_brac>{</h-><h- data-h=mk_attr>"keys"</h-></code-block>
 </example-block>
 
+<h4 id=dir-cowel_highlight_as><a class=para href=#dir-cowel_highlight_as></a>7.5.2. <code><h- data-h=mk_tag>\cowel_highlight_as</h-></code> — Syntax highlight override</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_highlight_as</h-></code> directive forces certain syntax highlighting
+to be applied to some text;
+it is a manual override for when automatic syntax highlighting is insufficient or broken.
+This is done by wrapping the given content in HTML tags for syntax highlighting
+and feeding the provided content, converted to HTML into the surrounding policy,
+so it is not subject to automatic highlighting.
+</p>
+<p><code><h- data-h=mk_tag>\cowel_highlight_as</h-></code> has a single <tt-><h- data-h=mk_attr>name</h-></tt-> parameter,
+which is the µlight <dfn>long name</dfn> for a highlight type.
+</p>
+<tip-block><p><intro-></intro-> 
+You can obtain a list of possible long names at
+<a href=https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h><tt->ulight.h</tt-></a>
+from the definition of <code><h- data-h=kw>enum</h-> <h- data-h=id>ulight_highlight_type</h-></code>.
+The long name is the enumerator name without the <tt->ULIGHT_HL</tt-> prefix,
+all lowercase, and with hyphens instead of underscores.
+</p></tip-block>
+
+<example-block><p><intro-></intro-> 
+It is possible to mix automatic syntax highlighting with manual overrides:
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> _Int128 is manually highlighted as a type keyword,</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> and x is automatically highlighted as an identifier.</h->
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_sqr>[</h->code<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_sqr>[</h->c<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_highlight_as</h-><h- data-h=sym_sqr>[</h->keyword-type<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-> x<h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=sym_brac>}</h-></code-block>
+<p>This generates the HTML (subject to change):
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_punc>&gt;</h->_Int128<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-> <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>id</h-><h- data-h=sym_punc>&gt;</h->x<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+<p>It renders as <code><h- data-h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>.
+</p></example-block>
+
+<note-block><p><intro-></intro-> 
+While it is also possible to produce the highlighting tags using
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_html_element</h-><h- data-h=sym_sqr>[</h->h-<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h->kw_type<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-></code>,
+the "short names" (e.g. <code>kw_type</code>) are not stable,
+i.e. they are more likely to change.
+Only µlight long names should be used directly.
+</p></note-block>
 
 <h3 id=new-paragraph-control><a class=para href=#new-paragraph-control></a>7.6. Paragraph control</h3>
 

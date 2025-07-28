@@ -377,7 +377,8 @@ Or, if line wrapping takes place in the middle of the highlighted keyword,
 it renders as:
 \Bindent{
 Use of
-\tt{\hl[keyword]{reinterpret_}-\br{}\hl[keyword]{cast}} is discouraged.
+\tt{\cowel_highlight_as[keyword]{reinterpret_}-\br{}
+\cowel_highlight_as[keyword]{cast}} is discouraged.
 }
 }
 
@@ -567,6 +568,51 @@ as if it was positioned like:
 \:}
 }
 
+\h4[
+  id = dir-cowel_highlight_as
+]{\cowdoc_dir{cowel_highlight_as} \c{mdash} Syntax highlight override}
+
+The \cowdoc_dir{cowel_highlight_as} directive forces certain syntax highlighting
+to be applied to some text;
+it is a manual override for when automatic syntax highlighting is insufficient or broken.
+This is done by wrapping the given content in HTML tags for syntax highlighting
+and feeding the provided content, converted to HTML into the surrounding policy,
+so it is not subject to automatic highlighting.
+
+\cowdoc_dir{cowel_highlight_as} has a single \cowdoc_attr{name} parameter,
+which is the µlight \dfn{long name} for a highlight type.
+
+\Btip{
+You can obtain a list of possible long names at
+\ref[https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h]{\tt{ulight.h}}
+from the definition of \code[cpp]{enum ulight_highlight_type}.
+The long name is the enumerator name without the \tt{ULIGHT_HL} prefix,
+all lowercase, and with hyphens instead of underscores.
+}
+
+\Bex{
+It is possible to mix automatic syntax highlighting with manual overrides:
+\codeblock[cowel]{\literally{
+\: _Int128 is manually highlighted as a type keyword,
+\: and x is automatically highlighted as an identifier.
+\cowel_html_element[code]{\
+\cowel_highlight[c]{\cowel_highlight_as[keyword-type]{_Int128} x}\
+}
+}}
+This generates the HTML (subject to change):
+\codeblock[html]{
+<code><h- data-h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>
+}
+It renders as \code[c]{\cowel_highlight_as[keyword-type]{_Int128} x}.
+}
+
+\Bnote{
+While it is also possible to produce the highlighting tags using
+\cowdoc_c{\\cowel_html_element[h-,data-h=kw_type]{_Int128}},
+the "short names" (e.g. \cowdoc_c{kw_type}) are not stable,
+i.e. they are more likely to change.
+Only µlight long names should be used directly.
+}
 
 \h3[id=new-paragraph-control]{Paragraph control}
 

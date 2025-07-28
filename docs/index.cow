@@ -1,9 +1,9 @@
 \macro[\cowdoc_c{...}]{\code[cowel,\put{...}]{\put}}\
 \macro[\cowdoc_html{...}]{\code[html]{\put}}\
-\macro[\cowdoc_dir{...}]{\cowdoc_c{\hl[markup-tag]{\\\put}}}\
+\macro[\cowdoc_dir{...}]{\cowdoc_c{\cowel_highlight_as[markup-tag]{\\\put}}}\
 \macro[\cowdoc_cp{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}\
-\macro[\cowdoc_attr{...}]{\tt{\hl[markup-attr]{\put}}}\
-\macro[\cowdoc_esc{...}]{\tt{\hl[escape]{\\\put}}}\
+\macro[\cowdoc_attr{...}]{\tt{\cowel_highlight_as[markup-attr]{\put}}}\
+\macro[\cowdoc_esc{...}]{\tt{\cowel_highlight_as[escape]{\\\put}}}\
 \
 \macro[\c{...}]{\cowel_paragraph_enter\cowel_char_by_entity[\put{...}]{\put}}\
 \macro[\N{...}]{\cowel_paragraph_enter\cowel_char_by_name[\put{...}]{\put}}\

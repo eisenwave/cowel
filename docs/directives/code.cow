@@ -180,7 +180,7 @@ This generates the HTML (subject to change):
 \codeblock[html]{
 <code><h- data=h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>
 }
-It renders as \code[c]{\hl[keyword-type]{_Int128} x}.
+It renders as \code[c]{\cowel_highlight_as[keyword-type]{_Int128} x}.
 }
 
 \Bnote{
