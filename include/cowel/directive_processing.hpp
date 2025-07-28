@@ -175,6 +175,9 @@ constexpr bool argument_subset_intersects(Argument_Subset x, Argument_Subset y)
     return (x & y) != Argument_Subset::none;
 }
 
+/// @brief Emits a warning which informs the user that all arguments to the directive are ignored.
+void warn_all_args_ignored(const ast::Directive& d, Context& context);
+
 /// @brief Emits a warning for all ignored arguments,
 /// where the caller can specify what subset of arguments were ignored.
 void warn_ignored_argument_subset(
@@ -198,6 +201,13 @@ void warn_ignored_argument_subset(
 /// Those are deprecated.
 /// The search is recursive for the arguments and content of any directive in `content`.
 void warn_deprecated_directive_names(std::span<const ast::Content> content, Context& context);
+
+void diagnose(
+    Syntax_Highlight_Error error,
+    std::u8string_view lang,
+    const ast::Directive& d,
+    Context& context
+);
 
 using Argument_Filter = Function_Ref<bool(std::size_t index, const ast::Argument& argument) const>;
 

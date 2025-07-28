@@ -217,6 +217,17 @@ Processing_Status apply_behavior(Content_Policy& out, const ast::Directive& d, C
     return (*behavior)(out, d, context);
 }
 
+void warn_all_args_ignored(const ast::Directive& d, Context& context)
+{
+    if (context.emits(Severity::warning)) {
+        for (const ast::Argument& arg : d.get_arguments()) {
+            context.emit_warning(
+                diagnostic::ignored_args, arg.get_source_span(), u8"This argument was ignored."sv
+            );
+        }
+    }
+}
+
 void warn_ignored_argument_subset(
     std::span<const ast::Argument> args,
     const Argument_Matcher& matcher,
@@ -276,6 +287,64 @@ void warn_deprecated_directive_names(std::span<const ast::Content> content, Cont
             }
             warn_deprecated_directive_names(d->get_content(), context);
         }
+    }
+}
+
+void diagnose(
+    Syntax_Highlight_Error error,
+    std::u8string_view lang,
+    const ast::Directive& d,
+    Context& context
+)
+{
+    if (!context.emits(Severity::warning)) {
+        return;
+    }
+    switch (error) {
+    case Syntax_Highlight_Error::unsupported_language: {
+        if (lang.empty()) {
+            context.try_warning(
+                diagnostic::highlight_language, d.get_source_span(),
+                u8"Syntax highlighting was not possible because no language was given, "
+                u8"and automatic language detection was not possible. "
+                u8"Please use \\tt{...} or \\pre{...} if you want a code (block) "
+                u8"without any syntax highlighting."sv
+            );
+            break;
+        }
+        const std::u8string_view message[] {
+            u8"Unable to apply syntax highlighting because the specified language \"",
+            lang,
+            u8"\" is not supported.",
+        };
+        context.emit_warning(
+            diagnostic::highlight_language, d.get_source_span(), joined_char_sequence(message)
+        );
+        break;
+    }
+    case Syntax_Highlight_Error::bad_code: {
+        const std::u8string_view message[] {
+            u8"Unable to apply syntax highlighting because the code is not valid "
+            u8"for the specified language \"",
+            lang,
+            u8"\".",
+        };
+        context.emit_warning(
+            diagnostic::highlight_malformed, d.get_source_span(), joined_char_sequence(message)
+        );
+        break;
+    }
+    case Syntax_Highlight_Error::other: {
+        const std::u8string_view message[] {
+            u8"Unable to apply syntax highlighting because of an internal error.",
+            lang,
+            u8"\".",
+        };
+        context.emit_warning(
+            diagnostic::highlight_error, d.get_source_span(), joined_char_sequence(message)
+        );
+        break;
+    }
     }
 }
 

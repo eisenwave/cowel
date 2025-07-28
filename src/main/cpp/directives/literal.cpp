@@ -1,10 +1,12 @@
+#include <string_view>
 #include <vector>
+
+#include "cowel/util/html_writer.hpp"
+#include "cowel/util/strings.hpp"
 
 #include "cowel/policy/html_literal.hpp"
 #include "cowel/policy/literally.hpp"
 #include "cowel/policy/unprocessed.hpp"
-#include "cowel/util/html_writer.hpp"
-#include "cowel/util/strings.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
@@ -14,20 +16,6 @@
 using namespace std::string_view_literals;
 
 namespace cowel {
-namespace {
-
-void warn_all_args_ignored(const ast::Directive& d, Context& context)
-{
-    if (context.emits(Severity::warning)) {
-        for (const ast::Argument& arg : d.get_arguments()) {
-            context.emit_warning(
-                diagnostic::ignored_args, arg.get_source_span(), u8"This argument was ignored."sv
-            );
-        }
-    }
-}
-
-} // namespace
 
 Processing_Status
 Literally_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
