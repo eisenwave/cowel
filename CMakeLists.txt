@@ -106,6 +106,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/directives/math.cpp
     src/main/cpp/directives/paragraph.cpp
     src/main/cpp/directives/passthrough.cpp
+    src/main/cpp/directives/policies.cpp
     src/main/cpp/directives/reference.cpp
     src/main/cpp/directives/syntax_highlight.cpp
     src/main/cpp/directives/variables.cpp

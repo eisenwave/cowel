@@ -36,14 +36,26 @@ struct Builtin_Directive_Set::Impl {
         {};
     Include_Text_Behavior cowel_include_text //
         {};
-    Paragraphs_Behavior cowel_paragraphs //
-        {};
+    Policy_Behavior cowel_no_invoke //
+        { Known_Content_Policy::no_invoke };
+    Policy_Behavior cowel_paragraphs //
+        { Known_Content_Policy::paragraphs };
     Paragraph_Enter_Behavior cowel_paragraph_enter //
         {};
     Paragraph_Inherit_Behavior cowel_paragraph_inherit //
         {};
     Paragraph_Leave_Behavior cowel_paragraph_leave //
         {};
+    Policy_Behavior cowel_source_as_text //
+        { Known_Content_Policy::source_as_text };
+    Policy_Behavior cowel_syntax_highlight //
+        { Known_Content_Policy::syntax_highlight };
+    Policy_Behavior cowel_text_as_html //
+        { Known_Content_Policy::text_as_html };
+    Policy_Behavior cowel_text_only //
+        { Known_Content_Policy::text_only };
+    Policy_Behavior cowel_to_html //
+        { Known_Content_Policy::to_html };
 
     // Legacy directives
     Fixed_Name_Passthrough_Behavior b //
@@ -599,6 +611,8 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
                 return &m_impl->cowel_include;
             if (name == u8"cowel_include_text")
                 return &m_impl->cowel_include_text;
+            if (name == u8"cowel_no_invoke")
+                return &m_impl->cowel_no_invoke;
             if (name == u8"cowel_paragraphs")
                 return &m_impl->cowel_paragraphs;
             if (name == u8"cowel_paragraph_enter")
@@ -607,6 +621,16 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
                 return &m_impl->cowel_paragraph_inherit;
             if (name == u8"cowel_paragraph_leave")
                 return &m_impl->cowel_paragraph_leave;
+            if (name == u8"cowel_source_as_text")
+                return &m_impl->cowel_source_as_text;
+            if (name == u8"cowel_syntax_highlight")
+                return &m_impl->cowel_syntax_highlight;
+            if (name == u8"cowel_text_as_html")
+                return &m_impl->cowel_text_as_html;
+            if (name == u8"cowel_text_only")
+                return &m_impl->cowel_text_only;
+            if (name == u8"cowel_to_html")
+                return &m_impl->cowel_to_html;
         }
         if (name == u8"c")
             return &m_impl->c;

@@ -41,18 +41,6 @@ Processing_Status control_paragraph(
 } // namespace
 
 Processing_Status
-Paragraphs_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
-    const
-{
-    warn_all_arguments_ignored(d, context);
-
-    Paragraph_Split_Policy policy { out, context.get_transient_memory() };
-    const Processing_Status result = consume_all(policy, d.get_content(), context);
-    policy.leave_paragraph();
-    return result;
-}
-
-Processing_Status
 Paragraph_Enter_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {

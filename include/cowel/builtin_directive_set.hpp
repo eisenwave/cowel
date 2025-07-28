@@ -270,6 +270,33 @@ public:
     operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
 };
 
+enum struct Known_Content_Policy : Default_Underlying {
+    current,
+    to_html,
+    syntax_highlight,
+    paragraphs,
+    no_invoke,
+    text_only,
+    text_as_html,
+    source_as_text,
+};
+
+struct Policy_Behavior : Directive_Behavior {
+private:
+    Known_Content_Policy m_policy;
+
+public:
+    [[nodiscard]]
+    constexpr explicit Policy_Behavior(Known_Content_Policy policy)
+        : m_policy { policy }
+    {
+    }
+
+    [[nodiscard]]
+    Processing_Status
+    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
+};
+
 struct Literally_Behavior : Directive_Behavior {
     [[nodiscard]]
     constexpr explicit Literally_Behavior()
@@ -843,15 +870,6 @@ struct Macro_Instantiate_Behavior final : Directive_Behavior {
     [[nodiscard]]
     Processing_Status
     operator()(Content_Policy& out, const ast::Directive&, Context&) const override;
-};
-
-struct Paragraphs_Behavior final : Directive_Behavior {
-
-    constexpr explicit Paragraphs_Behavior() = default;
-
-    [[nodiscard]]
-    Processing_Status
-    operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 };
 
 struct Paragraph_Enter_Behavior final : Directive_Behavior {
