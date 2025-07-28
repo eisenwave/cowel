@@ -516,57 +516,12 @@ The \cowdoc_dir{cowel_highlight}
 processes content using the highlight policy,
 which wraps parts of code in HTML tags for the purpose of syntax highlighting.
 
-The following arguments are supported,
-with the usual matching rules:
-
-\dl{
-  \dt{\cowdoc_attr{lang}}
-  \dd{
-    The name of language (e.g. \tt{cowel}) in which the content is to be highlighted.
-    The name has to be one of the language short names
-    supported by the \ref[https://github.com/Eisenwave/ulight]{µlight syntax highlighter},
-    which is the highlighter that COWEL uses internally.
-  }
-  \dt{\cowdoc_attr{prefix}}
-  \dd{Code that comes before the input content (see below).}
-  \dt{\cowdoc_attr{suffix}}
-  \dd{Code that comes after the input content (see below).}
-}
-
-\h5[id=new-highlight-prefix-suffix]{Highlighting prefix and suffix}
-
-The \cowdoc_attr{prefix} and \cowdoc_attr{suffix} parameters
-can be used to further customize syntax highlighting.
-They provide code which is fed into the syntax highlighter before and after
-the input content, respectively.
-Thus, they may alter how the provided content is highlighted,
-without becoming part of that content.
-
-\Bex{
-Using \cowdoc_attr{prefix},
-we can control whether a JSON string is interpreted as a markup key,
-or as a string value:
-\codeblock[cowel]{\literally{
-In JSON, there are
-\cowel_html_element[code]{\cowel_policy[syntax_highlight,lang=json,prefix=\{]{"keys"}}
-and
-\cowel_html_element[code]{\cowel_policy[syntax_highlight,lang=json]{"values"}}.
-\: Note that this is low-level functionality intended to power macros like:
-\:   \code[json,prefix=\{]{"keys"}
-\: or
-\:   \json_key{"keys"}
-}}
-This renders as:
-\Bindent{
-In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
-}
-Notice that the color of \code[json,prefix=\{]{"keys"} is different because it is highlighted
-as if it was positioned like:
-\codeblock[json]{
-\{"keys"
-}
-\:}
-}
+\cowdoc_dir{cowel_highlight} has a single \cowdoc_attr{lang} parameter.
+This specifies the name of language (e.g. \tt{cowel})
+in which the content is to be highlighted.
+The name has to be one of the language short names
+supported by the \ref[https://github.com/Eisenwave/ulight]{µlight syntax highlighter},
+which is the highlighter that COWEL uses internally.
 
 \h4[
   id = dir-cowel_highlight_as
@@ -612,6 +567,47 @@ While it is also possible to produce the highlighting tags using
 the "short names" (e.g. \cowdoc_c{kw_type}) are not stable,
 i.e. they are more likely to change.
 Only µlight long names should be used directly.
+}
+
+\h4[
+  id = dir-cowel_highlight_phantom
+]{\cowdoc_dir{cowel_highlight_phantom} \c{mdash} Syntax highlight phantom text}
+
+The \cowdoc_dir{cowel_highlight_phantom} directive
+can be used to further customize syntax highlighting.
+It outputs \dfn{phantom text}, which is fed into the syntax highlighter,
+but is not part of the output content.
+
+The provided content is processed using a text-only policy (\ref[#contexts-and-output]).
+If the current policy is a highlight policy,
+the text output by the former is turned into phantom text within the latter.
+Otherwise, the generated text is discarded.
+All arguments are ignored.
+
+\Bex{
+Using \cowdoc_dir{cowel_highlight_phantom},
+we can control whether a JSON string is interpreted as a markup key,
+or as a string value:
+\codeblock[cowel]{\literally{
+In JSON, there are
+\cowel_html_element[code]{\cowel_highlight[json]{\cowel_highlight_phantom{\{}"keys"}}
+and
+\cowel_html_element[code]{\cowel_highlight[json]{"values"}}.
+\: Note that this is low-level functionality intended to power macros like:
+\:   \code[json,prefix=\{]{"keys"}
+\: or
+\:   \json_key{"keys"}
+}}
+Using the highlight theme of this document, this renders as:
+\Bindent{
+In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
+}
+Notice that the color of \code[json,prefix=\{]{"keys"} is different because it is highlighted
+as if it was positioned like:
+\codeblock[json]{
+\{"keys"
+}
+\:}}
 }
 
 \h3[id=new-paragraph-control]{Paragraph control}

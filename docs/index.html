@@ -1567,10 +1567,10 @@ h1 {
 <a href=#new-syntax-highlighting><h3>Syntax highlighting</h3></a>
 <div class=toc-num data-level=4>7.5.1</div>
 <a href=#dir-cowel_highlight><h4><code><h- data-h=mk_tag>\cowel_highlight</h-></code> — Perform syntax highlighting</h4></a>
-<div class=toc-num data-level=5>7.5.1.1</div>
-<a href=#new-highlight-prefix-suffix><h5>Highlighting prefix and suffix</h5></a>
 <div class=toc-num data-level=4>7.5.2</div>
 <a href=#dir-cowel_highlight_as><h4><code><h- data-h=mk_tag>\cowel_highlight_as</h-></code> — Syntax highlight override</h4></a>
+<div class=toc-num data-level=4>7.5.3</div>
+<a href=#dir-cowel_highlight_phantom><h4><code><h- data-h=mk_tag>\cowel_highlight_phantom</h-></code> — Syntax highlight phantom text</h4></a>
 <div class=toc-num data-level=3>7.6</div>
 <a href=#new-paragraph-control><h3>Paragraph control</h3></a>
 <div class=toc-num data-level=4>7.6.1</div>
@@ -2861,53 +2861,13 @@ Many examples can be found in this document.
 processes content using the highlight policy,
 which wraps parts of code in HTML tags for the purpose of syntax highlighting.
 </p>
-<p>The following arguments are supported,
-with the usual matching rules:
+<p><code><h- data-h=mk_tag>\cowel_highlight</h-></code> has a single <tt-><h- data-h=mk_attr>lang</h-></tt-> parameter.
+This specifies the name of language (e.g. <tt->cowel</tt->)
+in which the content is to be highlighted.
+The name has to be one of the language short names
+supported by the <a href=https://github.com/Eisenwave/ulight>µlight syntax highlighter</a>,
+which is the highlighter that COWEL uses internally.
 </p>
-<dl>
-  <dt><tt-><h- data-h=mk_attr>lang</h-></tt-></dt>
-  <dd>
-    The name of language (e.g. <tt->cowel</tt->) in which the content is to be highlighted.
-    The name has to be one of the language short names
-    supported by the <a href=https://github.com/Eisenwave/ulight>µlight syntax highlighter</a>,
-    which is the highlighter that COWEL uses internally.
-  </dd>
-  <dt><tt-><h- data-h=mk_attr>prefix</h-></tt-></dt>
-  <dd>Code that comes before the input content (see below).</dd>
-  <dt><tt-><h- data-h=mk_attr>suffix</h-></tt-></dt>
-  <dd>Code that comes after the input content (see below).</dd>
-</dl>
-
-<h5 id=new-highlight-prefix-suffix><a class=para href=#new-highlight-prefix-suffix></a>7.5.1.1. Highlighting prefix and suffix</h5>
-
-<p>The <tt-><h- data-h=mk_attr>prefix</h-></tt-> and <tt-><h- data-h=mk_attr>suffix</h-></tt-> parameters
-can be used to further customize syntax highlighting.
-They provide code which is fed into the syntax highlighter before and after
-the input content, respectively.
-Thus, they may alter how the provided content is highlighted,
-without becoming part of that content.
-</p>
-<example-block><p><intro-></intro-> 
-Using <tt-><h- data-h=mk_attr>prefix</h-></tt->,
-we can control whether a JSON string is interpreted as a markup key,
-or as a string value:
-</p><code-block>In JSON, there are
-<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_sqr>[</h->code<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_policy</h-><h- data-h=sym_sqr>[</h->syntax_highlight<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>lang</h-><h- data-h=sym_punc>=</h->json<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>prefix</h-><h- data-h=sym_punc>=</h-><h- data-h=esc>\{</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->"keys"<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
-and
-<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_sqr>[</h->code<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_policy</h-><h- data-h=sym_sqr>[</h->syntax_highlight<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>lang</h-><h- data-h=sym_punc>=</h->json<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->"values"<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->.
-<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Note that this is low-level functionality intended to power macros like:</h->
-<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt>   \code[json,prefix=\{]{"keys"}</h->
-<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> or</h->
-<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt>   \json_key{"keys"}</h-></code-block>
-<p>This renders as:
-</p><div class=indent>
-In JSON, there are <code><h- data-h=mk_attr>"keys"</h-></code> and <code><h- data-h=str_dlim>"</h-><h- data-h=str>values</h-><h- data-h=str_dlim>"</h-></code>.
-</div>
-<p>Notice that the color of <code><h- data-h=mk_attr>"keys"</h-></code> is different because it is highlighted
-as if it was positioned like:
-</p><code-block><h- data-h=sym_brac>{</h-><h- data-h=mk_attr>"keys"</h-></code-block>
-</example-block>
-
 <h4 id=dir-cowel_highlight_as><a class=para href=#dir-cowel_highlight_as></a>7.5.2. <code><h- data-h=mk_tag>\cowel_highlight_as</h-></code> — Syntax highlight override</h4>
 
 <p>The <code><h- data-h=mk_tag>\cowel_highlight_as</h-></code> directive forces certain syntax highlighting
@@ -2947,6 +2907,40 @@ the "short names" (e.g. <code>kw_type</code>) are not stable,
 i.e. they are more likely to change.
 Only µlight long names should be used directly.
 </p></note-block>
+
+<h4 id=dir-cowel_highlight_phantom><a class=para href=#dir-cowel_highlight_phantom></a>7.5.3. <code><h- data-h=mk_tag>\cowel_highlight_phantom</h-></code> — Syntax highlight phantom text</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_highlight_phantom</h-></code> directive
+can be used to further customize syntax highlighting.
+It outputs <dfn>phantom text</dfn>, which is fed into the syntax highlighter,
+but is not part of the output content.
+</p>
+<p>The provided content is processed using a text-only policy (<a href=#contexts-and-output>§5.1. Content policies</a>).
+If the current policy is a highlight policy,
+the text output by the former is turned into phantom text within the latter.
+Otherwise, the generated text is discarded.
+All arguments are ignored.
+</p>
+<example-block><p><intro-></intro-> 
+Using <code><h- data-h=mk_tag>\cowel_highlight_phantom</h-></code>,
+we can control whether a JSON string is interpreted as a markup key,
+or as a string value:
+</p><code-block>In JSON, there are
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_sqr>[</h->code<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_sqr>[</h->json<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_highlight_phantom</h-><h- data-h=sym_brac>{</h-><h- data-h=esc>\{</h-><h- data-h=sym_brac>}</h->"keys"<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+and
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_sqr>[</h->code<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_sqr>[</h->json<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->"values"<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->.
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Note that this is low-level functionality intended to power macros like:</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt>   \code[json,prefix=\{]{"keys"}</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> or</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt>   \json_key{"keys"}</h-></code-block>
+<p>Using the highlight theme of this document, this renders as:
+</p><div class=indent>
+In JSON, there are <code><h- data-h=mk_attr>"keys"</h-></code> and <code><h- data-h=str_dlim>"</h-><h- data-h=str>values</h-><h- data-h=str_dlim>"</h-></code>.
+</div>
+<p>Notice that the color of <code><h- data-h=mk_attr>"keys"</h-></code> is different because it is highlighted
+as if it was positioned like:
+</p><code-block><h- data-h=sym_brac>{</h-><h- data-h=mk_attr>"keys"</h-></code-block>
+</example-block>
 
 <h3 id=new-paragraph-control><a class=para href=#new-paragraph-control></a>7.6. Paragraph control</h3>
 
