@@ -4,6 +4,7 @@
 #include "cowel/policy/html_literal.hpp"
 #include "cowel/policy/literally.hpp"
 #include "cowel/policy/paragraph_split.hpp"
+#include "cowel/policy/phantom.hpp"
 #include "cowel/policy/plaintext.hpp"
 #include "cowel/policy/syntax_highlight.hpp"
 #include "cowel/policy/unprocessed.hpp"
@@ -41,13 +42,7 @@ Processing_Status
 consume_syntax_highlighted(Content_Policy& out, const ast::Directive& d, Context& context)
 {
     static constexpr auto lang_parameter = u8"lang"sv;
-    static constexpr auto prefix_parameter = u8"prefix"sv;
-    static constexpr auto suffix_parameter = u8"suffix"sv;
-    static constexpr std::u8string_view parameters[] {
-        lang_parameter,
-        prefix_parameter,
-        suffix_parameter,
-    };
+    static constexpr std::u8string_view parameters[] { lang_parameter };
     Argument_Matcher args { parameters, context.get_transient_memory() };
     args.match(d.get_arguments());
 
@@ -58,32 +53,15 @@ consume_syntax_highlighted(Content_Policy& out, const ast::Directive& d, Context
     if (status_is_break(lang.status())) {
         return lang.status();
     }
-    const Greedy_Result<String_Argument> prefix
-        = get_string_argument(prefix_parameter, d, args, context);
-    if (status_is_break(prefix.status())) {
-        return prefix.status();
-    }
-    const Greedy_Result<String_Argument> suffix
-        = get_string_argument(suffix_parameter, d, args, context);
-    if (status_is_break(suffix.status())) {
-        return suffix.status();
-    }
-    const Processing_Status args_status
-        = status_concat(lang.status(), prefix.status(), suffix.status());
 
-    Syntax_Highlight_Policy policy {
-        context.get_transient_memory(),
-        prefix->string,
-        suffix->string,
-    };
+    Syntax_Highlight_Policy policy { context.get_transient_memory() };
     const Processing_Status consume_status = consume_all(policy, d.get_content(), context);
-    const Result<void, Syntax_Highlight_Error> result
-        = policy.write_highlighted(out, context, lang->string);
+    const Result<void, Syntax_Highlight_Error> result = policy.dump_to(out, context, lang->string);
     if (!result) {
         diagnose(result.error(), lang->string, d, context);
     }
 
-    return status_concat(args_status, consume_status);
+    return status_concat(lang.status(), consume_status);
 }
 
 } // namespace
@@ -101,6 +79,9 @@ Policy_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
     }
     case Known_Content_Policy::highlight: {
         return consume_syntax_highlighted(out, d, context);
+    }
+    case Known_Content_Policy::phantom: {
+        return consume_simply<Phantom_Content_Policy>(out, d, context);
     }
     case Known_Content_Policy::paragraphs: {
         return consume_paragraphs(out, d, context);

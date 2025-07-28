@@ -108,11 +108,7 @@ bool Syntax_Highlight_Policy::write(Char_Sequence8 chars, Output_Language langua
         COWEL_ASSERT_UNREACHABLE(u8"None input.");
     }
     case Output_Language::text: {
-        const std::size_t initial_size = m_highlighted_text.size();
-        m_spans.push_back({ Span_Type::highlight, initial_size, chars_size });
-        append(m_highlighted_text, chars);
-        COWEL_ASSERT(m_highlighted_text.size() == initial_size + chars_size);
-        return true;
+        return write_highlighted_text(chars, Span_Type::highlight);
     }
     case Output_Language::html: {
         const std::size_t initial_size = m_html_text.size();
@@ -127,11 +123,21 @@ bool Syntax_Highlight_Policy::write(Char_Sequence8 chars, Output_Language langua
     }
 }
 
-Result<void, Syntax_Highlight_Error> Syntax_Highlight_Policy::write_highlighted(
-    Text_Sink& out,
-    Context& context,
-    std::u8string_view language
-)
+bool Syntax_Highlight_Policy::write_highlighted_text(Char_Sequence8 chars, Span_Type type)
+{
+    const std::size_t chars_size = chars.size();
+    if constexpr (enable_empty_string_assertions) {
+        COWEL_ASSERT(chars_size != 0);
+    }
+    const std::size_t initial_size = m_highlighted_text.size();
+    m_spans.push_back({ type, initial_size, chars_size });
+    append(m_highlighted_text, chars);
+    COWEL_ASSERT(m_highlighted_text.size() == initial_size + chars_size);
+    return true;
+}
+
+Result<void, Syntax_Highlight_Error>
+Syntax_Highlight_Policy::dump_to(Text_Sink& out, Context& context, std::u8string_view language)
 {
     const std::size_t initial_size = m_highlighted_text.size();
     m_highlighted_text.insert(m_highlighted_text.end(), m_suffix.begin(), m_suffix.end());
@@ -159,6 +165,12 @@ Result<void, Syntax_Highlight_Error> Syntax_Highlight_Policy::write_highlighted(
         }
         case Span_Type::highlight: {
             generate_highlighted_html(writer, code_string, span.begin, span.length, highlights);
+            break;
+        }
+        case Span_Type::phantom: {
+            // Deliberately do nothing.
+            // Phantom text is only relevant to generating highlights,
+            // but does not appear in the output.
             break;
         }
         }

@@ -18,9 +18,10 @@ namespace cowel {
 
 struct Syntax_Highlight_Policy : virtual Content_Policy {
 protected:
-    enum struct Span_Type : bool {
+    enum struct Span_Type : Default_Underlying {
         html,
         highlight,
+        phantom,
     };
 
     struct Output_Span {
@@ -36,22 +37,21 @@ protected:
 
 public:
     [[nodiscard]]
-    explicit Syntax_Highlight_Policy(
-        std::pmr::memory_resource* memory,
-        std::u8string_view prefix = {},
-        std::u8string_view suffix = {}
-    )
+    explicit Syntax_Highlight_Policy(std::pmr::memory_resource* memory)
         : Text_Sink { Output_Language::html }
         , Content_Policy { Output_Language::html }
         , m_spans { memory }
         , m_html_text { memory }
         , m_highlighted_text { memory }
-        , m_suffix { suffix }
     {
-        m_highlighted_text.insert(m_highlighted_text.end(), prefix.begin(), prefix.end());
     }
 
     bool write(Char_Sequence8 chars, Output_Language language) override;
+
+    bool write_phantom(Char_Sequence8 chars)
+    {
+        return write_highlighted_text(chars, Span_Type::phantom);
+    }
 
     [[nodiscard]]
     Processing_Status consume(const ast::Text& text, Context&) override
@@ -93,7 +93,10 @@ public:
     /// Under the hood, ulight is used, so this needs to be one of the short names
     /// that ulight supports.
     Result<void, Syntax_Highlight_Error>
-    write_highlighted(Text_Sink& out, Context& context, std::u8string_view language);
+    dump_to(Text_Sink& out, Context& context, std::u8string_view language);
+
+private:
+    bool write_highlighted_text(Char_Sequence8 chars, Span_Type type);
 };
 
 } // namespace cowel

@@ -91,11 +91,13 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     auto& chosen_sink = should_trim ? buffer_sink : static_cast<Text_Sink&>(out);
 
     Syntax_Highlight_Policy highlight_policy //
-        { context.get_transient_memory(), prefix->string, suffix->string };
+        { context.get_transient_memory() };
+    highlight_policy.write_phantom(prefix->string);
     const auto highlight_status = consume_all(highlight_policy, d.get_content(), context);
+    highlight_policy.write_phantom(suffix->string);
 
     const Result<void, Syntax_Highlight_Error> result
-        = highlight_policy.write_highlighted(chosen_sink, context, lang->string);
+        = highlight_policy.dump_to(chosen_sink, context, lang->string);
     if (!result) {
         diagnose(result.error(), lang->string, d, context);
     }
