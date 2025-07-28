@@ -28,6 +28,10 @@ struct Builtin_Directive_Set::Impl {
         {};
     Char_Get_Num_Behavior cowel_char_get_num //
         {};
+    Policy_Behavior cowel_highlight //
+        { Known_Content_Policy::highlight };
+    Highlight_As_Behavior cowel_highlight_as //
+        {};
     HTML_Element_Behavior cowel_html_element //
         { HTML_Element_Self_Closing::normal };
     HTML_Element_Behavior cowel_html_self_closing_element //
@@ -48,8 +52,6 @@ struct Builtin_Directive_Set::Impl {
         {};
     Policy_Behavior cowel_source_as_text //
         { Known_Content_Policy::source_as_text };
-    Policy_Behavior cowel_highlight //
-        { Known_Content_Policy::highlight };
     Policy_Behavior cowel_text_as_html //
         { Known_Content_Policy::text_as_html };
     Policy_Behavior cowel_text_only //
@@ -158,8 +160,6 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::in_line };
     Here_Behavior hereblock //
         { Directive_Display::block };
-    Highlight_As_Behavior hl // NOLINT(misc-confusable-identifiers)
-        {};
     Self_Closing_Behavior hr //
         { u8"hr", Directive_Display::block };
     HTML_Behavior html //
@@ -324,6 +324,7 @@ struct Builtin_Directive_Set::Impl {
     COWEL_DEPRECATED_ALIAS(hyphen_wg21_head, wg21_head);
     COWEL_DEPRECATED_ALIAS(hyphen_wg21_note, wg21_note);
 
+    COWEL_DEPRECATED_ALIAS(hl, cowel_highlight_as); // NOLINT(misc-confusable-identifiers)
     COWEL_DEPRECATED_ALIAS(import, cowel_include);
     COWEL_DEPRECATED_ALIAS(include, cowel_include_text);
 
@@ -603,6 +604,10 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
                 return &m_impl->cowel_char_by_num;
             if (name == u8"cowel_char_get_num")
                 return &m_impl->cowel_char_get_num;
+            if (name == u8"cowel_highlight")
+                return &m_impl->cowel_highlight;
+            if (name == u8"cowel_highlight_as")
+                return &m_impl->cowel_highlight_as;
             if (name == u8"cowel_html_element")
                 return &m_impl->cowel_html_element;
             if (name == u8"cowel_html_self_closing_element")
@@ -623,8 +628,6 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
                 return &m_impl->cowel_paragraph_leave;
             if (name == u8"cowel_source_as_text")
                 return &m_impl->cowel_source_as_text;
-            if (name == u8"cowel_highlight")
-                return &m_impl->cowel_highlight;
             if (name == u8"cowel_text_as_html")
                 return &m_impl->cowel_text_as_html;
             if (name == u8"cowel_text_only")
