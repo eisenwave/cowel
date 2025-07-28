@@ -14,6 +14,64 @@ However, those long names are self-document, unambiguous,
 and guaranteed not to collide with any user directives.
 }
 
+\h3{Common principles}
+
+There are a few common principles,
+which all builtin directives have in common:
+
+\ul{
+  \li{
+    Unless otherwise stated,
+    arguments to builtin directives are processed using the
+    text-only policy (\ref[#contexts-and-output]).
+  }
+  \li{
+    Unless otherwise stated,
+    arguments to builtin directives
+    use the usual argument matching (\ref[#usual-argument-matching]).
+  }
+  \li{
+    Whenever content or arguments are said to be ignored,
+    a warning is emitted when content or arguments are provided by the user, respectively.
+  }
+}
+
+\h4{Usual argument matching}
+
+The usual argument matching is performed as follows:
+
+\ol{
+  \li{
+    Any parameters of the directive are compared against named arguments.
+    If the name of the parameter is equal to the name of the named argument,
+    the argument is a match for that parameter.
+    An error is raised if there is more than one named argument with the same name.
+  }
+  \li{
+    Any positional arguments are matched against any remaining parameters,
+    in the same order.
+  }
+  \li{
+    Any arguments that do not match a parameter are ignored.
+  }
+}
+
+\Bex{
+Let \cowdoc_dir{d} be a directive with parameters
+\cowdoc_attr{x}, \cowdoc_attr{y}, and \cowdoc_attr{z}:
+\codeblock[cowel]{\literally{
+\: a, b, and c match x, y, and z, respectively
+\d[z = c, y = b, x = a]
+
+\: a, b, and c match x, y, and z, respectively
+\d[a, b, c]
+
+\: d matches x, a matches y, b matches z, c is ignored
+\d[a, b, c, x = d]
+}}
+}
+
+
 \h3[id=new-character-utilities]{Character utilities}
 
 It is quite common that a text document should include special characters.
@@ -231,6 +289,284 @@ Horizontal rule:
 <hr id=abc />
 }
 }
+
+\h3[id=new-content-policies]{Content policies}
+
+As explained in \ref[#contexts-and-output],
+all content within the document and produced by directives is fed into a content policy,
+which, in turn, feeds content into some parent content policy.
+
+The table below lists directives which process content using some content policy.
+
+\Bindent{
+\table{
+  \tr{
+    \th{Directive}
+    \th{Content policy}
+    \th{Notes}
+  }
+  \tr{
+    \td{\cowdoc_dir{cowel_to_html}}
+    \td{HTML policy}
+    \td{}
+  }
+  \tr{
+    \td{\cowdoc_dir{cowel_syntax_highlight}}
+    \td{syntax highlight policy}
+    \td{see \ref[#dir-cowel_syntax_highlight]}
+  }
+  \tr{
+    \td{\cowdoc_dir{cowel_paragraphs}}
+    \td{paragraphs policy}
+    \td{see \ref[#dir-cowel_paragraphs]}
+  }
+  \tr{
+    \td{\cowdoc_dir{cowel_no_invoke}}
+    \td{no-invoke policy}
+    \td{}
+  }
+  \tr{
+    \td{\cowdoc_dir{cowel_text_only}}
+    \td{text-only policy}
+  }
+  \tr{
+    \td{\cowdoc_dir{cowel_text_as_html}}
+    \td{text-as-html policy}
+  }
+  \tr{
+    \td{\cowdoc_dir{cowel_source_as_text}}
+    \td{source-as-text policy}
+  }
+}
+}
+
+\h4[
+  id = dir-cowel_to_html
+]{\cowdoc_dir{cowel_to_html} \c{mdash} Process with to-HTML policy}
+
+\cowdoc_dir{cowel_to_html} simply processes the provided content using the to-HTML policy.
+All arguments are ignored.
+
+The purpose of this policy/directive is mainly to
+feed its parent policy pure HTML content,
+rather than a mixture of plaintext and HTML.
+This also suppresses paragraph splitting, syntax highlighting,
+and other such "special treatments" of plaintext,
+since none of those operate on HTML.
+
+\Bex{
+Since HTML is not syntax-highlighted,
+we can insert special characters like U+00AD SOFT HYPHEN
+into code snippets, without interfering with syntax highlighting:
+\codeblock[cowel]{\literally{
+Use of
+\cowel_html_element[code]{
+\cowel_syntax_highlight[cpp]{reinterpret_\
+\cowel_to_html{\cowel_char_by_name{SOFT HYPHEN}}\
+cast}
+}
+is discouraged.
+}}
+
+This renders as:
+\Bindent{
+Use of
+\code[cpp]{reinterpret_cast} is discouraged.
+}
+Or, if line wrapping takes place in the middle of the highlighted keyword,
+it renders as:
+\Bindent{
+Use of
+\tt{\hl[keyword]{reinterpret_}-\br{}\hl[keyword]{cast}} is discouraged.
+}
+}
+
+\h4[
+  id = dir-cowel_no_invoke
+]{\cowdoc_dir{cowel_no_invoke} \c{mdash} Process with no-invoke policy}
+
+\cowdoc_dir{cowel_no_invoke} processes the provided content
+using the no-invoke policy.
+All arguments are ignored.
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\cowel_no_invoke{Undefined directive: \awoo}
+}}
+Generated HTML:
+\codeblock[html]{
+Undefined directive: \\awoo
+}
+Under the no-invoke policy selected by \cowdoc_c{no_invoke},
+\cowdoc_c{\\awoo} is not invoked,
+but its source code is fed into the current policy as plaintext.
+This is particularly useful when writing code blocks
+which contain character escapes (e.g. containing \code[cpp]{"\\n"} in C++)
+because such escapes should not treated as COWEL directives.
+}
+
+\Bnote{
+COWEL comments and COWEL escape sequences are processed as usual.
+That is, comments are ignored, and escapes are expanded.
+}
+
+\h4[
+  id = dir-cowel_text_only
+]{\cowdoc_dir{cowel_text_only} \c{mdash} Process with text-only policy}
+
+\cowdoc_dir{cowel_text_only} processes the provided content
+using the text-only policy.
+All arguments are ignored.
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+Hello, \cowel_html_element[strong]{strong} world!
+\cowel_text_only{Hello, \cowel_html_element[strong]{strong} world!}
+}}
+Generated HTML:
+\codeblock[html]{
+Hello, <strong>strong</strong> world!
+Hello, strong world!
+}
+As can be seen, only plaintext "makes it through",
+whereas HTML is stripped.
+}
+
+\Bnote{
+This policy is used internally when processing arguments in various places,
+such as in the \cowdoc_c{strong} positional argument to
+\cowdoc_dir{cowel_html_element} in the example above.
+
+It is mainly useful in situations where it makes no sense to have non-plaintext content.
+}
+
+\h4[
+  id = dir-cowel_text_as_html
+]{\cowdoc_dir{cowel_text_as_html} \c{mdash} Process with text-as-HTML policy}
+
+\cowdoc_dir{cowel_no_invoke} processes the provided content
+using the text-as-HTML policy.
+All arguments are ignored.
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\cowel_text_as_html{Hello, <strong>strong</strong> world!}
+}}
+Generated HTML:
+\codeblock[html]{
+Hello, <strong>strong</strong> world!
+}
+As can be seen, the provided text is reinterpreted as HTML.
+}
+
+\Bwarn{
+This directive should be used with great caution
+because it can easily result in producing malformed HTML.
+While there are legitimate uses (e.g. inline SVG images and other large HTML blocks),
+\cowdoc_dir{cowel_html_element} and other safer directives should be preferred.
+}
+
+\h4[
+  id = dir-cowel_source_as_text
+]{\cowdoc_dir{cowel_source_as_text} \c{mdash} Process with source-as-text policy}
+
+\cowdoc_dir{cowel_no_invoke} processes the provided content
+using the source-as-text policy.
+All arguments are ignored.
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\cowel_source_as_text{
+\: Comment ...
+Hello \source_as_text \{ ... \}
+}
+}}
+Generated HTML:
+\codeblock[html]{\literally{
+\: Comment ...
+Hello \source_as_text \{ ... \}
+}}
+}
+
+\Bnote{
+This directive is mainly useful for writing COWEL code blocks,
+where all content within is treated literally, including comments.
+
+It can be seen as a more extreme form of \cowdoc_dir{cowel_no_invoke},
+and is more niche in its applications.
+}
+
+\h3[id=new-syntax-highlighting]{Syntax highlighting}
+
+Syntax highlighting improves the readability of inline code and code snippets
+by applying different formatting (usually colors)
+based on the syntactical meaning of text.
+Many examples can be found in this document.
+
+\h4[
+  id = dir-cowel_syntax_highlight
+]{\cowdoc_dir{cowel_syntax_highlight} \c{mdash} Perform syntax highlighting}
+
+The \cowdoc_dir{cowel_syntax_highlight}
+processes content using the syntax highlight policy,
+which wraps parts of code in HTML tags for the purpose of syntax highlighting.
+
+The following arguments are supported,
+with the usual matching rules:
+
+\dl{
+  \dt{\cowdoc_attr{lang}}
+  \dd{
+    The name of language (e.g. \tt{cowel}) in which the content is to be highlighted.
+    The name has to be one of the language short names
+    supported by the \ref[https://github.com/Eisenwave/ulight]{µlight syntax highlighter},
+    which is the highlighter that COWEL uses internally.
+  }
+  \dt{\cowdoc_attr{prefix}}
+  \dd{Code that comes before the input content (see below).}
+  \dt{\cowdoc_attr{suffix}}
+  \dd{Code that comes after the input content (see below).}
+}
+
+\h5[id=new-highlight-prefix-suffix]{Highlighting prefix and suffix}
+
+The \cowdoc_attr{prefix} and \cowdoc_attr{suffix} parameters
+can be used to further customize syntax highlighting.
+They provide code which is fed into the syntax highlighter before and after
+the input content, respectively.
+Thus, they may alter how the provided content is highlighted,
+without becoming part of that content.
+
+\Bex{
+Using \cowdoc_attr{prefix},
+we can control whether a JSON string is interpreted as a markup key,
+or as a string value:
+\codeblock[cowel]{\literally{
+In JSON, there are
+\cowel_html_element[code]{\cowel_policy[syntax_highlight,lang=json,prefix=\{]{"keys"}}
+and
+\cowel_html_element[code]{\cowel_policy[syntax_highlight,lang=json]{"values"}}.
+\: Note that this is low-level functionality intended to power macros like:
+\:   \code[json,prefix=\{]{"keys"}
+\: or
+\:   \json_key{"keys"}
+}}
+This renders as:
+\Bindent{
+In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
+}
+Notice that the color of \code[json,prefix=\{]{"keys"} is different because it is highlighted
+as if it was positioned like:
+\codeblock[json]{
+\{"keys"
+}
+\:}
+}
+
 
 \h3[id=new-paragraph-control]{Paragraph control}
 
