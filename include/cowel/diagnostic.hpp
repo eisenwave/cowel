@@ -138,19 +138,12 @@ inline constexpr std::u8string_view file_path_missing = u8"file.path.empty";
 /// the file could not be loaded.
 inline constexpr std::u8string_view file_io = u8"file.io";
 
-namespace code {
-
-/// @brief In `\code`, the given `nested` parameter is not `yes` or `no`.
-inline constexpr std::u8string_view nested_invalid = u8"code:nested.invalid";
-
-} // namespace code
-
-namespace codeblock {
-
-/// @brief In `\codeblock`, the given `borders` parameter is not `yes` or `no`.
-inline constexpr std::u8string_view borders_invalid = u8"codeblock:borders.invalid";
-
-} // namespace codeblock
+/// @brief In a `\hl` directive,
+/// no name parameter was provided.
+inline constexpr std::u8string_view highlight_name_missing = u8"highlight.name.missing";
+/// @brief In a `\hl` directive,
+/// the given highlight name is not valid.
+inline constexpr std::u8string_view highlight_name_invalid = u8"highlight.name.invalid";
 
 /// @brief In `\cowel_char`,
 /// the input is blank.
@@ -179,6 +172,22 @@ inline constexpr std::u8string_view char_base_range = u8"char.base.range";
 /// @brief The `lower` argument is neither `yes` nor `no`.
 inline constexpr std::u8string_view char_lower_invalid = u8"char.lower.invalid";
 
+// LEGACY DIRECTIVE DIAGNOSTICS ====================================================================
+
+namespace code {
+
+/// @brief In `\code`, the given `nested` parameter is not `yes` or `no`.
+inline constexpr std::u8string_view nested_invalid = u8"code:nested.invalid";
+
+} // namespace code
+
+namespace codeblock {
+
+/// @brief In `\codeblock`, the given `borders` parameter is not `yes` or `no`.
+inline constexpr std::u8string_view borders_invalid = u8"codeblock:borders.invalid";
+
+} // namespace codeblock
+
 namespace h {
 
 /// @brief In `\hN` headings, the given `listed` parameter is not `yes` or `no`.
@@ -187,17 +196,6 @@ inline constexpr std::u8string_view listed_invalid = u8"h:listed.invalid";
 inline constexpr std::u8string_view show_number_invalid = u8"h:show-number.invalid";
 
 } // namespace h
-
-namespace hl {
-
-/// @brief In a `\hl` directive,
-/// no name parameter was provided.
-inline constexpr std::u8string_view name_missing = u8"hl:name.missing";
-/// @brief In a `\hl` directive,
-/// the given highlight name is not valid.
-inline constexpr std::u8string_view name_invalid = u8"hl:name.invalid";
-
-} // namespace hl
 
 namespace there {
 

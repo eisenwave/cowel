@@ -136,7 +136,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     }
     if (!*has_name_result) {
         context.try_error(
-            diagnostic::hl::name_missing, d.get_source_span(),
+            diagnostic::highlight_name_missing, d.get_source_span(),
             u8"A name parameter is required to specify the kind of highlight to apply."sv
         );
         return try_generate_error(out, d, context);
@@ -151,7 +151,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
             u8"\" is not a valid ulight highlight name (long form).",
         };
         context.try_error(
-            diagnostic::hl::name_invalid, d.get_source_span(), joined_char_sequence(message)
+            diagnostic::highlight_name_invalid, d.get_source_span(), joined_char_sequence(message)
         );
         return try_generate_error(out, d, context);
     }
