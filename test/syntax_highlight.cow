@@ -1,4 +1,0 @@
-\cowel_syntax_highlight[html]{div}
-\cowel_syntax_highlight[lang=html,prefix=<]{div}
-\cowel_syntax_highlight[nasm]{mov}
-\cowel_syntax_highlight[nasm,suffix=:]{mov}

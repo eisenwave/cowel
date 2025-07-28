@@ -1566,7 +1566,7 @@ h1 {
 <div class=toc-num data-level=3>7.5</div>
 <a href=#new-syntax-highlighting><h3>Syntax highlighting</h3></a>
 <div class=toc-num data-level=4>7.5.1</div>
-<a href=#dir-cowel_syntax_highlight><h4><code><h- data-h=mk_tag>\cowel_syntax_highlight</h-></code> — Perform syntax highlighting</h4></a>
+<a href=#dir-cowel_highlight><h4><code><h- data-h=mk_tag>\cowel_highlight</h-></code> — Perform syntax highlighting</h4></a>
 <div class=toc-num data-level=5>7.5.1.1</div>
 <a href=#new-highlight-prefix-suffix><h5>Highlighting prefix and suffix</h5></a>
 <div class=toc-num data-level=3>7.6</div>
@@ -2259,7 +2259,7 @@ or in a policy which captures the output and writes it to memory for further pro
     and received plaintext is sanitized like text.
   </dd>
 
-  <dt>Syntax highlight policy</dt>
+  <dt>Highlight policy</dt>
   <dd>
     Like a to-HTML policy,
     but any text content and any received plaintext
@@ -2340,7 +2340,7 @@ the <code><h- data-h=mk_tag>\b</h-></code> directive feeds the current content p
     The result is simply <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h->x<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code>.
   </li>
   <li>
-    When fed into a syntax highlighting policy,
+    When fed into a highlight policy,
     HTML tags are interpreted literally in the same way.
     However, syntax highlighting is applied to the given input text,
     resulting in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-><i>syntax highlighted x</i><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code>.
@@ -2684,9 +2684,9 @@ which, in turn, feeds content into some parent content policy.
     <td></td>
   </tr>
   <tr>
-    <td><code><h- data-h=mk_tag>\cowel_syntax_highlight</h-></code></td>
-    <td>syntax highlight policy</td>
-    <td>see <a href=#dir-cowel_syntax_highlight>§7.5.1. <code><h- data-h=mk_tag>\cowel_syntax_highlight</h-></code> — Perform syntax highlighting</a></td>
+    <td><code><h- data-h=mk_tag>\cowel_highlight</h-></code></td>
+    <td>highlight policy</td>
+    <td>see <a href=#dir-cowel_highlight>§7.5.1. <code><h- data-h=mk_tag>\cowel_highlight</h-></code> — Perform syntax highlighting</a></td>
   </tr>
   <tr>
     <td><code><h- data-h=mk_tag>\cowel_paragraphs</h-></code></td>
@@ -2731,7 +2731,7 @@ we can insert special characters like U+00AD SOFT HYPHEN
 into code snippets, without interfering with syntax highlighting:
 </p><code-block>Use of
 <h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_sqr>[</h->code<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->
-<h- data-h=mk_tag>\cowel_syntax_highlight</h-><h- data-h=sym_sqr>[</h->cpp<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->reinterpret_<h- data-h=esc>\</h->
+<h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_sqr>[</h->cpp<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->reinterpret_<h- data-h=esc>\</h->
 <h- data-h=mk_tag>\cowel_to_html</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_char_by_name</h-><h- data-h=sym_brac>{</h->SOFT HYPHEN<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
 cast<h- data-h=sym_brac>}</h->
 <h- data-h=sym_brac>}</h->
@@ -2852,10 +2852,10 @@ by applying different formatting (usually colors)
 based on the syntactical meaning of text.
 Many examples can be found in this document.
 </p>
-<h4 id=dir-cowel_syntax_highlight><a class=para href=#dir-cowel_syntax_highlight></a>7.5.1. <code><h- data-h=mk_tag>\cowel_syntax_highlight</h-></code> — Perform syntax highlighting</h4>
+<h4 id=dir-cowel_highlight><a class=para href=#dir-cowel_highlight></a>7.5.1. <code><h- data-h=mk_tag>\cowel_highlight</h-></code> — Perform syntax highlighting</h4>
 
-<p>The <code><h- data-h=mk_tag>\cowel_syntax_highlight</h-></code>
-processes content using the syntax highlight policy,
+<p>The <code><h- data-h=mk_tag>\cowel_highlight</h-></code>
+processes content using the highlight policy,
 which wraps parts of code in HTML tags for the purpose of syntax highlighting.
 </p>
 <p>The following arguments are supported,

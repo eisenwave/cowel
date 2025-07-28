@@ -407,8 +407,8 @@ constexpr Basic_Test basic_tests[] {
     { Path { u8"text.cow" },
       Source { u8"Hello, world!\n" } },
 
-    { Path { u8"syntax_highlight.cow" },
-      Path { u8"syntax_highlight.cow.html" } },
+    { Path { u8"highlight.cow" },
+      Path { u8"highlight.cow.html" } },
     
     { Path { u8"comments.cow" },
       Path { u8"comments.cow.html" } },
@@ -422,8 +422,8 @@ constexpr Basic_Test basic_tests[] {
     { Path { u8"policy/source_as_text.cow" },
       Path { u8"policy/source_as_text.cow.html" } },
 
-    { Path { u8"policy/syntax_highlight.cow" },
-      Path { u8"policy/syntax_highlight.cow.html" } },
+    { Path { u8"policy/highlight.cow" },
+      Path { u8"policy/highlight.cow.html" } },
 
     { Path { u8"policy/text_as_html.cow" },
       Path { u8"policy/text_as_html.cow.html" } },

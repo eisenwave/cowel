@@ -35,7 +35,7 @@ The following builtin content policies exist:
     and received plaintext is sanitized like text.
   }
 
-  \dt{Syntax highlight policy}
+  \dt{Highlight policy}
   \dd{
     Like a to-HTML policy,
     but any text content and any received plaintext
@@ -116,7 +116,7 @@ Content policies differ in how they treat the content they're fed:
     The result is simply \cowdoc_html{<b>x</b>}.
   }
   \li{
-    When fed into a syntax highlighting policy,
+    When fed into a highlight policy,
     HTML tags are interpreted literally in the same way.
     However, syntax highlighting is applied to the given input text,
     resulting in \cowdoc_html{<b>\i{syntax highlighted x}</b>}.

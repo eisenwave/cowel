@@ -99,7 +99,7 @@ Policy_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
     case Known_Content_Policy::to_html: {
         return consume_simply<HTML_Content_Policy>(out, d, context);
     }
-    case Known_Content_Policy::syntax_highlight: {
+    case Known_Content_Policy::highlight: {
         return consume_syntax_highlighted(out, d, context);
     }
     case Known_Content_Policy::paragraphs: {

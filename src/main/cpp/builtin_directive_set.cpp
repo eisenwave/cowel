@@ -48,8 +48,8 @@ struct Builtin_Directive_Set::Impl {
         {};
     Policy_Behavior cowel_source_as_text //
         { Known_Content_Policy::source_as_text };
-    Policy_Behavior cowel_syntax_highlight //
-        { Known_Content_Policy::syntax_highlight };
+    Policy_Behavior cowel_highlight //
+        { Known_Content_Policy::highlight };
     Policy_Behavior cowel_text_as_html //
         { Known_Content_Policy::text_as_html };
     Policy_Behavior cowel_text_only //
@@ -623,8 +623,8 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
                 return &m_impl->cowel_paragraph_leave;
             if (name == u8"cowel_source_as_text")
                 return &m_impl->cowel_source_as_text;
-            if (name == u8"cowel_syntax_highlight")
-                return &m_impl->cowel_syntax_highlight;
+            if (name == u8"cowel_highlight")
+                return &m_impl->cowel_highlight;
             if (name == u8"cowel_text_as_html")
                 return &m_impl->cowel_text_as_html;
             if (name == u8"cowel_text_only")

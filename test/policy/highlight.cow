@@ -1,4 +1,4 @@
-\cowel_syntax_highlight[cpp]{
+\cowel_highlight[cpp]{
 \: Comment
 Text
 \\

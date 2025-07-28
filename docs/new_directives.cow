@@ -311,9 +311,9 @@ The table below lists directives which process content using some content policy
     \td{}
   }
   \tr{
-    \td{\cowdoc_dir{cowel_syntax_highlight}}
-    \td{syntax highlight policy}
-    \td{see \ref[#dir-cowel_syntax_highlight]}
+    \td{\cowdoc_dir{cowel_highlight}}
+    \td{highlight policy}
+    \td{see \ref[#dir-cowel_highlight]}
   }
   \tr{
     \td{\cowdoc_dir{cowel_paragraphs}}
@@ -361,7 +361,7 @@ into code snippets, without interfering with syntax highlighting:
 \codeblock[cowel]{\literally{
 Use of
 \cowel_html_element[code]{
-\cowel_syntax_highlight[cpp]{reinterpret_\
+\cowel_highlight[cpp]{reinterpret_\
 \cowel_to_html{\cowel_char_by_name{SOFT HYPHEN}}\
 cast}
 }
@@ -508,11 +508,11 @@ based on the syntactical meaning of text.
 Many examples can be found in this document.
 
 \h4[
-  id = dir-cowel_syntax_highlight
-]{\cowdoc_dir{cowel_syntax_highlight} \c{mdash} Perform syntax highlighting}
+  id = dir-cowel_highlight
+]{\cowdoc_dir{cowel_highlight} \c{mdash} Perform syntax highlighting}
 
-The \cowdoc_dir{cowel_syntax_highlight}
-processes content using the syntax highlight policy,
+The \cowdoc_dir{cowel_highlight}
+processes content using the highlight policy,
 which wraps parts of code in HTML tags for the purpose of syntax highlighting.
 
 The following arguments are supported,
