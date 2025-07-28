@@ -13,67 +13,6 @@
 using namespace std::string_view_literals;
 
 namespace cowel {
-namespace {
-
-void diagnose(
-    Syntax_Highlight_Error error,
-    std::u8string_view lang,
-    const ast::Directive& d,
-    Context& context
-)
-{
-    if (!context.emits(Severity::warning)) {
-        return;
-    }
-    switch (error) {
-    case Syntax_Highlight_Error::unsupported_language: {
-        if (lang.empty()) {
-            context.try_warning(
-                diagnostic::highlight_language, d.get_source_span(),
-                u8"Syntax highlighting was not possible because no language was given, "
-                u8"and automatic language detection was not possible. "
-                u8"Please use \\tt{...} or \\pre{...} if you want a code (block) "
-                u8"without any syntax highlighting."sv
-            );
-            break;
-        }
-        const std::u8string_view message[] {
-            u8"Unable to apply syntax highlighting because the specified language \"",
-            lang,
-            u8"\" is not supported.",
-        };
-        context.emit_warning(
-            diagnostic::highlight_language, d.get_source_span(), joined_char_sequence(message)
-        );
-        break;
-    }
-    case Syntax_Highlight_Error::bad_code: {
-        const std::u8string_view message[] {
-            u8"Unable to apply syntax highlighting because the code is not valid "
-            u8"for the specified language \"",
-            lang,
-            u8"\".",
-        };
-        context.emit_warning(
-            diagnostic::highlight_malformed, d.get_source_span(), joined_char_sequence(message)
-        );
-        break;
-    }
-    case Syntax_Highlight_Error::other: {
-        const std::u8string_view message[] {
-            u8"Unable to apply syntax highlighting because of an internal error.",
-            lang,
-            u8"\".",
-        };
-        context.emit_warning(
-            diagnostic::highlight_error, d.get_source_span(), joined_char_sequence(message)
-        );
-        break;
-    }
-    }
-}
-
-} // namespace
 
 Processing_Status
 Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
