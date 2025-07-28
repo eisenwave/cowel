@@ -118,6 +118,7 @@ Policy_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
         return consume_simply<To_Source_Content_Policy>(out, d, context);
     }
     }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid m_policy");
 }
 
 } // namespace cowel
