@@ -32,6 +32,8 @@ struct Builtin_Directive_Set::Impl {
         { Known_Content_Policy::highlight };
     Highlight_As_Behavior cowel_highlight_as //
         {};
+    Policy_Behavior cowel_highlight_phantom //
+        { Known_Content_Policy::phantom };
     HTML_Element_Behavior cowel_html_element //
         { HTML_Element_Self_Closing::normal };
     HTML_Element_Behavior cowel_html_self_closing_element //
@@ -608,6 +610,8 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
                 return &m_impl->cowel_highlight;
             if (name == u8"cowel_highlight_as")
                 return &m_impl->cowel_highlight_as;
+            if (name == u8"cowel_highlight_phantom")
+                return &m_impl->cowel_highlight_phantom;
             if (name == u8"cowel_html_element")
                 return &m_impl->cowel_html_element;
             if (name == u8"cowel_html_self_closing_element")

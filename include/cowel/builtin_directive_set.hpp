@@ -274,6 +274,7 @@ enum struct Known_Content_Policy : Default_Underlying {
     current,
     to_html,
     highlight,
+    phantom,
     paragraphs,
     no_invoke,
     text_only,
