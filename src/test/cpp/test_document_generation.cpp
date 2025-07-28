@@ -406,9 +406,33 @@ constexpr Basic_Test basic_tests[] {
     
     { Path { u8"text.cow" },
       Source { u8"Hello, world!\n" } },
+
+    { Path { u8"syntax_highlight.cow" },
+      Path { u8"syntax_highlight.cow.html" } },
     
     { Path { u8"comments.cow" },
       Path { u8"comments.cow.html" } },
+
+    { Path { u8"policy/no_invoke.cow" },
+      Path { u8"policy/no_invoke.cow.html" } },
+
+    { Path { u8"policy/paragraphs.cow" },
+      Path { u8"policy/paragraphs.cow.html" } },
+
+    { Path { u8"policy/source_as_text.cow" },
+      Path { u8"policy/source_as_text.cow.html" } },
+
+    { Path { u8"policy/syntax_highlight.cow" },
+      Path { u8"policy/syntax_highlight.cow.html" } },
+
+    { Path { u8"policy/text_as_html.cow" },
+      Path { u8"policy/text_as_html.cow.html" } },
+
+    { Path { u8"policy/text_only.cow" },
+      Path { u8"policy/text_only.cow.html" } },
+
+    { Path { u8"policy/to_html.cow" },
+      Path { u8"policy/to_html.cow.html" } },
     
     { .document = Path { u8"paragraphs.cow" },
       .expected_html = Path { u8"paragraphs.cow.html" },

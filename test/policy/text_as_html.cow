@@ -1,0 +1,6 @@
+\cowel_text_as_html{
+\: Comment
+Text
+\\
+\cowel_html_element[span]{<b>directive</b>}
+}

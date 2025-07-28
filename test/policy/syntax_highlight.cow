@@ -1,0 +1,6 @@
+\cowel_syntax_highlight[cpp]{
+\: Comment
+Text
+\\
+\cowel_html_element[span]{directive}
+}
