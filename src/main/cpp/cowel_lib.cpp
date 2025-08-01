@@ -9,6 +9,7 @@
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/cowel.h"
 #include "cowel/document_generation.hpp"
+#include "cowel/memory_resources.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/services.hpp"
 #include "cowel/ulight_highlighter.hpp"
@@ -33,95 +34,16 @@ std::u8string_view as_u8string_view(cowel_mutable_string_view_u8 str)
 }
 
 [[nodiscard]]
-cowel_string_view_u8 as_cowel_string_view(std::u8string_view str)
+cowel_string_view as_cowel_string_view(std::string_view str)
 {
     return { str.data(), str.length() };
 }
 
-[[noreturn]]
-void allocation_failure()
+[[nodiscard]]
+cowel_string_view_u8 as_cowel_string_view(std::u8string_view str)
 {
-#ifdef ULIGHT_EXCEPTIONS
-    throw std::bad_alloc();
-#else
-    COWEL_ASSERT_UNREACHABLE(u8"Allocation failure.");
-#endif
+    return { str.data(), str.length() };
 }
-
-struct Pointer_Memory_Resource final : std::pmr::memory_resource {
-private:
-    cowel_alloc_fn* m_alloc;
-    void* m_alloc_data;
-    cowel_free_fn* m_free;
-    void* m_free_data;
-
-public:
-    [[nodiscard]]
-    explicit Pointer_Memory_Resource(
-        cowel_alloc_fn* alloc,
-        void* alloc_data,
-        cowel_free_fn* free,
-        void* free_data
-    )
-        : m_alloc { alloc }
-        , m_alloc_data { alloc_data }
-        , m_free { free }
-        , m_free_data { free_data }
-    {
-    }
-
-    [[nodiscard]]
-    explicit Pointer_Memory_Resource(const cowel_options_u8& options)
-        : Pointer_Memory_Resource { options.alloc, options.alloc_data, options.free,
-                                    options.free_data }
-    {
-    }
-
-    [[nodiscard]]
-    void* do_allocate(std::size_t bytes, std::size_t alignment) final
-    {
-        void* const result = m_alloc(m_alloc_data, bytes, alignment);
-        if (!result) {
-            allocation_failure();
-        }
-        return result;
-    }
-
-    void do_deallocate(void* p, std::size_t bytes, std::size_t alignment) noexcept final
-    {
-        m_free(m_free_data, p, bytes, alignment);
-    }
-
-    [[nodiscard]]
-    bool do_is_equal(const std::pmr::memory_resource& other) const noexcept final
-    {
-        return dynamic_cast<const Pointer_Memory_Resource*>(&other) != nullptr;
-    }
-};
-
-struct Global_Memory_Resource final : std::pmr::memory_resource {
-
-    [[nodiscard]]
-    void* do_allocate(std::size_t bytes, std::size_t alignment) final
-    {
-        void* const result = cowel_alloc(bytes, alignment);
-        if (!result) {
-            allocation_failure();
-        }
-        return result;
-    }
-
-    void do_deallocate(void* p, std::size_t bytes, std::size_t alignment) noexcept final
-    {
-        cowel_free(p, bytes, alignment);
-    }
-
-    [[nodiscard]]
-    bool do_is_equal(const std::pmr::memory_resource& other) const noexcept final
-    {
-        return dynamic_cast<const Pointer_Memory_Resource*>(&other) != nullptr;
-    }
-};
 
 struct File_Loader_Less {
     using is_transparent = void;
@@ -154,10 +76,10 @@ constexpr File_Load_Error io_status_to_load_error(cowel_io_status error)
 struct File_Loader_From_Options final : File_Loader {
 private:
     cowel_load_file_fn_u8* m_load_file;
-    void* m_load_file_data;
+    const void* m_load_file_data;
 
 public:
-    explicit File_Loader_From_Options(cowel_load_file_fn_u8* load_file, void* load_file_data)
+    explicit File_Loader_From_Options(cowel_load_file_fn_u8* load_file, const void* load_file_data)
         : m_load_file { load_file }
         , m_load_file_data { load_file_data }
     {
@@ -188,13 +110,13 @@ public:
 struct Logger_From_Options final : Logger {
 private:
     cowel_log_fn_u8* m_log;
-    void* m_log_data;
+    const void* m_log_data;
     std::pmr::vector<char8_t> m_buffer;
 
 public:
     explicit Logger_From_Options(
         cowel_log_fn_u8* log,
-        void* log_data,
+        const void* log_data,
         cowel_severity min_severity,
         std::pmr::memory_resource* memory
     )
@@ -235,7 +157,8 @@ public:
             .severity = cowel_severity(diagnostic.severity),
             .id = char_sequence_to_sv(diagnostic.id),
             .message = char_sequence_to_sv(diagnostic.message),
-            .file = diagnostic.location.file,
+            .file_name = {},
+            .file_id = diagnostic.location.file,
             .begin = diagnostic.location.begin,
             .length = diagnostic.location.length,
             .line = diagnostic.location.line,
@@ -271,6 +194,22 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
     File_Loader_From_Options file_loader { options.load_file, options.load_file_data };
     Logger_From_Options logger { options, memory };
     static constinit Ulight_Syntax_Highlighter highlighter;
+
+    [[maybe_unused]]
+    const auto trace_log
+        = [&](std::u8string_view message) {
+              if (options.min_log_severity > COWEL_SEVERITY_TRACE) {
+                  return;
+              }
+              logger(Diagnostic {
+                  .severity = Severity::trace,
+                  .id = u8"trace"sv,
+                  .location = { {}, -1 },
+                  .message = message,
+              });
+          };
+
+    trace_log(u8"Trace logging enabled.");
 
     const auto source = as_u8string_view(options.source);
 
@@ -326,9 +265,10 @@ void uncaught_exception(const cowel_options& options)
 
     const cowel_diagnostic diagnostic {
         .severity = COWEL_SEVERITY_MAX,
-        .id = { id.data(), id.size() },
-        .message = { message.data(), message.size() },
-        .file = 0,
+        .id = as_cowel_string_view(id),
+        .message = as_cowel_string_view(message),
+        .file_name = {},
+        .file_id = 0,
         .begin = 0,
         .length = 0,
         .line = 0,
@@ -349,9 +289,10 @@ void uncaught_exception_u8(const cowel_options_u8& options)
 
     const cowel_diagnostic_u8 diagnostic {
         .severity = COWEL_SEVERITY_MAX,
-        .id = { id.data(), id.size() },
-        .message = { message.data(), message.size() },
-        .file = 0,
+        .id = as_cowel_string_view(id),
+        .message = as_cowel_string_view(message),
+        .file_name = {},
+        .file_id = 0,
         .begin = 0,
         .length = 0,
         .line = 0,
@@ -359,6 +300,31 @@ void uncaught_exception_u8(const cowel_options_u8& options)
     };
     options.log(options.log_data, &diagnostic);
     std::terminate();
+}
+
+thread_local cowel_assertion_handler_fn_u8* thread_local_assertion_handler;
+
+void do_handle_assertion(const Assertion_Error& error)
+{
+    const std::u8string_view file_name
+        = reinterpret_cast<const char8_t*>(error.location.file_name());
+    const std::u8string_view function_name
+        = reinterpret_cast<const char8_t*>(error.location.function_name());
+    const cowel_assertion_error_u8 cowel_error {
+        .type = cowel_assertion_type(error.type),
+        .message = as_cowel_string_view(error.message),
+        .file_name = as_cowel_string_view(file_name),
+        .function_name = as_cowel_string_view(function_name),
+        .line = error.location.line(),
+        .column = error.location.column(),
+    };
+    thread_local_assertion_handler(&cowel_error);
+};
+
+void do_set_assertion_handler_u8(cowel_assertion_handler_fn_u8* handler) noexcept
+{
+    thread_local_assertion_handler = handler;
+    assertion_handler = &do_handle_assertion;
 }
 
 } // namespace
@@ -374,6 +340,31 @@ void* cowel_alloc(size_t size, size_t alignment) noexcept
 void cowel_free(void* pointer, size_t size, size_t alignment) noexcept
 {
     ::operator delete(pointer, size, std::align_val_t(alignment));
+}
+
+cowel_mutable_string_view cowel_alloc_text(cowel_string_view text) noexcept
+{
+    void* const result = cowel_alloc(text.length, alignof(char));
+    if (!result) {
+        return {};
+    }
+    std::memcpy(result, text.text, text.length);
+    return { static_cast<char*>(result), text.length };
+}
+
+cowel_mutable_string_view_u8 cowel_alloc_text_u8(cowel_string_view_u8 text) noexcept
+{
+    void* const result = cowel_alloc(text.length, alignof(char8_t));
+    if (!result) {
+        return {};
+    }
+    std::memcpy(result, text.text, text.length);
+    return { static_cast<char8_t*>(result), text.length };
+}
+
+void cowel_set_assertion_handler_u8(cowel_assertion_handler_fn_u8* handler) noexcept
+{
+    cowel::do_set_assertion_handler_u8(handler);
 }
 
 cowel_gen_result cowel_generate_html(const cowel_options* options) noexcept
@@ -405,19 +396,4 @@ cowel_gen_result_u8 cowel_generate_html_u8(const cowel_options_u8* options) noex
     }
 #endif
 }
-
-#ifdef COWEL_EMSCRIPTEN
-// The {} shouldn't be necessary, but it's a workaround for:
-// https://github.com/llvm/llvm-project/issues/143689
-COWEL_EXPORT
-constinit cowel_options_u8 cowel_global_options {};
-
-COWEL_EXPORT
-constinit cowel_mutable_string_view_u8 cowel_global_result {};
-
-void cowel_global_generate_html(void) noexcept
-{
-    cowel_global_result = cowel_generate_html_u8(&cowel_global_options);
-}
-#endif
 }
