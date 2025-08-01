@@ -7,11 +7,11 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  native:
     timeout-minutes: 15
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest]
         build_type: [Debug]
@@ -91,3 +91,50 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: ctest --output-on-failure --build-config ${{ matrix.build_type }}
       timeout-minutes: 5
+
+  node:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Install emscripten
+      run: |
+        git clone https://github.com/emscripten-core/emsdk.git
+        cd emsdk
+        ./emsdk install latest
+        ./emsdk activate latest
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt -y install nodejs npm
+        npm install
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build_dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "workspace_forward=$(echo '${{ github.workspace }}' | sed 's|\\|/|g')" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: |
+        cmake -B "${{ steps.strings.outputs.build_dir }}" \
+        -DCMAKE_TOOLCHAIN_FILE=emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake \
+        -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
+        -DCMAKE_COLOR_DIAGNOSTICS=ON \
+        -DCMAKE_CXX_FLAGS="-fdiagnostics-color=always" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: >
+        cmake
+        --build "${{ steps.strings.outputs.build_dir }}"
+        --target cowel-npm
+        --config Release
+        --verbose
