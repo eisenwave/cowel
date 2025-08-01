@@ -3,17 +3,17 @@
 
 #include "cowel/fwd.hpp"
 
-#ifdef COWEL_EMSCRIPTEN
-#error "This header should not be included when using emscripten."
+#ifndef COWEL_EMSCRIPTEN
+#include <iosfwd>
+
+#include "cowel/util/io.hpp"
 #endif
 
 #include <cstddef>
-#include <iosfwd>
 #include <span>
 #include <string_view>
 
 #include "cowel/util/assert.hpp"
-#include "cowel/util/io.hpp"
 #include "cowel/util/source_position.hpp"
 
 namespace cowel {
@@ -73,11 +73,11 @@ void print_ast(
 
 void print_internal_error_notice(Diagnostic_String& out);
 
-#ifndef COWEL_EMSCRIPTEN
-std::ostream& operator<<(std::ostream& out, std::u8string_view str);
-#endif
+void dump_code_string(std::pmr::vector<char8_t>& out, const Diagnostic_String& string, bool colors);
 
 #ifndef COWEL_EMSCRIPTEN
+std::ostream& operator<<(std::ostream& out, std::u8string_view str);
+
 std::ostream& print_code_string(std::ostream& out, const Diagnostic_String& string, bool colors);
 
 void print_code_string_stdout(const Diagnostic_String&);

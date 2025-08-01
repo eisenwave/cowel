@@ -1,11 +1,15 @@
 #include "cowel/fwd.hpp"
 
 #ifndef COWEL_EMSCRIPTEN
+#include <iostream>
+
+#include "cowel/util/io.hpp"
+#include "cowel/util/tty.hpp"
+#endif
 
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
-#include <iostream>
 #include <optional>
 #include <span>
 #include <string_view>
@@ -13,11 +17,10 @@
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
 #include "cowel/util/assert.hpp"
-#include "cowel/util/io.hpp"
+#include "cowel/util/html_writer.hpp"
 #include "cowel/util/source_position.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
-#include "cowel/util/tty.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/diagnostic_highlight.hpp"
@@ -75,23 +78,6 @@ struct Error_Line {
     std::u8string_view message;
     bool omit_affected_line = false;
 };
-
-[[nodiscard]]
-std::u8string_view to_prose(IO_Error_Code e)
-{
-    using enum IO_Error_Code;
-    switch (e) {
-    case cannot_open: //
-        return u8"Failed to open file.";
-    case read_error: //
-        return u8"I/O error occurred when reading from file.";
-    case write_error: //
-        return u8"I/O error occurred when writing to file.";
-    case corrupted: //
-        return u8"Data in the file is corrupted (not properly encoded).";
-    }
-    COWEL_ASSERT_UNREACHABLE(u8"invalid error code");
-}
 
 void do_print_affected_line(
     Diagnostic_String& out,
@@ -214,14 +200,6 @@ void print_assertion_error(Diagnostic_String& out, const Assertion_Error& error)
     out.append(error.message, Diagnostic_Highlight::error_text);
     out.append(u8"\n\n");
     print_internal_error_notice(out);
-}
-
-void print_io_error(Diagnostic_String& out, std::u8string_view file, IO_Error_Code error)
-{
-    print_location_of_file(out, file);
-    out.append(u8' ');
-    out.append(to_prose(error), Diagnostic_Highlight::text);
-    out.append(u8'\n');
 }
 
 namespace {
@@ -447,7 +425,60 @@ void print_internal_error_notice(Diagnostic_String& out)
     out.append(notice, Diagnostic_Highlight::internal_error_notice);
 }
 
+void dump_code_string(std::pmr::vector<char8_t>& out, const Diagnostic_String& string, bool colors)
+{
+    const std::u8string_view text = string.get_text();
+    if (!colors) {
+        append(out, text);
+    }
+
+    Annotation_Span<Diagnostic_Highlight> previous {};
+    for (const Annotation_Span<Diagnostic_Highlight> span : string) {
+        const std::size_t previous_end = previous.begin + previous.length;
+        COWEL_ASSERT(span.begin >= previous_end);
+        if (previous_end != span.begin) {
+            append(out, text.substr(previous_end, span.begin - previous_end));
+        }
+        append(out, diagnostic_highlight_ansi_sequence(span.value));
+        append(out, text.substr(span.begin, span.length));
+        append(out, ansi::reset);
+        previous = span;
+    }
+    const std::size_t last_span_end = previous.begin + previous.length;
+    if (last_span_end != text.size()) {
+        append(out, text.substr(last_span_end));
+    }
+}
+
 #ifndef COWEL_EMSCRIPTEN
+namespace {
+
+[[nodiscard]]
+std::u8string_view to_prose(IO_Error_Code e)
+{
+    using enum IO_Error_Code;
+    switch (e) {
+    case cannot_open: //
+        return u8"Failed to open file.";
+    case read_error: //
+        return u8"I/O error occurred when reading from file.";
+    case write_error: //
+        return u8"I/O error occurred when writing to file.";
+    case corrupted: //
+        return u8"Data in the file is corrupted (not properly encoded).";
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"invalid error code");
+}
+
+} // namespace
+
+void print_io_error(Diagnostic_String& out, std::u8string_view file, IO_Error_Code error)
+{
+    print_location_of_file(out, file);
+    out.append(u8' ');
+    out.append(to_prose(error), Diagnostic_Highlight::text);
+    out.append(u8'\n');
+}
 
 std::ostream& operator<<(std::ostream& out, std::u8string_view str)
 {
@@ -456,28 +487,9 @@ std::ostream& operator<<(std::ostream& out, std::u8string_view str)
 
 std::ostream& print_code_string(std::ostream& out, const Diagnostic_String& string, bool colors)
 {
-    const std::u8string_view text = string.get_text();
-    if (!colors) {
-        return out << text;
-    }
-
-    Annotation_Span<Diagnostic_Highlight> previous {};
-    for (const Annotation_Span<Diagnostic_Highlight> span : string) {
-        const std::size_t previous_end = previous.begin + previous.length;
-        COWEL_ASSERT(span.begin >= previous_end);
-        if (previous_end != span.begin) {
-            out << text.substr(previous_end, span.begin - previous_end);
-        }
-        out << diagnostic_highlight_ansi_sequence(span.value)
-            << text.substr(span.begin, span.length) << ansi::reset;
-        previous = span;
-    }
-    const std::size_t last_span_end = previous.begin + previous.length;
-    if (last_span_end != text.size()) {
-        out << text.substr(last_span_end);
-    }
-
-    return out;
+    std::pmr::vector<char8_t> buffer;
+    dump_code_string(buffer, string, colors);
+    return out << as_string_view(as_u8string_view(buffer));
 }
 
 void print_code_string_stdout(const Diagnostic_String& string)
@@ -503,5 +515,3 @@ void flush_stderr()
 #endif
 
 } // namespace cowel
-
-#endif
