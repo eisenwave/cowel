@@ -193,7 +193,7 @@ if(DEFINED EMSCRIPTEN)
 #        COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
 #            "${CMAKE_SOURCE_DIR}/src/main/js"
 #            "${NPM_DIR}"
-        COMMAND tsc
+        COMMAND npx tsc
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_BINARY_DIR}/cowel.wasm"
             "${CMAKE_SOURCE_DIR}/package.json"
