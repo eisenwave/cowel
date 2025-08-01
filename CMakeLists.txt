@@ -34,9 +34,9 @@ function(embed_asset INPUT_FILE VAR_NAME OUT_VAR)
     add_custom_command(
         OUTPUT ${OUTPUT_CPP}
         COMMAND "${CMAKE_COMMAND}" -E make_directory ${ASSET_OUTPUT_DIR}
-        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/file-to-array.py"
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/src/util/file-to-array.py"
                 "${INPUT_FILE}" "${OUTPUT_CPP}" "${VAR_NAME}"
-        DEPENDS "${INPUT_FILE}" ${CMAKE_CURRENT_LIST_DIR}/file-to-array.py
+        DEPENDS "${INPUT_FILE}" ${CMAKE_CURRENT_LIST_DIR}/src/util/file-to-array.py
         COMMENT "Embedding asset ${INPUT_FILE} as ${VAR_NAME}"
     )
 
