@@ -188,17 +188,21 @@ if(DEFINED EMSCRIPTEN)
     target_link_libraries(cowel-wasm PRIVATE ulight)
 
     set(NPM_DIR "${CMAKE_BINARY_DIR}/npm")
+    find_program(NPX_EXECUTABLE npx REQUIRED)
+    find_program(NODE_EXECUTABLE node REQUIRED)
+
     add_custom_target(cowel-npm ALL
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${NPM_DIR}"
-#        COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
-#            "${CMAKE_SOURCE_DIR}/src/main/js"
-#            "${NPM_DIR}"
-        COMMAND npx tsc
+        COMMAND "${NPX_EXECUTABLE}" tsc
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_BINARY_DIR}/cowel.wasm"
-            "${CMAKE_SOURCE_DIR}/package.json"
-            "${CMAKE_SOURCE_DIR}/LICENSE"
             "${NPM_DIR}"
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
+            "${CMAKE_CURRENT_LIST_DIR}/docs/npm"
+            "${NPM_DIR}"
+        COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/src/util/transform-package-json.js"
+            "${CMAKE_CURRENT_LIST_DIR}/package.json"
+            "${NPM_DIR}/package.json"
         BYPRODUCTS
             "${NPM_DIR}"
             "${NPM_DIR}/cowel.wasm"
