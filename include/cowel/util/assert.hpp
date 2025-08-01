@@ -5,8 +5,11 @@
 
 namespace cowel {
 
+using ulight::assert_fail;
 using ulight::Assertion_Error;
 using ulight::Assertion_Error_Type;
+using ulight::assertion_handler;
+using ulight::handle_assertion;
 
 #define COWEL_ASSERT(...) ULIGHT_ASSERT(__VA_ARGS__)
 #define COWEL_DEBUG_ASSERT(...) ULIGHT_DEBUG_ASSERT(__VA_ARGS__)
