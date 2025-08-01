@@ -1,0 +1,288 @@
+import path from "path";
+import fs from "fs";
+import process from "process";
+import yargs from "yargs";
+import { fileURLToPath } from "url";
+import * as helpers from "yargs/helpers";
+
+import * as cowel from "./cowel-wasm.js";
+
+function readModuleFileSync(file: string): Buffer;
+function readModuleFileSync(file: string, encoding: BufferEncoding): string;
+function readModuleFileSync(file: string, encoding?: BufferEncoding): string | Buffer {
+    const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+    const resolved = path.resolve(moduleDir, file);
+    return fs.readFileSync(resolved, {
+        encoding,
+    });
+}
+
+function getVersion(): string {
+    const p = JSON.parse(readModuleFileSync("package.json", "utf8"));
+    return p.version;
+}
+
+enum AnsiCode {
+    reset = "\x1b[0m",
+    black = "\x1B[30m",
+    red = "\x1B[31m",
+    green = "\x1B[32m",
+    yellow = "\x1B[33m",
+    blue = "\x1B[34m",
+    magenta = "\x1B[35m",
+    cyan = "\x1B[36m",
+    white = "\x1B[37m",
+    highBlack = "\x1B[0;90m",
+    highRed = "\x1B[0;91m",
+    highGreen = "\x1B[0;92m",
+    highYellow = "\x1B[0;93m",
+    highBlue = "\x1B[0;94m",
+    highMagenta = "\x1B[0;95m",
+    highCyan = "\x1B[0;96m",
+    highWhite = "\x1B[0;97m",
+}
+
+const severityKeys = [
+    "min",
+    "trace",
+    "debug",
+    "info",
+    "soft_warning",
+    "error",
+    "fatal",
+    "none",
+];
+
+function getEnumValue<T extends object>(
+    enumObj: T,
+    key: string,
+): number | undefined {
+    if (key in enumObj && typeof enumObj[key as keyof T] === "number") {
+        return enumObj[key as keyof T] as unknown as number;
+    }
+    return undefined;
+}
+
+const parser = yargs(helpers.hideBin(process.argv))
+    .scriptName("cowel")
+    .usage("Usage: $0 <input> <output>")
+    .positional("input", {
+        type: "string",
+        description: "Input file",
+    })
+    .positional("output", {
+        type: "string",
+        description: "Output file",
+    })
+    .option("no-color", {
+        alias: "nc",
+        type: "boolean",
+        default: false,
+        description: "Disable colored output",
+    })
+    .option("severity", {
+        alias: "l",
+        type: "string",
+        choices: severityKeys,
+        default: cowel.Severity[cowel.Severity.info],
+        description: "Minimum (>=) severity for log messages",
+    })
+    .option("version", {
+        alias: "v",
+        type: "boolean",
+        description: "Show version",
+    })
+    .help("h")
+    .alias("h", "help")
+    .wrap(Math.min(process.stdout.columns || Infinity, 100));
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function parseArgs() {
+    return parser.parseSync();
+}
+
+type LoadedFile = {
+    path: string;
+    data: Buffer;
+};
+
+const files: LoadedFile[] = [];
+
+let mainDocumentDir = "";
+let colorsEnabled = true;
+let wasm: cowel.CowelWasm | undefined;
+
+function loadFile(unresolvedPath: string): cowel.FileResult {
+    const resolvedPath = path.resolve(mainDocumentDir, unresolvedPath);
+    let status = cowel.IoStatus.ok;
+    let data: Buffer | undefined;
+    let id = 0;
+    try {
+        data = fs.readFileSync(resolvedPath);
+        id = files.length;
+        files.push({ path: resolvedPath, data });
+    } catch (_) {
+        status = cowel.IoStatus.error;
+    }
+    return { status, data, id };
+};
+
+
+function severityColor(severity: cowel.Severity): string {
+    const s = severity;
+    return s <= cowel.Severity.trace ? AnsiCode.highBlack
+        : s <= cowel.Severity.debug ? AnsiCode.white
+            : s <= cowel.Severity.info ? AnsiCode.highBlue
+                : s <= cowel.Severity.soft_warning ? AnsiCode.highGreen
+                    : s <= cowel.Severity.warning ? AnsiCode.highYellow
+                        : s <= cowel.Severity.error ? AnsiCode.highRed
+                            : s <= cowel.Severity.fatal ? AnsiCode.red
+                                : AnsiCode.magenta;
+}
+
+function severityTag(severity: cowel.Severity): string {
+    switch (severity) {
+        case cowel.Severity.min: return "MIN";
+        case cowel.Severity.trace: return "TRACE";
+        case cowel.Severity.debug: return "DEBUG";
+        case cowel.Severity.info: return "INFO";
+        case cowel.Severity.soft_warning: return "SOFTWARN";
+        case cowel.Severity.warning: return "WARNING";
+        case cowel.Severity.error: return "ERROR";
+        case cowel.Severity.fatal: return "FATAL";
+        case cowel.Severity.none: break;
+    }
+    return String(Number(severity));
+}
+
+function log(diagnostic: cowel.Diagnostic): void {
+    const file = diagnostic.fileId < 0 ? null : files[diagnostic.fileId];
+
+    const tag = severityTag(diagnostic.severity);
+    const filePath = diagnostic.fileName.length !== 0 ? diagnostic.fileName
+        : file ? file.path : "";
+
+    const isLocated = diagnostic.begin !== 0 || diagnostic.length !== 0 || diagnostic.line !== 0;
+    const location = isLocated ? `:${diagnostic.line + 1}:${diagnostic.column + 1}` : "";
+    const citation = isLocated && file ? wasm!.generateCodeCitationFor({
+        source: file.data,
+        line: diagnostic.line,
+        column: diagnostic.column,
+        begin: diagnostic.begin,
+        length: diagnostic.length,
+        colors: colorsEnabled,
+    }) : null;
+
+    const fullLocation = filePath.length !== 0 || location.length !== 0 ?
+        ` ${colorsEnabled ? AnsiCode.highBlack : ""}${filePath}${location}:` : "";
+
+    if (colorsEnabled) {
+        const tagColor = severityColor(diagnostic.severity);
+        process.stdout.write(`${tagColor}${tag}${fullLocation} ${AnsiCode.reset}${diagnostic.message} ${AnsiCode.highBlack}[${diagnostic.id}]${AnsiCode.reset}\n`);
+    } else {
+        process.stdout.write(`${tag}${fullLocation} ${diagnostic.message} [${diagnostic.id}]\n`);
+    }
+    if (citation !== null) {
+        process.stdout.write(citation);
+    }
+}
+
+function logError(
+    fileName: string,
+    id: string,
+    message: string,
+    severity = cowel.Severity.fatal,
+): void {
+    log({
+        severity,
+        id,
+        message,
+        fileName,
+        fileId: -1,
+        begin: 0,
+        length: 0,
+        line: 0,
+        column: 0,
+    });
+}
+
+async function main(): Promise<number> {
+    const args = parseArgs();
+
+    if (args.version) {
+        console.info(getVersion());
+        return 0;
+    }
+    if (args._.length < 2) {
+        parser.showHelp();
+        return 1;
+    }
+    if (args["no-color"]) {
+        colorsEnabled = false;
+    }
+    const minSeverity = getEnumValue(cowel.Severity, args.severity);
+    if (minSeverity === undefined) {
+        logError(
+            "",
+            "option.severity",
+            `"${args.severity}" is not a valid severity; see --help.`,
+        );
+        return 1;
+    }
+
+    const moduleBytes = readModuleFileSync("cowel.wasm");
+
+    const inputPath = String(args._[0]);
+    const outputPath = String(args._[1]);
+
+    const mainFileResult = ((): string => {
+        try {
+            const data = fs.readFileSync(inputPath);
+            files.push({ path: inputPath, data });
+            return data.toString("utf8");
+        } catch (_) {
+            logError(
+                inputPath,
+                "file.read",
+                "Failed to open main document.",
+            );
+            process.exit(1);
+        }
+    })();
+
+    mainDocumentDir = path.dirname(inputPath);
+
+    wasm = await cowel.load(moduleBytes);
+
+    const result = await wasm.generateHtml({
+        source: mainFileResult,
+        mode: cowel.Mode.document,
+        minSeverity,
+        loadFile,
+        log,
+    });
+    if (result.status !== cowel.ProcessingStatus.ok) {
+        const statusString = cowel.ProcessingStatus[result.status];
+        logError(
+            inputPath,
+            `status.${statusString}`,
+            `Generation exited with status ${result.status} (${statusString}).`,
+        );
+        return 1;
+    }
+
+    try {
+        fs.writeFileSync(outputPath, result.output, { encoding: "utf8" });
+    } catch (_) {
+        logError(
+            outputPath,
+            "file.write",
+            "Failed to write generated output.",
+        );
+        return 1;
+    }
+
+    return 0;
+}
+
+process.exitCode = await main();
