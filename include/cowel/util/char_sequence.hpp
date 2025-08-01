@@ -231,42 +231,48 @@ public:
         return {};
     }
 
-    /// @brief Attempts to return a pointer to the contiguous data
-    /// that the sequence was originally constructed with.
-    /// That is the case if the sequence was constructed using a `u8string_view`,
-    /// a single `char8_t`, or `Static_String8`.
-    /// If none of these constructors were used, returns `nullptr`.
-    ///
-    /// If `empty()` is `true`, may return `nullptr` even if the data is contiguous.
     [[nodiscard]]
     constexpr const char8_t* as_contiguous() const noexcept
+    {
+        return as_contiguous_impl<sizeof(const void*)>();
+    }
+
+private:
+    template <std::size_t sizeof_void_ptr>
+    [[nodiscard]]
+    constexpr const char8_t* as_contiguous_impl() const noexcept
     {
         if (m_extract == &extract_from_string_view) {
             return static_cast<const char8_t*>(m_entity.const_pointer);
         }
-        if constexpr (sizeof(const void*) >= 2) {
+        if constexpr (sizeof_void_ptr >= 2) {
             if (m_extract == &extract_from_static_string<1> //
                 || m_extract == &extract_from_static_string<2>) {
                 return m_entity.code_units.data();
             }
         }
-        if constexpr (sizeof(const void*) >= 4) {
+        if constexpr (sizeof_void_ptr >= 4) {
             if (m_extract == &extract_from_static_string<3> //
                 || m_extract == &extract_from_static_string<4>) {
                 return m_entity.code_units.data();
             }
         }
-        if constexpr (sizeof(const void*) >= 8) {
-            if (m_extract == &extract_from_static_string<5> //
-                || m_extract == &extract_from_static_string<6> //
-                || m_extract == &extract_from_static_string<7> //
-                || m_extract == &extract_from_static_string<8>) {
+        if constexpr (sizeof_void_ptr == 8) {
+            // Unfortunately needed because extract_from_static_string is constexpr,
+            // so it's considered to be needed for constant evaluation,
+            // even if its address is taken in a discarded statement.
+            // We can only make this work by making the template argument dependent.
+            if (m_extract == &extract_from_static_string<sizeof_void_ptr - 3> //
+                || m_extract == &extract_from_static_string<sizeof_void_ptr - 2> //
+                || m_extract == &extract_from_static_string<sizeof_void_ptr - 1> //
+                || m_extract == &extract_from_static_string<sizeof_void_ptr - 0>) {
                 return m_entity.code_units.data();
             }
         }
         return nullptr;
     }
 
+public:
     /// @brief Equivalent to `as_contiguous() != nullptr`.
     [[nodiscard]]
     constexpr bool is_contiguous() const noexcept
