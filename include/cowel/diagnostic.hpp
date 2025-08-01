@@ -7,6 +7,7 @@
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/source_position.hpp"
 
+#include "cowel/cowel.h"
 #include "cowel/fwd.hpp"
 
 namespace cowel {
@@ -15,24 +16,16 @@ using Suppress_Unused_Include_Source_Position = Basic_File_Source_Position<void>
 }
 
 enum struct Severity : Default_Underlying {
-    /// @brief Alias for `debug`.
-    min = 0,
-    /// @brief Debugging messages.
-    /// Only emitted in debug mode.
-    debug = 0,
-    /// @brief Minor problems. Only emitted in verbose mode.
-    soft_warning = 1,
-    /// @brief Major problems with the document.
-    warning = 2,
-    /// @brief Problems with the document that prevent proper content generation.
-    /// Usually results in the generation of `\\error` directives.
-    error = 3,
-    /// @brief Alias for `error`.
-    max = 3,
-    /// @brief Greater than all other levels.
-    /// No diagnostic with this level is emitted, so using it as a minimum level
-    /// silences all diagnostics, even errors.
-    none = 4,
+    min = COWEL_SEVERITY_MIN,
+    trace = COWEL_SEVERITY_TRACE,
+    debug = COWEL_SEVERITY_DEBUG,
+    info = COWEL_SEVERITY_INFO,
+    soft_warning = COWEL_SEVERITY_SOFT_WARNING,
+    warning = COWEL_SEVERITY_WARNING,
+    error = COWEL_SEVERITY_ERROR,
+    fatal = COWEL_SEVERITY_FATAL,
+    max = COWEL_SEVERITY_MAX,
+    none = COWEL_SEVERITY_NONE,
 };
 
 [[nodiscard]]
