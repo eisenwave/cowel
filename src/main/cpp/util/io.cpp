@@ -1,5 +1,3 @@
-#ifndef COWEL_EMSCRIPTEN
-
 #include <bit>
 #include <cstddef>
 #include <cstdio>
@@ -97,4 +95,3 @@ load_utf32le_file(std::u8string_view path, std::pmr::memory_resource* memory)
 }
 
 } // namespace cowel
-#endif

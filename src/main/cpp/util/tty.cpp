@@ -1,5 +1,3 @@
-#ifndef COWEL_EMSCRIPTEN
-
 #ifdef __unix__
 #include "stdio.h" // NOLINT for fileno
 #include <cstdio>
@@ -24,4 +22,3 @@ const bool is_stdout_tty = is_tty(stdout);
 const bool is_stderr_tty = is_tty(stderr);
 
 } // namespace cowel
-#endif
