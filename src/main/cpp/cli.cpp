@@ -92,14 +92,15 @@ struct Relative_File_Loader {
 [[nodiscard]]
 std::u8string_view severity_highlight(Severity severity)
 {
-    using enum Severity;
-    switch (severity) {
-    case debug: return ansi::h_black;
-    case soft_warning: return ansi::green;
-    case warning: return ansi::h_yellow;
-    case error: return ansi::h_red;
-    default: return ansi::magenta;
-    }
+    const auto s = cowel_severity(severity);
+    return s <= COWEL_SEVERITY_TRACE       ? ansi::black
+        : s <= COWEL_SEVERITY_DEBUG        ? ansi::h_black
+        : s <= COWEL_SEVERITY_INFO         ? ansi::blue
+        : s <= COWEL_SEVERITY_SOFT_WARNING ? ansi::green
+        : s <= COWEL_SEVERITY_WARNING      ? ansi::h_yellow
+        : s <= COWEL_SEVERITY_ERROR        ? ansi::h_red
+        : s <= COWEL_SEVERITY_FATAL        ? ansi::red
+                                           : ansi::magenta;
 }
 
 [[nodiscard]]
@@ -107,12 +108,17 @@ std::u8string_view severity_tag(Severity severity)
 {
     using enum Severity;
     switch (severity) {
+    case min: return u8"MIN";
+    case trace: return u8"TRACE";
     case debug: return u8"DEBUG";
+    case info: return u8"INFO";
     case soft_warning: return u8"SOFTWARN";
     case warning: return u8"WARNING";
     case error: return u8"ERROR";
-    default: return u8"???";
+    case fatal: return u8"FATAL";
+    case none: break;
     }
+    return u8"???";
 }
 
 [[nodiscard]]
@@ -121,7 +127,7 @@ constexpr File_Source_Span as_file_source_span(const cowel_diagnostic_u8& diagno
     return {
         { { .line = diagnostic.line, .column = diagnostic.column, .begin = diagnostic.begin },
           diagnostic.length },
-        diagnostic.file,
+        diagnostic.file_id,
     };
 }
 
@@ -153,14 +159,14 @@ struct Stderr_Logger {
         any_errors |= severity >= Severity::error;
 
         const auto file_entry = [&] -> File_Entry {
-            if (diagnostic.file <= 0) {
-                return { .id = diagnostic.file,
+            if (diagnostic.file_id <= 0) {
+                return { .id = diagnostic.file_id,
                          .source = main_file_source,
                          .name = main_file_name };
             }
             const Owned_File_Entry& result
-                = file_loader.entries.at(std::size_t(diagnostic.file - 1));
-            return { .id = diagnostic.file,
+                = file_loader.entries.at(std::size_t(diagnostic.file_id - 1));
+            return { .id = diagnostic.file_id,
                      .source = as_u8string_view(result.text),
                      .name = as_u8string_view(result.name) };
         }();
@@ -193,7 +199,7 @@ struct Stderr_Logger {
     }
 };
 
-int main(int argc, const char* const* argv)
+int main(int argc, const char* const* const argv)
 {
     if (argc < 1) {
         return EXIT_FAILURE;
@@ -233,33 +239,54 @@ int main(int argc, const char* const* argv)
 
     // TODO: allow custom ulight themes instead of hardcoding wg21.json
 
+    constexpr auto alloc_fn = [](std::pmr::memory_resource* memory, std::size_t size,
+                                 std::size_t alignment) noexcept -> void* {
+#ifdef ULIGHT_EXCEPTIONS
+        try {
+#endif
+            return memory->allocate(size, alignment);
+#ifdef ULIGHT_EXCEPTIONS
+        } catch (...) {
+            return nullptr;
+        }
+#endif
+    };
+    const Function_Ref<void*(std::size_t, std::size_t) noexcept> alloc_ref
+        = { const_v<alloc_fn>, &memory };
+
+    constexpr auto free_fn = [](std::pmr::memory_resource* memory, void* pointer, std::size_t size,
+                                std::size_t alignment) noexcept -> void {
+        memory->deallocate(pointer, size, alignment);
+    };
+    const Function_Ref<void(void*, std::size_t, std::size_t) noexcept> free_ref
+        = { const_v<free_fn>, &memory };
+
+    constexpr auto load_file_fn
+        = [](Relative_File_Loader* file_loader, cowel_string_view_u8 path
+          ) noexcept -> cowel_file_result_u8 { return file_loader->load(as_u8string_view(path)); };
+    const Function_Ref<cowel_file_result_u8(cowel_string_view_u8) noexcept> load_file_ref
+        = { const_v<load_file_fn>, &file_loader };
+
+    constexpr auto log_fn = [](Stderr_Logger* logger, const cowel_diagnostic_u8* diagnostic
+                            ) noexcept -> void { (*logger)(*diagnostic); };
+    const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref
+        = { const_v<log_fn>, &logger };
+
     const cowel_options_u8 options {
         .source = as_cowel_string_view(in_source),
         .highlight_theme_json = as_cowel_string_view(assets::wg21_json),
         .mode = COWEL_MODE_DOCUMENT,
         .min_log_severity = COWEL_SEVERITY_MIN,
         .reserved_0 {},
-        .alloc = [](void* self, std::size_t size, std::size_t alignment) -> void* {
-            auto* const memory = static_cast<std::pmr::memory_resource*>(self);
-            return memory->allocate(size, alignment);
-        },
-        .alloc_data = &memory,
-        .free = [](void* self, void* pointer, std::size_t size, std::size_t alignment) -> void {
-            auto* const memory = static_cast<std::pmr::memory_resource*>(self);
-            memory->deallocate(pointer, size, alignment);
-        },
-        .free_data = &memory,
-        .load_file = [](void* self, cowel_string_view_u8 path) -> cowel_file_result_u8 {
-            auto* const file_loader = static_cast<Relative_File_Loader*>(self);
-            return file_loader->load(as_u8string_view(path));
-        },
-        .load_file_data = &file_loader,
-        .log = [](void* self, const cowel_diagnostic_u8* diagnostic) -> void {
-            auto* const logger = static_cast<Stderr_Logger*>(self);
-            (*logger)(*diagnostic);
-        },
-        .log_data = &logger,
-        .reserved_1 {}
+        .alloc = alloc_ref.get_invoker(),
+        .alloc_data = alloc_ref.get_entity(),
+        .free = free_ref.get_invoker(),
+        .free_data = free_ref.get_entity(),
+        .load_file = load_file_ref.get_invoker(),
+        .load_file_data = load_file_ref.get_entity(),
+        .log = log_ref.get_invoker(),
+        .log_data = log_ref.get_entity(),
+        .reserved_1 {},
     };
 
     const cowel_gen_result_u8 result = cowel_generate_html_u8(&options);
