@@ -1,7 +1,12 @@
 #ifndef COWEL_TTY_HPP
 #define COWEL_TTY_HPP
 
-#ifndef COWEL_EMSCRIPTEN
+#include "cowel/fwd.hpp"
+
+#ifdef COWEL_EMSCRIPTEN
+#error "This file should not be included on emscripten builds."
+#endif
+
 #include <cstdio>
 
 namespace cowel {
@@ -22,6 +27,4 @@ extern const bool is_stdout_tty;
 extern const bool is_stderr_tty;
 
 } // namespace cowel
-#endif
-
 #endif

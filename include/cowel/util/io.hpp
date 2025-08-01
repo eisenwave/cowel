@@ -1,7 +1,12 @@
 #ifndef COWEL_IO_HPP
 #define COWEL_IO_HPP
 
-#ifndef COWEL_EMSCRIPTEN
+#include "cowel/fwd.hpp"
+
+#ifdef COWEL_EMSCRIPTEN
+#error "This header should not be included in emscripten builds."
+#endif
+
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -14,8 +19,6 @@
 #include "cowel/util/function_ref.hpp"
 #include "cowel/util/meta.hpp"
 #include "cowel/util/result.hpp"
-
-#include "cowel/fwd.hpp"
 
 namespace cowel {
 
@@ -144,6 +147,4 @@ Result<std::pmr::vector<char32_t>, IO_Error_Code>
 load_utf32le_file(std::u8string_view path, std::pmr::memory_resource* memory);
 
 } // namespace cowel
-#endif
-
 #endif
