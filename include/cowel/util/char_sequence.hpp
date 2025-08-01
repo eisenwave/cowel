@@ -231,6 +231,12 @@ public:
         return {};
     }
 
+    /// @brief Attempts to return a pointer to the contiguous data
+    /// that the sequence was originally constructed with.
+    /// That is the case if the sequence was constructed using a `u8string_view`,
+    /// a single `char8_t`, or `Static_String8`.
+    /// If none of these constructors were used, returns `nullptr`.
+    /// If `empty()` is `true`, may return `nullptr` even if the data is contiguous.
     [[nodiscard]]
     constexpr const char8_t* as_contiguous() const noexcept
     {
