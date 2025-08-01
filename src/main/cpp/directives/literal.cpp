@@ -1,6 +1,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/strings.hpp"
 

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <span>
 #include <string_view>
 #include <vector>
 

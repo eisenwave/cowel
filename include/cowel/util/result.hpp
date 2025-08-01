@@ -1,6 +1,7 @@
 #ifndef COWEL_RESULT_HPP
 #define COWEL_RESULT_HPP
 
+#include <type_traits>
 #include <utility>
 
 #include "cowel/util/assert.hpp"

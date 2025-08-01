@@ -2,6 +2,7 @@
 #define COWEL_SOURCE_POSITION_HPP
 
 #include <cstddef>
+#include <type_traits>
 
 #include "cowel/util/assert.hpp"
 

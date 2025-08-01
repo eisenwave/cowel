@@ -1,9 +1,12 @@
+#include <cstddef>
+#include <optional>
 #include <string_view>
 #include <vector>
 
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/draft_uris.hpp"
+#include "cowel/util/html_writer.hpp"
 #include "cowel/util/strings.hpp"
 
 #include "cowel/builtin_directive_set.hpp"

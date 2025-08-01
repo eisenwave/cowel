@@ -1,3 +1,5 @@
+#include <array>
+#include <string_view>
 #include <vector>
 
 #include "cowel/util/char_sequence.hpp"
