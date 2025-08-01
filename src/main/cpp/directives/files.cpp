@@ -3,6 +3,7 @@
 
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
+#include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
@@ -50,7 +51,7 @@ Include_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     }
 
     if (path_data.empty()) {
-        context.try_error(
+        context.try_fatal(
             diagnostic::file_path_missing, d.get_source_span(),
             u8"The given path to include text data from cannot empty."sv
         );
@@ -65,7 +66,7 @@ Include_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
             file_load_error_explanation(entry.error()),
             u8" Note that files are loaded relative to the directory of the current document."
         };
-        context.try_error(diagnostic::file_io, d.get_source_span(), joined_char_sequence(message));
+        context.try_fatal(diagnostic::file_io, d.get_source_span(), joined_char_sequence(message));
         return Processing_Status::fatal;
     }
     out.write(entry->source, Output_Language::text);
@@ -88,7 +89,7 @@ Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     }
 
     if (path_data.empty()) {
-        context.try_error(
+        context.try_fatal(
             diagnostic::file_path_missing, d.get_source_span(),
             u8"The given path to include text data from cannot empty."sv
         );
@@ -103,7 +104,7 @@ Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
             file_load_error_explanation(entry.error()),
             u8" Note that files are loaded relative to the directory of the current document."
         };
-        context.try_error(diagnostic::file_io, d.get_source_span(), joined_char_sequence(message));
+        context.try_fatal(diagnostic::file_io, d.get_source_span(), joined_char_sequence(message));
         return Processing_Status::fatal;
     }
 
