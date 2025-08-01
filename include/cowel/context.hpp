@@ -273,9 +273,19 @@ public:
         emit({ severity, id, location, message });
     }
 
+    void emit_trace(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
+    {
+        emit(Severity::trace, id, location, message);
+    }
+
     void emit_debug(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
     {
         emit(Severity::debug, id, location, message);
+    }
+
+    void emit_info(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
+    {
+        emit(Severity::info, id, location, message);
     }
 
     void
@@ -292,6 +302,11 @@ public:
     void emit_error(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
     {
         emit(Severity::error, id, location, message);
+    }
+
+    void emit_fatal(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
+    {
+        emit(Severity::fatal, id, location, message);
     }
 
     void try_emit(Diagnostic diagnostic)
@@ -313,9 +328,19 @@ public:
         }
     }
 
+    void try_trace(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
+    {
+        try_emit(Severity::trace, id, location, message);
+    }
+
     void try_debug(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
     {
         try_emit(Severity::debug, id, location, message);
+    }
+
+    void try_info(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
+    {
+        try_emit(Severity::info, id, location, message);
     }
 
     void
@@ -332,6 +357,11 @@ public:
     void try_error(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
     {
         try_emit(Severity::error, id, location, message);
+    }
+
+    void try_fatal(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
+    {
+        try_emit(Severity::fatal, id, location, message);
     }
 
     void add_resolver(const Name_Resolver& resolver)
