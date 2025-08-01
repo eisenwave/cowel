@@ -88,12 +88,10 @@ endif()
 set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
 include_directories(${INCLUDE_DIRS})
 
-set(LIBRARY_SOURCES
+set(COMMON_LIBRARY_SOURCES
     src/main/cpp/util/code_point_names.cpp
     src/main/cpp/util/draft_uris.cpp
     src/main/cpp/util/html_entities.cpp
-    src/main/cpp/util/io.cpp
-    src/main/cpp/util/tty.cpp
     src/main/cpp/util/typo.cpp
 
     src/main/cpp/directives/bibliography.cpp
@@ -133,44 +131,82 @@ set(LIBRARY_SOURCES
     "${WG21_JSON_CPP}"
 )
 
+set(NATIVE_LIBRARY_SOURCES
+    ${COMMON_LIBRARY_SOURCES}
+
+    src/main/cpp/util/io.cpp
+    src/main/cpp/util/tty.cpp
+)
+
 if(DEFINED EMSCRIPTEN)
-    add_executable(cowel-wasm ${LIBRARY_SOURCES})
-    set_target_properties(cowel-wasm PROPERTIES
-        OUTPUT_NAME "cowel"
-        SUFFIX ".wasm"
-    )
-    target_compile_options(cowel-wasm PRIVATE
+    set(WASM_COMPILE_OPTIONS
         # the SHELL option group prevents de-duplication
         # https://cmake.org/cmake/help/latest/prop_tgt/COMPILE_OPTIONS.html#option-de-duplication
-        "SHELL:-s SIDE_MODULE=0"
         "-stdlib=libc++"
         "-fno-exceptions"
         "-Os"
         ${WARNING_OPTIONS}
-        ${SANITIZER_OPTIONS}
     )
-    target_link_options(cowel-wasm PRIVATE
+    set(WASM_LINK_OPTIONS
         "-fno-exceptions"
         "-Os"
         "-stdlib=libc++"
         "-static-libc++"
         "SHELL:-s WASM=1"
         "SHELL:-s ENVIRONMENT=web"
+        "SHELL:-s IMPORTED_MEMORY=0"
         "SHELL:-s ALLOW_MEMORY_GROWTH=1"
         "SHELL:-s ALLOW_TABLE_GROWTH=1"
         "SHELL:-s AUTO_JS_LIBRARIES=0"
-        "SHELL:-s SIDE_MODULE=0"
-        "SHELL:-s STANDALONE_WASM=1"
-        "SHELL:-s \"EXPORTED_RUNTIME_METHODS=[]\""
+        "SHELL:-s STANDALONE_WASM=0"
         "--no-entry"
+    )
+
+    add_executable(cowel-wasm
+        ${COMMON_LIBRARY_SOURCES}
+        src/main/cpp/wasm.cpp
+    )
+    set_target_properties(cowel-wasm PROPERTIES
+        OUTPUT_NAME "cowel"
+        SUFFIX ".wasm"
+    )
+    target_compile_options(cowel-wasm PRIVATE
+        ${WASM_COMPILE_OPTIONS}
+        ${SANITIZER_OPTIONS}
+    )
+    target_link_options(cowel-wasm PRIVATE
+        ${WASM_LINK_OPTIONS}
         ${SANITIZER_OPTIONS}
     )
 
-    target_compile_options(ulight PRIVATE "-fno-exceptions")
-    target_link_options(ulight PRIVATE "-fno-exceptions")
-    target_link_libraries(cowel-wasm ulight)
+    target_compile_options(ulight PRIVATE
+        "-fno-exceptions"
+    )
+    target_link_options(ulight PRIVATE
+        "-fno-exceptions"
+    )
+    target_link_libraries(cowel-wasm PRIVATE ulight)
+
+    set(NPM_DIR "${CMAKE_BINARY_DIR}/npm")
+    add_custom_target(cowel-npm ALL
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${NPM_DIR}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
+#            "${CMAKE_SOURCE_DIR}/src/main/js"
+#            "${NPM_DIR}"
+        COMMAND tsc
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${CMAKE_CURRENT_BINARY_DIR}/cowel.wasm"
+            "${CMAKE_SOURCE_DIR}/package.json"
+            "${CMAKE_SOURCE_DIR}/LICENSE"
+            "${NPM_DIR}"
+        BYPRODUCTS
+            "${NPM_DIR}"
+            "${NPM_DIR}/cowel.wasm"
+        DEPENDS cowel-wasm
+        COMMENT "Preparing npm package in ${NPM_DIR}"
+    )
 else()
-    add_library(cowel STATIC ${LIBRARY_SOURCES})
+    add_library(cowel STATIC ${NATIVE_LIBRARY_SOURCES})
     target_link_libraries(cowel ulight)
     target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
     target_link_options(cowel PUBLIC ${SANITIZER_OPTIONS})
