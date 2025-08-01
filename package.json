@@ -4,13 +4,8 @@
     "description": "COWEL (Compact Web Language) command line utility",
     "main": "index.js",
     "type": "module",
-    "directories": {
-        "doc": "docs",
-        "test": "test"
-    },
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
+    "directories": {},
+    "scripts": {},
     "repository": {
         "type": "git",
         "url": "git+https://github.com/Eisenwave/cowel.git"
