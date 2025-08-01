@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "moduleResolution": "node",
+        "outDir": "build/npm",
+        "rootDirs": [
+            "src/main/ts"
+        ]
+    },
+    "include": [
+        "src/main"
+    ]
+}

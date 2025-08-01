@@ -1,0 +1,49 @@
+{
+    "name": "cowel",
+    "version": "0.3.0",
+    "description": "COWEL (Compact Web Language) command line utility",
+    "main": "index.js",
+    "type": "module",
+    "directories": {
+        "doc": "docs",
+        "test": "test"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Eisenwave/cowel.git"
+    },
+    "keywords": [
+        "markup",
+        "cowel"
+    ],
+    "author": {
+        "name": "Jan Schultke",
+        "email": "me@eisenwave.net",
+        "url": "https://github.com/Eisenwave/"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/Eisenwave/cowel/issues"
+    },
+    "homepage": "https://cowel.org",
+    "devDependencies": {
+        "@stylistic/eslint-plugin": "^5.2.2",
+        "@types/node": "^24.1.0",
+        "@typescript-eslint/eslint-plugin": "^8.38.0",
+        "@typescript-eslint/parser": "^8.38.0",
+        "eslint": "^9.32.0",
+        "globals": "^16.3.0",
+        "typescript": "^5.8.3",
+        "typescript-eslint": "^8.38.0",
+        "@types/yargs": "^17.0.0"
+    },
+    "engines": {
+        "node": ">=18.19.1"
+    },
+    "dependencies": {
+        "yargs": "^17.0.0"
+    }
+}
