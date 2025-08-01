@@ -1,3 +1,5 @@
+#include <string_view>
+
 #include <gtest/gtest.h>
 
 #include "cowel/util/char_sequence.hpp"
@@ -25,7 +27,7 @@ TEST(Char_Sequence, empty)
 
 TEST(Char_Sequence, zero_capacity_static)
 {
-    Char_Sequence8 chars = Static_String8<0> {};
+    const Char_Sequence8 chars = Static_String8<0> {};
     ASSERT_TRUE(chars.empty());
 }
 

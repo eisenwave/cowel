@@ -120,7 +120,7 @@ Result<Draft_URI_Info, Draft_URI_Error>
 parse_draft_uri(std::u8string_view uri, std::span<Draft_Location> out_locations)
 {
     std::size_t locations = 0;
-    std::size_t anchor_pos = uri.find(u8'#');
+    const std::size_t anchor_pos = uri.find(u8'#');
     if (anchor_pos == std::u8string_view::npos) {
         return Draft_URI_Info { uri.length(), locations };
     }

@@ -1,15 +1,18 @@
 #include <string_view>
+#include <variant>
 #include <vector>
 
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/strings.hpp"
 
+#include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/html.hpp"
 #include "cowel/policy/paragraph_split.hpp"
 #include "cowel/policy/plaintext.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
 
 using namespace std::string_view_literals;

@@ -2,11 +2,16 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/html_writer.hpp"
+#include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
 
+#include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/syntax_highlight.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/content_status.hpp"
+#include "cowel/diagnostic.hpp"
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/theme_to_css.hpp"

@@ -549,7 +549,7 @@ TEST(Parse_And_Build, hello_code)
 
     std::optional<Actual_Document> parsed = parse_and_build_file(u8"hello_code.cow", &memory);
     ASSERT_TRUE(parsed);
-    const auto actual = parsed->to_expected();
+    const auto actual = parsed->to_expected(); // NOLINT(bugprone-unchecked-optional-access)
     ASSERT_EQ(expected, actual);
 }
 

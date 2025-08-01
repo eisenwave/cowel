@@ -13,6 +13,7 @@
 #include <optional>
 #include <span>
 #include <string_view>
+#include <vector>
 
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
@@ -397,7 +398,7 @@ private:
         return Scoped_Indent { indent_level };
     }
 
-    void print_indent()
+    void print_indent() const
     {
         COWEL_ASSERT(indent_level >= 0);
         COWEL_ASSERT(options.indent_width >= 0);

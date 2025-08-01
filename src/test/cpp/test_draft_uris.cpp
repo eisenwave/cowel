@@ -1,7 +1,11 @@
+#include <array>
+#include <cstddef>
 #include <iostream>
 #include <string_view>
 
 #include <gtest/gtest.h>
+
+#include "ulight/impl/platform.h"
 
 #include "cowel/util/draft_uris.hpp"
 #include "cowel/util/result.hpp"

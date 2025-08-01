@@ -1,16 +1,23 @@
 #include <span>
+#include <string>
 #include <string_view>
+#include <utility>
+#include <variant>
 #include <vector>
 
+#include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
 
+#include "cowel/policy/content_policy.hpp"
+
 #include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/context.hpp"
+#include "cowel/diagnostic.hpp"
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 
@@ -223,7 +230,7 @@ Processing_Status substitute_in_macro(
             }
             // It is very important that we do it in this order because erase(it)
             // also kills d.
-            ast::Argument else_arg = std::move(d->get_arguments()[std::size_t(else_index)]);
+            const ast::Argument else_arg = std::move(d->get_arguments()[std::size_t(else_index)]);
             it = content.erase(it);
             substitute_arg(else_arg);
             continue;

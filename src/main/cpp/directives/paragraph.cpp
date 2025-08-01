@@ -1,7 +1,12 @@
+#include <string_view>
+
 #include "cowel/policy/paragraph_split.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
+
+using namespace std::string_view_literals;
 
 namespace cowel {
 namespace {

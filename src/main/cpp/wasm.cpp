@@ -2,10 +2,11 @@
 #include <string_view>
 #include <vector>
 
-#include "cowel/memory_resources.hpp"
 #include "cowel/util/annotated_string.hpp"
 
 #include "cowel/cowel.h"
+#include "cowel/diagnostic_highlight.hpp"
+#include "cowel/memory_resources.hpp"
 #include "cowel/print.hpp"
 
 // The purpose of this cpp file is to accept imports

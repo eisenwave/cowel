@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <span>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "cowel/util/char_sequence.hpp"

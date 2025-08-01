@@ -3,6 +3,8 @@
 
 #include <gtest/gtest.h>
 
+#include "ulight/impl/platform.h"
+
 #include "cowel/parse_utils.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/strings.hpp"

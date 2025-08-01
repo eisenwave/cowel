@@ -1,11 +1,15 @@
+#include <cstddef>
 #include <memory_resource>
 #include <unordered_set>
 
-#include "cowel/policy/paragraph_split.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
+#include "cowel/util/strings.hpp"
+
+#include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/paragraph_split.hpp"
 
 #include "cowel/assets.hpp"
 #include "cowel/builtin_directive_set.hpp"

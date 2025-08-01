@@ -1,6 +1,10 @@
 #include <algorithm>
 #include <bitset>
+#include <cstddef>
+#include <span>
 #include <string_view>
+
+#include "cowel/policy/content_policy.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/directive_processing.hpp"

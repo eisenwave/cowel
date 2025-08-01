@@ -1,6 +1,7 @@
 #include <span>
 #include <vector>
 
+#include "ulight/ulight.h"
 #include "ulight/ulight.hpp"
 
 #include "cowel/util/typo.hpp"

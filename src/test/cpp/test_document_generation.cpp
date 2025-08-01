@@ -9,19 +9,25 @@
 
 #include <gtest/gtest.h>
 
-#include "cowel/diagnostic_highlight.hpp"
-#include "cowel/policy/paragraph_split.hpp"
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/meta.hpp"
 
+#include "cowel/policy/capture.hpp"
+#include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/paragraph_split.hpp"
+
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/content_status.hpp"
 #include "cowel/diagnostic.hpp"
+#include "cowel/diagnostic_highlight.hpp"
 #include "cowel/directive_behavior.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/document_generation.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/output_language.hpp"
 #include "cowel/parse.hpp"
+#include "cowel/print.hpp"
 
 #include "collecting_logger.hpp"
 #include "diff.hpp"
@@ -178,7 +184,7 @@ public:
     {
         constexpr auto invoker = [](Doc_Gen_Test* self, std::u8string_view id,
                                     const File_Source_Span& location, std::u8string_view message) {
-            Diagnostic d { Severity::error, id, location, message };
+            const Diagnostic d { Severity::error, id, location, message };
             self->logger(d);
         };
         return Parse_Error_Consumer { const_v<invoker>, this };
@@ -488,7 +494,7 @@ void append_specials_escaped(
     Diagnostic_Highlight default_highlight
 )
 {
-    for (char8_t c : str) {
+    for (const char8_t c : str) {
         switch (c) {
         case u8'\n': out.append(u8"\\n", Diagnostic_Highlight::escape); break;
         case u8'\t': out.append(u8"\\t", Diagnostic_Highlight::escape); break;

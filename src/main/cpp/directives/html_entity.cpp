@@ -1,4 +1,6 @@
 #include <array>
+#include <cstddef>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -8,7 +10,12 @@
 #include "cowel/util/html_entities.hpp"
 #include "cowel/util/strings.hpp"
 
+#include "cowel/policy/content_policy.hpp"
+
+#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/context.hpp"
+#include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
 
 using namespace std::string_view_literals;
