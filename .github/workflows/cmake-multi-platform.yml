@@ -115,8 +115,10 @@ jobs:
         npm install
 
     - name: Lint
-      run: |
-        npx eslint . --max-warnings=0
+      run: >
+        npx eslint src
+        --max-warnings=0
+        --color
 
     - name: Set reusable strings
       id: strings
