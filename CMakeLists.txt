@@ -206,6 +206,7 @@ if(DEFINED EMSCRIPTEN)
         BYPRODUCTS
             "${NPM_DIR}"
             "${NPM_DIR}/cowel.wasm"
+            "${CMAKE_BINARY_DIR}/.tsbuildinfo"
         DEPENDS cowel-wasm
         COMMENT "Preparing npm package in ${NPM_DIR}"
     )
