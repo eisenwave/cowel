@@ -48,6 +48,7 @@ const severityKeys = [
     "debug",
     "info",
     "soft_warning",
+    "warning",
     "error",
     "fatal",
     "none",
@@ -65,27 +66,33 @@ function getEnumValue<T extends object>(
 
 const parser = yargs(helpers.hideBin(process.argv))
     .scriptName("cowel")
-    .usage("Usage: $0 <input> <output>")
-    .positional("input", {
-        type: "string",
-        description: "Input file",
-    })
-    .positional("output", {
-        type: "string",
-        description: "Output file",
-    })
+    .usage("Usage: $0 <command>")
+    .command(
+        "run <input> <output>",
+        "Processes a COWEL document",
+        yargs => {
+            return yargs
+                .positional("input", {
+                    type: "string",
+                    description: "Input file",
+                })
+                .positional("output", {
+                    type: "string",
+                    description: "Output file",
+                })
+                .option("severity", {
+                    alias: "l",
+                    type: "string",
+                    choices: severityKeys,
+                    default: cowel.Severity[cowel.Severity.info],
+                    description: "Minimum (>=) severity for log messages",
+                });
+        },
+    )
     .option("no-color", {
-        alias: "nc",
         type: "boolean",
         default: false,
         description: "Disable colored output",
-    })
-    .option("severity", {
-        alias: "l",
-        type: "string",
-        choices: severityKeys,
-        default: cowel.Severity[cowel.Severity.info],
-        description: "Minimum (>=) severity for log messages",
     })
     .version(false)
     .option("version", {
@@ -93,6 +100,7 @@ const parser = yargs(helpers.hideBin(process.argv))
         type: "boolean",
         description: "Show version",
     })
+    .strict()
     .help("h")
     .alias("h", "help")
     .wrap(Math.min(process.stdout.columns || Infinity, 100));
@@ -207,34 +215,16 @@ function logError(
     });
 }
 
-async function main(): Promise<number> {
-    const args = parseArgs();
+type RunOptions = {
+    minSeverity: cowel.Severity;
+};
 
-    if (args.version) {
-        console.info(getVersion());
-        return 0;
-    }
-    if (args._.length < 2) {
-        parser.showHelp();
-        return 1;
-    }
-    if (args["no-color"]) {
-        colorsEnabled = false;
-    }
-    const minSeverity = getEnumValue(cowel.Severity, args.severity);
-    if (minSeverity === undefined) {
-        logError(
-            "",
-            "option.severity",
-            `"${args.severity}" is not a valid severity; see --help.`,
-        );
-        return 1;
-    }
-
+async function run(
+    inputPath: string,
+    outputPath: string,
+    options: RunOptions,
+): Promise<number> {
     const moduleBytes = readModuleFileSync("cowel.wasm");
-
-    const inputPath = String(args._[0]);
-    const outputPath = String(args._[1]);
 
     const mainFileResult = ((): string => {
         try {
@@ -258,7 +248,7 @@ async function main(): Promise<number> {
     const result = await wasm.generateHtml({
         source: mainFileResult,
         mode: cowel.Mode.document,
-        minSeverity,
+        minSeverity: options.minSeverity,
         loadFile,
         log,
     });
@@ -283,7 +273,48 @@ async function main(): Promise<number> {
         return 1;
     }
 
+    if (options.minSeverity <= cowel.Severity.debug) {
+        const absolutePath = path.resolve(outputPath);
+        logError(
+            outputPath,
+            "file.write",
+            `Output written to: ${absolutePath}`,
+            cowel.Severity.debug,
+        );
+    }
+
     return 0;
+}
+
+async function main(): Promise<number> {
+    const args = parseArgs();
+
+    if (args.version) {
+        console.info(getVersion());
+        return 0;
+    }
+    if (args._.length === 0) {
+        parser.showHelp();
+        return 1;
+    }
+    if (args["no-color"]) {
+        colorsEnabled = false;
+    }
+
+    const inputPath = String(args.input);
+    const outputPath = String(args.output);
+
+    const minSeverity = getEnumValue(cowel.Severity, args.severity);
+    if (minSeverity === undefined) {
+        logError(
+            "",
+            "option.severity",
+            `"${args.severity}" is not a valid severity; see --help.`,
+        );
+        return 1;
+    }
+
+    return run(inputPath, outputPath, { minSeverity });
 }
 
 process.exitCode = await main();
