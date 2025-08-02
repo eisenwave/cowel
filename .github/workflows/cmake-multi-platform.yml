@@ -114,6 +114,10 @@ jobs:
         sudo apt -y install nodejs npm
         npm install
 
+    - name: Lint
+      run: |
+        npx eslint . --max-warnings=0
+
     - name: Set reusable strings
       id: strings
       shell: bash
