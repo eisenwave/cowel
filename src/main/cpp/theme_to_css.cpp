@@ -1,4 +1,7 @@
 #include <algorithm>
+#include <array>
+#include <cstddef>
+#include <memory_resource>
 #include <optional>
 #include <string>
 #include <string_view>

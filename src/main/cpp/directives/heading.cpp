@@ -1,20 +1,32 @@
 #include <algorithm>
+#include <cstddef>
 #include <span>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
 
+#include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/function_ref.hpp"
+#include "cowel/util/html_writer.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
 
+#include "cowel/policy/capture.hpp"
+#include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/html.hpp"
+
+#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/content_status.hpp"
+#include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/document_sections.hpp"
+#include "cowel/output_language.hpp"
 
 using namespace std::string_view_literals;
 

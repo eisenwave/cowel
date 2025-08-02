@@ -1,6 +1,7 @@
 #ifndef COWEL_CHAR_SEQUENCE_UTIL_HPP
 #define COWEL_CHAR_SEQUENCE_UTIL_HPP
 
+#include <cstddef>
 #include <memory_resource>
 #include <span>
 #include <string>

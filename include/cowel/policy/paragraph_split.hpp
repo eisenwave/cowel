@@ -1,6 +1,10 @@
 #ifndef COWEL_POLICY_PARAGRAPH_SPLIT_HPP
 #define COWEL_POLICY_PARAGRAPH_SPLIT_HPP
 
+#include <cstddef>
+#include <memory_resource>
+
+#include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 
 #include "cowel/policy/content_policy.hpp"
@@ -146,7 +150,7 @@ public:
         // (e.g. in \paragraphs{\i{\b{...}}}),
         // a simple bool is insufficient to keep track of whether we are in a directive.
         m_line_state = Blank_Line_Initial_State::middle;
-        Directive_Depth_Guard depth_guard { *this };
+        const Directive_Depth_Guard depth_guard { *this };
         return apply_behavior(*this, directive, context);
     }
 

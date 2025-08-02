@@ -2,11 +2,13 @@
 #define COWEL_HTML_WRITER_HPP
 
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <string_view>
 #include <vector>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/html.hpp"
 #include "cowel/util/strings.hpp"

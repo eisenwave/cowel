@@ -1,5 +1,8 @@
 #include <string_view>
 
+#include "cowel/util/assert.hpp"
+#include "cowel/util/result.hpp"
+
 #include "cowel/policy/html.hpp"
 #include "cowel/policy/html_literal.hpp"
 #include "cowel/policy/literally.hpp"
@@ -11,9 +14,11 @@
 
 #include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/services.hpp"
 
 namespace cowel {
 namespace {

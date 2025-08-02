@@ -1,6 +1,8 @@
 #ifndef COWEL_POLICY_SYNTAX_HIGHLIGHT_HPP
 #define COWEL_POLICY_SYNTAX_HIGHLIGHT_HPP
 
+#include <cstddef>
+#include <memory_resource>
 #include <string_view>
 #include <vector>
 
@@ -9,8 +11,10 @@
 #include "cowel/policy/content_policy.hpp"
 
 #include "cowel/ast.hpp"
+#include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
 #include "cowel/services.hpp"
 

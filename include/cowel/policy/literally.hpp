@@ -51,7 +51,6 @@ public:
     {
         COWEL_ASSERT_UNREACHABLE(u8"Generated content within To_Source_Policy should be impossible."
         );
-        return Processing_Status::fatal;
     }
 };
 

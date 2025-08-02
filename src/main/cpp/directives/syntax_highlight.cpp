@@ -2,18 +2,28 @@
 #include <string_view>
 #include <vector>
 
+#include "ulight/ulight.hpp"
+
+#include "cowel/util/assert.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
 
+#include "cowel/policy/capture.hpp"
 #include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/html.hpp"
 #include "cowel/policy/syntax_highlight.hpp"
 
+#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
+#include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_arguments.hpp"
+#include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/output_language.hpp"
+#include "cowel/services.hpp"
 #include "cowel/theme_to_css.hpp"
 
 using namespace std::string_view_literals;
@@ -135,6 +145,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     const
 {
     Argument_Matcher args { parameters, context.get_transient_memory() };
+    args.match(d.get_arguments());
 
     std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
     const Result<bool, Processing_Status> has_name_result

@@ -1,11 +1,13 @@
 #ifndef COWEL_POLICY_IGNORANT_HPP
 #define COWEL_POLICY_IGNORANT_HPP
 
+#include "cowel/util/char_sequence.hpp"
+
 #include "cowel/policy/content_policy.hpp"
 
-#include "cowel/output_language.hpp"
-
+#include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/output_language.hpp"
 
 namespace cowel {
 
@@ -25,29 +27,29 @@ struct Ignorant_Content_Policy : virtual Content_Policy {
     }
 
     [[nodiscard]]
-    Content_Status consume(const ast::Text&, Context&) override
+    Processing_Status consume(const ast::Text&, Context&) override
     {
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Comment&, Context&) override
+    Processing_Status consume(const ast::Comment&, Context&) override
     {
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Escaped&, Context&) override
+    Processing_Status consume(const ast::Escaped&, Context&) override
     {
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Directive&, Context&) override
+    Processing_Status consume(const ast::Directive&, Context&) override
     {
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
     [[nodiscard]]
-    Content_Status consume(const ast::Generated&, Context&) override
+    Processing_Status consume(const ast::Generated&, Context&) override
     {
-        return Content_Status::ok;
+        return Processing_Status::ok;
     }
 };
 

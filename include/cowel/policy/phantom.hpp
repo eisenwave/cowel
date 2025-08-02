@@ -1,6 +1,7 @@
 #ifndef COWEL_POLICY_PHANTOM_HPP
 #define COWEL_POLICY_PHANTOM_HPP
 
+#include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 
 #include "cowel/policy/content_policy.hpp"
@@ -8,6 +9,7 @@
 #include "cowel/policy/syntax_highlight.hpp"
 
 #include "cowel/fwd.hpp"
+#include "cowel/output_language.hpp"
 
 namespace cowel {
 

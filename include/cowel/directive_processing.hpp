@@ -2,15 +2,19 @@
 #define COWEL_DIRECTIVE_PROCESSING_HPP
 
 #include <cstddef>
+#include <ranges>
 #include <span>
 #include <string_view>
 #include <type_traits>
 #include <vector>
 
+#include "cowel/util/assert.hpp"
 #include "cowel/util/function_ref.hpp"
 #include "cowel/util/html_writer.hpp"
+#include "cowel/util/typo.hpp"
 
 #include "cowel/ast.hpp"
+#include "cowel/content_status.hpp"
 #include "cowel/directive_display.hpp"
 #include "cowel/fwd.hpp"
 

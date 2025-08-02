@@ -1,6 +1,7 @@
 #ifndef COWEL_POLICY_HTML_HPP
 #define COWEL_POLICY_HTML_HPP
 
+#include <cstddef>
 #include <string_view>
 
 #include "cowel/util/html.hpp"

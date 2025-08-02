@@ -1,6 +1,9 @@
 #ifndef COWEL_UNICODE_HPP
 #define COWEL_UNICODE_HPP
 
+#include <cstddef>
+#include <string_view>
+
 #include "ulight/impl/unicode.hpp"
 
 namespace cowel::utf8 {

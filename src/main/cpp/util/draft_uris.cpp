@@ -1,10 +1,13 @@
+#include <algorithm>
 #include <cstddef>
 #include <optional>
+#include <span>
 #include <string_view>
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/draft_uris.hpp"
 #include "cowel/util/from_chars.hpp"
+#include "cowel/util/function_ref.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/to_chars.hpp"
 

@@ -12,13 +12,16 @@
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/meta.hpp"
+#include "cowel/util/strings.hpp"
 
 #include "cowel/policy/capture.hpp"
 #include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/html.hpp"
 #include "cowel/policy/paragraph_split.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
+#include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/diagnostic_highlight.hpp"
 #include "cowel/directive_behavior.hpp"

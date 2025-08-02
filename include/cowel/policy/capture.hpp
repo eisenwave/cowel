@@ -1,8 +1,13 @@
 #ifndef COWEL_POLICY_CAPTURE_HPP
 #define COWEL_POLICY_CAPTURE_HPP
 
+#include <cstddef>
+#include <memory_resource>
+#include <span>
+#include <utility>
 #include <vector>
 
+#include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 
 #include "cowel/policy/content_policy.hpp"

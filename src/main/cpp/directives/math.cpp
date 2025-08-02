@@ -3,10 +3,18 @@
 #include <cstddef>
 #include <span>
 #include <string_view>
+#include <variant>
+
+#include "cowel/util/html_writer.hpp"
 
 #include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/html.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/content_status.hpp"
+#include "cowel/context.hpp"
+#include "cowel/diagnostic.hpp"
+#include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
 
 using namespace std::string_view_literals;

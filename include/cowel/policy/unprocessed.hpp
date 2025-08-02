@@ -1,10 +1,13 @@
 #ifndef COWEL_POLICY_UNPROCESSED_HPP
 #define COWEL_POLICY_UNPROCESSED_HPP
 
+#include <string_view>
+
 #include "cowel/util/assert.hpp"
 
 #include "cowel/policy/plaintext.hpp"
 
+#include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
 
@@ -52,7 +55,6 @@ public:
         COWEL_ASSERT_UNREACHABLE(
             u8"Generated content within Unprocessed_Content_Policy should be impossible."
         );
-        return Processing_Status::fatal;
     }
 };
 

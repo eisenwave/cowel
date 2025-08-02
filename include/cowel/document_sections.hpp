@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/transparent_comparison.hpp"
@@ -18,6 +19,7 @@
 #include "cowel/policy/html.hpp"
 
 #include "cowel/fwd.hpp"
+#include "cowel/output_language.hpp"
 
 namespace cowel {
 

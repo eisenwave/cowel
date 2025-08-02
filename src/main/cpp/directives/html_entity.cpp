@@ -1,11 +1,13 @@
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <string_view>
 #include <vector>
 
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
+#include "cowel/util/chars.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_entities.hpp"
 #include "cowel/util/strings.hpp"
@@ -17,6 +19,7 @@
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/fwd.hpp"
 
 using namespace std::string_view_literals;
 

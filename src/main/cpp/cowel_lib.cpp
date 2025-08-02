@@ -1,15 +1,31 @@
 #include <bit>
+#include <cstddef>
+#include <cstring>
 #include <exception>
 #include <memory_resource>
 #include <new>
+#include <span>
+#include <string_view>
+#include <type_traits>
+#include <vector>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
+#include "cowel/util/result.hpp"
+#include "cowel/util/strings.hpp"
+
+#include "cowel/policy/html.hpp"
 
 #include "cowel/assets.hpp"
+#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/context.hpp"
 #include "cowel/cowel.h"
+#include "cowel/diagnostic.hpp"
+#include "cowel/directive_processing.hpp"
 #include "cowel/document_generation.hpp"
 #include "cowel/memory_resources.hpp"
+#include "cowel/output_language.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/services.hpp"
 #include "cowel/ulight_highlighter.hpp"
@@ -142,9 +158,9 @@ public:
         /// If `chars` is contiguous, simply returns the underlying `u8string_view`.
         /// Otherwise, spills the contents of `chars` into `m_buffer`.
         const auto char_sequence_to_sv = [&](Char_Sequence8 chars) -> cowel_string_view_u8 {
-            std::u8string_view result = chars.as_string_view();
+            const std::u8string_view result = chars.as_string_view();
             if (chars.empty() || !result.empty()) {
-                return { result.data(), result.size() };
+                return as_cowel_string_view(result);
             }
             const std::size_t initial_size = m_buffer.size();
             m_buffer.resize(initial_size + chars.size());

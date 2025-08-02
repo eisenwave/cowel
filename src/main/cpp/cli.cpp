@@ -1,18 +1,23 @@
 #include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 #include <memory_resource>
 #include <string_view>
+#include <utility>
 #include <vector>
 
-#include "cowel/cowel.h"
-#include "cowel/services.hpp"
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
+#include "cowel/util/function_ref.hpp"
+#include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
 
 #include "cowel/assets.hpp"
+#include "cowel/cowel.h"
 #include "cowel/diagnostic.hpp"
+#include "cowel/fwd.hpp"
 #include "cowel/print.hpp"
+#include "cowel/services.hpp"
 
 namespace cowel {
 namespace {

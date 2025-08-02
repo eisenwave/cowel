@@ -1,9 +1,15 @@
 #ifndef COWEL_POLICY_HTML_LITERAL
 #define COWEL_POLICY_HTML_LITERAL
 
+#include <string_view>
+
+#include "cowel/util/assert.hpp"
+
 #include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/html.hpp"
 
+#include "cowel/content_status.hpp"
+#include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
 

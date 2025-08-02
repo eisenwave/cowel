@@ -1,4 +1,6 @@
+#include <array>
 #include <string_view>
+#include <type_traits>
 
 #include <gtest/gtest.h>
 
@@ -121,7 +123,7 @@ TEST(Char_Sequence, repeated_code_point)
 
     // chars = repeated_char_sequence(2, c)
     // would dangle.
-    Char_Sequence8 chars = source;
+    const Char_Sequence8 chars = source;
     ASSERT_EQ(chars.length(), code_units.length());
     ASSERT_EQ(chars.as_contiguous(), nullptr);
     ASSERT_EQ(as_u8string_view(to_string(chars)), code_units);
@@ -134,7 +136,7 @@ TEST(Char_Sequence, joined)
 
     auto source = joined_char_sequence(parts);
 
-    Char_Sequence8 chars = source;
+    const Char_Sequence8 chars = source;
     ASSERT_EQ(chars.length(), joined.length());
     ASSERT_EQ(chars.as_contiguous(), nullptr);
     ASSERT_EQ(as_u8string_view(to_string(chars)), joined);

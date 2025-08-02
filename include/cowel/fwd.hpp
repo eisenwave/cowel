@@ -96,6 +96,7 @@ using File_Source_Span = Basic_File_Source_Span<File_Id>;
 namespace ast {
 
 struct Argument;
+struct Comment;
 struct Content;
 struct Directive;
 struct Escaped;

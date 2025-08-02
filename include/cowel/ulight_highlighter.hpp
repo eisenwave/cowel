@@ -6,6 +6,9 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/result.hpp"
+#include "cowel/util/typo.hpp"
+
 #include "cowel/services.hpp"
 
 namespace cowel {

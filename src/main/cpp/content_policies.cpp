@@ -1,18 +1,27 @@
+#include <algorithm>
 #include <cstddef>
 #include <span>
 #include <string_view>
 #include <vector>
 
+#include "ulight/ulight.hpp"
+
+#include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_ops.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
+#include "cowel/util/strings.hpp"
 
+#include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/html.hpp"
 #include "cowel/policy/paragraph_split.hpp"
 #include "cowel/policy/syntax_highlight.hpp"
 
 #include "cowel/fwd.hpp"
+#include "cowel/output_language.hpp"
 #include "cowel/parse_utils.hpp"
+#include "cowel/services.hpp"
 #include "cowel/settings.hpp"
 
 namespace cowel {

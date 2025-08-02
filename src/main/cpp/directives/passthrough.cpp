@@ -2,6 +2,7 @@
 #include <variant>
 #include <vector>
 
+#include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/strings.hpp"
@@ -11,7 +12,10 @@
 #include "cowel/policy/paragraph_split.hpp"
 #include "cowel/policy/plaintext.hpp"
 
+#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/content_status.hpp"
+#include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
 
@@ -89,7 +93,7 @@ Processing_Status
 HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
     const
 {
-    const ast::Argument* first_positional = get_first_positional_warn_rest(d, context);
+    const ast::Argument* const first_positional = get_first_positional_warn_rest(d, context);
     if (!first_positional) {
         context.try_error(
             diagnostic::html_element_name_missing, d.get_name_span(),

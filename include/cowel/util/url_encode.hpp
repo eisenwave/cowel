@@ -1,13 +1,14 @@
 #ifndef COWEL_URL_ENCODE_HPP
 #define COWEL_URL_ENCODE_HPP
 
+#include <cstddef>
 #include <iterator>
 #include <string_view>
 
-#include "cowel/util/html.hpp"
 #include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/chars.hpp"
 
+#include "cowel/util/char_sequence.hpp"
 #include "cowel/util/chars.hpp"
 
 namespace cowel {

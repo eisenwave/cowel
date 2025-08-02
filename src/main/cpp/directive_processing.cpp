@@ -1,26 +1,32 @@
 #include <cstddef>
 #include <cstring>
+#include <optional>
 #include <ranges>
 #include <span>
 #include <string_view>
 #include <variant>
 #include <vector>
 
-#include "cowel/policy/paragraph_split.hpp"
-#include "cowel/policy/plaintext.hpp"
-
 #include "cowel/util/assert.hpp"
+#include "cowel/util/chars.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
 
+#include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/paragraph_split.hpp"
+#include "cowel/policy/plaintext.hpp"
+
 #include "cowel/ast.hpp"
 #include "cowel/context.hpp"
+#include "cowel/diagnostic.hpp"
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_behavior.hpp"
+#include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/output_language.hpp"
 
 using namespace std::string_view_literals;
 

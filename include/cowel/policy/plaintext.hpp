@@ -3,10 +3,14 @@
 
 #include <string_view>
 
+#include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
+
 #include "cowel/policy/content_policy.hpp"
 
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/output_language.hpp"
 
 namespace cowel {
 

@@ -1,9 +1,11 @@
 #ifndef COWEL_SIMPLE_BIBLIOGRAPHY_HPP
 #define COWEL_SIMPLE_BIBLIOGRAPHY_HPP
 
+#include <cstddef>
 #include <optional>
 #include <string_view>
 #include <unordered_set>
+#include <utility>
 
 #include "cowel/services.hpp"
 

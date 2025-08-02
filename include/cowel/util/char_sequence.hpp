@@ -2,9 +2,14 @@
 #define COWEL_CHAR_SEQUENCE_HPP
 
 #include <algorithm>
+#include <array>
+#include <concepts>
+#include <cstddef>
 #include <cstring>
 #include <optional>
+#include <ranges>
 #include <span>
+#include <string_view>
 #include <type_traits>
 
 #include "cowel/util/assert.hpp"

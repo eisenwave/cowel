@@ -2,6 +2,8 @@
 #define COWEL_CHAR_SEQUENCES_HPP
 
 #include <algorithm>
+#include <concepts>
+#include <cstddef>
 #include <initializer_list>
 #include <span>
 #include <string_view>
