@@ -87,6 +87,7 @@ const parser = yargs(helpers.hideBin(process.argv))
         default: cowel.Severity[cowel.Severity.info],
         description: "Minimum (>=) severity for log messages",
     })
+    .version(false)
     .option("version", {
         alias: "v",
         type: "boolean",
