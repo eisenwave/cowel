@@ -2,13 +2,13 @@
     "name": "cowel",
     "version": "0.3.1-pre1",
     "description": "COWEL (Compact Web Language) command line utility",
-    "main": "index.js",
+    "main": "cowel.js",
     "type": "module",
     "directories": {},
     "scripts": {},
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Eisenwave/cowel.git"
+        "url": "git+https://github.com/eisenwave/cowel.git"
     },
     "keywords": [
         "markup",
@@ -17,11 +17,11 @@
     "author": {
         "name": "Jan Schultke",
         "email": "me@eisenwave.net",
-        "url": "https://github.com/Eisenwave/"
+        "url": "https://github.com/eisenwave/"
     },
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/Eisenwave/cowel/issues"
+        "url": "https://github.com/eisenwave/cowel/issues"
     },
     "homepage": "https://cowel.org",
     "devDependencies": {

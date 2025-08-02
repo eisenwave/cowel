@@ -2,6 +2,8 @@
     "compilerOptions": {
         "target": "ES2022",
         "module": "ESNext",
+        "incremental": true,
+        "tsBuildInfoFile": "build/.tsbuildinfo",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
