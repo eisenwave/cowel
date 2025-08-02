@@ -14,6 +14,7 @@
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
 
+#include "cowel/policy/capture.hpp"
 #include "cowel/policy/html.hpp"
 
 #include "cowel/assets.hpp"
@@ -24,6 +25,7 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/document_generation.hpp"
+#include "cowel/fwd.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/output_language.hpp"
 #include "cowel/parse.hpp"

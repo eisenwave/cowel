@@ -3,6 +3,7 @@
 #include <optional>
 #include <span>
 #include <string_view>
+#include <system_error>
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/draft_uris.hpp"

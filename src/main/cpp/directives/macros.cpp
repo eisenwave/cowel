@@ -24,6 +24,7 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/fwd.hpp"
 
 using namespace std::string_view_literals;
 namespace cowel {

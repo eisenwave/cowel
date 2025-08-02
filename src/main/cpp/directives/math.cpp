@@ -5,11 +5,13 @@
 #include <string_view>
 #include <variant>
 
+#include "cowel/util/chars.hpp"
 #include "cowel/util/html_writer.hpp"
 
 #include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/html.hpp"
 
+#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"

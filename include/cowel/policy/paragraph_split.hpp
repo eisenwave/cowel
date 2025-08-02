@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <memory_resource>
+#include <string_view>
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"

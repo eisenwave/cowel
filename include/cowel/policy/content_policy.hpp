@@ -1,6 +1,8 @@
 #ifndef COWEL_CONTENT_POLICY_HPP
 #define COWEL_CONTENT_POLICY_HPP
 
+#include <variant>
+
 #include "cowel/util/char_sequence.hpp"
 
 #include "cowel/ast.hpp"

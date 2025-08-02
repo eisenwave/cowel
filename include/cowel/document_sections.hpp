@@ -13,6 +13,7 @@
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/chars.hpp"
+#include "cowel/util/strings.hpp"
 #include "cowel/util/transparent_comparison.hpp"
 
 #include "cowel/policy/capture.hpp"

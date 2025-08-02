@@ -4,6 +4,7 @@
 #include <string_view>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
 
 #include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/html.hpp"

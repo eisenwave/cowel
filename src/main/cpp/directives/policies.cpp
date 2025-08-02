@@ -3,6 +3,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/result.hpp"
 
+#include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/html.hpp"
 #include "cowel/policy/html_literal.hpp"
 #include "cowel/policy/literally.hpp"

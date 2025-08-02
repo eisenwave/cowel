@@ -5,9 +5,11 @@
 
 #include "cowel/util/assert.hpp"
 
+#include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/plaintext.hpp"
 
 #include "cowel/content_status.hpp"
+#include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
 

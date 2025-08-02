@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <memory_resource>
 #include <span>
 #include <string_view>
@@ -6,6 +7,7 @@
 #include "ulight/ulight.h"
 #include "ulight/ulight.hpp"
 
+#include "cowel/util/result.hpp"
 #include "cowel/util/typo.hpp"
 
 #include "cowel/services.hpp"

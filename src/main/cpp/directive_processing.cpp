@@ -14,11 +14,13 @@
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
 
+#include "cowel/policy/capture.hpp"
 #include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/paragraph_split.hpp"
 #include "cowel/policy/plaintext.hpp"
 
 #include "cowel/ast.hpp"
+#include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_arguments.hpp"

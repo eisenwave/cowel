@@ -15,6 +15,7 @@
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/services.hpp"

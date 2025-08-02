@@ -6,6 +6,7 @@
 #include <string_view>
 
 #include "cowel/util/function_ref.hpp"
+#include "cowel/util/meta.hpp"
 
 #include "cowel/policy/content_policy.hpp"
 

@@ -1,6 +1,5 @@
 #include <cstddef>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 #include "cowel/util/html_writer.hpp"

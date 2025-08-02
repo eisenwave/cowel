@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
 #include "cowel/util/transparent_comparison.hpp"
 #include "cowel/util/typo.hpp"
 

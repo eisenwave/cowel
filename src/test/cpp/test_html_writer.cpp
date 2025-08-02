@@ -11,6 +11,8 @@
 
 #include "cowel/policy/capture.hpp"
 
+#include "cowel/output_language.hpp"
+
 using namespace std::string_view_literals;
 
 namespace cowel {

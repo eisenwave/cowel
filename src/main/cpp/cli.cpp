@@ -9,6 +9,7 @@
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
 #include "cowel/util/function_ref.hpp"
+#include "cowel/util/meta.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
 

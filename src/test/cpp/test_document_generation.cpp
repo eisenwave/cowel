@@ -94,7 +94,8 @@ public:
     Function_Ref<Processing_Status(Context&)> get_behavior_impl()
     {
         constexpr auto action = [](Doc_Gen_Test* self, Context& context) -> Processing_Status {
-            Macro_Name_Resolver macro_resolver { self->builtin_directives.get_macro_behavior() };
+            const Macro_Name_Resolver macro_resolver //
+                { self->builtin_directives.get_macro_behavior() };
             context.add_resolver(self->builtin_directives);
             context.add_resolver(macro_resolver);
 

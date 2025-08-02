@@ -8,12 +8,14 @@
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
+#include "cowel/util/typo.hpp"
 
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_behavior.hpp"
 #include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
 
 namespace cowel {

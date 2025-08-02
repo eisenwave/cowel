@@ -5,6 +5,7 @@
 
 #include "cowel/policy/plaintext.hpp"
 
+#include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
 

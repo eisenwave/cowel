@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <span>
 #include <string_view>
+#include <vector>
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/source_position.hpp"

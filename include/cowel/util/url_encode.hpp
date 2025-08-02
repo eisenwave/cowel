@@ -7,9 +7,11 @@
 
 #include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/chars.hpp"
+#include "ulight/impl/charset.hpp"
 
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/chars.hpp"
+#include "cowel/util/html.hpp"
 
 namespace cowel {
 

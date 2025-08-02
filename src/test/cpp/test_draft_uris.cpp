@@ -1,6 +1,7 @@
 #include <array>
 #include <cstddef>
 #include <iostream>
+#include <string>
 #include <string_view>
 
 #include <gtest/gtest.h>

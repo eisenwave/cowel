@@ -5,6 +5,7 @@
 #include "ulight/ulight.hpp"
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
