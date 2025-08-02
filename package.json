@@ -4,6 +4,7 @@
     "description": "COWEL (Compact Web Language) command line utility",
     "main": "cowel.js",
     "type": "module",
+    "bin": "cowel.js",
     "directories": {},
     "scripts": {},
     "repository": {
