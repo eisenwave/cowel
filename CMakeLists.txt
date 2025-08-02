@@ -195,6 +195,7 @@ if(DEFINED EMSCRIPTEN)
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${NPM_DIR}"
         COMMAND "${NPX_EXECUTABLE}" tsc
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${CMAKE_CURRENT_LIST_DIR}/CHANGELOG.md"
             "${CMAKE_CURRENT_BINARY_DIR}/cowel.wasm"
             "${NPM_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
