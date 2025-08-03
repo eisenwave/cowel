@@ -3,9 +3,14 @@
 #include <filesystem>
 #include <memory_resource>
 #include <string_view>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
+#define ARGS_NOEXCEPT
+#include "args.hxx"
+
+#include "cowel/memory_resources.hpp"
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
 #include "cowel/util/function_ref.hpp"
@@ -207,27 +212,67 @@ struct Stderr_Logger {
 
 int main(int argc, const char* const* const argv)
 {
-    if (argc < 1) {
+    static const std::unordered_map<std::string, Severity> severity_arg_map {
+        { "min", Severity::min },
+        { "trace", Severity::trace },
+        { "debug", Severity::debug },
+        { "info", Severity::info },
+        { "soft_warning", Severity::soft_warning },
+        { "warning", Severity::warning },
+        { "error", Severity::error },
+        { "fatal", Severity::fatal },
+        { "none", Severity::none },
+    };
+
+    args::ArgumentParser parser { "Processes COWEL documents into HTML." };
+    parser.helpParams.width = 100;
+    parser.helpParams.addChoices = true;
+    args::Positional<std::string> input_arg {
+        parser,
+        "input",
+        "Input COWEL file",
+        args::Options::Required,
+    };
+    args::Positional<std::string> output_arg {
+        parser,
+        "output",
+        "Output HTML file",
+        args::Options::Required,
+    };
+    args::MapFlag<std::string, Severity> severity_arg {
+        parser,
+        "severity",
+        "Minimum (>=) severity for log messages",
+        { 'l', "severity" },
+        severity_arg_map,
+        Severity::info,
+    };
+    args::HelpFlag help_arg {
+        parser, "help", "Display this help menu", { 'h', "help" }, args::Options::Global
+    };
+
+    if (argc <= 1) {
+        parser.Help(std::cout);
         return EXIT_FAILURE;
     }
-    const std::u8string_view program_name { reinterpret_cast<const char8_t*>(argv[0]) };
-
-    std::pmr::unsynchronized_pool_resource memory;
-
-    if (argc < 3) {
-        Basic_Annotated_String<char8_t, Diagnostic_Highlight> error { &memory };
-        error.append(u8"Usage: ");
-        error.append(program_name);
-        error.append(u8" IN_FILE.cowel OUT_FILE.html\n");
-        print_code_string_stderr(error);
+    if (!parser.ParseCLI(argc, argv) || parser.GetError() != args::Error::None) {
+        std::cerr << parser.GetErrorMsg() << '\n';
         return EXIT_FAILURE;
     }
+    if (help_arg.Matched()) {
+        parser.Help(std::cout);
+        return EXIT_SUCCESS;
+    }
 
-    const std::string_view in_path = argv[1];
+    const std::string in_path = input_arg.Get();
+    const std::string out_path = output_arg.Get();
+
+    Global_Memory_Resource global_memory;
+    std::pmr::unsynchronized_pool_resource memory { &global_memory };
+
     const std::u8string_view in_path_u8 = as_u8string_view(in_path);
     auto in_path_directory = std::filesystem::path { in_path }.parent_path();
 
-    const std::string_view out_path = argv[2];
     const std::u8string_view out_path_u8 = as_u8string_view(out_path);
 
     const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text
@@ -282,7 +327,7 @@ int main(int argc, const char* const* const argv)
         .source = as_cowel_string_view(in_source),
         .highlight_theme_json = as_cowel_string_view(assets::wg21_json),
         .mode = COWEL_MODE_DOCUMENT,
-        .min_log_severity = COWEL_SEVERITY_MIN,
+        .min_log_severity = cowel_severity(severity_arg.Get()),
         .reserved_0 {},
         .alloc = alloc_ref.get_invoker(),
         .alloc_data = alloc_ref.get_entity(),

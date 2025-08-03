@@ -11,14 +11,20 @@ if(NOT DEFINED EMSCRIPTEN)
 
     FetchContent_Declare(
         googletest
-        URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
-        DOWNLOAD_EXTRACT_TIMESTAMP true
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        v1.17.0
     )
-
     set(INSTALL_GTEST OFF)
     set(BUILD_GMOCK OFF)
     set(BUILD_GTEST ON)
     FetchContent_MakeAvailable(googletest)
+
+    FetchContent_Declare(
+        tayweeargs
+        GIT_REPOSITORY https://github.com/Taywee/args.git
+        GIT_TAG        6.4.7
+    )
+    FetchContent_MakeAvailable(tayweeargs)
 endif()
 
 find_package(Python3 REQUIRED)
@@ -220,7 +226,7 @@ else()
     add_executable(cowel-cli ${HEADERS}
         src/main/cpp/cli.cpp
     )
-    target_link_libraries(cowel-cli cowel ulight)
+    target_link_libraries(cowel-cli cowel ulight args)
 
     add_executable(cowel-test
         ${HEADERS}

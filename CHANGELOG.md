@@ -2,7 +2,9 @@
 
 ## Next version
 
+- add `-l`/`--severity` option and help menu to native CLI (#60)
 - add documentation for npm installation (#57)
+- fix trace messages printed by default in native CLI (#60)
 - also create CHANGELOG and CONTRIBUTING documents
 
 **Full Changelog**:
