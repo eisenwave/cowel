@@ -2,7 +2,8 @@
 
 ## Next version
 
-- also create this CHANGELOG document
+- add documentation for npm installation (#57)
+- also create CHANGELOG and CONTRIBUTING documents
 
 **Full Changelog**:
 [`v0.3.1...master`](https://github.com/Eisenwave/cowel/compare/v0.3.1...master)
@@ -19,7 +20,7 @@
 
 ## v0.3.0 (2025-08-01)
 
-Never proper published.
+Never properly published.
 
 ## **[v0.2.2]** (2025-07-26)
 
