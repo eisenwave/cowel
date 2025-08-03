@@ -1495,6 +1495,8 @@ h1 {
 <a href=#motivation><h2>Motivation</h2></a>
 <div class=toc-num data-level=2>3</div>
 <a href=#getting-started><h2>Getting started</h2></a>
+<div class=toc-num data-level=3>3.1</div>
+<a href=#native-installation><h3>Native installation</h3></a>
 <div class=toc-num data-level=2>4</div>
 <a href=#syntax><h2>Syntax</h2></a>
 <div class=toc-num data-level=3>4.1</div>
@@ -1846,24 +1848,46 @@ and more, all in one, simple syntax.
 </p>
 <h2 id=getting-started><a class=para href=#getting-started></a>3. Getting started</h2>
 
-<p>COWEL is still early in development,
-and not available in any package manager yet.
-To install it and run COWEL:
-</p><code-block><h- data-h=sh_cmd>git</h-> <h- data-h=str>clone</h-> <h- data-h=str>https://github.com/Eisenwave/cowel.git</h-> <h- data-h=sh-opt>--recursive</h->
-<h- data-h=sh_cmd>cd</h-> <h- data-h=str>cowel</h->
-<h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>-B</h-> <h- data-h=str>build</h->
-<h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>--build</h-> <h- data-h=str>build</h->
-<h- data-h=sh_cmd>./build/cowel-cli</h-> <h- data-h=str>INPUT.cow</h-> <h- data-h=str>OUTPUT.html</h-></code-block>
+<p>To use and install COWEL,
+you need to <a href=https://docs.npmjs.com/downloading-and-installing-node-js-and-npm>install Node.js and <tt->npm</tt-></a>.
+With <tt->npm</tt-> installed, open a terminal and run:
+</p>
+<code-block><h- data-h=sh_cmd>npm</h-> <h- data-h=str>i</h-> <h- data-h=sh-opt>-g</h-> <h- data-h=str>cowel</h->
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> or</h->
+<h- data-h=sh_cmd>npm</h-> <h- data-h=str>install</h-> <h- data-h=sh-opt>--global</h-> <h- data-h=str>cowel</h-></code-block>
 
+<p>See also <a href=https://www.npmjs.com/package/cowel class=sans>https://www.npmjs.com/package/cowel</a>.
+With COWEL installed,
+you can convert COWEL documents to HTML by using:
+</p>
+<code-block><h- data-h=sh_cmd>cowel</h-> <h- data-h=str>run</h-> <h- data-h=str>input.cow</h-> <h- data-h=str>output.html</h-></code-block>
+
+<p>To see a list of available options and commands,
+run <code><h- data-h=sh_cmd>cowel</h-></code> by itself or <code><h- data-h=sh_cmd>cowel</h-> <h- data-h=sh-opt>--help</h-></code>.
+</p>
 <tip-block><p><intro-></intro-> 
-It is recommended to use a <tt->.cow</tt-> or <tt->.cowel</tt-> file extension for COWEL documents.
+You may need to use <code><h- data-h=sh_cmd>sudo</h-></code> or otherwise elevate your permissions
+because <code><h- data-h=sh-opt>-g</h-></code> performs a "global"/system-wide installation.
+This is necessary to make the <code><h- data-h=sh_cmd>cowel</h-></code> command available everywhere.
+</p>
+<p>It is recommended to use a <tt->.cow</tt-> or <tt->.cowel</tt-> file extension for COWEL documents.
 </p>
 <p>Many text editors support associating such file extensions
 with TeX or LaTeX syntax highlighting,
 whose syntax is similar enough to get <em>some</em> basic highlighting.
-</p>
-<p>A VSCode plugin for proper highlighting is planned, among other features.
+A VSCode plugin for proper highlighting is planned, among other features.
 </p></tip-block>
+
+<h3 id=native-installation><a class=para href=#native-installation></a>3.1. Native installation</h3>
+
+<p>There also exists a more limited native CLI for development purposes.
+To install it and run COWEL:
+</p>
+<code-block><h- data-h=sh_cmd>git</h-> <h- data-h=str>clone</h-> <h- data-h=str>https://github.com/Eisenwave/cowel.git</h-> <h- data-h=sh-opt>--recursive</h->
+<h- data-h=sh_cmd>cd</h-> <h- data-h=str>cowel</h->
+<h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>-B</h-> <h- data-h=str>build</h->
+<h- data-h=sh_cmd>cmake</h-> <h- data-h=sh-opt>--build</h-> <h- data-h=str>build</h->
+<h- data-h=sh_cmd>./build/cowel-cli</h-> <h- data-h=str>input.cow</h-> <h- data-h=str>output.html</h-></code-block>
 
 <h2 id=syntax><a class=para href=#syntax></a>4. Syntax</h2>
 
