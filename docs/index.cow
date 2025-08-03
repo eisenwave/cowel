@@ -134,6 +134,11 @@ cmake --build build
 ./build/cowel-cli input.cow output.html
 }
 
+The \tt{npm} CLI is slightly different from the native CLI,
+but they share some options,
+such as \code[sh,prefix=c\ ]{--severity} and \code[sh,prefix=c\ ]{--help}.
+Running \code[sh]{./build/cowel-cli} without extra arguments also brings up the help menu.
+
 \cowel_include{intro/syntax.cow}\
 \cowel_include{intro/directives.cow}\
 \cowel_include{intro/themes.cow}\
