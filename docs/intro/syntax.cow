@@ -3,7 +3,7 @@
 COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 \ul{
-  \li{\cowdoc_c{\\various-directives[positional args, named-args = 0]{and content}}}
+  \li{\cowdoc_c{\\various_directives[positional args, named-args = 0]{and content}}}
   \li{\cowdoc_c{Text.}}
   \li{\cowdoc_c{\\:Comments}}
   \li{Escape sequences, such as \cowdoc_c{\\\U{7B}}, \cowdoc_c{\\\U{7D}}, \cowdoc_c{\\\\}, etc.}

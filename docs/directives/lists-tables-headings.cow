@@ -82,7 +82,7 @@ produce the corresponding HTML tags with the same name.
 
 Headings take a \cowdoc_attr{listed} argument, which is a yes/no plaintext argument.
 Unless its value is \tt{no}, headings are numbered and added to the table of contents
-(\ref[#dir-make-contents]) automatically.
+(\ref[#dir-make_contents]) automatically.
 
 Headings also take a \cowdoc_attr{show-number} argument, which is a yes/no plaintext argument.
 Unless this is \tt{no},
@@ -107,9 +107,9 @@ Headings can be referenced using the \cowdoc_dir{ref} directive:
 }
 }
 
-\h4[id=dir-make-contents]{\cowdoc_dir{make-contents} \c{mdash} Make table of contents}
+\h4[id=dir-make_contents]{\cowdoc_dir{make_contents} \c{mdash} Make table of contents}
 
-The \cowdoc_dir{make-contents} directive generates the table of contents,
+The \cowdoc_dir{make_contents} directive generates the table of contents,
 which is comprised of all the headings within the document.
 It takes no arguments and its content is ignored.
 It displays as a block.
@@ -122,7 +122,7 @@ Since the table of contents should usually not be listed within itself,
 an unlisted heading may be used:
 \codeblock[cowel]{
 \\h2[listed=no]{Contents}
-\\make-contents
+\\make_contents
 }
 A similar effect can be achieved using \cowdoc_dir{html-h2} (\ref[#dir-html-element]).
 However, using \cowdoc_dir{html-h2} will also not emit a link icon in the gutter,
@@ -131,7 +131,7 @@ and it will not synthesize an \cowdoc_attr{id} for that heading.
 
 \Bnote{
 The underlying contents can be obtained with \cowdoc_c{\\here[std.contents]}.
-\cowdoc_dir{make-contents} additionally wraps those contents in HTML elements to
+\cowdoc_dir{make_contents} additionally wraps those contents in HTML elements to
 chang their visual appearance.
 }
 
@@ -205,20 +205,20 @@ Every argument except the \cowdoc_attr{id} is optional,
 although you will hardly get meaningful bibliography output if only the \cowdoc_attr{id} is specified.
 
 
-\h4[id=dir-make-bib]{\cowdoc_dir{make-bib} \c{mdash} Generate bibliography}
+\h4[id=dir-make_bib]{\cowdoc_dir{make_bib} \c{mdash} Generate bibliography}
 
-The \cowdoc_dir{make-bib} directive generates a bibliography.
+The \cowdoc_dir{make_bib} directive generates a bibliography.
 This is typically done towards the bottom of the document, but can be done anywhere.
 
 It takes no arguments, its content is ignored,
 and it displays as a block.
 
-The \cowdoc_dir{make-bib} directive is populated by uses of \cowdoc_dir{bib} directives in order of use.
+The \cowdoc_dir{make_bib} directive is populated by uses of \cowdoc_dir{bib} directives in order of use.
 That is, the bibliography is not automatically sorted for you;
 the order in which \cowdoc_dir{bib} directives are used is also the order in which the bibliography
 entries are generated.
 
 \Bnote{
-Similar to \cowdoc_dir{make-contents},
+Similar to \cowdoc_dir{make_contents},
 it is a wrapper for the underlying \tt{std.bib} section.
 }

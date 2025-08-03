@@ -1720,13 +1720,13 @@ h1 {
 <div class=toc-num data-level=3>8.10</div>
 <a href=#headings><h3>Headings</h3></a>
 <div class=toc-num data-level=4>8.10.1</div>
-<a href=#dir-make-contents><h4><code><h- data-h=mk_tag>\make-contents</h-></code> — Make table of contents</h4></a>
+<a href=#dir-make_contents><h4><code><h- data-h=mk_tag>\make_contents</h-></code> — Make table of contents</h4></a>
 <div class=toc-num data-level=3>8.11</div>
 <a href=#bibliography><h3>Bibliography</h3></a>
 <div class=toc-num data-level=4>8.11.1</div>
 <a href=#dir-bib><h4><code><h- data-h=mk_tag>\bib</h-></code> — Add bibliography entry</h4></a>
 <div class=toc-num data-level=4>8.11.2</div>
-<a href=#dir-make-bib><h4><code><h- data-h=mk_tag>\make-bib</h-></code> — Generate bibliography</h4></a>
+<a href=#dir-make_bib><h4><code><h- data-h=mk_tag>\make_bib</h-></code> — Generate bibliography</h4></a>
 <div class=toc-num data-level=3>8.12</div>
 <a href=#references><h3>References</h3></a>
 <div class=toc-num data-level=4>8.12.1</div>
@@ -1894,7 +1894,7 @@ To install it and run COWEL:
 <p>COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 </p><ul>
-  <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>various-directives</h-><h- data-h=sym_sqr>[</h->positional args<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> 0<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
+  <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>various_directives</h-><h- data-h=sym_sqr>[</h->positional args<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> 0<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
   <li><code>Text.</code></li>
   <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt>Comments</h-></code></li>
   <li>Escape sequences, such as <code><h- data-h=esc>\</h-><h- data-h=esc>{</h-></code>, <code><h- data-h=esc>\</h-><h- data-h=esc>}</h-></code>, <code><h- data-h=esc>\</h-><h- data-h=esc>\</h-></code>, etc.</li>
@@ -4151,7 +4151,7 @@ produce the corresponding HTML tags with the same name.
 </p>
 <p>Headings take a <tt-><h- data-h=mk_attr>listed</h-></tt-> argument, which is a yes/no plaintext argument.
 Unless its value is <tt->no</tt->, headings are numbered and added to the table of contents
-(<a href=#dir-make-contents>§8.10.1. <code><h- data-h=mk_tag>\make-contents</h-></code> — Make table of contents</a>) automatically.
+(<a href=#dir-make_contents>§8.10.1. <code><h- data-h=mk_tag>\make_contents</h-></code> — Make table of contents</a>) automatically.
 </p>
 <p>Headings also take a <tt-><h- data-h=mk_attr>show-number</h-></tt-> argument, which is a yes/no plaintext argument.
 Unless this is <tt->no</tt->,
@@ -4174,9 +4174,9 @@ Headings can be referenced using the <code><h- data-h=mk_tag>\ref</h-></code> di
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_sqr>[</h->#xzy<h- data-h=sym_sqr>]</h-></code-block>
 </tip-block>
 
-<h4 id=dir-make-contents><a class=para href=#dir-make-contents></a>8.10.1. <code><h- data-h=mk_tag>\make-contents</h-></code> — Make table of contents</h4>
+<h4 id=dir-make_contents><a class=para href=#dir-make_contents></a>8.10.1. <code><h- data-h=mk_tag>\make_contents</h-></code> — Make table of contents</h4>
 
-<p>The <code><h- data-h=mk_tag>\make-contents</h-></code> directive generates the table of contents,
+<p>The <code><h- data-h=mk_tag>\make_contents</h-></code> directive generates the table of contents,
 which is comprised of all the headings within the document.
 It takes no arguments and its content is ignored.
 It displays as a block.
@@ -4188,7 +4188,7 @@ as the document is processed.
 Since the table of contents should usually not be listed within itself,
 an unlisted heading may be used:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>h2</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>listed</h-><h- data-h=sym_punc>=</h->no<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->Contents<h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>make-contents</h-></code-block>
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>make_contents</h-></code-block>
 <p>A similar effect can be achieved using <code><h- data-h=mk_tag>\html-h2</h-></code> (<a href=#dir-html-element>§8.13.3. <code><h- data-h=mk_tag>\html-*</h-></code> — HTML element literals</a>).
 However, using <code><h- data-h=mk_tag>\html-h2</h-></code> will also not emit a link icon in the gutter,
 and it will not synthesize an <tt-><h- data-h=mk_attr>id</h-></tt-> for that heading.
@@ -4196,7 +4196,7 @@ and it will not synthesize an <tt-><h- data-h=mk_attr>id</h-></tt-> for that hea
 
 <note-block><p><intro-></intro-> 
 The underlying contents can be obtained with <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>here</h-><h- data-h=sym_sqr>[</h->std.contents<h- data-h=sym_sqr>]</h-></code>.
-<code><h- data-h=mk_tag>\make-contents</h-></code> additionally wraps those contents in HTML elements to
+<code><h- data-h=mk_tag>\make_contents</h-></code> additionally wraps those contents in HTML elements to
 chang their visual appearance.
 </p></note-block>
 
@@ -4270,21 +4270,21 @@ For example, in WG21 circles, this may be a link to the GitHub issue where a pap
 although you will hardly get meaningful bibliography output if only the <tt-><h- data-h=mk_attr>id</h-></tt-> is specified.
 </p>
 
-<h4 id=dir-make-bib><a class=para href=#dir-make-bib></a>8.11.2. <code><h- data-h=mk_tag>\make-bib</h-></code> — Generate bibliography</h4>
+<h4 id=dir-make_bib><a class=para href=#dir-make_bib></a>8.11.2. <code><h- data-h=mk_tag>\make_bib</h-></code> — Generate bibliography</h4>
 
-<p>The <code><h- data-h=mk_tag>\make-bib</h-></code> directive generates a bibliography.
+<p>The <code><h- data-h=mk_tag>\make_bib</h-></code> directive generates a bibliography.
 This is typically done towards the bottom of the document, but can be done anywhere.
 </p>
 <p>It takes no arguments, its content is ignored,
 and it displays as a block.
 </p>
-<p>The <code><h- data-h=mk_tag>\make-bib</h-></code> directive is populated by uses of <code><h- data-h=mk_tag>\bib</h-></code> directives in order of use.
+<p>The <code><h- data-h=mk_tag>\make_bib</h-></code> directive is populated by uses of <code><h- data-h=mk_tag>\bib</h-></code> directives in order of use.
 That is, the bibliography is not automatically sorted for you;
 the order in which <code><h- data-h=mk_tag>\bib</h-></code> directives are used is also the order in which the bibliography
 entries are generated.
 </p>
 <note-block><p><intro-></intro-> 
-Similar to <code><h- data-h=mk_tag>\make-contents</h-></code>,
+Similar to <code><h- data-h=mk_tag>\make_contents</h-></code>,
 it is a wrapper for the underlying <tt->std.bib</tt-> section.
 </p></note-block>
 <h3 id=references><a class=para href=#references></a>8.12. References</h3>
