@@ -187,14 +187,14 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     HTML_Content_Policy policy { out };
     HTML_Writer writer { policy };
     writer
-        .open_tag_with_attributes(u8"h-") //
-        .write_attribute(u8"data-h", short_name)
+        .open_tag_with_attributes(html_tag::h_) //
+        .write_attribute(html_attr::data_h, short_name)
         .end();
     const Processing_Status result = consume_all(policy, d.get_content(), context);
     if (status_is_break(result)) {
         return result;
     }
-    writer.close_tag(u8"h-");
+    writer.close_tag(html_tag::h_);
     return result;
 }
 

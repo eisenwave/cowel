@@ -9,6 +9,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_ops.hpp"
+#include "cowel/util/html_names.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
@@ -28,8 +29,8 @@ namespace cowel {
 
 namespace {
 
-constexpr std::u8string_view highlighting_tag = u8"h-";
-constexpr std::u8string_view highlighting_attribute = u8"data-h";
+constexpr HTML_Tag_Name highlighting_tag = html_tag::h_;
+constexpr HTML_Attribute_Name highlighting_attribute = html_attr::data_h;
 constexpr auto highlighting_attribute_style = Attribute_Style::double_if_needed;
 
 bool index_ranges_intersect(

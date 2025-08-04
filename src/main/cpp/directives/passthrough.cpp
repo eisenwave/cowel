@@ -74,7 +74,7 @@ Passthrough_Behavior::operator()(Content_Policy& out, const ast::Directive& d, C
     HTML_Content_Policy html_policy { out };
     auto& policy = m_policy == Policy_Usage::html ? html_policy : out;
 
-    const std::u8string_view name = get_name(d, context);
+    const HTML_Tag_Name name = get_name(d, context);
     HTML_Writer writer { policy };
     Attribute_Writer attributes = writer.open_tag_with_attributes(name);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
@@ -109,7 +109,8 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
         return name_status;
     }
     const auto name_string = as_u8string_view(name_text);
-    if (!is_html_tag_name(name_string)) {
+    const std::optional<HTML_Tag_Name> name = HTML_Tag_Name::make(name_string);
+    if (!name) {
         context.try_error(
             diagnostic::html_element_name_invalid, first_positional->get_source_span(),
             joined_char_sequence({
@@ -122,7 +123,7 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     }
 
     HTML_Writer writer { out };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(name_string);
+    Attribute_Writer attributes = writer.open_tag_with_attributes(*name);
     auto status = named_arguments_to_attributes(attributes, d, context);
 
     if (m_self_closing == HTML_Element_Self_Closing::self_closing) {
@@ -140,7 +141,7 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
             const auto content_status = consume_all(out, d.get_content(), context);
             status = status_concat(content_status, status);
         }
-        writer.close_tag(name_string);
+        writer.close_tag(*name);
     }
 
     return status;
@@ -174,7 +175,7 @@ In_Tag_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
 }
 
 [[nodiscard]]
-std::u8string_view
+HTML_Tag_Name
 Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d, Context& context) const
 {
     context.try_warning(
@@ -186,7 +187,7 @@ Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d, Context& 
     const std::u8string_view raw_name = d.get_name();
     const std::u8string_view name
         = raw_name.starts_with(builtin_directive_prefix) ? raw_name.substr(1) : raw_name;
-    return name.substr(m_name_prefix.size());
+    return { Unchecked {}, name.substr(m_name_prefix.size()) };
 }
 
 Processing_Status
@@ -212,8 +213,8 @@ Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
     }
 
     if (emit_intro) {
-        writer.open_tag(u8"p");
-        writer.open_and_close_tag(u8"intro-");
+        writer.open_tag(html_tag::p);
+        writer.open_and_close_tag(html_tag::intro_);
         // This space ensures that even if the user writes say,
         // \note{abc}, there is a space between </into> and abc.
         writer.write_inner_html(u8' ');
@@ -242,7 +243,7 @@ URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
     const auto url_string = as_u8string_view(url);
 
     HTML_Writer writer { out };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(u8"a");
+    Attribute_Writer attributes = writer.open_tag_with_attributes(html_tag::a);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.write_href(url_string);
     attributes.write_class(u8"sans"sv);
@@ -252,7 +253,7 @@ URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
     COWEL_ASSERT(url_string.length() >= m_url_prefix.length());
     writer.write_inner_text(url_string.substr(m_url_prefix.length()));
 
-    writer.close_tag(u8"a");
+    writer.close_tag(html_tag::a);
     return attributes_status;
 }
 

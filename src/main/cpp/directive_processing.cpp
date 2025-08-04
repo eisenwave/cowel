@@ -420,7 +420,7 @@ Processing_Status named_argument_to_attribute(
     const auto status = to_plaintext(value, a.get_content(), context);
     const std::u8string_view value_string { value.data(), value.size() };
     const std::u8string_view name = a.get_name();
-    out.write_attribute(name, value_string, style);
+    out.write_attribute(HTML_Attribute_Name(name), value_string, style);
     return status;
 }
 

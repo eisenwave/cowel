@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/html_names.hpp"
 #include "cowel/util/typo.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
@@ -63,45 +64,45 @@ struct Builtin_Directive_Set::Impl {
 
     // Legacy directives
     Fixed_Name_Passthrough_Behavior b //
-        { u8"b", Policy_Usage::inherit, Directive_Display::in_line };
+        { html_tag::b, Policy_Usage::inherit, Directive_Display::in_line };
     Special_Block_Behavior Babstract //
-        { u8"abstract-block", Intro_Policy::yes };
+        { HTML_Tag_Name(u8"abstract-block"), Intro_Policy::yes };
     Special_Block_Behavior Bdecision //
-        { u8"decision-block", Intro_Policy::yes };
+        { HTML_Tag_Name(u8"decision-block"), Intro_Policy::yes };
     Special_Block_Behavior Bdel //
-        { u8"del-block", Intro_Policy::no };
+        { HTML_Tag_Name(u8"del-block"), Intro_Policy::no };
     Fixed_Name_Passthrough_Behavior Bdetails //
-        { u8"details", Policy_Usage::inherit, Directive_Display::block };
+        { HTML_Tag_Name(u8"details"), Policy_Usage::inherit, Directive_Display::block };
     Special_Block_Behavior Bdiff //
-        { u8"diff-block", Intro_Policy::no };
+        { HTML_Tag_Name(u8"diff-block"), Intro_Policy::no };
     Special_Block_Behavior Bex //
-        { u8"example-block", Intro_Policy::yes };
+        { HTML_Tag_Name(u8"example-block"), Intro_Policy::yes };
     Bibliography_Add_Behavior bib //
         {};
     Special_Block_Behavior Bimp //
-        { u8"important-block", Intro_Policy::yes };
+        { HTML_Tag_Name(u8"important-block"), Intro_Policy::yes };
     In_Tag_Behavior Bindent //
-        { u8"div", u8"indent", Policy_Usage::html, Directive_Display::block };
+        { html_tag::div, u8"indent", Policy_Usage::html, Directive_Display::block };
     Special_Block_Behavior Bins //
-        { u8"ins-block", Intro_Policy::no };
+        { HTML_Tag_Name(u8"ins-block"), Intro_Policy::no };
     HTML_Wrapper_Behavior block //
         { Directive_Display::block, To_HTML_Mode::direct };
     Special_Block_Behavior blockquote //
-        { u8"blockquote", Intro_Policy::no };
+        { HTML_Tag_Name(u8"blockquote"), Intro_Policy::no };
     Special_Block_Behavior Bnote //
-        { u8"note-block", Intro_Policy::yes };
+        { HTML_Tag_Name(u8"note-block"), Intro_Policy::yes };
     Special_Block_Behavior Bquote //
-        { u8"blockquote", Intro_Policy::no };
+        { HTML_Tag_Name(u8"blockquote"), Intro_Policy::no };
     Self_Closing_Behavior br //
-        { u8"br", Directive_Display::in_line };
+        { html_tag::br, Directive_Display::in_line };
     Special_Block_Behavior Btip //
-        { u8"tip-block", Intro_Policy::yes };
+        { HTML_Tag_Name(u8"tip-block"), Intro_Policy::yes };
     Special_Block_Behavior Btodo //
-        { u8"todo-block", Intro_Policy::yes };
+        { HTML_Tag_Name(u8"todo-block"), Intro_Policy::yes };
     Special_Block_Behavior Bug //
-        { u8"bug-block", Intro_Policy::yes };
+        { HTML_Tag_Name(u8"bug-block"), Intro_Policy::yes };
     Special_Block_Behavior Bwarn //
-        { u8"warning-block", Intro_Policy::yes };
+        { HTML_Tag_Name(u8"warning-block"), Intro_Policy::yes };
     Char_By_Entity_Behavior c //
         { Directive_Display::in_line };
     Expression_Behavior Cadd //
@@ -113,39 +114,39 @@ struct Builtin_Directive_Set::Impl {
     Expression_Behavior Csub //
         { Expression_Type::subtract };
     Fixed_Name_Passthrough_Behavior caption //
-        { u8"caption", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"caption"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior cite //
-        { u8"cite", Policy_Usage::html, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"cite"), Policy_Usage::html, Directive_Display::in_line };
     Code_Behavior code //
-        { u8"code", Directive_Display::in_line, Pre_Trimming::no };
+        { HTML_Tag_Name(u8"code"), Directive_Display::in_line, Pre_Trimming::no };
     Code_Behavior codeblock //
-        { u8"code-block", Directive_Display::block, Pre_Trimming::yes };
+        { HTML_Tag_Name(u8"code-block"), Directive_Display::block, Pre_Trimming::yes };
     Fixed_Name_Passthrough_Behavior col //
-        { u8"col", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"col"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior colgroup //
-        { u8"colgroup", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"colgroup"), Policy_Usage::html, Directive_Display::block };
     Comment_Behavior comment //
         {};
     Fixed_Name_Passthrough_Behavior dd //
-        { u8"dd", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"dd"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior del //
-        { u8"del", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"del"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior details //
-        { u8"details", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"details"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dfn //
-        { u8"dfn", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"dfn"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior div //
-        { u8"div", Policy_Usage::html, Directive_Display::block };
+        { html_tag::div, Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dl //
-        { u8"dl", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"dl"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior dt //
-        { u8"dt", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"dt"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior em //
-        { u8"em", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"em"), Policy_Usage::inherit, Directive_Display::in_line };
     Error_Behavior error //
         {};
     Fixed_Name_Passthrough_Behavior gterm //
-        { u8"g-term", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"g-term"), Policy_Usage::inherit, Directive_Display::in_line };
     Heading_Behavior h1 //
         { 1 };
     Heading_Behavior h2 //
@@ -163,7 +164,7 @@ struct Builtin_Directive_Set::Impl {
     Here_Behavior hereblock //
         { Directive_Display::block };
     Self_Closing_Behavior hr //
-        { u8"hr", Directive_Display::block };
+        { HTML_Tag_Name(u8"hr"), Directive_Display::block };
     HTML_Behavior html //
         { Directive_Display::in_line };
     HTML_Behavior htmlblock //
@@ -171,15 +172,15 @@ struct Builtin_Directive_Set::Impl {
     Directive_Name_Passthrough_Behavior html_tags //
         { Policy_Usage::html, Directive_Display::block, html_tag_prefix };
     Fixed_Name_Passthrough_Behavior i //
-        { u8"i", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"i"), Policy_Usage::inherit, Directive_Display::in_line };
     HTML_Wrapper_Behavior in_line //
         { Directive_Display::in_line, To_HTML_Mode::direct };
     Fixed_Name_Passthrough_Behavior ins //
-        { u8"ins", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"ins"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
-        { u8"kbd", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"kbd"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior li //
-        { u8"li", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"li"), Policy_Usage::html, Directive_Display::block };
     Literally_Behavior literally //
         {};
     Lorem_Ipsum_Behavior lorem_ipsum //
@@ -196,7 +197,7 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::block, class_name::table_of_contents,
           section_name::table_of_contents };
     Fixed_Name_Passthrough_Behavior mark //
-        { u8"mark", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"mark"), Policy_Usage::inherit, Directive_Display::in_line };
     Math_Behavior math //
         { Directive_Display::in_line };
     Math_Behavior mathblock //
@@ -204,75 +205,75 @@ struct Builtin_Directive_Set::Impl {
     Char_By_Name_Behavior N //
         { Directive_Display::in_line };
     In_Tag_Behavior nobr //
-        { u8"span", u8"word", Policy_Usage::inherit, Directive_Display::in_line };
+        { html_tag::span, u8"word", Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior noscript //
-        { u8"noscript", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"noscript"), Policy_Usage::html, Directive_Display::block };
     In_Tag_Behavior o //
-        { u8"span", u8"oblique", Policy_Usage::inherit, Directive_Display::in_line };
+        { html_tag::span, u8"oblique", Policy_Usage::inherit, Directive_Display::in_line };
     List_Behavior ol //
-        { u8"ol", li };
+        { HTML_Tag_Name(u8"ol"), li };
     Fixed_Name_Passthrough_Behavior p //
-        { u8"p", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"p"), Policy_Usage::html, Directive_Display::block };
     HTML_Wrapper_Behavior paragraphs //
         { Directive_Display::block, To_HTML_Mode::paragraphs };
     Fixed_Name_Passthrough_Behavior pre //
-        { u8"pre", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"pre"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior q //
-        { u8"q", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"q"), Policy_Usage::inherit, Directive_Display::in_line };
     Ref_Behavior ref //
         {};
     Fixed_Name_Passthrough_Behavior s //
-        { u8"s", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"s"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior samp //
-        { u8"samp", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"samp"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior sans //
-        { u8"f-sans", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"f-sans"), Policy_Usage::inherit, Directive_Display::in_line };
     HTML_Raw_Text_Behavior script //
-        { u8"script" };
+        { html_tag::script };
     Fixed_Name_Passthrough_Behavior serif //
-        { u8"f-serif", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"f-serif"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior small //
-        { u8"small", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"small"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior span //
-        { u8"span", Policy_Usage::inherit, Directive_Display::in_line };
+        { html_tag::span, Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior strong //
-        { u8"strong", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"strong"), Policy_Usage::inherit, Directive_Display::in_line };
     HTML_Raw_Text_Behavior style //
-        { u8"style" };
+        { html_tag::style };
     Fixed_Name_Passthrough_Behavior sub //
-        { u8"sub", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"sub"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior summary //
-        { u8"summary", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"summary"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior sup //
-        { u8"sup", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"sup"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior table //
-        { u8"table", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"table"), Policy_Usage::html, Directive_Display::block };
     URL_Behavior tel //
         { u8"tel:" };
     Plaintext_Wrapper_Behavior text //
         { Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior tbody //
-        { u8"tbody", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"tbody"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior td //
-        { u8"td", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"td"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior tfoot //
-        { u8"tfoot", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"tfoot"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior th //
-        { u8"th", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"th"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior thead //
-        { u8"thead", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"thead"), Policy_Usage::html, Directive_Display::block };
     There_Behavior there //
         {};
     Fixed_Name_Passthrough_Behavior tr //
-        { u8"tr", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"tr"), Policy_Usage::html, Directive_Display::block };
     Trim_Behavior trim //
         { Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior tt //
-        { u8"tt-", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"tt-"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior u //
-        { u8"u", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"u"), Policy_Usage::inherit, Directive_Display::in_line };
     List_Behavior ul //
-        { u8"ul", li };
+        { HTML_Tag_Name(u8"ul"), li };
     Char_By_Num_Behavior U //
         { Directive_Display::in_line };
     Char_Get_Num_Behavior Udigits //
@@ -282,17 +283,17 @@ struct Builtin_Directive_Set::Impl {
     URL_Behavior url //
         {};
     Fixed_Name_Passthrough_Behavior var //
-        { u8"var", Policy_Usage::inherit, Directive_Display::in_line };
+        { HTML_Tag_Name(u8"var"), Policy_Usage::inherit, Directive_Display::in_line };
     Get_Variable_Behavior Vget //
         {};
     Modify_Variable_Behavior Vset //
         { Variable_Operation::set };
     Self_Closing_Behavior wbr //
-        { u8"wbr", Directive_Display::in_line };
+        { HTML_Tag_Name(u8"wbr"), Directive_Display::in_line };
     WG21_Block_Behavior wg21_example //
         { u8"Example", u8"end example" };
     In_Tag_Behavior wg21_grammar //
-        { u8"dl", u8"grammar", Policy_Usage::html, Directive_Display::block };
+        { HTML_Tag_Name(u8"dl"), u8"grammar", Policy_Usage::html, Directive_Display::block };
     WG21_Head_Behavior wg21_head //
         {};
     WG21_Block_Behavior wg21_note //

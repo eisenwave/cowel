@@ -175,7 +175,7 @@ Processing_Status write_head_body_document(
         Content_Policy& current_out = sections.current_policy();
         HTML_Writer current_writer { current_out };
 
-        const auto open_and_close = [&](std::u8string_view tag, auto f) {
+        const auto open_and_close = [&](HTML_Tag_Name tag, auto f) {
             current_writer.open_tag(tag);
             current_writer.write_inner_html(u8'\n');
             f();
@@ -184,11 +184,11 @@ Processing_Status write_head_body_document(
         };
 
         current_writer.write_preamble();
-        open_and_close(u8"html", [&] {
-            open_and_close(u8"head", [&] {
+        open_and_close(html_tag::html, [&] {
+            open_and_close(html_tag::head, [&] {
                 reference_section(current_out, section_name::document_head);
             });
-            open_and_close(u8"body", [&] {
+            open_and_close(html_tag::body, [&] {
                 reference_section(current_out, section_name::document_body);
             });
         });
@@ -249,35 +249,35 @@ write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Con
     writer.write_inner_html(indent);
 
     writer
-        .open_tag_with_attributes(u8"meta"sv) //
+        .open_tag_with_attributes(html_tag::meta) //
         .write_charset(u8"UTF-8"sv)
         .end_empty();
     writer
-        .open_tag_with_attributes(u8"meta"sv) //
+        .open_tag_with_attributes(html_tag::meta) //
         .write_name(u8"viewport"sv)
         .write_content(u8"width=device-width, initial-scale=1"sv)
         .end_empty();
 
     writer
-        .open_tag_with_attributes(u8"link"sv) //
+        .open_tag_with_attributes(html_tag::link) //
         .write_rel(u8"preconnent"sv)
         .write_href(u8"https://fonts.googleapis.com"sv)
         .end_empty();
     writer.write_inner_html(newline_indent);
     writer
-        .open_tag_with_attributes(u8"link"sv) //
+        .open_tag_with_attributes(html_tag::link) //
         .write_rel(u8"preconnent"sv)
         .write_href(u8"https://fonts.gstatic.com"sv)
         .write_crossorigin()
         .end_empty();
     writer.write_inner_html(newline_indent);
     writer
-        .open_tag_with_attributes(u8"link"sv) //
+        .open_tag_with_attributes(html_tag::link) //
         .write_rel(u8"stylesheet"sv)
         .write_href(google_fonts_url)
         .end_empty();
 
-    const auto include_css_or_js = [&](std::u8string_view tag, std::u8string_view source) {
+    const auto include_css_or_js = [&](HTML_Tag_Name tag, std::u8string_view source) {
         writer.write_inner_html(newline_indent);
         writer.open_tag(tag);
         writer.write_inner_html(u8'\n');
@@ -285,10 +285,10 @@ write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Con
         writer.write_inner_html(indent);
         writer.close_tag(tag);
     };
-    include_css_or_js(u8"style", assets::main_css);
+    include_css_or_js(html_tag::style, assets::main_css);
     {
         writer.write_inner_text(newline_indent);
-        writer.open_tag(u8"style");
+        writer.open_tag(html_tag::style);
         writer.write_inner_html(u8'\n');
         const std::u8string_view theme_json = context.get_highlight_theme_source();
         std::pmr::vector<char8_t> css { context.get_transient_memory() };
@@ -304,10 +304,10 @@ write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Con
             return Processing_Status::error;
         }
         writer.write_inner_html(indent);
-        writer.close_tag(u8"style");
+        writer.close_tag(html_tag::style);
     }
 
-    include_css_or_js(u8"script", assets::light_dark_js);
+    include_css_or_js(html_tag::script, assets::light_dark_js);
     writer.write_inner_html(u8'\n');
     return Processing_Status::ok;
 }
@@ -320,14 +320,14 @@ Processing_Status write_wg21_body_contents(
 {
     HTML_Writer writer { out };
     writer.write_inner_html(assets::settings_widget_html);
-    writer.open_tag(u8"main");
+    writer.open_tag(html_tag::main);
     writer.write_inner_html(u8'\n');
 
     Paragraph_Split_Policy policy { out, context.get_transient_memory() };
     const Processing_Status result = consume_all(policy, content, context);
     policy.leave_paragraph();
 
-    writer.close_tag(u8"main");
+    writer.close_tag(html_tag::main);
     return result;
 }
 

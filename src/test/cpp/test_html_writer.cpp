@@ -58,9 +58,9 @@ TEST_F(HTML_Writer_Test, tag)
 {
     constexpr std::u8string_view expected = u8"<b>Hello, world!</b>"sv;
 
-    writer.open_tag(u8"b"sv);
+    writer.open_tag(html_tag::b);
     writer.write_inner_text(u8"Hello, world!"sv);
-    writer.close_tag(u8"b"sv);
+    writer.close_tag(html_tag::b);
 
     EXPECT_EQ(expected, as_view(*out));
 }
@@ -69,7 +69,7 @@ TEST_F(HTML_Writer_Test, empty_tag)
 {
     constexpr std::u8string_view expected = u8"<br/>"sv;
 
-    writer.write_self_closing_tag(u8"br"sv);
+    writer.write_self_closing_tag(html_tag::br);
 
     EXPECT_EQ(expected, as_view(*out));
 }
@@ -77,13 +77,14 @@ TEST_F(HTML_Writer_Test, empty_tag)
 TEST_F(HTML_Writer_Test, empty_attributes)
 {
     constexpr std::u8string_view expected = u8"<x a b=\"\" c></x>"sv;
+    constexpr HTML_Tag_Name tag { u8"x" };
 
-    writer.open_tag_with_attributes(u8"x"sv)
-        .write_empty_attribute(u8"a"sv, Attribute_Style::double_if_needed)
-        .write_empty_attribute(u8"b"sv, Attribute_Style::always_double)
-        .write_empty_attribute(u8"c"sv, Attribute_Style::double_if_needed)
+    writer.open_tag_with_attributes(tag)
+        .write_empty_attribute(HTML_Attribute_Name(u8"a"sv), Attribute_Style::double_if_needed)
+        .write_empty_attribute(HTML_Attribute_Name(u8"b"sv), Attribute_Style::always_double)
+        .write_empty_attribute(HTML_Attribute_Name(u8"c"sv), Attribute_Style::double_if_needed)
         .end();
-    writer.close_tag(u8"x"sv);
+    writer.close_tag(tag);
 
     EXPECT_EQ(expected, as_view(*out));
 }
@@ -91,13 +92,14 @@ TEST_F(HTML_Writer_Test, empty_attributes)
 TEST_F(HTML_Writer_Test, attributes_with_values_quotes_if_needed)
 {
     constexpr std::u8string_view expected = u8"<x id=name class='a b' hidden></x>"sv;
+    constexpr HTML_Tag_Name tag { u8"x" };
 
-    writer.open_tag_with_attributes(u8"x"sv)
-        .write_attribute(u8"id"sv, u8"name"sv, Attribute_Style::single_if_needed)
-        .write_attribute(u8"class"sv, u8"a b"sv, Attribute_Style::single_if_needed)
-        .write_attribute(u8"hidden"sv, u8""sv, Attribute_Style::single_if_needed)
+    writer.open_tag_with_attributes(tag)
+        .write_id(u8"name"sv, Attribute_Style::single_if_needed)
+        .write_class(u8"a b"sv, Attribute_Style::single_if_needed)
+        .write_attribute(html_attr::hidden, u8""sv, Attribute_Style::single_if_needed)
         .end();
-    writer.close_tag(u8"x"sv);
+    writer.close_tag(tag);
 
     EXPECT_EQ(expected, as_view(*out));
 }
@@ -105,13 +107,14 @@ TEST_F(HTML_Writer_Test, attributes_with_values_quotes_if_needed)
 TEST_F(HTML_Writer_Test, attributes_with_values_always_quotes)
 {
     constexpr std::u8string_view expected = u8"<x id='name' class='a b' hidden=''></x>"sv;
+    constexpr HTML_Tag_Name tag { u8"x" };
 
-    writer.open_tag_with_attributes(u8"x"sv)
-        .write_attribute(u8"id"sv, u8"name"sv, Attribute_Style::always_single)
-        .write_attribute(u8"class"sv, u8"a b"sv, Attribute_Style::always_single)
-        .write_attribute(u8"hidden"sv, u8""sv, Attribute_Style::always_single)
+    writer.open_tag_with_attributes(tag)
+        .write_id(u8"name"sv, Attribute_Style::always_single)
+        .write_class(u8"a b"sv, Attribute_Style::always_single)
+        .write_attribute(html_attr::hidden, u8""sv, Attribute_Style::always_single)
         .end();
-    writer.close_tag(u8"x"sv);
+    writer.close_tag(tag);
 
     EXPECT_EQ(expected, as_view(*out));
 }
@@ -120,7 +123,7 @@ TEST_F(HTML_Writer_Test, attributes_but_empty)
 {
     constexpr std::u8string_view expected = u8"<br/>"sv;
 
-    writer.open_tag_with_attributes(u8"br"sv).end_empty();
+    writer.open_tag_with_attributes(html_tag::br).end_empty();
 
     EXPECT_EQ(expected, as_view(*out));
 }
@@ -129,8 +132,8 @@ TEST_F(HTML_Writer_Test, attributes_escape)
 {
     constexpr std::u8string_view expected = u8"<x id='&apos;'/>"sv;
 
-    writer.open_tag_with_attributes(u8"x"sv)
-        .write_attribute(u8"id"sv, u8"'"sv, Attribute_Style::single_if_needed)
+    writer.open_tag_with_attributes(HTML_Tag_Name(u8"x"sv))
+        .write_id(u8"'"sv, Attribute_Style::single_if_needed)
         .end_empty();
 
     EXPECT_EQ(expected, as_view(*out));

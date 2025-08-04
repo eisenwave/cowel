@@ -115,13 +115,15 @@ Processing_Status to_math_html(
             }
             return out.consume_content(c, context);
         }
-        const std::u8string_view name = d->get_name();
-        const std::ptrdiff_t index = mathml_element_index(name);
+        const std::u8string_view name_string = d->get_name();
+        const std::ptrdiff_t index = mathml_element_index(name_string);
         if (index < 0) {
             return out.consume(*d, context);
         }
         warn_ignored_argument_subset(d->get_arguments(), context, Argument_Subset::positional);
 
+        // directive names are HTML tag names
+        const HTML_Tag_Name name { Unchecked {}, name_string };
         HTML_Writer writer { out };
         Attribute_Writer attributes = writer.open_tag_with_attributes(name);
         const auto attributes_status = named_arguments_to_attributes(attributes, *d, context);
@@ -143,7 +145,7 @@ Processing_Status to_math_html(
 Processing_Status
 Math_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
-    constexpr std::u8string_view tag_name = u8"math";
+    constexpr auto tag_name = html_tag::math;
     const std::u8string_view display_string
         = m_display == Directive_Display::in_line ? u8"inline" : u8"block";
 
@@ -152,7 +154,7 @@ Math_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     HTML_Content_Policy policy { out };
     HTML_Writer writer { policy };
     Attribute_Writer attributes = writer.open_tag_with_attributes(tag_name);
-    attributes.write_attribute(u8"display", display_string);
+    attributes.write_display(display_string);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.end();
     warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);

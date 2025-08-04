@@ -11,6 +11,7 @@
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/html.hpp"
+#include "cowel/util/html_names.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/url_encode.hpp"
 
@@ -159,13 +160,12 @@ public:
     }
 
     /// @brief Writes a self-closing tag such as `<br/>` or `<hr/>`.
-    Self& write_self_closing_tag(std::u8string_view id)
+    Self& write_self_closing_tag(HTML_Tag_Name id)
     {
         COWEL_ASSERT(!m_in_attributes);
-        COWEL_ASSERT(is_html_tag_name(id));
 
         m_out(u8'<');
-        m_out(id);
+        m_out(id.str());
         m_out(u8"/>"sv);
 
         return *this;
@@ -181,13 +181,12 @@ public:
     }
 
     /// @brief Writes an opening tag such as `<div>`.
-    Self& open_tag(std::u8string_view id)
+    Self& open_tag(HTML_Tag_Name id)
     {
         COWEL_ASSERT(!m_in_attributes);
-        COWEL_ASSERT(is_html_tag_name(id));
 
         m_out(u8'<');
-        m_out(id);
+        m_out(id.str());
         m_out(u8'>');
         ++m_depth;
 
@@ -195,15 +194,14 @@ public:
     }
 
     /// @brief Writes an opening tag immediately followed by a closing tag, like `<div></div>`.
-    Self& open_and_close_tag(std::u8string_view id)
+    Self& open_and_close_tag(HTML_Tag_Name id)
     {
         COWEL_ASSERT(!m_in_attributes);
-        COWEL_ASSERT(is_html_tag_name(id));
 
         m_out(u8'<');
-        m_out(id);
+        m_out(id.str());
         m_out(u8"></"sv);
-        m_out(id);
+        m_out(id.str());
         m_out(u8'>');
 
         return *this;
@@ -215,13 +213,12 @@ public:
     /// @param properties the tag properties
     /// @return `*this`
     [[nodiscard]]
-    Basic_Attribute_Writer<Out> open_tag_with_attributes(std::u8string_view id)
+    Basic_Attribute_Writer<Out> open_tag_with_attributes(HTML_Tag_Name id)
     {
         COWEL_ASSERT(!m_in_attributes);
-        COWEL_ASSERT(is_html_tag_name(id));
 
         m_out(u8'<');
-        m_out(id);
+        m_out(id.str());
 
         return Basic_Attribute_Writer<Out> { *this };
     }
@@ -229,16 +226,15 @@ public:
     /// @brief Writes a closing tag, such as `</div>`.
     /// The most recent call to `open_tag` or `open_tag_with_attributes` shall have been made with
     /// the same arguments.
-    Self& close_tag(std::u8string_view id)
+    Self& close_tag(HTML_Tag_Name id)
     {
         COWEL_ASSERT(!m_in_attributes);
-        COWEL_ASSERT(is_html_tag_name(id));
         COWEL_ASSERT(m_depth != 0);
 
         --m_depth;
 
         m_out(u8"</"sv);
-        m_out(id);
+        m_out(id.str());
         m_out(u8'>');
 
         return *this;
@@ -276,7 +272,7 @@ public:
 
 private:
     Attribute_Quoting write_attribute(
-        std::u8string_view key,
+        HTML_Attribute_Name key,
         Char_Sequence8 value,
         Attribute_Style style,
         Attribute_Encoding encoding
@@ -287,10 +283,9 @@ private:
         }
 
         COWEL_ASSERT(m_in_attributes);
-        COWEL_ASSERT(is_html_attribute_name(key));
 
         m_out(u8' ');
-        m_out(key);
+        m_out(key.str());
 
         const char8_t quote_char = attribute_style_quote_char(style);
         m_out(u8'=');
@@ -335,13 +330,12 @@ private:
         return omit_quotes ? Attribute_Quoting::none : Attribute_Quoting::quoted;
     }
 
-    Attribute_Quoting write_empty_attribute(std::u8string_view key, Attribute_Style style)
+    Attribute_Quoting write_empty_attribute(HTML_Attribute_Name key, Attribute_Style style)
     {
         COWEL_ASSERT(m_in_attributes);
-        COWEL_ASSERT(is_html_attribute_name(key));
 
         m_out(u8' ');
-        m_out(key);
+        m_out(key.str());
 
         switch (style) {
         case Attribute_Style::always_double: {
@@ -405,11 +399,11 @@ public:
     /// If `value` is empty, writes `key` on its own.
     /// If `value` requires quotes to comply with the HTML standard, quotes are added.
     /// For example, if `value` is `x y`, `key="x y"` is written.
-    /// @param key the attribute key; `is_identifier(key)` shall be `true`.
-    /// @param value the attribute value, or an empty string
+    /// @param key The attribute name.
+    /// @param value The attribute value, or an empty string.
     /// @return `*this`
     Basic_Attribute_Writer& write_attribute(
-        std::u8string_view key,
+        HTML_Attribute_Name key,
         Char_Sequence8 value,
         Attribute_Style style = Attribute_Style::double_if_needed
     )
@@ -423,7 +417,7 @@ public:
     /// @brief Like `write_attribute`,
     /// but applies minimal URL encoding to the value.
     Basic_Attribute_Writer& write_url_attribute(
-        std::u8string_view key,
+        HTML_Attribute_Name key,
         Char_Sequence8 value,
         Attribute_Style style = Attribute_Style::double_if_needed
     )
@@ -435,7 +429,7 @@ public:
     }
 
     Basic_Attribute_Writer& write_empty_attribute(
-        std::u8string_view key,
+        HTML_Attribute_Name key,
         Attribute_Style style = Attribute_Style::double_if_needed
     )
     {
@@ -447,60 +441,66 @@ public:
     Basic_Attribute_Writer&
     write_charset(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"charset"sv, value, style);
+        return write_attribute(html_attr::charset, value, style);
     }
 
     Basic_Attribute_Writer&
     write_class(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"class"sv, value, style);
+        return write_attribute(html_attr::class_, value, style);
     }
 
     Basic_Attribute_Writer&
     write_content(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"content"sv, value, style);
+        return write_attribute(html_attr::content, value, style);
     }
 
     Basic_Attribute_Writer& write_crossorigin()
     {
-        return write_empty_attribute(u8"crossorigin"sv);
+        return write_empty_attribute(html_attr::crossorigin);
+    }
+
+    Basic_Attribute_Writer&
+    write_display(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
+    {
+        return write_attribute(html_attr::display, value, style);
     }
 
     Basic_Attribute_Writer&
     write_href(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"href"sv, value, style);
+        return write_attribute(html_attr::href, value, style);
     }
 
     Basic_Attribute_Writer&
     write_id(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"id"sv, value, style);
+        return write_attribute(html_attr::id, value, style);
     }
 
     Basic_Attribute_Writer&
     write_name(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"name"sv, value, style);
+        return write_attribute(html_attr::name, value, style);
     }
 
     Basic_Attribute_Writer&
     write_rel(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"rel"sv, value, style);
+        return write_attribute(html_attr::rel, value, style);
     }
 
     Basic_Attribute_Writer&
     write_src(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"src"sv, value, style);
+        return write_attribute(html_attr::src, value, style);
     }
 
     Basic_Attribute_Writer&
     write_tabindex(Char_Sequence8 value, Attribute_Style style = Attribute_Style::double_if_needed)
     {
-        return write_attribute(u8"tabindex"sv, value, style);
+        return write_attribute(html_attr::tabindex, value, style);
     }
 
     /// @brief Writes `>` and finishes writing attributes.

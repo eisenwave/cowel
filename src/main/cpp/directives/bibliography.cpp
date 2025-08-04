@@ -62,8 +62,8 @@ void write_bibliography_entry(HTML_Writer& out, const Document_Info& info, Conte
 
     const std::u8string_view id_parts[] { bib_item_id_prefix, info.id };
 
-    out.open_tag_with_attributes(u8"div"sv) //
-        .write_attribute(u8"id"sv, joined_char_sequence(id_parts))
+    out.open_tag_with_attributes(html_tag::div) //
+        .write_id(joined_char_sequence(id_parts))
         .write_class(u8"bib-item"sv)
         .end();
     out.write_inner_html(u8'\n');
@@ -83,28 +83,28 @@ void write_bibliography_entry(HTML_Writer& out, const Document_Info& info, Conte
 
     if (!info.author.empty()) {
         out.write_inner_html(u8'\n');
-        out.open_tag_with_attributes(u8"span"sv) //
+        out.open_tag_with_attributes(html_tag::span) //
             .write_class(u8"bib-author"sv)
             .end();
         out.write_inner_text(info.author);
         out.write_inner_html(u8'.');
-        out.close_tag(u8"span");
+        out.close_tag(html_tag::span);
     }
     if (!info.title.empty()) {
         out.write_inner_html(u8'\n');
-        out.open_tag_with_attributes(u8"span"sv) //
+        out.open_tag_with_attributes(html_tag::span) //
             .write_class(u8"bib-title"sv)
             .end();
         out.write_inner_text(info.title);
-        out.close_tag(u8"span");
+        out.close_tag(html_tag::span);
     }
     if (!info.date.empty()) {
         out.write_inner_html(u8"\n"sv);
-        out.open_tag_with_attributes(u8"span"sv) //
+        out.open_tag_with_attributes(html_tag::span) //
             .write_class(u8"bib-date"sv)
             .end();
         out.write_inner_text(info.date);
-        out.close_tag(u8"span"sv);
+        out.close_tag(html_tag::span);
     }
 
     const auto write_link = [&](std::u8string_view url) {
@@ -121,7 +121,7 @@ void write_bibliography_entry(HTML_Writer& out, const Document_Info& info, Conte
         write_link(info.link);
     }
 
-    out.close_tag(u8"div"sv);
+    out.close_tag(html_tag::div);
 }
 
 } // namespace
@@ -249,8 +249,8 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
             // In any case, it's important to guarantee that an <a> element will be emitted.
             const std::u8string_view id_parts[] { u8"#"sv, bib_item_id_prefix, result.info.id };
             section_writer
-                .open_tag_with_attributes(u8"a"sv) //
-                .write_attribute(u8"id"sv, joined_char_sequence(id_parts))
+                .open_tag_with_attributes(html_tag::a) //
+                .write_id(joined_char_sequence(id_parts))
                 .end();
             section_writer.set_depth(0);
         }

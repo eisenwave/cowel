@@ -178,7 +178,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
 
     if (classification.type == Reference_Type::anchor) {
         writer
-            .open_tag_with_attributes(u8"a") //
+            .open_tag_with_attributes(html_tag::a) //
             .write_href(target_string)
             .end();
         auto status = Processing_Status::ok;
@@ -193,7 +193,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
         else {
             status = consume_all(out, d.get_content(), context);
         }
-        writer.close_tag(u8"a");
+        writer.close_tag(html_tag::a);
         return status;
     }
 
@@ -201,15 +201,15 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
 
     if (!d.get_content().empty()) {
         writer
-            .open_tag_with_attributes(u8"a") //
+            .open_tag_with_attributes(html_tag::a) //
             .write_href(target_string)
             .end();
         const auto status = consume_all(out, d.get_content(), context);
-        writer.close_tag(u8"a");
+        writer.close_tag(html_tag::a);
         return status;
     }
 
-    Attribute_Writer attributes = writer.open_tag_with_attributes(u8"a");
+    Attribute_Writer attributes = writer.open_tag_with_attributes(html_tag::a);
     attributes.write_href(target_string);
     const bool is_sans = classification.url_scheme == URL_Scheme::mailto
         || classification.url_scheme == URL_Scheme::tel
@@ -234,7 +234,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
         else {
             writer.write_inner_text(target_string);
         }
-        writer.close_tag(u8"a");
+        writer.close_tag(html_tag::a);
         return Processing_Status::ok;
     }
 
@@ -251,14 +251,14 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             writer.write_inner_html(u8']');
             break;
         case Text_Format::grammar:
-            writer.open_tag(u8"g-term");
+            writer.open_tag(html_tag::g_term);
             writer.write_inner_text(part);
-            writer.close_tag(u8"g-term");
+            writer.close_tag(html_tag::g_term);
             break;
         case Text_Format::code:
-            writer.open_tag(u8"tt-");
+            writer.open_tag(html_tag::tt_);
             writer.write_inner_text(part);
-            writer.close_tag(u8"tt-");
+            writer.close_tag(html_tag::tt_);
             break;
         default: //
             writer.write_inner_text(part);
@@ -279,7 +279,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
         );
         writer.write_inner_text(target_string);
     }
-    writer.close_tag(u8"a");
+    writer.close_tag(html_tag::a);
     return Processing_Status::ok;
 }
 

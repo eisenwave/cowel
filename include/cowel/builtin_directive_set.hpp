@@ -6,6 +6,7 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
+#include "cowel/util/html_names.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/typo.hpp"
@@ -82,7 +83,7 @@ public:
 /// Generates no plaintext.
 /// Generates HTML with the source code of the contents wrapped in an `<error->` custom tag.
 struct Error_Behavior : Directive_Behavior {
-    static constexpr std::u8string_view id = u8"error-";
+    static constexpr auto id = html_tag::error_;
 
     constexpr explicit Error_Behavior() = default;
 
@@ -241,14 +242,14 @@ private:
     };
     // clang-format on
 
-    const std::u8string_view m_tag_name;
+    const HTML_Tag_Name m_tag_name;
     const Directive_Display m_display;
     const Pre_Trimming m_pre_compat_trim;
 
 public:
     [[nodiscard]]
     constexpr explicit Code_Behavior(
-        std::u8string_view tag_name,
+        HTML_Tag_Name tag_name,
         Directive_Display display,
         Pre_Trimming pre_compat_trim
     )
@@ -353,14 +354,14 @@ public:
 struct [[nodiscard]]
 HTML_Raw_Text_Behavior final : Directive_Behavior {
 private:
-    const std::u8string_view m_tag_name;
+    const HTML_Tag_Name m_tag_name;
 
 public:
     [[nodiscard]]
-    constexpr explicit HTML_Raw_Text_Behavior(std::u8string_view tag_name)
+    constexpr explicit HTML_Raw_Text_Behavior(HTML_Tag_Name tag_name)
         : m_tag_name { tag_name }
     {
-        COWEL_ASSERT(tag_name == u8"style" || tag_name == u8"script");
+        COWEL_ASSERT(tag_name == u8"style"sv || tag_name == u8"script"sv);
     }
 
     [[nodiscard]]
@@ -538,7 +539,7 @@ public:
     operator()(Content_Policy& out, const ast::Directive& d, Context& context) const override;
 
     [[nodiscard]]
-    virtual std::u8string_view get_name(const ast::Directive& d, Context& context) const
+    virtual HTML_Tag_Name get_name(const ast::Directive& d, Context& context) const
         = 0;
 };
 
@@ -565,7 +566,7 @@ public:
 
 struct In_Tag_Behavior : Directive_Behavior {
 protected:
-    const std::u8string_view m_tag_name;
+    const HTML_Tag_Name m_tag_name;
     const std::u8string_view m_class_name;
     const Policy_Usage m_policy;
     const Directive_Display m_display;
@@ -573,7 +574,7 @@ protected:
 public:
     [[nodiscard]]
     constexpr explicit In_Tag_Behavior(
-        std::u8string_view tag_name,
+        HTML_Tag_Name tag_name,
         std::u8string_view class_name,
         Policy_Usage policy,
         Directive_Display display
@@ -593,12 +594,12 @@ public:
 /// @brief Behavior for self-closing tags, like `<br/>` and `<hr/>`.
 struct Self_Closing_Behavior final : Directive_Behavior {
 private:
-    const std::u8string_view m_tag_name;
+    const HTML_Tag_Name m_tag_name;
     const Directive_Display m_display;
 
 public:
     [[nodiscard]]
-    constexpr explicit Self_Closing_Behavior(std::u8string_view tag_name, Directive_Display display)
+    constexpr explicit Self_Closing_Behavior(HTML_Tag_Name tag_name, Directive_Display display)
         : m_tag_name { tag_name }
         , m_display { display }
     {
@@ -635,17 +636,17 @@ public:
     }
 
     [[nodiscard]]
-    std::u8string_view get_name(const ast::Directive& d, Context& context) const override;
+    HTML_Tag_Name get_name(const ast::Directive& d, Context& context) const override;
 };
 
 struct Fixed_Name_Passthrough_Behavior : Passthrough_Behavior {
 private:
-    const std::u8string_view m_name;
+    const HTML_Tag_Name m_name;
 
 public:
     [[nodiscard]]
     constexpr explicit Fixed_Name_Passthrough_Behavior(
-        std::u8string_view name,
+        HTML_Tag_Name name,
         Policy_Usage policy,
         Directive_Display display
     )
@@ -655,7 +656,7 @@ public:
     }
 
     [[nodiscard]]
-    std::u8string_view get_name(const ast::Directive&, Context&) const override
+    HTML_Tag_Name get_name(const ast::Directive&, Context&) const override
     {
         return m_name;
     }
@@ -663,12 +664,12 @@ public:
 
 struct Special_Block_Behavior final : Directive_Behavior {
 private:
-    const std::u8string_view m_name;
+    const HTML_Tag_Name m_name;
     const Intro_Policy m_intro;
 
 public:
     [[nodiscard]]
-    constexpr explicit Special_Block_Behavior(std::u8string_view name, Intro_Policy intro)
+    constexpr explicit Special_Block_Behavior(HTML_Tag_Name name, Intro_Policy intro)
         : m_name { name }
         , m_intro { intro }
     {
@@ -745,13 +746,13 @@ struct Bibliography_Add_Behavior final : Directive_Behavior {
 
 struct List_Behavior final : Directive_Behavior {
 private:
-    const std::u8string_view m_tag_name;
+    const HTML_Tag_Name m_tag_name;
     const Directive_Behavior& m_item_behavior;
 
 public:
     [[nodiscard]]
     constexpr explicit List_Behavior(
-        std::u8string_view tag_name,
+        HTML_Tag_Name tag_name,
         const Directive_Behavior& item_behavior
     )
         : m_tag_name { tag_name }
