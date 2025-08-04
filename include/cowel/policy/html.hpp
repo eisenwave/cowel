@@ -1,9 +1,9 @@
 #ifndef COWEL_POLICY_HTML_HPP
 #define COWEL_POLICY_HTML_HPP
 
-#include <cstddef>
 #include <string_view>
 
+#include "cowel/util/char_sequence.hpp"
 #include "cowel/util/html.hpp"
 
 #include "cowel/policy/content_policy.hpp"
@@ -19,32 +19,16 @@ namespace detail {
 static constexpr auto is_html_escaped
     = [](char8_t c) { return c == u8'&' || c == u8'<' || c == u8'>'; };
 
-// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
 inline bool write_as_html(Text_Sink& out, Char_Sequence8 chars)
 {
-    constexpr std::size_t chunk_size = 1024;
-    char8_t buffer[chunk_size];
-
     COWEL_ASSERT(out.get_language() == Output_Language::html);
-    struct {
-        Text_Sink& out;
-        void operator()(std::u8string_view s) const
-        {
-            out.write(s, Output_Language::html);
-        }
-        void operator()(char8_t c) const
-        {
-            out.write(c, Output_Language::html);
-        }
-    } adapter { out };
+    const auto adapter = [&](auto x) {
+        using T = decltype(x);
+        static_assert(std::is_same_v<char8_t, T> || std::is_same_v<std::u8string_view, T>);
+        out.write(x, Output_Language::html);
+    };
 
-    while (!chars.empty()) {
-        std::size_t n = chars.extract(buffer);
-        COWEL_DEBUG_ASSERT(n <= chunk_size);
-
-        const std::u8string_view buffer_string { buffer, n };
-        append_html_escaped(adapter, buffer_string, is_html_escaped);
-    }
+    append_html_escaped(adapter, chars, is_html_escaped);
     return true;
 }
 

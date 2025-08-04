@@ -124,8 +124,11 @@ template <string_or_char_consumer Output, typename F>
     requires std::is_invocable_r_v<bool, F, char8_t>
 void url_encode_ascii_if(Output out, Char_Sequence8 str, F filter)
 {
-    if (str.is_contiguous()) {
-        url_encode_ascii_if(out, str.as_string_view(), std::move(filter));
+    if (str.empty()) {
+        return;
+    }
+    if (const std::u8string_view sv = str.as_string_view(); !sv.empty()) {
+        url_encode_ascii_if(out, sv, std::move(filter));
         return;
     }
     char8_t buffer[default_char_sequence_buffer_size];

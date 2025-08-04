@@ -1,14 +1,12 @@
 #ifndef COWEL_POLICY_CAPTURE_HPP
 #define COWEL_POLICY_CAPTURE_HPP
 
-#include <cstddef>
 #include <memory_resource>
-#include <span>
 #include <utility>
 #include <vector>
 
-#include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
+#include "cowel/util/char_sequence_ops.hpp"
 
 #include "cowel/policy/content_policy.hpp"
 
@@ -39,9 +37,7 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
     bool write(Char_Sequence8 chars, Output_Language) override
     {
-        const std::size_t initial_size = m_out.size();
-        m_out.resize(initial_size + chars.size());
-        chars.extract(std::span { m_out }.subspan(initial_size));
+        append(m_out, chars);
         return true;
     }
 };
@@ -87,10 +83,7 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
     bool write(Char_Sequence8 chars, Output_Language) override
     {
-        const std::size_t initial_size = m_out.size();
-        m_out.resize(initial_size + chars.size());
-        chars.extract(std::span { m_out }.subspan(initial_size));
-        COWEL_DEBUG_ASSERT(chars.empty());
+        append(m_out, chars);
         return true;
     }
 };

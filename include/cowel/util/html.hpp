@@ -40,8 +40,11 @@ void append_html_escaped(Out& out, std::u8string_view text, Predicate p)
 template <string_or_char_consumer Out, std::invocable<char8_t> Predicate>
 void append_html_escaped(Out& out, Char_Sequence8 text, Predicate p)
 {
-    if (text.is_contiguous()) {
-        append_html_escaped(out, text.as_string_view(), std::move(p));
+    if (text.empty()) {
+        return;
+    }
+    if (const std::u8string_view sv = text.as_string_view(); !sv.empty()) {
+        append_html_escaped(out, sv, std::move(p));
         return;
     }
     char8_t buffer[default_char_sequence_buffer_size];
