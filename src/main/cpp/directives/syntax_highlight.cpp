@@ -12,6 +12,7 @@
 
 #include "cowel/policy/capture.hpp"
 #include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/factory.hpp"
 #include "cowel/policy/html.hpp"
 #include "cowel/policy/syntax_highlight.hpp"
 
@@ -184,7 +185,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
         return consume_all(out, d.get_content(), context);
     }
 
-    HTML_Content_Policy policy { out };
+    HTML_Content_Policy policy = ensure_html_policy(out);
     HTML_Writer writer { policy };
     writer
         .open_tag_with_attributes(html_tag::h_) //

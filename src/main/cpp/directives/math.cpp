@@ -9,6 +9,7 @@
 #include "cowel/util/html_writer.hpp"
 
 #include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/factory.hpp"
 #include "cowel/policy/html.hpp"
 
 #include "cowel/ast.hpp"
@@ -151,7 +152,7 @@ Math_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
 
     ensure_paragraph_matches_display(out, m_display);
 
-    HTML_Content_Policy policy { out };
+    HTML_Content_Policy policy = ensure_html_policy(out);
     HTML_Writer writer { policy };
     Attribute_Writer attributes = writer.open_tag_with_attributes(tag_name);
     attributes.write_display(display_string);

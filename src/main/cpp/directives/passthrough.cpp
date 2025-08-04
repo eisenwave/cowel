@@ -8,6 +8,7 @@
 #include "cowel/util/strings.hpp"
 
 #include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/factory.hpp"
 #include "cowel/policy/html.hpp"
 #include "cowel/policy/paragraph_split.hpp"
 #include "cowel/policy/plaintext.hpp"
@@ -71,7 +72,7 @@ Passthrough_Behavior::operator()(Content_Policy& out, const ast::Directive& d, C
 
     ensure_paragraph_matches_display(out, m_display);
 
-    HTML_Content_Policy html_policy { out };
+    HTML_Content_Policy html_policy = ensure_html_policy(out);
     auto& policy = m_policy == Policy_Usage::html ? html_policy : out;
 
     const HTML_Tag_Name name = get_name(d, context);
@@ -156,7 +157,7 @@ In_Tag_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
 
     ensure_paragraph_matches_display(out, m_display);
 
-    HTML_Content_Policy html_policy { out };
+    HTML_Content_Policy html_policy = ensure_html_policy(out);
     auto& policy = m_policy == Policy_Usage::html ? html_policy : out;
 
     HTML_Writer writer { policy };
@@ -201,7 +202,7 @@ Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
     const bool emit_intro = m_intro == Intro_Policy::yes;
     const auto initial_state = emit_intro ? Paragraphs_State::inside : Paragraphs_State::outside;
 
-    HTML_Content_Policy html_policy { out };
+    HTML_Content_Policy html_policy = ensure_html_policy(out);
     Paragraph_Split_Policy policy { html_policy, context.get_transient_memory(), initial_state };
     HTML_Writer writer { policy };
     Attribute_Writer attributes = writer.open_tag_with_attributes(m_name);
@@ -289,7 +290,7 @@ List_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
 
     try_leave_paragraph(out);
 
-    HTML_Content_Policy policy { out };
+    HTML_Content_Policy policy = ensure_html_policy(out);
     HTML_Writer writer { policy };
     Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);

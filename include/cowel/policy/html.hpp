@@ -47,6 +47,12 @@ public:
     {
     }
 
+    [[nodiscard]]
+    Text_Sink& parent() & noexcept
+    {
+        return m_parent;
+    }
+
     bool write(Char_Sequence8 chars, Output_Language language) override
     {
         switch (language) {

@@ -6,6 +6,7 @@
 #include "cowel/util/strings.hpp"
 
 #include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/factory.hpp"
 #include "cowel/policy/html.hpp"
 
 #include "cowel/ast.hpp"
@@ -63,7 +64,7 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Con
 
     try_leave_paragraph(out);
 
-    HTML_Content_Policy html_policy { out };
+    HTML_Content_Policy html_policy = ensure_html_policy(out);
     HTML_Writer writer { html_policy };
     writer
         .open_tag_with_attributes(html_tag::div) //

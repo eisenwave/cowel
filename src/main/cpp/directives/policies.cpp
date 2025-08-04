@@ -4,6 +4,7 @@
 #include "cowel/util/result.hpp"
 
 #include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/factory.hpp"
 #include "cowel/policy/html.hpp"
 #include "cowel/policy/html_literal.hpp"
 #include "cowel/policy/literally.hpp"
@@ -81,7 +82,9 @@ Policy_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
         return consume_all(out, d.get_content(), context);
     }
     case Known_Content_Policy::to_html: {
-        return consume_simply<HTML_Content_Policy>(out, d, context);
+        warn_all_args_ignored(d, context);
+        HTML_Content_Policy policy = ensure_html_policy(out);
+        return consume_all(policy, d.get_content(), context);
     }
     case Known_Content_Policy::highlight: {
         return consume_syntax_highlighted(out, d, context);
