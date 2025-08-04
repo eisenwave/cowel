@@ -4,6 +4,7 @@
 
 - add `-l`/`--severity` option and help menu to native CLI (#60)
 - add documentation for npm installation (#57)
+- improve performance with better Unicode processing, obsoleting assertions (#61)
 - fix trace messages printed by default in native CLI (#60)
 - also create CHANGELOG and CONTRIBUTING documents
 
