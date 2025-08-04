@@ -179,8 +179,7 @@ constexpr bool is_html_tag_name(std::u8string_view str)
     constexpr auto predicate = [](char32_t x) { return is_html_tag_name_character(x); };
 
     // https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name
-    return !str.empty() //
-        && is_ascii_alpha(str[0]) && detail::all_of(utf8::Code_Point_View { str }, predicate);
+    return !str.empty() && is_ascii_alpha(str[0]) && utf8::all_of(str.substr(1), predicate);
 }
 
 /// @brief Returns `true` if `str` is a valid HTML attribute name.
@@ -190,8 +189,7 @@ constexpr bool is_html_attribute_name(std::u8string_view str)
     constexpr auto predicate = [](char32_t x) { return is_html_attribute_name_character(x); };
 
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
-    return !str.empty() //
-        && detail::all_of(utf8::Code_Point_View { str }, predicate);
+    return !str.empty() && utf8::all_of(str, predicate);
 }
 
 /// @brief Returns `true` if the given string requires no wrapping in quotes when it

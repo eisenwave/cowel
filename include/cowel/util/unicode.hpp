@@ -5,9 +5,13 @@
 #include <string_view>
 
 #include "ulight/impl/unicode.hpp"
+#include "ulight/impl/unicode_algorithm.hpp"
 
 namespace cowel::utf8 {
 
+using ulight::utf8::all_of;
+using ulight::utf8::any_not_of;
+using ulight::utf8::any_of;
 using ulight::utf8::Code_Point_And_Length;
 using ulight::utf8::Code_Point_Iterator;
 using ulight::utf8::Code_Point_Iterator_Sentinel;
@@ -22,9 +26,15 @@ using ulight::utf8::decode_unchecked;
 using ulight::utf8::encode8_unchecked;
 using ulight::utf8::Error_Code;
 using ulight::utf8::error_code_message;
+using ulight::utf8::find_if;
+using ulight::utf8::find_if_not;
 using ulight::utf8::is_valid;
+using ulight::utf8::length_if;
+using ulight::utf8::length_if_not;
+using ulight::utf8::none_of;
 using ulight::utf8::sequence_length;
 using ulight::utf8::Unicode_Error;
+using ulight::utf8::Unicode_Error_Handling;
 
 /// @brief Returns the length of `str`, in code units, when encoded.
 [[nodiscard]]
