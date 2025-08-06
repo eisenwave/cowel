@@ -7,7 +7,10 @@
 
 #define COWEL_HOT ULIGHT_HOT
 #define COWEL_COLD ULIGHT_COLD
+
+#ifdef ULIGHT_EXCEPTIONS
 #define COWEL_EXCEPTIONS ULIGHT_EXCEPTIONS
+#endif
 
 namespace cowel {
 
