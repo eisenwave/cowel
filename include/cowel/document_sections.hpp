@@ -277,7 +277,7 @@ public:
 /// The given name is then appended as is.
 /// @returns `name.size() <= 65635`.
 /// A name beyond that size cannot be encoded as a section reference.
-inline bool reference_section(Content_Policy& out, Char_Sequence8 name)
+inline bool reference_section(Text_Sink& out, Char_Sequence8 name)
 {
     constexpr std::size_t max_length = supplementary_pua_a_max - supplementary_pua_a_min;
     if (name.size() > max_length) {
