@@ -196,15 +196,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         ? static_cast<std::pmr::memory_resource*>(&pointer_memory)
         : static_cast<std::pmr::memory_resource*>(&global_memory);
 
-    using output_type = std::pmr::vector<char8_t>;
-
-    // We use placement new to prevent the destructor from std::vector from being called.
-    // This lets us steal the storage that std::vector is managing.
-    // Normally, this wouldn't be safe, but we use pmr and so we know that allocation can only
-    // have been performed using that.
-    alignas(output_type) std::byte output_storage[sizeof(output_type)];
-    output_type& output = *new (output_storage) output_type { memory };
-    Capturing_Ref_Text_Sink html_sink { output, Output_Language::html };
+    Vector_Text_Sink html_sink { Output_Language::html, memory };
     HTML_Content_Policy html_policy { html_sink };
 
     const Builtin_Directive_Set builtin_behavior {};
@@ -214,9 +206,9 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
     static constinit Ulight_Syntax_Highlighter highlighter;
 
     [[maybe_unused]]
-    const auto trace_log
-        = [&](std::u8string_view message) {
-              if (options.min_log_severity > COWEL_SEVERITY_TRACE) {
+    const auto try_log
+        = [&](std::u8string_view message, Severity severity) {
+              if (cowel_severity(severity) < options.min_log_severity) {
                   return;
               }
               logger(Diagnostic {
@@ -227,7 +219,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
               });
           };
 
-    trace_log(u8"Trace logging enabled.");
+    try_log(u8"Trace logging enabled."sv, Severity::trace);
 
     const auto source = as_u8string_view(options.source);
 
@@ -264,12 +256,18 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         gen_options
     );
 
-    // This is safe because output is never destroyed,
-    // so we keep its allocation alive.
-    return {
-        .status = static_cast<cowel_processing_status>(status),
-        .output = { output.data(), output.size() },
-    };
+    if (html_sink->empty()) {
+        return { .status = static_cast<cowel_processing_status>(status), .output = {} };
+    }
+
+    const cowel_mutable_string_view_u8 result
+        = cowel_alloc_text_u8({ html_sink->data(), html_sink->size() });
+    if (result.text == nullptr) {
+        try_log(u8"Failed to allocate memory for the generated HTML."sv, Severity::fatal);
+        return { .status = COWEL_PROCESSING_FATAL, .output = result };
+    }
+
+    return { .status = static_cast<cowel_processing_status>(status), .output = result };
 }
 
 [[maybe_unused]] [[noreturn]]

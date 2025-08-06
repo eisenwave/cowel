@@ -80,6 +80,17 @@ public:
         return std::move(m_out);
     }
 
+    [[nodiscard]]
+    std::pmr::vector<char8_t>* operator->()
+    {
+        return &m_out;
+    }
+    [[nodiscard]]
+    const std::pmr::vector<char8_t>* operator->() const
+    {
+        return &m_out;
+    }
+
     // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
     bool write(Char_Sequence8 chars, Output_Language) override
     {
