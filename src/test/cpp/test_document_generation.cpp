@@ -78,7 +78,7 @@ private:
 public:
     std::u8string_view source_string {};
     std::u8string_view theme_source_string {};
-    std::pmr::vector<ast::Content> content { &memory };
+    ast::Pmr_Vector<ast::Content> content { &memory };
 
     Collecting_Logger logger { &memory };
 

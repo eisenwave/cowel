@@ -23,7 +23,7 @@ Argument::Argument(
     std::u8string_view source,
     const File_Source_Span& name_span,
     std::u8string_view name,
-    std::pmr::vector<ast::Content>&& children
+    Pmr_Vector<ast::Content>&& children
 )
     : m_source_span { source_span }
     , m_source { source }
@@ -39,7 +39,7 @@ Argument::Argument(
 Argument::Argument(
     const File_Source_Span& source_span,
     std::u8string_view source,
-    std::pmr::vector<ast::Content>&& children
+    Pmr_Vector<ast::Content>&& children
 )
     : m_source_span { source_span }
     , m_source { source }
@@ -54,8 +54,8 @@ Directive::Directive(
     const File_Source_Span& source_span,
     std::u8string_view source,
     std::u8string_view name,
-    std::pmr::vector<Argument>&& args,
-    std::pmr::vector<Content>&& block
+    Pmr_Vector<Argument>&& args,
+    Pmr_Vector<Content>&& block
 )
     : m_source_span { source_span }
     , m_source { source }
@@ -146,7 +146,7 @@ public:
         COWEL_ASSERT(!instructions.empty());
     }
 
-    void build_document(std::pmr::vector<ast::Content>& out)
+    void build_document(ast::Pmr_Vector<ast::Content>& out)
     {
         const AST_Instruction push_doc = pop();
         COWEL_ASSERT(push_doc.type == AST_Instruction_Type::push_document);
@@ -193,7 +193,7 @@ private:
         return m_instructions[m_index++];
     }
 
-    void append_content(std::pmr::vector<ast::Content>& out)
+    void append_content(ast::Pmr_Vector<ast::Content>& out)
     {
         const AST_Instruction instruction = peek();
         switch (instruction.type) {
@@ -277,10 +277,10 @@ private:
         const std::size_t name_length = instruction.n - 1;
         advance_by(instruction.n);
 
-        std::pmr::vector<ast::Argument> arguments { m_memory };
+        ast::Pmr_Vector<ast::Argument> arguments { m_memory };
         try_append_argument_sequence(arguments);
 
-        std::pmr::vector<ast::Content> block { m_memory };
+        ast::Pmr_Vector<ast::Content> block { m_memory };
         try_append_block(block);
 
         const AST_Instruction pop_instruction = pop();
@@ -293,7 +293,7 @@ private:
         return { source_span, extract(source_span), name, std::move(arguments), std::move(block) };
     }
 
-    void try_append_argument_sequence(std::pmr::vector<ast::Argument>& out)
+    void try_append_argument_sequence(ast::Pmr_Vector<ast::Argument>& out)
     {
         if (eof()) {
             return;
@@ -327,7 +327,7 @@ private:
         advance_by(1);
     }
 
-    void append_argument(std::pmr::vector<ast::Argument>& out)
+    void append_argument(ast::Pmr_Vector<ast::Argument>& out)
     {
         const AST_Instruction instruction = pop();
         COWEL_ASSERT(instruction.type == AST_Instruction_Type::push_argument);
@@ -335,7 +335,7 @@ private:
         const Source_Position initial_pos = m_pos;
         std::optional<Source_Span> name;
 
-        std::pmr::vector<ast::Content> children { m_memory };
+        ast::Pmr_Vector<ast::Content> children { m_memory };
         children.reserve(instruction.n);
 
         while (!eof()) {
@@ -365,7 +365,7 @@ private:
         }
     }
 
-    void try_append_block(std::pmr::vector<ast::Content>& out)
+    void try_append_block(ast::Pmr_Vector<ast::Content>& out)
     {
         if (eof()) {
             return;
@@ -402,7 +402,7 @@ private:
 } // namespace
 
 void build_ast(
-    std::pmr::vector<ast::Content>& out,
+    ast::Pmr_Vector<ast::Content>& out,
     std::u8string_view source,
     File_Id file,
     std::span<const AST_Instruction> instructions,
@@ -413,7 +413,7 @@ void build_ast(
     AST_Builder { source, file, instructions, memory, on_error }.build_document(out);
 }
 
-std::pmr::vector<ast::Content> build_ast(
+ast::Pmr_Vector<ast::Content> build_ast(
     std::u8string_view source,
     File_Id file,
     std::span<const AST_Instruction> instructions,
@@ -421,13 +421,13 @@ std::pmr::vector<ast::Content> build_ast(
     Parse_Error_Consumer on_error
 )
 {
-    std::pmr::vector<ast::Content> result { memory };
+    ast::Pmr_Vector<ast::Content> result { memory };
     build_ast(result, source, file, instructions, memory, on_error);
     return result;
 }
 
 void parse_and_build(
-    std::pmr::vector<ast::Content>& out,
+    ast::Pmr_Vector<ast::Content>& out,
     std::u8string_view source,
     File_Id file,
     std::pmr::memory_resource* memory,
@@ -440,7 +440,7 @@ void parse_and_build(
 }
 
 /// @brief Parses a document and runs `build_ast` on the results.
-std::pmr::vector<ast::Content> parse_and_build(
+ast::Pmr_Vector<ast::Content> parse_and_build(
     std::u8string_view source,
     File_Id file,
     std::pmr::memory_resource* memory,

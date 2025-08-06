@@ -256,7 +256,7 @@ std::ostream& operator<<(std::ostream& out, const Expected_Content& content)
 
 struct [[nodiscard]] Actual_Document {
     std::pmr::vector<char8_t> source;
-    std::pmr::vector<ast::Content> content;
+    ast::Pmr_Vector<ast::Content> content;
 
     [[nodiscard]]
     std::u8string_view source_string() const
@@ -265,9 +265,9 @@ struct [[nodiscard]] Actual_Document {
     }
 
     [[nodiscard]]
-    std::pmr::vector<Expected_Content> to_expected() const
+    ast::Pmr_Vector<Expected_Content> to_expected() const
     {
-        std::pmr::vector<Expected_Content> result { content.get_allocator() };
+        ast::Pmr_Vector<Expected_Content> result { content.get_allocator() };
         result.reserve(content.size());
         for (const auto& actual : content) {
             result.push_back(Expected_Content::from(actual));
@@ -318,7 +318,7 @@ parse_and_build_file(std::u8string_view file, std::pmr::memory_resource* memory)
     }
     const std::u8string_view source_string = parsed->get_source_string();
 
-    std::pmr::vector<ast::Content> content
+    ast::Pmr_Vector<ast::Content> content
         = build_ast(source_string, File_Id {}, parsed->instructions, memory);
     return Actual_Document { std::move(parsed->source), std::move(content) };
 }
@@ -394,7 +394,7 @@ TEST(Parse, empty)
 TEST(Parse_And_Build, empty)
 {
     static std::pmr::monotonic_buffer_resource memory;
-    static const std::pmr::vector<Expected_Content> expected { &memory };
+    static const ast::Pmr_Vector<Expected_Content> expected { &memory };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"empty.cow");
 }
@@ -541,7 +541,7 @@ TEST(Parse, hello_code)
 TEST(Parse_And_Build, hello_code)
 {
     static std::pmr::monotonic_buffer_resource memory;
-    static const std::pmr::vector<Expected_Content> expected {
+    static const ast::Pmr_Vector<Expected_Content> expected {
         { Expected_Content::directive(u8"c", { Expected_Content::text(u8"/* awoo */") }),
           Expected_Content::text(u8"\n") },
         &memory
@@ -598,7 +598,7 @@ TEST(Parse_And_Build, hello_directive)
     static const Expected_Argument arg0 { u8"hello", { Expected_Content::text(u8"world") } };
     static const Expected_Argument arg1 { u8"x", { Expected_Content::text(u8"0") } };
 
-    static const std::pmr::vector<Expected_Content> expected {
+    static const ast::Pmr_Vector<Expected_Content> expected {
         { Expected_Content::directive(u8"b", { arg0, arg1 }, { Expected_Content::text(u8"test") }),
           Expected_Content::text(u8"\n") },
         &memory
@@ -613,7 +613,7 @@ TEST(Parse_And_Build, directive_arg_balanced_braces)
     static const Expected_Argument arg0 { u8"x", { Expected_Content::text(u8"{}") } };
     static const Expected_Argument arg1 { { Expected_Content::text(u8"{}") } };
 
-    static const std::pmr::vector<Expected_Content> expected {
+    static const ast::Pmr_Vector<Expected_Content> expected {
         { Expected_Content::directive(u8"d", { arg0, arg1 }), Expected_Content::text(u8"\n") },
         &memory
     };
@@ -624,7 +624,7 @@ TEST(Parse_And_Build, directive_arg_balanced_braces)
 TEST(Parse_And_Build, directive_arg_unbalanced_brace)
 {
     static std::pmr::monotonic_buffer_resource memory;
-    static const std::pmr::vector<Expected_Content> expected {
+    static const ast::Pmr_Vector<Expected_Content> expected {
         { Expected_Content::directive(u8"d"), Expected_Content::text(u8"[}]\n") }, &memory
     };
 
@@ -634,7 +634,7 @@ TEST(Parse_And_Build, directive_arg_unbalanced_brace)
 TEST(Parse_And_Build, directive_arg_unbalanced_brace_2)
 {
     static std::pmr::monotonic_buffer_resource memory;
-    static const std::pmr::vector<Expected_Content> expected {
+    static const ast::Pmr_Vector<Expected_Content> expected {
         { Expected_Content::directive(
               u8"x", { Expected_Content::directive(u8"y"), Expected_Content::text(u8"[") }
           ),
@@ -648,7 +648,7 @@ TEST(Parse_And_Build, directive_arg_unbalanced_brace_2)
 TEST(Parse_And_Build, directive_arg_unbalanced_through_brace_escape)
 {
     static std::pmr::monotonic_buffer_resource memory;
-    static const std::pmr::vector<Expected_Content> expected {
+    static const ast::Pmr_Vector<Expected_Content> expected {
         { Expected_Content::directive(u8"d"), Expected_Content::text(u8"["),
           Expected_Content::escape(u8"\\{"), Expected_Content::text(u8"}]\n") },
         &memory
@@ -660,7 +660,7 @@ TEST(Parse_And_Build, directive_arg_unbalanced_through_brace_escape)
 TEST(Parse_And_Build, directive_brace_escape)
 {
     static std::pmr::monotonic_buffer_resource memory;
-    static const std::pmr::vector<Expected_Content> expected {
+    static const ast::Pmr_Vector<Expected_Content> expected {
         { Expected_Content::directive(u8"d"), Expected_Content::text(u8"["),
           Expected_Content::escape(u8"\\{"), Expected_Content::text(u8"}]\n") },
         &memory

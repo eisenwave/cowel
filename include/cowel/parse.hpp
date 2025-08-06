@@ -109,7 +109,7 @@ using Parse_Error_Consumer = Function_Ref<
 /// @brief Builds an AST from a span of instructions,
 /// usually obtained from `parse`.
 void build_ast(
-    std::pmr::vector<ast::Content>& out,
+    ast::Pmr_Vector<ast::Content>& out,
     std::u8string_view source,
     File_Id file,
     std::span<const AST_Instruction> instructions,
@@ -120,7 +120,7 @@ void build_ast(
 /// @brief Builds an AST from a span of instructions,
 /// usually obtained from `parse`.
 [[nodiscard]]
-std::pmr::vector<ast::Content> build_ast(
+ast::Pmr_Vector<ast::Content> build_ast(
     std::u8string_view source,
     File_Id file,
     std::span<const AST_Instruction> instructions,
@@ -130,7 +130,7 @@ std::pmr::vector<ast::Content> build_ast(
 
 /// @brief Parses a document and runs `build_ast` on the results.
 void parse_and_build(
-    std::pmr::vector<ast::Content>& out,
+    ast::Pmr_Vector<ast::Content>& out,
     std::u8string_view source,
     File_Id file,
     std::pmr::memory_resource* memory,
@@ -139,7 +139,7 @@ void parse_and_build(
 
 /// @brief Parses a document and runs `build_ast` on the results.
 [[nodiscard]]
-std::pmr::vector<ast::Content> parse_and_build(
+ast::Pmr_Vector<ast::Content> parse_and_build(
     std::u8string_view source,
     File_Id file,
     std::pmr::memory_resource* memory,

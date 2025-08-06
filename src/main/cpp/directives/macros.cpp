@@ -84,7 +84,7 @@ enum struct Put_Response : bool {
 
 [[nodiscard]]
 Processing_Status substitute_in_macro(
-    std::pmr::vector<ast::Content>& content,
+    ast::Pmr_Vector<ast::Content>& content,
     const std::span<const ast::Argument> provided_arguments,
     const std::span<const ast::Content> provided_content,
     Context& context,
@@ -104,9 +104,9 @@ Processing_Status substitute_in_macro(
         // Before anything else, we have to replace the contents and the arguments of directives.
         // This comes even before the use evaluation of \put and \arg
         // in order to facilitate nesting, like \arg[\arg[0]].
-        std::pmr::vector<ast::Argument>& d_arguments = d->get_arguments();
+        ast::Pmr_Vector<ast::Argument>& d_arguments = d->get_arguments();
         for (auto arg_it = d_arguments.begin(); arg_it != d_arguments.end();) {
-            std::pmr::vector<ast::Content>& arg_content = arg_it->get_content();
+            ast::Pmr_Vector<ast::Content>& arg_content = arg_it->get_content();
             // Regular case where we just have some content in directive arguments that we
             // run substitution on, recursively.
             if (arg_content.size() != 1
@@ -248,7 +248,7 @@ Processing_Status substitute_in_macro(
 
 [[nodiscard]]
 Processing_Status instantiate_macro(
-    std::pmr::vector<ast::Content>& out,
+    ast::Pmr_Vector<ast::Content>& out,
     const ast::Directive& definition,
     std::span<const ast::Argument> put_arguments,
     std::span<const ast::Content> put_content,
@@ -283,7 +283,7 @@ Processing_Status Macro_Instantiate_Behavior::operator()(
     // so we're effectively calling it twice with the same input.
     COWEL_ASSERT(definition);
 
-    std::pmr::vector<ast::Content> instance { context.get_transient_memory() };
+    ast::Pmr_Vector<ast::Content> instance { context.get_transient_memory() };
     const auto instantiate_status
         = instantiate_macro(instance, *definition, d.get_arguments(), d.get_content(), context);
     if (status_is_break(instantiate_status)) {

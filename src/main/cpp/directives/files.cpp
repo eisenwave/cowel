@@ -125,7 +125,7 @@ Include_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
               context.emit(severity, id, file_location, message);
           };
 
-    const std::pmr::vector<ast::Content> imported_content
+    const ast::Pmr_Vector<ast::Content> imported_content
         = parse_and_build(entry->source, entry->id, context.get_transient_memory(), on_error);
 
     warn_deprecated_directive_names(imported_content, context);

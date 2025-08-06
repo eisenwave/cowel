@@ -15,6 +15,7 @@
 #include "cowel/util/source_position.hpp"
 
 #include "cowel/fwd.hpp"
+#include "cowel/memory_resources.hpp"
 #include "cowel/output_language.hpp"
 
 namespace cowel::ast {
@@ -24,11 +25,14 @@ using Suppress_Unused_Include_Source_Position_2 = Basic_File_Source_Span<void>;
 
 }
 
+template <typename T>
+using Pmr_Vector = std::vector<T, Propagated_Polymorphic_Allocator<T>>;
+
 struct Argument final {
 private:
     File_Source_Span m_source_span;
     std::u8string_view m_source;
-    std::pmr::vector<Content> m_content;
+    Pmr_Vector<Content> m_content;
     File_Source_Span m_name_span;
     std::u8string_view m_name;
 
@@ -40,7 +44,7 @@ public:
         std::u8string_view source,
         const File_Source_Span& name_span,
         std::u8string_view name,
-        std::pmr::vector<ast::Content>&& children
+        Pmr_Vector<ast::Content>&& children
     );
 
     /// @brief Constructor for positional (unnamed) arguments.
@@ -48,7 +52,7 @@ public:
     Argument(
         const File_Source_Span& source_span,
         std::u8string_view source,
-        std::pmr::vector<ast::Content>&& children
+        Pmr_Vector<ast::Content>&& children
     );
 
     Argument(Argument&&) noexcept;
@@ -88,11 +92,11 @@ public:
     }
 
     [[nodiscard]]
-    std::pmr::vector<Content>& get_content() &;
+    Pmr_Vector<Content>& get_content() &;
     [[nodiscard]]
     std::span<const Content> get_content() const&;
     [[nodiscard]]
-    std::pmr::vector<Content>&& get_content() &&;
+    Pmr_Vector<Content>&& get_content() &&;
 };
 
 struct Directive final {
@@ -101,8 +105,8 @@ private:
     std::u8string_view m_source;
     std::u8string_view m_name;
 
-    std::pmr::vector<Argument> m_arguments;
-    std::pmr::vector<Content> m_content;
+    Pmr_Vector<Argument> m_arguments;
+    Pmr_Vector<Content> m_content;
 
 public:
     [[nodiscard]]
@@ -110,8 +114,8 @@ public:
         const File_Source_Span& source_span,
         std::u8string_view source,
         std::u8string_view name,
-        std::pmr::vector<Argument>&& args,
-        std::pmr::vector<Content>&& block
+        Pmr_Vector<Argument>&& args,
+        Pmr_Vector<Content>&& block
     );
 
     Directive(Directive&&) noexcept;
@@ -147,11 +151,11 @@ public:
     }
 
     [[nodiscard]]
-    std::pmr::vector<Argument>& get_arguments();
+    Pmr_Vector<Argument>& get_arguments();
     [[nodiscard]]
     std::span<const Argument> get_arguments() const;
     [[nodiscard]]
-    std::pmr::vector<Content>& get_content();
+    Pmr_Vector<Content>& get_content();
     [[nodiscard]]
     std::span<Content const> get_content() const;
 };
@@ -269,12 +273,12 @@ public:
 
 struct Generated final {
 private:
-    std::pmr::vector<char8_t> m_data;
+    Pmr_Vector<char8_t> m_data;
     Output_Language m_type;
 
 public:
     [[nodiscard]]
-    explicit Generated(std::pmr::vector<char8_t>&& data, Output_Language type)
+    explicit Generated(Pmr_Vector<char8_t>&& data, Output_Language type)
         : m_data { std::move(data) }
         , m_type { type }
     {
@@ -351,7 +355,7 @@ inline Directive& Directive::operator=(const Directive&) = default;
 inline Directive::~Directive() = default;
 // NOLINTEND(readability-redundant-inline-specifier)
 
-inline std::pmr::vector<Content>& Argument::get_content() &
+inline Pmr_Vector<Content>& Argument::get_content() &
 {
     return m_content;
 }
@@ -359,12 +363,12 @@ inline std::span<const Content> Argument::get_content() const&
 {
     return m_content;
 }
-inline std::pmr::vector<Content>&& Argument::get_content() &&
+inline Pmr_Vector<Content>&& Argument::get_content() &&
 {
     return std::move(m_content);
 }
 
-inline std::pmr::vector<Argument>& Directive::get_arguments()
+inline Pmr_Vector<Argument>& Directive::get_arguments()
 {
     return m_arguments;
 }
@@ -373,7 +377,7 @@ inline std::span<const Argument> Directive::get_arguments() const
     return m_arguments;
 }
 
-inline std::pmr::vector<Content>& Directive::get_content()
+inline Pmr_Vector<Content>& Directive::get_content()
 {
     return m_content;
 }

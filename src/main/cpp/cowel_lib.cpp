@@ -231,7 +231,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 
     const auto source = as_u8string_view(options.source);
 
-    const std::pmr::vector<ast::Content> root_content = parse_and_build(
+    const ast::Pmr_Vector<ast::Content> root_content = parse_and_build(
         source, File_Id {}, memory,
         [&](std::u8string_view id, File_Source_Span pos, std::u8string_view message) {
             logger(Diagnostic { Severity::error, id, pos, message });
