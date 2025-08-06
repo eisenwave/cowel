@@ -26,7 +26,6 @@
 #include "cowel/settings.hpp"
 
 namespace cowel {
-
 namespace {
 
 constexpr HTML_Tag_Name highlighting_tag = html_tag::h_;
@@ -52,7 +51,7 @@ bool index_ranges_intersect(
 /// @param end The amount of characters to highlight.
 /// @param highlights The highlights for `source`.
 void generate_highlighted_html(
-    HTML_Writer& out,
+    Text_Buffer_HTML_Writer& out,
     std::u8string_view code,
     std::size_t begin,
     std::size_t length,
@@ -151,7 +150,7 @@ bool Syntax_Highlight_Policy::write_highlighted_text(Char_Sequence8 chars, Span_
 }
 
 Result<void, Syntax_Highlight_Error>
-Syntax_Highlight_Policy::dump_to(Text_Sink& out, Context& context, std::u8string_view language)
+Syntax_Highlight_Policy::dump_html_to(Text_Sink& out, Context& context, std::u8string_view language)
 {
     const std::size_t initial_size = m_highlighted_text.size();
     m_highlighted_text.insert(m_highlighted_text.end(), m_suffix.begin(), m_suffix.end());
@@ -168,7 +167,8 @@ Syntax_Highlight_Policy::dump_to(Text_Sink& out, Context& context, std::u8string
 
     m_highlighted_text.resize(initial_size);
 
-    HTML_Writer writer { out };
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
 
     for (const Output_Span& span : m_spans) {
         switch (span.type) {
@@ -190,6 +190,7 @@ Syntax_Highlight_Policy::dump_to(Text_Sink& out, Context& context, std::u8string
         }
     }
 
+    buffer.flush();
     return result;
 }
 

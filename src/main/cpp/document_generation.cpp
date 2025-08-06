@@ -169,11 +169,11 @@ Processing_Status write_head_body_document(
     Document_Sections& sections = context.get_sections();
 
     const Document_Sections::entry_type* html_section = nullptr;
-    auto& html_text = [&] -> std::pmr::vector<char8_t>& {
+    std::u8string_view html_string = [&] -> std::u8string_view {
         const auto scope = sections.go_to_scoped(section_name::document_html);
 
-        Content_Policy& current_out = sections.current_policy();
-        HTML_Writer current_writer { current_out };
+        HTML_Writer_Buffer buffer { sections.current_policy(), Output_Language::html };
+        Text_Buffer_HTML_Writer current_writer { buffer };
 
         const auto open_and_close = [&](HTML_Tag_Name tag, auto f) {
             current_writer.open_tag(tag);
@@ -186,17 +186,17 @@ Processing_Status write_head_body_document(
         current_writer.write_preamble();
         open_and_close(html_tag::html, [&] {
             open_and_close(html_tag::head, [&] {
-                reference_section(current_out, section_name::document_head);
+                reference_section(buffer, section_name::document_head);
             });
             open_and_close(html_tag::body, [&] {
-                reference_section(current_out, section_name::document_body);
+                reference_section(buffer, section_name::document_body);
             });
         });
 
         html_section = &sections.current();
-        return sections.current_output();
+        buffer.flush();
+        return as_u8string_view(sections.current_output());
     }();
-    const auto html_string = as_u8string_view(html_text);
 
     auto status = Processing_Status::ok;
     {
@@ -238,7 +238,8 @@ constexpr std::u8string_view newline_indent = u8"\n  ";
 Processing_Status
 write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Context& context)
 {
-    HTML_Writer writer { out };
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
     constexpr std::u8string_view google_fonts_url
         = u8"https://fonts.googleapis.com/css2"
           u8"?family=Fira+Code:wght@300..700"
@@ -309,6 +310,7 @@ write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Con
 
     include_css_or_js(html_tag::script, assets::light_dark_js);
     writer.write_inner_html(u8'\n');
+    buffer.flush();
     return Processing_Status::ok;
 }
 
@@ -318,12 +320,13 @@ Processing_Status write_wg21_body_contents(
     Context& context
 )
 {
-    HTML_Writer writer { out };
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
     writer.write_inner_html(assets::settings_widget_html);
     writer.open_tag(html_tag::main);
     writer.write_inner_html(u8'\n');
 
-    Paragraph_Split_Policy policy { out, context.get_transient_memory() };
+    Paragraph_Split_Policy policy { buffer, context.get_transient_memory() };
     const Processing_Status result = consume_all(policy, content, context);
     policy.leave_paragraph();
 

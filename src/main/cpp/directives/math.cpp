@@ -125,18 +125,22 @@ Processing_Status to_math_html(
 
         // directive names are HTML tag names
         const HTML_Tag_Name name { Unchecked {}, name_string };
-        HTML_Writer writer { out };
-        Attribute_Writer attributes = writer.open_tag_with_attributes(name);
+        HTML_Writer_Buffer buffer { out, Output_Language::html };
+        Text_Buffer_HTML_Writer writer { buffer };
+        auto attributes = writer.open_tag_with_attributes(name);
         const auto attributes_status = named_arguments_to_attributes(attributes, *d, context);
         attributes.end();
         if (status_is_break(attributes_status)) {
             writer.close_tag(name);
+            buffer.flush();
             return attributes_status;
         }
 
+        buffer.flush();
         const bool child_permits_text = mathml_permits_text_bits[std::size_t(index)];
         const auto nested_status = to_math_html(out, d->get_content(), context, child_permits_text);
         writer.close_tag(name);
+        buffer.flush();
         return status_concat(attributes_status, nested_status);
     });
 }
@@ -150,22 +154,27 @@ Math_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     const std::u8string_view display_string
         = m_display == Directive_Display::in_line ? u8"inline" : u8"block";
 
+    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+
     ensure_paragraph_matches_display(out, m_display);
 
     HTML_Content_Policy policy = ensure_html_policy(out);
-    HTML_Writer writer { policy };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(tag_name);
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    auto attributes = writer.open_tag_with_attributes(tag_name);
     attributes.write_display(display_string);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.end();
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
     if (status_is_break(attributes_status)) {
         writer.close_tag(tag_name);
+        buffer.flush();
         return attributes_status;
     }
+    buffer.flush();
 
     const auto nested_status = to_math_html(policy, d.get_content(), context);
     writer.close_tag(tag_name);
+    buffer.flush();
     return status_concat(attributes_status, nested_status);
 }
 

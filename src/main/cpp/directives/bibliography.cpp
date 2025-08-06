@@ -33,7 +33,7 @@ namespace {
 
 template <typename Predicate>
 void url_encode_to_writer(
-    HTML_Writer& out,
+    Text_Buffer_HTML_Writer& out,
     std::u8string_view url,
     Context& context,
     Predicate pred
@@ -48,7 +48,11 @@ constexpr std::u8string_view bib_item_id_prefix = u8"bib-item-";
 
 constexpr auto is_url_always_encoded_lambda = [](char8_t c) { return is_url_always_encoded(c); };
 
-void write_bibliography_entry(HTML_Writer& out, const Document_Info& info, Context& context)
+void write_bibliography_entry(
+    Text_Buffer_HTML_Writer& out,
+    const Document_Info& info,
+    Context& context
+)
 {
     const auto open_link_tag = [&](std::u8string_view url, bool link_class = false) {
         out.write_inner_html(u8"<a href=\""sv);
@@ -231,7 +235,8 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
         section_name += result.info.id;
         const auto scope = context.get_sections().go_to_scoped(section_name);
         Content_Policy& section_out = context.get_sections().current_policy();
-        HTML_Writer section_writer { section_out };
+        HTML_Writer_Buffer buffer { section_out, Output_Language::html };
+        Text_Buffer_HTML_Writer section_writer { buffer };
 
         if (!result.info.link.empty()) {
             // If the document info has a link,
@@ -254,12 +259,16 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
                 .end();
             section_writer.set_depth(0);
         }
+        buffer.flush();
     }
 
     {
         const auto scope = context.get_sections().go_to_scoped(section_name::bibliography);
-        HTML_Writer bib_writer { context.get_sections().current_policy() };
+        HTML_Writer_Buffer buffer { context.get_sections().current_policy(),
+                                    Output_Language::html };
+        Text_Buffer_HTML_Writer bib_writer { buffer };
         write_bibliography_entry(bib_writer, result.info, context);
+        buffer.flush();
     }
 
     context.get_bibliography().insert(std::move(result));

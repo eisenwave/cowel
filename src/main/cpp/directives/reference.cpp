@@ -156,7 +156,8 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
 
     try_enter_paragraph(out);
 
-    HTML_Writer writer { out };
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
 
     const auto target_string = as_u8string_view(target);
     const Reference_Classification classification = classify_reference(target_string);
@@ -166,13 +167,14 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             u8".",
             target_string,
         };
-        reference_section(out, joined_char_sequence(section_name_parts));
+        reference_section(buffer, joined_char_sequence(section_name_parts));
         if (d.get_content().empty()) {
             writer.write_inner_html(u8'[');
             writer.write_inner_text(target_string);
             writer.write_inner_html(u8']');
         }
         writer.write_inner_html(u8"</a>"sv); // no close_tag to avoid depth check
+        buffer.flush();
         return Processing_Status::ok;
     }
 
@@ -188,12 +190,14 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
                 u8".",
                 target_string.substr(1),
             };
-            reference_section(out, joined_char_sequence(section_name_parts));
+            reference_section(buffer, joined_char_sequence(section_name_parts));
         }
         else {
+            buffer.flush();
             status = consume_all(out, d.get_content(), context);
         }
         writer.close_tag(html_tag::a);
+        buffer.flush();
         return status;
     }
 
@@ -204,12 +208,14 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             .open_tag_with_attributes(html_tag::a) //
             .write_href(target_string)
             .end();
+        buffer.flush();
         const auto status = consume_all(out, d.get_content(), context);
         writer.close_tag(html_tag::a);
+        buffer.flush();
         return status;
     }
 
-    Attribute_Writer attributes = writer.open_tag_with_attributes(html_tag::a);
+    auto attributes = writer.open_tag_with_attributes(html_tag::a);
     attributes.write_href(target_string);
     const bool is_sans = classification.url_scheme == URL_Scheme::mailto
         || classification.url_scheme == URL_Scheme::tel
@@ -235,6 +241,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             writer.write_inner_text(target_string);
         }
         writer.close_tag(html_tag::a);
+        buffer.flush();
         return Processing_Status::ok;
     }
 
@@ -265,9 +272,9 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             break;
         }
     };
-    Draft_Location buffer[16];
+    Draft_Location location_buffer[16];
     const Result<void, Draft_URI_Error> r
-        = parse_and_verbalize_draft_uri(consume_verbalized, last_uri_part, buffer);
+        = parse_and_verbalize_draft_uri(consume_verbalized, last_uri_part, location_buffer);
     if (!r) {
         const std::u8string_view message[] {
             u8"The given reference in the C++ draft \"",

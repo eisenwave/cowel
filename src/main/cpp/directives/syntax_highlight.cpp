@@ -89,13 +89,16 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
 
     ensure_paragraph_matches_display(out, m_display);
 
+    const bool should_trim = m_pre_compat_trim == Pre_Trimming::yes;
+
     // All content written to out is HTML anyway,
     // so we don't need an extra HTML_Content_Policy here.
-    HTML_Writer writer { out };
-    const bool has_tags = !*nested;
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    const bool has_enclosing_tags = !*nested;
 
-    if (has_tags) {
-        Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
+    if (has_enclosing_tags) {
+        auto attributes = writer.open_tag_with_attributes(m_tag_name);
         if (!*borders) {
             COWEL_ASSERT(m_display != Directive_Display::in_line);
             attributes.write_class(u8"borderless"sv);
@@ -103,41 +106,43 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
         attributes.end();
     }
 
-    const bool should_trim = m_pre_compat_trim == Pre_Trimming::yes;
-
-    Vector_Text_Sink buffer_sink { Output_Language::html, context.get_transient_memory() };
-    auto& chosen_sink = should_trim ? buffer_sink : static_cast<Text_Sink&>(out);
-
     Syntax_Highlight_Policy highlight_policy //
         { context.get_transient_memory() };
     highlight_policy.write_phantom(prefix->string);
     const auto highlight_status = consume_all(highlight_policy, d.get_content(), context);
     highlight_policy.write_phantom(suffix->string);
 
-    const Result<void, Syntax_Highlight_Error> result
-        = highlight_policy.dump_to(chosen_sink, context, lang->string);
-    if (!result) {
-        diagnose(result.error(), lang->string, d, context);
-    }
-    if (should_trim) {
+    const Result<void, Syntax_Highlight_Error> result = [&] {
+        if (!should_trim) {
+            return highlight_policy.dump_html_to(buffer, context, lang->string);
+        }
+        Vector_Text_Sink vector_sink { Output_Language::html, context.get_transient_memory() };
+        const Result<void, Syntax_Highlight_Error> result
+            = highlight_policy.dump_html_to(vector_sink, context, lang->string);
+
         // https://html.spec.whatwg.org/dev/grouping-content.html#the-pre-element
         // Leading newlines immediately following <pre> are stripped anyway.
         // The same applies to any elements styled "white-space: pre".
         // In general, it is best to remove these.
         // To ensure portability, we need to trim away newlines (if any).
-        auto inner_html = as_u8string_view(*buffer_sink);
+        auto inner_html = as_u8string_view(*vector_sink);
         while (inner_html.starts_with(u8'\n')) {
             inner_html.remove_prefix(1);
         }
         while (inner_html.ends_with(u8'\n')) {
             inner_html.remove_suffix(1);
         }
-        out.write(inner_html, Output_Language::html);
+        buffer.write(inner_html, Output_Language::html);
+        return result;
+    }();
+    if (!result) {
+        diagnose(result.error(), lang->string, d, context);
     }
 
-    if (has_tags) {
+    if (has_enclosing_tags) {
         writer.close_tag(m_tag_name);
     }
+    buffer.flush();
 
     return status_concat(args_status, highlight_status);
 }
@@ -186,16 +191,19 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     }
 
     HTML_Content_Policy policy = ensure_html_policy(out);
-    HTML_Writer writer { policy };
+    HTML_Writer_Buffer buffer { policy, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
     writer
         .open_tag_with_attributes(html_tag::h_) //
         .write_attribute(html_attr::data_h, short_name)
         .end();
+    buffer.flush();
     const Processing_Status result = consume_all(policy, d.get_content(), context);
     if (status_is_break(result)) {
         return result;
     }
     writer.close_tag(html_tag::h_);
+    buffer.flush();
     return result;
 }
 

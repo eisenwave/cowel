@@ -16,6 +16,7 @@
 #include "cowel/util/url_encode.hpp"
 
 #include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/text_buffer.hpp"
 
 #include "cowel/fwd.hpp"
 
@@ -242,32 +243,36 @@ public:
 
     /// @brief Writes text between tags.
     /// Text characters such as `<` or `>` which interfere with HTML are converted to entities.
-    void write_inner_text(std::u8string_view text)
+    Basic_HTML_Writer& write_inner_text(std::u8string_view text)
     {
         COWEL_ASSERT(!m_in_attributes);
         append_html_escaped_of(m_out, text, u8"&<>"sv);
+        return *this;
     }
-    void write_inner_text(std::u32string_view text)
+    Basic_HTML_Writer& write_inner_text(std::u32string_view text)
     {
         COWEL_ASSERT(!m_in_attributes);
         for (const char32_t c : text) {
             write_inner_text(c);
         }
+        return *this;
     }
-    void write_inner_text(char8_t c)
+    Basic_HTML_Writer& write_inner_text(char8_t c)
     {
         COWEL_DEBUG_ASSERT(is_ascii(c));
         write_inner_text({ &c, 1 });
+        return *this;
     }
 
     /// @brief Writes HTML content between tags.
     /// Unlike `write_inner_text`, does not escape any entities.
     ///
     /// WARNING: Improper use of this function can easily result in incorrect HTML output.
-    void write_inner_html(Char_Sequence8 text)
+    Basic_HTML_Writer& write_inner_html(Char_Sequence8 text)
     {
         COWEL_ASSERT(!m_in_attributes);
         m_out(text);
+        return *this;
     }
 
 private:
@@ -537,7 +542,7 @@ struct To_Text_Sink_Consumer {
     Text_Sink& out;
 
     [[nodiscard]]
-    To_Text_Sink_Consumer(Text_Sink& out)
+    To_Text_Sink_Consumer(Text_Sink& out) noexcept
         : out { out }
     {
     }
@@ -548,8 +553,38 @@ struct To_Text_Sink_Consumer {
     }
 };
 
-using HTML_Writer = Basic_HTML_Writer<To_Text_Sink_Consumer>;
-using Attribute_Writer = Basic_Attribute_Writer<To_Text_Sink_Consumer>;
+using Text_Sink_HTML_Writer = Basic_HTML_Writer<To_Text_Sink_Consumer>;
+using Text_Sink_Attribute_Writer = Basic_Attribute_Writer<To_Text_Sink_Consumer>;
+
+using HTML_Writer_Buffer = Text_Buffer<html_writer_buffer_size>;
+
+struct To_Text_Buffer_Consumer {
+    using Buffer = HTML_Writer_Buffer;
+
+    Buffer& out;
+
+    [[nodiscard]]
+    To_Text_Buffer_Consumer(Buffer& out) noexcept
+        : out { out }
+    {
+    }
+
+    void operator()(Char_Sequence8 str) const
+    {
+        out.write(str, Output_Language::html);
+    }
+    void operator()(char8_t c) const
+    {
+        out.push_back(c);
+    }
+    void operator()(std::u8string_view sv) const
+    {
+        out.append(sv.data(), sv.data() + sv.size());
+    }
+};
+
+using Text_Buffer_HTML_Writer = Basic_HTML_Writer<To_Text_Buffer_Consumer>;
+using Text_Buffer_Attribute_Writer = Basic_Attribute_Writer<To_Text_Buffer_Consumer>;
 
 } // namespace cowel
 

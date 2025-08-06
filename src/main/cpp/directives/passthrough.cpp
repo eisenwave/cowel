@@ -76,17 +76,21 @@ Passthrough_Behavior::operator()(Content_Policy& out, const ast::Directive& d, C
     auto& policy = m_policy == Policy_Usage::html ? html_policy : out;
 
     const HTML_Tag_Name name = get_name(d, context);
-    HTML_Writer writer { policy };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(name);
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    Text_Buffer_Attribute_Writer attributes = writer.open_tag_with_attributes(name);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(name);
+        buffer.flush();
         return attributes_status;
     }
+    buffer.flush();
 
     const auto content_status = consume_all(policy, d.get_content(), context);
     writer.close_tag(name);
+    buffer.flush();
     return status_concat(attributes_status, content_status);
 }
 
@@ -123,8 +127,9 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
         return try_generate_error(out, d, context);
     }
 
-    HTML_Writer writer { out };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(*name);
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    auto attributes = writer.open_tag_with_attributes(*name);
     auto status = named_arguments_to_attributes(attributes, d, context);
 
     if (m_self_closing == HTML_Element_Self_Closing::self_closing) {
@@ -138,6 +143,7 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     }
     else {
         attributes.end();
+        buffer.flush();
         if (status_is_continue(status)) {
             const auto content_status = consume_all(out, d.get_content(), context);
             status = status_concat(content_status, status);
@@ -145,6 +151,7 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
         writer.close_tag(*name);
     }
 
+    buffer.flush();
     return status;
 }
 
@@ -160,18 +167,23 @@ In_Tag_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
     HTML_Content_Policy html_policy = ensure_html_policy(out);
     auto& policy = m_policy == Policy_Usage::html ? html_policy : out;
 
-    HTML_Writer writer { policy };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    auto attributes = writer.open_tag_with_attributes(m_tag_name);
     attributes.write_class(m_class_name);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(m_tag_name);
+        buffer.flush();
         return attributes_status;
     }
+    buffer.flush();
 
     const auto content_status = consume_all(policy, d.get_content(), context);
+
     writer.close_tag(m_tag_name);
+    buffer.flush();
     return status_concat(attributes_status, content_status);
 }
 
@@ -202,14 +214,20 @@ Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
     const bool emit_intro = m_intro == Intro_Policy::yes;
     const auto initial_state = emit_intro ? Paragraphs_State::inside : Paragraphs_State::outside;
 
+    // TODO: I'm pretty sure we don't need an HTML policy if we use a paragraph split policy.
     HTML_Content_Policy html_policy = ensure_html_policy(out);
     Paragraph_Split_Policy policy { html_policy, context.get_transient_memory(), initial_state };
-    HTML_Writer writer { policy };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(m_name);
+
+    // Note that it's okay to bypass the paragraph split policy here
+    // because all the output HTML would pass through it anyway.
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    auto attributes = writer.open_tag_with_attributes(m_name);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(m_name);
+        buffer.flush();
         return attributes_status;
     }
 
@@ -220,17 +238,20 @@ Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
         // \note{abc}, there is a space between </into> and abc.
         writer.write_inner_html(u8' ');
     }
-    // TODO: add paragraph splitting content policy here
+    buffer.flush();
+
     const auto content_status = consume_all(policy, d.get_content(), context);
+
     policy.leave_paragraph();
     writer.close_tag(m_name);
+    buffer.flush();
     return status_concat(attributes_status, content_status);
 }
 
 Processing_Status
 URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
 {
-    // TODO: warn about unused arguments
+    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
 
     try_enter_paragraph(out);
 
@@ -243,18 +264,19 @@ URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
 
     const auto url_string = as_u8string_view(url);
 
-    HTML_Writer writer { out };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(html_tag::a);
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    auto attributes = writer.open_tag_with_attributes(html_tag::a);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.write_href(url_string);
     attributes.write_class(u8"sans"sv);
     attributes.end();
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
 
     COWEL_ASSERT(url_string.length() >= m_url_prefix.length());
     writer.write_inner_text(url_string.substr(m_url_prefix.length()));
 
     writer.close_tag(html_tag::a);
+    buffer.flush();
     return attributes_status;
 }
 
@@ -276,8 +298,9 @@ Self_Closing_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
 
     ensure_paragraph_matches_display(out, m_display);
 
-    HTML_Writer writer { out };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    auto attributes = writer.open_tag_with_attributes(m_tag_name);
     const auto status = named_arguments_to_attributes(attributes, d, context);
     attributes.end_empty();
     return status;
@@ -290,15 +313,18 @@ List_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
 
     try_leave_paragraph(out);
 
-    HTML_Content_Policy policy = ensure_html_policy(out);
-    HTML_Writer writer { policy };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    auto attributes = writer.open_tag_with_attributes(m_tag_name);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.end();
+    buffer.flush();
     if (status_is_break(attributes_status)) {
+        buffer.flush();
         return attributes_status;
     }
 
+    HTML_Content_Policy policy = ensure_html_policy(out);
     const auto content_status = process_greedy(d.get_content(), [&](const ast::Content& c) {
         if (const auto* const directive = std::get_if<ast::Directive>(&c)) {
             const std::u8string_view name = directive->get_name();
@@ -317,6 +343,7 @@ List_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     });
 
     writer.close_tag(m_tag_name);
+    buffer.flush();
     return status_concat(attributes_status, content_status);
 }
 

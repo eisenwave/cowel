@@ -48,6 +48,8 @@ public:
         , m_html_text { memory }
         , m_highlighted_text { memory }
     {
+        m_spans.reserve(16);
+        m_highlighted_text.reserve(16);
     }
 
     bool write(Char_Sequence8 chars, Output_Language language) override;
@@ -97,7 +99,7 @@ public:
     /// Under the hood, ulight is used, so this needs to be one of the short names
     /// that ulight supports.
     Result<void, Syntax_Highlight_Error>
-    dump_to(Text_Sink& out, Context& context, std::u8string_view language);
+    dump_html_to(Text_Sink& out, Context& context, std::u8string_view language);
 
 private:
     bool write_highlighted_text(Char_Sequence8 chars, Span_Type type);

@@ -97,7 +97,7 @@ struct Error_Behavior : Directive_Behavior {
             return Processing_Status::ok;
         }
         case Output_Language::html: {
-            HTML_Writer writer { out };
+            Text_Sink_HTML_Writer writer { out };
             writer.open_tag(id);
             writer.write_inner_text(d.get_source());
             writer.close_tag(id);

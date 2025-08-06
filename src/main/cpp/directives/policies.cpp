@@ -63,7 +63,8 @@ consume_syntax_highlighted(Content_Policy& out, const ast::Directive& d, Context
 
     Syntax_Highlight_Policy policy { context.get_transient_memory() };
     const Processing_Status consume_status = consume_all(policy, d.get_content(), context);
-    const Result<void, Syntax_Highlight_Error> result = policy.dump_to(out, context, lang->string);
+    const Result<void, Syntax_Highlight_Error> result
+        = policy.dump_html_to(out, context, lang->string);
     if (!result) {
         diagnose(result.error(), lang->string, d, context);
     }

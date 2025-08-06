@@ -357,7 +357,7 @@ void diagnose(
 }
 
 Processing_Status named_arguments_to_attributes(
-    Attribute_Writer& out,
+    Text_Buffer_Attribute_Writer& out,
     const ast::Directive& d,
     Context& context,
     Argument_Filter filter,
@@ -375,7 +375,7 @@ Processing_Status named_arguments_to_attributes(
 }
 
 Processing_Status named_arguments_to_attributes(
-    Attribute_Writer& out,
+    Text_Buffer_Attribute_Writer& out,
     const ast::Directive& d,
     const Argument_Matcher& matcher,
     Context& context,
@@ -407,7 +407,7 @@ Processing_Status named_arguments_to_attributes(
 }
 
 Processing_Status named_argument_to_attribute(
-    Attribute_Writer& out,
+    Text_Buffer_Attribute_Writer& out,
     const ast::Argument& a,
     Context& context,
     Attribute_Style style

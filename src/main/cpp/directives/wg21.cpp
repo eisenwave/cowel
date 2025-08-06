@@ -6,7 +6,6 @@
 #include "cowel/util/strings.hpp"
 
 #include "cowel/policy/content_policy.hpp"
-#include "cowel/policy/factory.hpp"
 #include "cowel/policy/html.hpp"
 
 #include "cowel/ast.hpp"
@@ -31,19 +30,22 @@ WG21_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
 
     try_enter_paragraph(out);
 
-    HTML_Writer writer { out };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(tag);
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    auto attributes = writer.open_tag_with_attributes(tag);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.end();
 
     if (status_is_break(attributes_status)) {
         writer.close_tag(tag);
+        buffer.flush();
         return attributes_status;
     }
 
     writer.write_inner_html(u8"[<i>"sv);
     writer.write_inner_text(m_prefix);
     writer.write_inner_html(u8"</i>: "sv);
+    buffer.flush();
 
     const auto content_status = consume_all(out, d.get_content(), context);
 
@@ -51,6 +53,7 @@ WG21_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
     writer.write_inner_text(m_suffix);
     writer.write_inner_html(u8"</i>]"sv);
     writer.close_tag(tag);
+    buffer.flush();
 
     return status_concat(attributes_status, content_status);
 }
@@ -64,8 +67,8 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Con
 
     try_leave_paragraph(out);
 
-    HTML_Content_Policy html_policy = ensure_html_policy(out);
-    HTML_Writer writer { html_policy };
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Sink_HTML_Writer writer { buffer };
     writer
         .open_tag_with_attributes(html_tag::div) //
         .write_class(u8"wg21-head"sv)
@@ -93,14 +96,19 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Con
         const auto title_string = as_u8string_view(title_plaintext);
 
         const auto scope = context.get_sections().go_to_scoped(section_name::document_head);
-        HTML_Writer head_writer { context.get_sections().current_policy() };
-        head_writer.open_tag(html_tag::title);
-        head_writer.write_inner_text(title_string);
-        head_writer.close_tag(html_tag::title);
+        HTML_Writer_Buffer buffer { context.get_sections().current_policy(),
+                                    Output_Language::html };
+        Text_Buffer_HTML_Writer { buffer }
+            .open_tag(html_tag::title)
+            .write_inner_text(title_string)
+            .close_tag(html_tag::title);
     }
 
     writer.open_tag(html_tag::h1);
+
+    HTML_Content_Policy html_policy { buffer };
     const auto title_status = consume_all(html_policy, title_arg.get_content(), context);
+
     writer.close_tag(html_tag::h1);
     if (status_is_break(title_status)) {
         return title_status;

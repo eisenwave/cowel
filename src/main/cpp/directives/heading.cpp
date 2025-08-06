@@ -123,9 +123,10 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     // 0. Ensure that headings are not in paragraphs.
     try_leave_paragraph(out);
 
-    // 1. Obtain or synthesize the id.
-    HTML_Writer writer { out };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(tag_name);
+    // 1. Write HTML attributes, including the (possibly synthesized) id.
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    auto attributes = writer.open_tag_with_attributes(tag_name);
     if (has_id) {
         attributes.write_id(as_u8string_view(id_data));
     }
@@ -136,18 +137,22 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     current_status = status_concat(current_status, attributes_status);
     if (status_is_break(attributes_status)) {
         writer.close_tag(tag_name);
+        buffer.flush();
         return current_status;
     }
 
     // 2. Generate user content in the heading.
     std::pmr::vector<char8_t> heading_html { context.get_transient_memory() };
-    Capturing_Ref_Text_Sink heading_sink { heading_html, Output_Language::html };
-    HTML_Content_Policy html_policy { heading_sink };
-    const auto heading_status = consume_all(html_policy, d.get_content(), context);
-    current_status = status_concat(current_status, heading_status);
-    if (status_is_break(heading_status)) {
-        writer.close_tag(tag_name);
-        return current_status;
+    {
+        Capturing_Ref_Text_Sink heading_sink { heading_html, Output_Language::html };
+        HTML_Content_Policy html_policy { heading_sink };
+        const auto heading_status = consume_all(html_policy, d.get_content(), context);
+        current_status = status_concat(current_status, heading_status);
+        if (status_is_break(heading_status)) {
+            writer.close_tag(tag_name);
+            buffer.flush();
+            return current_status;
+        }
     }
     const auto heading_html_string = as_u8string_view(heading_html);
 
@@ -182,7 +187,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
             .end();
         writer.close_tag(html_tag::a);
     }
-    const auto write_numbers = [&](HTML_Writer& to) {
+    const auto write_numbers = [&](Text_Buffer_HTML_Writer& to) {
         for (int i = min_listing_level; i <= m_level; ++i) {
             if (i != min_listing_level) {
                 to.write_inner_html(u8'.');
@@ -209,7 +214,8 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
         section_name += as_u8string_view(id_data).substr(1);
 
         const auto scope = sections.go_to_scoped(section_name);
-        HTML_Writer id_preview_out { sections.current_policy() };
+        HTML_Writer_Buffer id_preview_buffer { sections.current_policy(), Output_Language::html };
+        Text_Buffer_HTML_Writer id_preview_out { id_preview_buffer };
         id_preview_out.write_inner_html(u8"§"sv);
         if (is_listed && is_number_shown) {
             write_numbers(id_preview_out);
@@ -219,13 +225,15 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
             id_preview_out.write_inner_html(u8' ');
         }
         id_preview_out.write_inner_html(heading_html_string);
+        id_preview_buffer.flush();
     }
 
     // 7. If necessary, also output the heading into the table of contents.
     if (is_listed) {
         Document_Sections& sections = context.get_sections();
         const auto scope = sections.go_to_scoped(section_name::table_of_contents);
-        HTML_Writer toc_writer { sections.current_policy() };
+        HTML_Writer_Buffer toc_buffer { sections.current_policy(), Output_Language::html };
+        Text_Buffer_HTML_Writer toc_writer { toc_buffer };
 
         toc_writer
             .open_tag_with_attributes(html_tag::div) //
@@ -251,6 +259,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
             toc_writer.close_tag(html_tag::a);
         }
         toc_writer.write_inner_html(u8'\n'); // non-functional, purely for prettier HTML output
+        toc_buffer.flush();
     }
 
     return current_status;
@@ -329,12 +338,13 @@ Make_Section_Behavior::operator()(Content_Policy& out, const ast::Directive&, Co
     context.get_sections().make(m_section_name);
 
     // TODO: warn about ignored arguments and block
-    HTML_Writer writer { out };
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
     writer
         .open_tag_with_attributes(html_tag::div) //
         .write_class(m_class_name)
         .end();
-    reference_section(out, m_section_name);
+    reference_section(buffer, m_section_name);
     writer.close_tag(html_tag::div);
     return Processing_Status::ok;
 }

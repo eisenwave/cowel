@@ -27,7 +27,7 @@ std::u8string_view as_view(std::span<const char8_t> span)
 struct HTML_Writer_Test : testing::Test {
     std::pmr::monotonic_buffer_resource memory;
     Vector_Text_Sink out { Output_Language::html, &memory };
-    HTML_Writer writer { out };
+    Text_Sink_HTML_Writer writer { out };
 };
 
 TEST_F(HTML_Writer_Test, empty)

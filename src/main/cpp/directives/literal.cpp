@@ -65,8 +65,9 @@ HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
 
     try_leave_paragraph(out);
 
-    HTML_Writer writer { out };
-    Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Buffer_HTML_Writer writer { buffer };
+    Text_Buffer_Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
     const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
     attributes.end();
     if (status_is_break(attributes_status)) {
@@ -74,14 +75,14 @@ HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
     }
     Processing_Status status = attributes_status;
 
-    std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
-    const auto content_status = to_plaintext(buffer, d.get_content(), context);
+    std::pmr::vector<char8_t> raw_text { context.get_transient_memory() };
+    const auto content_status = to_plaintext(raw_text, d.get_content(), context);
     status = status_concat(status, content_status);
     if (status_is_continue(content_status)) {
         COWEL_ASSERT(m_tag_name == u8"style"sv || m_tag_name == u8"script"sv);
         const std::u8string_view needle
             = m_tag_name == u8"style"sv ? u8"</style"sv : u8"</script"sv;
-        if (as_u8string_view(buffer).contains(needle)) {
+        if (as_u8string_view(raw_text).contains(needle)) {
             context.try_error(
                 diagnostic::raw_text_closing, d.get_source_span(),
                 joined_char_sequence({
@@ -93,10 +94,12 @@ HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
             status = status_concat(status, Processing_Status::error);
         }
         else {
-            writer.write_inner_html(as_u8string_view(buffer));
+            writer.write_inner_html(as_u8string_view(raw_text));
         }
     }
+
     writer.close_tag(m_tag_name);
+    buffer.flush();
     return status;
 }
 
