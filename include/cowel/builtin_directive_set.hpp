@@ -65,17 +65,7 @@ public:
         return m_behavior(out, call, context);
     }
 
-    void warn(const Invocation& call, Context& context) const
-    {
-        context.try_warning(
-            diagnostic::deprecated, call.directive.get_name_span(),
-            joined_char_sequence({
-                u8"This directive is deprecated; use \\",
-                m_replacement,
-                u8" instead.",
-            })
-        );
-    }
+    void warn(const Invocation& call, Context& context) const;
 };
 
 /// @brief Behavior for `\\error` directives.
@@ -89,25 +79,7 @@ struct Error_Behavior : Directive_Behavior {
 
     [[nodiscard]]
     Processing_Status
-    operator()(Content_Policy& out, const Invocation& call, Context&) const override
-    {
-        // TODO: inline display
-        switch (out.get_language()) {
-        case Output_Language::none: {
-            return Processing_Status::ok;
-        }
-        case Output_Language::html: {
-            Text_Sink_HTML_Writer writer { out };
-            writer.open_tag(id);
-            writer.write_inner_text(call.directive.get_source());
-            writer.close_tag(id);
-            return Processing_Status::ok;
-        }
-        default: {
-            return Processing_Status::ok;
-        }
-        }
-    }
+    operator()(Content_Policy& out, const Invocation& call, Context&) const override;
 };
 
 struct Comment_Behavior : Directive_Behavior {

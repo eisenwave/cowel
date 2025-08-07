@@ -19,10 +19,44 @@
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/invocation.hpp"
 
 using namespace std::string_view_literals;
 
 namespace cowel {
+
+void Deprecated_Behavior::warn(const Invocation& call, Context& context) const
+{
+    context.try_warning(
+        diagnostic::deprecated, call.directive.get_name_span(),
+        joined_char_sequence({
+            u8"This directive is deprecated; use \\",
+            m_replacement,
+            u8" instead.",
+        })
+    );
+}
+
+Processing_Status
+Error_Behavior::operator()(Content_Policy& out, const Invocation& call, Context&) const
+{
+    // TODO: inline display
+    switch (out.get_language()) {
+    case Output_Language::none: {
+        return Processing_Status::ok;
+    }
+    case Output_Language::html: {
+        Text_Sink_HTML_Writer writer { out };
+        writer.open_tag(id);
+        writer.write_inner_text(call.directive.get_source());
+        writer.close_tag(id);
+        return Processing_Status::ok;
+    }
+    default: {
+        return Processing_Status::ok;
+    }
+    }
+}
 
 Processing_Status
 HTML_Wrapper_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
@@ -34,7 +68,7 @@ HTML_Wrapper_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     Paragraph_Split_Policy split_policy { out, context.get_transient_memory() };
     auto& policy = m_is_paragraphed ? split_policy : out;
 
-    const Processing_Status result = consume_all(policy, call.content, context);
+    const Processing_Status result = consume_all(policy, call.content, call.content_frame, context);
     if (m_is_paragraphed) {
         split_policy.leave_paragraph();
     }
@@ -52,7 +86,7 @@ Processing_Status Plaintext_Wrapper_Behavior::operator()(
     ensure_paragraph_matches_display(out, m_display);
 
     Plaintext_Content_Policy policy { out };
-    return consume_all(policy, call.content, context);
+    return consume_all(policy, call.content, call.content_frame, context);
 }
 
 Processing_Status
@@ -61,7 +95,7 @@ Trim_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     // TODO: warn about unused arguments
     ensure_paragraph_matches_display(out, m_display);
 
-    return consume_all_trimmed(out, call.content, context);
+    return consume_all_trimmed(out, call.content, call.content_frame, context);
 }
 
 Processing_Status
@@ -89,7 +123,7 @@ Passthrough_Behavior::operator()(Content_Policy& out, const Invocation& call, Co
     }
     buffer.flush();
 
-    const auto content_status = consume_all(policy, call.content, context);
+    const auto content_status = consume_all(policy, call.content, call.content_frame, context);
     writer.close_tag(name);
     buffer.flush();
     return status_concat(attributes_status, content_status);
@@ -99,7 +133,7 @@ Processing_Status
 HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    const ast::Argument* const first_positional
+    const std::optional<Argument_Ref> first_positional
         = get_first_positional_warn_rest(call.arguments, context);
     if (!first_positional) {
         context.try_error(
@@ -110,8 +144,9 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     }
 
     std::pmr::vector<char8_t> name_text { context.get_transient_memory() };
-    const Processing_Status name_status
-        = to_plaintext(name_text, first_positional->get_content(), context);
+    const Processing_Status name_status = to_plaintext(
+        name_text, first_positional->ast_node.get_content(), first_positional->frame_index, context
+    );
     if (name_status != Processing_Status::ok) {
         return name_status;
     }
@@ -119,7 +154,7 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     const std::optional<HTML_Tag_Name> name = HTML_Tag_Name::make(name_string);
     if (!name) {
         context.try_error(
-            diagnostic::html_element_name_invalid, first_positional->get_source_span(),
+            diagnostic::html_element_name_invalid, first_positional->ast_node.get_source_span(),
             joined_char_sequence({
                 u8"The given tag name \""sv,
                 name_string,
@@ -147,7 +182,7 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
         attributes.end();
         buffer.flush();
         if (status_is_continue(status)) {
-            const auto content_status = consume_all(out, call.content, context);
+            const auto content_status = consume_all(out, call.content, call.content_frame, context);
             status = status_concat(content_status, status);
         }
         writer.close_tag(*name);
@@ -183,7 +218,7 @@ In_Tag_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
     }
     buffer.flush();
 
-    const auto content_status = consume_all(policy, call.content, context);
+    const auto content_status = consume_all(policy, call.content, call.content_frame, context);
 
     writer.close_tag(m_tag_name);
     buffer.flush();
@@ -244,7 +279,7 @@ Special_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, 
     }
     buffer.flush();
 
-    const auto content_status = consume_all(policy, call.content, context);
+    const auto content_status = consume_all(policy, call.content, call.content_frame, context);
 
     policy.leave_paragraph();
     writer.close_tag(m_name);
@@ -261,7 +296,7 @@ URL_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
 
     std::pmr::vector<char8_t> url { context.get_transient_memory() };
     append(url, m_url_prefix);
-    const auto text_status = to_plaintext(url, call.content, context);
+    const auto text_status = to_plaintext(url, call.content, call.content_frame, context);
     if (text_status != Processing_Status::ok) {
         return text_status;
     }
@@ -331,24 +366,26 @@ List_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     }
 
     HTML_Content_Policy policy = ensure_html_policy(out);
-    const auto content_status = process_greedy(call.content, [&](const ast::Content& c) {
-        if (const auto* const directive = std::get_if<ast::Directive>(&c)) {
-            const std::u8string_view name = directive->get_name();
-            return [&] {
-                if (name == u8"item" || name == u8"-item") {
-                    context.try_warning(
-                        diagnostic::deprecated, directive->get_name_span(),
-                        u8"Use of \\item is deprecated. Use \\li in lists instead."sv
-                    );
-                    return m_item_behavior(
-                        policy, make_invocation(*directive, call.frame_index + 1), context
-                    );
-                }
-                return policy.consume(*directive, context);
-            }();
+    const auto process = [&](const ast::Content& c) -> Processing_Status {
+        const auto* const directive = std::get_if<ast::Directive>(&c);
+        if (!directive) {
+            return policy.consume_content(c, call.content_frame, context);
         }
-        return policy.consume_content(c, context);
-    });
+        const std::u8string_view name = directive->get_name();
+        if (name != u8"item"sv && name != u8"-item"sv) {
+            return policy.consume(*directive, call.content_frame, context);
+        }
+        context.try_warning(
+            diagnostic::deprecated, directive->get_name_span(),
+            u8"Use of \\item is deprecated. Use \\li in lists instead."sv
+        );
+        Direct_Call_Arguments call_args { *directive, call.content_frame };
+        return m_item_behavior(
+            policy, make_invocation(*directive, call.content_frame, call.call_frame + 1, call_args),
+            context
+        );
+    };
+    const auto content_status = process_greedy(call.content, process);
 
     writer.close_tag(m_tag_name);
     buffer.flush();
