@@ -25,7 +25,7 @@ using namespace std::string_view_literals;
 namespace cowel {
 
 Processing_Status
-HTML_Wrapper_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+HTML_Wrapper_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
     // TODO: warn about unused arguments
@@ -34,7 +34,7 @@ HTML_Wrapper_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     Paragraph_Split_Policy split_policy { out, context.get_transient_memory() };
     auto& policy = m_is_paragraphed ? split_policy : out;
 
-    const Processing_Status result = consume_all(policy, d.get_content(), context);
+    const Processing_Status result = consume_all(policy, call.content, context);
     if (m_is_paragraphed) {
         split_policy.leave_paragraph();
     }
@@ -44,7 +44,7 @@ HTML_Wrapper_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
 
 Processing_Status Plaintext_Wrapper_Behavior::operator()(
     Content_Policy& out,
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context
 ) const
 {
@@ -52,34 +52,35 @@ Processing_Status Plaintext_Wrapper_Behavior::operator()(
     ensure_paragraph_matches_display(out, m_display);
 
     Plaintext_Content_Policy policy { out };
-    return consume_all(policy, d.get_content(), context);
+    return consume_all(policy, call.content, context);
 }
 
 Processing_Status
-Trim_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+Trim_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
     // TODO: warn about unused arguments
     ensure_paragraph_matches_display(out, m_display);
 
-    return consume_all_trimmed(out, d.get_content(), context);
+    return consume_all_trimmed(out, call.content, context);
 }
 
 Processing_Status
-Passthrough_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+Passthrough_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
 
     ensure_paragraph_matches_display(out, m_display);
 
     HTML_Content_Policy html_policy = ensure_html_policy(out);
     auto& policy = m_policy == Policy_Usage::html ? html_policy : out;
 
-    const HTML_Tag_Name name = get_name(d, context);
+    const HTML_Tag_Name name = get_name(call, context);
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     Text_Buffer_Attribute_Writer attributes = writer.open_tag_with_attributes(name);
-    const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
+    const auto attributes_status
+        = named_arguments_to_attributes(attributes, call.arguments, context);
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(name);
@@ -88,23 +89,24 @@ Passthrough_Behavior::operator()(Content_Policy& out, const ast::Directive& d, C
     }
     buffer.flush();
 
-    const auto content_status = consume_all(policy, d.get_content(), context);
+    const auto content_status = consume_all(policy, call.content, context);
     writer.close_tag(name);
     buffer.flush();
     return status_concat(attributes_status, content_status);
 }
 
 Processing_Status
-HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    const ast::Argument* const first_positional = get_first_positional_warn_rest(d, context);
+    const ast::Argument* const first_positional
+        = get_first_positional_warn_rest(call.arguments, context);
     if (!first_positional) {
         context.try_error(
-            diagnostic::html_element_name_missing, d.get_name_span(),
+            diagnostic::html_element_name_missing, call.directive.get_name_span(),
             u8"A tag name must be provided (in the form of a positional argument)."sv
         );
-        return try_generate_error(out, d, context);
+        return try_generate_error(out, call, context);
     }
 
     std::pmr::vector<char8_t> name_text { context.get_transient_memory() };
@@ -124,19 +126,19 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
                 u8"\" is not a valid HTML tag name."sv,
             })
         );
-        return try_generate_error(out, d, context);
+        return try_generate_error(out, call, context);
     }
 
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(*name);
-    auto status = named_arguments_to_attributes(attributes, d, context);
+    auto status = named_arguments_to_attributes(attributes, call.arguments, context);
 
     if (m_self_closing == HTML_Element_Self_Closing::self_closing) {
         attributes.end_empty();
-        if (!d.get_content().empty()) {
+        if (!call.content.empty()) {
             context.try_warning(
-                diagnostic::ignored_content, d.get_source_span(),
+                diagnostic::ignored_content, call.directive.get_source_span(),
                 u8"Content in a self-closing HTML element is ignored."sv
             );
         }
@@ -145,7 +147,7 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
         attributes.end();
         buffer.flush();
         if (status_is_continue(status)) {
-            const auto content_status = consume_all(out, d.get_content(), context);
+            const auto content_status = consume_all(out, call.content, context);
             status = status_concat(content_status, status);
         }
         writer.close_tag(*name);
@@ -158,9 +160,9 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
 // TODO: Passthrough_Behavior and In_Tag_Behavior are virtually identical.
 //       It would be better to merge them into one.
 Processing_Status
-In_Tag_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+In_Tag_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
 
     ensure_paragraph_matches_display(out, m_display);
 
@@ -171,7 +173,8 @@ In_Tag_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(m_tag_name);
     attributes.write_class(m_class_name);
-    const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
+    const auto attributes_status
+        = named_arguments_to_attributes(attributes, call.arguments, context);
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(m_tag_name);
@@ -180,7 +183,7 @@ In_Tag_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
     }
     buffer.flush();
 
-    const auto content_status = consume_all(policy, d.get_content(), context);
+    const auto content_status = consume_all(policy, call.content, context);
 
     writer.close_tag(m_tag_name);
     buffer.flush();
@@ -189,25 +192,25 @@ In_Tag_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Contex
 
 [[nodiscard]]
 HTML_Tag_Name
-Directive_Name_Passthrough_Behavior::get_name(const ast::Directive& d, Context& context) const
+Directive_Name_Passthrough_Behavior::get_name(const Invocation& call, Context& context) const
 {
     context.try_warning(
-        diagnostic::deprecated, d.get_source_span(),
+        diagnostic::deprecated, call.directive.get_source_span(),
         u8"\\html-NAME directives are deprecated. "
         u8"Use \\cowel_html_element[NAME] instead."sv
     );
 
-    const std::u8string_view raw_name = d.get_name();
+    const std::u8string_view raw_name = call.name;
     const std::u8string_view name
         = raw_name.starts_with(builtin_directive_prefix) ? raw_name.substr(1) : raw_name;
     return { Unchecked {}, name.substr(m_name_prefix.size()) };
 }
 
 Processing_Status
-Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+Special_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
 
     try_leave_paragraph(out);
 
@@ -223,7 +226,8 @@ Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(m_name);
-    const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
+    const auto attributes_status
+        = named_arguments_to_attributes(attributes, call.arguments, context);
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(m_name);
@@ -240,7 +244,7 @@ Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
     }
     buffer.flush();
 
-    const auto content_status = consume_all(policy, d.get_content(), context);
+    const auto content_status = consume_all(policy, call.content, context);
 
     policy.leave_paragraph();
     writer.close_tag(m_name);
@@ -249,15 +253,15 @@ Special_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
 }
 
 Processing_Status
-URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+URL_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
 
     try_enter_paragraph(out);
 
     std::pmr::vector<char8_t> url { context.get_transient_memory() };
     append(url, m_url_prefix);
-    const auto text_status = to_plaintext(url, d.get_content(), context);
+    const auto text_status = to_plaintext(url, call.content, context);
     if (text_status != Processing_Status::ok) {
         return text_status;
     }
@@ -267,7 +271,8 @@ URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(html_tag::a);
-    const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
+    const auto attributes_status
+        = named_arguments_to_attributes(attributes, call.arguments, context);
     attributes.write_href(url_string);
     attributes.write_class(u8"sans"sv);
     attributes.end();
@@ -281,14 +286,14 @@ URL_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
 }
 
 Processing_Status
-Self_Closing_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+Self_Closing_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
 
     // TODO: this should use some utility function
-    if (!d.get_content().empty()) {
-        const auto location = ast::get_source_span(d.get_content().front());
+    if (!call.content.empty()) {
+        const auto location = ast::get_source_span(call.content.front());
         context.try_warning(
             diagnostic::ignored_content, location,
             u8"Content was ignored. Use empty braces,"
@@ -301,22 +306,23 @@ Self_Closing_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(m_tag_name);
-    const auto status = named_arguments_to_attributes(attributes, d, context);
+    const auto status = named_arguments_to_attributes(attributes, call.arguments, context);
     attributes.end_empty();
     return status;
 }
 
 Processing_Status
-List_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+List_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
 
     try_leave_paragraph(out);
 
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(m_tag_name);
-    const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
+    const auto attributes_status
+        = named_arguments_to_attributes(attributes, call.arguments, context);
     attributes.end();
     buffer.flush();
     if (status_is_break(attributes_status)) {
@@ -325,7 +331,7 @@ List_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     }
 
     HTML_Content_Policy policy = ensure_html_policy(out);
-    const auto content_status = process_greedy(d.get_content(), [&](const ast::Content& c) {
+    const auto content_status = process_greedy(call.content, [&](const ast::Content& c) {
         if (const auto* const directive = std::get_if<ast::Directive>(&c)) {
             const std::u8string_view name = directive->get_name();
             return [&] {
@@ -334,7 +340,9 @@ List_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
                         diagnostic::deprecated, directive->get_name_span(),
                         u8"Use of \\item is deprecated. Use \\li in lists instead."sv
                     );
-                    return m_item_behavior(policy, *directive, context);
+                    return m_item_behavior(
+                        policy, make_invocation(*directive, call.frame_index + 1), context
+                    );
                 }
                 return policy.consume(*directive, context);
             }();

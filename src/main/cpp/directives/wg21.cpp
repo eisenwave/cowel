@@ -21,19 +21,19 @@ using namespace std::string_view_literals;
 namespace cowel {
 
 Processing_Status
-WG21_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
-    const
+WG21_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
     constexpr auto tag = html_tag::wg21_block;
 
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
 
     try_enter_paragraph(out);
 
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(tag);
-    const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
+    const auto attributes_status
+        = named_arguments_to_attributes(attributes, call.arguments, context);
     attributes.end();
 
     if (status_is_break(attributes_status)) {
@@ -47,7 +47,7 @@ WG21_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
     writer.write_inner_html(u8"</i>: "sv);
     buffer.flush();
 
-    const auto content_status = consume_all(out, d.get_content(), context);
+    const auto content_status = consume_all(out, call.content, context);
 
     writer.write_inner_html(u8" \N{EM DASH} <i>"sv);
     writer.write_inner_text(m_suffix);
@@ -59,11 +59,11 @@ WG21_Block_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
 }
 
 Processing_Status
-WG21_Head_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+WG21_Head_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
     static constexpr std::u8string_view parameters[] { u8"title"sv };
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments());
+    args.match(call.arguments);
 
     try_leave_paragraph(out);
 
@@ -77,12 +77,12 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Con
     const int title_index = args.get_argument_index(u8"title"sv);
     if (title_index < 0) {
         context.try_warning(
-            diagnostic::wg21_head::no_title, d.get_source_span(),
+            diagnostic::wg21_head::no_title, call.directive.get_source_span(),
             u8"A wg21_head directive requires a title argument"sv
         );
     }
 
-    const ast::Argument& title_arg = d.get_arguments()[std::size_t(title_index)];
+    const ast::Argument& title_arg = call.arguments[std::size_t(title_index)];
 
     {
         // FIXME: multiple evaluations of title input
@@ -115,7 +115,7 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Con
     }
 
     writer.write_inner_html(u8'\n');
-    const auto status = consume_all(html_policy, d.get_content(), context);
+    const auto status = consume_all(html_policy, call.content, context);
     writer.close_tag(html_tag::div);
 
     return status;

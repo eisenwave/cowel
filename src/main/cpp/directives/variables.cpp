@@ -47,13 +47,13 @@ long long operate(Expression_Type type, long long x, long long y)
 Result<long long, Processing_Status> compute_expression(
     Expression_Type type,
     Content_Policy& out,
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context
 )
 {
     long long result = expression_type_neutral_element(type);
     bool first = true;
-    for (const ast::Argument& arg : d.get_arguments()) {
+    for (const ast::Argument& arg : call.arguments) {
         std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
         const auto arg_status = to_plaintext(arg_text, arg.get_content(), context);
         if (arg_status != Processing_Status::ok) {
@@ -71,7 +71,7 @@ Result<long long, Processing_Status> compute_expression(
             context.try_error(
                 diagnostic::arithmetic_parse, arg.get_source_span(), joined_char_sequence(message)
             );
-            return try_generate_error(out, d, context);
+            return try_generate_error(out, call, context);
         }
         if (type == Expression_Type::divide && *x == 0) {
             const std::u8string_view message[] {
@@ -83,7 +83,7 @@ Result<long long, Processing_Status> compute_expression(
                 diagnostic::arithmetic_div_by_zero, arg.get_source_span(),
                 joined_char_sequence(message)
             );
-            return try_generate_error(out, d, context);
+            return try_generate_error(out, call, context);
         }
 
         if (first) {
@@ -101,10 +101,10 @@ Result<long long, Processing_Status> compute_expression(
 } // namespace
 
 Processing_Status
-Expression_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
-    const
+Expression_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    const Result<long long, Processing_Status> result = compute_expression(m_type, out, d, context);
+    const Result<long long, Processing_Status> result
+        = compute_expression(m_type, out, call, context);
     if (!result) {
         return result.error();
     }
@@ -117,21 +117,21 @@ Expression_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
 }
 
 Processing_Status
-Variable_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+Variable_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments());
+    args.match(call.arguments);
 
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    if (argument_to_plaintext(data, d, args, var_parameter, context)) {
-        return generate_var(out, d, as_u8string_view(data), context);
+    if (argument_to_plaintext(data, call.arguments, args, var_parameter, context)) {
+        return generate_var(out, call, as_u8string_view(data), context);
     }
     return Processing_Status::error;
 }
 
 Processing_Status Get_Variable_Behavior::generate_var(
     Content_Policy& out,
-    const ast::Directive&,
+    const Invocation&,
     std::u8string_view var,
     Context& context
 ) const
@@ -147,13 +147,13 @@ Processing_Status Get_Variable_Behavior::generate_var(
 
 Processing_Status set_variable_to_op_result(
     Variable_Operation op,
-    const ast::Directive& d,
+    const Invocation& call,
     std::u8string_view var,
     Context& context
 )
 {
     std::pmr::vector<char8_t> body_string { context.get_transient_memory() };
-    const auto status = to_plaintext(body_string, d.get_content(), context);
+    const auto status = to_plaintext(body_string, call.content, context);
     if (status != Processing_Status::ok) {
         return status;
     }

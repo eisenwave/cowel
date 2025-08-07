@@ -50,6 +50,11 @@ public:
     using string_type = std::pmr::u8string;
     using string_view_type = std::u8string_view;
 
+    struct Macro_Definition {
+        /// @brief The content which the macro expands to.
+        std::pmr::vector<ast::Content> body;
+    };
+
     using Variable_Map = std::pmr::unordered_map<
         string_type,
         string_type,
@@ -57,7 +62,7 @@ public:
         Transparent_String_View_Equals8>;
     using Macro_Map = std::pmr::unordered_map<
         std::pmr::u8string,
-        ast::Directive,
+        Macro_Definition,
         Transparent_String_View_Hash8,
         Transparent_String_View_Equals8>;
     using ID_Map = std::pmr::unordered_map<
@@ -395,17 +400,19 @@ public:
     }
 
     [[nodiscard]]
-    const ast::Directive* find_macro(std::u8string_view id) const
+    const Macro_Definition* find_macro(std::u8string_view id) const
     {
         const auto it = m_macros.find(id);
         return it == m_macros.end() ? nullptr : &it->second;
     }
 
     [[nodiscard]]
-    bool emplace_macro(std::pmr::u8string&& id, ast::Directive&& definition_directive)
+    bool emplace_macro(std::pmr::u8string&& id, std::span<const ast::Content> definition)
     {
-        const auto [it, success]
-            = m_macros.try_emplace(std::move(id), std::move(definition_directive));
+        // TODO: once available, upgrade this to std::from_range construction
+        std::pmr::vector<ast::Content> body { m_macros.get_allocator() };
+        body.insert(body.end(), definition.begin(), definition.end());
+        const auto [it, success] = m_macros.try_emplace(std::move(id), std::move(body));
         return success;
     }
 };

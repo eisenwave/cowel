@@ -127,21 +127,20 @@ Result<char32_t, Processing_Status> code_point_by_generated_name(
 
 [[nodiscard]]
 Processing_Status
-Code_Point_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
-    const
+Code_Point_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
     // TODO: this warning should use some blanket method
-    if (!d.get_arguments().empty()) {
-        const File_Source_Span pos = d.get_arguments().front().get_source_span();
+    if (!call.arguments.empty()) {
+        const File_Source_Span pos = call.arguments.front().get_source_span();
         context.try_warning(
             diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."sv
         );
     }
 
-    const Result<char32_t, Processing_Status> code_point = get_code_point(d, context);
+    const Result<char32_t, Processing_Status> code_point = get_code_point(call, context);
     if (!code_point) {
         COWEL_ASSERT(code_point.error() != Processing_Status::ok);
-        return try_generate_error(out, d, context, code_point.error());
+        return try_generate_error(out, call, context, code_point.error());
     }
 
     ensure_paragraph_matches_display(out, m_display);
@@ -152,20 +151,20 @@ Code_Point_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Co
 
 [[nodiscard]]
 Result<char32_t, Processing_Status>
-Char_By_Num_Behavior::get_code_point(const ast::Directive& d, Context& context) const
+Char_By_Num_Behavior::get_code_point(const Invocation& call, Context& context) const
 {
-    return code_point_by_generated_digits(d.get_content(), d.get_source_span(), context);
+    return code_point_by_generated_digits(call.content, call.directive.get_source_span(), context);
 }
 
 [[nodiscard]]
 Result<char32_t, Processing_Status>
-Char_By_Name_Behavior::get_code_point(const ast::Directive& d, Context& context) const
+Char_By_Name_Behavior::get_code_point(const Invocation& call, Context& context) const
 {
-    return code_point_by_generated_name(d.get_content(), d.get_source_span(), context);
+    return code_point_by_generated_name(call.content, call.directive.get_source_span(), context);
 }
 
 Processing_Status
-Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+Char_Get_Num_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
     static constexpr std::u8string_view parameters[] { u8"zfill", u8"base", u8"lower" };
@@ -179,11 +178,11 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
     constexpr std::size_t max_base = 16;
 
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments());
+    args.match(call.arguments);
 
     const Greedy_Result<std::size_t> zfill = get_integer_argument(
         u8"zfill", diagnostic::char_zfill_not_an_integer, diagnostic::char_zfill_range, //
-        args, d, context, default_zfill, min_zfill, max_zfill
+        call.arguments, args, context, default_zfill, min_zfill, max_zfill
     );
     if (status_is_break(zfill.status())) {
         return zfill.status();
@@ -191,21 +190,22 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
 
     const Greedy_Result<std::size_t> base = get_integer_argument(
         u8"base", diagnostic::char_base_not_an_integer, diagnostic::char_base_range, //
-        args, d, context, default_base, min_base, max_base
+        call.arguments, args, context, default_base, min_base, max_base
     );
     if (status_is_break(base.status())) {
         return base.status();
     }
 
-    const Greedy_Result<bool> is_lower
-        = get_yes_no_argument(u8"lower", diagnostic::char_lower_invalid, d, args, context, false);
+    const Greedy_Result<bool> is_lower = get_yes_no_argument(
+        u8"lower", diagnostic::char_lower_invalid, call.arguments, args, context, false
+    );
     if (status_is_break(is_lower.status())) {
         return is_lower.status();
     }
     const auto args_status = status_concat(zfill.status(), base.status(), is_lower.status());
 
     std::pmr::vector<char8_t> input { context.get_transient_memory() };
-    const auto input_status = to_plaintext(input, d.get_content(), context);
+    const auto input_status = to_plaintext(input, call.content, context);
     if (input_status != Processing_Status::ok) {
         return status_concat(args_status, input_status);
     }
@@ -214,27 +214,27 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
 
     if (input_text.empty()) {
         context.try_error(
-            diagnostic::char_blank, d.get_source_span(),
+            diagnostic::char_blank, call.directive.get_source_span(),
             u8"Nothing can be generated because the input is empty."sv
         );
-        return try_generate_error(out, d, context);
+        return try_generate_error(out, call, context);
     }
 
     const std::expected<utf8::Code_Point_And_Length, utf8::Unicode_Error> decode_result
         = utf8::decode_and_length(input_text);
     if (!decode_result) {
         context.try_error(
-            diagnostic::char_corrupted, d.get_source_span(),
+            diagnostic::char_corrupted, call.directive.get_source_span(),
             u8"The input could not be interpreted as a code point because it is malformed UTF-8."sv
         );
-        return try_generate_error(out, d, context);
+        return try_generate_error(out, call, context);
     }
 
     const auto [code_point, length] = *decode_result;
     if (std::size_t(length) != input.size()) {
         COWEL_ASSERT(std::size_t(length) <= input.size());
         context.try_warning(
-            diagnostic::ignored_content, d.get_source_span(),
+            diagnostic::ignored_content, call.directive.get_source_span(),
             u8"Some of the code units inside were ignored because only the first given code point "
             u8"is converted. "
             u8"This can happen if you type a character inside \\Udigits that consist of multiple "

@@ -181,7 +181,7 @@ constexpr bool argument_subset_intersects(Argument_Subset x, Argument_Subset y)
 }
 
 /// @brief Emits a warning which informs the user that all arguments to the directive are ignored.
-void warn_all_args_ignored(const ast::Directive& d, Context& context);
+void warn_all_args_ignored(const Invocation& call, Context& context);
 
 /// @brief Emits a warning for all ignored arguments,
 /// where the caller can specify what subset of arguments were ignored.
@@ -210,7 +210,7 @@ void warn_deprecated_directive_names(std::span<const ast::Content> content, Cont
 void diagnose(
     Syntax_Highlight_Error error,
     std::u8string_view lang,
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context
 );
 
@@ -219,7 +219,7 @@ using Argument_Filter = Function_Ref<bool(std::size_t index, const ast::Argument
 [[nodiscard]]
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    const ast::Directive& d,
+    std::span<const ast::Argument> arguments,
     Context& context,
     Argument_Filter filter = {},
     Attribute_Style style = Attribute_Style::double_if_needed
@@ -228,7 +228,7 @@ Processing_Status named_arguments_to_attributes(
 [[nodiscard]]
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    const ast::Directive& d,
+    std::span<const ast::Argument> arguments,
     const Argument_Matcher& matcher,
     Context& context,
     Argument_Subset subset,
@@ -308,29 +308,30 @@ public:
 
 /// @brief Converts a the content of the argument matching the given parameter.
 /// @param out The vector into which generated plaintext should be written.
-/// @param d The directive.
-/// @param args The arguments. Matching must have already taken place.
+/// @param arguments The arguments.
+/// @param args The argument matcher. Matching must have already taken place.
 /// @param parameter The name of the parameter to which the argument belongs.
 /// @param context The context.
 [[nodiscard]]
 Result<bool, Processing_Status> argument_to_plaintext(
     std::pmr::vector<char8_t>& out,
-    const ast::Directive& d,
+    std::span<const ast::Argument> arguments,
     const Argument_Matcher& args,
     std::u8string_view parameter,
     Context& context
 );
 
-/// @brief Returns the first positional argument of `d`
+/// @brief Returns the first positional argument in `args`
 /// or a null pointer if there is no positional argument.
 /// Furthermore, emits a warning for any additional positional arguments, if any.
-const ast::Argument* get_first_positional_warn_rest(const ast::Directive& d, Context& context);
+const ast::Argument*
+get_first_positional_warn_rest(std::span<const ast::Argument> args, Context& context);
 
 [[nodiscard]]
 Greedy_Result<bool> get_yes_no_argument(
     std::u8string_view name,
     std::u8string_view diagnostic_id,
-    const ast::Directive& d,
+    std::span<const ast::Argument> arguments,
     const Argument_Matcher& args,
     Context& context,
     bool fallback
@@ -341,8 +342,8 @@ Greedy_Result<std::size_t> get_integer_argument(
     std::u8string_view name,
     std::u8string_view parse_error_diagnostic,
     std::u8string_view range_error_diagnostic,
+    std::span<const ast::Argument> arguments,
     const Argument_Matcher& args,
-    const ast::Directive& d,
     Context& context,
     std::size_t fallback,
     std::size_t min = 0,
@@ -357,18 +358,18 @@ struct String_Argument {
 [[nodiscard]]
 Greedy_Result<String_Argument> get_string_argument(
     std::u8string_view name,
-    const ast::Directive& d,
+    std::span<const ast::Argument> arguments,
     const Argument_Matcher& args,
     Context& context,
     std::u8string_view fallback = u8""
 );
 
-/// @brief Uses the error behavior provided by `context` to process `d`.
+/// @brief Uses the error behavior provided by `context` to process `call`.
 /// Returns `on_success` if that generation succeeded.
 [[nodiscard]]
 Processing_Status try_generate_error(
     Content_Policy& out,
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context,
     Processing_Status on_success = Processing_Status::error
 );

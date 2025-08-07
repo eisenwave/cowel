@@ -23,52 +23,53 @@ using namespace std::string_view_literals;
 namespace cowel {
 
 Processing_Status
-Literally_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+Literally_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    warn_all_args_ignored(d, context);
+    warn_all_args_ignored(call, context);
 
     try_enter_paragraph(out);
 
     To_Source_Content_Policy policy { out };
-    return consume_all(policy, d.get_content(), context);
+    return consume_all(policy, call.content, context);
 }
 
 Processing_Status
-Unprocessed_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+Unprocessed_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_all_args_ignored(d, context);
+    warn_all_args_ignored(call, context);
 
     try_enter_paragraph(out);
 
     Unprocessed_Content_Policy policy { out };
-    return consume_all(policy, d.get_content(), context);
+    return consume_all(policy, call.content, context);
 }
 
 Processing_Status
-HTML_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+HTML_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    warn_all_args_ignored(d, context);
+    warn_all_args_ignored(call, context);
 
     ensure_paragraph_matches_display(out, m_display);
 
     HTML_Literal_Content_Policy policy { out };
-    return consume_all(policy, d.get_content(), context);
+    return consume_all(policy, call.content, context);
 }
 
 Processing_Status
-HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_all_args_ignored(d, context);
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+    warn_all_args_ignored(call, context);
+    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
 
     try_leave_paragraph(out);
 
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     Text_Buffer_Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
-    const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
+    const auto attributes_status
+        = named_arguments_to_attributes(attributes, call.arguments, context);
     attributes.end();
     if (status_is_break(attributes_status)) {
         return attributes_status;
@@ -76,7 +77,7 @@ HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
     Processing_Status status = attributes_status;
 
     std::pmr::vector<char8_t> raw_text { context.get_transient_memory() };
-    const auto content_status = to_plaintext(raw_text, d.get_content(), context);
+    const auto content_status = to_plaintext(raw_text, call.content, context);
     status = status_concat(status, content_status);
     if (status_is_continue(content_status)) {
         COWEL_ASSERT(m_tag_name == u8"style"sv || m_tag_name == u8"script"sv);
@@ -84,7 +85,7 @@ HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const ast::Directive& d,
             = m_tag_name == u8"style"sv ? u8"</style"sv : u8"</script"sv;
         if (as_u8string_view(raw_text).contains(needle)) {
             context.try_error(
-                diagnostic::raw_text_closing, d.get_source_span(),
+                diagnostic::raw_text_closing, call.directive.get_source_span(),
                 joined_char_sequence({
                     u8"The content within this directive unexpectedly contained a closing \"",
                     needle,

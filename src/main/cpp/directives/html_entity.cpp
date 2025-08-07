@@ -35,10 +35,10 @@ std::u32string_view as_string_view(const std::array<char32_t, 2>& array)
     return { array.data(), length };
 }
 
-void check_arguments(const ast::Directive& d, Context& context)
+void check_arguments(const Invocation& call, Context& context)
 {
-    if (!d.get_arguments().empty()) {
-        const File_Source_Span pos = d.get_arguments().front().get_source_span();
+    if (!call.arguments.empty()) {
+        const File_Source_Span pos = call.arguments.front().get_source_span();
         context.try_warning(
             diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."sv
         );
@@ -49,7 +49,7 @@ void check_arguments(const ast::Directive& d, Context& context)
 std::array<char32_t, 2> get_code_points_from_digits(
     std::u8string_view digits,
     int base,
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context
 )
 {
@@ -58,14 +58,14 @@ std::array<char32_t, 2> get_code_points_from_digits(
         const std::u8string_view message = base == 10
             ? u8"Expected a sequence of decimal digits."sv
             : u8"Expected a sequence of hexadecimal digits."sv;
-        context.try_error(diagnostic::char_digits, d.get_source_span(), message);
+        context.try_error(diagnostic::char_digits, call.directive.get_source_span(), message);
         return {};
     }
 
     const auto code_point = char32_t(*value);
     if (!is_scalar_value(code_point)) {
         context.try_error(
-            diagnostic::char_nonscalar, d.get_source_span(),
+            diagnostic::char_nonscalar, call.directive.get_source_span(),
             u8"The given hex sequence is not a Unicode scalar value. "
             u8"Therefore, it cannot be encoded as UTF-8."sv
         );
@@ -77,11 +77,11 @@ std::array<char32_t, 2> get_code_points_from_digits(
 
 [[nodiscard]]
 std::array<char32_t, 2>
-get_code_points(std::u8string_view trimmed_text, const ast::Directive& d, Context& context)
+get_code_points(std::u8string_view trimmed_text, const Invocation& call, Context& context)
 {
     if (trimmed_text.empty()) {
         context.try_error(
-            diagnostic::char_blank, d.get_source_span(),
+            diagnostic::char_blank, call.directive.get_source_span(),
             u8"Expected an HTML character reference, but got a blank string."sv
         );
         return {};
@@ -89,12 +89,13 @@ get_code_points(std::u8string_view trimmed_text, const ast::Directive& d, Contex
     if (trimmed_text[0] == u8'#') {
         const int base
             = trimmed_text.starts_with(u8"#x") || trimmed_text.starts_with(u8"#X") ? 16 : 10;
-        return get_code_points_from_digits(trimmed_text.substr(2), base, d, context);
+        return get_code_points_from_digits(trimmed_text.substr(2), base, call, context);
     }
     const std::array<char32_t, 2> result = code_points_by_character_reference_name(trimmed_text);
     if (result[0] == 0) {
         context.try_error(
-            diagnostic::char_name, d.get_source_span(), u8"Invalid named HTML character."sv
+            diagnostic::char_name, call.directive.get_source_span(),
+            u8"Invalid named HTML character."sv
         );
     }
     return result;
@@ -103,23 +104,23 @@ get_code_points(std::u8string_view trimmed_text, const ast::Directive& d, Contex
 } // namespace
 
 Processing_Status
-Char_By_Entity_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+Char_By_Entity_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    check_arguments(d, context);
+    check_arguments(call, context);
 
     ensure_paragraph_matches_display(out, m_display);
 
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    const auto input_status = to_plaintext(data, d.get_content(), context);
+    const auto input_status = to_plaintext(data, call.content, context);
     if (input_status != Processing_Status::ok) {
         return input_status;
     }
 
     const std::u8string_view trimmed_text = trim_ascii_blank(as_u8string_view(data));
-    const std::array<char32_t, 2> code_points = get_code_points(trimmed_text, d, context);
+    const std::array<char32_t, 2> code_points = get_code_points(trimmed_text, call, context);
     if (code_points[0] == 0) {
-        return try_generate_error(out, d, context);
+        return try_generate_error(out, call, context);
     }
     out.write(make_char_sequence(as_string_view(code_points)), Output_Language::text);
     return Processing_Status::ok;

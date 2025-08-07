@@ -131,7 +131,7 @@ void write_bibliography_entry(
 } // namespace
 
 Processing_Status
-Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, Context& context)
+Bibliography_Add_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context)
     const
 {
     static constexpr struct Entry {
@@ -149,14 +149,14 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
     };
 
     // clang-format off
-        static constexpr auto parameters = []()  {
-            std::array<std::u8string_view, std::size(table)> result;
-            std::ranges::transform(table, result.begin(), &Entry::parameter);
-            return result;
-        }();
+    static constexpr auto parameters = []() {
+        std::array<std::u8string_view, std::size(table)> result;
+        std::ranges::transform(table, result.begin(), &Entry::parameter);
+        return result;
+    }();
     // clang-format on
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments());
+    args.match(call.arguments);
 
     Stored_Document_Info result { .text
                                   = std::pmr::vector<char8_t> { context.get_transient_memory() },
@@ -164,7 +164,7 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
 
     if (args.get_argument_index(u8"id") < 0) {
         context.try_error(
-            diagnostic::bib::id_missing, d.get_source_span(),
+            diagnostic::bib::id_missing, call.directive.get_source_span(),
             u8"An id argument is required to add a bibliography entry."sv
         );
         return Processing_Status::error;
@@ -185,7 +185,7 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
             string_lengths.push_back(0);
             continue;
         }
-        const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
+        const ast::Argument& arg = call.arguments[std::size_t(index)];
         const std::size_t initial_size = result.text.size();
         const auto status = to_plaintext(result.text, arg.get_content(), context);
         if (status != Processing_Status::ok) {
@@ -195,7 +195,7 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
 
         if (entry.parameter == u8"id" && result.text.size() == initial_size) {
             context.try_error(
-                diagnostic::bib::id_empty, d.get_source_span(),
+                diagnostic::bib::id_empty, call.directive.get_source_span(),
                 u8"An id argument for a bibliography entry cannot be empty."sv
             );
             return Processing_Status::error;
@@ -220,7 +220,8 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const ast::Directive& d, 
             u8"\" already exists.",
         };
         context.try_error(
-            diagnostic::bib::duplicate, d.get_source_span(), joined_char_sequence(message)
+            diagnostic::bib::duplicate, call.directive.get_source_span(),
+            joined_char_sequence(message)
         );
         return Processing_Status::error;
     }

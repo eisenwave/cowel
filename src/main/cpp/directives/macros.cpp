@@ -30,21 +30,21 @@ using namespace std::string_view_literals;
 namespace cowel {
 
 Processing_Status
-Macro_Define_Behavior::operator()(Content_Policy&, const ast::Directive& d, Context& context) const
+Macro_Define_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context) const
 {
     static const std::u8string_view parameters[] { u8"pattern" };
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments());
+    args.match(call.arguments);
 
     const int pattern_index = args.get_argument_index(u8"pattern");
     if (pattern_index < 0) {
         context.try_error(
-            diagnostic::macro::no_pattern, d.get_source_span(),
+            diagnostic::macro::no_pattern, call.directive.get_source_span(),
             u8"A directive pattern must be provided when defining a macro."sv
         );
         return Processing_Status::error;
     }
-    const ast::Argument& pattern_arg = d.get_arguments()[std::size_t(pattern_index)];
+    const ast::Argument& pattern_arg = call.arguments[std::size_t(pattern_index)];
     if (pattern_arg.get_content().size() != 1
         || !std::holds_alternative<ast::Directive>(pattern_arg.get_content()[0])) {
         context.try_error(
@@ -61,7 +61,7 @@ Macro_Define_Behavior::operator()(Content_Policy&, const ast::Directive& d, Cont
     const std::u8string_view pattern_name = pattern_directive.get_name();
     std::pmr::u8string owned_name { pattern_name, context.get_transient_memory() };
 
-    const bool success = context.emplace_macro(std::move(owned_name), auto(d));
+    const bool success = context.emplace_macro(std::move(owned_name), call.content);
     if (!success) {
         const std::u8string_view message[] {
             u8"Redefinition of macro \"",
@@ -69,7 +69,8 @@ Macro_Define_Behavior::operator()(Content_Policy&, const ast::Directive& d, Cont
             u8"\".",
         };
         context.try_soft_warning(
-            diagnostic::macro::redefinition, d.get_source_span(), joined_char_sequence(message)
+            diagnostic::macro::redefinition, call.directive.get_source_span(),
+            joined_char_sequence(message)
         );
     }
     return Processing_Status::ok;
@@ -249,14 +250,13 @@ Processing_Status substitute_in_macro(
 [[nodiscard]]
 Processing_Status instantiate_macro(
     ast::Pmr_Vector<ast::Content>& out,
-    const ast::Directive& definition,
+    const Context::Macro_Definition& definition,
     std::span<const ast::Argument> put_arguments,
     std::span<const ast::Content> put_content,
     Context& context
 )
 {
-    const std::span<const ast::Content> content = definition.get_content();
-    out.insert(out.end(), content.begin(), content.end());
+    out.insert(out.end(), definition.body.begin(), definition.body.end());
 
     auto on_variadic_put = [&](const File_Source_Span& location) {
         context.try_error(
@@ -273,11 +273,11 @@ Processing_Status instantiate_macro(
 
 Processing_Status Macro_Instantiate_Behavior::operator()(
     Content_Policy& out,
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context
 ) const
 {
-    const ast::Directive* const definition = context.find_macro(d.get_name());
+    const Context::Macro_Definition* const definition = context.find_macro(call.name);
     // We always find a macro
     // because the name lookup for this directive utilizes `find_macro`,
     // so we're effectively calling it twice with the same input.
@@ -285,7 +285,7 @@ Processing_Status Macro_Instantiate_Behavior::operator()(
 
     ast::Pmr_Vector<ast::Content> instance { context.get_transient_memory() };
     const auto instantiate_status
-        = instantiate_macro(instance, *definition, d.get_arguments(), d.get_content(), context);
+        = instantiate_macro(instance, *definition, call.arguments, call.content, context);
     if (status_is_break(instantiate_status)) {
         return instantiate_status;
     }

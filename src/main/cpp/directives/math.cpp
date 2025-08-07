@@ -128,7 +128,8 @@ Processing_Status to_math_html(
         HTML_Writer_Buffer buffer { out, Output_Language::html };
         Text_Buffer_HTML_Writer writer { buffer };
         auto attributes = writer.open_tag_with_attributes(name);
-        const auto attributes_status = named_arguments_to_attributes(attributes, *d, context);
+        const auto attributes_status
+            = named_arguments_to_attributes(attributes, d->get_arguments(), context);
         attributes.end();
         if (status_is_break(attributes_status)) {
             writer.close_tag(name);
@@ -148,13 +149,13 @@ Processing_Status to_math_html(
 } // namespace
 
 Processing_Status
-Math_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+Math_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
     constexpr auto tag_name = html_tag::math;
     const std::u8string_view display_string
         = m_display == Directive_Display::in_line ? u8"inline" : u8"block";
 
-    warn_ignored_argument_subset(d.get_arguments(), context, Argument_Subset::positional);
+    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
 
     ensure_paragraph_matches_display(out, m_display);
 
@@ -163,7 +164,8 @@ Math_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(tag_name);
     attributes.write_display(display_string);
-    const auto attributes_status = named_arguments_to_attributes(attributes, d, context);
+    const auto attributes_status
+        = named_arguments_to_attributes(attributes, call.arguments, context);
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(tag_name);
@@ -172,7 +174,7 @@ Math_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     }
     buffer.flush();
 
-    const auto nested_status = to_math_html(policy, d.get_content(), context);
+    const auto nested_status = to_math_html(policy, call.content, context);
     writer.close_tag(tag_name);
     buffer.flush();
     return status_concat(attributes_status, nested_status);

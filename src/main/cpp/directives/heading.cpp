@@ -59,7 +59,7 @@ constexpr int max_listing_level = 6;
 } // namespace
 
 Processing_Status
-Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
     static constexpr std::u8string_view parameters[] { u8"id", u8"listed", u8"show-number" };
 
@@ -68,19 +68,20 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     const HTML_Tag_Name tag_name { std::u8string_view { tag_name_data, sizeof(tag_name_data) } };
 
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments(), Parameter_Match_Mode::only_named);
+    args.match(call.arguments, Parameter_Match_Mode::only_named);
 
     // Determine whether the heading should be listed in the table of contents.
     const bool listed_by_default = m_level >= min_listing_level && m_level <= max_listing_level;
     const Greedy_Result<bool> is_listed_result = get_yes_no_argument(
-        u8"listed", diagnostic::h::listed_invalid, d, args, context, listed_by_default
+        u8"listed", diagnostic::h::listed_invalid, call.arguments, args, context, listed_by_default
     );
     if (status_is_break(is_listed_result.status())) {
         return is_listed_result.status();
     }
 
     const Greedy_Result<bool> is_number_shown_result = get_yes_no_argument(
-        u8"show-number", diagnostic::h::show_number_invalid, d, args, context, listed_by_default
+        u8"show-number", diagnostic::h::show_number_invalid, call.arguments, args, context,
+        listed_by_default
     );
     if (status_is_break(is_number_shown_result.status())) {
         return is_number_shown_result.status();
@@ -105,9 +106,9 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     const auto id_status = [&] -> Processing_Status {
         const int id_index = args.get_argument_index(u8"id");
         if (id_index < 0) {
-            return synthesize_id(id_data, d.get_content(), context);
+            return synthesize_id(id_data, call.content, context);
         }
-        const ast::Argument& id_arg = d.get_arguments()[std::size_t(id_index)];
+        const ast::Argument& id_arg = call.arguments[std::size_t(id_index)];
         return to_plaintext(id_data, id_arg.get_content(), context);
     }();
     current_status = status_concat(current_status, id_status);
@@ -117,7 +118,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     const bool has_id = id_status == Processing_Status::ok && !id_data.empty();
 
     warn_ignored_argument_subset(
-        d.get_arguments(), args, context, Argument_Subset::unmatched_positional
+        call.arguments, args, context, Argument_Subset::unmatched_positional
     );
 
     // 0. Ensure that headings are not in paragraphs.
@@ -131,7 +132,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
         attributes.write_id(as_u8string_view(id_data));
     }
     const auto attributes_status = named_arguments_to_attributes(
-        attributes, d, args, context, Argument_Subset::unmatched_named
+        attributes, call.arguments, args, context, Argument_Subset::unmatched_named
     );
     attributes.end();
     current_status = status_concat(current_status, attributes_status);
@@ -146,7 +147,7 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
     {
         Capturing_Ref_Text_Sink heading_sink { heading_html, Output_Language::html };
         HTML_Content_Policy html_policy { heading_sink };
-        const auto heading_status = consume_all(html_policy, d.get_content(), context);
+        const auto heading_status = consume_all(html_policy, call.content, context);
         current_status = status_concat(current_status, heading_status);
         if (status_is_break(heading_status)) {
             writer.close_tag(tag_name);
@@ -172,7 +173,8 @@ Heading_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Conte
             u8"\". Heading will be generated, but references may be broken.",
         };
         context.try_warning(
-            diagnostic::duplicate_id, d.get_source_span(), joined_char_sequence(message)
+            diagnostic::duplicate_id, call.directive.get_source_span(),
+            joined_char_sequence(message)
         );
         return false;
     }();
@@ -269,7 +271,7 @@ namespace {
 
 [[nodiscard]]
 Processing_Status with_section_name(
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context,
     std::u8string_view no_section_diagnostic,
     Function_Ref<Processing_Status(std::u8string_view section)> action
@@ -277,18 +279,18 @@ Processing_Status with_section_name(
 {
     static constexpr std::u8string_view parameters[] { u8"section" };
     Argument_Matcher args { parameters, context.get_persistent_memory() };
-    args.match(d.get_arguments());
+    args.match(call.arguments);
 
     const int arg_index = args.get_argument_index(u8"section");
     if (arg_index < 0) {
         context.try_error(
-            no_section_diagnostic, d.get_source_span(), u8"No section was provided."sv
+            no_section_diagnostic, call.directive.get_source_span(), u8"No section was provided."sv
         );
         return Processing_Status::error;
     }
 
     std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
-    const ast::Argument& arg = d.get_arguments()[std::size_t(arg_index)];
+    const ast::Argument& arg = call.arguments[std::size_t(arg_index)];
     const auto name_status = to_plaintext(name_data, arg.get_content(), context);
     if (name_status != Processing_Status::ok) {
         return name_status;
@@ -297,7 +299,7 @@ Processing_Status with_section_name(
     const auto section_string = as_u8string_view(name_data);
     if (section_string.empty()) {
         context.try_error(
-            no_section_diagnostic, d.get_source_span(), u8"No section was provided."sv
+            no_section_diagnostic, call.directive.get_source_span(), u8"No section was provided."sv
         );
         return Processing_Status::error;
     }
@@ -308,17 +310,17 @@ Processing_Status with_section_name(
 } // namespace
 
 Processing_Status
-There_Behavior::operator()(Content_Policy&, const ast::Directive& d, Context& context) const
+There_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context) const
 {
     auto action = [&](std::u8string_view section) {
         const auto scope = context.get_sections().go_to_scoped(section);
-        return consume_all(context.get_sections().current_policy(), d.get_content(), context);
+        return consume_all(context.get_sections().current_policy(), call.content, context);
     };
-    return with_section_name(d, context, diagnostic::there::no_section, action);
+    return with_section_name(call, context, diagnostic::there::no_section, action);
 }
 
 Processing_Status
-Here_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+Here_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
     ensure_paragraph_matches_display(out, m_display);
 
@@ -326,12 +328,11 @@ Here_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
         reference_section(out, section);
         return Processing_Status::ok;
     };
-    return with_section_name(d, context, diagnostic::there::no_section, action);
+    return with_section_name(call, context, diagnostic::there::no_section, action);
 }
 
 Processing_Status
-Make_Section_Behavior::operator()(Content_Policy& out, const ast::Directive&, Context& context)
-    const
+Make_Section_Behavior::operator()(Content_Policy& out, const Invocation&, Context& context) const
 {
     ensure_paragraph_matches_display(out, m_display);
 

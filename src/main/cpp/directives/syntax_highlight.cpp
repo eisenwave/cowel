@@ -33,25 +33,25 @@ using namespace std::string_view_literals;
 namespace cowel {
 
 Processing_Status
-Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments());
+    args.match(call.arguments);
 
     const Greedy_Result<String_Argument> lang
-        = get_string_argument(lang_parameter, d, args, context);
+        = get_string_argument(lang_parameter, call.arguments, args, context);
     if (status_is_break(lang.status())) {
         return lang.status();
     }
 
     const Greedy_Result<String_Argument> prefix
-        = get_string_argument(prefix_parameter, d, args, context);
+        = get_string_argument(prefix_parameter, call.arguments, args, context);
     if (status_is_break(prefix.status())) {
         return prefix.status();
     }
 
     const Greedy_Result<String_Argument> suffix
-        = get_string_argument(suffix_parameter, d, args, context);
+        = get_string_argument(suffix_parameter, call.arguments, args, context);
     if (status_is_break(suffix.status())) {
         return suffix.status();
     }
@@ -59,7 +59,8 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     const auto borders = m_display == Directive_Display::in_line
         ? Greedy_Result<bool> { true }
         : get_yes_no_argument(
-              borders_parameter, diagnostic::codeblock::borders_invalid, d, args, context, true
+              borders_parameter, diagnostic::codeblock::borders_invalid, call.arguments, args,
+              context, true
           );
     if (status_is_break(borders.status())) {
         return borders.status();
@@ -68,7 +69,8 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     const auto nested = m_display == Directive_Display::block
         ? Greedy_Result<bool> { false }
         : get_yes_no_argument(
-              nested_parameter, diagnostic::code::nested_invalid, d, args, context, false
+              nested_parameter, diagnostic::code::nested_invalid, call.arguments, args, context,
+              false
           );
     if (status_is_break(nested.status())) {
         return nested.status();
@@ -83,7 +85,7 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     // Note that for consistent side effects,
     // we still process all the arguments above.
     if (out.get_language() == Output_Language::text) {
-        const Processing_Status text_status = consume_all(out, d.get_content(), context);
+        const Processing_Status text_status = consume_all(out, call.content, context);
         return status_concat(args_status, text_status);
     }
 
@@ -109,7 +111,7 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
     Syntax_Highlight_Policy highlight_policy //
         { context.get_transient_memory() };
     highlight_policy.write_phantom(prefix->string);
-    const auto highlight_status = consume_all(highlight_policy, d.get_content(), context);
+    const auto highlight_status = consume_all(highlight_policy, call.content, context);
     highlight_policy.write_phantom(suffix->string);
 
     const Result<void, Syntax_Highlight_Error> result = [&] {
@@ -136,7 +138,7 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
         return result;
     }();
     if (!result) {
-        diagnose(result.error(), lang->string, d, context);
+        diagnose(result.error(), lang->string, call, context);
     }
 
     if (has_enclosing_tags) {
@@ -148,24 +150,24 @@ Code_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context&
 }
 
 Processing_Status
-Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+Highlight_As_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments());
+    args.match(call.arguments);
 
     std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
     const Result<bool, Processing_Status> has_name_result
-        = argument_to_plaintext(name_data, d, args, name_parameter, context);
+        = argument_to_plaintext(name_data, call.arguments, args, name_parameter, context);
     if (!has_name_result) {
         return has_name_result.error();
     }
     if (!*has_name_result) {
         context.try_error(
-            diagnostic::highlight_name_missing, d.get_source_span(),
+            diagnostic::highlight_name_missing, call.directive.get_source_span(),
             u8"A name parameter is required to specify the kind of highlight to apply."sv
         );
-        return try_generate_error(out, d, context);
+        return try_generate_error(out, call, context);
     }
     const auto name_string = as_u8string_view(name_data);
 
@@ -177,9 +179,10 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
             u8"\" is not a valid ulight highlight name (long form).",
         };
         context.try_error(
-            diagnostic::highlight_name_invalid, d.get_source_span(), joined_char_sequence(message)
+            diagnostic::highlight_name_invalid, call.directive.get_source_span(),
+            joined_char_sequence(message)
         );
-        return try_generate_error(out, d, context);
+        return try_generate_error(out, call, context);
     }
 
     const std::u8string_view short_name = ulight::highlight_type_short_string_u8(*type);
@@ -187,7 +190,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
 
     // We do the same special casing as for \code (see above for explanation).
     if (out.get_language() == Output_Language::text) {
-        return consume_all(out, d.get_content(), context);
+        return consume_all(out, call.content, context);
     }
 
     HTML_Content_Policy policy = ensure_html_policy(out);
@@ -198,7 +201,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const ast::Directive& d, 
         .write_attribute(html_attr::data_h, short_name)
         .end();
     buffer.flush();
-    const Processing_Status result = consume_all(policy, d.get_content(), context);
+    const Processing_Status result = consume_all(policy, call.content, context);
     if (status_is_break(result)) {
         return result;
     }

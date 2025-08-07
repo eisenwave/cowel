@@ -116,16 +116,16 @@ Reference_Classification classify_reference(std::u8string_view ref)
 } // namespace
 
 Processing_Status
-Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context) const
+Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
     static const std::u8string_view parameters[] { u8"to" };
     Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(d.get_arguments());
+    args.match(call.arguments);
 
     for (std::size_t i = 0; i < args.argument_statuses().size(); ++i) {
         if (args.argument_statuses()[i] == Argument_Status::unmatched) {
             context.try_warning(
-                diagnostic::ignored_args, d.get_arguments()[i].get_source_span(),
+                diagnostic::ignored_args, call.arguments[i].get_source_span(),
                 u8"This argument was ignored."sv
             );
         }
@@ -134,24 +134,24 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
     const int to_index = args.get_argument_index(u8"to");
     if (to_index < 0) {
         context.try_error(
-            diagnostic::ref::to_missing, d.get_source_span(),
+            diagnostic::ref::to_missing, call.directive.get_source_span(),
             u8"A \"to\" argument is required for a reference."sv
         );
-        return try_generate_error(out, d, context);
+        return try_generate_error(out, call, context);
     }
 
     std::pmr::vector<char8_t> target { context.get_transient_memory() };
     const auto target_status
-        = to_plaintext(target, d.get_arguments()[std::size_t(to_index)].get_content(), context);
+        = to_plaintext(target, call.arguments[std::size_t(to_index)].get_content(), context);
     if (target_status != Processing_Status::ok) {
         return target_status;
     }
     if (target.empty()) {
         context.try_error(
-            diagnostic::ref::to_empty, d.get_source_span(),
+            diagnostic::ref::to_empty, call.directive.get_source_span(),
             u8"A \"to\" argument cannot have an empty value."sv
         );
-        return try_generate_error(out, d, context);
+        return try_generate_error(out, call, context);
     }
 
     try_enter_paragraph(out);
@@ -168,7 +168,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             target_string,
         };
         reference_section(buffer, joined_char_sequence(section_name_parts));
-        if (d.get_content().empty()) {
+        if (call.content.empty()) {
             writer.write_inner_html(u8'[');
             writer.write_inner_text(target_string);
             writer.write_inner_html(u8']');
@@ -184,7 +184,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             .write_href(target_string)
             .end();
         auto status = Processing_Status::ok;
-        if (d.get_content().empty()) {
+        if (call.content.empty()) {
             const std::u8string_view section_name_parts[] {
                 section_name::id_preview,
                 u8".",
@@ -194,7 +194,7 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
         }
         else {
             buffer.flush();
-            status = consume_all(out, d.get_content(), context);
+            status = consume_all(out, call.content, context);
         }
         writer.close_tag(html_tag::a);
         buffer.flush();
@@ -203,13 +203,13 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
 
     COWEL_ASSERT(classification.type == Reference_Type::url);
 
-    if (!d.get_content().empty()) {
+    if (!call.content.empty()) {
         writer
             .open_tag_with_attributes(html_tag::a) //
             .write_href(target_string)
             .end();
         buffer.flush();
-        const auto status = consume_all(out, d.get_content(), context);
+        const auto status = consume_all(out, call.content, context);
         writer.close_tag(html_tag::a);
         buffer.flush();
         return status;
@@ -282,7 +282,8 @@ Ref_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& 
             u8"\" could not be verbalized automatically.",
         };
         context.try_warning(
-            diagnostic::ref::draft_verbalization, d.get_source_span(), joined_char_sequence(message)
+            diagnostic::ref::draft_verbalization, call.directive.get_source_span(),
+            joined_char_sequence(message)
         );
         writer.write_inner_text(target_string);
     }

@@ -75,6 +75,7 @@ struct Generation_Options;
 enum struct HLJS_Scope : Default_Underlying;
 struct Ignorant_Logger;
 enum struct IO_Error_Code : Default_Underlying;
+struct Invocation;
 struct Logger;
 struct Name_Resolver;
 struct Simple_Bibliography;

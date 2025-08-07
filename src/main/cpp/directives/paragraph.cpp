@@ -14,29 +14,19 @@ using namespace std::string_view_literals;
 namespace cowel {
 namespace {
 
-void warn_all_arguments_ignored(const ast::Directive& d, Context& context)
-{
-    if (!d.get_arguments().empty()) {
-        context.try_warning(
-            diagnostic::ignored_args, d.get_arguments().front().get_source_span(),
-            u8"This argument (and all other arguments) are ignored."sv
-        );
-    }
-}
-
 [[nodiscard]]
 Processing_Status control_paragraph(
     void (Paragraph_Split_Policy::*action)(),
     Content_Policy& out,
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context
 )
 {
-    warn_all_arguments_ignored(d, context);
+    warn_all_args_ignored(call, context);
 
-    if (!d.get_content().empty()) {
+    if (!call.content.empty()) {
         context.try_warning(
-            diagnostic::ignored_content, d.get_source_span(),
+            diagnostic::ignored_content, call.directive.get_source_span(),
             u8"Content in a paragraph control directive is ignored."sv
         );
     }
@@ -49,26 +39,26 @@ Processing_Status control_paragraph(
 } // namespace
 
 Processing_Status
-Paragraph_Enter_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+Paragraph_Enter_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    return control_paragraph(&Paragraph_Split_Policy::enter_paragraph, out, d, context);
+    return control_paragraph(&Paragraph_Split_Policy::enter_paragraph, out, call, context);
 }
 
 Processing_Status
-Paragraph_Leave_Behavior::operator()(Content_Policy& out, const ast::Directive& d, Context& context)
+Paragraph_Leave_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    return control_paragraph(&Paragraph_Split_Policy::leave_paragraph, out, d, context);
+    return control_paragraph(&Paragraph_Split_Policy::leave_paragraph, out, call, context);
 }
 
 Processing_Status Paragraph_Inherit_Behavior::operator()(
     Content_Policy& out,
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context
 ) const
 {
-    return control_paragraph(&Paragraph_Split_Policy::inherit_paragraph, out, d, context);
+    return control_paragraph(&Paragraph_Split_Policy::inherit_paragraph, out, call, context);
 }
 
 } // namespace cowel

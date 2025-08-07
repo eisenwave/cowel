@@ -51,11 +51,6 @@ const Directive_Behavior* Context::find_directive(std::u8string_view name)
     return nullptr;
 }
 
-const Directive_Behavior* Context::find_directive(const ast::Directive& directive)
-{
-    return find_directive(directive.get_name());
-}
-
 std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content> content)
 {
     while (!content.empty()) {
@@ -209,10 +204,11 @@ Processing_Status apply_behavior(Content_Policy& out, const ast::Directive& d, C
 {
     constexpr auto status_on_error_generated = Processing_Status::ok;
 
-    const Directive_Behavior* const behavior = context.find_directive(d);
+    const Directive_Behavior* const behavior = context.find_directive(d.get_name());
     if (!behavior) {
         try_lookup_error(d, context);
-        const auto status = try_generate_error(out, d, context, status_on_error_generated);
+        const auto status
+            = try_generate_error(out, make_invocation(d, 0), context, status_on_error_generated);
         if (status != status_on_error_generated) {
             context.try_error(
                 diagnostic::error_error, d.get_source_span(),
@@ -222,13 +218,13 @@ Processing_Status apply_behavior(Content_Policy& out, const ast::Directive& d, C
         }
         return Processing_Status::error;
     }
-    return (*behavior)(out, d, context);
+    return (*behavior)(out, make_invocation(d, 0), context);
 }
 
-void warn_all_args_ignored(const ast::Directive& d, Context& context)
+void warn_all_args_ignored(const Invocation& call, Context& context)
 {
     if (context.emits(Severity::warning)) {
-        for (const ast::Argument& arg : d.get_arguments()) {
+        for (const ast::Argument& arg : call.arguments) {
             context.emit_warning(
                 diagnostic::ignored_args, arg.get_source_span(), u8"This argument was ignored."sv
             );
@@ -301,7 +297,7 @@ void warn_deprecated_directive_names(std::span<const ast::Content> content, Cont
 void diagnose(
     Syntax_Highlight_Error error,
     std::u8string_view lang,
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context
 )
 {
@@ -312,7 +308,7 @@ void diagnose(
     case Syntax_Highlight_Error::unsupported_language: {
         if (lang.empty()) {
             context.try_warning(
-                diagnostic::highlight_language, d.get_source_span(),
+                diagnostic::highlight_language, call.directive.get_source_span(),
                 u8"Syntax highlighting was not possible because no language was given, "
                 u8"and automatic language detection was not possible. "
                 u8"Please use \\tt{...} or \\pre{...} if you want a code (block) "
@@ -326,7 +322,8 @@ void diagnose(
             u8"\" is not supported.",
         };
         context.emit_warning(
-            diagnostic::highlight_language, d.get_source_span(), joined_char_sequence(message)
+            diagnostic::highlight_language, call.directive.get_source_span(),
+            joined_char_sequence(message)
         );
         break;
     }
@@ -338,7 +335,8 @@ void diagnose(
             u8"\".",
         };
         context.emit_warning(
-            diagnostic::highlight_malformed, d.get_source_span(), joined_char_sequence(message)
+            diagnostic::highlight_malformed, call.directive.get_source_span(),
+            joined_char_sequence(message)
         );
         break;
     }
@@ -349,7 +347,8 @@ void diagnose(
             u8"\".",
         };
         context.emit_warning(
-            diagnostic::highlight_error, d.get_source_span(), joined_char_sequence(message)
+            diagnostic::highlight_error, call.directive.get_source_span(),
+            joined_char_sequence(message)
         );
         break;
     }
@@ -358,15 +357,14 @@ void diagnose(
 
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    const ast::Directive& d,
+    std::span<const ast::Argument> arguments,
     Context& context,
     Argument_Filter filter,
     Attribute_Style style
 )
 {
-    const std::span<const ast::Argument> args = d.get_arguments();
     std::size_t i = 0;
-    return process_greedy(args, [&](const ast::Argument& a) -> Processing_Status {
+    return process_greedy(arguments, [&](const ast::Argument& a) -> Processing_Status {
         const bool passed_filter = a.has_name() && (!filter || filter(i, a));
         ++i;
         return passed_filter ? named_argument_to_attribute(out, a, context, style)
@@ -376,7 +374,7 @@ Processing_Status named_arguments_to_attributes(
 
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    const ast::Directive& d,
+    std::span<const ast::Argument> arguments,
     const Argument_Matcher& matcher,
     Context& context,
     Argument_Subset subset,
@@ -403,7 +401,7 @@ Processing_Status named_arguments_to_attributes(
             : Argument_Subset::matched_named;
         return argument_subset_contains(subset, arg_subset);
     };
-    return named_arguments_to_attributes(out, d, context, filter, style);
+    return named_arguments_to_attributes(out, arguments, context, filter, style);
 }
 
 Processing_Status named_argument_to_attribute(
@@ -426,7 +424,7 @@ Processing_Status named_argument_to_attribute(
 
 Result<bool, Processing_Status> argument_to_plaintext(
     std::pmr::vector<char8_t>& out,
-    const ast::Directive& d,
+    std::span<const ast::Argument> arguments,
     const Argument_Matcher& args,
     std::u8string_view parameter,
     Context& context
@@ -436,7 +434,7 @@ Result<bool, Processing_Status> argument_to_plaintext(
     if (i < 0) {
         return false;
     }
-    const ast::Argument& arg = d.get_arguments()[std::size_t(i)];
+    const ast::Argument& arg = arguments[std::size_t(i)];
     // TODO: warn when pure HTML argument was used as variable name
     const auto status = to_plaintext(out, arg.get_content(), context);
     if (status != Processing_Status::ok) {
@@ -445,10 +443,11 @@ Result<bool, Processing_Status> argument_to_plaintext(
     return true;
 }
 
-const ast::Argument* get_first_positional_warn_rest(const ast::Directive& d, Context& context)
+const ast::Argument*
+get_first_positional_warn_rest(std::span<const ast::Argument> args, Context& context)
 {
     const ast::Argument* result = nullptr;
-    for (const ast::Argument& arg : d.get_arguments()) {
+    for (const ast::Argument& arg : args) {
         if (arg.has_name()) {
             continue;
         }
@@ -468,7 +467,7 @@ const ast::Argument* get_first_positional_warn_rest(const ast::Directive& d, Con
 Greedy_Result<bool> get_yes_no_argument(
     std::u8string_view name,
     std::u8string_view diagnostic_id,
-    const ast::Directive& d,
+    std::span<const ast::Argument> arguments,
     const Argument_Matcher& args,
     Context& context,
     bool fallback
@@ -478,7 +477,7 @@ Greedy_Result<bool> get_yes_no_argument(
     if (index < 0) {
         return fallback;
     }
-    const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
+    const ast::Argument& arg = arguments[std::size_t(index)];
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
     const auto text_status = to_plaintext(data, arg.get_content(), context);
     if (text_status != Processing_Status::ok) {
@@ -505,8 +504,8 @@ Greedy_Result<std::size_t> get_integer_argument(
     std::u8string_view name,
     std::u8string_view parse_error_diagnostic,
     std::u8string_view range_error_diagnostic,
+    std::span<const ast::Argument> arguments,
     const Argument_Matcher& args,
-    const ast::Directive& d,
     Context& context,
     std::size_t fallback,
     std::size_t min,
@@ -519,7 +518,7 @@ Greedy_Result<std::size_t> get_integer_argument(
     if (index < 0) {
         return fallback;
     }
-    const ast::Argument& arg = d.get_arguments()[std::size_t(index)];
+    const ast::Argument& arg = arguments[std::size_t(index)];
     std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
     const auto text_status = to_plaintext(arg_text, arg.get_content(), context);
     if (text_status != Processing_Status::ok) {
@@ -566,7 +565,7 @@ Greedy_Result<std::size_t> get_integer_argument(
 
 Greedy_Result<String_Argument> get_string_argument(
     std::u8string_view name,
-    const ast::Directive& d,
+    std::span<const ast::Argument> arguments,
     const Argument_Matcher& args,
     Context& context,
     std::u8string_view fallback
@@ -580,7 +579,7 @@ Greedy_Result<String_Argument> get_string_argument(
         return result;
     }
     const auto status
-        = to_plaintext(result.data, d.get_arguments()[std::size_t(index)].get_content(), context);
+        = to_plaintext(result.data, arguments[std::size_t(index)].get_content(), context);
     if (status != Processing_Status::ok) {
         result.string = fallback;
         return { result, status };
@@ -591,13 +590,13 @@ Greedy_Result<String_Argument> get_string_argument(
 
 Processing_Status try_generate_error(
     Content_Policy& out,
-    const ast::Directive& d,
+    const Invocation& call,
     Context& context,
     Processing_Status on_success
 )
 {
     if (const Directive_Behavior* const behavior = context.get_error_behavior()) {
-        const Processing_Status result = (*behavior)(out, d, context);
+        const Processing_Status result = (*behavior)(out, call, context);
         return result == Processing_Status::ok ? on_success : result;
     }
     return on_success;
