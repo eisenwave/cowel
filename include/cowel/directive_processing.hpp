@@ -17,6 +17,7 @@
 #include "cowel/content_status.hpp"
 #include "cowel/directive_display.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/invocation.hpp"
 
 namespace cowel {
 
@@ -59,7 +60,8 @@ enum struct To_Plaintext_Status : Default_Underlying { //
 };
 
 [[nodiscard]]
-Processing_Status apply_behavior(Content_Policy& out, const ast::Directive& d, Context& context);
+Processing_Status
+apply_behavior(Content_Policy& out, const ast::Directive& d, Frame_Index frame, Context& context);
 
 template <std::ranges::input_range R, typename Consumer>
     requires std::is_invocable_r_v<Processing_Status, Consumer, std::ranges::range_reference_t<R>>
@@ -68,8 +70,9 @@ template <std::ranges::input_range R, typename Consumer>
 Processing_Status process_greedy(R&& content, Consumer consumer)
 {
     bool error = false;
-    for (auto& c : content) {
-        const auto status = consumer(c);
+    auto end = std::ranges::end(content);
+    for (auto it = std::ranges::begin(content); it != end; ++it) {
+        const auto status = consumer(*it);
         switch (status) {
         case Processing_Status::ok: continue;
         case Processing_Status::brk:
@@ -98,22 +101,31 @@ Processing_Status process_lazy(R&& content, Consumer consumer)
 }
 
 [[nodiscard]]
-inline Processing_Status
-consume_all(Content_Policy& out, std::span<const ast::Content> content, Context& context)
+inline Processing_Status consume_all(
+    Content_Policy& out,
+    std::span<const ast::Content> content,
+    Frame_Index frame,
+    Context& context
+)
 {
     return process_greedy(content, [&](const ast::Content& c) {
-        return out.consume_content(c, context);
+        return out.consume_content(c, frame, context);
     });
 }
 
 [[nodiscard]]
-Processing_Status
-consume_all_trimmed(Content_Policy& out, std::span<const ast::Content> content, Context& context);
+Processing_Status consume_all_trimmed(
+    Content_Policy& out,
+    std::span<const ast::Content> content,
+    Frame_Index,
+    Context& context
+);
 
 [[nodiscard]]
 Processing_Status to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
+    Frame_Index frame,
     Context& context
 );
 
@@ -186,7 +198,7 @@ void warn_all_args_ignored(const Invocation& call, Context& context);
 /// @brief Emits a warning for all ignored arguments,
 /// where the caller can specify what subset of arguments were ignored.
 void warn_ignored_argument_subset(
-    std::span<const ast::Argument> args,
+    Arguments_View args,
     const Argument_Matcher& matcher,
     Context& context,
     Argument_Subset ignored_subset
@@ -197,7 +209,7 @@ void warn_ignored_argument_subset(
 /// The given subset has to include either both `matched` and `unmatched`,
 /// or be `none`.
 void warn_ignored_argument_subset(
-    std::span<const ast::Argument> args,
+    Arguments_View args,
     Context& context,
     Argument_Subset ignored_subset
 );
@@ -214,12 +226,12 @@ void diagnose(
     Context& context
 );
 
-using Argument_Filter = Function_Ref<bool(std::size_t index, const ast::Argument& argument) const>;
+using Argument_Filter = Function_Ref<bool(std::size_t index, Argument_Ref argument) const>;
 
 [[nodiscard]]
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     Context& context,
     Argument_Filter filter = {},
     Attribute_Style style = Attribute_Style::double_if_needed
@@ -228,7 +240,7 @@ Processing_Status named_arguments_to_attributes(
 [[nodiscard]]
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     const Argument_Matcher& matcher,
     Context& context,
     Argument_Subset subset,
@@ -238,7 +250,7 @@ Processing_Status named_arguments_to_attributes(
 [[nodiscard]]
 Processing_Status named_argument_to_attribute(
     Text_Buffer_Attribute_Writer& out,
-    const ast::Argument& a,
+    Argument_Ref a,
     Context& context,
     Attribute_Style style = Attribute_Style::double_if_needed
 );
@@ -315,7 +327,7 @@ public:
 [[nodiscard]]
 Result<bool, Processing_Status> argument_to_plaintext(
     std::pmr::vector<char8_t>& out,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     const Argument_Matcher& args,
     std::u8string_view parameter,
     Context& context
@@ -324,14 +336,13 @@ Result<bool, Processing_Status> argument_to_plaintext(
 /// @brief Returns the first positional argument in `args`
 /// or a null pointer if there is no positional argument.
 /// Furthermore, emits a warning for any additional positional arguments, if any.
-const ast::Argument*
-get_first_positional_warn_rest(std::span<const ast::Argument> args, Context& context);
+std::optional<Argument_Ref> get_first_positional_warn_rest(Arguments_View args, Context& context);
 
 [[nodiscard]]
 Greedy_Result<bool> get_yes_no_argument(
     std::u8string_view name,
     std::u8string_view diagnostic_id,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     const Argument_Matcher& args,
     Context& context,
     bool fallback
@@ -342,7 +353,7 @@ Greedy_Result<std::size_t> get_integer_argument(
     std::u8string_view name,
     std::u8string_view parse_error_diagnostic,
     std::u8string_view range_error_diagnostic,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     const Argument_Matcher& args,
     Context& context,
     std::size_t fallback,
@@ -358,7 +369,7 @@ struct String_Argument {
 [[nodiscard]]
 Greedy_Result<String_Argument> get_string_argument(
     std::u8string_view name,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     const Argument_Matcher& args,
     Context& context,
     std::u8string_view fallback = u8""

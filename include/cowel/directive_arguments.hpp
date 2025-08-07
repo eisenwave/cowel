@@ -9,8 +9,8 @@
 
 #include "cowel/util/assert.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/invocation.hpp"
 
 namespace cowel {
 
@@ -42,13 +42,13 @@ enum struct Parameter_Match_Mode : Default_Underlying {
 /// if none could be matched
 /// @param out_status for each argument, the resulting status after matching
 /// @param parameters a span of parameter names
-/// @param arguments a span of arguments, which could be named or unnamed
+/// @param arguments the arguments of the invocation
 /// @param mode the mode
 void match_parameters_and_arguments(
     std::span<int> out_indices,
     std::span<Argument_Status> out_status,
     std::span<const std::u8string_view> parameters,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     Parameter_Match_Mode mode = Parameter_Match_Mode::normal
 );
 
@@ -72,14 +72,7 @@ public:
 
     /// @brief Matches a sequence of arguments using `match_parameters_and_arguments`.
     /// Other member function can subsequently access the results.
-    void match(
-        std::span<const ast::Argument> arguments,
-        Parameter_Match_Mode mode = Parameter_Match_Mode::normal
-    )
-    {
-        m_statuses.resize(arguments.size());
-        match_parameters_and_arguments(m_indices, m_statuses, m_parameters, arguments, mode);
-    }
+    void match(Arguments_View arguments, Parameter_Match_Mode mode = Parameter_Match_Mode::normal);
 
     /// @brief Returns the matched argument index for the parameter with the given name,
     /// or `-1` if no argument matches.

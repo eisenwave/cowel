@@ -16,6 +16,7 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/services.hpp"
@@ -48,7 +49,7 @@ Include_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     // TODO: warn about ignored arguments
 
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
-    const auto path_status = to_plaintext(path_data, call.content, context);
+    const auto path_status = to_plaintext(path_data, call.content, call.content_frame, context);
     switch (path_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk: return Processing_Status::brk;
@@ -88,7 +89,7 @@ Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
     // TODO: warn about ignored arguments
 
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
-    const auto path_status = to_plaintext(path_data, call.content, context);
+    const auto path_status = to_plaintext(path_data, call.content, call.content_frame, context);
     switch (path_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk: return Processing_Status::brk;
@@ -135,7 +136,7 @@ Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
     warn_deprecated_directive_names(imported_content, context);
 
     try_inherit_paragraph(out);
-    return consume_all(out, imported_content, context);
+    return consume_all(out, imported_content, call.call_frame, context);
 }
 
 } // namespace cowel

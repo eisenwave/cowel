@@ -21,6 +21,7 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
 
 using namespace std::string_view_literals;
@@ -33,16 +34,6 @@ std::u32string_view as_string_view(const std::array<char32_t, 2>& array)
 {
     const std::size_t length = array[0] == 0 ? 0 : array[1] == 0 ? 1 : 2;
     return { array.data(), length };
-}
-
-void check_arguments(const Invocation& call, Context& context)
-{
-    if (!call.arguments.empty()) {
-        const File_Source_Span pos = call.arguments.front().get_source_span();
-        context.try_warning(
-            diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."sv
-        );
-    }
 }
 
 [[nodiscard]]
@@ -107,12 +98,12 @@ Processing_Status
 Char_By_Entity_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    check_arguments(call, context);
+    warn_all_args_ignored(call, context);
 
     ensure_paragraph_matches_display(out, m_display);
 
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    const auto input_status = to_plaintext(data, call.content, context);
+    const auto input_status = to_plaintext(data, call.content, call.content_frame, context);
     if (input_status != Processing_Status::ok) {
         return input_status;
     }

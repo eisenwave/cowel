@@ -28,6 +28,7 @@
 #include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
 
 using namespace std::string_view_literals;
@@ -117,8 +118,12 @@ void try_lookup_error(const ast::Directive& directive, Context& context)
 
 } // namespace
 
-Processing_Status
-consume_all_trimmed(Content_Policy& out, std::span<const ast::Content> content, Context& context)
+Processing_Status consume_all_trimmed(
+    Content_Policy& out,
+    std::span<const ast::Content> content,
+    Frame_Index frame,
+    Context& context
+)
 {
     content = trim_blank_text(content);
 
@@ -127,6 +132,7 @@ consume_all_trimmed(Content_Policy& out, std::span<const ast::Content> content, 
         Context& context;
         std::size_t i;
         std::size_t size;
+        Frame_Index frame;
 
         void write_trimmed(std::u8string_view str) const
         {
@@ -153,7 +159,7 @@ consume_all_trimmed(Content_Policy& out, std::span<const ast::Content> content, 
         [[nodiscard]]
         Processing_Status operator()(const ast::Comment& c) const
         {
-            return out.consume(c, context);
+            return out.consume(c, frame, context);
         }
 
         [[nodiscard]]
@@ -163,26 +169,26 @@ consume_all_trimmed(Content_Policy& out, std::span<const ast::Content> content, 
                 write_trimmed(g.as_string());
                 return Processing_Status::ok;
             }
-            return out.consume(g, context);
+            return out.consume(g, frame, context);
         }
 
         [[nodiscard]]
         Processing_Status operator()(const ast::Escaped& e) const
         {
-            return out.consume(e, context);
+            return out.consume(e, frame, context);
         }
 
         [[nodiscard]]
         Processing_Status operator()(const ast::Directive& e) const
         {
-            return out.consume(e, context);
+            return out.consume(e, frame, context);
         }
     };
 
     return process_greedy(
         content,
         [&, i = 0uz](const ast::Content& c) mutable -> Processing_Status {
-            const auto result = std::visit(Visitor { out, context, i, content.size() }, c);
+            const auto result = std::visit(Visitor { out, context, i, content.size(), frame }, c);
             ++i;
             return result;
         }
@@ -192,23 +198,31 @@ consume_all_trimmed(Content_Policy& out, std::span<const ast::Content> content, 
 Processing_Status to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
+    Frame_Index frame,
     Context& context
 )
 {
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
     Plaintext_Content_Policy policy { sink };
-    return consume_all(policy, content, context);
+    return consume_all(policy, content, frame, context);
 }
 
-Processing_Status apply_behavior(Content_Policy& out, const ast::Directive& d, Context& context)
+Processing_Status apply_behavior( //
+    Content_Policy& out,
+    const ast::Directive& d,
+    Frame_Index frame,
+    Context& context
+)
 {
     constexpr auto status_on_error_generated = Processing_Status::ok;
 
+    const Direct_Call_Arguments args { d, frame };
     const Directive_Behavior* const behavior = context.find_directive(d.get_name());
     if (!behavior) {
         try_lookup_error(d, context);
-        const auto status
-            = try_generate_error(out, make_invocation(d, 0), context, status_on_error_generated);
+        const auto status = try_generate_error(
+            out, make_invocation(d, frame, 0, args), context, status_on_error_generated
+        );
         if (status != status_on_error_generated) {
             context.try_error(
                 diagnostic::error_error, d.get_source_span(),
@@ -218,22 +232,23 @@ Processing_Status apply_behavior(Content_Policy& out, const ast::Directive& d, C
         }
         return Processing_Status::error;
     }
-    return (*behavior)(out, make_invocation(d, 0), context);
+    return (*behavior)(out, make_invocation(d, frame, 0, args), context);
 }
 
 void warn_all_args_ignored(const Invocation& call, Context& context)
 {
     if (context.emits(Severity::warning)) {
-        for (const ast::Argument& arg : call.arguments) {
+        for (Argument_Ref arg : call.arguments) {
             context.emit_warning(
-                diagnostic::ignored_args, arg.get_source_span(), u8"This argument was ignored."sv
+                diagnostic::ignored_args, arg.ast_node.get_source_span(),
+                u8"This argument was ignored."sv
             );
         }
     }
 }
 
 void warn_ignored_argument_subset(
-    std::span<const ast::Argument> args,
+    Arguments_View args,
     const Argument_Matcher& matcher,
     Context& context,
     Argument_Subset ignored_subset
@@ -245,18 +260,19 @@ void warn_ignored_argument_subset(
     for (std::size_t i = 0; i < args.size(); ++i) {
         const auto& arg = args[i];
         const bool is_matched = statuses[i] != Argument_Status::unmatched;
-        const bool is_named = arg.has_name();
+        const bool is_named = arg.ast_node.has_name();
         const Argument_Subset subset = argument_subset_matched_named(is_matched, is_named);
         if (argument_subset_contains(ignored_subset, subset)) {
             context.try_warning(
-                diagnostic::ignored_args, arg.get_source_span(), u8"This argument was ignored."sv
+                diagnostic::ignored_args, arg.ast_node.get_source_span(),
+                u8"This argument was ignored."sv
             );
         }
     }
 }
 
 void warn_ignored_argument_subset(
-    std::span<const ast::Argument> args,
+    Arguments_View args,
     Context& context,
     Argument_Subset ignored_subset
 )
@@ -267,10 +283,12 @@ void warn_ignored_argument_subset(
     );
 
     for (const auto& arg : args) {
-        const auto subset = arg.has_name() ? Argument_Subset::named : Argument_Subset::positional;
+        const auto subset
+            = arg.ast_node.has_name() ? Argument_Subset::named : Argument_Subset::positional;
         if (argument_subset_contains(ignored_subset, subset)) {
             context.try_warning(
-                diagnostic::ignored_args, arg.get_source_span(), u8"This argument was ignored."sv
+                diagnostic::ignored_args, arg.ast_node.get_source_span(),
+                u8"This argument was ignored."sv
             );
         }
     }
@@ -357,15 +375,15 @@ void diagnose(
 
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     Context& context,
     Argument_Filter filter,
     Attribute_Style style
 )
 {
     std::size_t i = 0;
-    return process_greedy(arguments, [&](const ast::Argument& a) -> Processing_Status {
-        const bool passed_filter = a.has_name() && (!filter || filter(i, a));
+    return process_greedy(arguments, [&](const Argument_Ref a) -> Processing_Status {
+        const bool passed_filter = a.ast_node.has_name() && (!filter || filter(i, a));
         ++i;
         return passed_filter ? named_argument_to_attribute(out, a, context, style)
                              : Processing_Status::ok;
@@ -374,7 +392,7 @@ Processing_Status named_arguments_to_attributes(
 
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     const Argument_Matcher& matcher,
     Context& context,
     Argument_Subset subset,
@@ -383,16 +401,17 @@ Processing_Status named_arguments_to_attributes(
 {
     COWEL_ASSERT(!argument_subset_intersects(subset, Argument_Subset::positional));
 
-    const auto filter = [&](std::size_t index, const ast::Argument& a) -> bool {
+    const auto filter = [&](std::size_t index, const Argument_Ref a) -> bool {
         const Argument_Status status = matcher.argument_statuses()[index];
         if (status == Argument_Status::duplicate_named) {
             const std::u8string_view message[] = {
                 u8"This argument is a duplicate of a previous named argument also named \"",
-                a.get_name(),
+                a.ast_node.get_name(),
                 u8"\", and will be ignored.",
             };
             context.try_warning(
-                diagnostic::duplicate_args, a.get_source_span(), joined_char_sequence(message)
+                diagnostic::duplicate_args, a.ast_node.get_source_span(),
+                joined_char_sequence(message)
             );
             return false;
         }
@@ -406,25 +425,27 @@ Processing_Status named_arguments_to_attributes(
 
 Processing_Status named_argument_to_attribute(
     Text_Buffer_Attribute_Writer& out,
-    const ast::Argument& a,
+    Argument_Ref a,
     Context& context,
     Attribute_Style style
 )
 {
-    COWEL_ASSERT(a.has_name());
+    COWEL_ASSERT(a.ast_node.has_name());
     std::pmr::vector<char8_t> value { context.get_transient_memory() };
     // TODO: error handling
     value.clear();
-    const auto status = to_plaintext(value, a.get_content(), context);
+    const auto status = to_plaintext(value, a.ast_node.get_content(), a.frame_index, context);
     const std::u8string_view value_string { value.data(), value.size() };
-    const std::u8string_view name = a.get_name();
+    const std::u8string_view name = a.ast_node.get_name();
+    // TODO: this is simply going to crash if the attribute name is not valid;
+    // investigate whether this needs work, and possibly leave a comment here if it's okay
     out.write_attribute(HTML_Attribute_Name(name), value_string, style);
     return status;
 }
 
 Result<bool, Processing_Status> argument_to_plaintext(
     std::pmr::vector<char8_t>& out,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     const Argument_Matcher& args,
     std::u8string_view parameter,
     Context& context
@@ -434,29 +455,28 @@ Result<bool, Processing_Status> argument_to_plaintext(
     if (i < 0) {
         return false;
     }
-    const ast::Argument& arg = arguments[std::size_t(i)];
+    const Argument_Ref& arg = arguments[std::size_t(i)];
     // TODO: warn when pure HTML argument was used as variable name
-    const auto status = to_plaintext(out, arg.get_content(), context);
+    const auto status = to_plaintext(out, arg.ast_node.get_content(), arg.frame_index, context);
     if (status != Processing_Status::ok) {
         return status;
     }
     return true;
 }
 
-const ast::Argument*
-get_first_positional_warn_rest(std::span<const ast::Argument> args, Context& context)
+std::optional<Argument_Ref> get_first_positional_warn_rest(Arguments_View args, Context& context)
 {
-    const ast::Argument* result = nullptr;
-    for (const ast::Argument& arg : args) {
-        if (arg.has_name()) {
+    std::optional<Argument_Ref> result;
+    for (const Argument_Ref arg : args) {
+        if (arg.ast_node.has_name()) {
             continue;
         }
         if (!result) {
-            result = &arg;
+            result.emplace(arg);
             continue;
         }
         context.try_warning(
-            diagnostic::ignored_args, arg.get_source_span(),
+            diagnostic::ignored_args, arg.ast_node.get_source_span(),
             u8"This positional argument is ignored. "
             u8"Only the first positional argument is used in this directive."sv
         );
@@ -467,7 +487,7 @@ get_first_positional_warn_rest(std::span<const ast::Argument> args, Context& con
 Greedy_Result<bool> get_yes_no_argument(
     std::u8string_view name,
     std::u8string_view diagnostic_id,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     const Argument_Matcher& args,
     Context& context,
     bool fallback
@@ -477,9 +497,10 @@ Greedy_Result<bool> get_yes_no_argument(
     if (index < 0) {
         return fallback;
     }
-    const ast::Argument& arg = arguments[std::size_t(index)];
+    const Argument_Ref arg = arguments[std::size_t(index)];
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    const auto text_status = to_plaintext(data, arg.get_content(), context);
+    const auto text_status
+        = to_plaintext(data, arg.ast_node.get_content(), arg.frame_index, context);
     if (text_status != Processing_Status::ok) {
         return { fallback, text_status };
     }
@@ -496,7 +517,9 @@ Greedy_Result<bool> get_yes_no_argument(
         string,
         u8"\" was given.",
     };
-    context.try_warning(diagnostic_id, arg.get_source_span(), joined_char_sequence(message));
+    context.try_warning(
+        diagnostic_id, arg.ast_node.get_source_span(), joined_char_sequence(message)
+    );
     return fallback;
 }
 
@@ -504,7 +527,7 @@ Greedy_Result<std::size_t> get_integer_argument(
     std::u8string_view name,
     std::u8string_view parse_error_diagnostic,
     std::u8string_view range_error_diagnostic,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     const Argument_Matcher& args,
     Context& context,
     std::size_t fallback,
@@ -518,9 +541,10 @@ Greedy_Result<std::size_t> get_integer_argument(
     if (index < 0) {
         return fallback;
     }
-    const ast::Argument& arg = arguments[std::size_t(index)];
+    const Argument_Ref arg = arguments[std::size_t(index)];
     std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
-    const auto text_status = to_plaintext(arg_text, arg.get_content(), context);
+    const auto text_status
+        = to_plaintext(arg_text, arg.ast_node.get_content(), arg.frame_index, context);
     if (text_status != Processing_Status::ok) {
         return { fallback, text_status };
     }
@@ -536,7 +560,7 @@ Greedy_Result<std::size_t> get_integer_argument(
             u8"\" is ignored because it could not be parsed as a (positive) integer.",
         };
         context.try_warning(
-            parse_error_diagnostic, arg.get_source_span(), joined_char_sequence(message)
+            parse_error_diagnostic, arg.ast_node.get_source_span(), joined_char_sequence(message)
         );
         return fallback;
     }
@@ -555,7 +579,7 @@ Greedy_Result<std::size_t> get_integer_argument(
             u8"].",
         };
         context.try_warning(
-            range_error_diagnostic, arg.get_source_span(), joined_char_sequence(message)
+            range_error_diagnostic, arg.ast_node.get_source_span(), joined_char_sequence(message)
         );
         return fallback;
     }
@@ -565,7 +589,7 @@ Greedy_Result<std::size_t> get_integer_argument(
 
 Greedy_Result<String_Argument> get_string_argument(
     std::u8string_view name,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     const Argument_Matcher& args,
     Context& context,
     std::u8string_view fallback
@@ -578,8 +602,9 @@ Greedy_Result<String_Argument> get_string_argument(
         result.string = fallback;
         return result;
     }
+    const Argument_Ref arg = arguments[std::size_t(index)];
     const auto status
-        = to_plaintext(result.data, arguments[std::size_t(index)].get_content(), context);
+        = to_plaintext(result.data, arg.ast_node.get_content(), arg.frame_index, context);
     if (status != Processing_Status::ok) {
         result.string = fallback;
         return { result, status };

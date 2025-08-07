@@ -8,6 +8,7 @@
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/invocation.hpp"
 
 using namespace std::string_view_literals;
 

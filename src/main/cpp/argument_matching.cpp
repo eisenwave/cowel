@@ -13,7 +13,7 @@ void match_parameters_and_arguments(
     std::span<int> out_indices,
     std::span<Argument_Status> out_status,
     std::span<const std::u8string_view> parameters,
-    std::span<const ast::Argument> arguments,
+    Arguments_View arguments,
     Parameter_Match_Mode mode
 )
 {
@@ -29,10 +29,10 @@ void match_parameters_and_arguments(
 
     if (mode != Parameter_Match_Mode::only_positional) {
         for (std::size_t arg_index = 0; arg_index < arguments.size(); ++arg_index) {
-            if (!arguments[arg_index].has_name()) {
+            if (!arguments[arg_index].ast_node.has_name()) {
                 continue;
             }
-            const std::u8string_view arg_name = arguments[arg_index].get_name();
+            const std::u8string_view arg_name = arguments[arg_index].ast_node.get_name();
             for (std::size_t i = 0; i < parameters.size(); ++i) {
                 if (arg_name == parameters[i]) {
                     if (out_indices[i] == -1) {
@@ -50,7 +50,7 @@ void match_parameters_and_arguments(
 
     if (mode != Parameter_Match_Mode::only_named) {
         for (std::size_t arg_index = 0; arg_index < arguments.size(); ++arg_index) {
-            if (arguments[arg_index].has_name()) {
+            if (arguments[arg_index].ast_node.has_name()) {
                 continue;
             }
             for (std::size_t i = 0; i < parameters.size(); ++i) {
@@ -62,6 +62,12 @@ void match_parameters_and_arguments(
             }
         }
     }
+}
+
+void Argument_Matcher::match(Arguments_View arguments, Parameter_Match_Mode mode)
+{
+    m_statuses.resize(arguments.size());
+    match_parameters_and_arguments(m_indices, m_statuses, m_parameters, arguments, mode);
 }
 
 } // namespace cowel

@@ -27,27 +27,27 @@ struct Ignorant_Content_Policy : virtual Content_Policy {
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Text&, Context&) override
+    Processing_Status consume(const ast::Text&, Frame_Index, Context&) override
     {
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Comment&, Context&) override
+    Processing_Status consume(const ast::Comment&, Frame_Index, Context&) override
     {
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Escaped&, Context&) override
+    Processing_Status consume(const ast::Escaped&, Frame_Index, Context&) override
     {
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Directive&, Context&) override
+    Processing_Status consume(const ast::Directive&, Frame_Index, Context&) override
     {
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Generated&, Context&) override
+    Processing_Status consume(const ast::Generated&, Frame_Index, Context&) override
     {
         return Processing_Status::ok;
     }

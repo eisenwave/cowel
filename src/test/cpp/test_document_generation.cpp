@@ -57,7 +57,7 @@ write_empty_head_document(Text_Sink& out, std::span<const ast::Content> content,
     };
     constexpr auto write_body
         = [](Content_Policy& policy, std::span<const ast::Content> content, Context& context) {
-              return consume_all(policy, content, context);
+              return consume_all(policy, content, 0, context);
           };
 
     return write_head_body_document(out, content, context, const_v<write_head>, const_v<write_body>);
@@ -103,13 +103,13 @@ public:
             switch (behavior) {
             case Test_Behavior::trivial: {
                 HTML_Content_Policy policy { sink };
-                return consume_all(policy, self->content, context);
+                return consume_all(policy, self->content, 0, context);
             }
 
             case Test_Behavior::paragraphs: {
                 Vector_Text_Sink buffer { Output_Language::html, context.get_transient_memory() };
                 Paragraph_Split_Policy policy { buffer, context.get_transient_memory() };
-                const Processing_Status result = consume_all(policy, self->content, context);
+                const Processing_Status result = consume_all(policy, self->content, 0, context);
                 policy.leave_paragraph();
                 resolve_references(sink, as_u8string_view(*buffer), context, File_Id {});
                 return result;

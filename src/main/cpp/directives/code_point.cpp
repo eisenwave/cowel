@@ -28,6 +28,7 @@
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
 
 using namespace std::string_view_literals;
@@ -38,12 +39,13 @@ namespace {
 [[nodiscard]]
 Result<char32_t, Processing_Status> code_point_by_generated_digits(
     std::span<const ast::Content> content,
+    Frame_Index content_frame,
     const File_Source_Span& source_span,
     Context& context
 )
 {
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    const auto status = to_plaintext(data, content, context);
+    const auto status = to_plaintext(data, content, content_frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -87,6 +89,7 @@ Result<char32_t, Processing_Status> code_point_by_generated_digits(
 [[nodiscard]]
 Result<char32_t, Processing_Status> code_point_by_generated_name(
     std::span<const ast::Content> content,
+    Frame_Index content_frame,
     const File_Source_Span& source_span,
     Context& context
 )
@@ -94,7 +97,7 @@ Result<char32_t, Processing_Status> code_point_by_generated_name(
     constexpr auto error_point = char32_t(-1);
 
     std::pmr::vector<char8_t> name { context.get_transient_memory() };
-    const auto status = to_plaintext(name, content, context);
+    const auto status = to_plaintext(name, content, content_frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -131,7 +134,7 @@ Code_Point_Behavior::operator()(Content_Policy& out, const Invocation& call, Con
 {
     // TODO: this warning should use some blanket method
     if (!call.arguments.empty()) {
-        const File_Source_Span pos = call.arguments.front().get_source_span();
+        const File_Source_Span pos = call.arguments.front().ast_node.get_source_span();
         context.try_warning(
             diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."sv
         );
@@ -153,14 +156,18 @@ Code_Point_Behavior::operator()(Content_Policy& out, const Invocation& call, Con
 Result<char32_t, Processing_Status>
 Char_By_Num_Behavior::get_code_point(const Invocation& call, Context& context) const
 {
-    return code_point_by_generated_digits(call.content, call.directive.get_source_span(), context);
+    return code_point_by_generated_digits(
+        call.content, call.content_frame, call.directive.get_source_span(), context
+    );
 }
 
 [[nodiscard]]
 Result<char32_t, Processing_Status>
 Char_By_Name_Behavior::get_code_point(const Invocation& call, Context& context) const
 {
-    return code_point_by_generated_name(call.content, call.directive.get_source_span(), context);
+    return code_point_by_generated_name(
+        call.content, call.content_frame, call.directive.get_source_span(), context
+    );
 }
 
 Processing_Status
@@ -205,7 +212,7 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     const auto args_status = status_concat(zfill.status(), base.status(), is_lower.status());
 
     std::pmr::vector<char8_t> input { context.get_transient_memory() };
-    const auto input_status = to_plaintext(input, call.content, context);
+    const auto input_status = to_plaintext(input, call.content, call.content_frame, context);
     if (input_status != Processing_Status::ok) {
         return status_concat(args_status, input_status);
     }

@@ -21,6 +21,7 @@
 #include "cowel/directive_processing.hpp"
 #include "cowel/document_sections.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/invocation.hpp"
 
 using namespace std::string_view_literals;
 
@@ -125,7 +126,7 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
     for (std::size_t i = 0; i < args.argument_statuses().size(); ++i) {
         if (args.argument_statuses()[i] == Argument_Status::unmatched) {
             context.try_warning(
-                diagnostic::ignored_args, call.arguments[i].get_source_span(),
+                diagnostic::ignored_args, call.arguments[i].ast_node.get_source_span(),
                 u8"This argument was ignored."sv
             );
         }
@@ -141,8 +142,9 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
     }
 
     std::pmr::vector<char8_t> target { context.get_transient_memory() };
+    const Argument_Ref to_arg = call.arguments[std::size_t(to_index)];
     const auto target_status
-        = to_plaintext(target, call.arguments[std::size_t(to_index)].get_content(), context);
+        = to_plaintext(target, to_arg.ast_node.get_content(), to_arg.frame_index, context);
     if (target_status != Processing_Status::ok) {
         return target_status;
     }
@@ -194,7 +196,7 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
         }
         else {
             buffer.flush();
-            status = consume_all(out, call.content, context);
+            status = consume_all(out, call.content, call.content_frame, context);
         }
         writer.close_tag(html_tag::a);
         buffer.flush();
@@ -209,7 +211,7 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
             .write_href(target_string)
             .end();
         buffer.flush();
-        const auto status = consume_all(out, call.content, context);
+        const auto status = consume_all(out, call.content, call.content_frame, context);
         writer.close_tag(html_tag::a);
         buffer.flush();
         return status;

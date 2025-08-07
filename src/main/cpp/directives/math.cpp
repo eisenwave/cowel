@@ -19,6 +19,7 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/invocation.hpp"
 
 using namespace std::string_view_literals;
 
@@ -93,6 +94,7 @@ static_assert(!mathml_permits_text_bits[mathml_element_index(u8"munderover")]);
 Processing_Status to_math_html(
     Content_Policy& out,
     std::span<const ast::Content> contents,
+    Frame_Index content_frame,
     Context& context,
     bool permit_text = false
 )
@@ -114,22 +116,22 @@ Processing_Status to_math_html(
                     );
                 }
             }
-            return out.consume_content(c, context);
+            return out.consume_content(c, content_frame, context);
         }
         const std::u8string_view name_string = d->get_name();
         const std::ptrdiff_t index = mathml_element_index(name_string);
         if (index < 0) {
-            return out.consume(*d, context);
+            return out.consume(*d, content_frame, context);
         }
-        warn_ignored_argument_subset(d->get_arguments(), context, Argument_Subset::positional);
+        Direct_Call_Arguments args { *d, content_frame };
+        warn_ignored_argument_subset(args, context, Argument_Subset::positional);
 
         // directive names are HTML tag names
         const HTML_Tag_Name name { Unchecked {}, name_string };
         HTML_Writer_Buffer buffer { out, Output_Language::html };
         Text_Buffer_HTML_Writer writer { buffer };
         auto attributes = writer.open_tag_with_attributes(name);
-        const auto attributes_status
-            = named_arguments_to_attributes(attributes, d->get_arguments(), context);
+        const auto attributes_status = named_arguments_to_attributes(attributes, args, context);
         attributes.end();
         if (status_is_break(attributes_status)) {
             writer.close_tag(name);
@@ -139,7 +141,8 @@ Processing_Status to_math_html(
 
         buffer.flush();
         const bool child_permits_text = mathml_permits_text_bits[std::size_t(index)];
-        const auto nested_status = to_math_html(out, d->get_content(), context, child_permits_text);
+        const auto nested_status
+            = to_math_html(out, d->get_content(), content_frame, context, child_permits_text);
         writer.close_tag(name);
         buffer.flush();
         return status_concat(attributes_status, nested_status);
@@ -174,7 +177,7 @@ Math_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     }
     buffer.flush();
 
-    const auto nested_status = to_math_html(policy, call.content, context);
+    const auto nested_status = to_math_html(policy, call.content, call.content_frame, context);
     writer.close_tag(tag_name);
     buffer.flush();
     return status_concat(attributes_status, nested_status);

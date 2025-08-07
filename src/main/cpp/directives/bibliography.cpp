@@ -24,6 +24,7 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/invocation.hpp"
 #include "cowel/services.hpp"
 
 using namespace std::string_view_literals;
@@ -185,9 +186,10 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const Invocation& call, C
             string_lengths.push_back(0);
             continue;
         }
-        const ast::Argument& arg = call.arguments[std::size_t(index)];
+        const Argument_Ref arg = call.arguments[std::size_t(index)];
         const std::size_t initial_size = result.text.size();
-        const auto status = to_plaintext(result.text, arg.get_content(), context);
+        const auto status
+            = to_plaintext(result.text, arg.ast_node.get_content(), arg.frame_index, context);
         if (status != Processing_Status::ok) {
             return status;
         }

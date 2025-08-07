@@ -24,31 +24,31 @@ public:
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Text& text, Context&) override
+    Processing_Status consume(const ast::Text& text, Frame_Index, Context&) override
     {
         write(text.get_source(), Output_Language::text);
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Comment& comment, Context&) override
+    Processing_Status consume(const ast::Comment& comment, Frame_Index, Context&) override
     {
         write(comment.get_source(), Output_Language::text);
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Escaped& escaped, Context&) override
+    Processing_Status consume(const ast::Escaped& escaped, Frame_Index, Context&) override
     {
         write(escaped.get_source(), Output_Language::text);
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Directive& directive, Context&) override
+    Processing_Status consume(const ast::Directive& directive, Frame_Index, Context&) override
     {
         write(directive.get_source(), Output_Language::text);
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Generated&, Context&) override
+    Processing_Status consume(const ast::Generated&, Frame_Index, Context&) override
     {
         COWEL_ASSERT_UNREACHABLE(u8"Generated content within To_Source_Policy should be impossible."
         );

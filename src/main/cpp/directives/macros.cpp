@@ -25,6 +25,7 @@
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/invocation.hpp"
 
 using namespace std::string_view_literals;
 namespace cowel {
@@ -44,17 +45,17 @@ Macro_Define_Behavior::operator()(Content_Policy&, const Invocation& call, Conte
         );
         return Processing_Status::error;
     }
-    const ast::Argument& pattern_arg = call.arguments[std::size_t(pattern_index)];
-    if (pattern_arg.get_content().size() != 1
-        || !std::holds_alternative<ast::Directive>(pattern_arg.get_content()[0])) {
+    const Argument_Ref pattern_arg = call.arguments[std::size_t(pattern_index)];
+    if (pattern_arg.ast_node.get_content().size() != 1
+        || !std::holds_alternative<ast::Directive>(pattern_arg.ast_node.get_content()[0])) {
         context.try_error(
-            diagnostic::macro::pattern_no_directive, pattern_arg.get_source_span(),
+            diagnostic::macro::pattern_no_directive, pattern_arg.ast_node.get_source_span(),
             u8"The pattern in a macro definition has to be a single directive, nothing else."sv
         );
         return Processing_Status::error;
     }
 
-    const auto& pattern_directive = std::get<ast::Directive>(pattern_arg.get_content()[0]);
+    const auto& pattern_directive = std::get<ast::Directive>(pattern_arg.ast_node.get_content()[0]);
     // The pattern arguments and content currently have no special meaning.
     // They are merely used as documentation by the user, but are never processed.
     // We are only interested in the pattern name at the point of definition.
@@ -86,8 +87,7 @@ enum struct Put_Response : bool {
 [[nodiscard]]
 Processing_Status substitute_in_macro(
     ast::Pmr_Vector<ast::Content>& content,
-    const std::span<const ast::Argument> provided_arguments,
-    const std::span<const ast::Content> provided_content,
+    const Invocation& call,
     Context& context,
     const Function_Ref<Put_Response(const File_Source_Span&)> on_variadic_put
 )
@@ -112,9 +112,8 @@ Processing_Status substitute_in_macro(
             // run substitution on, recursively.
             if (arg_content.size() != 1
                 || !std::holds_alternative<ast::Directive>(arg_content.front())) {
-                const auto status = substitute_in_macro(
-                    arg_content, provided_arguments, provided_content, context, on_variadic_put
-                );
+                const auto status
+                    = substitute_in_macro(arg_content, call, context, on_variadic_put);
                 if (status_is_break(status)) {
                     return status;
                 }
@@ -129,16 +128,17 @@ Processing_Status substitute_in_macro(
                 // This just gets rid of the \put{...} argument,
                 // to be replaced with expanded arguments.
                 arg_it = d_arguments.erase(arg_it);
-                arg_it = d_arguments.insert(
-                    arg_it, provided_arguments.begin(), provided_arguments.end()
+                const auto args_ast_nodes = std::views::transform(
+                    call.arguments,
+                    [](const Argument_Ref a) -> const ast::Argument& { return a.ast_node; }
                 );
-                arg_it += std::ptrdiff_t(provided_arguments.size());
+                arg_it = d_arguments.insert(arg_it, args_ast_nodes.begin(), args_ast_nodes.end());
+                arg_it += std::ptrdiff_t(call.arguments.size());
                 variadically_expanded = true;
                 return Put_Response::abort;
             };
-            const auto status = substitute_in_macro(
-                arg_content, provided_arguments, provided_content, context, variadic_put_expand
-            );
+            const auto status
+                = substitute_in_macro(arg_content, call, context, variadic_put_expand);
             if (status_is_break(status)) {
                 return status;
             }
@@ -147,9 +147,7 @@ Processing_Status substitute_in_macro(
             }
         }
 
-        const auto status0 = substitute_in_macro(
-            d->get_content(), provided_arguments, provided_content, context, on_variadic_put
-        );
+        const auto status0 = substitute_in_macro(d->get_content(), call, context, on_variadic_put);
         if (status_is_break(status0)) {
             return status0;
         }
@@ -158,14 +156,17 @@ Processing_Status substitute_in_macro(
             ++it;
             continue;
         }
-        Argument_Matcher put_args { put_parameters, context.get_transient_memory() };
-        put_args.match(d->get_arguments());
+
+        Direct_Call_Arguments put_args_backend { *d, call.call_frame };
+        Arguments_View put_args { put_args_backend };
+        Argument_Matcher put_arg_matcher { put_parameters, context.get_transient_memory() };
+        put_arg_matcher.match(put_args);
         warn_ignored_argument_subset(
-            d->get_arguments(), put_args, context, Argument_Subset::unmatched
+            put_args, put_arg_matcher, context, Argument_Subset::unmatched
         );
 
         std::pmr::vector<char8_t> selection { context.get_transient_memory() };
-        const auto status1 = to_plaintext(selection, d->get_content(), context);
+        const auto status1 = to_plaintext(selection, d->get_content(), call.content_frame, context);
         if (status_is_break(status1)) {
             return status1;
         }
@@ -181,12 +182,12 @@ Processing_Status substitute_in_macro(
         // Simple case like \put where we expand the given contents.
         if (selection.empty()) {
             it = content.erase(it);
-            it = content.insert(it, provided_content.begin(), provided_content.end());
+            it = content.insert(it, call.content.begin(), call.content.end());
             // We must skip over substituted content,
             // otherwise we risk expanding a \put directive that was passed to the macro,
             // rather than being in the macro definition,
             // and \put is only supposed to have special meaning within the macro definition.
-            it += std::ptrdiff_t(provided_content.size());
+            it += std::ptrdiff_t(call.content.size());
             continue;
         }
 
@@ -213,10 +214,10 @@ Processing_Status substitute_in_macro(
             it = content.erase(it);
             continue;
         }
-        if (*arg_index >= provided_arguments.size()) {
-            const int else_index = put_args.get_argument_index(u8"else");
+        if (*arg_index >= call.arguments.size()) {
+            const int else_index = put_arg_matcher.get_argument_index(u8"else");
             if (else_index < 0) {
-                const Characters8 limit_chars = to_characters8(provided_arguments.size());
+                const Characters8 limit_chars = to_characters8(call.arguments.size());
                 const std::u8string_view message[] {
                     u8"This \\put directive is invalid because the positional argument at ",
                     u8"index [",
@@ -242,31 +243,9 @@ Processing_Status substitute_in_macro(
             continue;
         }
         it = content.erase(it);
-        substitute_arg(provided_arguments[*arg_index]);
+        substitute_arg(call.arguments[*arg_index].ast_node);
     }
     return Processing_Status::ok;
-}
-
-[[nodiscard]]
-Processing_Status instantiate_macro(
-    ast::Pmr_Vector<ast::Content>& out,
-    const Context::Macro_Definition& definition,
-    std::span<const ast::Argument> put_arguments,
-    std::span<const ast::Content> put_content,
-    Context& context
-)
-{
-    out.insert(out.end(), definition.body.begin(), definition.body.end());
-
-    auto on_variadic_put = [&](const File_Source_Span& location) {
-        context.try_error(
-            diagnostic::macro::put_args_outside_args, location,
-            u8"A \\put[...] pseudo-directive can only be used as the sole positional argument "
-            u8"in a directive."sv
-        );
-        return Put_Response::normal;
-    };
-    return substitute_in_macro(out, put_arguments, put_content, context, on_variadic_put);
 }
 
 } // namespace
@@ -284,15 +263,25 @@ Processing_Status Macro_Instantiate_Behavior::operator()(
     COWEL_ASSERT(definition);
 
     ast::Pmr_Vector<ast::Content> instance { context.get_transient_memory() };
-    const auto instantiate_status
-        = instantiate_macro(instance, *definition, call.arguments, call.content, context);
+    instance.insert(instance.end(), definition->body.begin(), definition->body.end());
+
+    auto on_variadic_put = [&](const File_Source_Span& location) {
+        context.try_error(
+            diagnostic::macro::put_args_outside_args, location,
+            u8"A \\put[...] pseudo-directive can only be used as the sole positional argument "
+            u8"in a directive."sv
+        );
+        return Put_Response::normal;
+    };
+
+    const auto instantiate_status = substitute_in_macro(instance, call, context, on_variadic_put);
     if (status_is_break(instantiate_status)) {
         return instantiate_status;
     }
 
     try_inherit_paragraph(out);
 
-    const auto consume_status = consume_all(out, instance, context);
+    const auto consume_status = consume_all(out, instance, call.call_frame, context);
 
     return status_concat(instantiate_status, consume_status);
 }

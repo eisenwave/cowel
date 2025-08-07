@@ -26,6 +26,7 @@
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/document_sections.hpp"
+#include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
 
 using namespace std::string_view_literals;
@@ -37,12 +38,13 @@ namespace {
 Processing_Status synthesize_id(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
+    Frame_Index content_frame,
     Context& context
 )
 {
     // TODO: diagnostic on bad status
     // TODO: disallow side effects, or maybe use content policies to pull out just the text?
-    const auto status = to_plaintext(out, content, context);
+    const auto status = to_plaintext(out, content, content_frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -106,10 +108,10 @@ Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
     const auto id_status = [&] -> Processing_Status {
         const int id_index = args.get_argument_index(u8"id");
         if (id_index < 0) {
-            return synthesize_id(id_data, call.content, context);
+            return synthesize_id(id_data, call.content, call.content_frame, context);
         }
-        const ast::Argument& id_arg = call.arguments[std::size_t(id_index)];
-        return to_plaintext(id_data, id_arg.get_content(), context);
+        const Argument_Ref id_arg = call.arguments[std::size_t(id_index)];
+        return to_plaintext(id_data, id_arg.ast_node.get_content(), id_arg.frame_index, context);
     }();
     current_status = status_concat(current_status, id_status);
     if (status_is_break(id_status)) {
@@ -147,7 +149,8 @@ Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
     {
         Capturing_Ref_Text_Sink heading_sink { heading_html, Output_Language::html };
         HTML_Content_Policy html_policy { heading_sink };
-        const auto heading_status = consume_all(html_policy, call.content, context);
+        const auto heading_status
+            = consume_all(html_policy, call.content, call.content_frame, context);
         current_status = status_concat(current_status, heading_status);
         if (status_is_break(heading_status)) {
             writer.close_tag(tag_name);
@@ -290,8 +293,9 @@ Processing_Status with_section_name(
     }
 
     std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
-    const ast::Argument& arg = call.arguments[std::size_t(arg_index)];
-    const auto name_status = to_plaintext(name_data, arg.get_content(), context);
+    const Argument_Ref arg = call.arguments[std::size_t(arg_index)];
+    const auto name_status
+        = to_plaintext(name_data, arg.ast_node.get_content(), arg.frame_index, context);
     if (name_status != Processing_Status::ok) {
         return name_status;
     }
@@ -314,7 +318,9 @@ There_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
 {
     auto action = [&](std::u8string_view section) {
         const auto scope = context.get_sections().go_to_scoped(section);
-        return consume_all(context.get_sections().current_policy(), call.content, context);
+        return consume_all(
+            context.get_sections().current_policy(), call.content, call.content_frame, context
+        );
     };
     return with_section_name(call, context, diagnostic::there::no_section, action);
 }

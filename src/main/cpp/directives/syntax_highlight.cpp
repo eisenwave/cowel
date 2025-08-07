@@ -24,6 +24,7 @@
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
 #include "cowel/services.hpp"
 #include "cowel/theme_to_css.hpp"
@@ -85,7 +86,8 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     // Note that for consistent side effects,
     // we still process all the arguments above.
     if (out.get_language() == Output_Language::text) {
-        const Processing_Status text_status = consume_all(out, call.content, context);
+        const Processing_Status text_status
+            = consume_all(out, call.content, call.content_frame, context);
         return status_concat(args_status, text_status);
     }
 
@@ -111,7 +113,8 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     Syntax_Highlight_Policy highlight_policy //
         { context.get_transient_memory() };
     highlight_policy.write_phantom(prefix->string);
-    const auto highlight_status = consume_all(highlight_policy, call.content, context);
+    const auto highlight_status
+        = consume_all(highlight_policy, call.content, call.content_frame, context);
     highlight_policy.write_phantom(suffix->string);
 
     const Result<void, Syntax_Highlight_Error> result = [&] {
@@ -190,7 +193,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 
     // We do the same special casing as for \code (see above for explanation).
     if (out.get_language() == Output_Language::text) {
-        return consume_all(out, call.content, context);
+        return consume_all(out, call.content, call.content_frame, context);
     }
 
     HTML_Content_Policy policy = ensure_html_policy(out);
@@ -201,7 +204,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const Invocation& call, C
         .write_attribute(html_attr::data_h, short_name)
         .end();
     buffer.flush();
-    const Processing_Status result = consume_all(policy, call.content, context);
+    const Processing_Status result = consume_all(policy, call.content, call.content_frame, context);
     if (status_is_break(result)) {
         return result;
     }

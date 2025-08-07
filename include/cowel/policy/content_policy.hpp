@@ -58,25 +58,31 @@ struct Content_Policy : virtual Text_Sink {
     }
 
     [[nodiscard]]
-    virtual Processing_Status consume(const ast::Text& text, Context& context)
+    virtual Processing_Status //
+    consume(const ast::Text& text, Frame_Index frame, Context& context)
         = 0;
     [[nodiscard]]
-    virtual Processing_Status consume(const ast::Comment& comment, Context& context)
+    virtual Processing_Status //
+    consume(const ast::Comment& comment, Frame_Index frame, Context& context)
         = 0;
     [[nodiscard]]
-    virtual Processing_Status consume(const ast::Escaped& escape, Context& context)
+    virtual Processing_Status //
+    consume(const ast::Escaped& escape, Frame_Index frame, Context& context)
         = 0;
     [[nodiscard]]
-    virtual Processing_Status consume(const ast::Directive& directive, Context& context)
+    virtual Processing_Status //
+    consume(const ast::Directive& directive, Frame_Index frame, Context& context)
         = 0;
     [[nodiscard]]
-    virtual Processing_Status consume(const ast::Generated& generated, Context&)
+    virtual Processing_Status //
+    consume(const ast::Generated& generated, Frame_Index frame, Context&)
         = 0;
 
     [[nodiscard]]
-    Processing_Status consume_content(const ast::Content& content, Context& context)
+    Processing_Status //
+    consume_content(const ast::Content& content, Frame_Index frame, Context& context)
     {
-        return std::visit([&](const auto& c) { return consume(c, context); }, content);
+        return std::visit([&](const auto& c) { return consume(c, frame, context); }, content);
     }
 };
 

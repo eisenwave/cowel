@@ -21,6 +21,7 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
+#include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
 
 namespace cowel {
@@ -53,9 +54,10 @@ Result<long long, Processing_Status> compute_expression(
 {
     long long result = expression_type_neutral_element(type);
     bool first = true;
-    for (const ast::Argument& arg : call.arguments) {
+    for (const Argument_Ref& arg : call.arguments) {
         std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
-        const auto arg_status = to_plaintext(arg_text, arg.get_content(), context);
+        const auto arg_status
+            = to_plaintext(arg_text, arg.ast_node.get_content(), arg.frame_index, context);
         if (arg_status != Processing_Status::ok) {
             return arg_status;
         }
@@ -69,7 +71,8 @@ Result<long long, Processing_Status> compute_expression(
                 u8"\" is not a valid integer.",
             };
             context.try_error(
-                diagnostic::arithmetic_parse, arg.get_source_span(), joined_char_sequence(message)
+                diagnostic::arithmetic_parse, arg.ast_node.get_source_span(),
+                joined_char_sequence(message)
             );
             return try_generate_error(out, call, context);
         }
@@ -80,7 +83,7 @@ Result<long long, Processing_Status> compute_expression(
                 u8"\" evaluated to zero, and a division by zero would occur.",
             };
             context.try_error(
-                diagnostic::arithmetic_div_by_zero, arg.get_source_span(),
+                diagnostic::arithmetic_div_by_zero, arg.ast_node.get_source_span(),
                 joined_char_sequence(message)
             );
             return try_generate_error(out, call, context);
@@ -153,7 +156,7 @@ Processing_Status set_variable_to_op_result(
 )
 {
     std::pmr::vector<char8_t> body_string { context.get_transient_memory() };
-    const auto status = to_plaintext(body_string, call.content, context);
+    const auto status = to_plaintext(body_string, call.content, call.content_frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }
