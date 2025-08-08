@@ -295,6 +295,10 @@ constexpr Basic_Test basic_tests_array[] {
     { .document = Path { u8"paragraph_control.cow" },
       .expected_html = Path { u8"paragraph_control.cow.html" },
       .behavior = Test_Behavior::paragraphs },
+
+    { .document = Path { u8"../docs/index.cow" },
+      .expected_html = Path { u8"../docs/index.html" },
+      .behavior = Test_Behavior::wg21 },
 };
 // clang-format on
 } // namespace

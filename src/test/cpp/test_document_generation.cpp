@@ -31,6 +31,7 @@
 #include "cowel/output_language.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/print.hpp"
+#include "cowel/relative_file_loader.hpp"
 
 #include "collecting_logger.hpp"
 #include "diff.hpp"
@@ -84,33 +85,44 @@ public:
         COWEL_ASSERT(theme_loaded);
     }
 
-    template <Test_Behavior behavior>
     [[nodiscard]]
+    Processing_Status run_test_with_behavior(Context& context, Test_Behavior behavior)
+    {
+        Capturing_Ref_Text_Sink sink { out, Output_Language::html };
+        switch (behavior) {
+        case Test_Behavior::trivial: {
+            HTML_Content_Policy policy { sink };
+            return consume_all(policy, content, 0, context);
+        }
+
+        case Test_Behavior::paragraphs: {
+            Vector_Text_Sink buffer { Output_Language::html, context.get_transient_memory() };
+            Paragraph_Split_Policy policy { buffer, context.get_transient_memory() };
+            const Processing_Status result = consume_all(policy, content, 0, context);
+            policy.leave_paragraph();
+            resolve_references(sink, as_u8string_view(*buffer), context, File_Id {});
+            return result;
+        }
+
+        case Test_Behavior::empty_head: {
+            return write_empty_head_document(sink, content, context);
+        }
+
+        case Test_Behavior::wg21: {
+            return write_wg21_document(sink, content, context);
+        }
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid behavior.");
+    }
+
+    // This needs to be a template so that the Function_Ref only captures this.
+    template <Test_Behavior behavior>
     Function_Ref<Processing_Status(Context&)> get_behavior_impl()
     {
-        constexpr auto action = [](Doc_Gen_Test* self, Context& context) -> Processing_Status {
-            Capturing_Ref_Text_Sink sink { self->out, Output_Language::html };
-            switch (behavior) {
-            case Test_Behavior::trivial: {
-                HTML_Content_Policy policy { sink };
-                return consume_all(policy, self->content, 0, context);
-            }
-
-            case Test_Behavior::paragraphs: {
-                Vector_Text_Sink buffer { Output_Language::html, context.get_transient_memory() };
-                Paragraph_Split_Policy policy { buffer, context.get_transient_memory() };
-                const Processing_Status result = consume_all(policy, self->content, 0, context);
-                policy.leave_paragraph();
-                resolve_references(sink, as_u8string_view(*buffer), context, File_Id {});
-                return result;
-            }
-
-            case Test_Behavior::empty_head: {
-                return write_empty_head_document(sink, self->content, context);
-            }
-            }
+        constexpr auto f = [](Doc_Gen_Test* self, Context& context) {
+            return self->run_test_with_behavior(context, behavior);
         };
-        return Function_Ref<Processing_Status(Context&)> { const_v<action>, this };
+        return { const_v<f>, this };
     }
 
     [[nodiscard]]
@@ -120,6 +132,7 @@ public:
         case Test_Behavior::trivial: return get_behavior_impl<Test_Behavior::trivial>();
         case Test_Behavior::paragraphs: return get_behavior_impl<Test_Behavior::paragraphs>();
         case Test_Behavior::empty_head: return get_behavior_impl<Test_Behavior::empty_head>();
+        case Test_Behavior::wg21: return get_behavior_impl<Test_Behavior::wg21>();
         }
         COWEL_ASSERT_UNREACHABLE(u8"Invalid behavior.");
     }
@@ -150,18 +163,28 @@ public:
         if (!load_utf8_file_or_error(theme_source, theme_path, &memory)) {
             return false;
         }
-        theme_source_string = { source.data(), source.size() };
+        theme_source_string = as_u8string_view(theme_source);
         return true;
     }
 
     [[nodiscard]]
     Processing_Status generate(Test_Behavior behavior)
     {
+        auto relative_loader = [&] -> std::optional<Relative_File_Loader> {
+            if (file_path.empty()) {
+                return {};
+            }
+            return Relative_File_Loader { file_path.parent_path(), &memory };
+        }();
+        auto& loader = relative_loader ? static_cast<File_Loader&>(*relative_loader)
+                                       : static_cast<File_Loader&>(always_failing_file_loader);
+
         const Directive_Behavior& error_behavior = builtin_directives.get_error_behavior();
         const Generation_Options options {
             .error_behavior = &error_behavior,
             .highlight_theme_source = theme_source_string,
             .builtin_name_resolver = builtin_directives,
+            .file_loader = loader,
             .logger = logger,
             .highlighter = test_highlighter,
             .memory = &memory,
@@ -278,9 +301,9 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
             Diagnostic_String error { &memory };
             append_test_details(error, test);
             error.build(Diagnostic_Highlight::error_text)
-                .append(u8"Test failed because the status (")
+                .append(u8"Test failed because the status ("sv)
                 .append(status_name(status))
-                .append(u8") was not as expected (")
+                .append(u8") was not as expected ("sv)
                 .append(status_name(test.expected_status))
                 .append(u8')');
             error.append(u8'\n');
@@ -291,10 +314,18 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
             Diagnostic_String error { &memory };
             append_test_details(error, test);
             error.append(
-                u8"Test failed because generated HTML does not match expected HTML.\n",
+                u8"Test output HTML deviates from expected HTML as follows:\n"sv,
                 Diagnostic_Highlight::error_text
             );
-            print_lines_diff(error, output_text(), expected);
+            if (expected.length() <= 2000) {
+                print_lines_diff(error, expected, output_text());
+            }
+            else {
+                error.append(
+                    u8"(Difference is too large to be displayed)"sv,
+                    Diagnostic_Highlight::error_text
+                );
+            }
             error.append(u8'\n');
             print_flush_code_string_stdout(error);
         }
@@ -305,7 +336,7 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
                 Diagnostic_String error { &memory };
                 append_test_details(error, test);
                 error.append(
-                    u8"Test failed because unexpected diagnostics were emitted:\n",
+                    u8"Test failed because unexpected diagnostics were emitted:\n"sv,
                     Diagnostic_Highlight::error_text
                 );
                 for (const Collected_Diagnostic& d : logger.diagnostics) {
@@ -329,7 +360,7 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
             Diagnostic_String error { &memory };
             append_test_details(error, test);
             error.append(
-                u8"Test failed because an expected diagnostic was not emitted: ",
+                u8"Test failed because an expected diagnostic was not emitted: "sv,
                 Diagnostic_Highlight::error_text
             );
             error.append(logger.diagnostics.front().id, Diagnostic_Highlight::code_citation);

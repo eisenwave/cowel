@@ -14,6 +14,7 @@ enum struct Test_Behavior : Default_Underlying {
     trivial,
     paragraphs,
     empty_head,
+    wg21,
 };
 
 struct Path {
