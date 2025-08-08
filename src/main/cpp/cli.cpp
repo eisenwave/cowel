@@ -23,6 +23,7 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/print.hpp"
+#include "cowel/relative_file_loader.hpp"
 #include "cowel/services.hpp"
 
 namespace cowel {
@@ -41,64 +42,6 @@ std::u8string_view as_u8string_view(cowel_string_view_u8 str)
 {
     return { str.text, str.length };
 }
-
-[[nodiscard]]
-constexpr cowel_io_status io_error_to_io_status(IO_Error_Code error)
-{
-    switch (error) {
-    case IO_Error_Code::read_error: return COWEL_IO_ERROR_READ;
-    case IO_Error_Code::cannot_open: return COWEL_IO_ERROR_NOT_FOUND;
-    default: return COWEL_IO_ERROR;
-    }
-}
-
-struct Owned_File_Entry {
-    std::pmr::vector<char8_t> name;
-    std::pmr::vector<char8_t> text;
-};
-
-struct Relative_File_Loader {
-    std::filesystem::path base;
-    std::pmr::vector<Owned_File_Entry> entries;
-
-    explicit Relative_File_Loader(std::filesystem::path&& base, std::pmr::memory_resource* memory)
-        : base { std::move(base) }
-        , entries { memory }
-    {
-    }
-
-    [[nodiscard]]
-    cowel_file_result_u8 load(std::u8string_view path)
-    {
-        const std::filesystem::path relative { path, std::filesystem::path::generic_format };
-        const std::filesystem::path resolved = base / relative;
-
-        std::pmr::memory_resource* const memory = entries.get_allocator().resource();
-        std::pmr::vector<char8_t> path_copy { path.begin(), path.end(), memory };
-        Result<std::pmr::vector<char8_t>, IO_Error_Code> result
-            = load_utf8_file(resolved.generic_u8string(), memory);
-
-        if (!result) {
-            // Even though loading failed, we store the file as an entry
-            // so that we can later get its name during logging.
-            entries.emplace_back(std::move(path_copy));
-            // Using entries.size() as the id is correct because id 0 refers to the main file,
-            // whereas the first loaded file gets id 1.
-            return {
-                .status = io_error_to_io_status(result.error()),
-                .data = {},
-                .id = File_Id(entries.size()),
-            };
-        }
-
-        auto& entry = entries.emplace_back(std::move(path_copy), std::move(*result));
-        return cowel_file_result_u8 {
-            .status = COWEL_IO_OK,
-            .data = { entry.text.data(), entry.text.size() },
-            .id = File_Id(entries.size()),
-        };
-    }
-};
 
 [[nodiscard]]
 std::u8string_view severity_highlight(Severity severity)
@@ -312,9 +255,10 @@ int main(int argc, const char* const* const argv)
     const Function_Ref<void(void*, std::size_t, std::size_t) noexcept> free_ref
         = { const_v<free_fn>, &memory };
 
-    constexpr auto load_file_fn
-        = [](Relative_File_Loader* file_loader, cowel_string_view_u8 path
-          ) noexcept -> cowel_file_result_u8 { return file_loader->load(as_u8string_view(path)); };
+    constexpr auto load_file_fn = [](Relative_File_Loader* file_loader,
+                                     cowel_string_view_u8 path) noexcept -> cowel_file_result_u8 {
+        return file_loader->do_load(as_u8string_view(path));
+    };
     const Function_Ref<cowel_file_result_u8(cowel_string_view_u8) noexcept> load_file_ref
         = { const_v<load_file_fn>, &file_loader };
 

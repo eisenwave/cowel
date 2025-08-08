@@ -22,6 +22,7 @@
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/context.hpp"
 #include "cowel/cowel.h"
+#include "cowel/cowel_lib.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/document_generation.hpp"
@@ -78,18 +79,6 @@ struct Loaded_File {
     cowel_file_id id;
     std::pmr::vector<char8_t> text;
 };
-
-[[nodiscard]]
-constexpr File_Load_Error io_status_to_load_error(cowel_io_status error)
-{
-    COWEL_ASSERT(error != COWEL_IO_OK);
-    switch (error) {
-    case COWEL_IO_ERROR_READ: return File_Load_Error::read_error;
-    case COWEL_IO_ERROR_NOT_FOUND: return File_Load_Error::not_found;
-    case COWEL_IO_ERROR_PERMISSIONS: return File_Load_Error::permissions;
-    default: return File_Load_Error::error;
-    }
-}
 
 struct File_Loader_From_Options final : File_Loader {
 private:
