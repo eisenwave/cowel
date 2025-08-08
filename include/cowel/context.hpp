@@ -97,7 +97,6 @@ private:
     ID_Map m_id_references { m_transient_memory };
     Alias_Map m_aliases { m_transient_memory };
     Macro_Map m_macros { m_transient_memory };
-    const Directive_Behavior* m_macro_behavior;
     const Directive_Behavior* m_error_behavior;
 
     const Name_Resolver& m_builtin_name_resolver;
