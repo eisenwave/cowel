@@ -105,6 +105,7 @@ set(COMMON_LIBRARY_SOURCES
     src/main/cpp/directives/files.cpp
     src/main/cpp/directives/heading.cpp
     src/main/cpp/directives/html_entity.cpp
+    src/main/cpp/directives/invoke.cpp
     src/main/cpp/directives/literal.cpp
     src/main/cpp/directives/macros.cpp
     src/main/cpp/directives/math.cpp

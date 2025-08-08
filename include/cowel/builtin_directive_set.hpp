@@ -5,14 +5,11 @@
 #include <string_view>
 
 #include "cowel/util/assert.hpp"
-#include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_names.hpp"
-#include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/typo.hpp"
 
 #include "cowel/context.hpp"
-#include "cowel/diagnostic.hpp"
 #include "cowel/directive_behavior.hpp"
 #include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
@@ -854,6 +851,16 @@ struct Paragraph_Leave_Behavior final : Directive_Behavior {
 struct Paragraph_Inherit_Behavior final : Directive_Behavior {
 
     constexpr explicit Paragraph_Inherit_Behavior() = default;
+
+    [[nodiscard]]
+    Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
+};
+
+struct Invoke_Behavior final : Directive_Behavior {
+
+    [[nodiscard]]
+    constexpr explicit Invoke_Behavior()
+        = default;
 
     [[nodiscard]]
     Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;

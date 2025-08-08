@@ -165,6 +165,16 @@ inline constexpr std::u8string_view char_base_range = u8"char.base.range";
 /// @brief The `lower` argument is neither `yes` nor `no`.
 inline constexpr std::u8string_view char_lower_invalid = u8"char.lower.invalid";
 
+/// @brief In `\cowel_invoke`,
+/// no directive name was provided.
+inline constexpr std::u8string_view invoke_name_missing = u8"invoke.name.missing";
+/// @brief In `\cowel_invoke`,
+/// the directive name is invalid.
+inline constexpr std::u8string_view invoke_name_invalid = u8"invoke.name.invalid";
+/// @brief In `\cowel_invoke`,
+/// name lookup failed.
+inline constexpr std::u8string_view invoke_lookup_failed = u8"invoke.lookup.failed";
+
 // LEGACY DIRECTIVE DIAGNOSTICS ====================================================================
 
 namespace code {

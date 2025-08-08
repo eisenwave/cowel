@@ -43,6 +43,8 @@ struct Builtin_Directive_Set::Impl {
         {};
     Include_Text_Behavior cowel_include_text //
         {};
+    Invoke_Behavior cowel_invoke //
+        {};
     Policy_Behavior cowel_no_invoke //
         { Known_Content_Policy::no_invoke };
     Policy_Behavior cowel_paragraphs //
@@ -621,6 +623,8 @@ Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) con
                 return &m_impl->cowel_include;
             if (name == u8"cowel_include_text")
                 return &m_impl->cowel_include_text;
+            if (name == u8"cowel_invoke")
+                return &m_impl->cowel_invoke;
             if (name == u8"cowel_no_invoke")
                 return &m_impl->cowel_no_invoke;
             if (name == u8"cowel_paragraphs")
