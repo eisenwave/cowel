@@ -11,10 +11,10 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/transparent_comparison.hpp"
-#include "cowel/util/typo.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/diagnostic.hpp"
+#include "cowel/directive_behavior.hpp"
 #include "cowel/document_sections.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/services.hpp"
@@ -35,12 +35,27 @@ struct Name_Resolver {
     fuzzy_lookup_name(std::u8string_view name, Context& context) const = 0;
 
     [[nodiscard]]
-    virtual const Directive_Behavior* operator()(std::u8string_view name, Context& context) const
+    virtual const Directive_Behavior* operator()(std::u8string_view name) const
         = 0;
 };
 
 struct Referred {
     std::u8string_view mask_html;
+};
+
+struct Macro_Definition final : Directive_Behavior {
+private:
+    std::pmr::vector<ast::Content> m_body;
+
+public:
+    [[nodiscard]]
+    explicit Macro_Definition(std::pmr::vector<ast::Content>&& body) noexcept
+        : m_body { std::move(body) }
+    {
+    }
+
+    [[nodiscard]]
+    Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const final;
 };
 
 /// @brief Stores contextual information during document processing.
@@ -50,11 +65,6 @@ public:
     using string_type = std::pmr::u8string;
     using string_view_type = std::u8string_view;
 
-    struct Macro_Definition {
-        /// @brief The content which the macro expands to.
-        std::pmr::vector<ast::Content> body;
-    };
-
     using Variable_Map = std::pmr::unordered_map<
         string_type,
         string_type,
@@ -63,6 +73,11 @@ public:
     using Macro_Map = std::pmr::unordered_map<
         std::pmr::u8string,
         Macro_Definition,
+        Transparent_String_View_Hash8,
+        Transparent_String_View_Equals8>;
+    using Alias_Map = std::pmr::unordered_map<
+        std::pmr::u8string,
+        const Directive_Behavior*,
         Transparent_String_View_Hash8,
         Transparent_String_View_Equals8>;
     using ID_Map = std::pmr::unordered_map<
@@ -77,18 +92,15 @@ private:
     std::pmr::memory_resource* m_transient_memory;
     /// @brief JSON source code of the syntax highlighting theme.
     string_view_type m_highlight_theme_source;
-    /// @brief A list of (non-null) name resolvers.
-    /// Whenever directives have to be looked up,
-    /// these are processed from
-    /// last to first (i.e. from most recently added) to determine which
-    /// `Directive_Behavior` should handle a given directive.
-    std::pmr::vector<const Name_Resolver*> m_name_resolvers { m_transient_memory };
     /// @brief Map of ids (as in, `id` attributes in HTML elements)
     /// to information about the reference.
     ID_Map m_id_references { m_transient_memory };
+    Alias_Map m_aliases { m_transient_memory };
     Macro_Map m_macros { m_transient_memory };
+    const Directive_Behavior* m_macro_behavior;
     const Directive_Behavior* m_error_behavior;
 
+    const Name_Resolver& m_builtin_name_resolver;
     File_Loader& m_file_loader;
     Logger& m_logger;
     Syntax_Highlighter& m_syntax_highlighter;
@@ -113,6 +125,7 @@ public:
     explicit Context(
         string_view_type highlight_theme_source,
         const Directive_Behavior* error_behavior,
+        const Name_Resolver& builtin_name_resolver,
         File_Loader& file_loader,
         Logger& logger,
         Syntax_Highlighter& highlighter,
@@ -124,6 +137,7 @@ public:
         , m_transient_memory { transient_memory }
         , m_highlight_theme_source { highlight_theme_source }
         , m_error_behavior { error_behavior }
+        , m_builtin_name_resolver { builtin_name_resolver }
         , m_file_loader { file_loader }
         , m_logger { logger }
         , m_syntax_highlighter { highlighter }
@@ -370,20 +384,8 @@ public:
         try_emit(Severity::fatal, id, location, message);
     }
 
-    void add_resolver(const Name_Resolver& resolver)
-    {
-        m_name_resolvers.push_back(&resolver);
-    }
-
-    /// @brief Finds a directive behavior using `name_resolvers` in reverse order.
-    /// @param name the name of the directive
-    /// @return the behavior for the given name, or `nullptr` if none could be found
     [[nodiscard]]
     const Directive_Behavior* find_directive(string_view_type name);
-
-    /// @brief Equivalent to `find_directive(directive.get_name(source))`.
-    [[nodiscard]]
-    const Directive_Behavior* find_directive(const ast::Directive& directive);
 
     [[nodiscard]]
     const Referred* find_id(std::u8string_view id) const
@@ -400,6 +402,21 @@ public:
     }
 
     [[nodiscard]]
+    const Directive_Behavior* find_alias(string_view_type name) const
+    {
+        const auto it = m_aliases.find(name);
+        return it == m_aliases.end() ? nullptr : it->second;
+    }
+
+    [[nodiscard]]
+    bool emplace_alias(std::pmr::u8string&& name, const Directive_Behavior* behavior)
+    {
+        COWEL_ASSERT(behavior);
+        const auto [_, success] = m_aliases.emplace(std::move(name), behavior);
+        return success;
+    }
+
+    [[nodiscard]]
     const Macro_Definition* find_macro(std::u8string_view id) const
     {
         const auto it = m_macros.find(id);
@@ -407,35 +424,13 @@ public:
     }
 
     [[nodiscard]]
-    bool emplace_macro(std::pmr::u8string&& id, std::span<const ast::Content> definition)
+    bool emplace_macro(std::pmr::u8string&& name, std::span<const ast::Content> definition)
     {
         // TODO: once available, upgrade this to std::from_range construction
-        std::pmr::vector<ast::Content> body { m_macros.get_allocator() };
-        body.insert(body.end(), definition.begin(), definition.end());
-        const auto [it, success] = m_macros.try_emplace(std::move(id), std::move(body));
+        std::pmr::vector<ast::Content> body { definition.begin(), definition.end(),
+                                              m_macros.get_allocator() };
+        const auto [_, success] = m_macros.try_emplace(std::move(name), std::move(body));
         return success;
-    }
-};
-
-struct Macro_Name_Resolver final : Name_Resolver {
-    const Directive_Behavior& m_macro_behavior;
-
-    [[nodiscard]]
-    explicit Macro_Name_Resolver(const Directive_Behavior& macro_behavior)
-        : m_macro_behavior { macro_behavior }
-    {
-    }
-
-    [[nodiscard]]
-    Distant<std::u8string_view> fuzzy_lookup_name(std::u8string_view, Context&) const final
-    {
-        COWEL_ASSERT_UNREACHABLE(u8"Unimplemented.");
-    }
-
-    [[nodiscard]]
-    const Directive_Behavior* operator()(std::u8string_view name, Context& context) const final
-    {
-        return context.find_macro(name) ? &m_macro_behavior : nullptr;
     }
 };
 
