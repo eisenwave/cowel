@@ -1589,6 +1589,10 @@ h1 {
 <a href=#dir-cowel_include><h4><code><h- data-h=mk_tag>\cowel_include</h-></code> — Include a sub-document</h4></a>
 <div class=toc-num data-level=4>7.7.2</div>
 <a href=#dir-cowel_include_text><h4><code><h- data-h=mk_tag>\cowel_include_text</h-></code> — Include text from a file</h4></a>
+<div class=toc-num data-level=3>7.8</div>
+<a href=#new-invocations><h3>Invocations</h3></a>
+<div class=toc-num data-level=4>7.8.1</div>
+<a href=#dir-cowel_invoke><h4><code><h- data-h=mk_tag>\cowel_invoke</h-></code> — Invoke a directive</h4></a>
 <div class=toc-num data-level=2>8</div>
 <a href=#legacy-directives><h2>Legacy directives</h2></a>
 <div class=toc-num data-level=3>8.1</div>
@@ -3206,6 +3210,36 @@ there are some stark differences:
   </li>
 </ul>
 </note-block>
+
+<h3 id=new-invocations><a class=para href=#new-invocations></a>7.8. Invocations</h3>
+
+<h4 id=dir-cowel_invoke><a class=para href=#dir-cowel_invoke></a>7.8.1. <code><h- data-h=mk_tag>\cowel_invoke</h-></code> — Invoke a directive</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_invoke</h-></code> directive invokes a directive by name.
+This process is called a <dfn>dynamic invocation</dfn>.
+Most invocations are <dfn>static invocations</dfn>.
+</p>
+<p>The name of the invoked directive is provided as the first positional argument.
+All other arguments are ignored.
+The content provided to <code><h- data-h=mk_tag>\cowel_invoke</h-></code>
+is the content provided to the invoked directive.
+</p>
+<example-block><p><intro-></intro-> 
+Any directive <code><h- data-h=mk_tag>\abc</h-></code> can be invoked statically or dynamically:
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Static invocation of directive named "abc".</h->
+<h- data-h=mk_tag>\abc</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Static invocation of directive named "cowel_invoke",</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> which performs an equivalent dynamic invocation of "abc".</h->
+<h- data-h=mk_tag>\cowel_invoke</h-><h- data-h=sym_sqr>[</h->abc<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code-block>
+</example-block>
+
+<todo-block><p><intro-></intro-> 
+It is also planned to allow providing arguments to the invoked directive,
+but it may be better to add "argument groups" to the syntax first,
+so that they can be bundled up in an <tt-><h- data-h=mk_attr>args</h-></tt-> group.
+To avoid changing how <code><h- data-h=mk_tag>\cowel_invoke</h-></code> works in the future,
+argument forwarding is not supported at all right now.
+</p></todo-block>
 
 <h2 id=legacy-directives><a class=para href=#legacy-directives></a>8. Legacy directives</h2>
 

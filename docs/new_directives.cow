@@ -877,3 +877,37 @@ there are some stark differences:
   }
 }
 }
+
+\h3[id=new-invocations]{Invocations}
+
+\h4[
+  id = dir-cowel_invoke
+]{\cowdoc_dir{cowel_invoke} \c{mdash} Invoke a directive}
+
+The \cowdoc_dir{cowel_invoke} directive invokes a directive by name.
+This process is called a \dfn{dynamic invocation}.
+Most invocations are \dfn{static invocations}.
+
+The name of the invoked directive is provided as the first positional argument.
+All other arguments are ignored.
+The content provided to \cowdoc_dir{cowel_invoke}
+is the content provided to the invoked directive.
+
+\Bex{
+Any directive \cowdoc_dir{abc} can be invoked statically or dynamically:
+\codeblock[cowel]{\cowel_invoke[literally]{
+\: Static invocation of directive named "abc".
+\abc{...}
+\: Static invocation of directive named "cowel_invoke",
+\: which performs an equivalent dynamic invocation of "abc".
+\cowel_invoke[abc]{...}
+}}
+}
+
+\Btodo{
+It is also planned to allow providing arguments to the invoked directive,
+but it may be better to add "argument groups" to the syntax first,
+so that they can be bundled up in an \cowdoc_attr{args} group.
+To avoid changing how \cowdoc_dir{cowel_invoke} works in the future,
+argument forwarding is not supported at all right now.
+}
