@@ -1,4 +1,4 @@
-#include "ulight/impl/lang/cowel.hpp"
+#include "cowel/util/strings.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/context.hpp"
@@ -7,16 +7,6 @@
 #include "cowel/invocation.hpp"
 
 namespace cowel {
-namespace {
-
-[[nodiscard]]
-bool is_directive_name(std::u8string_view str) noexcept
-{
-    const std::size_t length = ulight::cowel::match_directive_name(str);
-    return str.length() == length;
-}
-
-} // namespace
 
 [[nodiscard]]
 Processing_Status

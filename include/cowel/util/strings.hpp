@@ -6,6 +6,8 @@
 #include <string_view>
 #include <vector>
 
+#include "ulight/impl/lang/cowel.hpp"
+
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/unicode.hpp"
@@ -205,6 +207,14 @@ constexpr bool is_html_unquoted_attribute_value(std::u8string_view str)
 
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
     return detail::all_of(str, predicate);
+}
+
+/// @brief Returns `true` if `str` is a valid COWEL directive name.
+[[nodiscard]]
+constexpr bool is_directive_name(std::u8string_view str) noexcept
+{
+    const std::size_t length = ulight::cowel::match_directive_name(str);
+    return length != 0 && str.length() == length;
 }
 
 namespace detail {
