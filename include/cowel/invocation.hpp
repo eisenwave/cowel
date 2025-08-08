@@ -33,16 +33,20 @@ struct Arguments_View {
     using const_iterator = iterator;
 
 private:
-    std::size_t m_size;
-    Accessor m_accessor;
+    std::size_t m_size = 0;
+    Accessor m_accessor = {};
 
 public:
     [[nodiscard]]
-    Arguments_View(std::size_t length, Accessor accessor)
+    constexpr Arguments_View() noexcept
+        = default;
+
+    [[nodiscard]]
+    constexpr Arguments_View(std::size_t length, Accessor accessor)
         : m_size { length }
         , m_accessor { accessor }
     {
-        COWEL_ASSERT(accessor);
+        COWEL_ASSERT(length == 0 || accessor);
     }
 
     [[nodiscard]]
