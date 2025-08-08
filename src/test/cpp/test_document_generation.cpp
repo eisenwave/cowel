@@ -272,7 +272,30 @@ constexpr Basic_Test basic_tests[] {
       Source { u8"<error->\\cowel_char_by_num{D800}</error->\n" },
       Processing_Status::error,
       { diagnostic::char_nonscalar } },
-    
+
+    { Source { u8"\\cowel_invoke[cowel_char_by_num]{00B6}\n" },
+      Source { u8"¶\n" } },
+
+    { Source { u8"\\cowel_invoke[cowel_char_by_num]{ }\n" },
+      Source { u8"<error->\\cowel_invoke[cowel_char_by_num]{ }</error->\n" },
+      Processing_Status::error,
+      { diagnostic::char_blank } },
+
+    { Source { u8"\\cowel_invoke\n" },
+      Source { u8"<error->\\cowel_invoke</error->\n" },
+      Processing_Status::error,
+      { diagnostic::invoke_name_missing } },
+
+    { Source { u8"\\cowel_invoke[???]\n" },
+      Source { u8"<error->\\cowel_invoke[???]</error->\n" },
+      Processing_Status::error,
+      { diagnostic::invoke_name_invalid } },
+
+    { Source { u8"\\cowel_invoke[not_found]\n" },
+      Source { u8"<error->\\cowel_invoke[not_found]</error->\n" },
+      Processing_Status::error,
+      { diagnostic::invoke_lookup_failed } },
+
     { Source { u8"\\url{https://cowel.org}" },
       Source { u8"<a href=https://cowel.org class=sans>https://cowel.org</a>" } },
 
