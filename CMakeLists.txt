@@ -100,6 +100,7 @@ set(COMMON_LIBRARY_SOURCES
     src/main/cpp/util/html_entities.cpp
     src/main/cpp/util/typo.cpp
 
+    src/main/cpp/directives/alias.cpp
     src/main/cpp/directives/bibliography.cpp
     src/main/cpp/directives/code_point.cpp
     src/main/cpp/directives/files.cpp
@@ -236,6 +237,7 @@ else()
         src/test/cpp/test_char_sequence.cpp
         src/test/cpp/test_chars_strings.cpp
         src/test/cpp/test_document_generation.cpp
+        src/test/cpp/test_document_generation_data.cpp
         src/test/cpp/test_draft_uris.cpp
         src/test/cpp/test_html_writer.cpp
         src/test/cpp/test_levenshtein.cpp

@@ -860,6 +860,16 @@ struct Invoke_Behavior final : Directive_Behavior {
     Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
 };
 
+struct Alias_Behavior final : Directive_Behavior {
+
+    [[nodiscard]]
+    constexpr explicit Alias_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
+};
+
 struct [[nodiscard]]
 Builtin_Directive_Set final : Name_Resolver {
 private:

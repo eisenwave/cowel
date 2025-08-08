@@ -173,7 +173,21 @@ inline constexpr std::u8string_view invoke_name_missing = u8"invoke.name.missing
 inline constexpr std::u8string_view invoke_name_invalid = u8"invoke.name.invalid";
 /// @brief In `\cowel_invoke`,
 /// name lookup failed.
-inline constexpr std::u8string_view invoke_lookup_failed = u8"invoke.lookup.failed";
+inline constexpr std::u8string_view invoke_lookup_failed = u8"invoke.lookup";
+
+/// @brief In `\cowel_alias`,
+/// no (target or alias) name was provided.
+inline constexpr std::u8string_view alias_name_missing = u8"alias.name.missing";
+/// @brief In `\cowel_alias`,
+/// generation of a name failed or a name is invalid,
+/// which is considered a fatal error.
+inline constexpr std::u8string_view alias_name_invalid = u8"alias.name.invalid";
+/// @brief In `\cowel_alias`,
+/// the target was not found.
+inline constexpr std::u8string_view alias_lookup = u8"alias.lookup";
+/// @brief In `\cowel_alias`,
+/// an attempt was made to define an alias which already exists.
+inline constexpr std::u8string_view alias_duplicate = u8"alias.duplicate";
 
 // LEGACY DIRECTIVE DIAGNOSTICS ====================================================================
 
