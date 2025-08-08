@@ -3,10 +3,12 @@
 ## Next version
 
 - add `\cowel_invoke` directive (#52)
+- add `\cowel_alias` directive (#65)
 - add `-l`/`--severity` option and help menu to native CLI (#60)
 - add documentation for npm installation (#57)
 - improve performance with better Unicode processing, obsoleting assertions (#61)
 - improve performance by buffering HTML snippets during output (#62)
+- improve performance of directive name lookup (#66)
 - fix trace messages printed by default in native CLI (#60)
 - also create CHANGELOG and CONTRIBUTING documents
 

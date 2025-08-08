@@ -1590,8 +1590,12 @@ h1 {
 <div class=toc-num data-level=4>7.7.2</div>
 <a href=#dir-cowel_include_text><h4><code><h- data-h=mk_tag>\cowel_include_text</h-></code> — Include text from a file</h4></a>
 <div class=toc-num data-level=3>7.8</div>
-<a href=#new-invocations><h3>Invocations</h3></a>
+<a href=#new-aliases><h3>Aliases</h3></a>
 <div class=toc-num data-level=4>7.8.1</div>
+<a href=#dir-cowel_alias><h4><code><h- data-h=mk_tag>\cowel_alias</h-></code> — Define aliases for an existing directive</h4></a>
+<div class=toc-num data-level=3>7.9</div>
+<a href=#new-invocations><h3>Invocations</h3></a>
+<div class=toc-num data-level=4>7.9.1</div>
 <a href=#dir-cowel_invoke><h4><code><h- data-h=mk_tag>\cowel_invoke</h-></code> — Invoke a directive</h4></a>
 <div class=toc-num data-level=2>8</div>
 <a href=#legacy-directives><h2>Legacy directives</h2></a>
@@ -3211,9 +3215,49 @@ there are some stark differences:
 </ul>
 </note-block>
 
-<h3 id=new-invocations><a class=para href=#new-invocations></a>7.8. Invocations</h3>
+<h3 id=new-aliases><a class=para href=#new-aliases></a>7.8. Aliases</h3>
 
-<h4 id=dir-cowel_invoke><a class=para href=#dir-cowel_invoke></a>7.8.1. <code><h- data-h=mk_tag>\cowel_invoke</h-></code> — Invoke a directive</h4>
+<h4 id=dir-cowel_alias><a class=para href=#dir-cowel_alias></a>7.8.1. <code><h- data-h=mk_tag>\cowel_alias</h-></code> — Define aliases for an existing directive</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_alias</h-></code> directive defines one or more aliases for an existing directive.
+The content of <code><h- data-h=mk_tag>\cowel_alias</h-></code> is converted to text,
+and must be the name of an existing directive or directive alias.
+Each positional argument is converted to text,
+and results in the definition of a new directive alias.
+After processing <code><h- data-h=mk_tag>\cowel_alias</h-></code>,
+the target can also be invoked using the alias name.
+Named arguments are ignored.
+</p>
+<p>A fatal error is raised if
+</p><ul>
+  <li>generation of the alias or target names is erroneous,</li>
+  <li>the target name or any of the alias names are empty,</li>
+  <li>the target name or any of the alias names are not valid directive names,</li>
+  <li>the target was not found, or</li>
+  <li>an alias name matches the name of an existing macro or alias.</li>
+</ul>
+
+<example-block><p><intro-></intro-> 
+One or multiple aliases can be defined as follows:
+</p><code-block><h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_sqr>[</h->N<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->cowel_char_by_name<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h->DIGIT ZERO<h- data-h=sym_brac>}</h->              <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_char_by_name{DIGIT ZERO}</h->
+
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_sqr>[</h->incl<h- data-h=sym_punc>,</h-> include<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->cowel_include<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\incl</h-><h- data-h=sym_brac>{</h->file.cow<h- data-h=sym_brac>}</h->             <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_include{file.cow}</h->
+<h- data-h=mk_tag>\include</h-><h- data-h=sym_brac>{</h->file.cow<h- data-h=sym_brac>}</h->          <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, same</h->
+
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->cowel_to_html<h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, but no effect</h->
+
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h->???<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->        <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: generation of target name failed</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->??<h- data-h=sym_brac>}</h->             <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid target name</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->undefined<h- data-h=sym_brac>}</h->      <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: target not found</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_sqr>[</h->?<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->cowel_alias<h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid alias name</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_sqr>[</h->N<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->N<h- data-h=sym_brac>}</h->           <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: redefinition of N</h-></code-block>
+</example-block>
+
+<h3 id=new-invocations><a class=para href=#new-invocations></a>7.9. Invocations</h3>
+
+<h4 id=dir-cowel_invoke><a class=para href=#dir-cowel_invoke></a>7.9.1. <code><h- data-h=mk_tag>\cowel_invoke</h-></code> — Invoke a directive</h4>
 
 <p>The <code><h- data-h=mk_tag>\cowel_invoke</h-></code> directive invokes a directive by name.
 This process is called a <dfn>dynamic invocation</dfn>.

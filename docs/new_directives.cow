@@ -878,6 +878,50 @@ there are some stark differences:
 }
 }
 
+\h3[id=new-aliases]{Aliases}
+
+\h4[
+  id = dir-cowel_alias
+]{\cowdoc_dir{cowel_alias} \c{mdash} Define aliases for an existing directive}
+
+The \cowdoc_dir{cowel_alias} directive defines one or more aliases for an existing directive.
+The content of \cowdoc_dir{cowel_alias} is converted to text,
+and must be the name of an existing directive or directive alias.
+Each positional argument is converted to text,
+and results in the definition of a new directive alias.
+After processing \cowdoc_dir{cowel_alias},
+the target can also be invoked using the alias name.
+Named arguments are ignored.
+
+A fatal error is raised if
+\ul{
+  \li{generation of the alias or target names is erroneous,}
+  \li{the target name or any of the alias names are empty,}
+  \li{the target name or any of the alias names are not valid directive names,}
+  \li{the target was not found, or}
+  \li{an alias name matches the name of an existing macro or alias.}
+}
+
+\Bex{
+One or multiple aliases can be defined as follows:
+\codeblock[cowel]{\literally{
+\cowel_alias[N]{cowel_char_by_name}
+\N{DIGIT ZERO}              \: OK, equivalent to \cowel_char_by_name{DIGIT ZERO}
+
+\cowel_alias[incl, include]{cowel_include}
+\incl{file.cow}             \: OK, equivalent to \cowel_include{file.cow}
+\include{file.cow}          \: OK, same
+
+\cowel_alias{cowel_to_html} \: OK, but no effect
+
+\cowel_alias{\N{???}}        \: error: generation of target name failed
+\cowel_alias{??}             \: error: invalid target name
+\cowel_alias{undefined}      \: error: target not found
+\cowel_alias[?]{cowel_alias} \: error: invalid alias name
+\cowel_alias[N]{N}           \: error: redefinition of N
+}}
+}
+
 \h3[id=new-invocations]{Invocations}
 
 \h4[
