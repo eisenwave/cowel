@@ -826,12 +826,6 @@ struct Macro_Define_Behavior final : Directive_Behavior {
     Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
 };
 
-struct Macro_Instantiate_Behavior final : Directive_Behavior {
-
-    [[nodiscard]]
-    Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
-};
-
 struct Paragraph_Enter_Behavior final : Directive_Behavior {
 
     constexpr explicit Paragraph_Enter_Behavior() = default;
@@ -884,14 +878,11 @@ public:
     const Directive_Behavior& get_error_behavior() const noexcept;
 
     [[nodiscard]]
-    const Directive_Behavior& get_macro_behavior() const noexcept;
-
-    [[nodiscard]]
     Distant<std::u8string_view>
     fuzzy_lookup_name(std::u8string_view name, Context& context) const final;
 
     [[nodiscard]]
-    const Directive_Behavior* operator()(std::u8string_view name, Context& context) const final;
+    const Directive_Behavior* operator()(std::u8string_view name) const final;
 };
 
 namespace class_name {

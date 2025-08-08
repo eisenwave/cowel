@@ -189,8 +189,6 @@ struct Builtin_Directive_Set::Impl {
         {};
     Macro_Define_Behavior macro //
         {};
-    Macro_Instantiate_Behavior macro_instantiate //
-        {};
     URL_Behavior mail //
         { u8"mailto:" };
     Make_Section_Behavior make_bib //
@@ -350,11 +348,6 @@ Builtin_Directive_Set::~Builtin_Directive_Set() = default;
 const Directive_Behavior& Builtin_Directive_Set::get_error_behavior() const noexcept
 {
     return m_impl->error;
-}
-
-const Directive_Behavior& Builtin_Directive_Set::get_macro_behavior() const noexcept
-{
-    return m_impl->macro_instantiate;
 }
 
 Distant<std::u8string_view>
@@ -521,14 +514,13 @@ Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& conte
     return { .value = all_names[result.value], .distance = result.distance };
 }
 
-const Directive_Behavior*
-Builtin_Directive_Set::operator()(std::u8string_view name, Context& context) const
+const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) const
 {
     // Any builtin names should be found with both `\\-directive` and `\\directive`.
     // `\\def` does not permit defining directives with a hyphen prefix,
     // so this lets the user
     if (name.starts_with(builtin_directive_prefix)) {
-        return (*this)(name.substr(1), context);
+        return (*this)(name.substr(1));
     }
     if (name.empty()) {
         return nullptr;

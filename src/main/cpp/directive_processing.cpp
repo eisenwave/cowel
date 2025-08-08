@@ -1,7 +1,6 @@
 #include <cstddef>
 #include <cstring>
 #include <optional>
-#include <ranges>
 #include <span>
 #include <string_view>
 #include <variant>
@@ -44,12 +43,13 @@ std::u8string_view expand_escape(std::u8string_view escape)
 
 const Directive_Behavior* Context::find_directive(std::u8string_view name)
 {
-    for (const Name_Resolver* const resolver : std::views::reverse(m_name_resolvers)) {
-        if (const Directive_Behavior* const result = (*resolver)(name, *this)) {
-            return result;
-        }
+    if (const Directive_Behavior* const alias = find_alias(name)) {
+        return alias;
     }
-    return nullptr;
+    if (const Directive_Behavior* const macro = find_macro(name)) {
+        return macro;
+    }
+    return m_builtin_name_resolver(name);
 }
 
 std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content> content)

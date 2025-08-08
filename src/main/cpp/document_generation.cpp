@@ -46,6 +46,7 @@ Processing_Status run_generation(
 
     Context context { options.highlight_theme_source, //
                       options.error_behavior, //
+                      options.builtin_name_resolver,
                       options.file_loader,
                       options.logger, //
                       options.highlighter, //

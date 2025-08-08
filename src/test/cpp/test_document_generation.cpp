@@ -94,11 +94,6 @@ public:
     Function_Ref<Processing_Status(Context&)> get_behavior_impl()
     {
         constexpr auto action = [](Doc_Gen_Test* self, Context& context) -> Processing_Status {
-            const Macro_Name_Resolver macro_resolver //
-                { self->builtin_directives.get_macro_behavior() };
-            context.add_resolver(self->builtin_directives);
-            context.add_resolver(macro_resolver);
-
             Capturing_Ref_Text_Sink sink { self->out, Output_Language::html };
             switch (behavior) {
             case Test_Behavior::trivial: {
@@ -168,11 +163,14 @@ public:
     Processing_Status generate(Test_Behavior behavior)
     {
         const Directive_Behavior& error_behavior = builtin_directives.get_error_behavior();
-        const Generation_Options options { .error_behavior = &error_behavior,
-                                           .highlight_theme_source = theme_source_string,
-                                           .logger = logger,
-                                           .highlighter = test_highlighter,
-                                           .memory = &memory };
+        const Generation_Options options {
+            .error_behavior = &error_behavior,
+            .highlight_theme_source = theme_source_string,
+            .builtin_name_resolver = builtin_directives,
+            .logger = logger,
+            .highlighter = test_highlighter,
+            .memory = &memory,
+        };
         const Function_Ref<Processing_Status(Context&)> f = get_behavior(behavior);
         return run_generation(f, options);
     }

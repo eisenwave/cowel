@@ -7,7 +7,6 @@
 #include <variant>
 #include <vector>
 
-#include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/from_chars.hpp"
@@ -250,20 +249,14 @@ Processing_Status substitute_in_macro(
 
 } // namespace
 
-Processing_Status Macro_Instantiate_Behavior::operator()(
-    Content_Policy& out,
-    const Invocation& call,
-    Context& context
-) const
+Processing_Status
+Macro_Definition::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    const Context::Macro_Definition* const definition = context.find_macro(call.name);
-    // We always find a macro
-    // because the name lookup for this directive utilizes `find_macro`,
-    // so we're effectively calling it twice with the same input.
-    COWEL_ASSERT(definition);
-
-    ast::Pmr_Vector<ast::Content> instance { context.get_transient_memory() };
-    instance.insert(instance.end(), definition->body.begin(), definition->body.end());
+    ast::Pmr_Vector<ast::Content> instance {
+        m_body.begin(),
+        m_body.end(),
+        context.get_transient_memory(),
+    };
 
     auto on_variadic_put = [&](const File_Source_Span& location) {
         context.try_error(

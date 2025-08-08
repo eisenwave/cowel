@@ -2,7 +2,6 @@
 #define COWEL_DIRECTIVE_BEHAVIOR_HPP
 
 #include "cowel/content_status.hpp"
-#include "cowel/context.hpp"
 #include "cowel/fwd.hpp"
 
 namespace cowel {

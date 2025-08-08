@@ -234,19 +234,18 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         ? assets::wg21_json
         : as_u8string_view(options.highlight_theme_json);
 
-    const Generation_Options gen_options { .error_behavior = &builtin_behavior.get_error_behavior(),
-                                           .highlight_theme_source = highlight_theme_source,
-                                           .file_loader = file_loader,
-                                           .logger = logger,
-                                           .highlighter = highlighter,
-                                           .memory = memory };
+    const Generation_Options gen_options {
+        .error_behavior = &builtin_behavior.get_error_behavior(),
+        .highlight_theme_source = highlight_theme_source,
+        .builtin_name_resolver = builtin_behavior,
+        .file_loader = file_loader,
+        .logger = logger,
+        .highlighter = highlighter,
+        .memory = memory,
+    };
 
     const Processing_Status status = run_generation(
         [&](Context& context) -> Processing_Status {
-            const Macro_Name_Resolver macro_resolver { builtin_behavior.get_macro_behavior() };
-            context.add_resolver(builtin_behavior);
-            context.add_resolver(macro_resolver);
-
             if (options.mode == COWEL_MODE_MINIMAL) {
                 return consume_all(html_policy, root_content, 0, context);
             }
