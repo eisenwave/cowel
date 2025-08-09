@@ -187,8 +187,35 @@ constexpr Basic_Test basic_tests_array[] {
     { Source { u8"\\math{\\mi[id=Z]{x}}\n" },
       Source { u8"<math display=inline><mi id=Z>x</mi></math>\n" } },
 
-    { Path { u8"macro/macros.cow" },
-      Path { u8"macro/macros.html" } },
+    { Path { u8"macro/legacy.cow" },
+      Path { u8"macro/legacy.cow.html" } },
+
+    { Path { u8"macro/new.cow" },
+      Path { u8"macro/new.cow.html" } },
+
+    { Source { u8"\\cowel_macro[content]{\\cowel_put}\\content{Content}\n" },
+      Source { u8"Content\n" } },
+
+    { Source { u8"\\cowel_macro[pos]{\\cowel_put{0}}\\pos[Positional]\n" },
+      Source { u8"Positional\n" } },
+
+    { Source { u8"\\cowel_macro[named]{\\cowel_put{n}}\\named[n = Named]\n" },
+      Source { u8"Named\n" } },
+
+    { Source { u8"\\cowel_macro[try]{\\cowel_put[else=Failure]{0}}\\try[Success] \\try\n" },
+      Source { u8"Success Failure\n" } },
+
+    { Source { u8"\\cowel_macro[m]{\\cowel_put{greeting}, \\cowel_put\\cowel_put{0}}"
+               u8"\\m[greeting = Hello, !]{macros}\n" },
+      Source { u8"Hello, macros!\n" } },
+
+    { Source { u8"\\cowel_macro[nested]{\\cowel_put{\\cowel_put}}\\nested[X]{0}\n" },
+      Source { u8"X\n" } },
+
+    { Source { u8"\\cowel_put\n" },
+      Source { u8"<error->\\cowel_put</error->\n" },
+      Processing_Status::error,
+      { diagnostic::put_outside } },
 
     { Source { u8"\\awoo\n" },
       Source { u8"<error->\\awoo</error->\n" },

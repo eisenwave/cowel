@@ -53,7 +53,7 @@ write_empty_head_document(Text_Sink& out, std::span<const ast::Content> content,
     };
     constexpr auto write_body
         = [](Content_Policy& policy, std::span<const ast::Content> content, Context& context) {
-              return consume_all(policy, content, 0, context);
+              return consume_all(policy, content, Frame_Index::root, context);
           };
 
     return write_head_body_document(out, content, context, const_v<write_head>, const_v<write_body>);
@@ -92,13 +92,14 @@ public:
         switch (behavior) {
         case Test_Behavior::trivial: {
             HTML_Content_Policy policy { sink };
-            return consume_all(policy, content, 0, context);
+            return consume_all(policy, content, Frame_Index::root, context);
         }
 
         case Test_Behavior::paragraphs: {
             Vector_Text_Sink buffer { Output_Language::html, context.get_transient_memory() };
             Paragraph_Split_Policy policy { buffer, context.get_transient_memory() };
-            const Processing_Status result = consume_all(policy, content, 0, context);
+            const Processing_Status result
+                = consume_all(policy, content, Frame_Index::root, context);
             policy.leave_paragraph();
             resolve_references(sink, as_u8string_view(*buffer), context, File_Id {});
             return result;
@@ -363,7 +364,7 @@ TEST_F(Doc_Gen_Test, basic_directive_tests)
                 u8"Test failed because an expected diagnostic was not emitted: "sv,
                 Diagnostic_Highlight::error_text
             );
-            error.append(logger.diagnostics.front().id, Diagnostic_Highlight::code_citation);
+            error.append(id, Diagnostic_Highlight::code_citation);
             error.append(u8"\n");
             print_flush_code_string_stdout(error);
         }
