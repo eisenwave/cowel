@@ -13,6 +13,7 @@
 #include "cowel/util/transparent_comparison.hpp"
 
 #include "cowel/ast.hpp"
+#include "cowel/call_stack.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_behavior.hpp"
 #include "cowel/document_sections.hpp"
@@ -43,14 +44,23 @@ struct Referred {
     std::u8string_view mask_html;
 };
 
+enum struct Macro_Type : bool {
+    /// @brief Definition of `\cowel_macro` directive.
+    cowel,
+    /// @brief Definition of legacy `\macro` directive.
+    legacy,
+};
+
 struct Macro_Definition final : Directive_Behavior {
 private:
     std::pmr::vector<ast::Content> m_body;
+    Macro_Type m_type;
 
 public:
     [[nodiscard]]
-    explicit Macro_Definition(std::pmr::vector<ast::Content>&& body) noexcept
+    explicit Macro_Definition(std::pmr::vector<ast::Content>&& body, Macro_Type type) noexcept
         : m_body { std::move(body) }
+        , m_type { type }
     {
     }
 
@@ -107,6 +117,8 @@ private:
 
     Document_Sections m_sections { m_memory };
     Variable_Map m_variables { m_memory };
+
+    Call_Stack m_call_stack { m_memory };
 
 public:
     /// @brief Constructs a new context.
@@ -197,11 +209,21 @@ public:
     {
         return m_variables;
     }
-
     [[nodiscard]]
     const Variable_Map& get_variables() const
     {
         return m_variables;
+    }
+
+    [[nodiscard]]
+    Call_Stack& get_call_stack()
+    {
+        return m_call_stack;
+    }
+    [[nodiscard]]
+    const Call_Stack& get_call_stack() const
+    {
+        return m_call_stack;
     }
 
     [[nodiscard]]
@@ -423,12 +445,16 @@ public:
     }
 
     [[nodiscard]]
-    bool emplace_macro(std::pmr::u8string&& name, std::span<const ast::Content> definition)
+    bool emplace_macro(
+        std::pmr::u8string&& name,
+        std::span<const ast::Content> definition,
+        Macro_Type type
+    )
     {
         // TODO: once available, upgrade this to std::from_range construction
         std::pmr::vector<ast::Content> body { definition.begin(), definition.end(),
                                               m_macros.get_allocator() };
-        const auto [_, success] = m_macros.try_emplace(std::move(name), std::move(body));
+        const auto [_, success] = m_macros.try_emplace(std::move(name), std::move(body), type);
         return success;
     }
 };
