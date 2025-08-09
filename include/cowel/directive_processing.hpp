@@ -60,8 +60,12 @@ enum struct To_Plaintext_Status : Default_Underlying { //
 };
 
 [[nodiscard]]
-Processing_Status
-apply_behavior(Content_Policy& out, const ast::Directive& d, Frame_Index frame, Context& context);
+Processing_Status apply_behavior(
+    Content_Policy& out,
+    const ast::Directive& d,
+    Frame_Index content_frame,
+    Context& context
+);
 
 template <std::ranges::input_range R, typename Consumer>
     requires std::is_invocable_r_v<Processing_Status, Consumer, std::ranges::range_reference_t<R>>

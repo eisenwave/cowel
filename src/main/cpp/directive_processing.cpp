@@ -210,29 +210,29 @@ Processing_Status to_plaintext(
 Processing_Status apply_behavior( //
     Content_Policy& out,
     const ast::Directive& d,
-    Frame_Index frame,
+    Frame_Index content_frame,
     Context& context
 )
 {
-    constexpr auto status_on_error_generated = Processing_Status::ok;
-
-    const Direct_Call_Arguments args { d, frame };
+    const Direct_Call_Arguments args { d, content_frame };
+    Invocation call {
+        .name = d.get_name(),
+        .directive = d,
+        .arguments = args,
+        .content = d.get_content(),
+        .content_frame = content_frame,
+        .call_frame = {},
+    };
     const Directive_Behavior* const behavior = context.find_directive(d.get_name());
     if (!behavior) {
         try_lookup_error(d, context);
-        const auto status = try_generate_error(
-            out, make_invocation(d, frame, 0, args), context, status_on_error_generated
-        );
-        if (status != status_on_error_generated) {
-            context.try_error(
-                diagnostic::error_error, d.get_source_span(),
-                u8"A fatal error was raised because producing a non-fatal error failed."sv
-            );
-            return Processing_Status::fatal;
-        }
-        return Processing_Status::error;
+        call.call_frame = context.get_call_stack().get_top_index();
+        return try_generate_error(out, call, context);
     }
-    return (*behavior)(out, make_invocation(d, frame, 0, args), context);
+
+    const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
+    call.call_frame = scope.get_index();
+    return (*behavior)(out, call, context);
 }
 
 void warn_all_args_ignored(const Invocation& call, Context& context)
@@ -622,7 +622,14 @@ Processing_Status try_generate_error(
 {
     if (const Directive_Behavior* const behavior = context.get_error_behavior()) {
         const Processing_Status result = (*behavior)(out, call, context);
-        return result == Processing_Status::ok ? on_success : result;
+        if (result != Processing_Status::ok) {
+            context.try_error(
+                diagnostic::error_error, call.directive.get_source_span(),
+                u8"A fatal error was raised because producing a non-fatal error failed."sv
+            );
+            return Processing_Status::fatal;
+        }
+        return on_success;
     }
     return on_success;
 }

@@ -57,14 +57,19 @@ Invoke_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
         return try_generate_error(out, call, context);
     }
 
-    const Invocation indirect_invocation {
+    Invocation indirect_invocation {
         .name = name_string,
         .directive = call.directive,
         .arguments = {},
         .content = call.content,
         .content_frame = call.content_frame,
-        .call_frame = call.call_frame + 1,
+        .call_frame = {},
     };
+    const Scoped_Frame scope = context.get_call_stack().push_scoped({
+        *behavior,
+        indirect_invocation,
+    });
+    indirect_invocation.call_frame = scope.get_index();
     return (*behavior)(out, indirect_invocation, context);
 }
 

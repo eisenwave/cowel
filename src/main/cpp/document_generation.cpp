@@ -328,7 +328,7 @@ Processing_Status write_wg21_body_contents(
     writer.write_inner_html(u8'\n');
 
     Paragraph_Split_Policy policy { buffer, context.get_transient_memory() };
-    const Processing_Status result = consume_all(policy, content, 0, context);
+    const Processing_Status result = consume_all(policy, content, Frame_Index::root, context);
     policy.leave_paragraph();
 
     writer.close_tag(html_tag::main);

@@ -72,8 +72,7 @@ struct Document_Info;
 struct Document_Sections;
 struct Directive_Behavior;
 struct Error_Tag;
-using File_Id = int;
-using Frame_Index = int;
+using File_Id = int; // TODO: similar to Frame_Index, this should be a strong alias
 struct Generation_Options;
 enum struct HLJS_Scope : Default_Underlying;
 struct Ignorant_Logger;
@@ -85,10 +84,12 @@ struct Simple_Bibliography;
 struct No_Support_Syntax_Highlighter;
 template <typename, typename>
 struct Result;
+struct Scoped_Frame;
 enum struct Severity : Default_Underlying;
 enum struct Sign_Policy : Default_Underlying;
 struct Source_Position;
 struct Source_Span;
+struct Stack_Frame;
 struct Success_Tag;
 struct Syntax_Highlighter;
 enum struct Syntax_Highlight_Error : Default_Underlying;
@@ -126,6 +127,11 @@ using Transparent_String_View_Hash = Basic_Transparent_String_View_Hash<char>;
 using Transparent_String_View_Hash8 = Basic_Transparent_String_View_Hash<char8_t>;
 using Transparent_String_View_Less = Basic_Transparent_String_View_Less<char>;
 using Transparent_String_View_Less8 = Basic_Transparent_String_View_Less<char8_t>;
+
+/// @brief A stack frame index.
+/// The special value `root = -1` expresses top-level content,
+/// i.e. content which is not expanded from any macro.
+enum struct Frame_Index : int { root = -1 }; // NOLINT(performance-enum-size)
 
 } // namespace cowel
 
