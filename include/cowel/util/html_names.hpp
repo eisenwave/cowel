@@ -81,11 +81,13 @@ inline constexpr HTML_Tag_Name link { u8"link" };
 inline constexpr HTML_Tag_Name main { u8"main" };
 inline constexpr HTML_Tag_Name math { u8"math" };
 inline constexpr HTML_Tag_Name meta { u8"meta" };
+inline constexpr HTML_Tag_Name ol { u8"ol" };
 inline constexpr HTML_Tag_Name p { u8"p" };
 inline constexpr HTML_Tag_Name script { u8"script" };
 inline constexpr HTML_Tag_Name span { u8"span" };
 inline constexpr HTML_Tag_Name style { u8"style" };
 inline constexpr HTML_Tag_Name title { u8"title" };
+inline constexpr HTML_Tag_Name ul { u8"ul" };
 
 inline constexpr HTML_Tag_Name error_ { u8"error-" };
 inline constexpr HTML_Tag_Name g_term { u8"g-term" };

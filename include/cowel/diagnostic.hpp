@@ -189,6 +189,28 @@ inline constexpr std::u8string_view alias_lookup = u8"alias.lookup";
 /// an attempt was made to define an alias which already exists.
 inline constexpr std::u8string_view alias_duplicate = u8"alias.duplicate";
 
+/// @brief In `\cowel_macro`,
+/// no macro name was provided.
+inline constexpr std::u8string_view macro_name_missing = u8"macro.name.missing";
+/// @brief In `\cowel_macro`,
+/// generation of a name failed or a name is invalid,
+/// which is considered a fatal error.
+inline constexpr std::u8string_view macro_name_invalid = u8"macro.name.invalid";
+/// @brief In `\cowel_macro`,
+/// an attempt was made to define a macro which already exists.
+inline constexpr std::u8string_view macro_duplicate = u8"macro.duplicate";
+
+/// @brief In `\cowel_put`,
+/// the target name is invalid.
+inline constexpr std::u8string_view put_invalid = u8"put.invalid";
+/// @brief In `\cowel_put`,
+/// the target is an integer and thus refers to a positional argument,
+/// but not enough positional arguments were provided.
+inline constexpr std::u8string_view put_out_of_range = u8"put.range";
+/// @brief In `\cowel_put`,
+/// there is no surrounding macro which expands this directive.
+inline constexpr std::u8string_view put_outside = u8"put.outside";
+
 // LEGACY DIRECTIVE DIAGNOSTICS ====================================================================
 
 namespace code {

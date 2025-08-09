@@ -47,6 +47,8 @@ struct Builtin_Directive_Set::Impl {
         {};
     Invoke_Behavior cowel_invoke //
         {};
+    Macro_Behavior cowel_macro //
+        {};
     Policy_Behavior cowel_no_invoke //
         { Known_Content_Policy::no_invoke };
     Policy_Behavior cowel_paragraphs //
@@ -56,6 +58,8 @@ struct Builtin_Directive_Set::Impl {
     Paragraph_Inherit_Behavior cowel_paragraph_inherit //
         {};
     Paragraph_Leave_Behavior cowel_paragraph_leave //
+        {};
+    Put_Behavior cowel_put //
         {};
     Policy_Behavior cowel_source_as_text //
         { Known_Content_Policy::source_as_text };
@@ -189,7 +193,7 @@ struct Builtin_Directive_Set::Impl {
         {};
     Lorem_Ipsum_Behavior lorem_ipsum //
         {};
-    Macro_Define_Behavior macro //
+    Legacy_Macro_Behavior macro //
         {};
     URL_Behavior mail //
         { u8"mailto:" };
@@ -212,8 +216,8 @@ struct Builtin_Directive_Set::Impl {
         { HTML_Tag_Name(u8"noscript"), Policy_Usage::html, Directive_Display::block };
     In_Tag_Behavior o //
         { html_tag::span, u8"oblique", Policy_Usage::inherit, Directive_Display::in_line };
-    List_Behavior ol //
-        { HTML_Tag_Name(u8"ol"), li };
+    Fixed_Name_Passthrough_Behavior ol //
+        { html_tag::ol, Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior p //
         { HTML_Tag_Name(u8"p"), Policy_Usage::html, Directive_Display::block };
     HTML_Wrapper_Behavior paragraphs //
@@ -274,8 +278,8 @@ struct Builtin_Directive_Set::Impl {
         { HTML_Tag_Name(u8"tt-"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior u //
         { HTML_Tag_Name(u8"u"), Policy_Usage::inherit, Directive_Display::in_line };
-    List_Behavior ul //
-        { HTML_Tag_Name(u8"ul"), li };
+    Fixed_Name_Passthrough_Behavior ul //
+        { html_tag::ul, Policy_Usage::html, Directive_Display::block };
     Char_By_Num_Behavior U //
         { Directive_Display::in_line };
     Char_Get_Num_Behavior Udigits //
@@ -621,6 +625,8 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
                 return &m_impl->cowel_include_text;
             if (name == u8"cowel_invoke")
                 return &m_impl->cowel_invoke;
+            if (name == u8"cowel_macro")
+                return &m_impl->cowel_macro;
             if (name == u8"cowel_no_invoke")
                 return &m_impl->cowel_no_invoke;
             if (name == u8"cowel_paragraphs")
@@ -631,6 +637,8 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
                 return &m_impl->cowel_paragraph_inherit;
             if (name == u8"cowel_paragraph_leave")
                 return &m_impl->cowel_paragraph_leave;
+            if (name == u8"cowel_put")
+                return &m_impl->cowel_put;
             if (name == u8"cowel_source_as_text")
                 return &m_impl->cowel_source_as_text;
             if (name == u8"cowel_text_as_html")

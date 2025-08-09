@@ -698,27 +698,6 @@ struct Bibliography_Add_Behavior final : Directive_Behavior {
     operator()(Content_Policy& out, const Invocation& call, Context& context) const final;
 };
 
-struct List_Behavior final : Directive_Behavior {
-private:
-    const HTML_Tag_Name m_tag_name;
-    const Directive_Behavior& m_item_behavior;
-
-public:
-    [[nodiscard]]
-    constexpr explicit List_Behavior(
-        HTML_Tag_Name tag_name,
-        const Directive_Behavior& item_behavior
-    )
-        : m_tag_name { tag_name }
-        , m_item_behavior { item_behavior }
-    {
-    }
-
-    [[nodiscard]]
-    Processing_Status
-    operator()(Content_Policy& out, const Invocation& call, Context& context) const override;
-};
-
 struct Heading_Behavior final : Directive_Behavior {
 private:
     const int m_level;
@@ -820,7 +799,31 @@ struct Include_Behavior final : Directive_Behavior {
     Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
 };
 
-struct Macro_Define_Behavior final : Directive_Behavior {
+struct Macro_Behavior final : Directive_Behavior {
+
+    [[nodiscard]]
+    constexpr explicit Macro_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
+};
+
+struct Put_Behavior final : Directive_Behavior {
+
+    [[nodiscard]]
+    constexpr explicit Put_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
+};
+
+struct Legacy_Macro_Behavior final : Directive_Behavior {
+
+    [[nodiscard]]
+    constexpr explicit Legacy_Macro_Behavior()
+        = default;
 
     [[nodiscard]]
     Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
