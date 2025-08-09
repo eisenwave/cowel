@@ -1590,9 +1590,13 @@ h1 {
 <div class=toc-num data-level=4>7.7.2</div>
 <a href=#dir-cowel_include_text><h4><code><h- data-h=mk_tag>\cowel_include_text</h-></code> — Include text from a file</h4></a>
 <div class=toc-num data-level=3>7.8</div>
-<a href=#new-aliases><h3>Aliases</h3></a>
+<a href=#new-aliases><h3>Aliases and macros</h3></a>
 <div class=toc-num data-level=4>7.8.1</div>
 <a href=#dir-cowel_alias><h4><code><h- data-h=mk_tag>\cowel_alias</h-></code> — Define aliases for an existing directive</h4></a>
+<div class=toc-num data-level=4>7.8.2</div>
+<a href=#dir-cowel_macro><h4><code><h- data-h=mk_tag>\cowel_macro</h-></code> — Define a macro</h4></a>
+<div class=toc-num data-level=4>7.8.3</div>
+<a href=#dir-cowel_put><h4><code><h- data-h=mk_tag>\cowel_put</h-></code> — Process provided macro content or arguments</h4></a>
 <div class=toc-num data-level=3>7.9</div>
 <a href=#new-invocations><h3>Invocations</h3></a>
 <div class=toc-num data-level=4>7.9.1</div>
@@ -3215,7 +3219,7 @@ there are some stark differences:
 </ul>
 </note-block>
 
-<h3 id=new-aliases><a class=para href=#new-aliases></a>7.8. Aliases</h3>
+<h3 id=new-aliases><a class=para href=#new-aliases></a>7.8. Aliases and macros</h3>
 
 <h4 id=dir-cowel_alias><a class=para href=#dir-cowel_alias></a>7.8.1. <code><h- data-h=mk_tag>\cowel_alias</h-></code> — Define aliases for an existing directive</h4>
 
@@ -3254,6 +3258,157 @@ One or multiple aliases can be defined as follows:
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_sqr>[</h->?<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->cowel_alias<h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid alias name</h->
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_sqr>[</h->N<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->N<h- data-h=sym_brac>}</h->           <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: redefinition of N</h-></code-block>
 </example-block>
+
+<h4 id=dir-cowel_macro><a class=para href=#dir-cowel_macro></a>7.8.2. <code><h- data-h=mk_tag>\cowel_macro</h-></code> — Define a macro</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_macro</h-></code> directive defines a block of content which
+can be processed at a later point in the document.
+The provided content is not processed, but remembered.
+Each positional argument is converted to text,
+and results in the definition of a new macro.
+After processing <code><h- data-h=mk_tag>\cowel_macro</h-></code>,
+the target can also be invoked using the macro name.
+Named arguments are ignored.
+</p>
+<p>A fatal error occurs if
+</p><ul>
+  <li>generation of the alias or target names is erroneous,</li>
+  <li>any macro name is not a valid directive name (this includes empty names), or</li>
+  <li>a macro name matches the name of an existing macro or alias.</li>
+</ul>
+
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->m<h- data-h=sym_punc>,</h->x<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->Hello, macros!<h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\m</h->
+<h- data-h=mk_tag>\x</h-></code-block>
+<p>Generated HTML:
+</p><code-block>Hello, macros!
+Hello, macros!</code-block>
+</example-block>
+
+<p>When a macro is processed,
+the behavior is as if <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> (<a href=#dir-cowel_paragraph_inherit>§7.6.4. <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</a>)
+was invoked immediately before processing the content in the macro definition.
+This means that blank lines in the macro definition
+may also result in paragraph splits outside the macro.
+</p>
+<h4 id=dir-cowel_put><a class=para href=#dir-cowel_put></a>7.8.3. <code><h- data-h=mk_tag>\cowel_put</h-></code> — Process provided macro content or arguments</h4>
+
+<p>The <code><h- data-h=mk_tag>\cowel_put</h-></code> directive processes content
+which was provided when a macro was invoked.
+<code><h- data-h=mk_tag>\cowel_put</h-></code> has a single <tt-><h- data-h=mk_attr>else</h-></tt-> parameter.
+</p>
+<p>The content provided to <code><h- data-h=mk_tag>\cowel_put</h-></code> is converted to text,
+and <dfn>designates</dfn>
+</p><ul>
+  <li>
+    if that text is empty, the provided macro content;
+  </li>
+  <li>
+    otherwise, if that text expands to only ASCII digits,
+    the provided positional macro argument at the index obtained by parsing the digits
+    (counting starts at zero);
+  </li>
+  <li>
+    otherwise, if there exists a named macro argument whose name matches the target text,
+    that argument;
+  </li>
+  <li>
+    otherwise, nothing.
+  </li>
+</ul>
+
+<p><code><h- data-h=mk_tag>\cowel_put</h-></code> has the following effect:
+</p><ul>
+  <li>
+    If any content is designated,
+    the designated content is processed.
+  </li>
+  <li>
+    Otherwise, if an argument matches the <tt-><h- data-h=mk_attr>else</h-></tt-> parameter,
+    the content within the <tt-><h- data-h=mk_attr>else</h-></tt-> parameter is processed.
+  </li>
+  <li>
+    Otherwise, an error is raised.
+  </li>
+</ul>
+
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> \cowel_put designates content</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->content<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\content</h-><h- data-h=sym_brac>{</h->Content<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> \cowel_put designates first positional argument</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->pos<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\pos</h-><h- data-h=sym_sqr>[</h->Positional<h- data-h=sym_sqr>]</h->
+
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> \cowel_put designates named argument with name "n"</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->named<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->n<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\named</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>n</h-> <h- data-h=sym_punc>=</h-> Named<h- data-h=sym_sqr>]</h->
+
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> \cowel_put designates the first positional argument and has a fallback</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Note that equivalently, we could use \cowel_put[Failure]{0}.</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->try<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>else</h-><h- data-h=sym_punc>=</h->Failure<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\try</h-><h- data-h=sym_sqr>[</h->Success<h- data-h=sym_sqr>]</h->
+<h- data-h=mk_tag>\try</h->
+
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> All together:</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->m<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->greeting<h- data-h=sym_brac>}</h->, <h- data-h=mk_tag>\cowel_put</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\m</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>greeting</h-> <h- data-h=sym_punc>=</h-> Hello<h- data-h=sym_punc>,</h-> !<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->macros<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block>Content
+
+Positional
+
+Named
+
+Success
+Failure
+
+Hello, macros!</code-block>
+</example-block>
+
+<p>The behavior is erroneous if <code><h- data-h=mk_tag>\cowel_put</h-></code> is not expanded from a macro,
+such as when <code><h- data-h=mk_tag>\cowel_put</h-></code> appears at a top-level in the document.
+</p>
+<note-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_macro</h-></code> is not processed in any special way,
+meaning that it cannot be used for "macro substitution" directly:
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->m<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_source_as_text</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\m</h-></code-block>
+<p>Generated HTML:
+</p><code-block>\cowel_put</code-block>
+<p>However, <code><h- data-h=mk_tag>\cowel_put</h-></code> accesses the inputs to the macro invocation
+which expands <code><h- data-h=mk_tag>\cowel_put</h-></code>:
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->m<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\m</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-></code-block>
+<p>This results in a fatal error because when <code><h- data-h=mk_tag>\m</h-></code> is processed,
+the <code><h- data-h=mk_tag>\cowel_put</h-></code> in the macro definition
+expands to the top-level <code><h- data-h=mk_tag>\cowel_put</h-></code>.
+That <code><h- data-h=mk_tag>\cowel_put</h-></code> in <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>m</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_put</h-><h- data-h=sym_brac>}</h-></code>
+is not expanded from any macro.
+This functionality is implemented by tracking the "stack frame"
+where content was expanded from (or none, in the case of the document top level).
+This also makes it possible to deeply nest <code><h- data-h=mk_tag>\cowel_put</h-></code>
+within other directives while still referring to parameters of the macro invocation:
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->m<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_to_html</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_to_html{...}</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Notably, the expanded \cowel_put refers to the content provided to \m,</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> not to the content provided to \cowel_to_html (which would be \cowel_put).</h->
+<h- data-h=mk_tag>\m</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code-block>
+</note-block>
+
+<warning-block><p><intro-></intro-> 
+Expanding <code><h- data-h=mk_tag>\cowel_put</h-></code> with the same input multiple times
+results in multiple processing of the same provided content.
+Sometimes this is useful,
+but it can have unintended side effects:
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->twice<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: multiple definitions of alias "\N" for "\cowel_char_by_name"</h->
+<h- data-h=mk_tag>\twice</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_sqr>[</h->N<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->cowel_char_by_name<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
+</warning-block>
 
 <h3 id=new-invocations><a class=para href=#new-invocations></a>7.9. Invocations</h3>
 

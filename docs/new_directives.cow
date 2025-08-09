@@ -878,7 +878,7 @@ there are some stark differences:
 }
 }
 
-\h3[id=new-aliases]{Aliases}
+\h3[id=new-aliases]{Aliases and macros}
 
 \h4[
   id = dir-cowel_alias
@@ -919,6 +919,179 @@ One or multiple aliases can be defined as follows:
 \cowel_alias{undefined}      \: error: target not found
 \cowel_alias[?]{cowel_alias} \: error: invalid alias name
 \cowel_alias[N]{N}           \: error: redefinition of N
+}}
+}
+
+\h4[
+  id = dir-cowel_macro
+]{\cowdoc_dir{cowel_macro} \c{mdash} Define a macro}
+
+The \cowdoc_dir{cowel_macro} directive defines a block of content which
+can be processed at a later point in the document.
+The provided content is not processed, but remembered.
+Each positional argument is converted to text,
+and results in the definition of a new macro.
+After processing \cowdoc_dir{cowel_macro},
+the target can also be invoked using the macro name.
+Named arguments are ignored.
+
+A fatal error occurs if
+\ul{
+  \li{generation of the alias or target names is erroneous,}
+  \li{any macro name is not a valid directive name (this includes empty names), or}
+  \li{a macro name matches the name of an existing macro or alias.}
+}
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\cowel_macro[m,x]{Hello, macros!}\
+\m
+\x
+}}
+Generated HTML:
+\codeblock[html]{
+Hello, macros!
+Hello, macros!
+}
+}
+
+When a macro is processed,
+the behavior is as if \cowdoc_dir{cowel_paragraph_inherit} (\ref[#dir-cowel_paragraph_inherit])
+was invoked immediately before processing the content in the macro definition.
+This means that blank lines in the macro definition
+may also result in paragraph splits outside the macro.
+
+\h4[
+  id = dir-cowel_put
+]{\cowdoc_dir{cowel_put} \c{mdash} Process provided macro content or arguments}
+
+The \cowdoc_dir{cowel_put} directive processes content
+which was provided when a macro was invoked.
+\cowdoc_dir{cowel_put} has a single \cowdoc_attr{else} parameter.
+
+The content provided to \cowdoc_dir{cowel_put} is converted to text,
+and \dfn{designates}
+\ul{
+  \li{
+    if that text is empty, the provided macro content;
+  }
+  \li{
+    otherwise, if that text expands to only ASCII digits,
+    the provided positional macro argument at the index obtained by parsing the digits
+    (counting starts at zero);
+  }
+  \li{
+    otherwise, if there exists a named macro argument whose name matches the target text,
+    that argument;
+  }
+  \li{
+    otherwise, nothing.
+  }
+}
+
+\cowdoc_dir{cowel_put} has the following effect:
+\ul{
+  \li{
+    If any content is designated,
+    the designated content is processed.
+  }
+  \li{
+    Otherwise, if an argument matches the \cowdoc_attr{else} parameter,
+    the content within the \cowdoc_attr{else} parameter is processed.
+  }
+  \li{
+    Otherwise, an error is raised.
+  }
+}
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\: \cowel_put designates content
+\cowel_macro[content]{\cowel_put}\
+\content{Content}
+
+\: \cowel_put designates first positional argument
+\cowel_macro[pos]{\cowel_put{0}}\
+\pos[Positional]
+
+\: \cowel_put designates named argument with name "n"
+\cowel_macro[named]{\cowel_put{n}}\
+\named[n = Named]
+
+\: \cowel_put designates the first positional argument and has a fallback
+\: Note that equivalently, we could use \cowel_put[Failure]{0}.
+\cowel_macro[try]{\cowel_put[else=Failure]{0}}\
+\try[Success]
+\try
+
+\: All together:
+\cowel_macro[m]{\cowel_put{greeting}, \cowel_put\cowel_put{0}}\
+\m[greeting = Hello, !]{macros}
+}}
+Generated HTML:
+\codeblock[html]{
+Content
+
+Positional
+
+Named
+
+Success
+Failure
+
+Hello, macros!
+}
+}
+
+The behavior is erroneous if \cowdoc_dir{cowel_put} is not expanded from a macro,
+such as when \cowdoc_dir{cowel_put} appears at a top-level in the document.
+
+\Bnote{
+\cowdoc_dir{cowel_macro} is not processed in any special way,
+meaning that it cannot be used for "macro substitution" directly:
+\codeblock[cowel]{\literally{
+\cowel_macro[m]{\cowel_source_as_text{\cowel_put}}\
+\m
+}}
+Generated HTML:
+\codeblock[html]{
+\\cowel_put
+}
+However, \cowdoc_dir{cowel_put} accesses the inputs to the macro invocation
+which expands \cowdoc_dir{cowel_put}:
+\codeblock[cowel]{\literally{
+\cowel_macro[m]{\cowel_put}\
+\m{\cowel_put}
+}}
+This results in a fatal error because when \cowdoc_dir{m} is processed,
+the \cowdoc_dir{cowel_put} in the macro definition
+expands to the top-level \cowdoc_dir{cowel_put}.
+That \cowdoc_dir{cowel_put} in \cowdoc_c{\\m{\\cowel_put}}
+is not expanded from any macro.
+This functionality is implemented by tracking the "stack frame"
+where content was expanded from (or none, in the case of the document top level).
+This also makes it possible to deeply nest \cowdoc_dir{cowel_put}
+within other directives while still referring to parameters of the macro invocation:
+\codeblock[cowel]{\literally{
+\cowel_macro[m]{\cowel_to_html{\cowel_put}}\
+\: OK, equivalent to \cowel_to_html{...}
+\: Notably, the expanded \cowel_put refers to the content provided to \m,
+\: not to the content provided to \cowel_to_html (which would be \cowel_put).
+\m{...}
+}}
+}
+
+\Bwarn{
+Expanding \cowdoc_dir{cowel_put} with the same input multiple times
+results in multiple processing of the same provided content.
+Sometimes this is useful,
+but it can have unintended side effects:
+\codeblock[cowel]{\literally{
+\cowel_macro[twice]{\cowel_put\cowel_put}\
+\: error: multiple definitions of alias "\N" for "\cowel_char_by_name"
+\twice{\cowel_alias[N]{cowel_char_by_name}}
 }}
 }
 

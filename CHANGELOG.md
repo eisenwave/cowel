@@ -1,7 +1,8 @@
 # Changelog
 
-## Next version
+## **[v0.4.0]** (2025-08-09)
 
+- remove deprecated `\item`/`\-item` behavior within `\ul` and `\li`
 - add `\cowel_invoke` directive (#52)
 - add `\cowel_alias` directive (#65)
 - add `-l`/`--severity` option and help menu to native CLI (#60)
@@ -13,7 +14,7 @@
 - also create CHANGELOG and CONTRIBUTING documents
 
 **Full Changelog**:
-[`v0.3.1...master`](https://github.com/Eisenwave/cowel/compare/v0.3.1...master)
+[`v0.3.1...master`](https://github.com/eisenwave/cowel/compare/v0.3.1...v0.4.0)
 
 ## **[v0.3.1]** (2025-08-02)
 
@@ -23,7 +24,7 @@
 - add `\cowel_highlight_phantom` directive (#49)
 
 **Full Changelog**:
-[`v0.2.2...v0.3.1`](https://github.com/Eisenwave/cowel/compare/v0.2.2...v0.3.1)
+[`v0.2.2...v0.3.1`](https://github.com/eisenwave/cowel/compare/v0.2.2...v0.3.1)
 
 ## v0.3.0 (2025-08-01)
 
@@ -38,7 +39,7 @@ Never properly published.
 - add `\cowel_paragraphs` and `\cowel_paragraph_*` directives (#38)
 
 **Full Changelog**:
-[`v0.2.1...v0.2.2`](https://github.com/Eisenwave/cowel/compare/v0.2.1...v0.2.2)
+[`v0.2.1...v0.2.2`](https://github.com/eisenwave/cowel/compare/v0.2.1...v0.2.2)
 
 ## **[v0.2.1]** (2025-07-24)
 
@@ -49,7 +50,7 @@ Never properly published.
 - fix malformed HTML generated as result of `\style{</style>}` or `\script{</script>}` (#25)
 
 **Full Changelog**:
-[`v0.2.0...v0.2.1`](https://github.com/Eisenwave/cowel/compare/v0.2.0...v0.2.1)
+[`v0.2.0...v0.2.1`](https://github.com/eisenwave/cowel/compare/v0.2.0...v0.2.1)
 
 ## **[v0.2.0]** (2025-07-24)
 
@@ -65,6 +66,7 @@ Never properly published.
 This build was used for generating C++ proposals
 up to the post-Sofia (2025-07) mailing.
 
+[v0.4.0]: https://github.com/eisenwave/cowel/releases/tag/v0.4.0
 [v0.3.1]: https://github.com/eisenwave/cowel/releases/tag/v0.3.1
 [v0.2.2]: https://github.com/eisenwave/cowel/releases/tag/v0.2.2
 [v0.2.1]: https://github.com/eisenwave/cowel/releases/tag/v0.2.1
