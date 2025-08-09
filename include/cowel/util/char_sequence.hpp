@@ -29,38 +29,36 @@ private:
     union Storage {
         const void* const_pointer;
         void* pointer;
-        std::array<char8_t, sizeof(const_pointer)> code_units;
+        std::array<char8_t, sizeof(void*)> code_units;
     };
 
     using Extractor_Function = Storage(Storage entity, std::span<char8_t> buffer, std::size_t n);
 
     static_assert(sizeof(char8_t) == 1);
 
-    template <std::size_t N>
-    static constexpr Storage to_storage(Static_String8<N> str)
+    template <std::size_t capacity>
+    [[nodiscard]]
+    static constexpr Storage to_storage(Static_String8<capacity> str)
     {
-        static_assert(N <= sizeof(const void*)); // NOLINT(bugprone-sizeof-expression)
+        static_assert(capacity <= sizeof(const void*)); // NOLINT(bugprone-sizeof-expression)
         decltype(Storage::code_units) result_array {};
         std::ranges::copy(str, result_array.data());
         return { .code_units = result_array };
     }
 
-    template <std::size_t N>
-    static constexpr Static_String8<N> to_static_string(Storage storage, std::size_t size)
+    [[nodiscard]]
+    static constexpr Static_String8<sizeof(void*)>
+    to_static_string(Storage storage, std::size_t size)
     {
-        static_assert(N <= sizeof(const void*)); // NOLINT(bugprone-sizeof-expression)
-        std::array<char8_t, N> result_array {};
-        std::ranges::copy_n(storage.code_units.data(), N, result_array.data());
-        return Static_String8<N> { result_array, size };
+        return Static_String8<sizeof(void*)> { storage.code_units, size };
     }
 
-    template <std::size_t capacity>
+    [[nodiscard]]
     static constexpr Storage
     extract_from_static_string(Storage entity, std::span<char8_t> buffer, std::size_t n)
     {
         COWEL_ASSERT(n <= buffer.size());
-        COWEL_ASSERT(n <= capacity);
-        auto entity_as_string = to_static_string<capacity>(entity, n);
+        Static_String8<sizeof(void*)> entity_as_string { entity.code_units, n };
         std::ranges::copy(entity_as_string, buffer.data());
         entity_as_string.remove_prefix(n);
         return to_storage(entity_as_string);
@@ -107,7 +105,7 @@ public:
     [[nodiscard]]
     constexpr Char_Sequence8(char8_t c) noexcept
         : m_size { 1 }
-        , m_extract { &extract_from_static_string<1> }
+        , m_extract { &extract_from_static_string }
         , m_entity { .code_units = { c } }
     {
     }
@@ -135,11 +133,11 @@ public:
     /// @brief Constructs a sequence with the same length and contents as `str`.
     /// `capacity <= sizeof(const void*)` shall be `true`.
     template <std::size_t capacity>
-        requires(capacity != 0 && capacity <= sizeof(const void*))
+        requires(capacity != 0 && capacity <= sizeof(void*))
     [[nodiscard]]
     constexpr Char_Sequence8(Static_String8<capacity> str) noexcept
         : m_size { str.size() }
-        , m_extract { &extract_from_static_string<capacity> }
+        , m_extract { &extract_from_static_string }
         , m_entity { to_storage(str) }
     {
     }
@@ -245,45 +243,12 @@ public:
     [[nodiscard]]
     constexpr const char8_t* as_contiguous() const noexcept
     {
-        return as_contiguous_impl<sizeof(const void*)>();
+        using result_type = const char8_t*;
+        return m_extract == &extract_from_string_view  ? result_type(m_entity.const_pointer)
+            : m_extract == &extract_from_static_string ? m_entity.code_units.data()
+                                                       : nullptr;
     }
 
-private:
-    template <std::size_t sizeof_void_ptr>
-    [[nodiscard]]
-    constexpr const char8_t* as_contiguous_impl() const noexcept
-    {
-        if (m_extract == &extract_from_string_view) {
-            return static_cast<const char8_t*>(m_entity.const_pointer);
-        }
-        if constexpr (sizeof_void_ptr >= 2) {
-            if (m_extract == &extract_from_static_string<1> //
-                || m_extract == &extract_from_static_string<2>) {
-                return m_entity.code_units.data();
-            }
-        }
-        if constexpr (sizeof_void_ptr >= 4) {
-            if (m_extract == &extract_from_static_string<3> //
-                || m_extract == &extract_from_static_string<4>) {
-                return m_entity.code_units.data();
-            }
-        }
-        if constexpr (sizeof_void_ptr == 8) {
-            // Unfortunately needed because extract_from_static_string is constexpr,
-            // so it's considered to be needed for constant evaluation,
-            // even if its address is taken in a discarded statement.
-            // We can only make this work by making the template argument dependent.
-            if (m_extract == &extract_from_static_string<sizeof_void_ptr - 3> //
-                || m_extract == &extract_from_static_string<sizeof_void_ptr - 2> //
-                || m_extract == &extract_from_static_string<sizeof_void_ptr - 1> //
-                || m_extract == &extract_from_static_string<sizeof_void_ptr - 0>) {
-                return m_entity.code_units.data();
-            }
-        }
-        return nullptr;
-    }
-
-public:
     /// @brief Equivalent to `as_contiguous() != nullptr`.
     [[nodiscard]]
     constexpr bool is_contiguous() const noexcept
