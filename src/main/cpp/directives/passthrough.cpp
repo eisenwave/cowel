@@ -1,5 +1,4 @@
 #include <string_view>
-#include <variant>
 #include <vector>
 
 #include "cowel/util/assert.hpp"
@@ -344,52 +343,6 @@ Self_Closing_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     const auto status = named_arguments_to_attributes(attributes, call.arguments, context);
     attributes.end_empty();
     return status;
-}
-
-Processing_Status
-List_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
-{
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
-
-    try_leave_paragraph(out);
-
-    HTML_Writer_Buffer buffer { out, Output_Language::html };
-    Text_Buffer_HTML_Writer writer { buffer };
-    auto attributes = writer.open_tag_with_attributes(m_tag_name);
-    const auto attributes_status
-        = named_arguments_to_attributes(attributes, call.arguments, context);
-    attributes.end();
-    buffer.flush();
-    if (status_is_break(attributes_status)) {
-        buffer.flush();
-        return attributes_status;
-    }
-
-    HTML_Content_Policy policy = ensure_html_policy(out);
-    const auto process = [&](const ast::Content& c) -> Processing_Status {
-        const auto* const directive = std::get_if<ast::Directive>(&c);
-        if (!directive) {
-            return policy.consume_content(c, call.content_frame, context);
-        }
-        const std::u8string_view name = directive->get_name();
-        if (name != u8"item"sv && name != u8"-item"sv) {
-            return policy.consume(*directive, call.content_frame, context);
-        }
-        context.try_warning(
-            diagnostic::deprecated, directive->get_name_span(),
-            u8"Use of \\item is deprecated. Use \\li in lists instead."sv
-        );
-        Direct_Call_Arguments call_args { *directive, call.content_frame };
-        return m_item_behavior(
-            policy, make_invocation(*directive, call.content_frame, call.call_frame + 1, call_args),
-            context
-        );
-    };
-    const auto content_status = process_greedy(call.content, process);
-
-    writer.close_tag(m_tag_name);
-    buffer.flush();
-    return status_concat(attributes_status, content_status);
 }
 
 } // namespace cowel
