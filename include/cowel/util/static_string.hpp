@@ -15,6 +15,8 @@ namespace cowel {
 template <char_like Char, std::size_t capacity>
 struct Basic_Static_String {
     using array_type = std::array<Char, capacity>;
+    using iterator = array_type::iterator;
+    using const_iterator = array_type::const_iterator;
 
 private:
     array_type m_buffer {};
@@ -75,27 +77,25 @@ public:
     }
 
     [[nodiscard]]
-    constexpr typename array_type::iterator begin() noexcept
+    constexpr iterator begin() noexcept
+    {
+        return m_buffer.begin();
+    }
+    [[nodiscard]]
+    constexpr const_iterator begin() const noexcept
     {
         return m_buffer.begin();
     }
 
     [[nodiscard]]
-    constexpr typename array_type::const_iterator begin() const noexcept
+    constexpr iterator end() noexcept
     {
-        return m_buffer.begin();
+        return m_buffer.begin() + std::ptrdiff_t(m_length);
     }
-
     [[nodiscard]]
-    constexpr typename array_type::iterator end() noexcept
+    constexpr const_iterator end() const noexcept
     {
-        return m_buffer.end();
-    }
-
-    [[nodiscard]]
-    constexpr typename array_type::const_iterator end() const noexcept
-    {
-        return m_buffer.end();
+        return m_buffer.begin() + std::ptrdiff_t(m_length);
     }
 
     constexpr void remove_prefix(std::size_t n)
