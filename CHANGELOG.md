@@ -2,19 +2,22 @@
 
 ## **[v0.4.0]** (2025-08-09)
 
-- remove deprecated `\item`/`\-item` behavior within `\ul` and `\li`
-- add `\cowel_invoke` directive (#52)
+- remove deprecated `\item`/`\-item` behavior within `\ul` and `\li` (#68)
 - add `\cowel_alias` directive (#65)
+- add `\cowel_macro` directive (#68)
+- add `\cowel_put` directive (#68)
+- add `\cowel_invoke` directive (#52)
 - add `-l`/`--severity` option and help menu to native CLI (#60)
 - add documentation for npm installation (#57)
 - improve performance with better Unicode processing, obsoleting assertions (#61)
 - improve performance by buffering HTML snippets during output (#62)
 - improve performance of directive name lookup (#66)
 - fix trace messages printed by default in native CLI (#60)
+- fix potential out-of-bounds bug in string utilities (#72)
 - also create CHANGELOG and CONTRIBUTING documents
 
 **Full Changelog**:
-[`v0.3.1...master`](https://github.com/eisenwave/cowel/compare/v0.3.1...v0.4.0)
+[`v0.3.1...v0.4.0`](https://github.com/eisenwave/cowel/compare/v0.3.1...v0.4.0)
 
 ## **[v0.3.1]** (2025-08-02)
 
