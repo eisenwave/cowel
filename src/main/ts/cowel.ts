@@ -8,9 +8,9 @@ import * as helpers from "yargs/helpers";
 
 import * as cowel from "./cowel-wasm.js";
 
-function readModuleFileSync(file: string): Buffer;
+function readModuleFileSync(file: string): NonSharedBuffer;
 function readModuleFileSync(file: string, encoding: BufferEncoding): string;
-function readModuleFileSync(file: string, encoding?: BufferEncoding): string | Buffer {
+function readModuleFileSync(file: string, encoding?: BufferEncoding): string | NonSharedBuffer {
     const moduleDir = path.dirname(fileURLToPath(import.meta.url));
     const resolved = path.resolve(moduleDir, file);
     return fs.readFileSync(resolved, {
@@ -172,9 +172,12 @@ function log(diagnostic: cowel.Diagnostic): void {
     const filePath = diagnostic.fileName.length !== 0 ? diagnostic.fileName
         : file ? file.path : "";
 
-    const isLocated = diagnostic.begin !== 0 || diagnostic.length !== 0 || diagnostic.line !== 0;
-    const location = isLocated ? `:${diagnostic.line + 1}:${diagnostic.column + 1}` : "";
-    const citation = isLocated && file ? wasm!.generateCodeCitationFor({
+    const hasLocation =
+        diagnostic.begin !== 0 || diagnostic.length !== 0 || diagnostic.line !== 0;
+    const location = hasLocation ? `:${diagnostic.line + 1}:${diagnostic.column + 1}` : "";
+
+    const isCitable = diagnostic.length !== 0 && file;
+    const citation = isCitable ? wasm!.generateCodeCitationFor({
         source: file.data,
         line: diagnostic.line,
         column: diagnostic.column,

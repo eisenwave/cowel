@@ -46,7 +46,7 @@ export type GenResult = {
 
 export type FileResult = {
     status: IoStatus,
-    data?: ArrayBuffer,
+    data?: Buffer,
     id: number
 };
 
@@ -191,6 +191,11 @@ export class CowelWasm {
     }
 
     generateCodeCitationFor(options: CodeCiteOptions): string {
+        if (options.length === 0) {
+            throw new Error("Cannot generate code citation " +
+                "where the target location has zero length.");
+        }
+
         const resultAllocation = this.alloc2(8, 4);
         const stringAllocation = this.allocBytes2(options.source);
 

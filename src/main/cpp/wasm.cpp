@@ -104,7 +104,20 @@ cowel_mutable_string_view_u8 generate_code_citation(
     bool colors
 )
 {
-    cowel::Global_Memory_Resource memory;
+    // We cannot use assertions here
+    // because this function is used by our assertion handler,
+    // so preconditions need to be handled in a dirtier way.
+    if (source_text == nullptr) {
+        __builtin_trap();
+    }
+    if (begin >= source_length || column >= source_length) {
+        __builtin_trap();
+    }
+    if (length == 0) {
+        __builtin_trap();
+    }
+
+    static constinit cowel::Global_Memory_Resource memory;
     cowel::Basic_Annotated_String<char8_t, cowel::Diagnostic_Highlight> out { &memory };
     cowel::print_affected_line(
         out, { source_text, source_length }, { { line, column, begin }, length }
