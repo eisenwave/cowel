@@ -190,8 +190,14 @@ constexpr Basic_Test basic_tests_array[] {
     { Path { u8"macro/legacy.cow" },
       Path { u8"macro/legacy.cow.html" } },
 
+    { Path { u8"macro/legacy_multiline.cow" },
+      Path { u8"macro/legacy_multiline.cow.html" } },
+
     { Path { u8"macro/new.cow" },
       Path { u8"macro/new.cow.html" } },
+
+    { Path { u8"macro/multiline.cow" },
+      Path { u8"macro/multiline.cow.html" } },
 
     { Source { u8"\\cowel_macro[content]{\\cowel_put}\\content{Content}\n" },
       Source { u8"Content\n" } },

@@ -1,0 +1,5 @@
+\macro[\hl{...}]{\
+\cowel_paragraph_enter\
+\cowel_highlight_as[\put{...}]{\put}\
+}\
+\cowel_highlight[cpp]{\hl[keyword]{int}}
