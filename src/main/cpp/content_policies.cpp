@@ -58,7 +58,12 @@ void generate_highlighted_html(
     std::span<const Highlight_Span> highlights
 )
 {
-    COWEL_ASSERT(length != 0);
+    if constexpr (enable_empty_string_assertions) {
+        COWEL_ASSERT(length != 0);
+    }
+    else if (length == 0) {
+        return;
+    }
     COWEL_ASSERT(begin < code.length());
     COWEL_ASSERT(begin + length <= code.length());
 
@@ -114,6 +119,9 @@ bool Syntax_Highlight_Policy::write(Char_Sequence8 chars, Output_Language langua
     const std::size_t chars_size = chars.size();
     if constexpr (enable_empty_string_assertions) {
         COWEL_ASSERT(chars_size != 0);
+    }
+    else if (chars_size == 0) {
+        return true;
     }
 
     switch (language) {

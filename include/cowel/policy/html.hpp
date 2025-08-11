@@ -21,6 +21,9 @@ static constexpr auto is_html_escaped
 
 inline bool write_as_html(Text_Sink& out, Char_Sequence8 chars)
 {
+    if constexpr (enable_empty_string_assertions) {
+        COWEL_ASSERT(!chars.empty());
+    }
     COWEL_ASSERT(out.get_language() == Output_Language::html);
     const auto adapter = [&](auto x) {
         using T = decltype(x);
@@ -55,6 +58,10 @@ public:
 
     bool write(Char_Sequence8 chars, Output_Language language) override
     {
+        if constexpr (enable_empty_string_assertions) {
+            COWEL_ASSERT(!chars.empty());
+        }
+
         switch (language) {
         case Output_Language::none: {
             COWEL_ASSERT_UNREACHABLE(u8"None input.");
@@ -86,7 +93,9 @@ public:
     Processing_Status consume(const ast::Escaped& escape, Frame_Index, Context&) override
     {
         const std::u8string_view text = expand_escape(escape);
-        write(text, Output_Language::text);
+        if (!text.empty()) {
+            write(text, Output_Language::text);
+        }
         return Processing_Status::ok;
     }
     [[nodiscard]]

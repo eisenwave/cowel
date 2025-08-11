@@ -130,11 +130,10 @@ public:
     {
         m_line_state = Blank_Line_Initial_State::middle;
         const std::u8string_view text = expand_escape(escape);
-        if (text.empty()) {
-            return Processing_Status::ok;
+        if (!text.empty()) {
+            enter_paragraph();
+            HTML_Content_Policy::write(text, Output_Language::text);
         }
-        enter_paragraph();
-        HTML_Content_Policy::write(text, Output_Language::text);
         return Processing_Status::ok;
     }
 

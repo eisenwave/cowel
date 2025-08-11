@@ -47,7 +47,9 @@ struct HTML_Literal_Content_Policy : virtual HTML_Content_Policy {
     Processing_Status consume(const ast::Escaped& escape, Frame_Index, Context&) override
     {
         const std::u8string_view text = expand_escape(escape);
-        write(text, Output_Language::text);
+        if (!text.empty()) {
+            write(text, Output_Language::text);
+        }
         return Processing_Status::ok;
     }
     [[nodiscard]]

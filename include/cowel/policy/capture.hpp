@@ -37,6 +37,9 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
     bool write(Char_Sequence8 chars, Output_Language) override
     {
+        if constexpr (enable_empty_string_assertions) {
+            COWEL_ASSERT(!chars.empty());
+        }
         append(m_out, chars);
         return true;
     }
@@ -94,6 +97,9 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
     bool write(Char_Sequence8 chars, Output_Language) override
     {
+        if constexpr (enable_empty_string_assertions) {
+            COWEL_ASSERT(!chars.empty());
+        }
         append(m_out, chars);
         return true;
     }

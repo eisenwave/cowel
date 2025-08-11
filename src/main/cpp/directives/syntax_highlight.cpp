@@ -112,10 +112,14 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
 
     Syntax_Highlight_Policy highlight_policy //
         { context.get_transient_memory() };
-    highlight_policy.write_phantom(prefix->string);
+    if (!prefix->string.empty()) {
+        highlight_policy.write_phantom(prefix->string);
+    }
     const auto highlight_status
         = consume_all(highlight_policy, call.content, call.content_frame, context);
-    highlight_policy.write_phantom(suffix->string);
+    if (!suffix->string.empty()) {
+        highlight_policy.write_phantom(suffix->string);
+    }
 
     const Result<void, Syntax_Highlight_Error> result = [&] {
         if (!should_trim) {
