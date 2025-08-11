@@ -1,27 +1,9 @@
 #ifndef COWEL_CONFIG_HPP
 #define COWEL_CONFIG_HPP
 
-#ifndef NDEBUG // debug builds
-#define COWEL_DEBUG 1
-#define COWEL_IF_DEBUG(...) __VA_ARGS__
-#define COWEL_IF_NOT_DEBUG(...)
-#else // release builds
-#define COWEL_IF_DEBUG(...)
-#define COWEL_IF_NOT_DEBUG(...) __VA_ARGS__
-#endif
+#include "cowel/settings.hpp"
 
-#ifdef __EMSCRIPTEN__
-#define COWEL_EMSCRIPTEN 1
-#define COWEL_IF_EMSCRIPTEN(...) __VA_ARGS__
-#else
-#define COWEL_IF_EMSCRIPTEN(...)
-#endif
-
-#ifdef __clang__
-#define COWEL_CLANG 1
-#endif
-
-#define COWEL_UNREACHABLE() __builtin_unreachable()
+COWEL_IF_DEBUG() // silence unused warning for settings.hpp
 
 namespace cowel {
 
