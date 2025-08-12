@@ -21,6 +21,8 @@ namespace cowel {
 
 struct Builtin_Directive_Set::Impl {
     // New directives
+    Policy_Behavior cowel_actions //
+        { Known_Content_Policy::actions };
     Alias_Behavior cowel_alias //
         {};
     Char_By_Entity_Behavior cowel_char_by_entity //
@@ -599,6 +601,8 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
 
     case u8'c':
         if (name.starts_with(u8"cowel_")) {
+            if (name == u8"cowel_actions")
+                return &m_impl->cowel_actions;
             if (name == u8"cowel_alias")
                 return &m_impl->cowel_alias;
             if (name == u8"cowel_char_by_entity")

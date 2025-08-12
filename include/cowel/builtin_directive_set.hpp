@@ -250,6 +250,7 @@ enum struct Known_Content_Policy : Default_Underlying {
     phantom,
     paragraphs,
     no_invoke,
+    actions,
     text_only,
     text_as_html,
     source_as_text,

@@ -3,6 +3,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/result.hpp"
 
+#include "cowel/policy/actions.hpp"
 #include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/factory.hpp"
 #include "cowel/policy/html.hpp"
@@ -99,6 +100,9 @@ Policy_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
     }
     case Known_Content_Policy::no_invoke: {
         return consume_simply<Unprocessed_Content_Policy>(out, call, context);
+    }
+    case Known_Content_Policy::actions: {
+        return consume_simply<Actions_Content_Policy>(out, call, context);
     }
     case Known_Content_Policy::text_only: {
         return consume_simply<Plaintext_Content_Policy>(out, call, context);
