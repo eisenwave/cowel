@@ -28,40 +28,66 @@ using Suppress_Unused_Include_Source_Position_2 = Basic_File_Source_Span<void>;
 template <typename T>
 using Pmr_Vector = std::vector<T, Propagated_Polymorphic_Allocator<T>>;
 
-struct Argument final {
-private:
-    File_Source_Span m_source_span;
-    std::u8string_view m_source;
-    Pmr_Vector<Content> m_content;
-    File_Source_Span m_name_span;
-    std::u8string_view m_name;
+enum struct Argument_Type : Default_Underlying {
+    named,
+    positional,
+    ellipsis,
+};
 
+struct [[nodiscard]]
+Argument final {
 public:
-    /// @brief Constructor for named arguments.
     [[nodiscard]]
-    Argument(
+    static Argument ellipsis(File_Source_Span source_span, std::u8string_view source);
+    [[nodiscard]]
+    static Argument named(
         const File_Source_Span& source_span,
         std::u8string_view source,
         const File_Source_Span& name_span,
         std::u8string_view name,
         Pmr_Vector<ast::Content>&& children
     );
-
-    /// @brief Constructor for positional (unnamed) arguments.
     [[nodiscard]]
-    Argument(
+    static Argument positional(
         const File_Source_Span& source_span,
         std::u8string_view source,
         Pmr_Vector<ast::Content>&& children
     );
 
+private:
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+    Pmr_Vector<Content> m_content;
+    File_Source_Span m_name_span;
+    std::u8string_view m_name;
+    Argument_Type m_type;
+
+    [[nodiscard]]
+    Argument(
+        const File_Source_Span& source_span,
+        std::u8string_view source,
+        const File_Source_Span& name_span,
+        std::u8string_view name,
+        Pmr_Vector<ast::Content>&& children,
+        Argument_Type type
+    );
+
+public:
+    [[nodiscard]]
     Argument(Argument&&) noexcept;
+    [[nodiscard]]
     Argument(const Argument&);
 
     Argument& operator=(Argument&&) noexcept;
     Argument& operator=(const Argument&);
 
     ~Argument();
+
+    [[nodiscard]]
+    Argument_Type get_type() const
+    {
+        return m_type;
+    }
 
     [[nodiscard]]
     File_Source_Span get_source_span() const
@@ -76,11 +102,6 @@ public:
     }
 
     [[nodiscard]]
-    bool has_name() const
-    {
-        return !m_name_span.empty();
-    }
-    [[nodiscard]]
     File_Source_Span get_name_span() const
     {
         return m_name_span;
@@ -88,6 +109,7 @@ public:
     [[nodiscard]]
     std::u8string_view get_name() const
     {
+        COWEL_ASSERT(m_type == Argument_Type::named);
         return m_name;
     }
 
@@ -104,6 +126,7 @@ private:
     File_Source_Span m_source_span;
     std::u8string_view m_source;
     std::u8string_view m_name;
+    bool m_has_ellipsis = false;
 
     Pmr_Vector<Argument> m_arguments;
     Pmr_Vector<Content> m_content;
@@ -125,6 +148,12 @@ public:
     Directive& operator=(const Directive&);
 
     ~Directive();
+
+    [[nodiscard]]
+    bool has_ellipsis() const
+    {
+        return m_has_ellipsis;
+    }
 
     [[nodiscard]]
     File_Source_Span get_source_span() const

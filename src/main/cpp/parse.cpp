@@ -305,7 +305,8 @@ private:
 
         for (std::size_t i = 0; try_match_argument(); ++i) {
             if (expect(u8']')) {
-                m_out[arguments_instruction_index].n = i + 1;
+                const bool last_removed = try_remove_trailing_empty_argument();
+                m_out[arguments_instruction_index].n = i + !last_removed;
                 m_out.push_back({ AST_Instruction_Type::pop_arguments });
                 a.commit();
                 return true;
@@ -320,6 +321,36 @@ private:
         }
 
         return true;
+    }
+
+    /// @brief Removes the topmost trailing argument, if any,
+    /// and returns `true` iff the argument was removed.
+    // To support the use of trailing commas in arguments
+    // and to not consider [ ] or arguments containing only comments as an argument,
+    // we sometimes have to remove an argument at the end of the list.
+    // If need be, we replace it with a skip.
+    bool try_remove_trailing_empty_argument()
+    {
+        COWEL_ASSERT(m_out.size() >= 3);
+        COWEL_ASSERT(m_out.back().type == AST_Instruction_Type::pop_argument);
+
+        const AST_Instruction middle = m_out[m_out.size() - 2];
+        // Pattern 1: push argument, skip, pop argument
+        if (middle.type == AST_Instruction_Type::skip) {
+            if (m_out[m_out.size() - 3].type == AST_Instruction_Type::push_argument) {
+                const std::size_t skip_length = middle.n;
+                m_out.resize(m_out.size() - 3);
+                m_out.push_back({ AST_Instruction_Type::skip, skip_length });
+                return true;
+            }
+        }
+        // Pattern 2: push argument, pop argument
+        else if (middle.type == AST_Instruction_Type::push_argument) {
+            m_out.resize(m_out.size() - 2);
+            return true;
+        }
+
+        return false;
     }
 
     [[nodiscard]]
@@ -364,7 +395,19 @@ private:
         const std::size_t argument_instruction_index = m_out.size();
         m_out.push_back({ AST_Instruction_Type::push_argument });
 
-        try_match_argument_name();
+        try_skip_comments_and_whitespace();
+
+        const bool is_named = try_match_argument_name();
+        if (is_named) {
+            const std::size_t leading_whitespace = ulight::cowel::match_whitespace(peek_all());
+            if (leading_whitespace != 0) {
+                m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
+                m_pos += leading_whitespace;
+            }
+        }
+        else {
+            try_match_ellipsis();
+        }
 
         const std::optional<std::size_t> result = try_match_trimmed_argument_value();
         if (!result) {
@@ -385,12 +428,6 @@ private:
     {
         Scoped_Attempt a = attempt();
 
-        const std::size_t leading_whitespace = ulight::cowel::match_whitespace(peek_all());
-        if (leading_whitespace != 0) {
-            m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
-        }
-        m_pos += leading_whitespace;
-
         if (eof()) {
             return false;
         }
@@ -403,7 +440,10 @@ private:
         m_pos += name_length;
 
         const std::size_t trailing_whitespace = ulight::cowel::match_whitespace(peek_all());
-        m_pos += trailing_whitespace;
+        if (trailing_whitespace != 0) {
+            m_out.push_back({ AST_Instruction_Type::skip, trailing_whitespace });
+            m_pos += trailing_whitespace;
+        }
         if (eof()) {
             return false;
         }
@@ -412,7 +452,6 @@ private:
             return false;
         }
 
-        m_out.push_back({ AST_Instruction_Type::skip, trailing_whitespace });
         m_out.push_back({ AST_Instruction_Type::argument_equal });
         a.commit();
         return true;
@@ -422,12 +461,6 @@ private:
     std::optional<std::size_t> try_match_trimmed_argument_value()
     {
         Scoped_Attempt a = attempt();
-
-        const std::size_t leading_whitespace = ulight::cowel::match_whitespace(peek_all());
-        if (leading_whitespace != 0) {
-            m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
-        }
-        m_pos += leading_whitespace;
 
         const std::size_t content_amount = match_content_sequence(Content_Context::argument_value);
         if (eof() || peek(u8'}')) {
@@ -442,6 +475,47 @@ private:
 
         a.commit();
         return content_amount;
+    }
+
+    std::size_t try_skip_comments_and_whitespace()
+    {
+        // Comments before arguments are not considered part of any content sequence,
+        // and are instead treated like whitespace.
+        //
+        //     \d[
+        //       \: Documentation
+        //       \: for upcoming argument:
+        //       a = b
+        //     ]
+
+        const std::size_t start = m_pos;
+
+        while (true) {
+            m_pos += ulight::cowel::match_whitespace(peek_all());
+            const std::size_t comment_length = ulight::cowel::match_line_comment(peek_all());
+            if (comment_length) {
+                m_pos += comment_length;
+                continue;
+            }
+            break;
+        }
+
+        const std::size_t skip_length = m_pos - start;
+        if (skip_length) {
+            m_out.push_back({ AST_Instruction_Type::skip, skip_length });
+        }
+
+        return skip_length;
+    }
+
+    bool try_match_ellipsis()
+    {
+        if (const std::size_t ellipsis = ulight::cowel::match_ellipsis(peek_all())) {
+            m_pos += ellipsis;
+            m_out.push_back({ AST_Instruction_Type::argument_ellipsis, ellipsis });
+            return true;
+        }
+        return false;
     }
 
     /// @brief Trims trailing whitespace in just matched content.
@@ -523,6 +597,7 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         COWEL_ENUM_STRING_CASE8(text);
         COWEL_ENUM_STRING_CASE8(comment);
         COWEL_ENUM_STRING_CASE8(argument_name);
+        COWEL_ENUM_STRING_CASE8(argument_ellipsis);
         COWEL_ENUM_STRING_CASE8(argument_equal);
         COWEL_ENUM_STRING_CASE8(argument_comma);
         COWEL_ENUM_STRING_CASE8(push_document);

@@ -14,40 +14,66 @@
 #include "cowel/fwd.hpp"
 #include "cowel/parse.hpp"
 
+using namespace std::string_view_literals;
+
 namespace cowel {
 
 namespace ast {
 
-Argument::Argument(
+Argument Argument::ellipsis(File_Source_Span source_span, std::u8string_view source)
+{
+    return {
+        source_span, source, source_span.with_length(0), {}, {}, Argument_Type::ellipsis,
+    };
+}
+
+Argument Argument::named(
     const File_Source_Span& source_span,
     std::u8string_view source,
     const File_Source_Span& name_span,
     std::u8string_view name,
     Pmr_Vector<ast::Content>&& children
 )
+{
+    return {
+        source_span, source, name_span, name, std::move(children), Argument_Type::named,
+    };
+}
+
+[[nodiscard]]
+Argument Argument::positional(
+    const File_Source_Span& source_span,
+    std::u8string_view source,
+    Pmr_Vector<ast::Content>&& children
+)
+{
+    return {
+        source_span,
+        source,
+        source_span.with_length(0),
+        {},
+        std::move(children),
+        Argument_Type::positional,
+    };
+}
+
+Argument::Argument(
+    const File_Source_Span& source_span,
+    std::u8string_view source,
+    const File_Source_Span& name_span,
+    std::u8string_view name,
+    Pmr_Vector<ast::Content>&& children,
+    Argument_Type type
+)
     : m_source_span { source_span }
     , m_source { source }
     , m_content { std::move(children) }
     , m_name_span { name_span }
     , m_name { name }
+    , m_type { type }
 {
     COWEL_ASSERT(m_source_span.length == m_source.length());
     COWEL_ASSERT(m_name_span.length == m_name.length());
-}
-
-[[nodiscard]]
-Argument::Argument(
-    const File_Source_Span& source_span,
-    std::u8string_view source,
-    Pmr_Vector<ast::Content>&& children
-)
-    : m_source_span { source_span }
-    , m_source { source }
-    , m_content { std::move(children) }
-    , m_name_span { source_span.with_length(0) } // NOLINT(cppcoreguidelines-slicing)
-    , m_name {}
-{
-    COWEL_ASSERT(m_source_span.length == m_source.length());
 }
 
 Directive::Directive(
@@ -67,6 +93,11 @@ Directive::Directive(
     COWEL_ASSERT(!name.empty());
     COWEL_ASSERT(!name.starts_with(u8'\\'));
     COWEL_ASSERT(name.length() <= source_span.length);
+
+    // this needs to be late-initialized here because it is declared after m_arguments
+    m_has_ellipsis = std::ranges::contains(
+        m_arguments, ast::Argument_Type::ellipsis, &ast::Argument::get_type
+    );
 }
 
 Text::Text(const File_Source_Span& source_span, std::u8string_view source)
@@ -334,6 +365,7 @@ private:
 
         const Source_Position initial_pos = m_pos;
         std::optional<Source_Span> name;
+        bool is_ellipsis = false;
 
         ast::Pmr_Vector<ast::Content> children { m_memory };
         children.reserve(instruction.n);
@@ -350,18 +382,40 @@ private:
                 advance_by(next.n);
                 continue;
             }
+            if (next.type == AST_Instruction_Type::argument_ellipsis) {
+                pop();
+                is_ellipsis = true;
+                advance_by(next.n);
+                continue;
+            }
             append_content(children);
         }
 
         const File_Source_Span source_span { initial_pos, m_pos.begin - initial_pos.begin, m_file };
         const std::u8string_view source = extract(source_span);
-        if (name) {
+
+        COWEL_ASSERT(!is_ellipsis || !name);
+
+        if (is_ellipsis) {
+            out.push_back(ast::Argument::ellipsis(source_span, source));
+            if (m_on_error && !children.empty()) {
+                constexpr std::u8string_view message
+                    = u8"Content following an ellipsis is not allowed. "
+                      u8"Use '\\.' to specify a literal dot instead of an ellipsis."sv;
+                m_on_error(
+                    diagnostic::parse_block_unclosed, ast::get_source_span(children.front()),
+                    message
+                );
+            }
+        }
+        else if (name) {
             const File_Source_Span name_span { *name, m_file };
-            out.push_back(ast::Argument {
-                source_span, source, { *name, m_file }, extract(*name), std::move(children) });
+            out.push_back(ast::Argument::named(
+                source_span, source, { *name, m_file }, extract(*name), std::move(children)
+            ));
         }
         else {
-            out.push_back(ast::Argument { source_span, source, std::move(children) });
+            out.push_back(ast::Argument::positional(source_span, source, std::move(children)));
         }
     }
 

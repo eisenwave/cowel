@@ -28,6 +28,8 @@ enum struct AST_Instruction_Type : Default_Underlying {
     comment,
     /// @brief The next `n` characters are an argument name.
     argument_name,
+    /// @brief The next `n` characters are an ellipsis (currently always `3`).
+    argument_ellipsis,
     /// @brief Advance past `=` following an argument name.
     argument_equal,
     /// @brief Advance past `,` between arguments.
@@ -53,6 +55,8 @@ enum struct AST_Instruction_Type : Default_Underlying {
     /// @brief Begin argument.
     /// The operand is the amount of pieces that comprise the argument content,
     /// where a piece is an escape sequence, text, or a directive.
+    /// This amount does not include ellipses,
+    /// as an ellipsis is a special argument property similar to names.
     push_argument,
     pop_argument,
     /// @brief Begin directive content.
