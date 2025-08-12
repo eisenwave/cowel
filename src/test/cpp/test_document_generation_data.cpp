@@ -342,7 +342,6 @@ constexpr Basic_Test basic_tests_array[] {
     { .document = Path { u8"../docs/index.cow" },
       .expected_html = Path { u8"../docs/index.html" },
       .expected_status = Processing_Status::ok,
-      .expected_diagnostics = { diagnostic::deprecated },
       .behavior = Test_Behavior::wg21 },
 };
 // clang-format on
