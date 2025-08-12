@@ -1,6 +1,6 @@
 # Changelog
 
-## **Next version**
+## **[v0.5.0]** (2025-08-12)
 
 - change that trailing empty arguments are not empty positionals (#77)
 - deprecate legacy `\macro` directive (#77)
@@ -11,7 +11,7 @@
 - also document `\.` to be a stable escape sequence (#77)
 
 **Full Changelog**:
-[`v0.4.0...master`](https://github.com/eisenwave/cowel/compare/v0.4.0...master)
+[`v0.4.0...v0.5.0`](https://github.com/eisenwave/cowel/compare/v0.4.0...v0.5.0)
 
 ## **[v0.4.0]** (2025-08-09)
 
@@ -82,6 +82,7 @@ Never properly published.
 This build was used for generating C++ proposals
 up to the post-Sofia (2025-07) mailing.
 
+[v0.5.0]: https://github.com/eisenwave/cowel/releases/tag/v0.5.0
 [v0.4.0]: https://github.com/eisenwave/cowel/releases/tag/v0.4.0
 [v0.3.1]: https://github.com/eisenwave/cowel/releases/tag/v0.3.1
 [v0.2.2]: https://github.com/eisenwave/cowel/releases/tag/v0.2.2
