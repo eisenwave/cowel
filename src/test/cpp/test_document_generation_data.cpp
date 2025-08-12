@@ -188,16 +188,26 @@ constexpr Basic_Test basic_tests_array[] {
       Source { u8"<math display=inline><mi id=Z>x</mi></math>\n" } },
 
     { Path { u8"macro/legacy.cow" },
-      Path { u8"macro/legacy.cow.html" } },
+      Path { u8"macro/legacy.cow.html" },
+      Processing_Status::ok,
+      { diagnostic::deprecated } },
 
     { Path { u8"macro/legacy_multiline.cow" },
-      Path { u8"macro/legacy_multiline.cow.html" } },
+      Path { u8"macro/legacy_multiline.cow.html" },
+      Processing_Status::ok,
+      { diagnostic::deprecated } },
 
     { Path { u8"macro/new.cow" },
       Path { u8"macro/new.cow.html" } },
 
     { Path { u8"macro/multiline.cow" },
       Path { u8"macro/multiline.cow.html" } },
+
+    { Path { u8"macro/forwarding_positional.cow" },
+      Path { u8"macro/forwarding_positional.cow.html" } },
+
+    { Path { u8"macro/forwarding_named.cow" },
+      Path { u8"macro/forwarding_named.cow.html" } },
 
     { Source { u8"\\cowel_macro[content]{\\cowel_put}\\content{Content}\n" },
       Source { u8"Content\n" } },
@@ -331,6 +341,8 @@ constexpr Basic_Test basic_tests_array[] {
 
     { .document = Path { u8"../docs/index.cow" },
       .expected_html = Path { u8"../docs/index.html" },
+      .expected_status = Processing_Status::ok,
+      .expected_diagnostics = { diagnostic::deprecated },
       .behavior = Test_Behavior::wg21 },
 };
 // clang-format on

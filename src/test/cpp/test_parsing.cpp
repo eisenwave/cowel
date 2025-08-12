@@ -23,6 +23,9 @@
 #include "cowel/fwd.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/print.hpp"
+#include "diff.hpp"
+
+using namespace std::string_view_literals;
 
 namespace cowel {
 namespace {
@@ -37,10 +40,27 @@ struct Expected_Content;
 struct Expected_Argument {
     std::vector<Expected_Content> content;
     std::u8string_view name {};
+    bool is_ellipsis;
 
-    Expected_Argument(std::u8string_view name, std::vector<Expected_Content>&& content);
+    static Expected_Argument ellipsis();
 
-    Expected_Argument(std::vector<Expected_Content>&& content);
+private:
+    Expected_Argument(
+        std::u8string_view name,
+        std::vector<Expected_Content>&& content,
+        bool is_ellipsis
+    );
+
+public:
+    Expected_Argument(std::u8string_view name, std::vector<Expected_Content>&& content)
+        : Expected_Argument(name, std::move(content), false)
+    {
+    }
+
+    Expected_Argument(std::vector<Expected_Content>&& content)
+        : Expected_Argument({}, std::move(content), false)
+    {
+    }
 
     Expected_Argument(Expected_Argument&&) noexcept;
     Expected_Argument(const Expected_Argument&);
@@ -49,9 +69,6 @@ struct Expected_Argument {
     ~Expected_Argument();
 
     static Expected_Argument from(const ast::Argument& arg);
-
-    [[nodiscard]]
-    bool matches(const ast::Argument& actual, std::u8string_view source) const;
 
     [[maybe_unused]]
     friend bool operator==(const Expected_Argument&, const Expected_Argument&)
@@ -152,16 +169,18 @@ struct Expected_Content {
 
 Expected_Argument::Expected_Argument(
     std::u8string_view name,
-    std::vector<Expected_Content>&& content
+    std::vector<Expected_Content>&& content,
+    bool is_ellipsis
 )
     : content { std::move(content) }
     , name { name }
+    , is_ellipsis { is_ellipsis }
 {
 }
 
-Expected_Argument::Expected_Argument(std::vector<Expected_Content>&& content)
-    : content { std::move(content) }
+Expected_Argument Expected_Argument::ellipsis()
 {
+    return { {}, {}, true };
 }
 
 [[maybe_unused]]
@@ -186,10 +205,19 @@ Expected_Argument Expected_Argument::from(const ast::Argument& arg)
     for (const ast::Content& c : arg.get_content()) {
         content.push_back(Expected_Content::from(c));
     }
-    if (arg.has_name()) {
+    switch (arg.get_type()) {
+    case ast::Argument_Type::ellipsis: {
+        COWEL_ASSERT(content.empty());
+        return Expected_Argument::ellipsis();
+    }
+    case ast::Argument_Type::named: {
         return Expected_Argument { arg.get_name(), std::move(content) };
     }
-    return auto(std::move(content));
+    case ast::Argument_Type::positional: {
+        return auto(std::move(content));
+    }
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid argument type.");
 }
 
 template <typename T, typename Alloc>
@@ -206,8 +234,14 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T, Alloc>& vec)
 
 std::ostream& operator<<(std::ostream& out, const Expected_Argument& arg)
 {
-    if (!arg.name.empty()) {
+    if (arg.is_ellipsis) {
+        out << "...";
+    }
+    else if (!arg.name.empty()) {
         out << "Arg(" << arg.name << "){" << arg.content << '}';
+    }
+    else {
+        out << "Arg{" << arg.content << '}';
     }
     return out;
 }
@@ -336,10 +370,14 @@ void append_instruction(Diagnostic_String& out, const AST_Instruction& ins)
     }
 }
 
-void dump_instructions(Diagnostic_String& out, std::span<const AST_Instruction> instructions)
+void dump_instructions(
+    Diagnostic_String& out,
+    std::span<const AST_Instruction> instructions,
+    std::u8string_view indent = {}
+)
 {
     for (const auto& i : instructions) {
-        out.append(u8"    ");
+        out.append(indent);
         append_instruction(out, i);
         out.append(u8'\n');
     }
@@ -347,6 +385,8 @@ void dump_instructions(Diagnostic_String& out, std::span<const AST_Instruction> 
 
 bool run_parse_test(std::u8string_view file, std::span<const AST_Instruction> expected)
 {
+    constexpr std::u8string_view indent = u8"    ";
+
     std::pmr::monotonic_buffer_resource memory;
     std::optional<Parsed_File> actual = parse_file(file, &memory);
     if (!actual) {
@@ -365,9 +405,21 @@ bool run_parse_test(std::u8string_view file, std::span<const AST_Instruction> ex
             Diagnostic_Highlight::error_text
         );
         error.append(u8"Expected:\n", Diagnostic_Highlight::text);
-        dump_instructions(error, expected);
+        Diagnostic_String expected_text;
+        dump_instructions(error, expected, indent);
+        dump_instructions(expected_text, expected);
+
         error.append(u8"Actual:\n", Diagnostic_Highlight::text);
-        dump_instructions(error, actual->instructions);
+        Diagnostic_String actual_text;
+        dump_instructions(error, actual->instructions, indent);
+        dump_instructions(actual_text, actual->instructions);
+
+        error.append(
+            u8"Test output instructions deviate from expected as follows:\n"sv,
+            Diagnostic_Highlight::error_text
+        );
+        print_lines_diff(error, expected_text.get_text(), actual_text.get_text());
+
         print_code_string(std::cout, error, is_stdout_tty);
         return false;
     }
@@ -438,6 +490,168 @@ TEST(Parse, comments)
     };
     // clang-format on
     ASSERT_TRUE(run_parse_test(u8"comments.cow", expected));
+}
+
+TEST(Parse, arguments_comments_1)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_arguments, 0 },
+        { AST_Instruction_Type::skip, 21 },
+        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"arguments/comments_1.cow", expected));
+}
+
+TEST(Parse_And_Build, arguments_comments_1)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+
+    static const ast::Pmr_Vector<Expected_Content> expected {
+        {
+            Expected_Content::directive(u8"a"),
+            Expected_Content::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/comments_1.cow");
+}
+
+TEST(Parse, arguments_comments_2)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_arguments, 2 },
+
+        { AST_Instruction_Type::push_argument, 1 },
+        { AST_Instruction_Type::skip, 13 },
+        { AST_Instruction_Type::text, 4 },
+        { AST_Instruction_Type::pop_argument },
+        { AST_Instruction_Type::argument_comma },
+
+        { AST_Instruction_Type::push_argument, 1 },
+        { AST_Instruction_Type::skip, 13 },
+        { AST_Instruction_Type::argument_name, 5 },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::argument_equal },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::text, 3 },
+        { AST_Instruction_Type::pop_argument },
+        { AST_Instruction_Type::argument_comma },
+        { AST_Instruction_Type::skip, 1 },
+
+        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"arguments/comments_2.cow", expected));
+}
+
+TEST(Parse_And_Build, arguments_comments_2)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+
+    static const ast::Pmr_Vector<Expected_Content> expected {
+        {
+            Expected_Content::directive(
+                u8"b",
+                {
+                    Expected_Argument { { Expected_Content::text(u8"text") } },
+                    Expected_Argument { u8"named", { Expected_Content::text(u8"arg") } },
+                }
+            ),
+            Expected_Content::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/comments_2.cow");
+}
+
+TEST(Parse, arguments_ellipsis)
+{
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_arguments, 1 },
+        { AST_Instruction_Type::push_argument, 0 },
+        { AST_Instruction_Type::argument_ellipsis, 3 },
+        { AST_Instruction_Type::pop_argument },
+        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_document },
+    };
+    ASSERT_TRUE(run_parse_test(u8"arguments/ellipsis.cow", expected));
+}
+
+TEST(Parse_And_Build, arguments_ellipsis)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+
+    static const ast::Pmr_Vector<Expected_Content> expected {
+        {
+            Expected_Content::directive(u8"x", { Expected_Argument::ellipsis() }),
+            Expected_Content::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/ellipsis.cow");
+}
+
+TEST(Parse, arguments_not_ellipsis)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 6 },
+
+        { AST_Instruction_Type::push_directive, 2 }, // \a
+        { AST_Instruction_Type::push_arguments, 1 },
+        { AST_Instruction_Type::push_argument, 1 },
+        { AST_Instruction_Type::text, 7 },
+        { AST_Instruction_Type::pop_argument },
+        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 }, // \b
+        { AST_Instruction_Type::push_arguments, 1 },
+        { AST_Instruction_Type::push_argument, 1 },
+        { AST_Instruction_Type::argument_name, 1 },
+        { AST_Instruction_Type::argument_equal },
+        { AST_Instruction_Type::text, 3 },
+        { AST_Instruction_Type::pop_argument },
+        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 }, // \c
+        { AST_Instruction_Type::push_arguments, 1 },
+        { AST_Instruction_Type::push_argument, 1 },
+        { AST_Instruction_Type::argument_ellipsis, 3 },
+        { AST_Instruction_Type::text, 4 },
+        { AST_Instruction_Type::pop_argument },
+        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+
+    ASSERT_TRUE(run_parse_test(u8"arguments/not_ellipsis.cow", expected));
 }
 
 TEST(Parse, illegal_backslash)
@@ -542,9 +756,11 @@ TEST(Parse_And_Build, hello_code)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const ast::Pmr_Vector<Expected_Content> expected {
-        { Expected_Content::directive(u8"c", { Expected_Content::text(u8"/* awoo */") }),
-          Expected_Content::text(u8"\n") },
-        &memory
+        {
+            Expected_Content::directive(u8"c", { Expected_Content::text(u8"/* awoo */") }),
+            Expected_Content::text(u8"\n"),
+        },
+        &memory,
     };
 
     std::optional<Actual_Document> parsed = parse_and_build_file(u8"hello_code.cow", &memory);
@@ -599,74 +815,79 @@ TEST(Parse_And_Build, hello_directive)
     static const Expected_Argument arg1 { u8"x", { Expected_Content::text(u8"0") } };
 
     static const ast::Pmr_Vector<Expected_Content> expected {
-        { Expected_Content::directive(u8"b", { arg0, arg1 }, { Expected_Content::text(u8"test") }),
-          Expected_Content::text(u8"\n") },
-        &memory
+        {
+            Expected_Content::directive(
+                u8"b", { arg0, arg1 }, { Expected_Content::text(u8"test") }
+            ),
+            Expected_Content::text(u8"\n"),
+        },
+        &memory,
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"hello_directive.cow");
 }
 
-TEST(Parse_And_Build, directive_arg_balanced_braces)
+TEST(Parse_And_Build, arguments_balanced_braces)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const Expected_Argument arg0 { u8"x", { Expected_Content::text(u8"{}") } };
     static const Expected_Argument arg1 { { Expected_Content::text(u8"{}") } };
 
     static const ast::Pmr_Vector<Expected_Content> expected {
-        { Expected_Content::directive(u8"d", { arg0, arg1 }), Expected_Content::text(u8"\n") },
-        &memory
+        {
+            Expected_Content::directive(u8"d", { arg0, arg1 }),
+            Expected_Content::text(u8"\n"),
+        },
+        &memory,
     };
 
-    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_balanced_braces.cow");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/balanced_braces.cow");
 }
 
-TEST(Parse_And_Build, directive_arg_unbalanced_brace)
+TEST(Parse_And_Build, arguments_unbalanced_brace_1)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const ast::Pmr_Vector<Expected_Content> expected {
-        { Expected_Content::directive(u8"d"), Expected_Content::text(u8"[}]\n") }, &memory
+        {
+            Expected_Content::directive(u8"d"),
+            Expected_Content::text(u8"[}]\n"),
+        },
+        &memory,
     };
 
-    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_brace.cow");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/unbalanced_brace_1.cow");
 }
 
-TEST(Parse_And_Build, directive_arg_unbalanced_brace_2)
+TEST(Parse_And_Build, arguments_unbalanced_brace_2)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const ast::Pmr_Vector<Expected_Content> expected {
-        { Expected_Content::directive(
-              u8"x", { Expected_Content::directive(u8"y"), Expected_Content::text(u8"[") }
-          ),
-          Expected_Content::text(u8"]\n") },
-        &memory
+        {
+            Expected_Content::directive(
+                u8"x", { Expected_Content::directive(u8"y"), Expected_Content::text(u8"[") }
+            ),
+            Expected_Content::text(u8"]\n"),
+        },
+        &memory,
     };
 
-    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_brace_2.cow");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/unbalanced_brace_2.cow");
 }
 
-TEST(Parse_And_Build, directive_arg_unbalanced_through_brace_escape)
+TEST(Parse_And_Build, arguments_unbalanced_through_brace_escape)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const ast::Pmr_Vector<Expected_Content> expected {
-        { Expected_Content::directive(u8"d"), Expected_Content::text(u8"["),
-          Expected_Content::escape(u8"\\{"), Expected_Content::text(u8"}]\n") },
-        &memory
+        {
+            Expected_Content::directive(u8"d"),
+            Expected_Content::text(u8"["),
+            Expected_Content::escape(u8"\\{"),
+            Expected_Content::text(u8"}]\n"),
+        },
+        &memory,
     };
 
-    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_through_brace_escape.cow");
-}
-
-TEST(Parse_And_Build, directive_brace_escape)
-{
-    static std::pmr::monotonic_buffer_resource memory;
-    static const ast::Pmr_Vector<Expected_Content> expected {
-        { Expected_Content::directive(u8"d"), Expected_Content::text(u8"["),
-          Expected_Content::escape(u8"\\{"), Expected_Content::text(u8"}]\n") },
-        &memory
-    };
-
-    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_arg_unbalanced_through_brace_escape.cow");
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/unbalanced_through_brace_escape.cow");
 }
 
 } // namespace

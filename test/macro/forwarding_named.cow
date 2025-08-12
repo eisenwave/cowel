@@ -1,0 +1,2 @@
+\cowel_macro[d]{\cowel_html_element[div,...]{\cowel_put}}\
+\d[id = awoo, hidden = hidden]{inner text}
