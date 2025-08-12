@@ -17,6 +17,15 @@ void match_parameters_and_arguments(
     Parameter_Match_Mode mode
 )
 {
+    if constexpr (is_debug_build) {
+        // Argument matching is impossible to perform on ellipses,
+        // which are symbolic arguments representing some other set of arguments,
+        // but are not arguments on their own.
+        for (const Argument_Ref ref : arguments) {
+            COWEL_ASSERT(ref.ast_node.get_type() != ast::Argument_Type::ellipsis);
+        }
+    }
+
     COWEL_ASSERT(out_indices.size() == parameters.size());
     COWEL_ASSERT(out_status.size() == arguments.size());
 
@@ -29,7 +38,7 @@ void match_parameters_and_arguments(
 
     if (mode != Parameter_Match_Mode::only_positional) {
         for (std::size_t arg_index = 0; arg_index < arguments.size(); ++arg_index) {
-            if (!arguments[arg_index].ast_node.has_name()) {
+            if (arguments[arg_index].ast_node.get_type() != ast::Argument_Type::named) {
                 continue;
             }
             const std::u8string_view arg_name = arguments[arg_index].ast_node.get_name();
@@ -50,7 +59,7 @@ void match_parameters_and_arguments(
 
     if (mode != Parameter_Match_Mode::only_named) {
         for (std::size_t arg_index = 0; arg_index < arguments.size(); ++arg_index) {
-            if (arguments[arg_index].ast_node.has_name()) {
+            if (arguments[arg_index].ast_node.get_type() == ast::Argument_Type::named) {
                 continue;
             }
             for (std::size_t i = 0; i < parameters.size(); ++i) {

@@ -371,14 +371,22 @@ public:
     {
         print_indent();
 
-        if (arg.has_name()) {
+        switch (arg.get_type()) {
+        case ast::Argument_Type::named: {
             out.append(u8"Named_Argument", Diagnostic_Highlight::tag);
             out.append(u8'(', Diagnostic_Highlight::punctuation);
             out.append(arg.get_name(), Diagnostic_Highlight::attribute);
             out.append(u8')', Diagnostic_Highlight::punctuation);
+            break;
         }
-        else {
+        case ast::Argument_Type::positional: {
             out.append(u8"Positional_Argument", Diagnostic_Highlight::tag);
+            break;
+        }
+        case ast::Argument_Type::ellipsis: {
+            out.append(u8"Ellipsis", Diagnostic_Highlight::tag);
+            break;
+        }
         }
 
         if (!arg.get_content().empty()) {

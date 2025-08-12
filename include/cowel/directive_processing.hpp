@@ -60,7 +60,20 @@ enum struct To_Plaintext_Status : Default_Underlying { //
 };
 
 [[nodiscard]]
-Processing_Status apply_behavior(
+Processing_Status invoke(
+    Content_Policy& out,
+    std::u8string_view name,
+    const ast::Directive& directive,
+    Arguments_View args,
+    std::span<const ast::Content> content,
+    Frame_Index content_frame,
+    Context& context
+);
+
+/// @brief Convenience function which performs a direct call of a directive
+/// via `invoke`.
+[[nodiscard]]
+Processing_Status invoke_directive(
     Content_Policy& out,
     const ast::Directive& d,
     Frame_Index content_frame,

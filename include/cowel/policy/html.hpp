@@ -11,6 +11,7 @@
 #include "cowel/ast.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/output_language.hpp"
+#include "cowel/settings.hpp"
 
 namespace cowel {
 
@@ -102,7 +103,7 @@ public:
     Processing_Status
     consume(const ast::Directive& directive, Frame_Index frame, Context& context) override
     {
-        return apply_behavior(*this, directive, frame, context);
+        return invoke_directive(*this, directive, frame, context);
     }
     [[nodiscard]]
     Processing_Status consume(const ast::Generated& generated, Frame_Index, Context&) override

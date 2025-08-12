@@ -172,7 +172,7 @@ Put_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
 
     std::size_t positional_index = 0;
     for (const Argument_Ref arg : target_invocation.arguments) {
-        if (arg.ast_node.has_name()) {
+        if (arg.ast_node.get_type() != ast::Argument_Type::positional) {
             continue;
         }
         if (*arg_index == positional_index++) {
@@ -200,6 +200,13 @@ Put_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
 Processing_Status
 Legacy_Macro_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context) const
 {
+    context.try_warning(
+        diagnostic::deprecated, call.directive.get_name_span(),
+        u8"\\macro is deprecated. Use \\cowel_macro instead. "
+        u8"Note that these are slightly different: \\put pseudo-directives "
+        u8"are only supported within legacy \\macro directives."sv
+    );
+
     static const std::u8string_view parameters[] { u8"pattern" };
     Argument_Matcher args { parameters, context.get_transient_memory() };
     args.match(call.arguments);
@@ -325,7 +332,7 @@ Processing_Status substitute_in_macro(
             continue;
         }
 
-        Direct_Call_Arguments put_args_backend { *d, call.call_frame };
+        Homogeneous_Call_Arguments put_args_backend { d->get_arguments(), call.call_frame };
         Arguments_View put_args { put_args_backend };
         Argument_Matcher put_arg_matcher { put_parameters, context.get_transient_memory() };
         put_arg_matcher.match(put_args);

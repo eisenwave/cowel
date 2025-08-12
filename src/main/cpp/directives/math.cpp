@@ -123,7 +123,7 @@ Processing_Status to_math_html(
         if (index < 0) {
             return out.consume(*d, content_frame, context);
         }
-        Direct_Call_Arguments args { *d, content_frame };
+        Homogeneous_Call_Arguments args { d->get_arguments(), content_frame };
         warn_ignored_argument_subset(args, context, Argument_Subset::positional);
 
         // directive names are HTML tag names

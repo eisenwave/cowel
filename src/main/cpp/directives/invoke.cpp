@@ -57,20 +57,10 @@ Invoke_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
         return try_generate_error(out, call, context);
     }
 
-    Invocation indirect_invocation {
-        .name = name_string,
-        .directive = call.directive,
-        .arguments = {},
-        .content = call.content,
-        .content_frame = call.content_frame,
-        .call_frame = {},
-    };
-    const Scoped_Frame scope = context.get_call_stack().push_scoped({
-        *behavior,
-        indirect_invocation,
-    });
-    indirect_invocation.call_frame = scope.get_index();
-    return (*behavior)(out, indirect_invocation, context);
+    return invoke(
+        out, name_string, call.directive, Arguments_View {}, call.content, call.content_frame,
+        context
+    );
 }
 
 } // namespace cowel

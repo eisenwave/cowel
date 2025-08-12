@@ -36,12 +36,14 @@
 
 namespace cowel {
 
+/// @brief If `true`, the current build is a debug build (not a release build).
+inline constexpr bool is_debug_build = COWEL_IF_DEBUG(true) COWEL_IF_NOT_DEBUG(false);
+
 /// @brief If `true`, adds assertions in various places
 /// which check for writing of empty strings to content policies and other places.
 /// The point is to identify potential optimization opportunities/correctness problems,
 /// where empty strings ultimately have no effect anyway.
-inline constexpr bool enable_empty_string_assertions
-    = COWEL_IF_DEBUG(true) COWEL_IF_NOT_DEBUG(false);
+inline constexpr bool enable_empty_string_assertions = is_debug_build;
 
 /// @brief The default `char8_t` buffer size
 /// when it is necessary to process a `Char_Sequence` in a chunked/buffered way.

@@ -266,27 +266,46 @@ struct Invocation {
 /// @brief Simple helper type which can be constructed from an `ast::Directive`
 /// and which can be converted to an `Arguments_View` which provides access
 /// to the arguments of that directive.
-struct Direct_Call_Arguments {
+struct Homogeneous_Call_Arguments {
 private:
     std::span<const ast::Argument> m_arguments;
     Frame_Index m_frame;
 
 public:
     [[nodiscard]]
-    Direct_Call_Arguments(const ast::Directive& d, Frame_Index frame) noexcept
-        : m_arguments { d.get_arguments() }
+    Homogeneous_Call_Arguments(std::span<const ast::Argument> arguments, Frame_Index frame) noexcept
+        : m_arguments { arguments }
         , m_frame { frame }
     {
     }
 
-    [[nodiscard]] operator Arguments_View() const& noexcept
+    [[nodiscard]] operator Arguments_View() noexcept
     {
-        const Arguments_View::Accessor accessor
-            = { const_v<[](const Direct_Call_Arguments* self, std::size_t i) -> Argument_Ref {
-                    return { .ast_node = self->m_arguments[i], .frame_index = self->m_frame };
-                }>,
-                this };
-        return { m_arguments.size(), accessor };
+        static constexpr auto access
+            = [](const Homogeneous_Call_Arguments* self, std::size_t i) -> Argument_Ref {
+            return { .ast_node = self->m_arguments[i], .frame_index = self->m_frame };
+        };
+        return { m_arguments.size(), Arguments_View::Accessor { const_v<access>, this } };
+    }
+};
+
+struct Heterogeneous_Call_Arguments {
+private:
+    std::span<const Argument_Ref> m_arguments;
+
+public:
+    [[nodiscard]]
+    Heterogeneous_Call_Arguments(std::span<const Argument_Ref> arguments) noexcept
+        : m_arguments { arguments }
+    {
+    }
+
+    [[nodiscard]] operator Arguments_View() noexcept
+    {
+        static constexpr auto access
+            = [](const Argument_Ref* data, std::size_t i) -> Argument_Ref { return data[i]; };
+        return { m_arguments.size(),
+                 Arguments_View::Accessor { const_v<access>, m_arguments.data() } };
     }
 };
 

@@ -152,7 +152,7 @@ public:
         // a simple bool is insufficient to keep track of whether we are in a directive.
         m_line_state = Blank_Line_Initial_State::middle;
         const Directive_Depth_Guard depth_guard { *this };
-        return apply_behavior(*this, directive, frame, context);
+        return invoke_directive(*this, directive, frame, context);
     }
 
     [[nodiscard]]

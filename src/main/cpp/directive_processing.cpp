@@ -207,25 +207,27 @@ Processing_Status to_plaintext(
     return consume_all(policy, content, frame, context);
 }
 
-Processing_Status apply_behavior( //
+Processing_Status invoke( //
     Content_Policy& out,
-    const ast::Directive& d,
+    std::u8string_view name,
+    const ast::Directive& directive,
+    const Arguments_View args,
+    std::span<const ast::Content> content,
     Frame_Index content_frame,
     Context& context
 )
 {
-    const Direct_Call_Arguments args { d, content_frame };
     Invocation call {
-        .name = d.get_name(),
-        .directive = d,
+        .name = name,
+        .directive = directive,
         .arguments = args,
-        .content = d.get_content(),
+        .content = content,
         .content_frame = content_frame,
         .call_frame = {},
     };
-    const Directive_Behavior* const behavior = context.find_directive(d.get_name());
+    const Directive_Behavior* const behavior = context.find_directive(name);
     if (!behavior) {
-        try_lookup_error(d, context);
+        try_lookup_error(directive, context);
         call.call_frame = context.get_call_stack().get_top_index();
         return try_generate_error(out, call, context);
     }
@@ -233,6 +235,107 @@ Processing_Status apply_behavior( //
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
     call.call_frame = scope.get_index();
     return (*behavior)(out, call, context);
+}
+
+namespace {
+
+[[nodiscard]]
+bool expand_ellipses_recursively(
+    std::pmr::vector<Argument_Ref>& out,
+    Arguments_View args,
+    Context& context
+)
+{
+    for (const Argument_Ref arg : args) {
+        if (arg.ast_node.get_type() != ast::Argument_Type::ellipsis) {
+            out.push_back(arg);
+            continue;
+        }
+
+        if (arg.frame_index == Frame_Index::root) {
+            context.try_error(
+                diagnostic::ellipsis_outside, arg.ast_node.get_source_span(),
+                u8"Ellipsis arguments cannot be used outside of a macro expansion, "
+                u8"similar to \\cowel_put."sv
+            );
+            break;
+        }
+
+        const Stack_Frame& frame = context.get_call_stack()[arg.frame_index];
+        if (!expand_ellipses_recursively(out, frame.invocation.arguments, context)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+} // namespace
+
+Processing_Status invoke_directive( //
+    Content_Policy& out,
+    const ast::Directive& d,
+    Frame_Index content_frame,
+    Context& context
+)
+{
+    const auto do_invoke = [&](Arguments_View args) {
+        return invoke(out, d.get_name(), d, args, d.get_content(), content_frame, context);
+    };
+    if (!d.has_ellipsis()) {
+        return do_invoke(Homogeneous_Call_Arguments { d.get_arguments(), content_frame });
+    }
+
+    if (content_frame == Frame_Index::root) {
+        for (const ast::Argument& a : d.get_arguments()) {
+            if (a.get_type() == ast::Argument_Type::ellipsis) {
+                context.try_error(
+                    diagnostic::ellipsis_outside, a.get_source_span(),
+                    u8"Ellipsis arguments cannot be used outside of a macro expansion, "
+                    u8"similar to \\cowel_put."sv
+                );
+                break;
+            }
+        }
+        // TODO: generate error
+        return Processing_Status::error;
+    }
+    const Call_Stack& stack = context.get_call_stack();
+    const Stack_Frame& frame = stack[content_frame];
+
+    // A common, special case is to simply forward all arguments, like \d[...].
+    // In this case, we can simply yoink the arguments provided to the macro.
+    if (d.get_arguments().size() == 1) {
+        const ast::Argument& arg = d.get_arguments().front();
+        COWEL_ASSERT(arg.get_type() == ast::Argument_Type::ellipsis);
+        return do_invoke(frame.invocation.arguments);
+    }
+
+    // TODO: It's likely worth supporting the common case of exactly one ellipsis,
+    //       like in \cowel_html_element[div, ...].
+    //       For only one ellipsis, we don't need to allocate and could imply form a
+    //       joined view of the ellipsis and the surrounding arguments.
+    //
+    //       Currently, which is not ideal, we recursively flatten all the expansions
+    //       into a vector, which requires dynamic allocations.
+    //       I suspect the performance downsides are relatively minimal though.
+
+    std::pmr::vector<Argument_Ref> recursively_flattened_args { context.get_transient_memory() };
+    recursively_flattened_args.reserve(64);
+
+    for (const ast::Argument& arg : d.get_arguments()) {
+        if (arg.get_type() != ast::Argument_Type::ellipsis) {
+            recursively_flattened_args.push_back({ arg, content_frame });
+            continue;
+        }
+        if (!expand_ellipses_recursively(
+                recursively_flattened_args, frame.invocation.arguments, context
+            )) {
+            // TODO: generate error
+            return Processing_Status::error;
+        }
+    }
+
+    return do_invoke(Heterogeneous_Call_Arguments { recursively_flattened_args });
 }
 
 void warn_all_args_ignored(const Invocation& call, Context& context)
@@ -260,7 +363,7 @@ void warn_ignored_argument_subset(
     for (std::size_t i = 0; i < args.size(); ++i) {
         const auto& arg = args[i];
         const bool is_matched = statuses[i] != Argument_Status::unmatched;
-        const bool is_named = arg.ast_node.has_name();
+        const bool is_named = arg.ast_node.get_type() == ast::Argument_Type::named;
         const Argument_Subset subset = argument_subset_matched_named(is_matched, is_named);
         if (argument_subset_contains(ignored_subset, subset)) {
             context.try_warning(
@@ -283,8 +386,9 @@ void warn_ignored_argument_subset(
     );
 
     for (const auto& arg : args) {
-        const auto subset
-            = arg.ast_node.has_name() ? Argument_Subset::named : Argument_Subset::positional;
+        const auto subset = arg.ast_node.get_type() == ast::Argument_Type::named
+            ? Argument_Subset::named
+            : Argument_Subset::positional;
         if (argument_subset_contains(ignored_subset, subset)) {
             context.try_warning(
                 diagnostic::ignored_args, arg.ast_node.get_source_span(),
@@ -383,7 +487,10 @@ Processing_Status named_arguments_to_attributes(
 {
     std::size_t i = 0;
     return process_greedy(arguments, [&](const Argument_Ref a) -> Processing_Status {
-        const bool passed_filter = a.ast_node.has_name() && (!filter || filter(i, a));
+        if (a.ast_node.get_type() != ast::Argument_Type::named) {
+            return Processing_Status::ok;
+        }
+        const bool passed_filter = !filter || filter(i, a);
         ++i;
         return passed_filter ? named_argument_to_attribute(out, a, context, style)
                              : Processing_Status::ok;
@@ -430,7 +537,7 @@ Processing_Status named_argument_to_attribute(
     Attribute_Style style
 )
 {
-    COWEL_ASSERT(a.ast_node.has_name());
+    COWEL_ASSERT(a.ast_node.get_type() == ast::Argument_Type::named);
     std::pmr::vector<char8_t> value { context.get_transient_memory() };
     // TODO: error handling
     value.clear();
@@ -468,7 +575,7 @@ std::optional<Argument_Ref> get_first_positional_warn_rest(Arguments_View args, 
 {
     std::optional<Argument_Ref> result;
     for (const Argument_Ref arg : args) {
-        if (arg.ast_node.has_name()) {
+        if (arg.ast_node.get_type() != ast::Argument_Type::positional) {
             continue;
         }
         if (!result) {
