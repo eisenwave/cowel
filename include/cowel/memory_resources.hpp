@@ -20,46 +20,6 @@ inline void allocation_failure()
 #endif
 }
 
-/// @brief Like `std::pmr::polymorphic_allocator`,
-/// but propagated whenever possible.
-template <typename T>
-struct Propagated_Polymorphic_Allocator {
-    using propagate_on_container_copy_assignment = std::true_type;
-    using propagate_on_container_move_assignment = std::true_type;
-    using propagate_on_container_swap = std::true_type;
-
-    using value_type = T;
-    std::pmr::memory_resource* resource;
-
-    [[nodiscard]]
-    constexpr Propagated_Polymorphic_Allocator(std::pmr::memory_resource* resource) noexcept
-        : resource { resource }
-    {
-    }
-
-    template <typename U>
-        requires(!std::is_same_v<T, U>)
-    Propagated_Polymorphic_Allocator(const Propagated_Polymorphic_Allocator<U>& other)
-        : resource { other.resource }
-    {
-    }
-
-    [[nodiscard]]
-    T* allocate(std::size_t n)
-    {
-        return static_cast<T*>(resource->allocate(n * sizeof(T), alignof(T)));
-    }
-
-    void deallocate(T* p, std::size_t n)
-    {
-        resource->deallocate(p, n, alignof(T));
-    }
-
-    friend bool
-    operator==(const Propagated_Polymorphic_Allocator& x, const Propagated_Polymorphic_Allocator& y)
-        = default;
-};
-
 /// @brief A `pmr::memory_resource` constructed from `cowel_options`.
 struct Pointer_Memory_Resource final : std::pmr::memory_resource {
 private:
@@ -120,6 +80,17 @@ public:
 /// `cowel_alloc` and `cowel_free` for allocation and deallocation, respectively.
 struct Global_Memory_Resource final : std::pmr::memory_resource {
 
+    /// @brief Returns a pointer to an object of type `Global_Memory_Resource`
+    /// with static duration.
+    /// Note that all objects of this type are interchangeable,
+    /// so `get()` is typically better than creating a new instance.
+    [[nodiscard]]
+    static Global_Memory_Resource* get() noexcept
+    {
+        static constinit Global_Memory_Resource instance;
+        return &instance;
+    }
+
     [[nodiscard]]
     void* do_allocate(std::size_t bytes, std::size_t alignment) final
     {
@@ -140,6 +111,48 @@ struct Global_Memory_Resource final : std::pmr::memory_resource {
     {
         return dynamic_cast<const Pointer_Memory_Resource*>(&other) != nullptr;
     }
+};
+
+/// @brief Like `std::pmr::polymorphic_allocator`,
+/// but propagated whenever possible.
+template <typename T>
+struct Propagated_Polymorphic_Allocator {
+    using propagate_on_container_copy_assignment = std::true_type;
+    using propagate_on_container_move_assignment = std::true_type;
+    using propagate_on_container_swap = std::true_type;
+
+    using value_type = T;
+    std::pmr::memory_resource* resource;
+
+    [[nodiscard]]
+    constexpr Propagated_Polymorphic_Allocator(
+        std::pmr::memory_resource* resource = Global_Memory_Resource::get()
+    ) noexcept
+        : resource { resource }
+    {
+    }
+
+    template <typename U>
+        requires(!std::is_same_v<T, U>)
+    Propagated_Polymorphic_Allocator(const Propagated_Polymorphic_Allocator<U>& other)
+        : resource { other.resource }
+    {
+    }
+
+    [[nodiscard]]
+    T* allocate(std::size_t n)
+    {
+        return static_cast<T*>(resource->allocate(n * sizeof(T), alignof(T)));
+    }
+
+    void deallocate(T* p, std::size_t n)
+    {
+        resource->deallocate(p, n, alignof(T));
+    }
+
+    friend bool
+    operator==(const Propagated_Polymorphic_Allocator& x, const Propagated_Polymorphic_Allocator& y)
+        = default;
 };
 
 } // namespace cowel
