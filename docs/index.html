@@ -1519,6 +1519,8 @@ h1 {
 <a href=#named-arguments><h5>Named arguments</h5></a>
 <div class=toc-num data-level=5>4.6.2.2</div>
 <a href=#positional-arguments><h5>Positional arguments</h5></a>
+<div class=toc-num data-level=5>4.6.2.3</div>
+<a href=#ellipses><h5>Ellipses</h5></a>
 <div class=toc-num data-level=4>4.6.3</div>
 <a href=#directive-content><h4>Directive content</h4></a>
 <div class=toc-num data-level=2>5</div>
@@ -1560,10 +1562,12 @@ h1 {
 <div class=toc-num data-level=4>7.4.2</div>
 <a href=#dir-cowel_no_invoke><h4><code><h- data-h=mk_tag>\cowel_no_invoke</h-></code> — Process with no-invoke policy</h4></a>
 <div class=toc-num data-level=4>7.4.3</div>
-<a href=#dir-cowel_text_only><h4><code><h- data-h=mk_tag>\cowel_text_only</h-></code> — Process with text-only policy</h4></a>
+<a href=#dir-cowel_actions><h4><code><h- data-h=mk_tag>\cowel_actions</h-></code> — Process with actions policy</h4></a>
 <div class=toc-num data-level=4>7.4.4</div>
-<a href=#dir-cowel_text_as_html><h4><code><h- data-h=mk_tag>\cowel_text_as_html</h-></code> — Process with text-as-HTML policy</h4></a>
+<a href=#dir-cowel_text_only><h4><code><h- data-h=mk_tag>\cowel_text_only</h-></code> — Process with text-only policy</h4></a>
 <div class=toc-num data-level=4>7.4.5</div>
+<a href=#dir-cowel_text_as_html><h4><code><h- data-h=mk_tag>\cowel_text_as_html</h-></code> — Process with text-as-HTML policy</h4></a>
+<div class=toc-num data-level=4>7.4.6</div>
 <a href=#dir-cowel_source_as_text><h4><code><h- data-h=mk_tag>\cowel_source_as_text</h-></code> — Process with source-as-text policy</h4></a>
 <div class=toc-num data-level=3>7.5</div>
 <a href=#new-syntax-highlighting><h3>Syntax highlighting</h3></a>
@@ -2002,6 +2006,7 @@ The meaning of the escape sequences is described in the table below.
       <tt-><h- data-h=esc>\[</h-></tt->,
       <tt-><h- data-h=esc>\]</h-></tt->,
       <tt-><h- data-h=esc>\,</h-></tt->,
+      <tt-><h- data-h=esc>\.</h-></tt->,
       <tt-><h- data-h=esc>\=</h-></tt->,
       <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+0009 HORIZONTAL TABULATION</span>,
       <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+0020 SPACE</span>
@@ -2024,7 +2029,6 @@ The meaning of the escape sequences is described in the table below.
       <tt-><h- data-h=esc>\)</h-></tt->,
       <tt-><h- data-h=esc>\*</h-></tt->,
       <tt-><h- data-h=esc>\+</h-></tt->,
-      <tt-><h- data-h=esc>\.</h-></tt->,
       <tt-><h- data-h=esc>\/</h-></tt->,
       <tt-><h- data-h=esc>\;</h-></tt->,
       <tt-><h- data-h=esc>\&lt;</h-></tt->,
@@ -2165,7 +2169,10 @@ followed by plaintext <tt->-b</tt->.
 
 <h4 id=directive-arguments><a class=para href=#directive-arguments></a>4.6.2. Directive arguments</h4>
 
-<p><dfn>Directive arguments</dfn> can be <dfn>positional arguments</dfn> or <dfn>named arguments</dfn>.
+<p><dfn>Directive arguments</dfn> can be
+<dfn>positional arguments</dfn>,
+<dfn>named arguments</dfn>, or
+<dfn>ellipses</dfn>.
 Arguments are separated by commas.
 Unlike anywhere else, whitespace surrounding directive arguments is ignored.
 </p>
@@ -2227,6 +2234,52 @@ You can use escape sequences to continue otherwise ended content.
 <h- data-h=mk_tag>\xyz</h-><h- data-h=sym_sqr>[</h->hello<h- data-h=esc>\[</h->world<h- data-h=sym_sqr>]</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK</h->
 <h- data-h=mk_tag>\xyz</h-><h- data-h=sym_sqr>[</h->hello[world]    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: unterminated arguments</h-></code-block>
 </tip-block>
+
+<h5 id=ellipses><a class=para href=#ellipses></a>4.6.2.3. Ellipses</h5>
+
+<p>Ellipsis arguments (spelled <code><h- data-h=attr>...</h-></code>)
+are placeholders which expand to arguments provided to a surrounding macro.
+See also <a href=#dir-cowel_macro>§7.8.2. <code><h- data-h=mk_tag>\cowel_macro</h-></code> — Define a macro</a> and <a href=#dir-cowel_put>§7.8.3. <code><h- data-h=mk_tag>\cowel_put</h-></code> — Process provided macro content or arguments</a>.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Define a macro for generating &lt;div&gt; elements</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->div<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_sqr>[</h->div<h- data-h=sym_punc>,</h-> <h- data-h=attr>...</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+
+<h- data-h=mk_tag>\div</h-><h- data-h=sym_sqr>[</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h->inner text<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>div</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-><h- data-h=sym_punc>&gt;</h->inner text<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>div</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<p>Specifically, any positional argument which begins with <code><h- data-h=attr>...</h-></code>
+(ignoring leading whitespace and comments)
+is considered an ellipsis.
+The text <tt->...</tt-> is not considered an ellipsis if it appears anywhere else
+or has preceding content within an argument.
+</p>
+<p>An error is raised if
+</p><ul>
+  <li>
+    any content follows the ellipsis, or
+  </li>
+  <li>
+    an ellipsis is used as an argument outside of a macro expansion.
+  </li>
+</ul>
+
+<tip-block><p><intro-></intro-> 
+To literally provide the text <tt->...</tt-> as an argument,
+you can use the escape sequence <code><h- data-h=esc>\</h-><h- data-h=esc>.</h->..</code> (only the first dot is part of the escape).
+</p></tip-block>
+
+<example-block><p><intro-></intro-> 
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_macro</h-><h- data-h=sym_sqr>[</h->m<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>x</h-><h- data-h=sym_sqr>[</h-><h- data-h=attr>...</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>}</h->        <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> OK, all macro arguments are forwarded to </h-><h- data-h=cmt>\</h-><h- data-h=cmt>x</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_macro</h-><h- data-h=sym_sqr>[</h->e<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>x</h-><h- data-h=sym_sqr>[</h-><h- data-h=attr>...</h->text<h- data-h=sym_sqr>]</h-><h- data-h=sym_brac>}</h->    <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> error: content following an ellipsis</h->
+
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>m</h-><h- data-h=sym_sqr>[</h-><h- data-h=attr>...</h-><h- data-h=sym_sqr>]</h->                         <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> error: ellipsis is not expanded from a macro</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>m</h-><h- data-h=sym_sqr>[</h-><h- data-h=esc>\</h-><h- data-h=esc>.</h->..<h- data-h=sym_sqr>]</h->                        <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> OK</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>m</h-><h- data-h=sym_sqr>[</h-><h- data-h=esc>\</h-><h- data-h=esc>.</h-><h- data-h=esc>\</h-><h- data-h=esc>.</h-><h- data-h=esc>\</h-><h- data-h=esc>.</h-><h- data-h=sym_sqr>]</h->                      <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> OK</h-></code-block>
+</example-block>
 
 <h4 id=directive-content><a class=para href=#directive-content></a>4.6.3. Directive content</h4>
 
@@ -2323,6 +2376,13 @@ or in a policy which captures the output and writes it to memory for further pro
     but directives are not processed.
     Instead, the source code of directives is taken, sanitized,
     and fed as HTML into the surrounding policy.
+  </dd>
+
+  <dt>Actions policy</dt>
+  <dd>
+    Ignores text, escape sequences, and comments,
+    and passes any other content (e.g. directives)
+    to the surrounding policy.
   </dd>
 
   <dt>Text-only policy</dt>
@@ -2742,6 +2802,11 @@ which, in turn, feeds content into some parent content policy.
     <td></td>
   </tr>
   <tr>
+    <td><code><h- data-h=mk_tag>\cowel_actions</h-></code></td>
+    <td>no-invoke policy</td>
+    <td></td>
+  </tr>
+  <tr>
     <td><code><h- data-h=mk_tag>\cowel_text_only</h-></code></td>
     <td>text-only policy</td>
   </tr>
@@ -2818,7 +2883,59 @@ COWEL comments and COWEL escape sequences are processed as usual.
 That is, comments are ignored, and escapes are expanded.
 </p></note-block>
 
-<h4 id=dir-cowel_text_only><a class=para href=#dir-cowel_text_only></a>7.4.3. <code><h- data-h=mk_tag>\cowel_text_only</h-></code> — Process with text-only policy</h4>
+<h4 id=dir-cowel_actions><a class=para href=#dir-cowel_actions></a>7.4.3. <code><h- data-h=mk_tag>\cowel_actions</h-></code> — Process with actions policy</h4>
+
+<p><code><h- data-h=mk_tag>\cowel_actions</h-></code> processes the provided content
+using the actions policy.
+All arguments are ignored.
+</p>
+<p>This is particularly useful in macros and surrounding macros
+because it prevents whitespace from being emitted into the HTML file.
+Normally, whitespace is preserved,
+unless explicitly eliminated (e.g. with newline escapes or commas).
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block>no escapes:
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->a<h- data-h=sym_sqr>]</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->b<h- data-h=sym_sqr>]</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->c<h- data-h=sym_sqr>]</h->
+end.
+newline escapes:
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->h<h- data-h=sym_sqr>]</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->j<h- data-h=sym_sqr>]</h-><h- data-h=esc>\</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->k<h- data-h=sym_sqr>]</h-><h- data-h=esc>\</h->
+end.
+actions:
+<h- data-h=mk_tag>\cowel_actions</h-><h- data-h=sym_brac>{</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Documentation for x:</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->x<h- data-h=sym_sqr>]</h->
+
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> In here, we can add as much whitespace as we want.</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> It won't add anything to the generated HTML 😃</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->y<h- data-h=sym_sqr>]</h->
+
+Text is also ignored, just like whitespace,
+but it is recommended to use comments even in actions
+because it expresses intent more clearly.
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_sqr>[</h->z<h- data-h=sym_sqr>]</h->
+<h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
+end.</code-block>
+<p>Generated HTML:
+</p><code-block>no escapes:
+
+
+
+end.
+newline escapes:
+end.
+actions:
+end.</code-block>
+<p>Note that nine macros have also been defined by the COWEL markup,
+but macro definitions produce no output.
+</p></example-block>
+
+<h4 id=dir-cowel_text_only><a class=para href=#dir-cowel_text_only></a>7.4.4. <code><h- data-h=mk_tag>\cowel_text_only</h-></code> — Process with text-only policy</h4>
 
 <p><code><h- data-h=mk_tag>\cowel_text_only</h-></code> processes the provided content
 using the text-only policy.
@@ -2843,7 +2960,7 @@ such as in the <code>strong</code> positional argument to
 <p>It is mainly useful in situations where it makes no sense to have non-plaintext content.
 </p></note-block>
 
-<h4 id=dir-cowel_text_as_html><a class=para href=#dir-cowel_text_as_html></a>7.4.4. <code><h- data-h=mk_tag>\cowel_text_as_html</h-></code> — Process with text-as-HTML policy</h4>
+<h4 id=dir-cowel_text_as_html><a class=para href=#dir-cowel_text_as_html></a>7.4.5. <code><h- data-h=mk_tag>\cowel_text_as_html</h-></code> — Process with text-as-HTML policy</h4>
 
 <p><code><h- data-h=mk_tag>\cowel_no_invoke</h-></code> processes the provided content
 using the text-as-HTML policy.
@@ -2864,7 +2981,7 @@ While there are legitimate uses (e.g. inline SVG images and other large HTML blo
 <code><h- data-h=mk_tag>\cowel_html_element</h-></code> and other safer directives should be preferred.
 </p></warning-block>
 
-<h4 id=dir-cowel_source_as_text><a class=para href=#dir-cowel_source_as_text></a>7.4.5. <code><h- data-h=mk_tag>\cowel_source_as_text</h-></code> — Process with source-as-text policy</h4>
+<h4 id=dir-cowel_source_as_text><a class=para href=#dir-cowel_source_as_text></a>7.4.6. <code><h- data-h=mk_tag>\cowel_source_as_text</h-></code> — Process with source-as-text policy</h4>
 
 <p><code><h- data-h=mk_tag>\cowel_no_invoke</h-></code> processes the provided content
 using the source-as-text policy.

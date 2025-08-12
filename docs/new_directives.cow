@@ -326,6 +326,11 @@ The table below lists directives which process content using some content policy
     \td{}
   }
   \tr{
+    \td{\cowdoc_dir{cowel_actions}}
+    \td{no-invoke policy}
+    \td{}
+  }
+  \tr{
     \td{\cowdoc_dir{cowel_text_only}}
     \td{text-only policy}
   }
@@ -410,6 +415,64 @@ because such escapes should not treated as COWEL directives.
 \Bnote{
 COWEL comments and COWEL escape sequences are processed as usual.
 That is, comments are ignored, and escapes are expanded.
+}
+
+\h4[
+  id = dir-cowel_actions
+]{\cowdoc_dir{cowel_actions} \c{mdash} Process with actions policy}
+
+\cowdoc_dir{cowel_actions} processes the provided content
+using the actions policy.
+All arguments are ignored.
+
+This is particularly useful in macros and surrounding macros
+because it prevents whitespace from being emitted into the HTML file.
+Normally, whitespace is preserved,
+unless explicitly eliminated (e.g. with newline escapes or commas).
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+no escapes:
+\cowel_macro[a]
+\cowel_macro[b]
+\cowel_macro[c]
+end.
+newline escapes:
+\cowel_macro[h]\
+\cowel_macro[j]\
+\cowel_macro[k]\
+end.
+actions:
+\cowel_actions{
+\: Documentation for x:
+\cowel_macro[x]
+
+\: In here, we can add as much whitespace as we want.
+\: It won't add anything to the generated HTML 😃
+\cowel_macro[y]
+
+Text is also ignored, just like whitespace,
+but it is recommended to use comments even in actions
+because it expresses intent more clearly.
+\cowel_macro[z]
+}\
+end.
+}}
+Generated HTML:
+\codeblock[html]{
+no escapes:
+
+
+
+end.
+newline escapes:
+end.
+actions:
+end.
+}
+Note that nine macros have also been defined by the COWEL markup,
+but macro definitions produce no output.
 }
 
 \h4[

@@ -1,17 +1,61 @@
-\macro[\cowdoc_c{...}]{\code[cowel,\put{...}]{\put}}\
-\macro[\cowdoc_html{...}]{\code[html]{\put}}\
-\macro[\cowdoc_dir{...}]{\cowdoc_c{\cowel_highlight_as[markup-tag]{\\\put}}}\
-\macro[\cowdoc_cp{...}]{U+\put\c{nbsp}(\tt{\U{\put}})}\
-\macro[\cowdoc_attr{...}]{\tt{\cowel_highlight_as[markup-attr]{\put}}}\
-\macro[\cowdoc_esc{...}]{\tt{\cowel_highlight_as[escape]{\\\put}}}\
-\
-\macro[\c{...}]{\cowel_paragraph_enter\cowel_char_by_entity[\put{...}]{\put}}\
-\macro[\N{...}]{\cowel_paragraph_enter\cowel_char_by_name[\put{...}]{\put}}\
-\macro[\U{...}]{\cowel_paragraph_enter\cowel_char_by_num[\put{...}]{\put}}\
-\macro[\Udigits{...}]{\cowel_paragraph_enter\cowel_char_get_num[\put{...}]{\put}}\
-\
-\macro[\cowdoc_og_property]{\cowel_html_element[meta,property=og:\put{0},content=\put]}\
-\
+\cowel_actions{
+
+\cowel_macro[cowdoc_c]{\
+\code[cowel, ...]{\cowel_put}\
+}
+
+\cowel_macro[ellipsis]{\
+\code[cowel, prefix=\\d\[]{...}\
+}
+
+\cowel_macro[cowdoc_html]{\
+\code[html]{\cowel_put}\
+}
+
+\cowel_macro[cowdoc_dir]{\
+\cowdoc_c{\cowel_highlight_as[markup-tag]{\\\cowel_put}}\
+}
+
+\cowel_macro[cowdoc_cp]{\
+U+\cowel_put\c{nbsp}(\tt{\U{\cowel_put}})\
+}
+
+\cowel_macro[cowdoc_attr]{\
+\tt{\cowel_highlight_as[markup-attr]{\cowel_put}}\
+}
+
+\cowel_macro[cowdoc_esc]{\
+\tt{\cowel_highlight_as[escape]{\\\cowel_put}}\
+}
+
+\cowel_macro[c]{\
+\cowel_paragraph_enter\
+\cowel_char_by_entity[...]{\cowel_put}\
+}
+
+\cowel_macro[N]{\
+\cowel_paragraph_enter\
+\cowel_char_by_name[...]{\cowel_put}\
+}
+
+\cowel_macro[U]{\
+\cowel_paragraph_enter\
+\cowel_char_by_num[...]{\cowel_put}\
+}
+
+\cowel_macro[Udigits]{\
+\cowel_paragraph_enter\
+\cowel_char_get_num[...]{\cowel_put}\
+}
+
+\cowel_macro[cowdoc_og_property]{\
+\cowel_html_element[
+  meta,
+  property = og:\cowel_put{0},
+  content = \cowel_put
+]\
+}
+
 \there[std.head]{
 \cowel_html_element[title]{COWEL - Compact Web Language Documentation}
 \cowdoc_og_property[title]{Compact Web Language (COWEL)}
@@ -22,7 +66,9 @@ intended to generate HTML documents.\
 \cowdoc_og_property[locale]{en_US}
 \cowdoc_og_property[url]{https://cowel.org/}
 \cowdoc_og_property[type]{website}
-}\
+}
+
+}\: cowel_actions
 
 \h1[id=compact-web-language]{Compact Web Language (COWEL)}
 

@@ -58,6 +58,13 @@ The following builtin content policies exist:
     and fed as HTML into the surrounding policy.
   }
 
+  \dt{Actions policy}
+  \dd{
+    Ignores text, escape sequences, and comments,
+    and passes any other content (e.g. directives)
+    to the surrounding policy.
+  }
+
   \dt{Text-only policy}
   \dd{
     Comments are ignored,

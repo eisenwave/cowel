@@ -102,6 +102,7 @@ The meaning of the escape sequences is described in the table below.
       \cowdoc_esc{[},
       \cowdoc_esc{]},
       \cowdoc_esc{,},
+      \cowdoc_esc{.},
       \cowdoc_esc{=},
       \nobr{\cowdoc_esc{} U+0009 HORIZONTAL TABULATION},
       \nobr{\cowdoc_esc{} U+0020 SPACE}
@@ -124,7 +125,6 @@ The meaning of the escape sequences is described in the table below.
       \cowdoc_esc{)},
       \cowdoc_esc{*},
       \cowdoc_esc{+},
-      \cowdoc_esc{.},
       \cowdoc_esc{/},
       \cowdoc_esc{;},
       \cowdoc_esc{<},
@@ -275,7 +275,10 @@ followed by plaintext \tt{-b}.
 
 \h4{Directive arguments}
 
-\dfn{Directive arguments} can be \dfn{positional arguments} or \dfn{named arguments}.
+\dfn{Directive arguments} can be
+\dfn{positional arguments},
+\dfn{named arguments}, or
+\dfn{ellipses}.
 Arguments are separated by commas.
 Unlike anywhere else, whitespace surrounding directive arguments is ignored.
 
@@ -344,6 +347,59 @@ You can use escape sequences to continue otherwise ended content.
 \xyz[hello\[world]   \: OK
 \xyz[hello[world]    \: error: unterminated arguments
 }}
+}
+
+\h5{Ellipses}
+
+Ellipsis arguments (spelled \ellipsis)
+are placeholders which expand to arguments provided to a surrounding macro.
+See also \ref[#dir-cowel_macro] and \ref[#dir-cowel_put].
+
+\Bex{
+COWEL markup:
+\codeblock[cowel]{\literally{
+\: Define a macro for generating <div> elements
+\cowel_macro[div]{\cowel_html_element[div, ...]{\cowel_put}}
+
+\div[id = abc]{inner text}
+}}
+Generated HTML:
+\codeblock[html]{
+<div id=abc>inner text</div>
+}
+}
+
+Specifically, any positional argument which begins with \ellipsis
+(ignoring leading whitespace and comments)
+is considered an ellipsis.
+The text \tt{...} is not considered an ellipsis if it appears anywhere else
+or has preceding content within an argument.
+
+An error is raised if
+\ul{
+  \li{
+    any content follows the ellipsis, or
+  }
+  \li{
+    an ellipsis is used as an argument outside of a macro expansion.
+  }
+}
+
+\Btip{
+To literally provide the text \tt{...} as an argument,
+you can use the escape sequence \cowdoc_c{\\...} (only the first dot is part of the escape).
+}
+
+\Bex{
+\: We cannot use \literally here because it would cause a parse error
+\codeblock[cowel]{
+\\cowel_macro[m]{\\x[...]}        \\: OK, all macro arguments are forwarded to \\x
+\\cowel_macro[e]{\\x[...text]}    \\: error: content following an ellipsis
+
+\\m[...]                         \\: error: ellipsis is not expanded from a macro
+\\m[\\...]                        \\: OK
+\\m[\\.\\.\\.]                      \\: OK
+}
 }
 
 \h4{Directive content}

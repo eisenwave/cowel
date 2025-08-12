@@ -1,5 +1,18 @@
 # Changelog
 
+## **Next version**
+
+- change that trailing empty arguments are not empty positionals (#77)
+- deprecate legacy `\macro` directive (#77)
+- add ellipsis arguments and argument forwarding (#77)
+- add `\cowel_actions` directive (#77)
+- fix infinite loop on assertion failure (#75)
+- fix assertion failure on empty syntax highlighted content (#75)
+- also document `\.` to be a stable escape sequence (#77)
+
+**Full Changelog**:
+[`v0.4.0...master`](https://github.com/eisenwave/cowel/compare/v0.4.0...master)
+
 ## **[v0.4.0]** (2025-08-09)
 
 - remove deprecated `\item`/`\-item` behavior within `\ul` and `\li` (#68)
