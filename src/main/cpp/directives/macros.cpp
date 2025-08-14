@@ -113,6 +113,8 @@ Put_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
     Argument_Matcher matcher { parameters, context.get_transient_memory() };
     matcher.match(call.arguments);
 
+    try_inherit_paragraph(out);
+
     Call_Stack& stack = context.get_call_stack();
     const Invocation& target_invocation = stack[call.content_frame].invocation;
 

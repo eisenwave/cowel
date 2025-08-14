@@ -1,5 +1,13 @@
 # Changelog
 
+## **[v0.5.1]** (2025-08-14)
+
+- fix `\cowel_put` not inheriting paragraph,
+  preventing paragraph splitting of expanded content
+
+**Full Changelog**:
+[`v0.5.0...v0.5.1`](https://github.com/eisenwave/cowel/compare/v0.5.0...v0.5.1)
+
 ## **[v0.5.0]** (2025-08-12)
 
 - change that trailing empty arguments are not empty positionals (#77)
@@ -82,6 +90,7 @@ Never properly published.
 This build was used for generating C++ proposals
 up to the post-Sofia (2025-07) mailing.
 
+[v0.5.1]: https://github.com/eisenwave/cowel/releases/tag/v0.5.1
 [v0.5.0]: https://github.com/eisenwave/cowel/releases/tag/v0.5.0
 [v0.4.0]: https://github.com/eisenwave/cowel/releases/tag/v0.4.0
 [v0.3.1]: https://github.com/eisenwave/cowel/releases/tag/v0.3.1

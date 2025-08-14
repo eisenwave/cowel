@@ -1,0 +1,4 @@
+\cowel_macro[ps]{\cowel_paragraphs{\cowel_put}}\
+\ps{First paragraph.
+
+Second paragraph.}

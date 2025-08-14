@@ -209,6 +209,9 @@ constexpr Basic_Test basic_tests_array[] {
     { Path { u8"macro/forwarding_named.cow" },
       Path { u8"macro/forwarding_named.cow.html" } },
 
+    { Path { u8"macro/put_paragraphs.cow" },
+      Path { u8"macro/put_paragraphs.cow.html" } },
+
     { Source { u8"\\cowel_macro[content]{\\cowel_put}\\content{Content}\n" },
       Source { u8"Content\n" } },
 
