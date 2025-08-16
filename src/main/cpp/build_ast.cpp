@@ -349,7 +349,7 @@ private:
                 pop();
                 continue;
             }
-            if (next.type == AST_Instruction_Type::pop_arguments) { // ]
+            if (next.type == AST_Instruction_Type::pop_arguments) {
                 pop();
                 break;
             }

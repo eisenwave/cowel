@@ -1,9 +1,9 @@
-\codeblock[x]{abc}
-\codeblock[x]{
+\codeblock(x){abc}
+\codeblock(x){
 abc
 }
 
-\codeblock[x]{xxx}
-\codeblock[x]{
+\codeblock(x){xxx}
+\codeblock(x){
 xxx
 }

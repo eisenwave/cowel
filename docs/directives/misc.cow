@@ -1,16 +1,16 @@
 \h3{Miscellaneous}
 
-\h4[id=dir-div]{\cowdoc_dir{div} \c{mdash} Content division}
+\h4(id=dir-div){\cowdoc_dir{div} \c{mdash} Content division}
 
 The \cowdoc_dir{div} directive surrounds its contents in \cowdoc_html{<div>...</div>}
 tags.
 It displays as a block, and its content is an HTML context.
 \cowdoc_dir{div}'s named arguments are turned into HTML attributes.
 
-\h4[id=dir-trim]{\cowdoc_dir{trim} \c{mdash} Trim input}
+\h4(id=dir-trim){\cowdoc_dir{trim} \c{mdash} Trim input}
 
 The content of a \cowdoc_dir{text} directive is an HTML context
-(\ref[#contexts-and-output]).
+(\ref(#contexts-and-output)).
 Its arguments are ignored.
 \cowdoc_dir{text} is a formatting directive.
 
@@ -18,7 +18,7 @@ The process of \dfn{trimming} eliminates leading and trailing whitespace in the 
 at the COWEL source level.
 
 \Bex{
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 Every\trim{ day}
 }}
 This renders as:
@@ -32,15 +32,15 @@ Every\trim{ day}
 We might not want to space-separate content if some of it is empty.
 For example, we could define a \cowdoc_dir{Note} macro
 where the user can \em{optionally} provide a number for that note:
-\codeblock[cowel]{\literally{
-\macro[\Note]{\trim{Note \put}:}
+\cowblock{\literally{
+\macro(\Note){\trim{Note \put}:}
 
 \Note Something something.
 
 \Note{1} Something else.
 }}
 This renders as:
-\Bindent{\paragraphs{
+\Bindent{\cowel_paragraphs{
 Note: Something something.
 
 Note 1: Something else.
@@ -48,17 +48,21 @@ Note 1: Something else.
 Notice that because \cowdoc_dir{put} expands to no content,
 the trailing space after \cowdoc_c{Note} is eliminated.
 If it wasn't eliminated, we would end up with
-\code[cowel,prefix=\\trim]{{Note :}},
+\code(cowel,prefix=\\trim){{Note :}},
 but there should never be a space before the colon.
 }
 
-\h4[id=dir-text]{\cowdoc_dir{text} \c{mdash} Plaintext context}
+\h4(id=dir-text){\cowdoc_dir{text} \c{mdash} Plaintext context}
 
 The content of a \cowdoc_dir{text} directive is a plaintext context
-(\ref[#contexts-and-output]).
+(\ref(#contexts-and-output)).
 Its arguments are ignored.
 
 It simply outputs the input that it was given as text.
 Therefore, it acts as a sort of wrapper for plaintext.
 Notably, this forces the generation of plaintext even when \cowdoc_dir{text}
 is within an HTML context.
+
+\h4(id=dir-p){\cowdoc_dir{p} \c{mdash} Paragraphs}
+
+The \cowdoc_dir{p} directive surrounds its content in \cowdoc_html{<p>...</p>} tags.

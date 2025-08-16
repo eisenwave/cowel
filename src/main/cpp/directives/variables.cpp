@@ -143,7 +143,10 @@ Processing_Status Get_Variable_Behavior::generate_var(
 
     const auto it = context.get_variables().find(var);
     if (it != context.get_variables().end()) {
-        out.write(std::u8string_view { it->second }, Output_Language::text);
+        const std::u8string_view value_string { it->second };
+        if (!value_string.empty()) {
+            out.write(value_string, Output_Language::text);
+        }
     }
     return Processing_Status::ok;
 }

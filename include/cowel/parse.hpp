@@ -48,9 +48,9 @@ enum struct AST_Instruction_Type : Default_Underlying {
     /// @brief Begin directive arguments.
     /// The operand is the amount of arguments.
     ///
-    /// Advance past `[`.
+    /// Advance past `(`.
     push_arguments,
-    /// @brief Advance past `]`.
+    /// @brief Advance past `)`.
     pop_arguments,
     /// @brief Begin argument.
     /// The operand is the amount of pieces that comprise the argument content,

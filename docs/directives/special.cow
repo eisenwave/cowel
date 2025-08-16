@@ -8,13 +8,13 @@ The input to all special block directives is an HTML context,
 they all convert their arguments to HTML attributes,
 and they all display as block content.
 
-\h4[id=dir-Babstract]{\cowdoc_dir{Babstract} \c{mdash} Abstract blocks}
+\h4(id=dir-Babstract){\cowdoc_dir{Babstract} \c{mdash} Abstract blocks}
 
 \Babstract{
 Abstracts provide a summary of the document.
 }
 
-\h4[id=dir-Bquote]{\cowdoc_dir{Bquote} \c{mdash} Quote blocks}
+\h4(id=dir-Bquote){\cowdoc_dir{Bquote} \c{mdash} Quote blocks}
 
 The \cowdoc_dir{blockquote} directive directly corresponds to the \cowdoc_html{<blockquote>} element.
 
@@ -22,31 +22,31 @@ The \cowdoc_dir{blockquote} directive directly corresponds to the \cowdoc_html{<
 Quotes blocks or "block quotes" display quoted text.
 }
 
-\h4[id=dir-blockquote]{\cowdoc_dir{blockquote} \c{mdash} Alias for \cowdoc_dir{Bquote}}
+\h4(id=dir-blockquote){\cowdoc_dir{blockquote} \c{mdash} Alias for \cowdoc_dir{Bquote}}
 
 The \cowdoc_dir{blockquote} directive is equivalent to the \cowdoc_dir{Bquote} directive.
 
-\h4[id=dir-Bug]{\cowdoc_dir{Bug} \c{mdash} Bug blocks}
+\h4(id=dir-Bug){\cowdoc_dir{Bug} \c{mdash} Bug blocks}
 
 \Bug{
 A bug block contains the description of a bug.
 This often includes a code block which demonstrates how to reproduce the bug.
 }
 
-\h4[id=dir-Bdecision]{\cowdoc_dir{Bdecision} \c{mdash} Decision blocks}
+\h4(id=dir-Bdecision){\cowdoc_dir{Bdecision} \c{mdash} Decision blocks}
 
 \Bdecision{
 A decision block indicates that a decision needs to be made.
 }
 
-\h4[id=dir-Bdel]{\cowdoc_dir{Bdel} \c{mdash} Deletion blocks}
+\h4(id=dir-Bdel){\cowdoc_dir{Bdel} \c{mdash} Deletion blocks}
 
 \Bdel{
 A deletion block acts as a wrapper for a large amount of deleted content.
 It is typically used when individual \cowdoc_dir{del} directives would be too tedious to use.
 }
 
-\h4[id=dir-Bdetails]{\cowdoc_dir{Bdetails} \c{mdash} Details blocks aka spoilers}
+\h4(id=dir-Bdetails){\cowdoc_dir{Bdetails} \c{mdash} Details blocks aka spoilers}
 
 The \cowdoc_dir{Bdetails} directive directly corresponds to the \cowdoc_html{<details>} element.
 Within \cowdoc_dir{Bdetails},
@@ -58,80 +58,58 @@ A details block contains details which need to be revealed by the user.
 This is also referred to as "spoiler".
 }
 
-\h4[id=dir-details]{\cowdoc_dir{details} \c{mdash} Alias for \cowdoc_dir{Bdetails}}
+\h4(id=dir-details){\cowdoc_dir{details} \c{mdash} Alias for \cowdoc_dir{Bdetails}}
 
 The \cowdoc_dir{details} directive is equivalent to the \cowdoc_dir{Bdetails} directive.
 
-\h4[id=dir-Bdiff]{\cowdoc_dir{Bdiff} \c{mdash} Difference blocks}
+\h4(id=dir-Bdiff){\cowdoc_dir{Bdiff} \c{mdash} Difference blocks}
 
 \Bdiff{
 A difference block contains changes,
 where some content within is typically \del{deleted} or \ins{inserted}.
 }
 
-\h4[id=dir-Bex]{\cowdoc_dir{Bex} \c{mdash} Example blocks}
+\h4(id=dir-Bex){\cowdoc_dir{Bex} \c{mdash} Example blocks}
 
 \Bex{
 An example block contains examples.
 }
 
-\h4[id=dir-Bins]{\cowdoc_dir{Bins} \c{mdash} Insertion blocks}
+\h4(id=dir-Bins){\cowdoc_dir{Bins} \c{mdash} Insertion blocks}
 
 \Bins{
 A deletion block acts as a wrapper for a large amount of inserted content.
 It is typically used when individual \cowdoc_dir{ins} directives would be too tedious to use.
 }
 
-\h4[id=dir-Bimp]{\cowdoc_dir{Bimp} \c{mdash} Important blocks}
+\h4(id=dir-Bimp){\cowdoc_dir{Bimp} \c{mdash} Important blocks}
 
 \Bimp{
 Important blocks contain especially important information.
 }
 
-\h4[id=dir-Bnote]{\cowdoc_dir{Bnote} \c{mdash} Note blocks}
+\h4(id=dir-Bnote){\cowdoc_dir{Bnote} \c{mdash} Note blocks}
 
 \Bnote{
 Note blocks contain less important information,
 which can often be skipped over by readers.
 }
 
-\h4[id=dir-Btip]{\cowdoc_dir{Btip} \c{mdash} Tip blocks}
+\h4(id=dir-Btip){\cowdoc_dir{Btip} \c{mdash} Tip blocks}
 
 \Btip{
 Tip blocks contain useful advice.
 }
 
-\h4[id=dir-Btodo]{\cowdoc_dir{Btodo} \c{mdash} TODO blocks}
+\h4(id=dir-Btodo){\cowdoc_dir{Btodo} \c{mdash} TODO blocks}
 
 \Btodo{
 TODO blocks contain actions that remain to be done.
 They may indicate that a part of a project is incomplete.
 }
 
-\h4[id=dir-Bwarn]{\cowdoc_dir{Bwarn} \c{mdash} Warning blocks}
+\h4(id=dir-Bwarn){\cowdoc_dir{Bwarn} \c{mdash} Warning blocks}
 
 \Bwarn{
 Warning blocks warn the reader of some hazard or potential mistake.
 }
-
-\h4{Deprecated aliases}
-
-Some of the special blocks also have alternative spellings
-which only exist for compatibility with past versions.
-The new naming scheme is for all special blocks to have a \cowdoc_dir{B*} name.
-
-\Bwarn{
-These directives are deprecated and will be removed in a future version.
-}
-
-\h5[id=dir-bug]{\cowdoc_dir{bug} \c{mdash} Deprecated alias for \cowdoc_dir{Bug}}
-\h5[id=dir-decision]{\cowdoc_dir{decision} \c{mdash} Deprecated alias for \cowdoc_dir{Bdecision}}
-\h5[id=dir-delblock]{\cowdoc_dir{delblock} \c{mdash} Deprecated alias for \cowdoc_dir{Bdel}}
-\h5[id=dir-diff]{\cowdoc_dir{diff} \c{mdash} Deprecated alias for \cowdoc_dir{Bdiff}}
-\h5[id=dir-example]{\cowdoc_dir{example} \c{mdash} Deprecated alias for \cowdoc_dir{Bex}}
-\h5[id=dir-insblock]{\cowdoc_dir{insblock} \c{mdash} Deprecated alias for \cowdoc_dir{Bins}}
-\h5[id=dir-important]{\cowdoc_dir{important} \c{mdash} Deprecated alias for \cowdoc_dir{Bimp}}
-\h5[id=dir-note]{\cowdoc_dir{note} \c{mdash} Deprecated alias for \cowdoc_dir{Bnote}}
-\h5[id=dir-tip]{\cowdoc_dir{tip} \c{mdash} Deprecated alias for \cowdoc_dir{Btip}}
-\h5[id=dir-todo]{\cowdoc_dir{todo} \c{mdash} Deprecated alias for \cowdoc_dir{Btodo}}
-\h5[id=dir-warning]{\cowdoc_dir{warning} \c{mdash} Deprecated alias for \cowdoc_dir{Bwarn}}

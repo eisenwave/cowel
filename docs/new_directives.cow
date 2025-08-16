@@ -23,12 +23,12 @@ which all builtin directives have in common:
   \li{
     Unless otherwise stated,
     arguments to builtin directives are processed using the
-    text-only policy (\ref[#contexts-and-output]).
+    text-only policy (\ref(#contexts-and-output)).
   }
   \li{
     Unless otherwise stated,
     arguments to builtin directives
-    use the usual argument matching (\ref[#usual-argument-matching]).
+    use the usual argument matching (\ref(#usual-argument-matching)).
   }
   \li{
     Whenever content or arguments are said to be ignored,
@@ -59,20 +59,20 @@ The usual argument matching is performed as follows:
 \Bex{
 Let \cowdoc_dir{d} be a directive with parameters
 \cowdoc_attr{x}, \cowdoc_attr{y}, and \cowdoc_attr{z}:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \: a, b, and c match x, y, and z, respectively
-\d[z = c, y = b, x = a]
+\d(z = c, y = b, x = a)
 
 \: a, b, and c match x, y, and z, respectively
-\d[a, b, c]
+\d(a, b, c)
 
 \: d matches x, a matches y, b matches z, c is ignored
-\d[a, b, c, x = d]
+\d(a, b, c, x = d)
 }}
 }
 
 
-\h3[id=new-character-utilities]{Character utilities}
+\h3(id=new-character-utilities){Character utilities}
 
 It is quite common that a text document should include special characters.
 While COWEL is built on UTF-8 and in theory,
@@ -83,9 +83,9 @@ not to mention that some characters are invisible when rendered.
 For portability and convenience
 COWEL has builtin directives for generating and querying characters.
 
-\h4[
+\h4(
   id = dir-cowel_char_by_entity
-]{\cowdoc_dir{cowel_char_by_entity} \c{mdash} Character by HTML character reference}
+){\cowdoc_dir{cowel_char_by_entity} \c{mdash} Character by HTML character reference}
 
 The \cowdoc_dir{cowel_char_by_entity} directive takes the name of a character
 and outputs the respective code points as text.
@@ -104,12 +104,12 @@ The '\tt{&}' character can be produced in a number of ways:
 }
 }
 
-\h4[
+\h4(
   id = dir-cowel_char_by_name
-]{\cowdoc_dir{cowel_char_by_name} \c{mdash} Character by Unicode name}
+){\cowdoc_dir{cowel_char_by_name} \c{mdash} Character by Unicode name}
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is text content which should be a
-\ref[https://www.unicode.org/reports/tr34/#Names]{Unicode name}
+\ref(https://www.unicode.org/reports/tr34/#Names){Unicode name}
 for a code point.
 That is, the name of a code point,
 or one of its "control", "alternate", or "correction" aliases.
@@ -118,13 +118,13 @@ or one of its "control", "alternate", or "correction" aliases.
 \cowdoc_c{\\N{DIGIT ZERO}} generates '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
 }
 
-\h4[
+\h4(
   id = dir-cowel_char_by_num
-]{\cowdoc_dir{cowel_char_by_num} \c{mdash} Character by code point number}
+){\cowdoc_dir{cowel_char_by_num} \c{mdash} Character by code point number}
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is text content
 which should be a sequence of hexadecimal numbers
-specifying a \ref[https://infra.spec.whatwg.org/#scalar-value]{Unicode scalar value};
+specifying a \ref(https://infra.spec.whatwg.org/#scalar-value){Unicode scalar value};
 that is, a code point which UTF-8 permits to be encoded.
 All arguments are ignored.
 
@@ -143,9 +143,9 @@ and unless the reader is a Unicode expert who happens to know that sequence,
 they cannot easily tell what the purpose of the character is.
 }
 
-\h4[
+\h4(
   id=dir-cowel_char_get_num
-]{\cowdoc_dir{cowel_char_get_num} \c{mdash} Get digits of character}
+){\cowdoc_dir{cowel_char_get_num} \c{mdash} Get digits of character}
 
 The \cowdoc_dir{cowel_char_get_num} directive is essentially the
 inverse of the \cowdoc_dir{cowel_char_by_num} directive.
@@ -179,18 +179,18 @@ This can be fine-tuned with the following parameters:
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
-U+\cowel_char_get_num[4]{x}
+\cowblock{\literally{
+U+\cowel_char_get_num(4){x}
 }}
 This renders as:
 \Bindent{
-U+\cowel_char_get_num[4]{x}
+U+\cowel_char_get_num(4){x}
 }
 Note that U+0078 is the usual way in which Unicode code points are represented.
 That is, \tt{U+}, followed by at least four hexadecimal digits.
 It is also possible to define a macro if we need this frequently:
-\codeblock[cowel]{\literally{
-\macro[\code_point]{U+\cowel_char_get_num{\put}}
+\cowblock{\literally{
+\cowel_macro(code_point){U+\cowel_char_get_num{\cowel_put}}
 \code_point{x}
 }}
 }
@@ -199,13 +199,13 @@ It is also possible to define a macro if we need this frequently:
 \cowdoc_dir{cowel_char_get_num} can also be combined with \cowdoc_dir{cowel_char_by_name}
 to produce human-readable descriptions of code points,
 while also keeping our source code readable:
-\codeblock[cowel]{\literally{
-\macro[\named_char{...}]{U+\cowel_char_get_num[4]{\N{\put}} \put}
+\cowblock{\literally{
+\macro(named_char){U+\cowel_char_get_num(4){\N{\put}} \cowel_put}
 \named_char{SECTION SIGN}
 }}
 This renders as:
 \Bindent{
-U+\cowel_char_get_num[4]{\N{SECTION SIGN}} SECTION SIGN
+U+\cowel_char_get_num(4){\N{SECTION SIGN}} SECTION SIGN
 }
 }
 
@@ -214,7 +214,7 @@ even though the entire input text is processed into plaintext.
 
 \Bug{
 If we provide more than a single code point, some input is discarded:
-\codeblock[cowel]{
+\cowblock{
 \\cowel_char_get_num{abc}
 }
 This renders as
@@ -226,9 +226,9 @@ This renders as
 
 \h3{HTML utilities}
 
-\h4[
+\h4(
   id=dir-cowel_html_element
-]{\cowdoc_dir{cowel_html_element} \c{mdash} HTML element}
+){\cowdoc_dir{cowel_html_element} \c{mdash} HTML element}
 
 The \cowdoc_dir{cowel_html_element} directive generates content,
 surrounded in HTML opening and closing HTML tags.
@@ -252,11 +252,11 @@ as the first positional argument to the directive.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
-This is \cowel_html_element[span, id=abc]{a span}.
+\cowblock{\literally{
+This is \cowel_html_element(span, id=abc){a span}.
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 This is <span id=abc>a span</span>.
 }
 }
@@ -265,9 +265,9 @@ A \cowdoc_dir{cowel_html_element} directive produces an error if the given
 tag name is not a valid HTML tag name, or
 if any of the argument names are invalid.
 
-\h4[
+\h4(
   id=dir-cowel_html_self_closing_element
-]{\cowdoc_dir{cowel_html_self_closing_element} \c{mdash} Self-closing HTML element}
+){\cowdoc_dir{cowel_html_self_closing_element} \c{mdash} Self-closing HTML element}
 
 The \cowdoc_dir{cowel_html_self_closing_element} directive generates a self-closing HTML element.
 That is, an element with no content,
@@ -279,20 +279,20 @@ and any named arguments are converted to attributes of the tag.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 Horizontal rule:
-\cowel_html_self_closing_element[hr, id=abc]{ignored}
+\cowel_html_self_closing_element(hr, id=abc){ignored}
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 Horizontal rule:
 <hr id=abc />
 }
 }
 
-\h3[id=new-content-policies]{Content policies}
+\h3(id=new-content-policies){Content policies}
 
-As explained in \ref[#contexts-and-output],
+As explained in \ref(#contexts-and-output),
 all content within the document and produced by directives is fed into a content policy,
 which, in turn, feeds content into some parent content policy.
 
@@ -313,12 +313,12 @@ The table below lists directives which process content using some content policy
   \tr{
     \td{\cowdoc_dir{cowel_highlight}}
     \td{highlight policy}
-    \td{see \ref[#dir-cowel_highlight]}
+    \td{see \ref(#dir-cowel_highlight)}
   }
   \tr{
     \td{\cowdoc_dir{cowel_paragraphs}}
     \td{paragraphs policy}
-    \td{see \ref[#dir-cowel_paragraphs]}
+    \td{see \ref(#dir-cowel_paragraphs)}
   }
   \tr{
     \td{\cowdoc_dir{cowel_no_invoke}}
@@ -345,9 +345,9 @@ The table below lists directives which process content using some content policy
 }
 }
 
-\h4[
+\h4(
   id = dir-cowel_to_html
-]{\cowdoc_dir{cowel_to_html} \c{mdash} Process with to-HTML policy}
+){\cowdoc_dir{cowel_to_html} \c{mdash} Process with to-HTML policy}
 
 \cowdoc_dir{cowel_to_html} simply processes the provided content using the to-HTML policy.
 All arguments are ignored.
@@ -363,10 +363,10 @@ since none of those operate on HTML.
 Since HTML is not syntax-highlighted,
 we can insert special characters like U+00AD SOFT HYPHEN
 into code snippets, without interfering with syntax highlighting:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 Use of
-\cowel_html_element[code]{
-\cowel_highlight[cpp]{reinterpret_\
+\cowel_html_element(code){
+\cowel_highlight(cpp){reinterpret_\
 \cowel_to_html{\cowel_char_by_name{SOFT HYPHEN}}\
 cast}
 }
@@ -376,20 +376,20 @@ is discouraged.
 This renders as:
 \Bindent{
 Use of
-\code[cpp]{reinterpret_cast} is discouraged.
+\code(cpp){reinterpret_cast} is discouraged.
 }
 Or, if line wrapping takes place in the middle of the highlighted keyword,
 it renders as:
 \Bindent{
 Use of
-\tt{\cowel_highlight_as[keyword]{reinterpret_}-\br{}
-\cowel_highlight_as[keyword]{cast}} is discouraged.
+\tt{\cowel_highlight_as(keyword){reinterpret_}-\br{}
+\cowel_highlight_as(keyword){cast}} is discouraged.
 }
 }
 
-\h4[
+\h4(
   id = dir-cowel_no_invoke
-]{\cowdoc_dir{cowel_no_invoke} \c{mdash} Process with no-invoke policy}
+){\cowdoc_dir{cowel_no_invoke} \c{mdash} Process with no-invoke policy}
 
 \cowdoc_dir{cowel_no_invoke} processes the provided content
 using the no-invoke policy.
@@ -397,18 +397,18 @@ All arguments are ignored.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \cowel_no_invoke{Undefined directive: \awoo}
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 Undefined directive: \\awoo
 }
 Under the no-invoke policy selected by \cowdoc_c{no_invoke},
 \cowdoc_c{\\awoo} is not invoked,
 but its source code is fed into the current policy as plaintext.
 This is particularly useful when writing code blocks
-which contain character escapes (e.g. containing \code[cpp]{"\\n"} in C++)
+which contain character escapes (e.g. containing \code(cpp){"\\n"} in C++)
 because such escapes should not treated as COWEL directives.
 }
 
@@ -417,9 +417,9 @@ COWEL comments and COWEL escape sequences are processed as usual.
 That is, comments are ignored, and escapes are expanded.
 }
 
-\h4[
+\h4(
   id = dir-cowel_actions
-]{\cowdoc_dir{cowel_actions} \c{mdash} Process with actions policy}
+){\cowdoc_dir{cowel_actions} \c{mdash} Process with actions policy}
 
 \cowdoc_dir{cowel_actions} processes the provided content
 using the actions policy.
@@ -432,35 +432,35 @@ unless explicitly eliminated (e.g. with newline escapes or commas).
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 no escapes:
-\cowel_macro[a]
-\cowel_macro[b]
-\cowel_macro[c]
+\cowel_macro(a)
+\cowel_macro(b)
+\cowel_macro(c)
 end.
 newline escapes:
-\cowel_macro[h]\
-\cowel_macro[j]\
-\cowel_macro[k]\
+\cowel_macro(h)\
+\cowel_macro(j)\
+\cowel_macro(k)\
 end.
 actions:
 \cowel_actions{
 \: Documentation for x:
-\cowel_macro[x]
+\cowel_macro(x)
 
 \: In here, we can add as much whitespace as we want.
 \: It won't add anything to the generated HTML 😃
-\cowel_macro[y]
+\cowel_macro(y)
 
 Text is also ignored, just like whitespace,
 but it is recommended to use comments even in actions
 because it expresses intent more clearly.
-\cowel_macro[z]
+\cowel_macro(z)
 }\
 end.
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 no escapes:
 
 
@@ -475,9 +475,9 @@ Note that nine macros have also been defined by the COWEL markup,
 but macro definitions produce no output.
 }
 
-\h4[
+\h4(
   id = dir-cowel_text_only
-]{\cowdoc_dir{cowel_text_only} \c{mdash} Process with text-only policy}
+){\cowdoc_dir{cowel_text_only} \c{mdash} Process with text-only policy}
 
 \cowdoc_dir{cowel_text_only} processes the provided content
 using the text-only policy.
@@ -485,12 +485,12 @@ All arguments are ignored.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
-Hello, \cowel_html_element[strong]{strong} world!
-\cowel_text_only{Hello, \cowel_html_element[strong]{strong} world!}
+\cowblock{\literally{
+Hello, \cowel_html_element(strong){strong} world!
+\cowel_text_only{Hello, \cowel_html_element(strong){strong} world!}
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 Hello, <strong>strong</strong> world!
 Hello, strong world!
 }
@@ -506,9 +506,9 @@ such as in the \cowdoc_c{strong} positional argument to
 It is mainly useful in situations where it makes no sense to have non-plaintext content.
 }
 
-\h4[
+\h4(
   id = dir-cowel_text_as_html
-]{\cowdoc_dir{cowel_text_as_html} \c{mdash} Process with text-as-HTML policy}
+){\cowdoc_dir{cowel_text_as_html} \c{mdash} Process with text-as-HTML policy}
 
 \cowdoc_dir{cowel_no_invoke} processes the provided content
 using the text-as-HTML policy.
@@ -516,11 +516,11 @@ All arguments are ignored.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \cowel_text_as_html{Hello, <strong>strong</strong> world!}
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 Hello, <strong>strong</strong> world!
 }
 As can be seen, the provided text is reinterpreted as HTML.
@@ -533,9 +533,9 @@ While there are legitimate uses (e.g. inline SVG images and other large HTML blo
 \cowdoc_dir{cowel_html_element} and other safer directives should be preferred.
 }
 
-\h4[
+\h4(
   id = dir-cowel_source_as_text
-]{\cowdoc_dir{cowel_source_as_text} \c{mdash} Process with source-as-text policy}
+){\cowdoc_dir{cowel_source_as_text} \c{mdash} Process with source-as-text policy}
 
 \cowdoc_dir{cowel_no_invoke} processes the provided content
 using the source-as-text policy.
@@ -543,14 +543,14 @@ All arguments are ignored.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \cowel_source_as_text{
 \: Comment ...
 Hello \source_as_text \{ ... \}
 }
 }}
 Generated HTML:
-\codeblock[html]{\literally{
+\htmlblock{\literally{
 \: Comment ...
 Hello \source_as_text \{ ... \}
 }}
@@ -564,16 +564,16 @@ It can be seen as a more extreme form of \cowdoc_dir{cowel_no_invoke},
 and is more niche in its applications.
 }
 
-\h3[id=new-syntax-highlighting]{Syntax highlighting}
+\h3(id=new-syntax-highlighting){Syntax highlighting}
 
 Syntax highlighting improves the readability of inline code and code snippets
 by applying different formatting (usually colors)
 based on the syntactical meaning of text.
 Many examples can be found in this document.
 
-\h4[
+\h4(
   id = dir-cowel_highlight
-]{\cowdoc_dir{cowel_highlight} \c{mdash} Perform syntax highlighting}
+){\cowdoc_dir{cowel_highlight} \c{mdash} Perform syntax highlighting}
 
 The \cowdoc_dir{cowel_highlight}
 processes content using the highlight policy,
@@ -583,12 +583,12 @@ which wraps parts of code in HTML tags for the purpose of syntax highlighting.
 This specifies the name of language (e.g. \tt{cowel})
 in which the content is to be highlighted.
 The name has to be one of the language short names
-supported by the \ref[https://github.com/Eisenwave/ulight]{µlight syntax highlighter},
+supported by the \ref(https://github.com/Eisenwave/ulight){µlight syntax highlighter},
 which is the highlighter that COWEL uses internally.
 
-\h4[
+\h4(
   id = dir-cowel_highlight_as
-]{\cowdoc_dir{cowel_highlight_as} \c{mdash} Syntax highlight override}
+){\cowdoc_dir{cowel_highlight_as} \c{mdash} Syntax highlight override}
 
 The \cowdoc_dir{cowel_highlight_as} directive forces certain syntax highlighting
 to be applied to some text;
@@ -602,46 +602,46 @@ which is the µlight \dfn{long name} for a highlight type.
 
 \Btip{
 You can obtain a list of possible long names at
-\ref[https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h]{\tt{ulight.h}}
-from the definition of \code[cpp]{enum ulight_highlight_type}.
+\ref(https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h){\tt{ulight.h}}
+from the definition of \code(cpp){enum ulight_highlight_type}.
 The long name is the enumerator name without the \tt{ULIGHT_HL} prefix,
 all lowercase, and with hyphens instead of underscores.
 }
 
 \Bex{
 It is possible to mix automatic syntax highlighting with manual overrides:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \: _Int128 is manually highlighted as a type keyword,
 \: and x is automatically highlighted as an identifier.
-\cowel_html_element[code]{\
-\cowel_highlight[c]{\cowel_highlight_as[keyword-type]{_Int128} x}\
+\cowel_html_element(code){\
+\cowel_highlight(c){\cowel_highlight_as(keyword-type){_Int128} x}\
 }
 }}
 This generates the HTML (subject to change):
-\codeblock[html]{
+\htmlblock{
 <code><h- data-h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>
 }
-It renders as \code[c]{\cowel_highlight_as[keyword-type]{_Int128} x}.
+It renders as \code(c){\cowel_highlight_as(keyword-type){_Int128} x}.
 }
 
 \Bnote{
 While it is also possible to produce the highlighting tags using
-\cowdoc_c{\\cowel_html_element[h-,data-h=kw_type]{_Int128}},
+\cowdoc_c{\\cowel_html_element(h-,data-h=kw_type){_Int128}},
 the "short names" (e.g. \cowdoc_c{kw_type}) are not stable,
 i.e. they are more likely to change.
 Only µlight long names should be used directly.
 }
 
-\h4[
+\h4(
   id = dir-cowel_highlight_phantom
-]{\cowdoc_dir{cowel_highlight_phantom} \c{mdash} Syntax highlight phantom text}
+){\cowdoc_dir{cowel_highlight_phantom} \c{mdash} Syntax highlight phantom text}
 
 The \cowdoc_dir{cowel_highlight_phantom} directive
 can be used to further customize syntax highlighting.
 It outputs \dfn{phantom text}, which is fed into the syntax highlighter,
 but is not part of the output content.
 
-The provided content is processed using a text-only policy (\ref[#contexts-and-output]).
+The provided content is processed using a text-only policy (\ref(#contexts-and-output)).
 If the current policy is a highlight policy,
 the text output by the former is turned into phantom text within the latter.
 Otherwise, the generated text is discarded.
@@ -651,33 +651,33 @@ All arguments are ignored.
 Using \cowdoc_dir{cowel_highlight_phantom},
 we can control whether a JSON string is interpreted as a markup key,
 or as a string value:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 In JSON, there are
-\cowel_html_element[code]{\cowel_highlight[json]{\cowel_highlight_phantom{\{}"keys"}}
+\cowel_html_element(code){\cowel_highlight(json){\cowel_highlight_phantom{\{}"keys"}}
 and
-\cowel_html_element[code]{\cowel_highlight[json]{"values"}}.
+\cowel_html_element(code){\cowel_highlight(json){"values"}}.
 \: Note that this is low-level functionality intended to power macros like:
-\:   \code[json,prefix=\{]{"keys"}
+\:   \code(json,prefix=\{){"keys"}
 \: or
 \:   \json_key{"keys"}
 }}
 Using the highlight theme of this document, this renders as:
 \Bindent{
-In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
+In JSON, there are \code(json,prefix=\{){"keys"} and \code(json){"values"}.
 }
-Notice that the color of \code[json,prefix=\{]{"keys"} is different because it is highlighted
+Notice that the color of \code(json,prefix=\{){"keys"} is different because it is highlighted
 as if it was positioned like:
-\codeblock[json]{
+\codeblock(json){
 \{"keys"
 }
 \:}}
 }
 
-\h3[id=new-paragraph-control]{Paragraph control}
+\h3(id=new-paragraph-control){Paragraph control}
 
 Dividing content into paragraphs manually would take a huge amount of effort,
 so COWEL provides means of doing so semi-automatically.
-Text within in a paragraphs policy (\ref[#contexts-and-output])
+Text within in a paragraphs policy (\ref(#contexts-and-output))
 is automatically wrapped in paragraphs (\cowdoc_html{<p>...</p>}),
 divided at blank lines.
 
@@ -690,19 +690,19 @@ and they neither begin nor end a paragraph.
 The following paragraph control directives define interactions
 between paragraph splitting and directives.
 
-\h4[
+\h4(
   id = dir-cowel_paragraphs
-]{\cowdoc_dir{cowel_paragraphs} \c{mdash} Perform paragraph splitting}
+){\cowdoc_dir{cowel_paragraphs} \c{mdash} Perform paragraph splitting}
 
 The \cowdoc_dir{cowel_paragraphs} directive
-creates a paragraphs policy (\ref[#contexts-and-output])
+creates a paragraphs policy (\ref(#contexts-and-output))
 and feeds all provided content into that policy.
 The beginning and end of the provided content are considered to be outside a paragraph.
 All arguments are ignored.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \cowel_paragraphs{
 First paragraph.
 
@@ -711,7 +711,7 @@ Second paragraph.
 }}
 
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <p>First paragraph.</p>
 
 <p>Second paragraph.</p>
@@ -729,9 +729,9 @@ so if one wants to have paragraph splitting inside say,
 \cowdoc_dir{cowel_paragraphs} has to be used.
 }
 
-\h4[
+\h4(
   id = dir-cowel_paragraph_enter
-]{\cowdoc_dir{cowel_paragraph_enter} \c{mdash} Enter a paragraph}
+){\cowdoc_dir{cowel_paragraph_enter} \c{mdash} Enter a paragraph}
 
 If the current content policy is a paragraphs policy and
 and the paragraph state is "outside",
@@ -742,14 +742,14 @@ All arguments are ignored.
 
 \Bex{
 COWEL markup, assuming a surrounding paragraphs policy:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \cowel_char_by_name{DIGIT ONE}. First paragraph
 
 \cowel_paragraph_enter\cowel_char_by_name{DIGIT TWO}. Second paragraph
 }}
 
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 1<p>. First paragraph</p>
 
 <p>2. Second paragraph</p>
@@ -768,9 +768,9 @@ For example, the user can define an \cowdoc_dir{N} directive which combines
 \cowdoc_dir{cowel_para\c{shy}graph_enter} and \cowdoc_dir{cowel_\c{shy}char_by_name}.
 }
 
-\h4[
+\h4(
   id = dir-cowel_paragraph_leave
-]{\cowdoc_dir{cowel_paragraph_leave} \c{mdash} Leave a paragraph}
+){\cowdoc_dir{cowel_paragraph_leave} \c{mdash} Leave a paragraph}
 
 If the current content policy is a paragraphs policy and
 and the paragraph state is "inside",
@@ -781,16 +781,16 @@ All arguments are ignored.
 
 \Bex{
 COWEL markup, assuming a surrounding paragraphs policy:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 Paragraph 1:
-\cowel_html_self_closing_element[hr]
+\cowel_html_self_closing_element(hr)
 
 Paragraph 2:
-\cowel_paragraph_leave\cowel_html_self_closing_element[hr]
+\cowel_paragraph_leave\cowel_html_self_closing_element(hr)
 }}
 
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <p>Paragraph 1:
 <hr/></p>
 
@@ -814,9 +814,9 @@ For example, the user can define a \cowdoc_dir{hr} directive which combines
 \cowdoc_dir{cowel_\c{shy}html_self_closing_element}.
 }
 
-\h4[
+\h4(
   id = dir-cowel_paragraph_inherit
-]{\cowdoc_dir{cowel_paragraph_inherit} \c{mdash} Activate paragraph splitting inside a directive}
+){\cowdoc_dir{cowel_paragraph_inherit} \c{mdash} Activate paragraph splitting inside a directive}
 
 \Bimp{
 There is no support for programmatic directives yet,
@@ -833,7 +833,7 @@ i.e. any content produced by such directives is fed directly into the paragraphs
 \cowdoc_dir{cowel_paragraph_inherit} can be used inside programmatic directives
 defined by the user to achieve the same behavior.
 
-\h3[id=new-file-management]{File management}
+\h3(id=new-file-management){File management}
 
 Once projects get larger,
 it often becomes difficult to manage everything in a single file.
@@ -843,9 +843,9 @@ or CSS files may have better IDE support than writing these out directly inside 
 
 COWEL provides directives to load content from other files.
 
-\h4[
+\h4(
   id = dir-cowel_include
-]{\cowdoc_dir{cowel_include} \c{mdash} Include a sub-document}
+){\cowdoc_dir{cowel_include} \c{mdash} Include a sub-document}
 
 The \cowdoc_dir{cowel_include} directive loads the content from another COWEL document,
 and processes it using the current content policy.
@@ -853,7 +853,7 @@ The path to the document is provided as content to \cowdoc_dir{cowel_include},
 and is assumed to be relative to the current file.
 All arguments are ignored.
 
-If the current content policy is a paragraphs policy (\ref[#contexts-and-output]),
+If the current content policy is a paragraphs policy (\ref(#contexts-and-output)),
 paragraph splitting of the included sub-document takes place
 as if its contents were expanded directly where \cowdoc_dir{cowel_include} appears.
 In other words, \cowdoc_dir{cowel_include} inherits the paragraph context,
@@ -861,7 +861,7 @@ or is \em{not} a "black box" to paragraph splitting.
 
 \Bex{
 Say we have another \tt{test.cow} files containing:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 Hello, includes!
 
 Next paragraph.
@@ -869,12 +869,12 @@ Next paragraph.
 When using \cowdoc_dir{cowel_include},
 the contents of the other file are substituted where we have written \cowdoc_dir{cowel_include},
 which means that imported content also plays nicely with paragraph splitting:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 First paragraph.
 \cowel_include{test.cow}
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <p>First paragraph.
 Hello, includes!</p>
 
@@ -891,9 +891,9 @@ It is also common to split documents into multiple files that are combined using
 of \cowdoc_dir{cowel_include}s.
 }
 
-\h4[
+\h4(
   id = dir-cowel_include_text
-]{\cowdoc_dir{cowel_include_text} \c{mdash} Include text from a file}
+){\cowdoc_dir{cowel_include_text} \c{mdash} Include text from a file}
 
 The \cowdoc_dir{cowel_include_text} directive reads the UTF-8 text contents of another file
 and feeds that text into the current content policy.
@@ -905,8 +905,8 @@ All arguments are ignored.
 Say we have a JavaScript file \tt{example.js} which we want to keep separate from the document.
 We can then include it into a \cowdoc_dir{script} block to use it as a script,
 or we can include it into a \cowdoc_dir{codeblock} to display its contents.
-\codeblock[cowel]{\literally{
-\codeblock[js]{
+\cowblock{\literally{
+\codeblock(js){
 // code included from example.js:
 \cowel_include_text{example.js}
 }
@@ -914,7 +914,7 @@ or we can include it into a \cowdoc_dir{codeblock} to display its contents.
 Assuming that \tt{example.js} is located in the same directory as the document
 and that loading the file succeeds,
 this renders as: 
-\codeblock[js]{
+\codeblock(js){
 // code included from example.js:
 \cowel_include_text{example.js}
 }
@@ -941,11 +941,11 @@ there are some stark differences:
 }
 }
 
-\h3[id=new-aliases]{Aliases and macros}
+\h3(id=new-aliases){Aliases and macros}
 
-\h4[
+\h4(
   id = dir-cowel_alias
-]{\cowdoc_dir{cowel_alias} \c{mdash} Define aliases for an existing directive}
+){\cowdoc_dir{cowel_alias} \c{mdash} Define aliases for an existing directive}
 
 The \cowdoc_dir{cowel_alias} directive defines one or more aliases for an existing directive.
 The content of \cowdoc_dir{cowel_alias} is converted to text,
@@ -967,11 +967,11 @@ A fatal error is raised if
 
 \Bex{
 One or multiple aliases can be defined as follows:
-\codeblock[cowel]{\literally{
-\cowel_alias[N]{cowel_char_by_name}
+\cowblock{\literally{
+\cowel_alias(N){cowel_char_by_name}
 \N{DIGIT ZERO}              \: OK, equivalent to \cowel_char_by_name{DIGIT ZERO}
 
-\cowel_alias[incl, include]{cowel_include}
+\cowel_alias(incl, include){cowel_include}
 \incl{file.cow}             \: OK, equivalent to \cowel_include{file.cow}
 \include{file.cow}          \: OK, same
 
@@ -980,14 +980,14 @@ One or multiple aliases can be defined as follows:
 \cowel_alias{\N{???}}        \: error: generation of target name failed
 \cowel_alias{??}             \: error: invalid target name
 \cowel_alias{undefined}      \: error: target not found
-\cowel_alias[?]{cowel_alias} \: error: invalid alias name
-\cowel_alias[N]{N}           \: error: redefinition of N
+\cowel_alias(?){cowel_alias} \: error: invalid alias name
+\cowel_alias(N){N}           \: error: redefinition of N
 }}
 }
 
-\h4[
+\h4(
   id = dir-cowel_macro
-]{\cowdoc_dir{cowel_macro} \c{mdash} Define a macro}
+){\cowdoc_dir{cowel_macro} \c{mdash} Define a macro}
 
 The \cowdoc_dir{cowel_macro} directive defines a block of content which
 can be processed at a later point in the document.
@@ -1007,27 +1007,27 @@ A fatal error occurs if
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
-\cowel_macro[m,x]{Hello, macros!}\
+\cowblock{\literally{
+\cowel_macro(m,x){Hello, macros!}\
 \m
 \x
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 Hello, macros!
 Hello, macros!
 }
 }
 
 When a macro is processed,
-the behavior is as if \cowdoc_dir{cowel_paragraph_inherit} (\ref[#dir-cowel_paragraph_inherit])
+the behavior is as if \cowdoc_dir{cowel_paragraph_inherit} (\ref(#dir-cowel_paragraph_inherit))
 was invoked immediately before processing the content in the macro definition.
 This means that blank lines in the macro definition
 may also result in paragraph splits outside the macro.
 
-\h4[
+\h4(
   id = dir-cowel_put
-]{\cowdoc_dir{cowel_put} \c{mdash} Process provided macro content or arguments}
+){\cowdoc_dir{cowel_put} \c{mdash} Process provided macro content or arguments}
 
 The \cowdoc_dir{cowel_put} directive processes content
 which was provided when a macro was invoked.
@@ -1070,31 +1070,31 @@ and \dfn{designates}
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \: \cowel_put designates content
-\cowel_macro[content]{\cowel_put}\
+\cowel_macro(content){\cowel_put}\
 \content{Content}
 
 \: \cowel_put designates first positional argument
-\cowel_macro[pos]{\cowel_put{0}}\
-\pos[Positional]
+\cowel_macro(pos){\cowel_put{0}}\
+\pos(Positional)
 
 \: \cowel_put designates named argument with name "n"
-\cowel_macro[named]{\cowel_put{n}}\
-\named[n = Named]
+\cowel_macro(named){\cowel_put{n}}\
+\named(n = Named)
 
 \: \cowel_put designates the first positional argument and has a fallback
-\: Note that equivalently, we could use \cowel_put[Failure]{0}.
-\cowel_macro[try]{\cowel_put[else=Failure]{0}}\
-\try[Success]
+\: Note that equivalently, we could use \cowel_put(Failure){0}.
+\cowel_macro(try){\cowel_put(else=Failure){0}}\
+\try(Success)
 \try
 
 \: All together:
-\cowel_macro[m]{\cowel_put{greeting}, \cowel_put\cowel_put{0}}\
-\m[greeting = Hello, !]{macros}
+\cowel_macro(m){\cowel_put{greeting}, \cowel_put\cowel_put{0}}\
+\m(greeting = Hello, !){macros}
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 Content
 
 Positional
@@ -1114,18 +1114,18 @@ such as when \cowdoc_dir{cowel_put} appears at a top-level in the document.
 \Bnote{
 \cowdoc_dir{cowel_macro} is not processed in any special way,
 meaning that it cannot be used for "macro substitution" directly:
-\codeblock[cowel]{\literally{
-\cowel_macro[m]{\cowel_source_as_text{\cowel_put}}\
+\cowblock{\literally{
+\cowel_macro(m){\cowel_source_as_text{\cowel_put}}\
 \m
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 \\cowel_put
 }
 However, \cowdoc_dir{cowel_put} accesses the inputs to the macro invocation
 which expands \cowdoc_dir{cowel_put}:
-\codeblock[cowel]{\literally{
-\cowel_macro[m]{\cowel_put}\
+\cowblock{\literally{
+\cowel_macro(m){\cowel_put}\
 \m{\cowel_put}
 }}
 This results in a fatal error because when \cowdoc_dir{m} is processed,
@@ -1137,8 +1137,8 @@ This functionality is implemented by tracking the "stack frame"
 where content was expanded from (or none, in the case of the document top level).
 This also makes it possible to deeply nest \cowdoc_dir{cowel_put}
 within other directives while still referring to parameters of the macro invocation:
-\codeblock[cowel]{\literally{
-\cowel_macro[m]{\cowel_to_html{\cowel_put}}\
+\cowblock{\literally{
+\cowel_macro(m){\cowel_to_html{\cowel_put}}\
 \: OK, equivalent to \cowel_to_html{...}
 \: Notably, the expanded \cowel_put refers to the content provided to \m,
 \: not to the content provided to \cowel_to_html (which would be \cowel_put).
@@ -1151,18 +1151,18 @@ Expanding \cowdoc_dir{cowel_put} with the same input multiple times
 results in multiple processing of the same provided content.
 Sometimes this is useful,
 but it can have unintended side effects:
-\codeblock[cowel]{\literally{
-\cowel_macro[twice]{\cowel_put\cowel_put}\
+\cowblock{\literally{
+\cowel_macro(twice){\cowel_put\cowel_put}\
 \: error: multiple definitions of alias "\N" for "\cowel_char_by_name"
-\twice{\cowel_alias[N]{cowel_char_by_name}}
+\twice{\cowel_alias(N){cowel_char_by_name}}
 }}
 }
 
-\h3[id=new-invocations]{Invocations}
+\h3(id=new-invocations){Invocations}
 
-\h4[
+\h4(
   id = dir-cowel_invoke
-]{\cowdoc_dir{cowel_invoke} \c{mdash} Invoke a directive}
+){\cowdoc_dir{cowel_invoke} \c{mdash} Invoke a directive}
 
 The \cowdoc_dir{cowel_invoke} directive invokes a directive by name.
 This process is called a \dfn{dynamic invocation}.
@@ -1175,12 +1175,12 @@ is the content provided to the invoked directive.
 
 \Bex{
 Any directive \cowdoc_dir{abc} can be invoked statically or dynamically:
-\codeblock[cowel]{\cowel_invoke[literally]{
+\cowblock{\cowel_invoke(literally){
 \: Static invocation of directive named "abc".
 \abc{...}
 \: Static invocation of directive named "cowel_invoke",
 \: which performs an equivalent dynamic invocation of "abc".
-\cowel_invoke[abc]{...}
+\cowel_invoke(abc){...}
 }}
 }
 

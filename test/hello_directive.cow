@@ -1,1 +1,1 @@
-\b[hello = world, x = 0]{test}
+\b(hello = world, x = 0){test}

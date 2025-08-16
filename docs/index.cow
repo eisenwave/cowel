@@ -1,78 +1,86 @@
 \cowel_actions{
 
-\cowel_macro[cowdoc_c]{\
-\code[cowel, ...]{\cowel_put}\
+\cowel_macro(cowdoc_c){\
+\code(cowel, ...){\cowel_put}\
 }
 
-\cowel_macro[ellipsis]{\
-\code[cowel, prefix=\\d\[]{...}\
+\cowel_macro(ellipsis){\
+\code(cowel, prefix=\\d\(){...}\
 }
 
-\cowel_macro[cowdoc_html]{\
-\code[html]{\cowel_put}\
+\cowel_macro(cowdoc_html){\
+\code(html){\cowel_put}\
 }
 
-\cowel_macro[cowdoc_dir]{\
-\cowdoc_c{\cowel_highlight_as[markup-tag]{\\\cowel_put}}\
+\cowel_macro(cowdoc_dir){\
+\cowdoc_c{\cowel_highlight_as(markup-tag){\\\cowel_put}}\
 }
 
-\cowel_macro[cowdoc_cp]{\
+\cowel_macro(cowdoc_cp){\
 U+\cowel_put\c{nbsp}(\tt{\U{\cowel_put}})\
 }
 
-\cowel_macro[cowdoc_attr]{\
-\tt{\cowel_highlight_as[markup-attr]{\cowel_put}}\
+\cowel_macro(cowdoc_attr){\
+\tt{\cowel_highlight_as(markup-attr){\cowel_put}}\
 }
 
-\cowel_macro[cowdoc_esc]{\
-\tt{\cowel_highlight_as[escape]{\\\cowel_put}}\
+\cowel_macro(cowdoc_esc){\
+\tt{\cowel_highlight_as(escape){\\\cowel_put}}\
 }
 
-\cowel_macro[c]{\
+\cowel_macro(cowblock){\
+\codeblock(cowel){\cowel_put}\
+}
+
+\cowel_macro(htmlblock){\
+\codeblock(html){\cowel_put}\
+}
+
+\cowel_macro(c){\
 \cowel_paragraph_enter\
-\cowel_char_by_entity[...]{\cowel_put}\
+\cowel_char_by_entity(...){\cowel_put}\
 }
 
-\cowel_macro[N]{\
+\cowel_macro(N){\
 \cowel_paragraph_enter\
-\cowel_char_by_name[...]{\cowel_put}\
+\cowel_char_by_name(...){\cowel_put}\
 }
 
-\cowel_macro[U]{\
+\cowel_macro(U){\
 \cowel_paragraph_enter\
-\cowel_char_by_num[...]{\cowel_put}\
+\cowel_char_by_num(...){\cowel_put}\
 }
 
-\cowel_macro[Udigits]{\
+\cowel_macro(Udigits){\
 \cowel_paragraph_enter\
-\cowel_char_get_num[...]{\cowel_put}\
+\cowel_char_get_num(...){\cowel_put}\
 }
 
-\cowel_macro[cowdoc_og_property]{\
-\cowel_html_element[
+\cowel_macro(cowdoc_og_property){\
+\cowel_html_element(
   meta,
   property = og:\cowel_put{0},
-  content = \cowel_put
-]\
+  content = \cowel_put,
+)\
 }
 
-\there[std.head]{
-\cowel_html_element[title]{COWEL - Compact Web Language Documentation}
-\cowdoc_og_property[title]{Compact Web Language (COWEL)}
-\cowdoc_og_property[description]{\
+\there(std.head){
+\cowel_html_element(title){COWEL - Compact Web Language Documentation}
+\cowdoc_og_property(title){Compact Web Language (COWEL)}
+\cowdoc_og_property(description){\
 COWEL is a markup language with TeX-like syntax, \
 intended to generate HTML documents.\
 }
-\cowdoc_og_property[locale]{en_US}
-\cowdoc_og_property[url]{https://cowel.org/}
-\cowdoc_og_property[type]{website}
+\cowdoc_og_property(locale){en_US}
+\cowdoc_og_property(url){https://cowel.org/}
+\cowdoc_og_property(type){website}
 }
 
 }\: cowel_actions
 
-\h1[id=compact-web-language]{Compact Web Language (COWEL)}
+\h1(id=compact-web-language){Compact Web Language (COWEL)}
 
-\div[id=github]{
+\div(id=github){
 \style{
 h1 {
     margin-bottom: 0;
@@ -83,10 +91,10 @@ h1 {
     margin-bottom: 3em;
 }
 }
-\ref[https://github.com/eisenwave/cowel]
+\ref(https://github.com/eisenwave/cowel)
 }
 
-\h2[listed=no]{Contents}
+\h2(listed=no){Contents}
 
 \make_contents
 
@@ -100,11 +108,11 @@ such as for writing C++ proposals.
 
 \Bex{
 The following COWEL code ...
-\codeblock[cowel]{
+\cowblock{
 Hello, \\strong{strong} world!
 }
 ... generates the HTML ...
-\codeblock[html]{
+\htmlblock{
 Hello, <strong>strong</strong> world!
 }
 ... which renders as:
@@ -134,10 +142,10 @@ and more, all in one, simple syntax.
 \h2{Getting started}
 
 To use and install COWEL,
-you need to \ref[https://docs.npmjs.com/downloading-and-installing-node-js-and-npm]{install Node.js and \tt{npm}}.
+you need to \ref(https://docs.npmjs.com/downloading-and-installing-node-js-and-npm){install Node.js and \tt{npm}}.
 With \tt{npm} installed, open a terminal and run:
 
-\codeblock[sh]{
+\codeblock(sh){
 npm i -g cowel
 # or
 npm install --global cowel
@@ -147,17 +155,17 @@ See also \url{https://www.npmjs.com/package/cowel}.
 With COWEL installed,
 you can convert COWEL documents to HTML by using:
 
-\codeblock[sh]{
+\codeblock(sh){
 cowel run input.cow output.html
 }
 
 To see a list of available options and commands,
-run \code[sh]{cowel} by itself or \code[sh]{cowel --help}.
+run \code(sh){cowel} by itself or \code(sh){cowel --help}.
 
 \Btip{
-You may need to use \code[sh]{sudo} or otherwise elevate your permissions
-because \code[sh,prefix=npm\ ]{-g} performs a "global"/system-wide installation.
-This is necessary to make the \code[sh]{cowel} command available everywhere.
+You may need to use \code(sh){sudo} or otherwise elevate your permissions
+because \code(sh,prefix=npm\ ){-g} performs a "global"/system-wide installation.
+This is necessary to make the \code(sh){cowel} command available everywhere.
 
 It is recommended to use a \tt{.cow} or \tt{.cowel} file extension for COWEL documents.
 
@@ -172,7 +180,7 @@ A VSCode plugin for proper highlighting is planned, among other features.
 There also exists a more limited native CLI for development purposes.
 To install it and run COWEL:
 
-\codeblock[sh]{
+\codeblock(sh){
 git clone https://github.com/Eisenwave/cowel.git --recursive
 cd cowel
 cmake -B build
@@ -182,8 +190,8 @@ cmake --build build
 
 The \tt{npm} CLI is slightly different from the native CLI,
 but they share some options,
-such as \code[sh,prefix=c\ ]{--severity} and \code[sh,prefix=c\ ]{--help}.
-Running \code[sh]{./build/cowel-cli} without extra arguments also brings up the help menu.
+such as \code(sh,prefix=c\ ){--severity} and \code(sh,prefix=c\ ){--help}.
+Running \code(sh){./build/cowel-cli} without extra arguments also brings up the help menu.
 
 \cowel_include{intro/syntax.cow}\
 \cowel_include{intro/directives.cow}\
@@ -208,14 +216,10 @@ The documentation for these directives is not actively maintained.
 \cowel_include{directives/code.cow}\
 \cowel_include{directives/math.cow}\
 \cowel_include{directives/separators.cow}\
-\cowel_include{directives/chars.cow}\
 \cowel_include{directives/special.cow}\
 \cowel_include{directives/lists-tables-headings.cow}\
 \cowel_include{directives/references.cow}\
 \cowel_include{directives/foreign.cow}\
-\cowel_include{directives/paragraphs.cow}\
 \cowel_include{directives/sections.cow}\
-\cowel_include{directives/files.cow}\
-\cowel_include{directives/macros.cow}\
 \cowel_include{directives/misc.cow}\
 \cowel_include{directives/calc.cow}\
