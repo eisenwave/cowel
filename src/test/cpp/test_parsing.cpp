@@ -850,7 +850,7 @@ TEST(Parse_And_Build, arguments_unbalanced_brace_1)
     static const ast::Pmr_Vector<Expected_Content> expected {
         {
             Expected_Content::directive(u8"d"),
-            Expected_Content::text(u8"[}]\n"),
+            Expected_Content::text(u8"(})\n"),
         },
         &memory,
     };
@@ -864,9 +864,9 @@ TEST(Parse_And_Build, arguments_unbalanced_brace_2)
     static const ast::Pmr_Vector<Expected_Content> expected {
         {
             Expected_Content::directive(
-                u8"x", { Expected_Content::directive(u8"y"), Expected_Content::text(u8"[") }
+                u8"x", { Expected_Content::directive(u8"y"), Expected_Content::text(u8"(") }
             ),
-            Expected_Content::text(u8"]\n"),
+            Expected_Content::text(u8")\n"),
         },
         &memory,
     };
@@ -880,9 +880,9 @@ TEST(Parse_And_Build, arguments_unbalanced_through_brace_escape)
     static const ast::Pmr_Vector<Expected_Content> expected {
         {
             Expected_Content::directive(u8"d"),
-            Expected_Content::text(u8"["),
+            Expected_Content::text(u8"("),
             Expected_Content::escape(u8"\\{"),
-            Expected_Content::text(u8"}]\n"),
+            Expected_Content::text(u8"})\n"),
         },
         &memory,
     };

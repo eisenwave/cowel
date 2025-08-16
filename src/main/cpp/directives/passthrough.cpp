@@ -57,24 +57,6 @@ Error_Behavior::operator()(Content_Policy& out, const Invocation& call, Context&
     }
 }
 
-Processing_Status
-HTML_Wrapper_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
-{
-    // TODO: warn about unused arguments
-    ensure_paragraph_matches_display(out, m_display);
-
-    Paragraph_Split_Policy split_policy { out, context.get_transient_memory() };
-    auto& policy = m_is_paragraphed ? split_policy : out;
-
-    const Processing_Status result = consume_all(policy, call.content, call.content_frame, context);
-    if (m_is_paragraphed) {
-        split_policy.leave_paragraph();
-    }
-
-    return result;
-}
-
 Processing_Status Plaintext_Wrapper_Behavior::operator()(
     Content_Policy& out,
     const Invocation& call,
@@ -222,22 +204,6 @@ In_Tag_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
     writer.close_tag(m_tag_name);
     buffer.flush();
     return status_concat(attributes_status, content_status);
-}
-
-[[nodiscard]]
-HTML_Tag_Name
-Directive_Name_Passthrough_Behavior::get_name(const Invocation& call, Context& context) const
-{
-    context.try_warning(
-        diagnostic::deprecated, call.directive.get_source_span(),
-        u8"\\html-NAME directives are deprecated. "
-        u8"Use \\cowel_html_element[NAME] instead."sv
-    );
-
-    const std::u8string_view raw_name = call.name;
-    const std::u8string_view name
-        = raw_name.starts_with(builtin_directive_prefix) ? raw_name.substr(1) : raw_name;
-    return { Unchecked {}, name.substr(m_name_prefix.size()) };
 }
 
 Processing_Status

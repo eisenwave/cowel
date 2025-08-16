@@ -13,7 +13,6 @@
 #include "cowel/parse.hpp"
 
 namespace cowel {
-
 namespace {
 
 enum struct Content_Context : Default_Underlying { document, argument_value, block };
@@ -192,7 +191,7 @@ private:
     }
 
     struct Bracket_Levels {
-        std::size_t square = 0;
+        std::size_t argument = 0;
         std::size_t brace = 0;
     };
 
@@ -236,14 +235,14 @@ private:
                 if (c == u8',') {
                     break;
                 }
-                if (c == u8'[') {
-                    ++levels.square;
+                if (c == u8'(') {
+                    ++levels.argument;
                 }
-                else if (c == u8']') {
-                    if (levels.square == 0) {
+                else if (c == u8')') {
+                    if (levels.argument == 0) {
                         break;
                     }
-                    --levels.square;
+                    --levels.argument;
                 }
             }
             if (c == u8'{') {
@@ -297,14 +296,14 @@ private:
     {
         Scoped_Attempt a = attempt();
 
-        if (!expect(u8'[')) {
+        if (!expect(u8'(')) {
             return false;
         }
         const std::size_t arguments_instruction_index = m_out.size();
         m_out.push_back({ AST_Instruction_Type::push_arguments, 0 });
 
         for (std::size_t i = 0; try_match_argument(); ++i) {
-            if (expect(u8']')) {
+            if (expect(u8')')) {
                 const bool last_removed = try_remove_trailing_empty_argument();
                 m_out[arguments_instruction_index].n = i + !last_removed;
                 m_out.push_back({ AST_Instruction_Type::pop_arguments });
@@ -409,12 +408,17 @@ private:
             try_match_ellipsis();
         }
 
-        const std::optional<std::size_t> result = try_match_trimmed_argument_value();
-        if (!result) {
-            return false;
+        if (try_match_argument_list()) {
+            m_out[argument_instruction_index].n = 1;
+        }
+        else {
+            const std::optional<std::size_t> result = try_match_right_trimmed_argument_value();
+            if (!result) {
+                return false;
+            }
+            m_out[argument_instruction_index].n = *result;
         }
 
-        m_out[argument_instruction_index].n = *result;
         m_out.push_back({ AST_Instruction_Type::pop_argument });
 
         a.commit();
@@ -458,7 +462,7 @@ private:
     }
 
     [[nodiscard]]
-    std::optional<std::size_t> try_match_trimmed_argument_value()
+    std::optional<std::size_t> try_match_right_trimmed_argument_value()
     {
         Scoped_Attempt a = attempt();
 
@@ -469,7 +473,7 @@ private:
         // match_content_sequence is very aggressive, so I think at this point,
         // we have to be at the end of an argument due to a comma separator or closing square.
         const char8_t c = m_source[m_pos];
-        COWEL_ASSERT(c == u8',' || c == u8']');
+        COWEL_ASSERT(c == u8',' || c == u8')');
 
         trim_trailing_whitespace_in_matched_content();
 

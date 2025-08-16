@@ -7,7 +7,6 @@
 #include "cowel/util/strings.hpp"
 
 #include "cowel/policy/content_policy.hpp"
-#include "cowel/policy/html_literal.hpp"
 #include "cowel/policy/literally.hpp"
 #include "cowel/policy/unprocessed.hpp"
 
@@ -43,17 +42,6 @@ Unprocessed_Behavior::operator()(Content_Policy& out, const Invocation& call, Co
     try_enter_paragraph(out);
 
     Unprocessed_Content_Policy policy { out };
-    return consume_all(policy, call.content, call.content_frame, context);
-}
-
-Processing_Status
-HTML_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
-{
-    warn_all_args_ignored(call, context);
-
-    ensure_paragraph_matches_display(out, m_display);
-
-    HTML_Literal_Content_Policy policy { out };
     return consume_all(policy, call.content, call.content_frame, context);
 }
 

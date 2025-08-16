@@ -1,9 +1,9 @@
-\cowel_macro[identity]{\cowel_put}\
-\cowel_macro[arg0]{\cowel_put{0}}\
-\cowel_macro[arg0x]{\cowel_put{0} \cowel_put \cowel_put{0}}\
-\cowel_macro[arg0_else]{\cowel_put[else=otherwise]{0}}\
+\cowel_macro(identity){\cowel_put}\
+\cowel_macro(arg0){\cowel_put{0}}\
+\cowel_macro(arg0x){\cowel_put{0} \cowel_put \cowel_put{0}}\
+\cowel_macro(arg0_else){\cowel_put(else=otherwise){0}}\
 \
 \identity{awoo}
-\arg0[baka]
-\arg0x[baka]{content}
+\arg0(baka)
+\arg0x(baka){content}
 \arg0_else

@@ -6,131 +6,131 @@ For these, there is a fixed HTML element that will always be used.
 You can rely on this when adding custom CSS.
 
 \table{
-\tr{
+  \tr{
     \th{Directive}
     \th{HTML}
     \th{Renders as}
-}
-\tr[id=dir-b]{
+  }
+  \tr(id=dir-b){
     \td{\cowdoc_c{\\b{...}}}
     \td{\cowdoc_html{<b>...</b>}}
     \td{\b{Bold text}}
-}
-\tr[id=dir-cite]{
+  }
+  \tr(id=dir-cite){
     \td{\cowdoc_c{\\cite{...}}}
     \td{\cowdoc_html{<cite>...</cite>}}
     \td{\cite{Name of cited work}}
-}
-\tr[id=dir-del]{
+  }
+  \tr(id=dir-del){
     \td{\cowdoc_c{\\del{...}}}
     \td{\cowdoc_html{<del>...</del>}}
     \td{\del{Deleted text}}
-}
-\tr[id=dir-dfn]{
+  }
+  \tr(id=dir-dfn){
     \td{\cowdoc_c{\\dfn{...}}}
     \td{\cowdoc_html{<dfn>...</dfn>}}
     \td{\dfn{Definition}}
-}
-\tr[id=dir-em]{
+  }
+  \tr(id=dir-em){
     \td{\cowdoc_c{\\em{...}}}
     \td{\cowdoc_html{<em>...</em>}}
     \td{\em{Emphasized text}}
-}
-\tr[id=dir-gterm]{
+  }
+  \tr(id=dir-gterm){
     \td{\cowdoc_c{\\gterm{...}}}
     \td{\i{unspecified}}
     \td{\gterm{grammar-term}}
-}
-\tr[id=dir-i]{
+  }
+  \tr(id=dir-i){
     \td{\cowdoc_c{\\i{...}}}
     \td{\cowdoc_html{<i>...</i>}}
     \td{\i{Italic text}}
-}
-\tr[id=dir-ins]{
+  }
+  \tr(id=dir-ins){
     \td{\cowdoc_c{\\ins{...}}}
     \td{\cowdoc_html{<ins>...</ins>}}
     \td{\ins{Inserted text}}
-}
-\tr[id=dir-kbd]{
+  }
+  \tr(id=dir-kbd){
     \td{\cowdoc_c{\\kbd{...}}}
     \td{\cowdoc_html{<kbd>...</kbd>}}
     \td{\kbd{Ctrl} + \kbd{Keyboard key}}
-}
-\tr[id=dir-mark]{
+  }
+  \tr(id=dir-mark){
     \td{\cowdoc_c{\\mark{...}}}
     \td{\cowdoc_html{<mark>...</mark>}}
     \td{\mark{Marked/highlighted}}
-}
-\tr[id=dir-o]{
+  }
+  \tr(id=dir-o){
     \td{\cowdoc_c{\\o{...}}}
     \td{\i{unspecified}}
     \td{\o{Oblique text}}
-}
-\tr[id=dir-q]{
+  }
+  \tr(id=dir-q){
     \td{\cowdoc_c{\\q{...}}}
     \td{\cowdoc_html{<q>...</q>}}
     \td{\q{Quoted text}}
-}
-\tr[id=dir-s]{
+  }
+  \tr(id=dir-s){
     \td{\cowdoc_c{\\s{...}}}
     \td{\cowdoc_html{<s>...</s>}}
     \td{\s{Struck text}}
-}
-\tr[id=dir-samp]{
+  }
+  \tr(id=dir-samp){
     \td{\cowdoc_c{\\samp{...}}}
     \td{\cowdoc_html{<samp>...</samp>}}
     \td{\samp{Sample output}}
-}
-\tr[id=dir-sans]{
+  }
+  \tr(id=dir-sans){
     \td{\cowdoc_c{\\sans{...}}}
     \td{\i{unspecified}}
     \td{\sans{Sans-serif font}}
-}
-\tr[id=dir-serif]{
+  }
+  \tr(id=dir-serif){
     \td{\cowdoc_c{\\serif{...}}}
     \td{\i{unspecified}}
     \td{\serif{Serif font}}
-}
-\tr[id=dir-small]{
+  }
+  \tr(id=dir-small){
     \td{\cowdoc_c{\\small{...}}}
     \td{\cowdoc_html{<small>...</small>}}
     \td{\sub{Small text}}
-}
-\tr[id=dir-span]{
+  }
+  \tr(id=dir-span){
     \td{\cowdoc_c{\\span{...}}}
     \td{\cowdoc_html{<span>...</span>}}
     \td{(No change in formatting)}
-}
-\tr[id=dir-sub]{
+  }
+  \tr(id=dir-sub){
     \td{\cowdoc_c{\\sub{...}}}
     \td{\cowdoc_html{<sub>...</sub>}}
     \td{\sub{Subscript}}
-}
-\tr[id=dir-sup]{
+  }
+  \tr(id=dir-sup){
     \td{\cowdoc_c{\\sup{...}}}
     \td{\cowdoc_html{<sup>...</sup>}}
     \td{\sup{Superscript}}
-}
-\tr[id=dir-strong]{
+  }
+  \tr(id=dir-strong){
     \td{\cowdoc_c{\\strong{...}}}
     \td{\cowdoc_html{<strong>...</strong>}}
     \td{\b{Strong text}}
-}
-\tr[id=dir-tt]{
+  }
+  \tr(id=dir-tt){
     \td{\cowdoc_c{\\tt{...}}}
     \td{\i{unspecified}}
     \td{\tt{Teletype/monospace font}}
-}
-\tr[id=dir-var]{
+  }
+  \tr(id=dir-var){
     \td{\cowdoc_c{\\var{...}}}
     \td{\cowdoc_html{<var>...</var>}}
     \td{\var{Variable name}}
-}
-\tr[id=dir-u]{
+  }
+  \tr(id=dir-u){
     \td{\cowdoc_c{\\u{...}}}
     \td{\cowdoc_html{<u>...</u>}}
     \td{\u{Underlined text}}
-}
+  }
 }
 
 All such \dfn{formatting directives}
@@ -142,7 +142,7 @@ For example, \cowdoc_dir{cite}, \cowdoc_dir{var}, \cowdoc_dir{i} and \cowdoc_dir
 Both \cowdoc_dir{strong} and \cowdoc_dir{b} are bold.
 Both \cowdoc_dir{tt} and \cowdoc_dir{samp} use teletype font.
 
-However, you can customize the style; see \ref[#dir-style].
+However, you can customize the style; see \ref(#dir-style).
 }
 
 \Bnote{

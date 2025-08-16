@@ -1,6 +1,6 @@
 \h3{References}
 
-\h4[id=dir-ref]{\cowdoc_dir{ref} \c{mdash} References}
+\h4(id=dir-ref){\cowdoc_dir{ref} \c{mdash} References}
 
 The \cowdoc_dir{ref} directive takes a single \tt{to} argument,
 which can be a URL, anchor, or something else.
@@ -19,27 +19,27 @@ If no content is provided, it can be synthesized from the following types of ref
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
-\\ref[mail:john@us.gov]
+\cowblock{
+\\ref(mail:john@us.gov)
 }
 HTML output (\cowdoc_html{<a>} tag may have additional attributes):
-\codeblock[html]{
+\htmlblock{
 <a href=mail:john@us.gov>john@us.gov</a>
 }
 }
 
 \Bex{
 C++ standard draft links can be synthesized into human-readable descriptions.
-\codeblock[cowel]{
-\\ref[https://eel.is/c++draft/expr#1]
+\cowblock{
+\\ref(https://eel.is/c++draft/expr#1)
 }
 This renders as:
 \Bindent{
-\ref[https://eel.is/c++draft/expr#1]
+\ref(https://eel.is/c++draft/expr#1)
 }
 }
 
-\h4[id=dir-mail]{\cowdoc_dir{mail} \c{mdash} E-Mail addresses}
+\h4(id=dir-mail){\cowdoc_dir{mail} \c{mdash} E-Mail addresses}
 
 A \cowdoc_dir{mail} directive behaves the same \cowdoc_dir{ref} directive that is given a \tt{mailto} URL.
 However, the input is provided as content instead of an argument,
@@ -47,13 +47,13 @@ and the displayed text cannot be customized.
 
 \Bex{
 The following two lines produce the same output:
-\codeblock[cowel]{
+\cowblock{
 Please contact \\mail{john@us.gov}.
-Please contact \\ref[mailto:john@us.gov].
+Please contact \\ref(mailto:john@us.gov).
 }
 }
 
-\h4[id=dir-tel]{\cowdoc_dir{tel} \c{mdash} Telephone numbers}
+\h4(id=dir-tel){\cowdoc_dir{tel} \c{mdash} Telephone numbers}
 
 A \cowdoc_dir{tel} directive behaves the same \cowdoc_dir{ref} directive that is given a \tt{tel} URL.
 However, the input is provided as content instead of an argument,
@@ -61,8 +61,8 @@ and the displayed text cannot be customized.
 
 \Bex{
 The following two lines produce the same output:
-\codeblock[cowel]{
+\cowblock{
 Please contact \\tel{+1234}.
-Please contact \\ref[tel:+1234].
+Please contact \\ref(tel:+1234).
 }
 }

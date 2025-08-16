@@ -1,13 +1,13 @@
-\h3[id=code]{Code and syntax highlighting}
+\h3(id=code){Code and syntax highlighting}
 
 COWEL uses
-\ref[https://github.com/Eisenwave/ulight]{µlight}
+\ref(https://github.com/Eisenwave/ulight){µlight}
 for syntax highlighting.
 While the set of supported language is relatively small,
 the highlighter is ultra-light, extremely fast, and
 deals with modern C++ features correctly.
 
-\h4[id=dir-code]{\cowdoc_dir{code} \c{mdash} Inline code}
+\h4(id=dir-code){\cowdoc_dir{code} \c{mdash} Inline code}
 
 The \cowdoc_dir{code} directive produced syntax-highlighted text in code font.
 
@@ -47,12 +47,12 @@ In a plaintext context, \cowdoc_dir{code} simply outputs the input source code.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
-\\code[cpp]{123}
+\cowblock{
+\\code(cpp){123}
 }
 This applies C++ syntax highlighting, and generates HTML.
 The \cowdoc_html{<h->} tags are an implementation detail and may be subject to change.
-\codeblock[html]{
+\htmlblock{
 <code><h- data-h=num>123</h-></code>
 }
 }
@@ -67,12 +67,12 @@ directives.
 
 \Bex{
 You can nest JSON inside of a C++ string literal as follows:
-\codeblock[cowel]{\unprocessed{
-Call: \code[cpp]{out.write_json("\code[json,nested=yes]{{"x":123,"y":true,"z":null}}")}
+\cowblock{\unprocessed{
+Call: \code(cpp){out.write_json("\code(json,nested=yes){{"x":123,"y":true,"z":null}}")}
 }}
 This renders as follows:
 \Bindent{
-Call: \code[cpp]{out.write_json("\code[json,nested=yes]{{"x":123,"y":true,"z":null}}")}
+Call: \code(cpp){out.write_json("\code(json,nested=yes){{"x":123,"y":true,"z":null}}")}
 }
 }
 
@@ -98,16 +98,16 @@ without becoming part of the highlighted output.
 Using \tt{prefix},
 we can control whether a JSON string is interpreted as a markup key,
 or as a string value:
-\codeblock[cowel]{\literally{
-In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
+\cowblock{\literally{
+In JSON, there are \code(json,prefix=\{){"keys"} and \code(json){"values"}.
 }}
 This renders as:
 \Bindent{
-In JSON, there are \code[json,prefix=\{]{"keys"} and \code[json]{"values"}.
+In JSON, there are \code(json,prefix=\{){"keys"} and \code(json){"values"}.
 }
-Notice that the color of \code[json,prefix=\{]{"keys"} is different because it is interpreted
+Notice that the color of \code(json,prefix=\{){"keys"} is different because it is interpreted
 as if it was positioned like:
-\codeblock[json]{
+\codeblock(json){
 \{"keys"
 }
 }
@@ -118,14 +118,14 @@ as if it was positioned like:
 \Btip{
 Writing \cowdoc_dir{code} directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:
-\codeblock[cowel]{\literally{
-\: Defines a \js directive that can be used in place of \code[js] from now on:
-\macro[\js]{\code[js]{\put}}
+\cowblock{\literally{
+\: Defines a \js directive that can be used in place of \code(js) from now on:
+\macro(\js){\code(js){\put}}
 Let's highlight \js{var} in JavaScript.
 }}
 }
 
-\h4[id=dir-codeblock]{\cowdoc_dir{codeblock} \c{mdash} Code blocks}
+\h4(id=dir-codeblock){\cowdoc_dir{codeblock} \c{mdash} Code blocks}
 
 The \cowdoc_dir{codeblock} directive works exactly like \cowdoc_dir{code},
 but it is a block directive, not an inline directive.
@@ -134,28 +134,28 @@ Additionally, code blocks render using borders and a dark background by default.
 This can be controlled using the \tt{borders}.
 
 \Bex{
-\codeblock[cowel]{
-\\codeblock[js]{
+\cowblock{
+\\codeblock(js){
 // Borders enabled
 let x = 0;
 }
-\\codeblock[js,borders=no]{
+\\codeblock(js,borders=no){
 // Borders disabled
 let x = 0;
 }
 }
 This renders as:
-\codeblock[js]{
+\codeblock(js){
 // Borders enabled
 let x = 0;
 }
-\codeblock[js,borders=no]{
+\codeblock(js,borders=no){
 // Borders disabled
 let x = 0;
 }
 }
 
-\h4[id=dir-hl]{\cowdoc_dir{hl} \c{mdash} Syntax highlight override}
+\h4(id=dir-hl){\cowdoc_dir{hl} \c{mdash} Syntax highlight override}
 
 The \cowdoc_dir{hl} directive forces certain syntax highlighting to be applied to some text;
 it is a manual override for when automatic syntax highlighting is insufficient or broken.
@@ -164,40 +164,40 @@ in the appropriate syntax highlighting tags.
 
 It has a single \tt{name} argument, which is the µlight \dfn{long name} for a highlight type.
 You can obtain a list of possible long names at
-\ref[https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h]{\tt{ulight.h}}
-from the definition of \code[cpp]{enum ulight_highlight_type}.
+\ref(https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h){\tt{ulight.h}}
+from the definition of \code(cpp){enum ulight_highlight_type}.
 The long name is the enumerator name without the \tt{ULIGHT_HL} prefix,
 all lowercase, and with hyphens instead of underscores.
 
 \Bex{
 It is possible to mix automatic syntax highlighting with manual overrides:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \: _Int128 is manually highlighted as a type keyword,
 \: and x is automatically highlighted as an identifier.
-\code[c]{\hl[keyword-type]{_Int128} x}
+\code(c){\hl(keyword-type){_Int128} x}
 }}
 This generates the HTML (subject to change):
-\codeblock[html]{
+\htmlblock{
 <code><h- data=h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>
 }
-It renders as \code[c]{\cowel_highlight_as[keyword-type]{_Int128} x}.
+It renders as \code(c){\cowel_highlight_as(keyword-type){_Int128} x}.
 }
 
 \Bnote{
 While it is also possible to produce the highlighting tags using
-\cowdoc_c{\\html-h-[data-h=kw_type]{_Int128}},
+\cowdoc_c{\\html-h-(data-h=kw_type){_Int128}},
 the "short names" (\cowdoc_c{kw_type}) are not stable, i.e. they are more likely to change.
 Only µlight long names should be used directly.
 }
 
-\h4[id=dir-pre]{\cowdoc_dir{pre} \c{mdash} Preformatted blocks}
+\h4(id=dir-pre){\cowdoc_dir{pre} \c{mdash} Preformatted blocks}
 
 The \cowdoc_dir{pre} directive contains pre-formatted content.
 It can be used to contain code, however, there is no syntax highlighting in a \cowdoc_dir{pre} block.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
+\cowblock{
 \\pre{
 Hello, world!
 =============
@@ -217,7 +217,7 @@ Unlike \cowdoc_dir{codeblock}, \cowdoc_dir{pre} currently does not support the \
 This will be added in the future.
 }
 
-\h4[id=dir-literally]{\cowdoc_dir{literally} \c{mdash} Treat input literally as text}
+\h4(id=dir-literally){\cowdoc_dir{literally} \c{mdash} Treat input literally as text}
 
 The \cowdoc_dir{literally} directive treats its input source code as plain text,
 even if it contains directives or escape sequences.
@@ -228,7 +228,7 @@ and it takes no arguments.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
+\cowblock{
 \literally{\pre{\literally{
 \: Even comments are preserved!
 This \comment{comment} \{ is taken literally \}!
@@ -248,14 +248,14 @@ because \cowdoc_dir{macro} replaces any appearances of \cowdoc_dir{put} with the
 disregarding the semantics of any directives nested within.
 }
 
-\h4[id=dir-unprocessed]{\cowdoc_dir{unprocessed} \c{mdash} Suppress directive processing}
+\h4(id=dir-unprocessed){\cowdoc_dir{unprocessed} \c{mdash} Suppress directive processing}
 
 The \cowdoc_dir{unprocessed} directive works just like \cowdoc_dir{literally},
 except that escape sequences are processed into their escaped characters.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \pre{\unprocessed{
 \: Unlike in \literally, comments are ignored.
 This \comment{comment} \{ is unprocessed \}!
@@ -272,13 +272,13 @@ This \comment{comment} \{ is unprocessed \}!
 code inside COWEL that already contains underscores.
 For example, \cowdoc_c{\\n} is an escape sequence for newline characters in many languages,
 and it may be annoying if it gets interpreted as an \cowdoc_dir{n} directive:
-\codeblock[cowel]{\unprocessed{
-\codeblock[cpp]{\unprocessed{
+\cowblock{\unprocessed{
+\codeblock(cpp){\unprocessed{
 std::string_view s = "Several\nLines\nof\nCode.";
 }}
 }}
 This renders as:
-\codeblock[cpp]{\unprocessed{
+\codeblock(cpp){\unprocessed{
 std::string_view s = "Several\nLines\nof\nCode.";
 }}
 Notice that COWEL technically parses a \cowdoc_dir{nLines} directive instead of just \cowdoc_dir{n},

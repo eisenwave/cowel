@@ -1,15 +1,15 @@
-\cowel_macro[cat3]{\cowel_put{0}\cowel_put{1}\cowel_put{2}}\
-\cowel_macro[a]{\cat3[...]}\
-\cowel_macro[b]{\cat3[\cowel_put{0}, ...]}\
-\cowel_macro[c]{\cat3[c, ...]}\
-\cowel_macro[d]{\cat3[..., d]}\
-\cowel_macro[e]{\cat3[e, ..., E]}\
-\cowel_macro[f]{\cat3[..., ..., f]}\
-\cowel_macro[g]{\cat3[..., X, Y, Z]}\
-\a[1, 2, 3]
-\b[1, 2]
-\c[1, 2]
-\d[1, 2]
-\e[1]
-\f[1]
+\cowel_macro(cat3){\cowel_put{0}\cowel_put{1}\cowel_put{2}}\
+\cowel_macro(a){\cat3(...)}\
+\cowel_macro(b){\cat3(\cowel_put{0}, ...)}\
+\cowel_macro(c){\cat3(c, ...)}\
+\cowel_macro(d){\cat3(..., d)}\
+\cowel_macro(e){\cat3(e, ..., E)}\
+\cowel_macro(f){\cat3(..., ..., f)}\
+\cowel_macro(g){\cat3(..., X, Y, Z)}\
+\a(1, 2, 3)
+\b(1, 2)
+\c(1, 2)
+\d(1, 2)
+\e(1)
+\f(1)
 \g

@@ -5,22 +5,22 @@ there exists a \cowdoc_dir{comment} directive which
 discards all of its contents.
 This can be used for multi-line comments.
 
-\h4[id=dir-comment]{\cowdoc_dir{comment} \c{mdash} Comments}
+\h4(id=dir-comment){\cowdoc_dir{comment} \c{mdash} Comments}
 
 The \cowdoc_dir{comment} directive does not process its arguments or content.
 It outputs no plaintext or HTML.
 
 \Bex{
 While comments don't output anything,
-\ref[#paragraph-splitting] is based on blank lines in the source,
+\ref(#paragraph-splitting) is based on blank lines in the source,
 so comments don't split paragraphs:
-\codeblock[cowel]{
+\cowblock{
 Text
 \\comment{This is \\directive{comment} content.}
 Text
 }
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <p>Text
 
 Text</p>

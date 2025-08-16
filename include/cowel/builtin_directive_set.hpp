@@ -289,21 +289,6 @@ struct Unprocessed_Behavior : Directive_Behavior {
     Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
 };
 
-struct HTML_Behavior : Directive_Behavior {
-private:
-    const Directive_Display m_display;
-
-public:
-    [[nodiscard]]
-    constexpr explicit HTML_Behavior(Directive_Display display)
-        : m_display { display }
-    {
-    }
-
-    [[nodiscard]]
-    Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
-};
-
 /// @brief Common behavior for generating `<script>` and `<style>` elements
 /// via `\script` and `\style`.
 ///
@@ -421,27 +406,6 @@ public:
     {
         return set_variable_to_op_result(m_op, call, var, context);
     }
-};
-
-struct HTML_Wrapper_Behavior final : Directive_Behavior {
-private:
-    const Directive_Display m_display;
-    const bool m_is_paragraphed;
-
-public:
-    [[nodiscard]]
-    constexpr explicit HTML_Wrapper_Behavior(Directive_Display display, To_HTML_Mode to_html_mode)
-        : m_display { display }
-        , m_is_paragraphed { to_html_mode == To_HTML_Mode::paragraphs }
-    {
-        COWEL_ASSERT(
-            to_html_mode == To_HTML_Mode::paragraphs || to_html_mode == To_HTML_Mode::direct
-        );
-    }
-
-    [[nodiscard]]
-    Processing_Status
-    operator()(Content_Policy& out, const Invocation& call, Context& context) const override;
 };
 
 struct Plaintext_Wrapper_Behavior : Directive_Behavior {
@@ -563,35 +527,6 @@ public:
     [[nodiscard]]
     Processing_Status
     operator()(Content_Policy& out, const Invocation& call, Context& context) const final;
-};
-
-/// @brief Behavior for any formatting tags that are mapped onto HTML with the same name.
-/// This includes `\\i{...}`, `\\strong`, and many more.
-///
-/// Preprocesses and processes all arguments.
-/// Generates the contents inside in plaintext.
-///
-/// Generates HTML where arguments are converted to HTML attributes,
-/// in a tag that has the same name as the directive.
-/// For example, `\\i[id = 123]{...}` generates `<i id=123>...</i>`.
-struct Directive_Name_Passthrough_Behavior : Passthrough_Behavior {
-private:
-    const std::u8string_view m_name_prefix;
-
-public:
-    [[nodiscard]]
-    constexpr explicit Directive_Name_Passthrough_Behavior(
-        Policy_Usage policy,
-        Directive_Display display,
-        std::u8string_view name_prefix
-    )
-        : Passthrough_Behavior { policy, display }
-        , m_name_prefix { name_prefix }
-    {
-    }
-
-    [[nodiscard]]
-    HTML_Tag_Name get_name(const Invocation& call, Context& context) const override;
 };
 
 struct Fixed_Name_Passthrough_Behavior : Passthrough_Behavior {
@@ -814,16 +749,6 @@ struct Put_Behavior final : Directive_Behavior {
 
     [[nodiscard]]
     constexpr explicit Put_Behavior()
-        = default;
-
-    [[nodiscard]]
-    Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const override;
-};
-
-struct Legacy_Macro_Behavior final : Directive_Behavior {
-
-    [[nodiscard]]
-    constexpr explicit Legacy_Macro_Behavior()
         = default;
 
     [[nodiscard]]
