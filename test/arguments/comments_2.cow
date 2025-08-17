@@ -1,6 +1,6 @@
-\b[
+\b(
   \: awoo
   text,
   \: awoo
   named = arg,
-]
+)

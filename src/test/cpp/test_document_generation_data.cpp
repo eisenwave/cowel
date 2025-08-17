@@ -63,11 +63,11 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::error,
       { diagnostic::char_nonscalar } },
 
-    { Source { u8"\\cowel_invoke[cowel_char_by_num]{00B6}\n" },
+    { Source { u8"\\cowel_invoke(cowel_char_by_num){00B6}\n" },
       Source { u8"¶\n" } },
 
-    { Source { u8"\\cowel_invoke[cowel_char_by_num]{ }\n" },
-      Source { u8"<error->\\cowel_invoke[cowel_char_by_num]{ }</error->\n" },
+    { Source { u8"\\cowel_invoke(cowel_char_by_num){ }\n" },
+      Source { u8"<error->\\cowel_invoke(cowel_char_by_num){ }</error->\n" },
       Processing_Status::error,
       { diagnostic::char_blank } },
 
@@ -76,13 +76,13 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::error,
       { diagnostic::invoke_name_missing } },
 
-    { Source { u8"\\cowel_invoke[???]\n" },
-      Source { u8"<error->\\cowel_invoke[???]</error->\n" },
+    { Source { u8"\\cowel_invoke(???)\n" },
+      Source { u8"<error->\\cowel_invoke(???)</error->\n" },
       Processing_Status::error,
       { diagnostic::invoke_name_invalid } },
 
-    { Source { u8"\\cowel_invoke[???]\n" },
-      Source { u8"<error->\\cowel_invoke[???]</error->\n" },
+    { Source { u8"\\cowel_invoke(???)\n" },
+      Source { u8"<error->\\cowel_invoke(???)</error->\n" },
       Processing_Status::error,
       { diagnostic::invoke_name_invalid } },
 
@@ -99,12 +99,12 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::fatal,
       { diagnostic::alias_name_invalid } },
 
-    { Source { u8".\\cowel_alias[?]{cowel_alias}\n" },
+    { Source { u8".\\cowel_alias(?){cowel_alias}\n" },
       Source { u8"." },
       Processing_Status::fatal,
       { diagnostic::alias_name_invalid } },
 
-    { Source { u8".\\cowel_alias[a, a]{cowel_alias}\n" },
+    { Source { u8".\\cowel_alias(a, a){cowel_alias}\n" },
       Source { u8"." },
       Processing_Status::fatal,
       { diagnostic::alias_duplicate } },
@@ -115,20 +115,17 @@ constexpr Basic_Test basic_tests_array[] {
     { Source { u8"\\h1{Heading}\n" },
       Source { u8"<h1 id=heading><a class=para href=#heading></a>Heading</h1>\n" } },
 
-    { Source { u8"\\h1{\\code[x]{abcx}}\n" },
+    { Source { u8"\\h1{\\code(x){abcx}}\n" },
       Source { u8"<h1 id=abcx><a class=para href=#abcx></a><code>abc<h- data-h=kw>x</h-></code></h1>\n" } },
 
-    { Source { u8"\\h2[listed=no]{ }\n" },
+    { Source { u8"\\h2(listed=no){ }\n" },
       Source { u8"<h2> </h2>\n" } },
 
-    { Source { u8"\\h3[id=user id,listed=no]{Heading}\n" },
+    { Source { u8"\\h3(id=user id,listed=no){Heading}\n" },
       Source { u8"<h3 id=\"user id\"><a class=para href=\"#user%20id\"></a>Heading</h3>\n" } },
 
-    { Source { u8"\\h4[id=user-id,listed=no]{Heading}\n" },
+    { Source { u8"\\h4(id=user-id,listed=no){Heading}\n" },
       Source { u8"<h4 id=user-id><a class=para href=#user-id></a>Heading</h4>\n" } },
-
-    { Source { u8"\\html{<b>Bold</b>}\n" },
-      Source { u8"<b>Bold</b>\n" } },
 
     { Source { u8"\\style{b { color: red; }}\n" },
       Source { u8"<style>b { color: red; }</style>\n" } },
@@ -151,51 +148,41 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::ok,
       { diagnostic::highlight_language } },
 
-    { Source { u8"\\code[x]{}\n" },
+    { Source { u8"\\code(x){}\n" },
       Source { u8"<code></code>\n" } },
 
-    { Source { u8"\\code[x]{ }\n" },
+    { Source { u8"\\code(x){ }\n" },
       Source { u8"<code> </code>\n" } },
 
-    { Source { u8"\\code[x]{xxx}\n" },
+    { Source { u8"\\code(x){xxx}\n" },
       Source { u8"<code><h- data-h=kw>xxx</h-></code>\n" } },
 
-    { Source { u8"\\code[x]{xxx123}\n" },
+    { Source { u8"\\code(x){xxx123}\n" },
       Source { u8"<code><h- data-h=kw>xxx</h->123</code>\n" } },
 
-    { Source { u8"\\code[x]{ 123 }\n" },
+    { Source { u8"\\code(x){ 123 }\n" },
       Source { u8"<code> 123 </code>\n" } },
 
-    { Source { u8"\\code[x]{ \\b{123} }\n" },
+    { Source { u8"\\code(x){ \\b{123} }\n" },
       Source { u8"<code> <b>123</b> </code>\n" } },
 
-    { Source { u8"\\code[x]{ \\b{xxx} }\n" },
+    { Source { u8"\\code(x){ \\b{xxx} }\n" },
       Source { u8"<code> <b><h- data-h=kw>xxx</h-></b> </code>\n" } },
 
-    { Source { u8"\\code[x]{ \\b{x}xx }\n" },
+    { Source { u8"\\code(x){ \\b{x}xx }\n" },
       Source { u8"<code> <b><h- data-h=kw>x</h-></b><h- data-h=kw>xx</h-> </code>\n" } },
 
     { Path { u8"codeblock/trim.cow" },
       Path { u8"codeblock/trim.html" } },
 
-    { Source { u8"\\cowel_highlight_as[keyword]{awoo}\n" },
+    { Source { u8"\\cowel_highlight_as(keyword){awoo}\n" },
       Source { u8"<h- data-h=kw>awoo</h->\n" } },
 
-    { Source { u8"\\code[c]{int \\cowel_highlight_as[number]{x}}\n" },
+    { Source { u8"\\code(c){int \\cowel_highlight_as(number){x}}\n" },
       Source { u8"<code><h- data-h=kw_type>int</h-> <h- data-h=num>x</h-></code>\n" } },
 
-    { Source { u8"\\math{\\mi[id=Z]{x}}\n" },
+    { Source { u8"\\math{\\mi(id=Z){x}}\n" },
       Source { u8"<math display=inline><mi id=Z>x</mi></math>\n" } },
-
-    { Path { u8"macro/legacy.cow" },
-      Path { u8"macro/legacy.cow.html" },
-      Processing_Status::ok,
-      { diagnostic::deprecated } },
-
-    { Path { u8"macro/legacy_multiline.cow" },
-      Path { u8"macro/legacy_multiline.cow.html" },
-      Processing_Status::ok,
-      { diagnostic::deprecated } },
 
     { Path { u8"macro/new.cow" },
       Path { u8"macro/new.cow.html" } },
@@ -212,23 +199,23 @@ constexpr Basic_Test basic_tests_array[] {
     { Path { u8"macro/put_paragraphs.cow" },
       Path { u8"macro/put_paragraphs.cow.html" } },
 
-    { Source { u8"\\cowel_macro[content]{\\cowel_put}\\content{Content}\n" },
+    { Source { u8"\\cowel_macro(content){\\cowel_put}\\content{Content}\n" },
       Source { u8"Content\n" } },
 
-    { Source { u8"\\cowel_macro[pos]{\\cowel_put{0}}\\pos[Positional]\n" },
+    { Source { u8"\\cowel_macro(pos){\\cowel_put{0}}\\pos(Positional)\n" },
       Source { u8"Positional\n" } },
 
-    { Source { u8"\\cowel_macro[named]{\\cowel_put{n}}\\named[n = Named]\n" },
+    { Source { u8"\\cowel_macro(named){\\cowel_put{n}}\\named(n = Named)\n" },
       Source { u8"Named\n" } },
 
-    { Source { u8"\\cowel_macro[try]{\\cowel_put[else=Failure]{0}}\\try[Success] \\try\n" },
+    { Source { u8"\\cowel_macro(try){\\cowel_put(else=Failure){0}}\\try(Success) \\try\n" },
       Source { u8"Success Failure\n" } },
 
-    { Source { u8"\\cowel_macro[m]{\\cowel_put{greeting}, \\cowel_put\\cowel_put{0}}"
-               u8"\\m[greeting = Hello, !]{macros}\n" },
+    { Source { u8"\\cowel_macro(m){\\cowel_put{greeting}, \\cowel_put\\cowel_put{0}}"
+               u8"\\m(greeting = Hello, !){macros}\n" },
       Source { u8"Hello, macros!\n" } },
 
-    { Source { u8"\\cowel_macro[nested]{\\cowel_put{\\cowel_put}}\\nested[X]{0}\n" },
+    { Source { u8"\\cowel_macro(nested){\\cowel_put{\\cowel_put}}\\nested(X){0}\n" },
       Source { u8"X\n" } },
 
     { Source { u8"\\cowel_put\n" },
@@ -241,20 +228,15 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::error,
       { diagnostic::directive_lookup_unresolved } },
 
-    { Source { u8"\\code[x]{\\awoo}\n" },
+    { Source { u8"\\code(x){\\awoo}\n" },
       Source { u8"<code><error->\\awoo</error-></code>\n" },
       Processing_Status::error,
       { diagnostic::directive_lookup_unresolved } },
 
-    { Source { u8"\\html-div" },
-      Source { u8"<div></div>" },
-      Processing_Status::ok,
-      { diagnostic::deprecated } },
-
-    { Source { u8"\\cowel_html_element[div]" },
+    { Source { u8"\\cowel_html_element(div)" },
       Source { u8"<div></div>" } },
 
-    { Source { u8"\\cowel_html_element[span, id=abc, x]{span content}" },
+    { Source { u8"\\cowel_html_element(span, id=abc, x){span content}" },
       Source { u8"<span id=abc>span content</span>" },
       Processing_Status::ok,
       { diagnostic::ignored_args } },
@@ -264,15 +246,15 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::error,
       { diagnostic::html_element_name_missing } },
 
-    { Source { u8"\\cowel_html_element[<]" },
-      Source { u8"<error->\\cowel_html_element[&lt;]</error->" },
+    { Source { u8"\\cowel_html_element(<)" },
+      Source { u8"<error->\\cowel_html_element(&lt;)</error->" },
       Processing_Status::error,
       { diagnostic::html_element_name_invalid } },
 
-    { Source { u8"\\cowel_html_self_closing_element[hr]" },
+    { Source { u8"\\cowel_html_self_closing_element(hr)" },
       Source { u8"<hr/>" } },
 
-    { Source { u8"\\cowel_html_self_closing_element[hr, id=abc, x]{span content}" },
+    { Source { u8"\\cowel_html_self_closing_element(hr, id=abc, x){span content}" },
       Source { u8"<hr id=abc />" },
       Processing_Status::ok,
       { diagnostic::ignored_content, diagnostic::ignored_args } },
@@ -282,8 +264,8 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::error,
       { diagnostic::html_element_name_missing } },
 
-    { Source { u8"\\cowel_html_self_closing_element[<]" },
-      Source { u8"<error->\\cowel_html_self_closing_element[&lt;]</error->" },
+    { Source { u8"\\cowel_html_self_closing_element(<)" },
+      Source { u8"<error->\\cowel_html_self_closing_element(&lt;)</error->" },
       Processing_Status::error,
       { diagnostic::html_element_name_invalid } },
 

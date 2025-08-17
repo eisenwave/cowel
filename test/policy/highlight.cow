@@ -1,6 +1,6 @@
-\cowel_highlight[cpp]{
+\cowel_highlight(cpp){
 \: Comment
 Text
 \\
-\cowel_html_element[span]{directive}
+\cowel_html_element(span){directive}
 }
