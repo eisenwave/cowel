@@ -109,7 +109,7 @@ Processing_Status to_math_html(
                 });
                 if (!is_blank_text) {
                     context.try_warning(
-                        diagnostic::math::text, ast::get_source_span(c),
+                        diagnostic::math::text, c.get_source_span(),
                         u8"Text cannot appear in this context. "
                         u8"MathML requires text to be enclosed in <mi>, <mn>, etc., "
                         u8"which correspond to \\mi, \\mn, and other pseudo-directives."sv
@@ -123,7 +123,7 @@ Processing_Status to_math_html(
         if (index < 0) {
             return out.consume(*d, content_frame, context);
         }
-        Homogeneous_Call_Arguments args { d->get_arguments(), content_frame };
+        Homogeneous_Call_Arguments args { d->get_argument_span(), content_frame };
         warn_ignored_argument_subset(args, context, Argument_Subset::positional);
 
         // directive names are HTML tag names
@@ -142,7 +142,7 @@ Processing_Status to_math_html(
         buffer.flush();
         const bool child_permits_text = mathml_permits_text_bits[std::size_t(index)];
         const auto nested_status
-            = to_math_html(out, d->get_content(), content_frame, context, child_permits_text);
+            = to_math_html(out, d->get_content_span(), content_frame, context, child_permits_text);
         writer.close_tag(name);
         buffer.flush();
         return status_concat(attributes_status, nested_status);
@@ -177,7 +177,8 @@ Math_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     }
     buffer.flush();
 
-    const auto nested_status = to_math_html(policy, call.content, call.content_frame, context);
+    const auto nested_status
+        = to_math_html(policy, call.get_content_span(), call.content_frame, context);
     writer.close_tag(tag_name);
     buffer.flush();
     return status_concat(attributes_status, nested_status);

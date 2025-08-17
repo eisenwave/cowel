@@ -5,28 +5,15 @@
 #include <string_view>
 
 #include "cowel/util/char_sequence.hpp"
+#include "cowel/util/severity.hpp"
 #include "cowel/util/source_position.hpp"
 
-#include "cowel/cowel.h"
 #include "cowel/fwd.hpp"
 
 namespace cowel {
 namespace detail {
 using Suppress_Unused_Include_Source_Position = Basic_File_Source_Position<void>;
 }
-
-enum struct Severity : Default_Underlying {
-    min = COWEL_SEVERITY_MIN,
-    trace = COWEL_SEVERITY_TRACE,
-    debug = COWEL_SEVERITY_DEBUG,
-    info = COWEL_SEVERITY_INFO,
-    soft_warning = COWEL_SEVERITY_SOFT_WARNING,
-    warning = COWEL_SEVERITY_WARNING,
-    error = COWEL_SEVERITY_ERROR,
-    fatal = COWEL_SEVERITY_FATAL,
-    max = COWEL_SEVERITY_MAX,
-    none = COWEL_SEVERITY_NONE,
-};
 
 [[nodiscard]]
 constexpr std::strong_ordering operator<=>(Severity x, Severity y) noexcept
@@ -120,6 +107,9 @@ inline constexpr std::u8string_view arithmetic_div_by_zero = u8"arithmetic.div-b
 /// @brief In a raw text directive (`\script` or `\style`),
 /// an unexpected closing tag was encountered.
 inline constexpr std::u8string_view raw_text_closing = u8"raw-text.closing";
+
+/// @brief An argument type does not match a parameter type.
+inline constexpr std::u8string_view type_mismatch = u8"type.mismatch";
 
 // DIRECTIVE-SPECIFIC DIAGNOSTICS ==================================================================
 

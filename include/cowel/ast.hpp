@@ -3,6 +3,7 @@
 
 #include <concepts>
 #include <cstddef>
+#include <optional>
 #include <span>
 #include <string_view>
 #include <type_traits>
@@ -28,65 +29,195 @@ using Suppress_Unused_Include_Source_Position_2 = Basic_File_Source_Span<void>;
 template <typename T>
 using Pmr_Vector = std::vector<T, Propagated_Polymorphic_Allocator<T>>;
 
-enum struct Argument_Type : Default_Underlying {
+struct Content_Sequence {
+private:
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+    Pmr_Vector<Content> m_elements;
+
+public:
+    [[nodiscard]]
+    explicit Content_Sequence(
+        File_Source_Span source_span,
+        std::u8string_view source,
+        Pmr_Vector<Content>&& elements
+    );
+    [[nodiscard]]
+    explicit Content_Sequence(File_Source_Span source_span, std::u8string_view source);
+    [[nodiscard]]
+    Content_Sequence(const Content_Sequence&);
+    [[nodiscard]]
+    Content_Sequence(Content_Sequence&&) noexcept;
+
+    Content_Sequence& operator=(const Content_Sequence&);
+    Content_Sequence& operator=(Content_Sequence&&) noexcept;
+
+    ~Content_Sequence();
+
+    [[nodiscard]]
+    File_Source_Span get_source_span() const
+    {
+        return m_source_span;
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        return m_source;
+    }
+
+    [[nodiscard]]
+    std::span<const Content> get_elements() const;
+
+    [[nodiscard]]
+    bool empty() const
+    {
+        return get_elements().empty();
+    }
+
+    [[nodiscard]]
+    std::size_t size() const
+    {
+        return get_elements().size();
+    }
+};
+
+struct Group final {
+private:
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+    Pmr_Vector<Group_Member> m_members;
+
+public:
+    [[nodiscard]]
+    explicit Group(File_Source_Span source_span, std::u8string_view source);
+    [[nodiscard]]
+    explicit Group(
+        File_Source_Span source_span,
+        std::u8string_view source,
+        Pmr_Vector<Group_Member>&& members
+    );
+
+    [[nodiscard]]
+    Group(const Group&);
+    [[nodiscard]]
+    Group(Group&&) noexcept;
+
+    Group& operator=(const Group&);
+    Group& operator=(Group&&) noexcept;
+
+    ~Group();
+
+    [[nodiscard]]
+    File_Source_Span get_source_span() const
+    {
+        return m_source_span;
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        return m_source;
+    }
+
+    [[nodiscard]]
+    std::span<const Group_Member> get_members() const;
+
+    [[nodiscard]]
+    bool empty() const
+    {
+        return get_members().empty();
+    }
+
+    [[nodiscard]]
+    std::size_t size() const
+    {
+        return get_members().size();
+    }
+};
+
+using Value_Variant = std::variant<Content_Sequence, Group>;
+
+struct Value : Value_Variant {
+    using Value_Variant::variant;
+
+    [[nodiscard]]
+    File_Source_Span get_source_span() const
+    {
+        if (const auto* const group = std::get_if<ast::Group>(this)) {
+            return group->get_source_span();
+        }
+        return std::get<ast::Content_Sequence>(*this).get_source_span();
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        if (const auto* const group = std::get_if<ast::Group>(this)) {
+            return group->get_source();
+        }
+        return std::get<ast::Content_Sequence>(*this).get_source();
+    }
+};
+
+enum struct Member_Kind : Default_Underlying {
     named,
     positional,
     ellipsis,
 };
 
 struct [[nodiscard]]
-Argument final {
+Group_Member final {
 public:
     [[nodiscard]]
-    static Argument ellipsis(File_Source_Span source_span, std::u8string_view source);
-    [[nodiscard]]
-    static Argument named(
-        const File_Source_Span& source_span,
-        std::u8string_view source,
-        const File_Source_Span& name_span,
-        std::u8string_view name,
-        Pmr_Vector<ast::Content>&& children
+    static Group_Member ellipsis( //
+        File_Source_Span source_span,
+        std::u8string_view source
     );
     [[nodiscard]]
-    static Argument positional(
-        const File_Source_Span& source_span,
-        std::u8string_view source,
-        Pmr_Vector<ast::Content>&& children
+    static Group_Member named( //
+        const File_Source_Span& name_span,
+        std::u8string_view name,
+        Value&& value
+    );
+    [[nodiscard]]
+    static Group_Member positional( //
+        Value&& value
     );
 
 private:
     File_Source_Span m_source_span;
     std::u8string_view m_source;
-    Pmr_Vector<Content> m_content;
+    Value m_value;
     File_Source_Span m_name_span;
     std::u8string_view m_name;
-    Argument_Type m_type;
+    Member_Kind m_kind;
 
     [[nodiscard]]
-    Argument(
+    Group_Member(
         const File_Source_Span& source_span,
         std::u8string_view source,
         const File_Source_Span& name_span,
         std::u8string_view name,
-        Pmr_Vector<ast::Content>&& children,
-        Argument_Type type
+        Value&& value,
+        Member_Kind type
     );
 
 public:
     [[nodiscard]]
-    Argument(Argument&&) noexcept;
+    Group_Member(Group_Member&&) noexcept;
     [[nodiscard]]
-    Argument(const Argument&);
+    Group_Member(const Group_Member&);
 
-    Argument& operator=(Argument&&) noexcept;
-    Argument& operator=(const Argument&);
+    Group_Member& operator=(Group_Member&&) noexcept;
+    Group_Member& operator=(const Group_Member&);
 
-    ~Argument();
+    ~Group_Member();
 
     [[nodiscard]]
-    Argument_Type get_type() const
+    Member_Kind get_kind() const
     {
-        return m_type;
+        return m_kind;
     }
 
     [[nodiscard]]
@@ -104,21 +235,29 @@ public:
     [[nodiscard]]
     File_Source_Span get_name_span() const
     {
+        COWEL_ASSERT(m_kind == Member_Kind::named);
         return m_name_span;
     }
+
     [[nodiscard]]
     std::u8string_view get_name() const
     {
-        COWEL_ASSERT(m_type == Argument_Type::named);
+        COWEL_ASSERT(m_kind == Member_Kind::named);
         return m_name;
     }
 
     [[nodiscard]]
-    Pmr_Vector<Content>& get_content() &;
+    bool has_value() const
+    {
+        return m_kind != Member_Kind::ellipsis;
+    }
+
     [[nodiscard]]
-    std::span<const Content> get_content() const&;
-    [[nodiscard]]
-    Pmr_Vector<Content>&& get_content() &&;
+    const Value& get_value() const
+    {
+        COWEL_ASSERT(has_value());
+        return m_value;
+    }
 };
 
 struct Directive final {
@@ -128,8 +267,8 @@ private:
     std::u8string_view m_name;
     bool m_has_ellipsis = false;
 
-    Pmr_Vector<Argument> m_arguments;
-    Pmr_Vector<Content> m_content;
+    std::optional<Group> m_arguments;
+    std::optional<Content_Sequence> m_content;
 
 public:
     [[nodiscard]]
@@ -137,11 +276,13 @@ public:
         const File_Source_Span& source_span,
         std::u8string_view source,
         std::u8string_view name,
-        Pmr_Vector<Argument>&& args,
-        Pmr_Vector<Content>&& block
+        std::optional<Group>&& args,
+        std::optional<Content_Sequence>&& content
     );
 
+    [[nodiscard]]
     Directive(Directive&&) noexcept;
+    [[nodiscard]]
     Directive(const Directive&);
 
     Directive& operator=(Directive&&) noexcept;
@@ -180,13 +321,44 @@ public:
     }
 
     [[nodiscard]]
-    Pmr_Vector<Argument>& get_arguments();
+    Group* get_arguments()
+    {
+        return m_arguments ? &*m_arguments : nullptr;
+    }
     [[nodiscard]]
-    std::span<const Argument> get_arguments() const;
+    const Group* get_arguments() const
+    {
+        return m_arguments ? &*m_arguments : nullptr;
+    }
+
     [[nodiscard]]
-    Pmr_Vector<Content>& get_content();
+    std::span<const ast::Group_Member> get_argument_span() const
+    {
+        if (m_arguments) {
+            return m_arguments->get_members();
+        }
+        return {};
+    }
+
     [[nodiscard]]
-    std::span<Content const> get_content() const;
+    Content_Sequence* get_content()
+    {
+        return m_content ? &*m_content : nullptr;
+    }
+    [[nodiscard]]
+    const Content_Sequence* get_content() const
+    {
+        return m_content ? &*m_content : nullptr;
+    }
+
+    [[nodiscard]]
+    std::span<const ast::Content> get_content_span() const
+    {
+        if (m_content) {
+            return m_content->get_elements();
+        }
+        return {};
+    }
 };
 
 struct Text final {
@@ -352,8 +524,48 @@ public:
 
 using Content_Variant = std::variant<Directive, Text, Comment, Escaped, Generated>;
 
+template <typename T>
+concept content_variant_alternative = []<typename... Ts>(std::variant<Ts...>*) {
+    return one_of<T, Ts...>;
+}(static_cast<Content_Variant*>(nullptr));
+
+template <typename T>
+concept user_written = content_variant_alternative<T> && !std::same_as<T, Generated>;
+
 struct Content : Content_Variant {
     using Content_Variant::variant;
+
+    [[nodiscard]]
+    File_Source_Span get_source_span() const
+    {
+        return visit(
+            [&]<typename T>(const T& v) -> File_Source_Span {
+                if constexpr (one_of<T, Text, Escaped, Directive>) {
+                    return v.get_source_span();
+                }
+                else {
+                    return { {}, File_Id { 0 } };
+                }
+            },
+            *this
+        );
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        return visit(
+            []<typename T>(const T& v) -> std::u8string_view {
+                if constexpr (user_written<T>) {
+                    return v.get_source();
+                }
+                else {
+                    return {};
+                }
+            },
+            *this
+        );
+    }
 };
 
 static_assert(std::is_move_constructible_v<Content>);
@@ -361,95 +573,47 @@ static_assert(std::is_move_constructible_v<Content>);
 static_assert(std::is_copy_assignable_v<Content>);
 static_assert(std::is_move_assignable_v<Content>);
 
-template <typename T>
-concept node = []<typename... Ts>(std::variant<Ts...>*) {
-    return one_of<T, Ts...>;
-}(static_cast<Content_Variant*>(nullptr));
-
-template <typename T>
-concept user_written = node<T> && !std::same_as<T, Generated>;
-
 // Suppress false positive: https://github.com/llvm/llvm-project/issues/130745
 // NOLINTBEGIN(readability-redundant-inline-specifier)
-inline Argument::Argument(Argument&&) noexcept = default;
-inline Argument::Argument(const Argument&) = default;
-inline Argument& Argument::operator=(Argument&&) noexcept = default;
-inline Argument& Argument::operator=(const Argument&) = default;
-inline Argument::~Argument() = default;
+inline Group_Member::Group_Member(Group_Member&&) noexcept = default;
+inline Group_Member::Group_Member(const Group_Member&) = default;
+inline Group_Member& Group_Member::operator=(Group_Member&&) noexcept = default;
+inline Group_Member& Group_Member::operator=(const Group_Member&) = default;
+inline Group_Member::~Group_Member() = default;
 
 inline Directive::Directive(Directive&&) noexcept = default;
 inline Directive::Directive(const Directive&) = default;
 inline Directive& Directive::operator=(Directive&&) noexcept = default;
 inline Directive& Directive::operator=(const Directive&) = default;
 inline Directive::~Directive() = default;
+
+inline Group::Group(const Group&) = default;
+inline Group::Group(Group&&) noexcept = default;
+inline Group& Group::operator=(const Group&) = default;
+inline Group& Group::operator=(Group&&) noexcept = default;
+inline Group::~Group() = default;
+
+inline Content_Sequence::Content_Sequence(const Content_Sequence&) = default;
+inline Content_Sequence::Content_Sequence(Content_Sequence&&) noexcept = default;
+inline Content_Sequence& Content_Sequence::operator=(const Content_Sequence&) = default;
+inline Content_Sequence& Content_Sequence::operator=(Content_Sequence&&) noexcept = default;
+inline Content_Sequence::~Content_Sequence() = default;
+
+inline std::span<const Content> Content_Sequence::get_elements() const
+{
+    return m_elements;
+}
+
+inline std::span<const ast::Group_Member> Group::get_members() const
+{
+    return m_members;
+}
 // NOLINTEND(readability-redundant-inline-specifier)
-
-inline Pmr_Vector<Content>& Argument::get_content() &
-{
-    return m_content;
-}
-inline std::span<const Content> Argument::get_content() const&
-{
-    return m_content;
-}
-inline Pmr_Vector<Content>&& Argument::get_content() &&
-{
-    return std::move(m_content);
-}
-
-inline Pmr_Vector<Argument>& Directive::get_arguments()
-{
-    return m_arguments;
-}
-inline std::span<const Argument> Directive::get_arguments() const
-{
-    return m_arguments;
-}
-
-inline Pmr_Vector<Content>& Directive::get_content()
-{
-    return m_content;
-}
-inline std::span<const Content> Directive::get_content() const
-{
-    return m_content;
-}
-
-[[nodiscard]]
-inline File_Source_Span get_source_span(const Content& node)
-{
-    return visit(
-        [&]<typename T>(const T& v) -> File_Source_Span {
-            if constexpr (one_of<T, Text, Escaped, Directive>) {
-                return v.get_source_span();
-            }
-            else {
-                return { {}, File_Id { 0 } };
-            }
-        },
-        node
-    );
-}
-
-[[nodiscard]]
-inline std::u8string_view get_source(const Content& node)
-{
-    return visit(
-        []<typename T>(const T& v) -> std::u8string_view {
-            if constexpr (user_written<T>) {
-                return v.get_source();
-            }
-            else {
-                return {};
-            }
-        },
-        node
-    );
-}
 
 template <bool constant>
 struct Visitor_Impl {
-    using Argument_Type = const_if_t<Argument, constant>;
+    using Group_Type = const_if_t<Group, constant>;
+    using Group_Member_Type = const_if_t<Group_Member, constant>;
     using Text_Type = const_if_t<Text, constant>;
     using Comment_Type = const_if_t<Comment, constant>;
     using Escaped_Type = const_if_t<Escaped, constant>;
@@ -459,7 +623,14 @@ struct Visitor_Impl {
 
     void visit_arguments(Directive_Type& directive)
     {
-        for (Argument_Type& arg : directive.get_arguments()) {
+        if (Group_Type* const args = directive.get_arguments()) {
+            visit_group_members(args->get_members());
+        }
+    }
+
+    void visit_group_members(std::span<Group_Member_Type> members)
+    {
+        for (Group_Member_Type& arg : members) {
             this->visit(arg);
         }
     }
@@ -470,7 +641,7 @@ struct Visitor_Impl {
         visit_content_sequence(directive.get_content());
     }
 
-    void visit_children(Argument_Type& argument)
+    void visit_children(Group_Member_Type& argument)
     {
         visit_content_sequence(argument.get_content());
     }
@@ -487,7 +658,7 @@ struct Visitor_Impl {
         }
     }
 
-    virtual void visit(Argument_Type& argument) = 0;
+    virtual void visit(Group_Member_Type& argument) = 0;
     virtual void visit(Directive_Type& directive) = 0;
     virtual void visit(Generated_Type& generated) = 0;
     virtual void visit(Text_Type& text) = 0;

@@ -143,8 +143,13 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
 
     std::pmr::vector<char8_t> target { context.get_transient_memory() };
     const Argument_Ref to_arg = call.arguments[std::size_t(to_index)];
+    const auto* const to_arg_content = as_content_or_error(to_arg.ast_node.get_value(), context);
+    if (!to_arg_content) {
+        return try_generate_error(out, call, context);
+    }
+
     const auto target_status
-        = to_plaintext(target, to_arg.ast_node.get_content(), to_arg.frame_index, context);
+        = to_plaintext(target, to_arg_content->get_elements(), to_arg.frame_index, context);
     if (target_status != Processing_Status::ok) {
         return target_status;
     }
@@ -170,7 +175,7 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
             target_string,
         };
         reference_section(buffer, joined_char_sequence(section_name_parts));
-        if (call.content.empty()) {
+        if (call.has_empty_content()) {
             writer.write_inner_html(u8'[');
             writer.write_inner_text(target_string);
             writer.write_inner_html(u8']');
@@ -186,7 +191,7 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
             .write_href(target_string)
             .end();
         auto status = Processing_Status::ok;
-        if (call.content.empty()) {
+        if (call.has_empty_content()) {
             const std::u8string_view section_name_parts[] {
                 section_name::id_preview,
                 u8".",
@@ -196,7 +201,7 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
         }
         else {
             buffer.flush();
-            status = consume_all(out, call.content, call.content_frame, context);
+            status = consume_all(out, call.get_content_span(), call.content_frame, context);
         }
         writer.close_tag(html_tag::a);
         buffer.flush();
@@ -205,13 +210,13 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
 
     COWEL_ASSERT(classification.type == Reference_Type::url);
 
-    if (!call.content.empty()) {
+    if (!call.has_empty_content()) {
         writer
             .open_tag_with_attributes(html_tag::a) //
             .write_href(target_string)
             .end();
         buffer.flush();
-        const auto status = consume_all(out, call.content, call.content_frame, context);
+        const auto status = consume_all(out, call.get_content_span(), call.content_frame, context);
         writer.close_tag(html_tag::a);
         buffer.flush();
         return status;

@@ -8,6 +8,7 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/source_position.hpp"
+#include "cowel/util/strings.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/diagnostic.hpp"
@@ -17,60 +18,102 @@
 using namespace std::string_view_literals;
 
 namespace cowel {
-
 namespace ast {
 
-Argument Argument::ellipsis(File_Source_Span source_span, std::u8string_view source)
+Group::Group(
+    File_Source_Span source_span,
+    std::u8string_view source,
+    Pmr_Vector<Group_Member>&& members
+)
+    : m_source_span { source_span }
+    , m_source { source }
+    , m_members { std::move(members) }
 {
-    return {
-        source_span, source, source_span.with_length(0), {}, {}, Argument_Type::ellipsis,
-    };
+    COWEL_ASSERT(m_source_span.length == m_source.length());
 }
 
-Argument Argument::named(
-    const File_Source_Span& source_span,
-    std::u8string_view source,
-    const File_Source_Span& name_span,
-    std::u8string_view name,
-    Pmr_Vector<ast::Content>&& children
-)
+Group::Group(File_Source_Span source_span, std::u8string_view source)
+    : Group { source_span, source, {} }
 {
-    return {
-        source_span, source, name_span, name, std::move(children), Argument_Type::named,
-    };
 }
 
-[[nodiscard]]
-Argument Argument::positional(
-    const File_Source_Span& source_span,
+Content_Sequence::Content_Sequence(
+    File_Source_Span source_span,
     std::u8string_view source,
-    Pmr_Vector<ast::Content>&& children
+    Pmr_Vector<Content>&& elements
 )
+    : m_source_span { source_span }
+    , m_source { source }
+    , m_elements { std::move(elements) }
 {
+    COWEL_ASSERT(m_source_span.length == m_source.length());
+}
+
+Content_Sequence::Content_Sequence(File_Source_Span source_span, std::u8string_view source)
+    : Content_Sequence { source_span, source, {} }
+{
+}
+
+Group_Member Group_Member::ellipsis(File_Source_Span source_span, std::u8string_view source)
+{
+    // clang-format off
     return {
         source_span,
         source,
         source_span.with_length(0),
         {},
-        std::move(children),
-        Argument_Type::positional,
+        Content_Sequence{source_span, source},
+        Member_Kind::ellipsis,
     };
+    // clang-format on
 }
 
-Argument::Argument(
+Group_Member
+Group_Member::named(const File_Source_Span& name_span, std::u8string_view name, Value&& value)
+{
+    COWEL_DEBUG_ASSERT(is_html_attribute_name(name));
+    // clang-format off
+    return {
+        value.get_source_span(),
+        value.get_source(),
+        name_span,
+        name,
+        std::move(value),
+        Member_Kind::named,
+    };
+    // clang-format on
+}
+
+[[nodiscard]]
+Group_Member Group_Member::positional(Value&& value)
+{
+    const File_Source_Span source_span = value.get_source_span();
+    // clang-format off
+    return {
+        source_span,
+        value.get_source(),
+        source_span.with_length(0),
+        {},
+        std::move(value),
+        Member_Kind::positional,
+    };
+    // clang-format on
+}
+
+Group_Member::Group_Member(
     const File_Source_Span& source_span,
     std::u8string_view source,
     const File_Source_Span& name_span,
     std::u8string_view name,
-    Pmr_Vector<ast::Content>&& children,
-    Argument_Type type
+    Value&& value,
+    Member_Kind type
 )
     : m_source_span { source_span }
     , m_source { source }
-    , m_content { std::move(children) }
+    , m_value { std::move(value) }
     , m_name_span { name_span }
     , m_name { name }
-    , m_type { type }
+    , m_kind { type }
 {
     COWEL_ASSERT(m_source_span.length == m_source.length());
     COWEL_ASSERT(m_name_span.length == m_name.length());
@@ -80,14 +123,14 @@ Directive::Directive(
     const File_Source_Span& source_span,
     std::u8string_view source,
     std::u8string_view name,
-    Pmr_Vector<Argument>&& args,
-    Pmr_Vector<Content>&& block
+    std::optional<Group>&& args,
+    std::optional<Content_Sequence>&& content
 )
     : m_source_span { source_span }
     , m_source { source }
     , m_name { name }
     , m_arguments { std::move(args) }
-    , m_content { std::move(block) }
+    , m_content { std::move(content) }
 {
     COWEL_ASSERT(m_source_span.length == m_source.length());
     COWEL_ASSERT(!name.empty());
@@ -95,9 +138,11 @@ Directive::Directive(
     COWEL_ASSERT(name.length() <= source_span.length);
 
     // this needs to be late-initialized here because it is declared after m_arguments
-    m_has_ellipsis = std::ranges::contains(
-        m_arguments, ast::Argument_Type::ellipsis, &ast::Argument::get_type
-    );
+    m_has_ellipsis
+        = m_arguments
+        && std::ranges::contains(
+              m_arguments->get_members(), ast::Member_Kind::ellipsis, &ast::Group_Member::get_kind
+        );
 }
 
 Text::Text(const File_Source_Span& source_span, std::u8string_view source)
@@ -256,7 +301,6 @@ private:
             out.push_back(build_directive());
             break;
         }
-
         default: COWEL_ASSERT_UNREACHABLE(u8"Invalid content creating instruction.");
         }
     }
@@ -308,11 +352,8 @@ private:
         const std::size_t name_length = instruction.n - 1;
         advance_by(instruction.n);
 
-        ast::Pmr_Vector<ast::Argument> arguments { m_memory };
-        try_append_argument_sequence(arguments);
-
-        ast::Pmr_Vector<ast::Content> block { m_memory };
-        try_append_block(block);
+        std::optional<ast::Group> arguments = try_build_group();
+        std::optional<ast::Content_Sequence> block = try_build_block();
 
         const AST_Instruction pop_instruction = pop();
         COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_directive);
@@ -324,17 +365,23 @@ private:
         return { source_span, extract(source_span), name, std::move(arguments), std::move(block) };
     }
 
-    void try_append_argument_sequence(ast::Pmr_Vector<ast::Argument>& out)
+    [[nodiscard]]
+    std::optional<ast::Group> try_build_group()
     {
         if (eof()) {
-            return;
+            {};
         }
         const AST_Instruction instruction = peek();
         if (instruction.type != AST_Instruction_Type::push_arguments) {
-            return;
+            return {};
         }
+        COWEL_DEBUG_ASSERT(m_source[m_pos.begin] == u8'(');
+
+        const Source_Position initial_pos = m_pos;
         pop();
         advance_by(1);
+
+        ast::Pmr_Vector<ast::Group_Member> members { m_memory };
 
         while (!eof()) {
             const AST_Instruction next = peek();
@@ -343,86 +390,150 @@ private:
                 pop();
                 continue;
             }
-            if (next.type == AST_Instruction_Type::argument_comma
-                || next.type == AST_Instruction_Type::argument_equal) {
+            if (next.type == AST_Instruction_Type::argument_comma) {
+                COWEL_DEBUG_ASSERT(m_source[m_pos.begin] == u8',');
                 advance_by(1);
                 pop();
                 continue;
             }
-            if (next.type == AST_Instruction_Type::pop_arguments) { // ]
+            if (next.type == AST_Instruction_Type::argument_equal) {
+                COWEL_DEBUG_ASSERT(m_source[m_pos.begin] == u8'=');
+                advance_by(1);
+                pop();
+                continue;
+            }
+            if (next.type == AST_Instruction_Type::pop_arguments) {
+                COWEL_DEBUG_ASSERT(m_source[m_pos.begin] == u8')');
+                advance_by(1);
                 pop();
                 break;
             }
-            append_argument(out);
+            members.push_back(build_group_member());
         }
-        advance_by(1);
+
+        const File_Source_Span source_span {
+            initial_pos,
+            m_pos.begin - initial_pos.begin,
+            m_file,
+        };
+        return ast::Group {
+            source_span,
+            extract(source_span),
+            std::move(members),
+        };
     }
 
-    void append_argument(ast::Pmr_Vector<ast::Argument>& out)
+    [[nodiscard]]
+    ast::Group_Member build_group_member()
     {
         const AST_Instruction instruction = pop();
-        COWEL_ASSERT(instruction.type == AST_Instruction_Type::push_argument);
+        ignore_skips();
 
         const Source_Position initial_pos = m_pos;
-        std::optional<Source_Span> name;
-        bool is_ellipsis = false;
 
-        ast::Pmr_Vector<ast::Content> children { m_memory };
-        children.reserve(instruction.n);
+        switch (instruction.type) {
+        case AST_Instruction_Type::push_named_argument: {
+            const AST_Instruction name = pop();
+            COWEL_ASSERT(name.type == AST_Instruction_Type::argument_name);
+            advance_by(name.n);
+            const File_Source_Span name_span { initial_pos, name.n, m_file };
+            ignore_skips();
 
-        while (!eof()) {
-            const AST_Instruction next = peek();
-            if (next.type == AST_Instruction_Type::pop_argument) {
-                pop();
-                break;
-            }
-            if (next.type == AST_Instruction_Type::argument_name) {
-                pop();
-                name = { m_pos, next.n };
-                advance_by(next.n);
-                continue;
-            }
-            if (next.type == AST_Instruction_Type::argument_ellipsis) {
-                pop();
-                is_ellipsis = true;
-                advance_by(next.n);
-                continue;
-            }
-            append_content(children);
+            const AST_Instruction equal = pop();
+            COWEL_ASSERT(equal.type == AST_Instruction_Type::argument_equal);
+            advance_by(1);
+            ignore_skips();
+
+            ast::Value value = build_value(instruction.n);
+            ignore_skips();
+            const auto pop_instruction = pop();
+            COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_named_argument);
+            return ast::Group_Member::named(name_span, extract(name_span), std::move(value));
         }
 
-        const File_Source_Span source_span { initial_pos, m_pos.begin - initial_pos.begin, m_file };
-        const std::u8string_view source = extract(source_span);
+        case AST_Instruction_Type::push_positional_argument: {
+            ast::Value value = build_value(instruction.n);
+            ignore_skips();
+            const auto pop_instruction = pop();
+            COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_positional_argument);
+            return ast::Group_Member::positional(std::move(value));
+        }
 
-        COWEL_ASSERT(!is_ellipsis || !name);
+        case AST_Instruction_Type::push_ellipsis_argument: {
+            const AST_Instruction ellipsis = pop();
+            advance_by(ellipsis.n);
+            COWEL_ASSERT(ellipsis.type == AST_Instruction_Type::argument_ellipsis);
 
-        if (is_ellipsis) {
-            out.push_back(ast::Argument::ellipsis(source_span, source));
-            if (m_on_error && !children.empty()) {
+            ast::Value value = build_value(0);
+            if (!m_on_error) { }
+            else if (const auto* const group = std::get_if<ast::Group>(&value)) {
+                constexpr std::u8string_view message
+                    = u8"A group following an ellipsis is not allowed. "
+                      u8"Use '\\.' to specify a literal dot instead of an ellipsis."sv;
+                m_on_error(diagnostic::parse_block_unclosed, group->get_source_span(), message);
+            }
+            else if (const auto* const content = std::get_if<ast::Content_Sequence>(&value);
+                     content && !content->empty()) {
                 constexpr std::u8string_view message
                     = u8"Content following an ellipsis is not allowed. "
                       u8"Use '\\.' to specify a literal dot instead of an ellipsis."sv;
-                m_on_error(
-                    diagnostic::parse_block_unclosed, ast::get_source_span(children.front()),
-                    message
-                );
+                m_on_error(diagnostic::parse_block_unclosed, content->get_source_span(), message);
             }
+
+            const File_Source_Span source_span { initial_pos, ellipsis.n, m_file };
+            ignore_skips();
+            const auto pop_instruction = pop();
+            COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_ellipsis_argument);
+            return ast::Group_Member::ellipsis(source_span, extract(source_span));
         }
-        else if (name) {
-            const File_Source_Span name_span { *name, m_file };
-            out.push_back(ast::Argument::named(
-                source_span, source, { *name, m_file }, extract(*name), std::move(children)
-            ));
+
+        default: break;
         }
-        else {
-            out.push_back(ast::Argument::positional(source_span, source, std::move(children)));
+
+        COWEL_ASSERT_UNREACHABLE(u8"Bad use of build_group_member()");
+    }
+
+    void ignore_skips()
+    {
+        while (!eof() && peek().type == AST_Instruction_Type::skip) {
+            const AST_Instruction skip = pop();
+            advance_by(skip.n);
         }
     }
 
-    void try_append_block(ast::Pmr_Vector<ast::Content>& out)
+    [[nodiscard]]
+    ast::Value build_value(std::size_t size_hint)
+    {
+        const Source_Position initial_pos = m_pos;
+        const AST_Instruction instruction = peek();
+        if (instruction.type == AST_Instruction_Type::push_arguments) {
+            return try_build_group().value();
+        }
+
+        ast::Pmr_Vector<ast::Content> children { m_memory };
+        children.reserve(size_hint);
+
+        while (!eof() && !ast_instruction_type_is_pop_argument(peek().type)) {
+            append_content(children);
+        }
+
+        const File_Source_Span source_span {
+            initial_pos,
+            m_pos.begin - initial_pos.begin,
+            m_file,
+        };
+        return ast::Content_Sequence {
+            source_span,
+            extract(source_span),
+            std::move(children),
+        };
+    }
+
+    [[nodiscard]]
+    std::optional<ast::Content_Sequence> try_build_block()
     {
         if (eof()) {
-            return;
+            return {};
         }
         const AST_Instruction instruction = peek();
         if (instruction.type == AST_Instruction_Type::error_unclosed_block) {
@@ -433,13 +544,17 @@ private:
             }
             pop();
             advance_by(1);
-            return;
+            return {};
         }
         if (instruction.type != AST_Instruction_Type::push_block) {
-            return;
+            return {};
         }
+
+        const Source_Position initial_pos = m_pos;
         pop();
         advance_by(1);
+
+        ast::Pmr_Vector<ast::Content> content { m_memory };
 
         while (!eof()) {
             const AST_Instruction next = peek();
@@ -447,9 +562,20 @@ private:
                 pop();
                 break;
             }
-            append_content(out);
+            append_content(content);
         }
         advance_by(1);
+
+        const File_Source_Span source_span {
+            initial_pos,
+            m_pos.begin - initial_pos.begin,
+            m_file,
+        };
+        return ast::Content_Sequence {
+            source_span,
+            extract(source_span),
+            std::move(content),
+        };
     }
 };
 

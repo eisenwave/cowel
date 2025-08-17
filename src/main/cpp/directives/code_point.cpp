@@ -157,7 +157,7 @@ Result<char32_t, Processing_Status>
 Char_By_Num_Behavior::get_code_point(const Invocation& call, Context& context) const
 {
     return code_point_by_generated_digits(
-        call.content, call.content_frame, call.directive.get_source_span(), context
+        call.get_content_span(), call.content_frame, call.directive.get_source_span(), context
     );
 }
 
@@ -166,7 +166,7 @@ Result<char32_t, Processing_Status>
 Char_By_Name_Behavior::get_code_point(const Invocation& call, Context& context) const
 {
     return code_point_by_generated_name(
-        call.content, call.content_frame, call.directive.get_source_span(), context
+        call.get_content_span(), call.content_frame, call.directive.get_source_span(), context
     );
 }
 
@@ -212,7 +212,8 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     const auto args_status = status_concat(zfill.status(), base.status(), is_lower.status());
 
     std::pmr::vector<char8_t> input { context.get_transient_memory() };
-    const auto input_status = to_plaintext(input, call.content, call.content_frame, context);
+    const auto input_status
+        = to_plaintext(input, call.get_content_span(), call.content_frame, context);
     if (input_status != Processing_Status::ok) {
         return status_concat(args_status, input_status);
     }

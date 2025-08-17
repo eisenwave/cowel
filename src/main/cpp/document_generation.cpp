@@ -165,8 +165,6 @@ Processing_Status write_head_body_document(
     Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Content>, Context&)> body
 )
 {
-    warn_deprecated_directive_names(content, context);
-
     Document_Sections& sections = context.get_sections();
 
     const Document_Sections::entry_type* html_section = nullptr;
@@ -215,7 +213,7 @@ Processing_Status write_head_body_document(
         }
     }
 
-    const File_Id file = content.empty() ? File_Id {} : ast::get_source_span(content.front()).file;
+    const File_Id file = content.empty() ? File_Id {} : content.front().get_source_span().file;
     const bool res_success = resolve_references(out, html_string, context, file);
     const auto res_status = res_success ? Processing_Status::ok : Processing_Status::error;
     status = status_concat(status, res_status);

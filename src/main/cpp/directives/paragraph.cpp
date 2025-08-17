@@ -25,9 +25,9 @@ Processing_Status control_paragraph(
 {
     warn_all_args_ignored(call, context);
 
-    if (!call.content.empty()) {
+    if (call.content && !call.content->get_elements().empty()) {
         context.try_warning(
-            diagnostic::ignored_content, call.directive.get_source_span(),
+            diagnostic::ignored_content, call.content->get_source_span(),
             u8"Content in a paragraph control directive is ignored."sv
         );
     }

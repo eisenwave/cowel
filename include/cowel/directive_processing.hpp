@@ -12,6 +12,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/function_ref.hpp"
 #include "cowel/util/html_writer.hpp"
+#include "cowel/util/severity.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/content_status.hpp"
@@ -65,7 +66,7 @@ Processing_Status invoke(
     std::u8string_view name,
     const ast::Directive& directive,
     Arguments_View args,
-    std::span<const ast::Content> content,
+    const ast::Content_Sequence* content,
     Frame_Index content_frame,
     Context& context
 );
@@ -79,6 +80,20 @@ Processing_Status invoke_directive(
     Frame_Index content_frame,
     Context& context
 );
+
+[[nodiscard]]
+const ast::Content_Sequence* as_content_or_error(
+    const ast::Value& value,
+    Context& context,
+    Severity error_severity = Severity::error
+);
+
+[[nodiscard]]
+inline const ast::Content_Sequence*
+as_content_or_fatal_error(const ast::Value& value, Context& context)
+{
+    return as_content_or_error(value, context, Severity::fatal);
+}
 
 template <std::ranges::input_range R, typename Consumer>
     requires std::is_invocable_r_v<Processing_Status, Consumer, std::ranges::range_reference_t<R>>
@@ -131,6 +146,24 @@ inline Processing_Status consume_all(
 }
 
 [[nodiscard]]
+inline Processing_Status consume_all(
+    Content_Policy& out,
+    const ast::Value& value,
+    Frame_Index frame,
+    Context& context,
+    Processing_Status error_status = Processing_Status::error
+)
+{
+    const auto* const content = as_content_or_error(value, context);
+    if (!content) {
+        return error_status;
+    }
+    return process_greedy(content->get_elements(), [&](const ast::Content& c) {
+        return out.consume_content(c, frame, context);
+    });
+}
+
+[[nodiscard]]
 Processing_Status consume_all_trimmed(
     Content_Policy& out,
     std::span<const ast::Content> content,
@@ -142,6 +175,14 @@ Processing_Status consume_all_trimmed(
 Processing_Status to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Content> content,
+    Frame_Index frame,
+    Context& context
+);
+
+[[nodiscard]]
+Processing_Status to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Value& value,
     Frame_Index frame,
     Context& context
 );
@@ -230,11 +271,6 @@ void warn_ignored_argument_subset(
     Context& context,
     Argument_Subset ignored_subset
 );
-
-/// @brief Emits a warning when directive names containing hyphens are found within `content`.
-/// Those are deprecated.
-/// The search is recursive for the arguments and content of any directive in `content`.
-void warn_deprecated_directive_names(std::span<const ast::Content> content, Context& context);
 
 void diagnose(
     Syntax_Highlight_Error error,

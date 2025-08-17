@@ -23,10 +23,15 @@ Invoke_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
         );
         return try_generate_error(out, call, context);
     }
+    const auto* const first_positional_content
+        = as_content_or_error(first_positional->ast_node.get_value(), context);
+    if (!first_positional_content) {
+        return try_generate_error(out, call, context);
+    }
 
     std::pmr::vector<char8_t> name_text { context.get_transient_memory() };
     const Processing_Status name_status = to_plaintext(
-        name_text, first_positional->ast_node.get_content(), first_positional->frame_index, context
+        name_text, first_positional_content->get_elements(), first_positional->frame_index, context
     );
     if (name_status != Processing_Status::ok) {
         return name_status;

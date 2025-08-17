@@ -22,7 +22,7 @@ void match_parameters_and_arguments(
         // which are symbolic arguments representing some other set of arguments,
         // but are not arguments on their own.
         for (const Argument_Ref ref : arguments) {
-            COWEL_ASSERT(ref.ast_node.get_type() != ast::Argument_Type::ellipsis);
+            COWEL_ASSERT(ref.ast_node.get_kind() != ast::Member_Kind::ellipsis);
         }
     }
 
@@ -38,7 +38,7 @@ void match_parameters_and_arguments(
 
     if (mode != Parameter_Match_Mode::only_positional) {
         for (std::size_t arg_index = 0; arg_index < arguments.size(); ++arg_index) {
-            if (arguments[arg_index].ast_node.get_type() != ast::Argument_Type::named) {
+            if (arguments[arg_index].ast_node.get_kind() != ast::Member_Kind::named) {
                 continue;
             }
             const std::u8string_view arg_name = arguments[arg_index].ast_node.get_name();
@@ -59,7 +59,7 @@ void match_parameters_and_arguments(
 
     if (mode != Parameter_Match_Mode::only_named) {
         for (std::size_t arg_index = 0; arg_index < arguments.size(); ++arg_index) {
-            if (arguments[arg_index].ast_node.get_type() == ast::Argument_Type::named) {
+            if (arguments[arg_index].ast_node.get_kind() == ast::Member_Kind::named) {
                 continue;
             }
             for (std::size_t i = 0; i < parameters.size(); ++i) {

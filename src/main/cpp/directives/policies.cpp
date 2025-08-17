@@ -32,7 +32,7 @@ Processing_Status consume_simply(Content_Policy& out, const Invocation& call, Co
 {
     warn_all_args_ignored(call, context);
     T policy { out };
-    return consume_all(policy, call.content, call.content_frame, context);
+    return consume_all(policy, call.get_content_span(), call.content_frame, context);
 }
 
 [[nodiscard]]
@@ -40,7 +40,8 @@ Processing_Status consume_paragraphs(Content_Policy& out, const Invocation& call
 {
     warn_all_args_ignored(call, context);
     Paragraph_Split_Policy policy { out, context.get_transient_memory() };
-    const Processing_Status result = consume_all(policy, call.content, call.content_frame, context);
+    const Processing_Status result
+        = consume_all(policy, call.get_content_span(), call.content_frame, context);
     policy.leave_paragraph();
     return result;
 }
@@ -64,7 +65,7 @@ consume_syntax_highlighted(Content_Policy& out, const Invocation& call, Context&
 
     Syntax_Highlight_Policy policy { context.get_transient_memory() };
     const Processing_Status consume_status
-        = consume_all(policy, call.content, call.content_frame, context);
+        = consume_all(policy, call.get_content_span(), call.content_frame, context);
     const Result<void, Syntax_Highlight_Error> result
         = policy.dump_html_to(out, context, lang->string);
     if (!result) {
@@ -82,12 +83,12 @@ Policy_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
     switch (m_policy) {
     case Known_Content_Policy::current: {
         warn_all_args_ignored(call, context);
-        return consume_all(out, call.content, call.content_frame, context);
+        return consume_all(out, call.get_content_span(), call.content_frame, context);
     }
     case Known_Content_Policy::to_html: {
         warn_all_args_ignored(call, context);
         HTML_Content_Policy policy = ensure_html_policy(out);
-        return consume_all(policy, call.content, call.content_frame, context);
+        return consume_all(policy, call.get_content_span(), call.content_frame, context);
     }
     case Known_Content_Policy::highlight: {
         return consume_syntax_highlighted(out, call, context);

@@ -108,10 +108,14 @@ Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
     const auto id_status = [&] -> Processing_Status {
         const int id_index = args.get_argument_index(u8"id");
         if (id_index < 0) {
-            return synthesize_id(id_data, call.content, call.content_frame, context);
+            return synthesize_id(id_data, call.get_content_span(), call.content_frame, context);
         }
         const Argument_Ref id_arg = call.arguments[std::size_t(id_index)];
-        return to_plaintext(id_data, id_arg.ast_node.get_content(), id_arg.frame_index, context);
+        const auto* id_content = as_content_or_error(id_arg.ast_node.get_value(), context);
+        if (!id_content) {
+            return Processing_Status::error;
+        }
+        return to_plaintext(id_data, id_content->get_elements(), id_arg.frame_index, context);
     }();
     current_status = status_concat(current_status, id_status);
     if (status_is_break(id_status)) {
@@ -150,7 +154,7 @@ Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
         Capturing_Ref_Text_Sink heading_sink { heading_html, Output_Language::html };
         HTML_Content_Policy html_policy { heading_sink };
         const auto heading_status
-            = consume_all(html_policy, call.content, call.content_frame, context);
+            = consume_all(html_policy, call.get_content_span(), call.content_frame, context);
         current_status = status_concat(current_status, heading_status);
         if (status_is_break(heading_status)) {
             writer.close_tag(tag_name);
@@ -294,8 +298,13 @@ Processing_Status with_section_name(
 
     std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
     const Argument_Ref arg = call.arguments[std::size_t(arg_index)];
+    const auto* const arg_content = as_content_or_error(arg.ast_node.get_value(), context);
+    if (!arg_content) {
+        return Processing_Status::error;
+    }
+
     const auto name_status
-        = to_plaintext(name_data, arg.ast_node.get_content(), arg.frame_index, context);
+        = to_plaintext(name_data, arg_content->get_elements(), arg.frame_index, context);
     if (name_status != Processing_Status::ok) {
         return name_status;
     }
@@ -316,10 +325,11 @@ Processing_Status with_section_name(
 Processing_Status
 There_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context) const
 {
-    auto action = [&](std::u8string_view section) {
+    auto action = [&](std::u8string_view section) -> Processing_Status {
         const auto scope = context.get_sections().go_to_scoped(section);
         return consume_all(
-            context.get_sections().current_policy(), call.content, call.content_frame, context
+            context.get_sections().current_policy(), call.get_content_span(), call.content_frame,
+            context
         );
     };
     return with_section_name(call, context, diagnostic::there::no_section, action);
@@ -330,7 +340,7 @@ Here_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
 {
     ensure_paragraph_matches_display(out, m_display);
 
-    auto action = [&](std::u8string_view section) {
+    auto action = [&](std::u8string_view section) -> Processing_Status {
         reference_section(out, section);
         return Processing_Status::ok;
     };

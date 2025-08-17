@@ -48,17 +48,24 @@ enum struct AST_Instruction_Type : Default_Underlying {
     /// @brief Begin directive arguments.
     /// The operand is the amount of arguments.
     ///
-    /// Advance past `[`.
+    /// Advance past `(`.
     push_arguments,
-    /// @brief Advance past `]`.
+    /// @brief Advance past `)`.
     pop_arguments,
     /// @brief Begin argument.
-    /// The operand is the amount of pieces that comprise the argument content,
-    /// where a piece is an escape sequence, text, or a directive.
-    /// This amount does not include ellipses,
-    /// as an ellipsis is a special argument property similar to names.
-    push_argument,
-    pop_argument,
+    /// The operand is the amount of elements in the content sequence,
+    /// or zero if the argument is a group.
+    push_named_argument,
+    pop_named_argument,
+    /// @brief Begin argument.
+    /// The operand is the amount of elements in the content sequence,
+    /// or zero if the argument is a group.
+    push_positional_argument,
+    pop_positional_argument,
+    /// @brief Begin argument.
+    /// The operand is the amount of elements in the content sequence.
+    push_ellipsis_argument,
+    pop_ellipsis_argument,
     /// @brief Begin directive content.
     /// The operand is the amount of pieces that comprise the argument content,
     /// where a piece is an escape sequence, text, or a directive.
@@ -79,12 +86,30 @@ constexpr bool ast_instruction_type_has_operand(AST_Instruction_Type type)
     case pop_document:
     case pop_directive:
     case pop_arguments:
-    case pop_argument:
+    case pop_named_argument:
+    case pop_positional_argument:
+    case pop_ellipsis_argument:
     case pop_block:
     case argument_comma:
     case argument_equal: return false;
     default: return true;
     }
+}
+
+[[nodiscard]]
+constexpr bool ast_instruction_type_is_push_argument(AST_Instruction_Type type)
+{
+    return type == AST_Instruction_Type::push_named_argument
+        || type == AST_Instruction_Type::push_positional_argument
+        || type == AST_Instruction_Type::push_ellipsis_argument;
+}
+
+[[nodiscard]]
+constexpr bool ast_instruction_type_is_pop_argument(AST_Instruction_Type type)
+{
+    return type == AST_Instruction_Type::pop_named_argument
+        || type == AST_Instruction_Type::pop_positional_argument
+        || type == AST_Instruction_Type::pop_ellipsis_argument;
 }
 
 [[nodiscard]]

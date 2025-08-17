@@ -13,7 +13,6 @@
 #include "cowel/parse.hpp"
 
 namespace cowel {
-
 namespace {
 
 enum struct Content_Context : Default_Underlying { document, argument_value, block };
@@ -192,7 +191,7 @@ private:
     }
 
     struct Bracket_Levels {
-        std::size_t square = 0;
+        std::size_t argument = 0;
         std::size_t brace = 0;
     };
 
@@ -236,14 +235,14 @@ private:
                 if (c == u8',') {
                     break;
                 }
-                if (c == u8'[') {
-                    ++levels.square;
+                if (c == u8'(') {
+                    ++levels.argument;
                 }
-                else if (c == u8']') {
-                    if (levels.square == 0) {
+                else if (c == u8')') {
+                    if (levels.argument == 0) {
                         break;
                     }
-                    --levels.square;
+                    --levels.argument;
                 }
             }
             if (c == u8'{') {
@@ -283,7 +282,7 @@ private:
 
         m_out.push_back({ AST_Instruction_Type::push_directive, name_length + 1 });
 
-        try_match_argument_list();
+        try_match_argument_group();
         try_match_block();
 
         m_out.push_back({ AST_Instruction_Type::pop_directive, 0 });
@@ -293,18 +292,18 @@ private:
     }
 
     // intentionally discardable
-    bool try_match_argument_list()
+    bool try_match_argument_group()
     {
         Scoped_Attempt a = attempt();
 
-        if (!expect(u8'[')) {
+        if (!expect(u8'(')) {
             return false;
         }
         const std::size_t arguments_instruction_index = m_out.size();
         m_out.push_back({ AST_Instruction_Type::push_arguments, 0 });
 
         for (std::size_t i = 0; try_match_argument(); ++i) {
-            if (expect(u8']')) {
+            if (expect(u8')')) {
                 const bool last_removed = try_remove_trailing_empty_argument();
                 m_out[arguments_instruction_index].n = i + !last_removed;
                 m_out.push_back({ AST_Instruction_Type::pop_arguments });
@@ -316,7 +315,7 @@ private:
                 continue;
             }
             COWEL_ASSERT_UNREACHABLE(
-                u8"Successfully matched arguments must be followed by ']' or ','"
+                u8"Successfully matched arguments must be followed by ')' or ','"
             );
         }
 
@@ -332,12 +331,12 @@ private:
     bool try_remove_trailing_empty_argument()
     {
         COWEL_ASSERT(m_out.size() >= 3);
-        COWEL_ASSERT(m_out.back().type == AST_Instruction_Type::pop_argument);
+        COWEL_ASSERT(ast_instruction_type_is_pop_argument(m_out.back().type));
 
         const AST_Instruction middle = m_out[m_out.size() - 2];
         // Pattern 1: push argument, skip, pop argument
         if (middle.type == AST_Instruction_Type::skip) {
-            if (m_out[m_out.size() - 3].type == AST_Instruction_Type::push_argument) {
+            if (ast_instruction_type_is_push_argument(m_out[m_out.size() - 3].type)) {
                 const std::size_t skip_length = middle.n;
                 m_out.resize(m_out.size() - 3);
                 m_out.push_back({ AST_Instruction_Type::skip, skip_length });
@@ -345,7 +344,7 @@ private:
             }
         }
         // Pattern 2: push argument, pop argument
-        else if (middle.type == AST_Instruction_Type::push_argument) {
+        else if (ast_instruction_type_is_push_argument(middle.type)) {
             m_out.resize(m_out.size() - 2);
             return true;
         }
@@ -393,9 +392,12 @@ private:
         Scoped_Attempt a = attempt();
 
         const std::size_t argument_instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type::push_argument });
+        m_out.push_back({ AST_Instruction_Type {} });
 
         try_skip_comments_and_whitespace();
+
+        AST_Instruction_Type push_type;
+        AST_Instruction_Type pop_type;
 
         const bool is_named = try_match_argument_name();
         if (is_named) {
@@ -404,18 +406,31 @@ private:
                 m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
                 m_pos += leading_whitespace;
             }
+            push_type = AST_Instruction_Type::push_named_argument;
+            pop_type = AST_Instruction_Type::pop_named_argument;
+        }
+        else if (try_match_ellipsis()) {
+            push_type = AST_Instruction_Type::push_ellipsis_argument;
+            pop_type = AST_Instruction_Type::pop_ellipsis_argument;
         }
         else {
-            try_match_ellipsis();
+            push_type = AST_Instruction_Type::push_positional_argument;
+            pop_type = AST_Instruction_Type::pop_positional_argument;
         }
 
-        const std::optional<std::size_t> result = try_match_trimmed_argument_value();
-        if (!result) {
-            return false;
+        if (try_match_argument_group()) {
+            m_out[argument_instruction_index].n = 0;
+        }
+        else {
+            const std::optional<std::size_t> result = try_match_right_trimmed_argument_value();
+            if (!result) {
+                return false;
+            }
+            m_out[argument_instruction_index].n = *result;
         }
 
-        m_out[argument_instruction_index].n = *result;
-        m_out.push_back({ AST_Instruction_Type::pop_argument });
+        m_out[argument_instruction_index].type = push_type;
+        m_out.push_back({ pop_type });
 
         a.commit();
         return true;
@@ -458,7 +473,7 @@ private:
     }
 
     [[nodiscard]]
-    std::optional<std::size_t> try_match_trimmed_argument_value()
+    std::optional<std::size_t> try_match_right_trimmed_argument_value()
     {
         Scoped_Attempt a = attempt();
 
@@ -469,7 +484,7 @@ private:
         // match_content_sequence is very aggressive, so I think at this point,
         // we have to be at the end of an argument due to a comma separator or closing square.
         const char8_t c = m_source[m_pos];
-        COWEL_ASSERT(c == u8',' || c == u8']');
+        COWEL_ASSERT(c == u8',' || c == u8')');
 
         trim_trailing_whitespace_in_matched_content();
 
@@ -606,8 +621,12 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         COWEL_ENUM_STRING_CASE8(pop_directive);
         COWEL_ENUM_STRING_CASE8(push_arguments);
         COWEL_ENUM_STRING_CASE8(pop_arguments);
-        COWEL_ENUM_STRING_CASE8(push_argument);
-        COWEL_ENUM_STRING_CASE8(pop_argument);
+        COWEL_ENUM_STRING_CASE8(push_named_argument);
+        COWEL_ENUM_STRING_CASE8(pop_named_argument);
+        COWEL_ENUM_STRING_CASE8(push_positional_argument);
+        COWEL_ENUM_STRING_CASE8(pop_positional_argument);
+        COWEL_ENUM_STRING_CASE8(push_ellipsis_argument);
+        COWEL_ENUM_STRING_CASE8(pop_ellipsis_argument);
         COWEL_ENUM_STRING_CASE8(push_block);
         COWEL_ENUM_STRING_CASE8(pop_block);
         COWEL_ENUM_STRING_CASE8(error_unclosed_block);

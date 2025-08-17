@@ -103,7 +103,8 @@ Char_By_Entity_Behavior::operator()(Content_Policy& out, const Invocation& call,
     ensure_paragraph_matches_display(out, m_display);
 
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    const auto input_status = to_plaintext(data, call.content, call.content_frame, context);
+    const auto input_status
+        = to_plaintext(data, call.get_content_span(), call.content_frame, context);
     if (input_status != Processing_Status::ok) {
         return input_status;
     }

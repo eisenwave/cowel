@@ -13,16 +13,15 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
 
     std::pmr::vector<char8_t> target_text { context.get_transient_memory() };
     const Processing_Status target_status
-        = to_plaintext(target_text, call.content, call.content_frame, context);
+        = to_plaintext(target_text, call.get_content_span(), call.content_frame, context);
     switch (target_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk:
     case Processing_Status::fatal: return target_status;
     case Processing_Status::error:
     case Processing_Status::error_brk: {
-        COWEL_ASSERT(!call.content.empty());
         context.try_fatal(
-            diagnostic::alias_name_invalid, ast::get_source_span(call.content.front()),
+            diagnostic::alias_name_invalid, call.get_content_source_span(),
             u8"Fatal error because generation of the target name failed."sv
         );
         return Processing_Status::fatal;
@@ -37,10 +36,10 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
         );
         return Processing_Status::fatal;
     }
-    COWEL_ASSERT(!call.content.empty());
+    COWEL_ASSERT(call.content);
     if (!is_directive_name(target_name)) {
         context.try_fatal(
-            diagnostic::alias_name_invalid, ast::get_source_span(call.content.front()),
+            diagnostic::alias_name_invalid, call.content->get_source_span(),
             joined_char_sequence({
                 u8"The target name \""sv,
                 target_name,
@@ -53,7 +52,7 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
     const Directive_Behavior* target_behavior = context.find_directive(target_name);
     if (!target_behavior) {
         context.try_fatal(
-            diagnostic::alias_name_invalid, ast::get_source_span(call.content.front()),
+            diagnostic::alias_name_invalid, call.content->get_source_span(),
             joined_char_sequence({
                 u8"No existing directive with the name \""sv,
                 target_name,
@@ -66,17 +65,23 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
 
     std::pmr::vector<char8_t> alias_text { context.get_transient_memory() };
     for (const Argument_Ref ref : call.arguments) {
+        const ast::Content_Sequence* arg_content
+            = as_content_or_error(ref.ast_node.get_value(), context);
+        if (!arg_content) {
+            return Processing_Status::fatal;
+        }
+
         const Processing_Status name_status
-            = to_plaintext(alias_text, ref.ast_node.get_content(), ref.frame_index, context);
+            = to_plaintext(alias_text, arg_content->get_elements(), ref.frame_index, context);
         switch (name_status) {
         case Processing_Status::ok: break;
         case Processing_Status::brk:
         case Processing_Status::fatal: return name_status;
         case Processing_Status::error:
         case Processing_Status::error_brk: {
-            COWEL_ASSERT(!call.content.empty());
+            COWEL_ASSERT(call.content);
             context.try_fatal(
-                diagnostic::alias_name_invalid, ast::get_source_span(call.content.front()),
+                diagnostic::alias_name_invalid, call.content->get_source_span(),
                 u8"Fatal error because generation of an alias failed."sv
             );
         }
@@ -90,10 +95,9 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
             return Processing_Status::fatal;
         }
         if (!is_directive_name(alias_name)) {
-            COWEL_ASSERT(!ref.ast_node.get_content().empty());
+            COWEL_ASSERT(!arg_content->empty());
             context.try_fatal(
-                diagnostic::alias_name_invalid,
-                ast::get_source_span(ref.ast_node.get_content().front()),
+                diagnostic::alias_name_invalid, arg_content->get_source_span(),
                 joined_char_sequence({
                     u8"The alias name \""sv,
                     alias_name,
@@ -104,8 +108,7 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
         }
         if (context.find_macro(alias_name) || context.find_alias(alias_name)) {
             context.try_fatal(
-                diagnostic::alias_duplicate,
-                ast::get_source_span(ref.ast_node.get_content().front()),
+                diagnostic::alias_duplicate, arg_content->get_source_span(),
                 joined_char_sequence({
                     u8"The alias name \""sv,
                     alias_name,

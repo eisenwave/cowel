@@ -48,7 +48,8 @@ WG21_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, Con
     writer.write_inner_html(u8"</i>: "sv);
     buffer.flush();
 
-    const auto content_status = consume_all(out, call.content, call.content_frame, context);
+    const auto content_status
+        = consume_all(out, call.get_content_span(), call.content_frame, context);
 
     writer.write_inner_html(u8" \N{EM DASH} <i>"sv);
     writer.write_inner_text(m_suffix);
@@ -84,12 +85,18 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const Invocation& call, Cont
     }
 
     const Argument_Ref title_arg = call.arguments[std::size_t(title_index)];
+    const auto* const title_arg_content
+        = as_content_or_error(title_arg.ast_node.get_value(), context);
+    if (!title_arg_content) {
+        writer.close_tag(html_tag::div);
+        return Processing_Status::error;
+    }
 
     {
         // FIXME: multiple evaluations of title input
         std::pmr::vector<char8_t> title_plaintext { context.get_transient_memory() };
         const auto status = to_plaintext(
-            title_plaintext, title_arg.ast_node.get_content(), title_arg.frame_index, context
+            title_plaintext, title_arg_content->get_elements(), title_arg.frame_index, context
         );
         if (status != Processing_Status::ok) {
             writer.close_tag(html_tag::div);
@@ -111,7 +118,7 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const Invocation& call, Cont
 
     HTML_Content_Policy html_policy { buffer };
     const auto title_status = consume_all(
-        html_policy, title_arg.ast_node.get_content(), title_arg.frame_index, context
+        html_policy, title_arg_content->get_elements(), title_arg.frame_index, context
     );
 
     writer.close_tag(html_tag::h1);
@@ -120,7 +127,8 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const Invocation& call, Cont
     }
 
     writer.write_inner_html(u8'\n');
-    const auto status = consume_all(html_policy, call.content, call.content_frame, context);
+    const auto status
+        = consume_all(html_policy, call.get_content_span(), call.content_frame, context);
     writer.close_tag(html_tag::div);
 
     return status;

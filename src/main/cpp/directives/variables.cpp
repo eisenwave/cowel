@@ -55,9 +55,14 @@ Result<long long, Processing_Status> compute_expression(
     long long result = expression_type_neutral_element(type);
     bool first = true;
     for (const Argument_Ref& arg : call.arguments) {
+        const auto* const arg_content = as_content_or_error(arg.ast_node.get_value(), context);
+        if (!arg_content) {
+            return try_generate_error(out, call, context);
+        }
+
         std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
         const auto arg_status
-            = to_plaintext(arg_text, arg.ast_node.get_content(), arg.frame_index, context);
+            = to_plaintext(arg_text, arg_content->get_elements(), arg.frame_index, context);
         if (arg_status != Processing_Status::ok) {
             return arg_status;
         }
@@ -143,7 +148,10 @@ Processing_Status Get_Variable_Behavior::generate_var(
 
     const auto it = context.get_variables().find(var);
     if (it != context.get_variables().end()) {
-        out.write(std::u8string_view { it->second }, Output_Language::text);
+        const std::u8string_view value_string { it->second };
+        if (!value_string.empty()) {
+            out.write(value_string, Output_Language::text);
+        }
     }
     return Processing_Status::ok;
 }
@@ -156,7 +164,8 @@ Processing_Status set_variable_to_op_result(
 )
 {
     std::pmr::vector<char8_t> body_string { context.get_transient_memory() };
-    const auto status = to_plaintext(body_string, call.content, call.content_frame, context);
+    const auto status
+        = to_plaintext(body_string, call.get_content_span(), call.content_frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }

@@ -49,7 +49,8 @@ Include_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     // TODO: warn about ignored arguments
 
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
-    const auto path_status = to_plaintext(path_data, call.content, call.content_frame, context);
+    const auto path_status
+        = to_plaintext(path_data, call.get_content_span(), call.content_frame, context);
     switch (path_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk: return Processing_Status::brk;
@@ -89,7 +90,8 @@ Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
     // TODO: warn about ignored arguments
 
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
-    const auto path_status = to_plaintext(path_data, call.content, call.content_frame, context);
+    const auto path_status
+        = to_plaintext(path_data, call.get_content_span(), call.content_frame, context);
     switch (path_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk: return Processing_Status::brk;
@@ -132,8 +134,6 @@ Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
 
     const ast::Pmr_Vector<ast::Content> imported_content
         = parse_and_build(entry->source, entry->id, context.get_transient_memory(), on_error);
-
-    warn_deprecated_directive_names(imported_content, context);
 
     try_inherit_paragraph(out);
     return consume_all(out, imported_content, call.call_frame, context);

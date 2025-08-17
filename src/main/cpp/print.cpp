@@ -323,28 +323,29 @@ public:
 
         out.build(Diagnostic_Highlight::tag).append(u8'\\').append(directive.get_name());
 
-        if (!directive.get_arguments().empty()) {
-            out.append(u8'[', Diagnostic_Highlight::punctuation);
-            out.append(u8'\n');
-            {
-                const Scoped_Indent i = indented();
-                visit_arguments(directive);
+        if (const ast::Group* const args = directive.get_arguments()) {
+            out.append(u8'(', Diagnostic_Highlight::punctuation);
+            if (!args->empty()) {
+                out.append(u8'\n');
+                {
+                    const Scoped_Indent i = indented();
+                    visit_arguments(directive);
+                }
+                print_indent();
             }
-            print_indent();
-            out.append(u8']', Diagnostic_Highlight::punctuation);
-        }
-        else {
-            out.append(u8"[]", Diagnostic_Highlight::punctuation);
+            out.append(u8')', Diagnostic_Highlight::punctuation);
         }
 
-        if (!directive.get_content().empty()) {
+        if (const ast::Content_Sequence* const content = directive.get_content()) {
             out.append(u8'{', Diagnostic_Highlight::punctuation);
-            out.append(u8'\n');
-            {
-                const Scoped_Indent i = indented();
-                visit_content_sequence(directive.get_content());
+            if (!content->empty()) {
+                out.append(u8'\n');
+                {
+                    const Scoped_Indent i = indented();
+                    visit_content_sequence(content->get_elements());
+                }
+                print_indent();
             }
-            print_indent();
             out.append(u8'}', Diagnostic_Highlight::punctuation);
         }
         else {
@@ -367,36 +368,47 @@ public:
         out.append(u8'\n');
     }
 
-    void visit(const ast::Argument& arg) final
+    void visit(const ast::Group_Member& arg) final
     {
         print_indent();
 
-        switch (arg.get_type()) {
-        case ast::Argument_Type::named: {
+        switch (arg.get_kind()) {
+        case ast::Member_Kind::named: {
             out.append(u8"Named_Argument", Diagnostic_Highlight::tag);
             out.append(u8'(', Diagnostic_Highlight::punctuation);
             out.append(arg.get_name(), Diagnostic_Highlight::attribute);
             out.append(u8')', Diagnostic_Highlight::punctuation);
             break;
         }
-        case ast::Argument_Type::positional: {
+        case ast::Member_Kind::positional: {
             out.append(u8"Positional_Argument", Diagnostic_Highlight::tag);
             break;
         }
-        case ast::Argument_Type::ellipsis: {
+        case ast::Member_Kind::ellipsis: {
             out.append(u8"Ellipsis", Diagnostic_Highlight::tag);
             break;
         }
         }
 
-        if (!arg.get_content().empty()) {
-            out.append(u8'\n');
-            const Scoped_Indent i = indented();
-            visit_content_sequence(arg.get_content());
+        if (const auto* const content = std::get_if<ast::Content_Sequence>(&arg.get_value())) {
+            if (content->empty()) {
+                out.append(u8'\n');
+                const Scoped_Indent i = indented();
+                visit_content_sequence(content->get_elements());
+            }
+            else {
+                out.append(u8" (empty value)", Diagnostic_Highlight::internal);
+                out.append(u8'\n');
+            }
+        }
+        else if (const auto* const group = std::get_if<ast::Group>(&arg.get_value())) {
+            out.append(u8"Group", Diagnostic_Highlight::tag);
+            out.append(u8'(', Diagnostic_Highlight::punctuation);
+            visit_group_members(group->get_members());
+            out.append(u8')', Diagnostic_Highlight::punctuation);
         }
         else {
-            out.append(u8" (empty value)", Diagnostic_Highlight::internal);
-            out.append(u8'\n');
+            COWEL_ASSERT_UNREACHABLE(u8"Invalid argument value.");
         }
     }
 

@@ -187,9 +187,14 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const Invocation& call, C
             continue;
         }
         const Argument_Ref arg = call.arguments[std::size_t(index)];
+        const auto* const arg_content = as_content_or_error(arg.ast_node.get_value(), context);
+        if (!arg_content) {
+            return Processing_Status::error;
+        }
+
         const std::size_t initial_size = result.text.size();
         const auto status
-            = to_plaintext(result.text, arg.ast_node.get_content(), arg.frame_index, context);
+            = to_plaintext(result.text, arg_content->get_elements(), arg.frame_index, context);
         if (status != Processing_Status::ok) {
             return status;
         }

@@ -18,7 +18,7 @@
 namespace cowel {
 
 struct Argument_Ref {
-    const ast::Argument& ast_node;
+    const ast::Group_Member& ast_node;
     Frame_Index frame_index;
 };
 
@@ -237,18 +237,16 @@ static_assert(std::is_trivially_copyable_v<Arguments_View>);
 struct Invocation {
     /// @brief The name which names the invoked directive.
     /// In the case of e.g. `\x`, this is simply `x`,
-    /// but in the case of `\cowel_invoke[x]`, it is `x`.
+    /// but in the case of `\cowel_invoke(x)`, it is `x`.
     std::u8string_view name;
     /// @brief The directive responsible for the invocation.
     /// This may not necessarily be a directive matching the behavior,
     /// but a directive like `\cowel_invoke` which performs that invocation programmatically.
     const ast::Directive& directive;
     /// @brief The arguments with which the directive is invoked.
-    /// Note that this is not necessarily the same as `directive->get_arguments()`.
     Arguments_View arguments;
     /// @brief The content with which the directive is invoked.
-    /// Note that this is not necessarily the same as `directive->get_content()`.
-    std::span<const ast::Content> content;
+    const ast::Content_Sequence* content;
     /// @brief The stack frame index of the content.
     /// For root content, this is zero.
     /// All content in a macro definition (and arguments of directives within)
@@ -261,6 +259,27 @@ struct Invocation {
     /// because `0` indicates the document top level,
     /// with each level of invocation being one greater than the level below.
     Frame_Index call_frame;
+
+    [[nodiscard]]
+    bool has_empty_content() const
+    {
+        return !content || content->empty();
+    }
+
+    [[nodiscard]]
+    std::span<const ast::Content> get_content_span() const
+    {
+        if (content) {
+            return content->get_elements();
+        }
+        return {};
+    }
+
+    [[nodiscard]]
+    File_Source_Span get_content_source_span() const
+    {
+        return content ? content->get_source_span() : directive.get_source_span();
+    }
 };
 
 /// @brief Simple helper type which can be constructed from an `ast::Directive`
@@ -268,12 +287,15 @@ struct Invocation {
 /// to the arguments of that directive.
 struct Homogeneous_Call_Arguments {
 private:
-    std::span<const ast::Argument> m_arguments;
+    std::span<const ast::Group_Member> m_arguments;
     Frame_Index m_frame;
 
 public:
     [[nodiscard]]
-    Homogeneous_Call_Arguments(std::span<const ast::Argument> arguments, Frame_Index frame) noexcept
+    Homogeneous_Call_Arguments(
+        std::span<const ast::Group_Member> arguments,
+        Frame_Index frame
+    ) noexcept
         : m_arguments { arguments }
         , m_frame { frame }
     {

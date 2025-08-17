@@ -87,7 +87,7 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     // we still process all the arguments above.
     if (out.get_language() == Output_Language::text) {
         const Processing_Status text_status
-            = consume_all(out, call.content, call.content_frame, context);
+            = consume_all(out, call.get_content_span(), call.content_frame, context);
         return status_concat(args_status, text_status);
     }
 
@@ -116,7 +116,7 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
         highlight_policy.write_phantom(prefix->string);
     }
     const auto highlight_status
-        = consume_all(highlight_policy, call.content, call.content_frame, context);
+        = consume_all(highlight_policy, call.get_content_span(), call.content_frame, context);
     if (!suffix->string.empty()) {
         highlight_policy.write_phantom(suffix->string);
     }
@@ -197,7 +197,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 
     // We do the same special casing as for \code (see above for explanation).
     if (out.get_language() == Output_Language::text) {
-        return consume_all(out, call.content, call.content_frame, context);
+        return consume_all(out, call.get_content_span(), call.content_frame, context);
     }
 
     HTML_Content_Policy policy = ensure_html_policy(out);
@@ -208,7 +208,8 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const Invocation& call, C
         .write_attribute(html_attr::data_h, short_name)
         .end();
     buffer.flush();
-    const Processing_Status result = consume_all(policy, call.content, call.content_frame, context);
+    const Processing_Status result
+        = consume_all(policy, call.get_content_span(), call.content_frame, context);
     if (status_is_break(result)) {
         return result;
     }
