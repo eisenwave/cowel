@@ -39,7 +39,17 @@ public:
         std::ranges::copy(str, m_buffer.data());
     }
 
-    constexpr Basic_Static_String() = default;
+    [[nodiscard]]
+    constexpr Basic_Static_String(Char c) noexcept
+        requires(capacity != 0)
+        : m_buffer { c }
+        , m_length { 1 }
+    {
+    }
+
+    [[nodiscard]]
+    constexpr Basic_Static_String() noexcept
+        = default;
 
     [[nodiscard]]
     constexpr bool empty() const noexcept
