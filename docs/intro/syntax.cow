@@ -3,7 +3,7 @@
 COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 \ul{
-  \li{\cowdoc_c{\\various_directives[positional args, named-args = 0]{and content}}}
+  \li{\cowdoc_c{\\various_directives(positional args, named-args = 0){and content}}}
   \li{\cowdoc_c{Text.}}
   \li{\cowdoc_c{\\:Comments}}
   \li{Escape sequences, such as \cowdoc_c{\\\U{7B}}, \cowdoc_c{\\\U{7D}}, \cowdoc_c{\\\\}, etc.}
@@ -19,11 +19,11 @@ This makes COWEL exceptionally suited to nest other languages inside of it in co
 Text is not processed specially;
 what you see is what you get.
 
-However, the output may depend on the context (\ref[#contexts-and-output]).
+However, the output may depend on the context (\ref(#contexts-and-output)).
 For example, \cowdoc_c{<} in text will render as a < character,
 but will be converted to \cowdoc_html{&lt;} in an HTML context.
 
-\h3[id=syntax-comments]{Comments}
+\h3(id=syntax-comments){Comments}
 
 Comments begin with \cowdoc_c{\\:} and extend until the end of the line.
 In almost every context,
@@ -34,14 +34,14 @@ This makes them useful for adding information to the COWEL markup.
 \Bnote{
 Comments, just like any other content,
 are actually part of the AST and don't simply get discarded during parsing.
-This means that a comment wrapped in \ref[#dir-literally] will render as expected:
-\codeblock[cowel]{\literally{
-\codeblock[cowel]{\literally{
+This means that a comment wrapped in \ref(#dir-cowel_source_as_text) will render as expected:
+\cowblock{\cowel_source_as_text{
+\cowblock{\cowel_source_as_text{
 \: A comment ...
 }}
 }}
 This renders as:
-\codeblock[cowel]{\literally{
+\cowblock{\cowel_source_as_text{
 \: A comment ...
 }}
 }
@@ -52,7 +52,7 @@ to the generated markup.
 
 \Bex{
 We can even join words by putting a comment between:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 Hello\: this comment will absorb the newline
 World
 
@@ -61,7 +61,7 @@ World
 }}
 
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 HelloWorld
 
 Hello World
@@ -89,7 +89,7 @@ The meaning of the escape sequences is described in the table below.
   }
 }
 
-\table[id=escapes-table]{
+\table(id=escapes-table){
   \tr{
     \th{Escape sequence}
     \th{Meaning}
@@ -101,6 +101,8 @@ The meaning of the escape sequences is described in the table below.
       \cowdoc_esc{\\},
       \cowdoc_esc{[},
       \cowdoc_esc{]},
+      \cowdoc_esc{(},
+      \cowdoc_esc{)},
       \cowdoc_esc{,},
       \cowdoc_esc{.},
       \cowdoc_esc{=},
@@ -121,8 +123,6 @@ The meaning of the escape sequences is described in the table below.
       \cowdoc_esc{\N{PERCENT SIGN}},
       \cowdoc_esc{&},
       \cowdoc_esc{'},
-      \cowdoc_esc{(},
-      \cowdoc_esc{)},
       \cowdoc_esc{*},
       \cowdoc_esc{+},
       \cowdoc_esc{/},
@@ -176,12 +176,12 @@ The way that whitespace is processed then depends on the produced HTML and how i
 
 \Bex{
 At a top level, whitespace is merged and line breaks are rendered like spaces:
-\codeblock[cowel]{
+\cowblock{
 This displays on one line
 because line breaks render like spaces.
 }
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <p>This displays on one line
 because line breaks render like spaces.</p>
 }
@@ -213,14 +213,14 @@ The process of paragraph splitting works as follows:
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
+\cowblock{
 First paragraph.
 
 Second paragraph.
 \\blockquote{This is a block directive.}
 }
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <p>First paragraph.</p>
 
 <p>Second paragraph.</p>
@@ -239,11 +239,11 @@ Every directive has three parts:
     The \cowdoc_c{\\directive_name} selects a specific directive to be processed.
   }
   \li{
-    An optional \cowdoc_c[prefix=\\d]{[comma-separated, positional arguments, named-arguments = ...]}
+    An optional \cowdoc_c(prefix=\\d){(comma-separated, positional arguments, named-arguments = ...)}
     provides additional inputs to the directive.
   }
   \li{
-    An optional \cowdoc_c[prefix=\\d]{{block of content}} provides a "main input" to a directive.
+    An optional \cowdoc_c(prefix=\\d){{block of content}} provides a "main input" to a directive.
   }
 }
 
@@ -258,7 +258,7 @@ However, the first character after \cowdoc_c{\\} cannot be an ASCII digit.
 
 \Btip{
 You can use an empty block of content to "cut a name short":
-\codeblock[cowel]{
+\cowblock{
 Thisisavery\\wbr{}longword.
 }
 Doing so is equivalent to writing
@@ -277,8 +277,9 @@ followed by plaintext \tt{-b}.
 
 \dfn{Directive arguments} can be
 \dfn{positional arguments},
-\dfn{named arguments}, or
-\dfn{ellipses}.
+\dfn{named arguments},
+\dfn{ellipses}, or
+\dfn{groups}.
 Arguments are separated by commas.
 Unlike anywhere else, whitespace surrounding directive arguments is ignored.
 
@@ -286,11 +287,11 @@ Arguments provide additional information to a directive.
 
 \Bex{
 Often, arguments are converted to HTML attributes.
-\codeblock[cowel]{
-\\b[id = abc]{Bold text.}
+\cowblock{
+\\b(id = abc){Bold text.}
 }
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <b id=abc>Bold text.</b>
 }
 }
@@ -321,11 +322,11 @@ and noncharacters.
 \Btip{
 If you want to provide a positional argument that is \cowdoc_c{name = value} instead,
 you can do so by writing:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \: "name = value" as a positional argument
-\xyz[name \\= value]
+\xyz(name \\= value)
 \: named argument with name "name" and value "value"
-\xyz[name = value]
+\xyz(name = value)
 }}
 Only the literal \cowdoc_c{=} character can be used for named arguments,
 not its escaped variant \cowdoc_c{\\=}.
@@ -339,13 +340,13 @@ ends the content.
 
 \Btip{
 You can use escape sequences to continue otherwise ended content.
-\codeblock[cowel]{\literally{
-\xyz[hello, world]   \: Two positional arguments
-\xyz[hello\, world]  \: One positional argument containing a comma.
-\xyz[hello[]world]   \: OK, [] is balanced and included in single argument
-\xyz[hello\]world]   \: OK
-\xyz[hello\[world]   \: OK
-\xyz[hello[world]    \: error: unterminated arguments
+\cowblock{\literally{
+\xyz(hello, world)   \: Two positional arguments
+\xyz(hello\, world)  \: One positional argument containing a comma.
+\xyz(hello()world)   \: OK, () is balanced and included in single argument
+\xyz(hello\)world)   \: OK
+\xyz(hello\(world)   \: OK
+\xyz(hello(world)    \: error: unterminated arguments
 }}
 }
 
@@ -353,18 +354,18 @@ You can use escape sequences to continue otherwise ended content.
 
 Ellipsis arguments (spelled \ellipsis)
 are placeholders which expand to arguments provided to a surrounding macro.
-See also \ref[#dir-cowel_macro] and \ref[#dir-cowel_put].
+See also \ref(#dir-cowel_macro) and \ref(#dir-cowel_put).
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{\literally{
+\cowblock{\literally{
 \: Define a macro for generating <div> elements
-\cowel_macro[div]{\cowel_html_element[div, ...]{\cowel_put}}
+\cowel_macro(div){\cowel_html_element(div, ...){\cowel_put}}
 
-\div[id = abc]{inner text}
+\div(id = abc){inner text}
 }}
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <div id=abc>inner text</div>
 }
 }
@@ -392,14 +393,27 @@ you can use the escape sequence \cowdoc_c{\\...} (only the first dot is part of 
 
 \Bex{
 \: We cannot use \literally here because it would cause a parse error
-\codeblock[cowel]{
-\\cowel_macro[m]{\\x[...]}        \\: OK, all macro arguments are forwarded to \\x
-\\cowel_macro[e]{\\x[...text]}    \\: error: content following an ellipsis
+\cowblock{
+\\cowel_macro(m){\\x(...)}        \\: OK, all macro arguments are forwarded to \\x
+\\cowel_macro(e){\\x(...text)}    \\: error: content following an ellipsis
 
-\\m[...]                         \\: error: ellipsis is not expanded from a macro
-\\m[\\...]                        \\: OK
-\\m[\\.\\.\\.]                      \\: OK
+\\m(...)                         \\: error: ellipsis is not expanded from a macro
+\\m(\\...)                        \\: OK
+\\m(\\.\\.\\.)                      \\: OK
 }
+}
+
+\h5{Groups}
+
+Groups make it possible to group any of the aforementioned constructs.
+Groups begin with \code(cowel,prefix=\\d){(} and end with \code(cowel,prefix=\\d\(){)}.
+
+\Bex{
+\codeblock(cowel){\literally{
+\d((x), ())    \: groups as positional arguments
+\d(n = (x, y)) \: group as named argument
+\d(((())))     \: nested empty groups
+}}
 }
 
 \h4{Directive content}
@@ -411,11 +425,11 @@ but they need to be balanced.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
+\cowblock{
 \\b{Bold text { with braces }.}
 }
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <b>Bold text { with braces }.</b>
 }
 }
@@ -424,11 +438,11 @@ Escape sequences don't participate in this "brace matching",
 so they can be used to literally produce a brace character.
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
+\cowblock{
 \\b{Bold text \\\U{7B} with brace.}
 }
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <b>Bold text \U{7B} with brace.</b>
 }
 }
@@ -437,11 +451,11 @@ Unlike in the directive arguments,
 whitespace is not trimmed.
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
+\cowblock{
 \\b{bold} \\i{ italic }
 }
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <b>bold</b> <i> italic </i>
 }
 }

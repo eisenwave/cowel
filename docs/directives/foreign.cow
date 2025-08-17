@@ -1,57 +1,6 @@
 \h3{Foreign languages}
 
-\h4[id=dir-html]{\cowdoc_dir{html} \c{mdash} Inline HTML}
-
-The \cowdoc_dir{html} directive can be used to output HTML literally.
-Its content is a plaintext context,
-and it displays as inline content.
-
-\Bex{
-COWEL markup:
-\codeblock[cowel]{
-This is \\html{<b>bold text</b>}.
-}
-Generated HTML:
-\codeblock[html]{
-This is <b>bold text</b>.
-}
-}
-
-\Bwarn{
-The \cowdoc_dir{html} directive can produce malformed HTML content if you're not careful.
-See, \ref[#dir-html-element] for a safer option.
-}
-
-\h4[id=dir-htmlblock]{\cowdoc_dir{htmlblock} \c{mdash} HTML blocks}
-
-The \cowdoc_dir{htmlblock} directive works exactly like the \cowdoc_dir{html} directive,
-but displays as block content instead of inline content.
-
-\Bwarn{
-The \cowdoc_dir{htmlblock} directive can produce malformed HTML content if you're not careful.
-See, \ref[#dir-html-element] for a safer option.
-}
-
-\h4[id=dir-html-element]{\cowdoc_dir{html-*} \c{mdash} HTML element literals}
-
-Any directive beginning with \cowdoc_dir{html-} can be used to produce an HTML element
-directly.
-Its content is a plaintext context,
-and it displays as inline content.
-Arguments are converted to HTML attributes of the produced tag.
-
-\Bex{
-COWEL markup:
-\codeblock[cowel]{
-This is \\html-span[id=abc]{a span}.
-}
-Generated HTML:
-\codeblock[html]{
-This is <span id=abc>a span</span>.
-}
-}
-
-\h4[id=dir-script]{\cowdoc_dir{script} \c{mdash} JavaScript blocks}
+\h4(id=dir-script){\cowdoc_dir{script} \c{mdash} JavaScript blocks}
 
 The content of a \cowdoc_dir{script} directive is a plaintext context,
 where the input is treated as JavaScript code
@@ -61,26 +10,26 @@ and surrounded in \cowdoc_html{<script>/*...*/</script>} tags.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
+\cowblock{
 \\script{
 console.log("hello");
 }
 }
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <script>
 console.log("hello");
 </script>
 }
 }
 
-\h4[id=dir-noscript]{\cowdoc_dir{noscript} \c{mdash} No-JavaScript content}
+\h4(id=dir-noscript){\cowdoc_dir{noscript} \c{mdash} No-JavaScript content}
 
 The \cowdoc_dir{noscript} directive corresponds to the \cowdoc_html{<noscript>} element.
 Its content is an HTML context,
 and will only be shown by the browser when JavaScript is disabled.
 
-\h4[id=dir-style]{\cowdoc_dir{style} \c{mdash} CSS blocks}
+\h4(id=dir-style){\cowdoc_dir{style} \c{mdash} CSS blocks}
 
 The content of a \cowdoc_dir{style} directive is a plaintext context,
 where the input is treated as JavaScript code and surrounded in \cowdoc_html{<style>/*...*/</style>} tags.
@@ -89,13 +38,13 @@ where the input is treated as JavaScript code and surrounded in \cowdoc_html{<st
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
+\cowblock{
 \\style{
 body { color: red; }
 }
 }
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 <style>
 body { color: red; }
 </style>

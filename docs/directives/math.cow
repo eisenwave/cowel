@@ -1,18 +1,19 @@
-\h3[id=math]{Math}
+\h3(id=math){Math}
 
 In recent years, browser support for
-\ref[https://developer.mozilla.org/en-US/docs/Web/MathML]{MathML}
+\ref(https://developer.mozilla.org/en-US/docs/Web/MathML){MathML}
 within HTML has become widespread.
 COWEL relies entirely on the browser for properly rendering math as MathML,
 which is very simple and lightweight,
 but not as portable as "baking" the math into an SVG.
 
 \Bex{
-If you have existing MathML, you can embed their content using \cowdoc_dir{html} or \cowdoc_dir{htmlblock}:
-\codeblock[cowel]{
+If you have existing MathML,
+you can embed their content using \cowdoc_dir{cowel_text_as_html}:
+\cowblock{
 Math
-\\html{
-\code[xml,nested=yes]{<math display=inline>
+\\cowel_text_as_html{
+\code(xml,nested=yes){<math display=inline>
   <mfrac>
     <mi>x</mi>
     <mn>2</mn>
@@ -24,7 +25,7 @@ in a sentence.
 This renders as:
 \Bindent{
 Math
-\html{<math display=inline>
+\cowel_text_as_html{<math display=inline>
 <mfrac>
   <mi>x</mi>
   <mn>2</mn>
@@ -32,16 +33,17 @@ Math
 </math>}
 in a sentence.
 }
-You can also keep the MathML separate within an XML document and \cowdoc_dir{include} it:
-\codeblock[cowel]{\literally{
-Math \html{\include{math.mml}} in a sentence.
+You can also keep the MathML separate within an XML document
+and use \cowdoc_dir{cowel_include_text}:
+\cowblock{\literally{
+Math \cowel_text_as_html{\cowel_include_text{math.mml}} in a sentence.
 }}
 }
 
 However, hand-writing MathML would be extremely tedious and verbose,
 so COWEL offers some convenience directives, listed below.
 
-\h4[id=dir-math]{\cowdoc_dir{math} \c{mdash} Inline math}
+\h4(id=dir-math){\cowdoc_dir{math} \c{mdash} Inline math}
 
 A \cowdoc_dir{math} directive surrounds its content with
 \cowdoc_html{<math display=inline>...</math>} tags,
@@ -52,12 +54,12 @@ and within it, additional pseudo-directives like \cowdoc_dir{mi} or \cowdoc_dir{
 corresponding to MathML elements can be used.
 Essentially, this allows you to build MathML using COWEL syntax.
 
-See \ref[https://developer.mozilla.org/en-US/docs/Web/MathML/Reference/Element]{Mozilla's MathML elements reference}
+See \ref(https://developer.mozilla.org/en-US/docs/Web/MathML/Reference/Element){Mozilla's MathML elements reference}
 for a list of supported elements/directives.
 
 \Bex{
-The previous example in \ref[#math] could also be written like:
-\codeblock[cowel]{
+The previous example in \ref(#math) could also be written like:
+\cowblock{
 Math
 \\math{ \\mfrac{\\mi{x}\\mn{2}} }
 in a sentence.
@@ -67,8 +69,8 @@ in a sentence.
 \Btip{
 If you frequently use math inside plain sentences,
 you can define a convenience macro:
-\codeblock[cowel]{
-\\macro[\\mathsqr{...}]{\\math{\\msup{\\mi{\\put}\\mn{2}}}}
+\cowblock{
+\\macro(\\mathsqr{...}){\\math{\\msup{\\mi{\\put}\\mn{2}}}}
 
 The sum of \\mathsqr{x} and \\mathsqr{y} \c{mldr}
 }
@@ -78,7 +80,7 @@ The sum of \math{\msup{\mi{x}\mn{2}}} and \math{\msup{\mi{y}\mn{2}}} \c{mldr}
 }
 }
 
-\h4[id=dir-mathblock]{\cowdoc_dir{mathblock} \c{mdash} Math blocks}
+\h4(id=dir-mathblock){\cowdoc_dir{mathblock} \c{mdash} Math blocks}
 
 The \cowdoc_dir{mathblock} directive functions almost exactly as the \cowdoc_dir{math} directive,
 but it displays as block content instead of inline content,

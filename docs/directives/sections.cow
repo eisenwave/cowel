@@ -3,9 +3,9 @@
 Often, you want to produce content in one place,
 but have it display in another place within the document.
 A classic example is collecting headings automatically in a table of contents,
-or copying the content of a heading into a preview when referenced by \cowdoc_c{\\ref[#id]}.
+or copying the content of a heading into a preview when referenced by \cowdoc_c{\\ref(#id)}.
 
-\h4[id=dir-there]{\cowdoc_dir{there} \c{mdash} Append content to section}
+\h4(id=dir-there){\cowdoc_dir{there} \c{mdash} Append content to section}
 
 The \cowdoc_dir{there} directive displays as meta content.
 Basically, it stashes away its input content (which is an HTML context) somewhere else.
@@ -19,11 +19,11 @@ inside \cowdoc_html{<body>}, inside \cowdoc_html{html}.
 
 \ul{
 \li{
-\cowdoc_c{\\there[std.head]{text}} will write \cowdoc_c{text}
+\cowdoc_c{\\there(std.head){text}} will write \cowdoc_c{text}
 inside of the \cowdoc_html{<head>} element (following auto-generated content).
 }
 \li{
-\cowdoc_c{\\there[std.body]{text}} will write \cowdoc_c{text}
+\cowdoc_c{\\there(std.body){text}} will write \cowdoc_c{text}
 inside of the \cowdoc_html{<body>} element (following \cowdoc_html{<main>}
 and other automatically inserted elements).
 }
@@ -31,14 +31,14 @@ and other automatically inserted elements).
 
 \Btip{
 You can change the title of the document as follows:
-\codeblock[cowel]{
-\\there[std.head]{
+\cowblock{
+\\there(std.head){
 \\html-title{This is the document title!}
 }
 }
 }
 
-\h4[id=dir-here]{\cowdoc_dir{here} \c{mdash} Copy section content}
+\h4(id=dir-here){\cowdoc_dir{here} \c{mdash} Copy section content}
 
 The \cowdoc_dir{here} directive inserts the content from another section at its location.
 It displays as inline content.
@@ -51,18 +51,18 @@ which allows forward-references.
 
 \Bex{
 COWEL markup:
-\codeblock[cowel]{
-\\there[sec]{before/}
-(\\here[sec])
-\\there[sec]{/after}
+\cowblock{
+\\there(sec){before/}
+(\\here(sec))
+\\there(sec){/after}
 }
 Generated HTML:
-\codeblock[html]{
+\htmlblock{
 (before//after)
 }
 }
 
-\h4[id=dir-hereblock]{\cowdoc_dir{hereblock} \c{mdash} Copy section content in block}
+\h4(id=dir-hereblock){\cowdoc_dir{hereblock} \c{mdash} Copy section content in block}
 
 The \cowdoc_dir{hereblock} directive functions exactly like the \cowdoc_dir{here} directive,
 but displays as block content instead of inline content.

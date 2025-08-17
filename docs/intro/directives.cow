@@ -7,7 +7,7 @@ where each piece of content is fed into the current content policy.
 There exists a \dfn{top-level content policy} which takes its input
 and writes it to the output HTML file.
 
-\h3[id=contexts-and-output]{Content policies}
+\h3(id=contexts-and-output){Content policies}
 
 A \dfn{content policy} dictates how each pice of content
 (text, comments, escapes, directives)
@@ -47,7 +47,7 @@ The following builtin content policies exist:
     Like a to-HTML policy,
     but surrounds given text content in paragraphs,
     and treats blank lines in text as paragraph separators.
-    See \ref[#paragraph-splitting] for details.
+    See \ref(#paragraph-splitting) for details.
   }
 
   \dt{No-invoke policy}
@@ -145,17 +145,17 @@ are passed into the function,
 COWEL directives have \em{absolute} control over their inputs and how they are processed.
 
 Say you have a JavaScript function:
-\codeblock[js]{
+\codeblock(js){
 function f(x) {
     console.log(x);
 }
 f(2 + 2);
 }
-\code[js]{f} has no idea that its input was originally \code[js]{2 + 2}.
-It only sees the value \code[js]{4} and prints it, "oblivious to the outside".
+\code(js){f} has no idea that its input was originally \code(js){2 + 2}.
+It only sees the value \code(js){4} and prints it, "oblivious to the outside".
 
 COWEL follows a different model:
-\codeblock[cowel]{
+\cowblock{
 \\comment{\\b{x}}
 }
 No \cowdoc_html{<b>} tag is ever generated because \cowdoc_c{\\b{x}} is never processed.
@@ -165,7 +165,7 @@ and it can choose not to process them.
 
 You can even make a \cowdoc_dir{comment2} directive that works
 just like \cowdoc_dir{comment} yourself:
-\codeblock[cowel]{
-\\macro[\\comment2]{}
+\cowblock{
+\\cowel_macro(comment2){}
 }
 

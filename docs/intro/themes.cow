@@ -5,9 +5,9 @@ COWEL outputs documents that can be viewed in \dfn{light mode} and \dfn{dark mod
 When the document is opened with support for JavaScript,
 there is an button in the top-right that can be used to switch between three modes:
 \ul{
-\li{Sync the theme with the OS (default)}
-\li{Light mode (ignoring system preference)}
-\li{Dark mode (ignoring system preference)}
+  \li{Sync the theme with the OS (default)}
+  \li{Light mode (ignoring system preference)}
+  \li{Dark mode (ignoring system preference)}
 }
 
 Forced light/dark mode works by adding a \tt{light} or \tt{dark}
