@@ -1,5 +1,44 @@
 # Changelog
 
+## **[v0.6.0]** (??)
+
+- remove support for `-` in directive names
+- remove the following deprecated directives:
+  - `\html` (use `\cowel_text_as_html` instead)
+  - `htmlblock` (use `\cowel_text_as_html` instead)
+  - `html-*` (use `\cowel_html_element` instead)
+  - `\wg21-*` (use `\wg21_*` instead)
+  - `\make-*` (use `\make_*` instead)
+  - `\lorem-ipsum` (use `\lorem_ipsum` instead)
+  - `\c` (use `\cowel_char_by_entity` instead)
+  - `\N` (use `\cowel_char_by_name` instead)
+  - `\U` (use `\cowel_char_by_num` instead)
+  - `\Udigits` (use `\cowel_char_get_num` instead)
+  - `\import` (use `\cowel_include` instead)
+  - `\include` (use `\cowel_include_text` instead)
+  - `\hl` (use `\cowel_highlight_as` instead)
+  - `\word` (use `\nobr` instead)
+  - `\bug` (use `\Bug` instead)
+  - `\decision` (use `\Bdecision` instead)
+  - `\delblock` (use `\Bdel` instead)
+  - `\diff` (use `\Bdiff` instead)
+  - `\example` (use `\Bex` instead)
+  - `\indent` (use `\Bindent` instead)
+  - `\insblock` (use `\Bins` instead)
+  - `\important` (use `\Bimp` instead)
+  - `\note` (use `\Bnote` instead)
+  - `\tip` (use `\Btip` instead)
+  - `\todo` (use `\Btodo` instead)
+  - `\warning` (use `\Bwarn` instead)
+  - `\macro` (use `\cowel_macro` instead)
+  - `\block` (use `\cowel_paragraph_leave` instead)
+  - `\inline` (use `\cowel_paragraph_enter` instead)
+  - `\paragraphs` (use `\cowel_paragraphs` instead)
+- change `[` and `]` argument syntax to `(` and `)` (#79)
+- add argument groups (#80)
+- add `\-` escape sequence
+- add EBNF grammar (`docs/grammar.ebnf`)
+
 ## **[v0.5.1]** (2025-08-14)
 
 - fix `\cowel_put` not inheriting paragraph,
