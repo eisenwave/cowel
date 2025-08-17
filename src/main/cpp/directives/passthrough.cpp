@@ -57,24 +57,6 @@ Error_Behavior::operator()(Content_Policy& out, const Invocation& call, Context&
     }
 }
 
-Processing_Status
-HTML_Wrapper_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
-{
-    // TODO: warn about unused arguments
-    ensure_paragraph_matches_display(out, m_display);
-
-    Paragraph_Split_Policy split_policy { out, context.get_transient_memory() };
-    auto& policy = m_is_paragraphed ? split_policy : out;
-
-    const Processing_Status result = consume_all(policy, call.content, call.content_frame, context);
-    if (m_is_paragraphed) {
-        split_policy.leave_paragraph();
-    }
-
-    return result;
-}
-
 Processing_Status Plaintext_Wrapper_Behavior::operator()(
     Content_Policy& out,
     const Invocation& call,
@@ -85,7 +67,7 @@ Processing_Status Plaintext_Wrapper_Behavior::operator()(
     ensure_paragraph_matches_display(out, m_display);
 
     Plaintext_Content_Policy policy { out };
-    return consume_all(policy, call.content, call.content_frame, context);
+    return consume_all(policy, call.get_content_span(), call.content_frame, context);
 }
 
 Processing_Status
@@ -94,7 +76,7 @@ Trim_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     // TODO: warn about unused arguments
     ensure_paragraph_matches_display(out, m_display);
 
-    return consume_all_trimmed(out, call.content, call.content_frame, context);
+    return consume_all_trimmed(out, call.get_content_span(), call.content_frame, context);
 }
 
 Processing_Status
@@ -122,7 +104,8 @@ Passthrough_Behavior::operator()(Content_Policy& out, const Invocation& call, Co
     }
     buffer.flush();
 
-    const auto content_status = consume_all(policy, call.content, call.content_frame, context);
+    const auto content_status
+        = consume_all(policy, call.get_content_span(), call.content_frame, context);
     writer.close_tag(name);
     buffer.flush();
     return status_concat(attributes_status, content_status);
@@ -141,10 +124,15 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
         );
         return try_generate_error(out, call, context);
     }
+    const auto* const first_positional_content
+        = as_content_or_error(first_positional->ast_node.get_value(), context);
+    if (!first_positional_content) {
+        return try_generate_error(out, call, context);
+    }
 
     std::pmr::vector<char8_t> name_text { context.get_transient_memory() };
     const Processing_Status name_status = to_plaintext(
-        name_text, first_positional->ast_node.get_content(), first_positional->frame_index, context
+        name_text, first_positional_content->get_elements(), first_positional->frame_index, context
     );
     if (name_status != Processing_Status::ok) {
         return name_status;
@@ -170,9 +158,9 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 
     if (m_self_closing == HTML_Element_Self_Closing::self_closing) {
         attributes.end_empty();
-        if (!call.content.empty()) {
+        if (call.content && !call.content->empty()) {
             context.try_warning(
-                diagnostic::ignored_content, call.directive.get_source_span(),
+                diagnostic::ignored_content, call.content->get_source_span(),
                 u8"Content in a self-closing HTML element is ignored."sv
             );
         }
@@ -181,7 +169,8 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
         attributes.end();
         buffer.flush();
         if (status_is_continue(status)) {
-            const auto content_status = consume_all(out, call.content, call.content_frame, context);
+            const auto content_status
+                = consume_all(out, call.get_content_span(), call.content_frame, context);
             status = status_concat(content_status, status);
         }
         writer.close_tag(*name);
@@ -217,27 +206,12 @@ In_Tag_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
     }
     buffer.flush();
 
-    const auto content_status = consume_all(policy, call.content, call.content_frame, context);
+    const auto content_status
+        = consume_all(policy, call.get_content_span(), call.content_frame, context);
 
     writer.close_tag(m_tag_name);
     buffer.flush();
     return status_concat(attributes_status, content_status);
-}
-
-[[nodiscard]]
-HTML_Tag_Name
-Directive_Name_Passthrough_Behavior::get_name(const Invocation& call, Context& context) const
-{
-    context.try_warning(
-        diagnostic::deprecated, call.directive.get_source_span(),
-        u8"\\html-NAME directives are deprecated. "
-        u8"Use \\cowel_html_element[NAME] instead."sv
-    );
-
-    const std::u8string_view raw_name = call.name;
-    const std::u8string_view name
-        = raw_name.starts_with(builtin_directive_prefix) ? raw_name.substr(1) : raw_name;
-    return { Unchecked {}, name.substr(m_name_prefix.size()) };
 }
 
 Processing_Status
@@ -278,7 +252,8 @@ Special_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, 
     }
     buffer.flush();
 
-    const auto content_status = consume_all(policy, call.content, call.content_frame, context);
+    const auto content_status
+        = consume_all(policy, call.get_content_span(), call.content_frame, context);
 
     policy.leave_paragraph();
     writer.close_tag(m_name);
@@ -295,7 +270,8 @@ URL_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
 
     std::pmr::vector<char8_t> url { context.get_transient_memory() };
     append(url, m_url_prefix);
-    const auto text_status = to_plaintext(url, call.content, call.content_frame, context);
+    const auto text_status
+        = to_plaintext(url, call.get_content_span(), call.content_frame, context);
     if (text_status != Processing_Status::ok) {
         return text_status;
     }
@@ -326,10 +302,9 @@ Self_Closing_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
 
     // TODO: this should use some utility function
-    if (!call.content.empty()) {
-        const auto location = ast::get_source_span(call.content.front());
+    if (call.content && !call.content->empty()) {
         context.try_warning(
-            diagnostic::ignored_content, location,
+            diagnostic::ignored_content, call.content->get_source_span(),
             u8"Content was ignored. Use empty braces,"
             "i.e. {} to resolve this warning."sv
         );

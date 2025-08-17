@@ -14,7 +14,6 @@
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/directive_behavior.hpp"
 #include "cowel/directive_display.hpp"
-#include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 
 namespace cowel {
@@ -95,8 +94,6 @@ struct Builtin_Directive_Set::Impl {
         { html_tag::div, u8"indent", Policy_Usage::html, Directive_Display::block };
     Special_Block_Behavior Bins //
         { HTML_Tag_Name(u8"ins-block"), Intro_Policy::no };
-    HTML_Wrapper_Behavior block //
-        { Directive_Display::block, To_HTML_Mode::direct };
     Special_Block_Behavior blockquote //
         { HTML_Tag_Name(u8"blockquote"), Intro_Policy::no };
     Special_Block_Behavior Bnote //
@@ -113,8 +110,6 @@ struct Builtin_Directive_Set::Impl {
         { HTML_Tag_Name(u8"bug-block"), Intro_Policy::yes };
     Special_Block_Behavior Bwarn //
         { HTML_Tag_Name(u8"warning-block"), Intro_Policy::yes };
-    Char_By_Entity_Behavior c //
-        { Directive_Display::in_line };
     Expression_Behavior Cadd //
         { Expression_Type::add };
     Expression_Behavior Cdiv //
@@ -175,16 +170,8 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::block };
     Self_Closing_Behavior hr //
         { HTML_Tag_Name(u8"hr"), Directive_Display::block };
-    HTML_Behavior html //
-        { Directive_Display::in_line };
-    HTML_Behavior htmlblock //
-        { Directive_Display::block };
-    Directive_Name_Passthrough_Behavior html_tags //
-        { Policy_Usage::html, Directive_Display::block, html_tag_prefix };
     Fixed_Name_Passthrough_Behavior i //
         { HTML_Tag_Name(u8"i"), Policy_Usage::inherit, Directive_Display::in_line };
-    HTML_Wrapper_Behavior in_line //
-        { Directive_Display::in_line, To_HTML_Mode::direct };
     Fixed_Name_Passthrough_Behavior ins //
         { HTML_Tag_Name(u8"ins"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior kbd //
@@ -194,8 +181,6 @@ struct Builtin_Directive_Set::Impl {
     Literally_Behavior literally //
         {};
     Lorem_Ipsum_Behavior lorem_ipsum //
-        {};
-    Legacy_Macro_Behavior macro //
         {};
     URL_Behavior mail //
         { u8"mailto:" };
@@ -210,8 +195,6 @@ struct Builtin_Directive_Set::Impl {
         { Directive_Display::in_line };
     Math_Behavior mathblock //
         { Directive_Display::block };
-    Char_By_Name_Behavior N //
-        { Directive_Display::in_line };
     In_Tag_Behavior nobr //
         { html_tag::span, u8"word", Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior noscript //
@@ -222,8 +205,6 @@ struct Builtin_Directive_Set::Impl {
         { html_tag::ol, Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior p //
         { HTML_Tag_Name(u8"p"), Policy_Usage::html, Directive_Display::block };
-    HTML_Wrapper_Behavior paragraphs //
-        { Directive_Display::block, To_HTML_Mode::paragraphs };
     Fixed_Name_Passthrough_Behavior pre //
         { HTML_Tag_Name(u8"pre"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior q //
@@ -282,10 +263,6 @@ struct Builtin_Directive_Set::Impl {
         { HTML_Tag_Name(u8"u"), Policy_Usage::inherit, Directive_Display::in_line };
     Fixed_Name_Passthrough_Behavior ul //
         { html_tag::ul, Policy_Usage::html, Directive_Display::block };
-    Char_By_Num_Behavior U //
-        { Directive_Display::in_line };
-    Char_Get_Num_Behavior Udigits //
-        { Directive_Display::in_line };
     Unprocessed_Behavior unprocessed //
         {};
     URL_Behavior url //
@@ -312,32 +289,8 @@ struct Builtin_Directive_Set::Impl {
     Deprecated_Behavior name { use_instead, u8## #use_instead }
     // clang-format on
 
-    COWEL_DEPRECATED_ALIAS(abstract, Babstract);
-    COWEL_DEPRECATED_ALIAS(bug, Bug);
-    COWEL_DEPRECATED_ALIAS(decision, Bdecision);
-    COWEL_DEPRECATED_ALIAS(delblock, Bdel);
-    COWEL_DEPRECATED_ALIAS(diff, Bdiff);
-    COWEL_DEPRECATED_ALIAS(example, Bex);
-    COWEL_DEPRECATED_ALIAS(indent, Bindent);
-    COWEL_DEPRECATED_ALIAS(important, Bimp);
-    COWEL_DEPRECATED_ALIAS(insblock, Bins);
-    COWEL_DEPRECATED_ALIAS(note, Bnote);
-    COWEL_DEPRECATED_ALIAS(tip, Btip);
-    COWEL_DEPRECATED_ALIAS(todo, Btodo);
-    COWEL_DEPRECATED_ALIAS(warning, Bwarn);
-    COWEL_DEPRECATED_ALIAS(word, nobr);
-
-    COWEL_DEPRECATED_ALIAS(hyphen_make_bib, make_bib);
-    COWEL_DEPRECATED_ALIAS(hyphen_make_contents, make_contents);
-    COWEL_DEPRECATED_ALIAS(hyphen_lorem_ipsum, lorem_ipsum);
-    COWEL_DEPRECATED_ALIAS(hyphen_wg21_example, wg21_example);
-    COWEL_DEPRECATED_ALIAS(hyphen_wg21_grammar, wg21_grammar);
-    COWEL_DEPRECATED_ALIAS(hyphen_wg21_head, wg21_head);
-    COWEL_DEPRECATED_ALIAS(hyphen_wg21_note, wg21_note);
-
-    COWEL_DEPRECATED_ALIAS(hl, cowel_highlight_as); // NOLINT(misc-confusable-identifiers)
-    COWEL_DEPRECATED_ALIAS(import, cowel_include);
-    COWEL_DEPRECATED_ALIAS(include, cowel_include_text);
+    // Usage:
+    // COWEL_DEPRECATED_ALIAS(abstract, Babstract);
 
     Impl() = default;
     ~Impl() = default;
@@ -439,12 +392,9 @@ Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& conte
         u8"-kbd",
         u8"-li",
         u8"-literally",
-        u8"-lorem-ipsum",
         u8"-lorem_ipsum",
         u8"-macro",
         u8"-mail",
-        u8"-make-bib",
-        u8"-make-contents",
         u8"-make_bib",
         u8"-make_contents",
         u8"-mark",
@@ -491,10 +441,6 @@ Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& conte
         u8"-var",
         u8"-warning",
         u8"-wbr",
-        u8"-wg21-example",
-        u8"-wg21-grammar",
-        u8"-wg21-head",
-        u8"-wg21-note",
         u8"-wg21_example",
         u8"-wg21_grammar",
         u8"-wg21_head",
@@ -524,22 +470,11 @@ Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& conte
 
 const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) const
 {
-    // Any builtin names should be found with both `\\-directive` and `\\directive`.
-    // `\\def` does not permit defining directives with a hyphen prefix,
-    // so this lets the user
-    if (name.starts_with(builtin_directive_prefix)) {
-        return (*this)(name.substr(1));
-    }
     if (name.empty()) {
         return nullptr;
     }
     // NOLINTBEGIN(readability-braces-around-statements)
     switch (name[0]) {
-    case u8'a':
-        if (name == u8"abstract")
-            return &m_impl->abstract;
-        break;
-
     case u8'B':
         if (name == u8"Babstract")
             return &m_impl->Babstract;
@@ -578,14 +513,10 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
             return &m_impl->b;
         if (name == u8"bib")
             return &m_impl->bib;
-        if (name == u8"block")
-            return &m_impl->block;
         if (name == u8"blockquote")
             return &m_impl->blockquote;
         if (name == u8"br")
             return &m_impl->br;
-        if (name == u8"bug")
-            return &m_impl->bug;
         break;
 
     case u8'C':
@@ -652,8 +583,6 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
             if (name == u8"cowel_to_html")
                 return &m_impl->cowel_to_html;
         }
-        if (name == u8"c")
-            return &m_impl->c;
         if (name == u8"caption")
             return &m_impl->caption;
         if (name == u8"cite")
@@ -673,18 +602,12 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
     case u8'd':
         if (name == u8"dd")
             return &m_impl->dd;
-        if (name == u8"decision")
-            return &m_impl->decision;
         if (name == u8"del")
             return &m_impl->del;
-        if (name == u8"delblock")
-            return &m_impl->delblock;
         if (name == u8"details")
             return &m_impl->details;
         if (name == u8"dfn")
             return &m_impl->dfn;
-        if (name == u8"diff")
-            return &m_impl->diff;
         if (name == u8"div")
             return &m_impl->div;
         if (name == u8"dl")
@@ -698,8 +621,6 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
             return &m_impl->em;
         if (name == u8"error")
             return &m_impl->error;
-        if (name == u8"example")
-            return &m_impl->example;
         break;
 
     case u8'g':
@@ -724,36 +645,15 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
             return &m_impl->here;
         if (name == u8"hereblock")
             return &m_impl->hereblock;
-        if (name == u8"hl")
-            return &m_impl->hl;
         if (name == u8"hr")
             return &m_impl->hr;
-        if (name == u8"html")
-            return &m_impl->html;
-        if (name == u8"htmlblock")
-            return &m_impl->htmlblock;
-        static_assert(html_tag_prefix[0] == 'h');
-        if (name.starts_with(html_tag_prefix))
-            return &m_impl->html_tags;
         break;
 
     case u8'i':
         if (name == u8"i")
             return &m_impl->i;
-        if (name == u8"import")
-            return &m_impl->import;
-        if (name == u8"important")
-            return &m_impl->important;
-        if (name == u8"include")
-            return &m_impl->include;
-        if (name == u8"indent")
-            return &m_impl->indent;
-        if (name == u8"inline")
-            return &m_impl->in_line;
         if (name == u8"ins")
             return &m_impl->ins;
-        if (name == u8"insblock")
-            return &m_impl->insblock;
         break;
 
     case u8'k':
@@ -766,26 +666,13 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
             return &m_impl->li;
         if (name == u8"literally")
             return &m_impl->literally;
-        if (name == u8"lorem-ipsum")
-            return &m_impl->hyphen_lorem_ipsum;
         if (name == u8"lorem_ipsum")
             return &m_impl->lorem_ipsum;
         break;
 
-    case u8'N':
-        if (name == u8"N")
-            return &m_impl->N;
-        break;
-
     case u8'm':
-        if (name == u8"macro")
-            return &m_impl->macro;
         if (name == u8"mail")
             return &m_impl->mail;
-        if (name == u8"make-bib")
-            return &m_impl->hyphen_make_bib;
-        if (name == u8"make-contents")
-            return &m_impl->hyphen_make_contents;
         if (name == u8"make_bib")
             return &m_impl->make_bib;
         if (name == u8"make_contents")
@@ -803,8 +690,6 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
             return &m_impl->nobr;
         if (name == u8"noscript")
             return &m_impl->noscript;
-        if (name == u8"note")
-            return &m_impl->note;
         break;
 
     case u8'o':
@@ -817,8 +702,6 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
     case u8'p':
         if (name == u8"p")
             return &m_impl->p;
-        if (name == u8"paragraphs")
-            return &m_impl->paragraphs;
         if (name == u8"pre")
             return &m_impl->pre;
         break;
@@ -879,23 +762,12 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
             return &m_impl->thead;
         if (name == u8"there")
             return &m_impl->there;
-        if (name == u8"tip")
-            return &m_impl->tip;
-        if (name == u8"todo")
-            return &m_impl->todo;
         if (name == u8"tr")
             return &m_impl->tr;
         if (name == u8"trim")
             return &m_impl->trim;
         if (name == u8"tt")
             return &m_impl->tt;
-        break;
-
-    case u8'U':
-        if (name == u8"U")
-            return &m_impl->U;
-        if (name == u8"Udigits")
-            return &m_impl->Udigits;
         break;
 
     case u8'u':
@@ -922,18 +794,8 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
         break;
 
     case u8'w':
-        if (name == u8"warning")
-            return &m_impl->warning;
         if (name == u8"wbr")
             return &m_impl->wbr;
-        if (name == u8"wg21-example")
-            return &m_impl->hyphen_wg21_example;
-        if (name == u8"wg21-grammar")
-            return &m_impl->hyphen_wg21_grammar;
-        if (name == u8"wg21-head")
-            return &m_impl->hyphen_wg21_head;
-        if (name == u8"wg21-note")
-            return &m_impl->hyphen_wg21_note;
         if (name == u8"wg21_example")
             return &m_impl->wg21_example;
         if (name == u8"wg21_grammar")
@@ -942,8 +804,6 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
             return &m_impl->wg21_head;
         if (name == u8"wg21_note")
             return &m_impl->wg21_note;
-        if (name == u8"word")
-            return &m_impl->word;
         break;
 
     default: break;

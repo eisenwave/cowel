@@ -7,7 +7,6 @@
 #include "cowel/util/strings.hpp"
 
 #include "cowel/policy/content_policy.hpp"
-#include "cowel/policy/html_literal.hpp"
 #include "cowel/policy/literally.hpp"
 #include "cowel/policy/unprocessed.hpp"
 
@@ -31,7 +30,7 @@ Literally_Behavior::operator()(Content_Policy& out, const Invocation& call, Cont
     try_enter_paragraph(out);
 
     To_Source_Content_Policy policy { out };
-    return consume_all(policy, call.content, call.content_frame, context);
+    return consume_all(policy, call.get_content_span(), call.content_frame, context);
 }
 
 Processing_Status
@@ -43,18 +42,7 @@ Unprocessed_Behavior::operator()(Content_Policy& out, const Invocation& call, Co
     try_enter_paragraph(out);
 
     Unprocessed_Content_Policy policy { out };
-    return consume_all(policy, call.content, call.content_frame, context);
-}
-
-Processing_Status
-HTML_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
-{
-    warn_all_args_ignored(call, context);
-
-    ensure_paragraph_matches_display(out, m_display);
-
-    HTML_Literal_Content_Policy policy { out };
-    return consume_all(policy, call.content, call.content_frame, context);
+    return consume_all(policy, call.get_content_span(), call.content_frame, context);
 }
 
 Processing_Status
@@ -78,7 +66,8 @@ HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, 
     Processing_Status status = attributes_status;
 
     std::pmr::vector<char8_t> raw_text { context.get_transient_memory() };
-    const auto content_status = to_plaintext(raw_text, call.content, call.content_frame, context);
+    const auto content_status
+        = to_plaintext(raw_text, call.get_content_span(), call.content_frame, context);
     status = status_concat(status, content_status);
     if (status_is_continue(content_status)) {
         COWEL_ASSERT(m_tag_name == u8"style"sv || m_tag_name == u8"script"sv);
