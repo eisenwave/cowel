@@ -44,23 +44,14 @@ struct Referred {
     std::u8string_view mask_html;
 };
 
-enum struct Macro_Type : bool {
-    /// @brief Definition of `\cowel_macro` directive.
-    cowel,
-    /// @brief Definition of legacy `\macro` directive.
-    legacy,
-};
-
 struct Macro_Definition final : Directive_Behavior {
 private:
     std::pmr::vector<ast::Content> m_body;
-    Macro_Type m_type;
 
 public:
     [[nodiscard]]
-    explicit Macro_Definition(std::pmr::vector<ast::Content>&& body, Macro_Type type) noexcept
+    explicit Macro_Definition(std::pmr::vector<ast::Content>&& body) noexcept
         : m_body { std::move(body) }
-        , m_type { type }
     {
     }
 
@@ -445,16 +436,12 @@ public:
     }
 
     [[nodiscard]]
-    bool emplace_macro(
-        std::pmr::u8string&& name,
-        std::span<const ast::Content> definition,
-        Macro_Type type
-    )
+    bool emplace_macro(std::pmr::u8string&& name, std::span<const ast::Content> definition)
     {
         // TODO: once available, upgrade this to std::from_range construction
         std::pmr::vector<ast::Content> body { definition.begin(), definition.end(),
                                               m_macros.get_allocator() };
-        const auto [_, success] = m_macros.try_emplace(std::move(name), std::move(body), type);
+        const auto [_, success] = m_macros.try_emplace(std::move(name), std::move(body));
         return success;
     }
 };
