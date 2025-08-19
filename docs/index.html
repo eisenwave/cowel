@@ -1227,6 +1227,8 @@ h-[data-h^=this] { color:#00607c; }
 h-[data-h^=mac] { color:#6f4e37; }
 h-[data-h^=id] { color:#000000; }
 h-[data-h^=id_labl] { color:#517a0b; }
+h-[data-h^=id_nt] { font-style:italic; }
+h-[data-h^=id_nt_dcl] { color:#00607c; font-style:italic; }
 h-[data-h^=kw] { color:#00607c; }
 h-[data-h^=sym] { color:#570057; }
 h-[data-h^=sym_punc] { color:#000000; }
@@ -1281,6 +1283,8 @@ h-[data-h^=this] { color:#62ded6; }
 h-[data-h^=mac] { color:#cc946e; }
 h-[data-h^=id] { color:#f0f0f0; }
 h-[data-h^=id_labl] { color:#d8eda6; }
+h-[data-h^=id_nt] { font-style:italic; }
+h-[data-h^=id_nt_dcl] { color:#62ded6; font-style:italic; }
 h-[data-h^=kw] { color:#62ded6; }
 h-[data-h^=sym] { color:#baa6b9; }
 h-[data-h^=sym_punc] { color:#d0d0d0; }
@@ -1331,6 +1335,8 @@ html.light h-[data-h^=this] { color:#00607c; }
 html.light h-[data-h^=mac] { color:#6f4e37; }
 html.light h-[data-h^=id] { color:#000000; }
 html.light h-[data-h^=id_labl] { color:#517a0b; }
+html.light h-[data-h^=id_nt] { font-style:italic; }
+html.light h-[data-h^=id_nt_dcl] { color:#00607c; font-style:italic; }
 html.light h-[data-h^=kw] { color:#00607c; }
 html.light h-[data-h^=sym] { color:#570057; }
 html.light h-[data-h^=sym_punc] { color:#000000; }
@@ -1384,6 +1390,8 @@ html.dark h-[data-h^=this] { color:#62ded6; }
 html.dark h-[data-h^=mac] { color:#cc946e; }
 html.dark h-[data-h^=id] { color:#f0f0f0; }
 html.dark h-[data-h^=id_labl] { color:#d8eda6; }
+html.dark h-[data-h^=id_nt] { font-style:italic; }
+html.dark h-[data-h^=id_nt_dcl] { color:#62ded6; font-style:italic; }
 html.dark h-[data-h^=kw] { color:#62ded6; }
 html.dark h-[data-h^=sym] { color:#baa6b9; }
 html.dark h-[data-h^=sym_punc] { color:#d0d0d0; }
@@ -1500,30 +1508,30 @@ h1 {
 <div class=toc-num data-level=2>4</div>
 <a href=#syntax><h2>Syntax</h2></a>
 <div class=toc-num data-level=3>4.1</div>
-<a href=#text><h3>Text</h3></a>
+<a href=#ebnf-grammar><h3>EBNF grammar</h3></a>
 <div class=toc-num data-level=3>4.2</div>
-<a href=#syntax-comments><h3>Comments</h3></a>
+<a href=#text><h3>Text</h3></a>
+<div class=toc-num data-level=4>4.2.1</div>
+<a href=#whitespace><h4>Whitespace</h4></a>
 <div class=toc-num data-level=3>4.3</div>
 <a href=#escape-sequences><h3>Escape sequences</h3></a>
 <div class=toc-num data-level=3>4.4</div>
-<a href=#whitespace><h3>Whitespace</h3></a>
+<a href=#syntax-comments><h3>Comments</h3></a>
 <div class=toc-num data-level=3>4.5</div>
-<a href=#paragraph-splitting><h3>Paragraph splitting</h3></a>
-<div class=toc-num data-level=3>4.6</div>
 <a href=#directives><h3>Directives</h3></a>
-<div class=toc-num data-level=4>4.6.1</div>
+<div class=toc-num data-level=4>4.5.1</div>
 <a href=#directive-names><h4>Directive names</h4></a>
-<div class=toc-num data-level=4>4.6.2</div>
+<div class=toc-num data-level=4>4.5.2</div>
 <a href=#directive-arguments><h4>Directive arguments</h4></a>
-<div class=toc-num data-level=5>4.6.2.1</div>
+<div class=toc-num data-level=5>4.5.2.1</div>
 <a href=#named-arguments><h5>Named arguments</h5></a>
-<div class=toc-num data-level=5>4.6.2.2</div>
+<div class=toc-num data-level=5>4.5.2.2</div>
 <a href=#positional-arguments><h5>Positional arguments</h5></a>
-<div class=toc-num data-level=5>4.6.2.3</div>
+<div class=toc-num data-level=5>4.5.2.3</div>
 <a href=#ellipses><h5>Ellipses</h5></a>
-<div class=toc-num data-level=5>4.6.2.4</div>
+<div class=toc-num data-level=5>4.5.2.4</div>
 <a href=#groups><h5>Groups</h5></a>
-<div class=toc-num data-level=4>4.6.3</div>
+<div class=toc-num data-level=4>4.5.3</div>
 <a href=#directive-content><h4>Directive content</h4></a>
 <div class=toc-num data-level=2>5</div>
 <a href=#document-processing><h2>Document processing</h2></a>
@@ -1582,12 +1590,14 @@ h1 {
 <div class=toc-num data-level=3>7.6</div>
 <a href=#new-paragraph-control><h3>Paragraph control</h3></a>
 <div class=toc-num data-level=4>7.6.1</div>
-<a href=#dir-cowel_paragraphs><h4><code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4></a>
+<a href=#paragraph-splitting><h4>Paragraph splitting</h4></a>
 <div class=toc-num data-level=4>7.6.2</div>
-<a href=#dir-cowel_paragraph_enter><h4><code><h- data-h=mk_tag>\cowel_paragraph_enter</h-></code> — Enter a paragraph</h4></a>
+<a href=#dir-cowel_paragraphs><h4><code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4></a>
 <div class=toc-num data-level=4>7.6.3</div>
-<a href=#dir-cowel_paragraph_leave><h4><code><h- data-h=mk_tag>\cowel_paragraph_leave</h-></code> — Leave a paragraph</h4></a>
+<a href=#dir-cowel_paragraph_enter><h4><code><h- data-h=mk_tag>\cowel_paragraph_enter</h-></code> — Enter a paragraph</h4></a>
 <div class=toc-num data-level=4>7.6.4</div>
+<a href=#dir-cowel_paragraph_leave><h4><code><h- data-h=mk_tag>\cowel_paragraph_leave</h-></code> — Leave a paragraph</h4></a>
+<div class=toc-num data-level=4>7.6.5</div>
 <a href=#dir-cowel_paragraph_inherit><h4><code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</h4></a>
 <div class=toc-num data-level=3>7.7</div>
 <a href=#new-file-management><h3>File management</h3></a>
@@ -1849,61 +1859,126 @@ Running <code><h- data-h=sh_cmd>./build/cowel-cli</h-></code> without extra argu
 <p>COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 </p><ul>
-  <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>various_directives</h-><h- data-h=sym_par>(</h->positional args<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> 0<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
   <li><code>Text.</code></li>
-  <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt>Comments</h-></code></li>
   <li>Escape sequences, such as <code><h- data-h=esc>\</h-><h- data-h=esc>{</h-></code>, <code><h- data-h=esc>\</h-><h- data-h=esc>}</h-></code>, <code><h- data-h=esc>\</h-><h- data-h=esc>\</h-></code>, etc.</li>
+  <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt>Comments</h-></code></li>
+  <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>various_directives</h-><h- data-h=sym_par>(</h->positional args<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> 0<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
 </ul>
 
-<p>There is no special syntax besides that,
-meaning that as long as some bit of code doesn't contain a <code>\</code>,
+<h3 id=ebnf-grammar><a class=para href=#ebnf-grammar></a>4.1. EBNF grammar</h3>
+
+<p>Formally, in <a href=https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form>EBNF</a>
+grammar format,
+a <g-term>document</g-term> is constructed as follows:
+</p>
+<code-block><h- data-h=id_nt_dcl>document</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>markup-element</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>markup-element</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>text</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>escape</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>comment</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>directive</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>text</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? Maximal character sequence excluding "\" ?</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>escape</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>escapable</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>line-terminator</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>escapable</h->
+  <h- data-h=sym_punc>=</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>[</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>]</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>#</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>$</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>%</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&amp;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>*</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>/</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>;</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&lt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&gt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>?</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>@</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>^</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>|</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>~</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str> </h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=id_nt>TAB</h-> <h- data-h=sym_op>|</h->   <h- data-h=id_nt>VT</h-> <h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>line-terminator</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>CR</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>CR</h->
+  <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> Ambiguities are resolved in favor of a single CRLF line-terminator,
+     instead of two CR and LF line-terminators </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>comment</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\:</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=mac>? Maximal character sequence up to and including line-terminator ?</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>directive</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>directive-name</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=id_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>markup-element</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>directive-name</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>directive-name-character</h-> <h- data-h=sym_op>-</h-> <h- data-h=id_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>directive-name-character</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>directive-name-character</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>_</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>digit</h-> <h- data-h=sym_op>|</h-> <h- data-h=mac>? ASCII alphabetic character ?</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>digit</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>2</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>3</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>4</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>5</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>6</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>7</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>8</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>9</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>group</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group-member-list</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>group-member-list</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-comments</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group-member</h-><h- data-h=sym_op>,</h->
+    <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>member-comments</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group-member</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h->
+    <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>group-member</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-name</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>member-value</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>member-value</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>...</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>member-name</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? HTML attribute name ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>member-value</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>member-value-markup-element</h-> <h- data-h=sym_brac>}</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>group</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>member-value-markup-element</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-value-text</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>escape</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>comment</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>directive</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>member-value-text</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? Maximal character sequence excluding "\", ",", or balanced ")" ?</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>member-comments</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>comment</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>whitespace</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>whitespace</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=str_dlim>"</h-><h- data-h=str> </h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>TAB</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>CR</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>VT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>TAB</h-> <h- data-h=sym_punc>=</h-> <h- data-h=mac>? U+0009 CHARACTER TABULATION ?</h-> <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> \t in C </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>LF</h-> <h- data-h=sym_punc>=</h->  <h- data-h=mac>? U+000A END OF LINE ?</h->          <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> \n in C </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>CR</h-> <h- data-h=sym_punc>=</h->  <h- data-h=mac>? U+000D CARRIAGE RETURN ?</h->      <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> \r in C </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>VT</h-> <h- data-h=sym_punc>=</h->  <h- data-h=mac>? U+000B LINE TABULATION ?</h->      <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> \v in C </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<note-block><p><intro-></intro-> 
+At the top-level in the <g-term>document</g-term>,
+there are no other syntactical features,
+meaning that as long as some bit of code doesn't contain a U+005C (<tt->\</tt->),
 it's all interpreted as plaintext.
 This makes COWEL exceptionally suited to nest other languages inside of it in code blocks etc.
-</p>
-<h3 id=text><a class=para href=#text></a>4.1. Text</h3>
+</p></note-block>
 
-<p>Text is not processed specially;
-what you see is what you get.
-</p>
-<p>However, the output may depend on the context (<a href=#contexts-and-output>§5.1. Content policies</a>).
-For example, <code>&lt;</code> in text will render as a &lt; character,
-but will be converted to <code><h- data-h=esc>&amp;lt;</h-></code> in an HTML context.
-</p>
-<h3 id=syntax-comments><a class=para href=#syntax-comments></a>4.2. Comments</h3>
+<h3 id=text><a class=para href=#text></a>4.2. Text</h3>
 
-<p>Comments begin with <code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-></code> and extend until the end of the line.
-In almost every context,
-comments are discarded instead of being emitted into the output HTML.
+<p><dfn>Text</dfn> (<g-term>text</g-term> in the grammar) is a <g-term>markup-element</g-term>
+which consists of as many characters as possible,
+excluding U+005C (<tt->\</tt->).
 </p>
-<p>This makes them useful for adding information to the COWEL markup.
-</p>
+<code-block><h- data-h=id_nt_dcl>text</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? Maximal character sequence excluding "</h-><h- data-h=mac>\</h-><h- data-h=mac>" ?</h-><h- data-h=sym_punc>;</h-></code-block>
+
 <note-block><p><intro-></intro-> 
-Comments, just like any other content,
-are actually part of the AST and don't simply get discarded during parsing.
-This means that a comment wrapped in <a href=#dir-cowel_source_as_text>§7.4.6. <code><h- data-h=mk_tag>\cowel_source_as_text</h-></code> — Process with source-as-text policy</a> will render as expected:
-</p><code-block><h- data-h=mk_tag>\cowblock</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_source_as_text</h-><h- data-h=sym_brac>{</h->
-<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> A comment ...</h->
-<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
-<p>This renders as:
-</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> A comment ...</h-></code-block>
-</note-block>
+In most situations, text is not processed specially.
+However, the output may depend on the context (<a href=#contexts-and-output>§5.1. Content policies</a>).
+For example, <code>&lt;</code> in text will render as a &lt; character,
+but will be converted to <code><h- data-h=esc>&amp;lt;</h-></code> when fed into a To-HTML Policy.
+Furthermore, text is subject to special effects like syntax highlighting
+and paragraph splitting.
+</p></note-block>
 
-<p>Comments also "absorb" the trailing newline (LF or CRLF),
-which means that a trailing comment won't add any lines (not even blank lines)
-to the generated markup.
+<h4 id=whitespace><a class=para href=#whitespace></a>4.2.1. Whitespace</h4>
+
+<p>COWEL translates text in whitespace directly into HTML in most situations.
+Additional styling with CSS can be applied
+to interpret that whitespace literally (like in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>pre</h-><h- data-h=sym_punc>&gt;</h-></code> elements)
+or to have it merged into spaces,
+which happens by default.
+</p>
+<p>At the document top-level,
+<a href=#paragraph-splitting>§7.6.1. Paragraph splitting</a> takes place.
 </p>
 <example-block><p><intro-></intro-> 
-We can even join words by putting a comment between:
-</p><code-block>Hello<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> this comment will absorb the newline</h->
-World
-
-Hello <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> this comment also does, but is preceded by a space</h->
-World</code-block>
-
+COWEL markup:
+</p><code-block>This displays on one line
+because line breaks render like spaces.</code-block>
 <p>Generated HTML:
-</p><code-block>HelloWorld
-
-Hello World</code-block>
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->This displays on one line
+because line breaks render like spaces.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+<p>Rendered output:
+</p><div class=indent>This displays on one line because line breaks render like spaces.</div>
 </example-block>
 
 <h3 id=escape-sequences><a class=para href=#escape-sequences></a>4.3. Escape sequences</h3>
@@ -1937,15 +2012,11 @@ The meaning of the escape sequences is described in the table below.
       <tt-><h- data-h=esc>\{</h-></tt->,
       <tt-><h- data-h=esc>\}</h-></tt->,
       <tt-><h- data-h=esc>\\</h-></tt->,
-      <tt-><h- data-h=esc>\[</h-></tt->,
-      <tt-><h- data-h=esc>\]</h-></tt->,
       <tt-><h- data-h=esc>\(</h-></tt->,
       <tt-><h- data-h=esc>\)</h-></tt->,
       <tt-><h- data-h=esc>\,</h-></tt->,
       <tt-><h- data-h=esc>\.</h-></tt->,
-      <tt-><h- data-h=esc>\=</h-></tt->,
-      <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+0009 HORIZONTAL TABULATION</span>,
-      <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+0020 SPACE</span>
+      <tt-><h- data-h=esc>\=</h-></tt->
     </td>
     <td>
       Expands to the second character in the escape sequence.
@@ -1963,15 +2034,20 @@ The meaning of the escape sequences is described in the table below.
       <tt-><h- data-h=esc>\'</h-></tt->,
       <tt-><h- data-h=esc>\*</h-></tt->,
       <tt-><h- data-h=esc>\+</h-></tt->,
+      <tt-><h- data-h=esc>\-</h-></tt->,
       <tt-><h- data-h=esc>\/</h-></tt->,
       <tt-><h- data-h=esc>\;</h-></tt->,
       <tt-><h- data-h=esc>\&lt;</h-></tt->,
       <tt-><h- data-h=esc>\&gt;</h-></tt->,
       <tt-><h- data-h=esc>\?</h-></tt->,
       <tt-><h- data-h=esc>\@</h-></tt->,
+      <tt-><h- data-h=esc>\[</h-></tt->,
+      <tt-><h- data-h=esc>\]</h-></tt->,
       <tt-><h- data-h=esc>\^</h-></tt->,
       <tt-><h- data-h=esc>\|</h-></tt->,
-      <tt-><h- data-h=esc>\~</h-></tt->
+      <tt-><h- data-h=esc>\~</h-></tt->,
+      <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+0009 CHARACTER TABULATION</span>,
+      <span class=word><tt-><h- data-h=esc>\</h-></tt-> U+0020 SPACE</span>
     </td>
     <td>
       Expands to the second character in the escape sequence.
@@ -1993,6 +2069,21 @@ The meaning of the escape sequences is described in the table below.
   </tr>
 </table>
 
+<p>In EBNF grammar, an <g-term>escape</g-term> is constructed like:
+</p>
+<code-block><h- data-h=id_nt_dcl>escape</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>escapable</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>line-terminator</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>escapable</h->
+  <h- data-h=sym_punc>=</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>[</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>]</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>#</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>$</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>%</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&amp;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>*</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>/</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>;</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&lt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&gt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>?</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>@</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>^</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>|</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>~</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str> </h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=id_nt>TAB</h-> <h- data-h=sym_op>|</h->   <h- data-h=id_nt>VT</h-> <h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>line-terminator</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>CR</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>CR</h->
+  <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> Ambiguities are resolved in favor of a single CRLF line-terminator,
+     instead of two CR and LF line-terminators </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h-></code-block>
+
 <p>If there is an ambiguity between a CRLF escape and a simple U+000D CARRIAGE RETURN escape,
 this ambiguity is resolved in favor of a CRLF escape.
 </p>
@@ -2006,59 +2097,49 @@ and to join long content that spans multiple lines,
 but without introducing any whitespace in the markup.
 </p></note-block>
 
-<h3 id=whitespace><a class=para href=#whitespace></a>4.4. Whitespace</h3>
+<h3 id=syntax-comments><a class=para href=#syntax-comments></a>4.4. Comments</h3>
 
-<p>COWEL translates very directly into HTML.
-Any whitespace in text is preserved exactly as is.
-The way that whitespace is processed then depends on the produced HTML and how it is CSS-styled.
+<p>Comments begin with <code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-></code> and extend until the end of the line.
+In almost every context,
+comments are discarded instead of being emitted into the output HTML.
+</p>
+<p>This makes them useful for adding information to the COWEL markup.
+</p>
+<note-block><p><intro-></intro-> 
+Comments, just like any other content,
+are actually part of the AST and don't simply get discarded during parsing.
+This means that a comment wrapped in <a href=#dir-cowel_source_as_text>§7.4.6. <code><h- data-h=mk_tag>\cowel_source_as_text</h-></code> — Process with source-as-text policy</a> will render as expected:
+</p><code-block><h- data-h=mk_tag>\cowblock</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_source_as_text</h-><h- data-h=sym_brac>{</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> A comment ...</h->
+<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
+<p>This renders as:
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> A comment ...</h-></code-block>
+</note-block>
+
+<p>In EBNF grammar, a <g-term>comment</g-term> is constructed as follows:
+</p>
+<code-block><h- data-h=id_nt_dcl>comment</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>:</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=mac>? Maximal character sequence up to and including line-terminator ?</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<p>Comments include a <g-term>line-terminator</g-term>,
+which means that a trailing comment won't add any lines (not even blank lines)
+to the generated markup.
 </p>
 <example-block><p><intro-></intro-> 
-At a top level, whitespace is merged and line breaks are rendered like spaces:
-</p><code-block>This displays on one line
-because line breaks render like spaces.</code-block>
+We can even join words by putting a comment between:
+</p><code-block>Hello<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> this comment will absorb the newline</h->
+World
+
+Hello <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> this comment also does, but is preceded by a space</h->
+World</code-block>
+
 <p>Generated HTML:
-</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->This displays on one line
-because line breaks render like spaces.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code-block>
-<p>Rendered output:
-</p><div class=indent>This displays on one line because line breaks render like spaces.</div>
+</p><code-block>HelloWorld
+
+Hello World</code-block>
 </example-block>
 
-<h3 id=paragraph-splitting><a class=para href=#paragraph-splitting></a>4.5. Paragraph splitting</h3>
-
-<p>At the top-level in the document and within the content of certain directives,
-<dfn>paragraph splitting</dfn> takes place.
-All content in COWEL is either <dfn>inline content</dfn>, <dfn>block content</dfn>, or <dfn>meta content</dfn>.
-Text and escape sequences are inline content,
-and directives are sometimes inline and sometimes block content.
-Certain directives (e.g. <code><h- data-h=mk_tag>\comment</h-></code>) that don't generate anything rendered are meta content.
-</p>
-<p>The process of paragraph splitting works as follows:
-</p><ul>
-  <li>
-    Blank-line-separated blocks of inline content is wrapped in in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
-    Meta content is not counted as a blank line, so it "continues" inline content,
-    but no effort is made to wrap it in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
-  </li>
-  <li>
-    Block content stays untouched, i.e. it is not wrapped in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
-    However, it also terminates prior inline content, like a blank line.
-  </li>
-</ul>
-
-<example-block><p><intro-></intro-> 
-COWEL markup:
-</p><code-block>First paragraph.
-
-Second paragraph.
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_brac>{</h->This is a block directive.<h- data-h=sym_brac>}</h-></code-block>
-<p>Generated HTML:
-</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->First paragraph.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
-
-<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Second paragraph.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
-<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h->This is a block directive.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h-></code-block>
-</example-block>
-
-<h3 id=directives><a class=para href=#directives></a>4.6. Directives</h3>
+<h3 id=directives><a class=para href=#directives></a>4.5. Directives</h3>
 
 <p>A <dfn>directive</dfn> is a way of generating plaintext, HTML, both, or neither.
 You can think of it as a "command" or "function call".
@@ -2077,14 +2158,21 @@ You can think of it as a "command" or "function call".
   </li>
 </ul>
 
-<h4 id=directive-names><a class=para href=#directive-names></a>4.6.1. Directive names</h4>
+<p>In EBNF grammar, a <g-term>directive</g-term> is constructed as follows:
+</p>
+<code-block><h- data-h=id_nt_dcl>directive</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>directive-name</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=id_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>markup-element</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>directive-name</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>directive-name-character</h-> <h- data-h=sym_op>-</h-> <h- data-h=id_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>directive-name-character</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>directive-name-character</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>_</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>digit</h-> <h- data-h=sym_op>|</h-> <h- data-h=mac>? ASCII alphabetic character ?</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<h4 id=directive-names><a class=para href=#directive-names></a>4.5.1. Directive names</h4>
 
 <p>A <dfn>directive name</dfn> selects a specific directive to be processed.
-The name begins with a <code>\</code> character,
-followed by a sequence of ASCII alphanumeric characters,
-U+002D (<tt->-</tt->), and
-U+005F (<tt->_</tt->).
-However, the first character after <code>\</code> cannot be an ASCII digit.
+The name begins with a U+005C (<tt->\</tt->) character,
+followed by a sequence of ASCII alphanumeric characters or U+005F (<tt->_</tt->).
+However, the first character after U+005C (<tt->\</tt->) cannot be an ASCII digit.
 </p>
 <tip-block><p><intro-></intro-> 
 You can use an empty block of content to "cut a name short":
@@ -2093,25 +2181,29 @@ You can use an empty block of content to "cut a name short":
 <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>wbr</h-></code> and <code>longword</code> immediately following one another.
 </p></tip-block>
 
-<warning-block><p><intro-></intro-> 
-The use of '-' (hyphen) characters in directive names is deprecated.
-Currently, <code><h- data-h=mk_tag>\a-b</h-></code> would get parsed as a directive name,
-but this behavior will be removed in the future.
-This will result in <code><h- data-h=mk_tag>\a</h-></code> being parsed as a directive name,
-followed by plaintext <tt->-b</tt->.
-</p></warning-block>
+<p>Grammatically, the arguments are a <g-term>group</g-term>,
+which is constructed as follows:
+</p>
+<code-block><h- data-h=id_nt_dcl>group</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group-member-list</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>group-member-list</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-comments</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group-member</h-><h- data-h=sym_op>,</h->
+    <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>member-comments</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group-member</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h->
+    <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>group-member</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-name</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>member-value</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>member-value</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>...</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<h4 id=directive-arguments><a class=para href=#directive-arguments></a>4.6.2. Directive arguments</h4>
+<h4 id=directive-arguments><a class=para href=#directive-arguments></a>4.5.2. Directive arguments</h4>
 
 <p><dfn>Directive arguments</dfn> can be
 <dfn>positional arguments</dfn>,
-<dfn>named arguments</dfn>,
-<dfn>ellipses</dfn>, or
-<dfn>groups</dfn>.
+<dfn>named arguments</dfn>, or
+<dfn>ellipses</dfn>.
 Arguments are separated by commas.
 Unlike anywhere else, whitespace surrounding directive arguments is ignored.
-</p>
-<p>Arguments provide additional information to a directive.
+The value of positional or named argument is either a <dfn>markup sequence</dfn> or a <dfn>group</dfn>.
 </p>
 <example-block><p><intro-></intro-> 
 Often, arguments are converted to HTML attributes.
@@ -2120,7 +2212,7 @@ Often, arguments are converted to HTML attributes.
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-><h- data-h=sym_punc>&gt;</h->Bold text.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
 
-<h5 id=named-arguments><a class=para href=#named-arguments></a>4.6.2.1. Named arguments</h5>
+<h5 id=named-arguments><a class=para href=#named-arguments></a>4.5.2.1. Named arguments</h5>
 
 <p>Named arguments are of the form
 <code>name = value</code>, where spaces anywhere around <code>name</code> and <code>value</code> are ignored.
@@ -2154,7 +2246,12 @@ you can do so by writing:
 not its escaped variant <code><h- data-h=esc>\</h-><h- data-h=esc>=</h-></code>.
 </p></tip-block>
 
-<h5 id=positional-arguments><a class=para href=#positional-arguments></a>4.6.2.2. Positional arguments</h5>
+<p>Grammatically, a <g-term>member-name</g-term> is constructed as follows:
+</p>
+<code-block><h- data-h=id_nt_dcl>member-name</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? HTML attribute name ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<h5 id=positional-arguments><a class=para href=#positional-arguments></a>4.5.2.2. Positional arguments</h5>
 
 <p>Positional arguments are content just like any other content,
 except that an unbalanced closing U+005D (<tt->]</tt->) or a U+002C (<tt->,</tt->)
@@ -2170,7 +2267,23 @@ You can use escape sequences to continue otherwise ended content.
 <h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->hello(world)    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: unterminated arguments</h-></code-block>
 </tip-block>
 
-<h5 id=ellipses><a class=para href=#ellipses></a>4.6.2.3. Ellipses</h5>
+<p>Grammatically, a positional argument is a <g-term>member-value</g-term>,
+constructed as follows:
+</p>
+<code-block><h- data-h=id_nt_dcl>member-value</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>member-value-markup-element</h-> <h- data-h=sym_brac>}</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>group</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>member-value-markup-element</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-value-text</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>escape</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>comment</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>directive</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>member-value-text</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? Maximal character sequence excluding "</h-><h- data-h=mac>\</h-><h- data-h=mac>", ",", or balanced ")" ?</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>member-comments</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>comment</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>whitespace</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<h5 id=ellipses><a class=para href=#ellipses></a>4.5.2.3. Ellipses</h5>
 
 <p>Ellipsis arguments (spelled <code><h- data-h=attr>...</h-></code>)
 are placeholders which expand to arguments provided to a surrounding macro.
@@ -2216,10 +2329,11 @@ you can use the escape sequence <code><h- data-h=esc>\</h-><h- data-h=esc>.</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>m</h-><h- data-h=sym_par>(</h-><h- data-h=esc>\</h-><h- data-h=esc>.</h-><h- data-h=esc>\</h-><h- data-h=esc>.</h-><h- data-h=esc>\</h-><h- data-h=esc>.</h-><h- data-h=sym_par>)</h->                      <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> OK</h-></code-block>
 </example-block>
 
-<h5 id=groups><a class=para href=#groups></a>4.6.2.4. Groups</h5>
+<h5 id=groups><a class=para href=#groups></a>4.5.2.4. Groups</h5>
 
 <p>Groups make it possible to group any of the aforementioned constructs.
 Groups begin with <code><h- data-h=sym_par>(</h-></code> and end with <code><h- data-h=sym_par>)</h-></code>.
+They can appear both in positional and in named arguments.
 </p>
 <example-block><p><intro-></intro-> 
 </p><code-block><h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h->x<h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> groups as positional arguments</h->
@@ -2227,7 +2341,7 @@ Groups begin with <code><h- data-h=sym_par>(</h-></code> and end with <code><h- 
 <h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->     <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> nested empty groups</h-></code-block>
 </example-block>
 
-<h4 id=directive-content><a class=para href=#directive-content></a>4.6.3. Directive content</h4>
+<h4 id=directive-content><a class=para href=#directive-content></a>4.5.3. Directive content</h4>
 
 <p>The <dfn>directive content</dfn> is the primary input to a directive.
 It is delimited by a '<tt->{</tt->' and ends with a <em>matching</em> closing '<tt->}</tt->'.
@@ -2313,7 +2427,7 @@ or in a policy which captures the output and writes it to memory for further pro
     Like a to-HTML policy,
     but surrounds given text content in paragraphs,
     and treats blank lines in text as paragraph separators.
-    See <a href=#paragraph-splitting>§4.5. Paragraph splitting</a> for details.
+    See <a href=#paragraph-splitting>§7.6.1. Paragraph splitting</a> for details.
   </dd>
 
   <dt>No-invoke policy</dt>
@@ -2740,7 +2854,7 @@ which, in turn, feeds content into some parent content policy.
   <tr>
     <td><code><h- data-h=mk_tag>\cowel_paragraphs</h-></code></td>
     <td>paragraphs policy</td>
-    <td>see <a href=#dir-cowel_paragraphs>§7.6.1. <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</a></td>
+    <td>see <a href=#dir-cowel_paragraphs>§7.6.2. <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</a></td>
   </tr>
   <tr>
     <td><code><h- data-h=mk_tag>\cowel_no_invoke</h-></code></td>
@@ -3063,7 +3177,42 @@ and they neither begin nor end a paragraph.
 The following paragraph control directives define interactions
 between paragraph splitting and directives.
 </p>
-<h4 id=dir-cowel_paragraphs><a class=para href=#dir-cowel_paragraphs></a>7.6.1. <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4>
+<h4 id=paragraph-splitting><a class=para href=#paragraph-splitting></a>7.6.1. Paragraph splitting</h4>
+
+<p>At the top-level in the document and within the content of certain directives,
+<dfn>paragraph splitting</dfn> takes place.
+All content in COWEL is either <dfn>inline content</dfn>, <dfn>block content</dfn>, or <dfn>meta content</dfn>.
+Text and escape sequences are inline content,
+and directives are sometimes inline and sometimes block content.
+Certain directives (e.g. <code><h- data-h=mk_tag>\comment</h-></code>) that don't generate anything rendered are meta content.
+</p>
+<p>The process of paragraph splitting works as follows:
+</p><ul>
+  <li>
+    Blank-line-separated blocks of inline content is wrapped in in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
+    Meta content is not counted as a blank line, so it "continues" inline content,
+    but no effort is made to wrap it in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
+  </li>
+  <li>
+    Block content stays untouched, i.e. it is not wrapped in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
+    However, it also terminates prior inline content, like a blank line.
+  </li>
+</ul>
+
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block>First paragraph.
+
+Second paragraph.
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_brac>{</h->This is a block directive.<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->First paragraph.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
+
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Second paragraph.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h->This is a block directive.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+</example-block>
+
+<h4 id=dir-cowel_paragraphs><a class=para href=#dir-cowel_paragraphs></a>7.6.2. <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4>
 
 <p>The <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> directive
 creates a paragraphs policy (<a href=#contexts-and-output>§5.1. Content policies</a>)
@@ -3096,7 +3245,7 @@ so if one wants to have paragraph splitting inside say,
 <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> has to be used.
 </p></note-block>
 
-<h4 id=dir-cowel_paragraph_enter><a class=para href=#dir-cowel_paragraph_enter></a>7.6.2. <code><h- data-h=mk_tag>\cowel_paragraph_enter</h-></code> — Enter a paragraph</h4>
+<h4 id=dir-cowel_paragraph_enter><a class=para href=#dir-cowel_paragraph_enter></a>7.6.3. <code><h- data-h=mk_tag>\cowel_paragraph_enter</h-></code> — Enter a paragraph</h4>
 
 <p>If the current content policy is a paragraphs policy and
 and the paragraph state is "outside",
@@ -3129,7 +3278,7 @@ but from within macros.
 <code><h- data-h=mk_tag>\cowel_para­graph_enter</h-></code> and <code><h- data-h=mk_tag>\cowel_­char_by_name</h-></code>.
 </p></tip-block>
 
-<h4 id=dir-cowel_paragraph_leave><a class=para href=#dir-cowel_paragraph_leave></a>7.6.3. <code><h- data-h=mk_tag>\cowel_paragraph_leave</h-></code> — Leave a paragraph</h4>
+<h4 id=dir-cowel_paragraph_leave><a class=para href=#dir-cowel_paragraph_leave></a>7.6.4. <code><h- data-h=mk_tag>\cowel_paragraph_leave</h-></code> — Leave a paragraph</h4>
 
 <p>If the current content policy is a paragraphs policy and
 and the paragraph state is "inside",
@@ -3169,7 +3318,7 @@ but from within macros.
 <code><h- data-h=mk_tag>\cowel_­html_self_closing_element</h-></code>.
 </p></tip-block>
 
-<h4 id=dir-cowel_paragraph_inherit><a class=para href=#dir-cowel_paragraph_inherit></a>7.6.4. <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</h4>
+<h4 id=dir-cowel_paragraph_inherit><a class=para href=#dir-cowel_paragraph_inherit></a>7.6.5. <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</h4>
 
 <important-block><p><intro-></intro-> 
 There is no support for programmatic directives yet,
@@ -3351,7 +3500,7 @@ Hello, macros!</code-block>
 </example-block>
 
 <p>When a macro is processed,
-the behavior is as if <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> (<a href=#dir-cowel_paragraph_inherit>§7.6.4. <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</a>)
+the behavior is as if <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> (<a href=#dir-cowel_paragraph_inherit>§7.6.5. <code><h- data-h=mk_tag>\cowel_paragraph_inherit</h-></code> — Activate paragraph splitting inside a directive</a>)
 was invoked immediately before processing the content in the macro definition.
 This means that blank lines in the macro definition
 may also result in paragraph splits outside the macro.
@@ -3529,7 +3678,7 @@ It outputs no plaintext or HTML.
 </p>
 <example-block><p><intro-></intro-> 
 While comments don't output anything,
-<a href=#paragraph-splitting>§4.5. Paragraph splitting</a> is based on blank lines in the source,
+<a href=#paragraph-splitting>§7.6.1. Paragraph splitting</a> is based on blank lines in the source,
 so comments don't split paragraphs:
 </p><code-block>Text
 <h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>This is </h-><h- data-h=cmt>\</h-><h- data-h=cmt>directive{comment} content.</h-><h- data-h=cmt_dlim>}</h->

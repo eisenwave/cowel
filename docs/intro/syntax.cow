@@ -3,69 +3,74 @@
 COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 \ul{
-  \li{\cowdoc_c{\\various_directives(positional args, named-args = 0){and content}}}
   \li{\cowdoc_c{Text.}}
-  \li{\cowdoc_c{\\:Comments}}
   \li{Escape sequences, such as \cowdoc_c{\\\U{7B}}, \cowdoc_c{\\\U{7D}}, \cowdoc_c{\\\\}, etc.}
+  \li{\cowdoc_c{\\:Comments}}
+  \li{\cowdoc_c{\\various_directives(positional args, named-args = 0){and content}}}
 }
 
-There is no special syntax besides that,
-meaning that as long as some bit of code doesn't contain a \cowdoc_c{\\},
+\h3{EBNF grammar}
+
+Formally, in \ref(https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form){EBNF}
+grammar format,
+a \gterm{document} is constructed as follows:
+
+\: FIXME: includes are meant to be relative to the current document,
+\: so specifying "intro/" as the base path should not be necessary.
+\codeblock(ebnf){\cowel_include_text{intro/grammar.ebnf}}
+
+\Bnote{
+At the top-level in the \gterm{document},
+there are no other syntactical features,
+meaning that as long as some bit of code doesn't contain a \cowdoc_cp{005C},
 it's all interpreted as plaintext.
 This makes COWEL exceptionally suited to nest other languages inside of it in code blocks etc.
+}
 
 \h3{Text}
 
-Text is not processed specially;
-what you see is what you get.
+\dfn{Text} (\gterm{text} in the grammar) is a \gterm{markup-element}
+which consists of as many characters as possible,
+excluding \cowdoc_cp{005C}.
 
-However, the output may depend on the context (\ref(#contexts-and-output)).
-For example, \cowdoc_c{<} in text will render as a < character,
-but will be converted to \cowdoc_html{&lt;} in an HTML context.
-
-\h3(id=syntax-comments){Comments}
-
-Comments begin with \cowdoc_c{\\:} and extend until the end of the line.
-In almost every context,
-comments are discarded instead of being emitted into the output HTML.
-
-This makes them useful for adding information to the COWEL markup.
+\codeblock(ebnf){
+text
+  = ? Maximal character sequence excluding "\\" ?;
+}
 
 \Bnote{
-Comments, just like any other content,
-are actually part of the AST and don't simply get discarded during parsing.
-This means that a comment wrapped in \ref(#dir-cowel_source_as_text) will render as expected:
-\cowblock{\cowel_source_as_text{
-\cowblock{\cowel_source_as_text{
-\: A comment ...
-}}
-}}
-This renders as:
-\cowblock{\cowel_source_as_text{
-\: A comment ...
-}}
+In most situations, text is not processed specially.
+However, the output may depend on the context (\ref(#contexts-and-output)).
+For example, \cowdoc_c{<} in text will render as a < character,
+but will be converted to \cowdoc_html{&lt;} when fed into a To-HTML Policy.
+Furthermore, text is subject to special effects like syntax highlighting
+and paragraph splitting.
 }
 
-Comments also "absorb" the trailing newline (LF or CRLF),
-which means that a trailing comment won't add any lines (not even blank lines)
-to the generated markup.
+\h4{Whitespace}
+
+COWEL translates text in whitespace directly into HTML in most situations.
+Additional styling with CSS can be applied
+to interpret that whitespace literally (like in \cowdoc_html{<pre>} elements)
+or to have it merged into spaces,
+which happens by default.
+
+At the document top-level,
+\ref(#paragraph-splitting) takes place.
 
 \Bex{
-We can even join words by putting a comment between:
-\cowblock{\literally{
-Hello\: this comment will absorb the newline
-World
-
-Hello \: this comment also does, but is preceded by a space
-World
-}}
-
+COWEL markup:
+\cowblock{
+This displays on one line
+because line breaks render like spaces.
+}
 Generated HTML:
 \htmlblock{
-HelloWorld
-
-Hello World
+<p>This displays on one line
+because line breaks render like spaces.</p>
 }
+Rendered output:
+\Bindent{This displays on one line because line breaks render like spaces.}
 }
 
 \h3{Escape sequences}
@@ -99,15 +104,11 @@ The meaning of the escape sequences is described in the table below.
       \cowdoc_esc{\N{LEFT CURLY BRACKET}},
       \cowdoc_esc{\N{RIGHT CURLY BRACKET}},
       \cowdoc_esc{\\},
-      \cowdoc_esc{[},
-      \cowdoc_esc{]},
       \cowdoc_esc{(},
       \cowdoc_esc{)},
       \cowdoc_esc{,},
       \cowdoc_esc{.},
-      \cowdoc_esc{=},
-      \nobr{\cowdoc_esc{} U+0009 HORIZONTAL TABULATION},
-      \nobr{\cowdoc_esc{} U+0020 SPACE}
+      \cowdoc_esc{=}
     }
     \td{
       Expands to the second character in the escape sequence.
@@ -125,15 +126,20 @@ The meaning of the escape sequences is described in the table below.
       \cowdoc_esc{'},
       \cowdoc_esc{*},
       \cowdoc_esc{+},
+      \cowdoc_esc{-},
       \cowdoc_esc{/},
       \cowdoc_esc{;},
       \cowdoc_esc{<},
       \cowdoc_esc{>},
       \cowdoc_esc{?},
       \cowdoc_esc{@},
+      \cowdoc_esc{[},
+      \cowdoc_esc{]},
       \cowdoc_esc{^},
       \cowdoc_esc{|},
-      \cowdoc_esc{~}
+      \cowdoc_esc{~},
+      \nobr{\cowdoc_esc U+0009 CHARACTER TABULATION},
+      \nobr{\cowdoc_esc U+0020 SPACE}
     }
     \td{
       Expands to the second character in the escape sequence.
@@ -144,15 +150,32 @@ The meaning of the escape sequences is described in the table below.
   }
   \tr{
     \td{
-      \nobr{\cowdoc_esc{} U+000A LINE FEED},
-      \nobr{\cowdoc_esc{} U+000B VERTICAL TABULATION},
-      \nobr{\cowdoc_esc{} U+000D CARRIAGE RETURN},
-      \nobr{\cowdoc_esc{} U+000A U+000D (CRLF escape)}
+      \nobr{\cowdoc_esc U+000A LINE FEED},
+      \nobr{\cowdoc_esc U+000B VERTICAL TABULATION},
+      \nobr{\cowdoc_esc U+000D CARRIAGE RETURN},
+      \nobr{\cowdoc_esc U+000A U+000D (CRLF escape)}
     }
     \td{
       Expands to nothing; feature is stable
     }
   }
+}
+
+In EBNF grammar, an \gterm{escape} is constructed like:
+
+\codeblock(ebnf){
+escape
+  = "\", escapable
+  | "\", line-terminator;
+escapable
+  =  "{" |  "}" |  "[" |  "]" |  "(" |  ")" |  "," |  "." |  "=" |  "!"
+  |  '"' |  "#" |  "\N{DOLLAR SIGN}" |  "%" |  "&" |  "'" |  "*" |  "+" |  "/" |  ";"
+  |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
+  |  " " |  TAB |   VT ;
+line-terminator
+  = LF | CR, LF | CR
+  (* Ambiguities are resolved in favor of a single CRLF line-terminator,
+     instead of two CR and LF line-terminators *);
 }
 
 If there is an ambiguity between a CRLF escape and a simple U+000D CARRIAGE RETURN escape,
@@ -168,63 +191,55 @@ and to join long content that spans multiple lines,
 but without introducing any whitespace in the markup.
 }
 
-\h3{Whitespace}
+\h3(id=syntax-comments){Comments}
 
-COWEL translates very directly into HTML.
-Any whitespace in text is preserved exactly as is.
-The way that whitespace is processed then depends on the produced HTML and how it is CSS-styled.
+Comments begin with \cowdoc_c{\\:} and extend until the end of the line.
+In almost every context,
+comments are discarded instead of being emitted into the output HTML.
+
+This makes them useful for adding information to the COWEL markup.
+
+\Bnote{
+Comments, just like any other content,
+are actually part of the AST and don't simply get discarded during parsing.
+This means that a comment wrapped in \ref(#dir-cowel_source_as_text) will render as expected:
+\cowblock{\cowel_source_as_text{
+\cowblock{\cowel_source_as_text{
+\: A comment ...
+}}
+}}
+This renders as:
+\cowblock{\cowel_source_as_text{
+\: A comment ...
+}}
+}
+
+In EBNF grammar, a \gterm{comment} is constructed as follows:
+
+\codeblock(ebnf){
+comment
+  = "\\:", ? Maximal character sequence up to and including line-terminator ?;
+}
+
+Comments include a \gterm{line-terminator},
+which means that a trailing comment won't add any lines (not even blank lines)
+to the generated markup.
 
 \Bex{
-At a top level, whitespace is merged and line breaks are rendered like spaces:
-\cowblock{
-This displays on one line
-because line breaks render like spaces.
-}
+We can even join words by putting a comment between:
+\cowblock{\literally{
+Hello\: this comment will absorb the newline
+World
+
+Hello \: this comment also does, but is preceded by a space
+World
+}}
+
 Generated HTML:
 \htmlblock{
-<p>This displays on one line
-because line breaks render like spaces.</p>
-}
-Rendered output:
-\Bindent{This displays on one line because line breaks render like spaces.}
-}
+HelloWorld
 
-\h3{Paragraph splitting}
-
-At the top-level in the document and within the content of certain directives,
-\dfn{paragraph splitting} takes place.
-All content in COWEL is either \dfn{inline content}, \dfn{block content}, or \dfn{meta content}.
-Text and escape sequences are inline content,
-and directives are sometimes inline and sometimes block content.
-Certain directives (e.g. \cowdoc_dir{comment}) that don't generate anything rendered are meta content.
-
-The process of paragraph splitting works as follows:
-\ul{
-  \li{
-    Blank-line-separated blocks of inline content is wrapped in in \cowdoc_html{<p>...</p>} tags.
-    Meta content is not counted as a blank line, so it "continues" inline content,
-    but no effort is made to wrap it in \cowdoc_html{<p>...</p>}.
-  }
-  \li{
-    Block content stays untouched, i.e. it is not wrapped in \cowdoc_html{<p>...</p>}.
-    However, it also terminates prior inline content, like a blank line.
-  }
-}
-
-\Bex{
-COWEL markup:
-\cowblock{
-First paragraph.
-
-Second paragraph.
-\\blockquote{This is a block directive.}
-}
-Generated HTML:
-\htmlblock{
-<p>First paragraph.</p>
-
-<p>Second paragraph.</p>
-<blockquote>This is a block directive.</blockquote>
+Hello World
 }
 }
 
@@ -247,14 +262,23 @@ Every directive has three parts:
   }
 }
 
+In EBNF grammar, a \gterm{directive} is constructed as follows:
+
+\codeblock(ebnf){
+directive
+  = "\", directive-name, [ group ], [ "{", { markup-element }, "}" ];
+directive-name
+  = directive-name-character - digit, { directive-name-character };
+directive-name-character
+  = "_" | digit | ? ASCII alphabetic character ?;
+}
+
 \h4{Directive names}
 
 A \dfn{directive name} selects a specific directive to be processed.
-The name begins with a \cowdoc_c{\\} character,
-followed by a sequence of ASCII alphanumeric characters,
-\cowdoc_cp{002D}, and
-\cowdoc_cp{005F}.
-However, the first character after \cowdoc_c{\\} cannot be an ASCII digit.
+The name begins with a \cowdoc_cp{005C} character,
+followed by a sequence of ASCII alphanumeric characters or \cowdoc_cp{005F}.
+However, the first character after \cowdoc_cp{005C} cannot be an ASCII digit.
 
 \Btip{
 You can use an empty block of content to "cut a name short":
@@ -265,25 +289,31 @@ Doing so is equivalent to writing
 \cowdoc_c{\\wbr} and \cowdoc_c{longword} immediately following one another.
 }
 
-\Bwarn{
-The use of '-' (hyphen) characters in directive names is deprecated.
-Currently, \cowdoc_dir{a-b} would get parsed as a directive name,
-but this behavior will be removed in the future.
-This will result in \cowdoc_dir{a} being parsed as a directive name,
-followed by plaintext \tt{-b}.
+Grammatically, the arguments are a \gterm{group},
+which is constructed as follows:
+
+\codeblock(ebnf){
+group
+  = "(", group-member-list, whitespace, ")";
+group-member-list
+  = member-comments, group-member,
+    { whitespace, ",", member-comments, group-member },
+    whitespace, [ "," ];
+group-member
+  = member-name, whitespace, "=", whitespace, member-value
+  | member-value
+  | "...";
 }
 
 \h4{Directive arguments}
 
 \dfn{Directive arguments} can be
 \dfn{positional arguments},
-\dfn{named arguments},
-\dfn{ellipses}, or
-\dfn{groups}.
+\dfn{named arguments}, or
+\dfn{ellipses}.
 Arguments are separated by commas.
 Unlike anywhere else, whitespace surrounding directive arguments is ignored.
-
-Arguments provide additional information to a directive.
+The value of positional or named argument is either a \dfn{markup sequence} or a \dfn{group}.
 
 \Bex{
 Often, arguments are converted to HTML attributes.
@@ -332,6 +362,13 @@ Only the literal \cowdoc_c{=} character can be used for named arguments,
 not its escaped variant \cowdoc_c{\\=}.
 }
 
+Grammatically, a \gterm{member-name} is constructed as follows:
+
+\codeblock(ebnf){
+member-name
+  = ? HTML attribute name ? - ("\\" | "(" | ")" | "{", "}" | ",");
+}
+
 \h5{Positional arguments}
 
 Positional arguments are content just like any other content,
@@ -348,6 +385,24 @@ You can use escape sequences to continue otherwise ended content.
 \xyz(hello\(world)   \: OK
 \xyz(hello(world)    \: error: unterminated arguments
 }}
+}
+
+Grammatically, a positional argument is a \gterm{member-value},
+constructed as follows:
+
+\codeblock(ebnf){
+member-value
+  = { member-value-markup-element }
+  | group;
+member-value-markup-element
+  = member-value-text
+  | escape
+  | comment
+  | directive;
+member-value-text
+  = ? Maximal character sequence excluding "\\", ",", or balanced ")" ?;
+member-comments
+  = { comment | whitespace };
 }
 
 \h5{Ellipses}
@@ -407,6 +462,7 @@ you can use the escape sequence \cowdoc_c{\\...} (only the first dot is part of 
 
 Groups make it possible to group any of the aforementioned constructs.
 Groups begin with \code(cowel,prefix=\\d){(} and end with \code(cowel,prefix=\\d\(){)}.
+They can appear both in positional and in named arguments.
 
 \Bex{
 \codeblock(cowel){\literally{
