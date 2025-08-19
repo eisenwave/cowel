@@ -37,7 +37,8 @@
 - change `[` and `]` argument syntax to `(` and `)` (#79)
 - add argument groups (#80)
 - add `\-` escape sequence
-- add EBNF grammar (`docs/grammar.ebnf`)
+- add EBNF grammar (`docs/intro/grammar.ebnf`)
+- also update µlight to enable EBNF syntax highlighting
 
 ## **[v0.5.1]** (2025-08-14)
 
