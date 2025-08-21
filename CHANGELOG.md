@@ -38,6 +38,7 @@
 - add argument groups (#80)
 - add `\-` escape sequence
 - add EBNF grammar (`docs/intro/grammar.ebnf`)
+- fix includes relative to included files not resolving paths correctly (#84)
 - also update µlight to enable EBNF syntax highlighting
 
 ## **[v0.5.1]** (2025-08-14)
