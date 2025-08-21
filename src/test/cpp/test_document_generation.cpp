@@ -101,7 +101,7 @@ public:
             const Processing_Status result
                 = consume_all(policy, content, Frame_Index::root, context);
             policy.leave_paragraph();
-            resolve_references(sink, as_u8string_view(*buffer), context, File_Id {});
+            resolve_references(sink, as_u8string_view(*buffer), context, File_Id::main);
             return result;
         }
 
@@ -146,14 +146,15 @@ public:
             return false;
         }
         source_string = as_u8string_view(source);
-        content = parse_and_build(source_string, File_Id {}, &memory, make_parse_error_consumer());
+        content
+            = parse_and_build(source_string, File_Id::main, &memory, make_parse_error_consumer());
         return true;
     }
 
     void load_source(std::u8string_view source)
     {
         source_string = source;
-        content = parse_and_build(source, File_Id {}, &memory, make_parse_error_consumer());
+        content = parse_and_build(source, File_Id::main, &memory, make_parse_error_consumer());
     }
 
     [[nodiscard]]

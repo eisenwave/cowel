@@ -213,7 +213,7 @@ Processing_Status write_head_body_document(
         }
     }
 
-    const File_Id file = content.empty() ? File_Id {} : content.front().get_source_span().file;
+    const auto file = content.empty() ? File_Id::main : content.front().get_source_span().file;
     const bool res_success = resolve_references(out, html_string, context, file);
     const auto res_status = res_success ? Processing_Status::ok : Processing_Status::error;
     status = status_concat(status, res_status);
@@ -297,7 +297,7 @@ write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Con
         }
         else {
             context.try_error(
-                diagnostic::theme_conversion, { {}, File_Id {} },
+                diagnostic::theme_conversion, { {}, File_Id::main },
                 u8"Failed to convert the syntax highlight theme to CSS, "
                 u8"possibly because the JSON was malformed."sv
             );

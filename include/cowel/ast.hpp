@@ -544,7 +544,7 @@ struct Content : Content_Variant {
                     return v.get_source_span();
                 }
                 else {
-                    return { {}, File_Id { 0 } };
+                    return { {}, File_Id::main };
                 }
             },
             *this

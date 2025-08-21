@@ -48,7 +48,7 @@ bool test_validity(std::u8string_view file, Printing_Diagnostic_Policy& policy)
     const std::u8string_view source { source_data.data(), source_data.size() };
     policy.source = source;
 
-    auto doc = parse_and_build(source, File_Id {}, &memory);
+    auto doc = parse_and_build(source, File_Id::main, &memory);
     COWEL_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
 
 // FIXME reimplement
