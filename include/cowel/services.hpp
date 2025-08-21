@@ -10,6 +10,7 @@
 
 #include "cowel/util/annotation_span.hpp"
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/typo.hpp"
 
@@ -168,14 +169,18 @@ struct File_Loader {
     ///
     /// Note that the entry name must not be the same as `path`
     /// because there is no assurance that `path` will remain valid in the long term.
+    /// @param path The characters comprising the path,
+    /// as written in a COWEL document.
+    /// @param relative_to The id of the document from which the load is taking place.
+    /// Note that `File_Id::main` is a valid input.
     [[nodiscard]]
-    virtual Result<File_Entry, File_Load_Error> load(std::u8string_view path)
+    virtual Result<File_Entry, File_Load_Error> load(Char_Sequence8 path, File_Id relative_to)
         = 0;
 };
 
 struct Always_Failing_File_Loader final : File_Loader {
     [[nodiscard]]
-    Result<File_Entry, File_Load_Error> load(std::u8string_view) final
+    Result<File_Entry, File_Load_Error> load(Char_Sequence8, File_Id) final
     {
         return File_Load_Error::error;
     }

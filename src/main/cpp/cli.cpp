@@ -20,7 +20,6 @@
 
 #include "cowel/assets.hpp"
 #include "cowel/cowel.h"
-#include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/print.hpp"
 #include "cowel/relative_file_loader.hpp"
@@ -79,9 +78,11 @@ std::u8string_view severity_tag(Severity severity)
 constexpr File_Source_Span as_file_source_span(const cowel_diagnostic_u8& diagnostic)
 {
     return {
-        { { .line = diagnostic.line, .column = diagnostic.column, .begin = diagnostic.begin },
-          diagnostic.length },
-        diagnostic.file_id,
+        {
+            { .line = diagnostic.line, .column = diagnostic.column, .begin = diagnostic.begin },
+            diagnostic.length,
+        },
+        File_Id(diagnostic.file_id),
     };
 }
 
@@ -109,20 +110,25 @@ struct Stderr_Logger {
     // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
     void operator()(const cowel_diagnostic_u8& diagnostic)
     {
+        COWEL_ASSERT(diagnostic.file_id >= -1);
+
         const auto severity = Severity(diagnostic.severity);
         any_errors |= severity >= Severity::error;
 
         const auto file_entry = [&] -> File_Entry {
-            if (diagnostic.file_id <= 0) {
-                return { .id = diagnostic.file_id,
-                         .source = main_file_source,
-                         .name = main_file_name };
+            if (diagnostic.file_id < 0) {
+                return {
+                    .id = File_Id(diagnostic.file_id),
+                    .source = main_file_source,
+                    .name = main_file_name,
+                };
             }
-            const Owned_File_Entry& result
-                = file_loader.entries.at(std::size_t(diagnostic.file_id - 1));
-            return { .id = diagnostic.file_id,
-                     .source = as_u8string_view(result.text),
-                     .name = as_u8string_view(result.name) };
+            const Owned_File_Entry& result = file_loader.at(File_Id(diagnostic.file_id));
+            return {
+                .id = File_Id(diagnostic.file_id),
+                .source = as_u8string_view(result.text),
+                .name = as_u8string_view(result.path_string),
+            };
         }();
 
         const File_Source_Span location = as_file_source_span(diagnostic);
@@ -255,12 +261,12 @@ int main(int argc, const char* const* const argv)
     const Function_Ref<void(void*, std::size_t, std::size_t) noexcept> free_ref
         = { const_v<free_fn>, &memory };
 
-    constexpr auto load_file_fn = [](Relative_File_Loader* file_loader,
-                                     cowel_string_view_u8 path) noexcept -> cowel_file_result_u8 {
-        return file_loader->do_load(as_u8string_view(path));
+    constexpr auto load_file_fn = [](Relative_File_Loader* file_loader, cowel_string_view_u8 path,
+                                     cowel_file_id relative_to) noexcept -> cowel_file_result_u8 {
+        return file_loader->do_load(as_u8string_view(path), File_Id(relative_to)).file_result;
     };
-    const Function_Ref<cowel_file_result_u8(cowel_string_view_u8) noexcept> load_file_ref
-        = { const_v<load_file_fn>, &file_loader };
+    const Function_Ref<cowel_file_result_u8(cowel_string_view_u8, cowel_file_id) noexcept>
+        load_file_ref = { const_v<load_file_fn>, &file_loader };
 
     constexpr auto log_fn = [](Stderr_Logger* logger, const cowel_diagnostic_u8* diagnostic
                             ) noexcept -> void { (*logger)(*diagnostic); };

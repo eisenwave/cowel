@@ -21,10 +21,11 @@ extern "C" {
 
 __attribute__((import_module("env"), import_name("load_file"))) // NOLINT
 cowel_file_result_u8
-cowel_import_load_file_u8(const char8_t* path_text, size_t path_length);
+cowel_import_load_file_u8(const char8_t* path_text, size_t path_length, cowel_file_id relative_to);
 
 __attribute__((import_module("env"), import_name("log"))) // NOLINT
 void cowel_import_log_u8(const cowel_diagnostic_u8*);
+}
 
 #ifdef COWEL_EMSCRIPTEN
 static_assert(sizeof(cowel_options_u8) == 88);
@@ -32,6 +33,23 @@ static_assert(alignof(cowel_options_u8) == 4);
 static_assert(sizeof(cowel_gen_result) == 12);
 static_assert(alignof(cowel_gen_result) == 4);
 #endif
+
+namespace {
+
+cowel_file_result_u8
+load_file_callback(const void*, cowel_string_view_u8 path, cowel_file_id relative_to) noexcept
+{
+    return cowel_import_load_file_u8(path.text, path.length, relative_to);
+};
+
+void log_callback(const void*, const cowel_diagnostic_u8* diagnostic) noexcept
+{
+    cowel_import_log_u8(diagnostic);
+};
+
+} // namespace
+
+extern "C" {
 
 COWEL_EXPORT
 void init_options(
@@ -42,12 +60,6 @@ void init_options(
     cowel_severity min_log_severity
 ) noexcept
 {
-    constexpr auto load_file_fn = //
-        [](const void*, cowel_string_view_u8 path) noexcept -> cowel_file_result_u8 {
-        return cowel_import_load_file_u8(path.text, path.length);
-    };
-    constexpr auto log_fn = [](const void*, const cowel_diagnostic_u8* diagnostic
-                            ) noexcept -> void { cowel_import_log_u8(diagnostic); };
     *result = cowel_options_u8 {
         .source = { source_text, source_length },
         // FIXME: embed highlight theme in this binary for now perhaps?
@@ -59,9 +71,9 @@ void init_options(
         .alloc_data = nullptr,
         .free = nullptr,
         .free_data = nullptr,
-        .load_file = load_file_fn,
+        .load_file = load_file_callback,
         .load_file_data = nullptr,
-        .log = log_fn,
+        .log = log_callback,
         .log_data = nullptr,
         .reserved_1 = {},
     };
@@ -78,7 +90,7 @@ void log_assertion_error(const cowel_assertion_error_u8* error)
         .id = { id.data(), id.length() },
         .message = error->message,
         .file_name = error->file_name,
-        .file_id = 0,
+        .file_id = -1,
         .begin = 0,
         .length = 0,
         .line = error->line,

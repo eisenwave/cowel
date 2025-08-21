@@ -35,7 +35,7 @@ export type GenOptions = {
     source: string;
     mode: Mode;
     minSeverity: Severity;
-    loadFile(path: string): FileResult;
+    loadFile(path: string, baseFileId: number): FileResult;
     log(diagnostic: Diagnostic): void;
 };
 
@@ -136,7 +136,7 @@ export class CowelWasm {
     private heap_u32!: Uint32Array;
     private heap_i32!: Int32Array;
 
-    private loadFile!: (path: string) => FileResult;
+    private loadFile!: (path: string, baseFileId: number) => FileResult;
     private log!: (diagnostic: Diagnostic) => void;
 
     constructor() { }
@@ -150,9 +150,10 @@ export class CowelWasm {
                     resultAddress: Address,
                     pathAddress: Address,
                     pathLength: number,
+                    baseFileId: number,
                 ) => {
                     const path = this.decodeUtf8(pathAddress, pathLength);
-                    this.encodeFileResult(resultAddress, this.loadFile(path));
+                    this.encodeFileResult(resultAddress, this.loadFile(path, baseFileId));
                 },
                 log: (diagnosticAddress: Address) => {
                     const diagnostic = this.decodeDiagnostic(diagnosticAddress);
@@ -248,7 +249,7 @@ export class CowelWasm {
         const messageLength = this.heap_u32[address / 4 + 4];
         const fileNameAddress = this.heap_u32[address / 4 + 5];
         const fileNameLength = this.heap_u32[address / 4 + 6];
-        const fileId = this.heap_u32[address / 4 + 7];
+        const fileId = this.heap_i32[address / 4 + 7];
         const begin = this.heap_u32[address / 4 + 8];
         const length = this.heap_u32[address / 4 + 9];
         const line = this.heap_u32[address / 4 + 10];

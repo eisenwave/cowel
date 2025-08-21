@@ -97,6 +97,12 @@ enum cowel_assertion_type {
     COWEL_ASSERTION_UNREACHABLE,
 };
 
+// NOLINTNEXTLINE(performance-enum-size)
+enum {
+    /// @brief The value of a `cowel_file_id` representing the main document.
+    COWEL_FILE_ID_MAIN = -1,
+};
+
 /// @brief A container for a string and a length.
 /// The string does not have to be null-terminated.
 struct cowel_string_view {
@@ -176,8 +182,9 @@ struct cowel_file_result {
     /// If loading failed, this is null.
     cowel_mutable_string_view data;
     /// @brief A unique identifier for the loaded file.
-    /// The identifier zero refers to the main file,
-    /// which is not actually loaded, but whose source is provided within `cowel_options`.
+    /// The identifier `-1` refers to the main file,
+    /// which is not actually loaded,
+    /// but whose source is provided within `cowel_options`.
     cowel_file_id id;
 };
 
@@ -206,10 +213,12 @@ cowel_free_fn(const void* data, void* pointer, size_t size, size_t alignment) CO
 
 // NOLINTNEXTLINE(modernize-use-using)
 typedef cowel_file_result
-cowel_load_file_fn(const void* data, cowel_string_view path) COWEL_NOEXCEPT;
+cowel_load_file_fn(const void* data, cowel_string_view path, cowel_file_id relative_to)
+    COWEL_NOEXCEPT;
 // NOLINTNEXTLINE(modernize-use-using)
 typedef cowel_file_result_u8
-cowel_load_file_fn_u8(const void* data, cowel_string_view_u8 path) COWEL_NOEXCEPT;
+cowel_load_file_fn_u8(const void* data, cowel_string_view_u8 path, cowel_file_id relative_to)
+    COWEL_NOEXCEPT;
 
 // NOLINTNEXTLINE(modernize-use-using)
 typedef void cowel_log_fn(const void* data, const cowel_diagnostic* diagnostic) COWEL_NOEXCEPT;

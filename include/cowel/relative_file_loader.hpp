@@ -3,30 +3,20 @@
 
 #include <filesystem>
 #include <memory_resource>
-#include <string_view>
 #include <vector>
 
+#include "cowel/util/char_sequence.hpp"
 #include "cowel/util/io.hpp"
 
 #include "cowel/cowel.h"
-#include "cowel/cowel_lib.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/services.hpp"
 
 namespace cowel {
 
-[[nodiscard]]
-constexpr cowel_io_status io_error_to_io_status(IO_Error_Code error)
-{
-    switch (error) {
-    case IO_Error_Code::read_error: return COWEL_IO_ERROR_READ;
-    case IO_Error_Code::cannot_open: return COWEL_IO_ERROR_NOT_FOUND;
-    default: return COWEL_IO_ERROR;
-    }
-}
-
 struct Owned_File_Entry {
-    std::pmr::vector<char8_t> name;
+    std::filesystem::path path;
+    std::u8string path_string;
     std::pmr::vector<char8_t> text;
 };
 
@@ -36,61 +26,37 @@ struct Owned_File_Entry {
 ///
 /// This class loads files relative to a given constant base directory.
 struct Relative_File_Loader final : File_Loader {
-    std::filesystem::path base;
-    std::pmr::vector<Owned_File_Entry> entries;
+private:
+    std::filesystem::path m_base;
+    std::pmr::vector<Owned_File_Entry> m_entries;
+
+public:
+    [[nodiscard]]
+    explicit Relative_File_Loader(std::filesystem::path&& base, std::pmr::memory_resource* memory);
+
+    struct Complete_Result {
+        cowel_file_result_u8 file_result;
+        Owned_File_Entry& entry;
+    };
 
     [[nodiscard]]
-    explicit Relative_File_Loader(std::filesystem::path&& base, std::pmr::memory_resource* memory)
-        : base { std::move(base) }
-        , entries { memory }
+    const Owned_File_Entry& at(File_Id id) const
     {
+        const auto value = int(id);
+        // This could fail if we accidentally call `at(File_Id::main)`,
+        // given that the main document is considered to simply exist in the environment,
+        // rather than being loaded here and having an entry.
+        COWEL_ASSERT(value >= 0);
+        return m_entries[std::size_t(value)];
     }
 
     /// @brief External implementation to be used with `cowel.h` API.
     [[nodiscard]]
-    cowel_file_result_u8 do_load(std::u8string_view path)
-    {
-        const std::filesystem::path relative { path, std::filesystem::path::generic_format };
-        const std::filesystem::path resolved = base / relative;
-
-        std::pmr::memory_resource* const memory = entries.get_allocator().resource();
-        std::pmr::vector<char8_t> path_copy { path.begin(), path.end(), memory };
-        Result<std::pmr::vector<char8_t>, IO_Error_Code> result
-            = load_utf8_file(resolved.generic_u8string(), memory);
-
-        if (!result) {
-            // Even though loading failed, we store the file as an entry
-            // so that we can later get its name during logging.
-            entries.emplace_back(std::move(path_copy));
-            // Using entries.size() as the id is correct because id 0 refers to the main file,
-            // whereas the first loaded file gets id 1.
-            return {
-                .status = io_error_to_io_status(result.error()),
-                .data = {},
-                .id = File_Id(entries.size()),
-            };
-        }
-
-        auto& entry = entries.emplace_back(std::move(path_copy), std::move(*result));
-        return cowel_file_result_u8 {
-            .status = COWEL_IO_OK,
-            .data = { entry.text.data(), entry.text.size() },
-            .id = File_Id(entries.size()),
-        };
-    }
+    Complete_Result do_load(Char_Sequence8 path_chars, File_Id relative_to);
 
     /// @brief Internal implementation for `File_Loader` service.
     [[nodiscard]]
-    Result<File_Entry, File_Load_Error> load(std::u8string_view path) final
-    {
-        const cowel_file_result_u8 result = do_load(path);
-        if (result.status != COWEL_IO_OK) {
-            return io_status_to_load_error(result.status);
-        }
-        return File_Entry { .id = result.id,
-                            .source = { result.data.text, result.data.length },
-                            .name = path };
-    }
+    Result<File_Entry, File_Load_Error> load(Char_Sequence8 path, File_Id relative_to) final;
 };
 
 } // namespace cowel

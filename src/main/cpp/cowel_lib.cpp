@@ -6,7 +6,6 @@
 #include <new>
 #include <span>
 #include <string_view>
-#include <type_traits>
 #include <vector>
 
 #include "cowel/util/assert.hpp"
@@ -36,7 +35,7 @@
 namespace cowel {
 namespace {
 
-static_assert(std::is_same_v<cowel::File_Id, cowel_file_id>);
+static_assert(int(File_Id::main) == COWEL_FILE_ID_MAIN);
 
 using cowel::as_u8string_view;
 
@@ -64,6 +63,22 @@ cowel_string_view_u8 as_cowel_string_view(std::u8string_view str)
     return { str.data(), str.length() };
 }
 
+/// If `chars` is contiguous, simply returns the underlying `u8string_view`.
+/// Otherwise, spills the contents of `chars` into `buffer`.
+cowel_string_view_u8 char_sequence_to_sv(Char_Sequence8 chars, std::pmr::vector<char8_t>& buffer)
+{
+    COWEL_ASSERT(buffer.empty());
+
+    const std::u8string_view result = chars.as_string_view();
+    if (chars.empty() || !result.empty()) {
+        return as_cowel_string_view(result);
+    }
+    buffer.resize(chars.size());
+    chars.extract(std::span { buffer });
+    COWEL_ASSERT(chars.empty());
+    return as_cowel_string_view(as_u8string_view(buffer));
+};
+
 struct File_Loader_Less {
     using is_transparent = void;
 
@@ -84,33 +99,49 @@ struct File_Loader_From_Options final : File_Loader {
 private:
     cowel_load_file_fn_u8* m_load_file;
     const void* m_load_file_data;
+    std::pmr::vector<char8_t> m_buffer;
 
 public:
-    explicit File_Loader_From_Options(cowel_load_file_fn_u8* load_file, const void* load_file_data)
+    explicit File_Loader_From_Options(
+        cowel_load_file_fn_u8* load_file,
+        const void* load_file_data,
+        std::pmr::memory_resource* memory
+    )
         : m_load_file { load_file }
         , m_load_file_data { load_file_data }
+        , m_buffer { memory }
     {
     }
 
-    explicit File_Loader_From_Options(const cowel_options_u8& options)
-        : File_Loader_From_Options { options.load_file, options.load_file_data }
+    explicit File_Loader_From_Options(
+        const cowel_options_u8& options,
+        std::pmr::memory_resource* memory
+    )
+        : File_Loader_From_Options {
+            options.load_file,
+            options.load_file_data,
+            memory,
+        }
     {
     }
 
     [[nodiscard]]
-    Result<File_Entry, File_Load_Error> load(std::u8string_view path) final
+    Result<File_Entry, File_Load_Error> load(Char_Sequence8 path_chars, File_Id relative_to) final
     {
         if (!m_load_file) {
             return File_Load_Error::error;
         }
+        COWEL_ASSERT(m_buffer.empty());
+        const cowel_string_view_u8 path = char_sequence_to_sv(path_chars, m_buffer);
+
         const cowel_file_result_u8 result
-            = m_load_file(m_load_file_data, as_cowel_string_view(path));
+            = m_load_file(m_load_file_data, path, cowel_file_id(relative_to));
         if (result.status != COWEL_IO_OK) {
             return io_status_to_load_error(result.status);
         }
-        return File_Entry { .id = result.id,
+        return File_Entry { .id = File_Id(result.id),
                             .source = as_u8string_view(result.data),
-                            .name = path };
+                            .name = as_u8string_view(path) };
     }
 };
 
@@ -146,26 +177,12 @@ public:
         }
         COWEL_ASSERT(m_buffer.empty());
 
-        /// If `chars` is contiguous, simply returns the underlying `u8string_view`.
-        /// Otherwise, spills the contents of `chars` into `m_buffer`.
-        const auto char_sequence_to_sv = [&](Char_Sequence8 chars) -> cowel_string_view_u8 {
-            const std::u8string_view result = chars.as_string_view();
-            if (chars.empty() || !result.empty()) {
-                return as_cowel_string_view(result);
-            }
-            const std::size_t initial_size = m_buffer.size();
-            m_buffer.resize(initial_size + chars.size());
-            chars.extract(std::span { m_buffer }.subspan(initial_size));
-            COWEL_ASSERT(chars.empty());
-            return as_cowel_string_view(as_u8string_view(m_buffer).substr(initial_size));
-        };
-
         const cowel_diagnostic_u8 diagnostic_u8 {
             .severity = cowel_severity(diagnostic.severity),
-            .id = char_sequence_to_sv(diagnostic.id),
-            .message = char_sequence_to_sv(diagnostic.message),
+            .id = char_sequence_to_sv(diagnostic.id, m_buffer),
+            .message = char_sequence_to_sv(diagnostic.message, m_buffer),
             .file_name = {},
-            .file_id = diagnostic.location.file,
+            .file_id = cowel_file_id(diagnostic.location.file),
             .begin = diagnostic.location.begin,
             .length = diagnostic.location.length,
             .line = diagnostic.location.line,
@@ -190,7 +207,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 
     const Builtin_Directive_Set builtin_behavior {};
 
-    File_Loader_From_Options file_loader { options.load_file, options.load_file_data };
+    File_Loader_From_Options file_loader { options.load_file, options.load_file_data, memory };
     Logger_From_Options logger { options, memory };
     static constinit Ulight_Syntax_Highlighter highlighter;
 
@@ -203,7 +220,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
               logger(Diagnostic {
                   .severity = Severity::trace,
                   .id = u8"trace"sv,
-                  .location = { {}, -1 },
+                  .location = { {}, File_Id::main },
                   .message = message,
               });
           };
@@ -213,7 +230,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
     const auto source = as_u8string_view(options.source);
 
     const ast::Pmr_Vector<ast::Content> root_content = parse_and_build(
-        source, File_Id {}, memory,
+        source, File_Id::main, memory,
         [&](std::u8string_view id, File_Source_Span pos, std::u8string_view message) {
             logger(Diagnostic { Severity::error, id, pos, message });
         }

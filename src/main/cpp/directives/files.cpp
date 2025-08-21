@@ -68,7 +68,9 @@ Include_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     }
 
     const auto path_string = as_u8string_view(path_data);
-    const Result<File_Entry, File_Load_Error> entry = context.get_file_loader().load(path_string);
+    const File_Id relative_to = call.directive.get_source_span().file;
+    const Result<File_Entry, File_Load_Error> entry
+        = context.get_file_loader().load(path_string, relative_to);
     if (!entry) {
         const std::u8string_view message[] {
             u8"Failed to include text from file \"", path_string, u8"\". ",
@@ -108,11 +110,13 @@ Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
         return Processing_Status::fatal;
     }
 
+    const auto path_string = as_u8string_view(path_data);
+    const File_Id relative_to = call.directive.get_source_span().file;
     const Result<File_Entry, File_Load_Error> entry
-        = context.get_file_loader().load(as_u8string_view(path_data));
+        = context.get_file_loader().load(path_string, relative_to);
     if (!entry) {
         const std::u8string_view message[] {
-            u8"Failed to import sub-document from file \"", as_u8string_view(path_data), u8"\". ",
+            u8"Failed to import sub-document from file \"", path_string, u8"\". ",
             file_load_error_explanation(entry.error()),
             u8" Note that files are loaded relative to the directory of the current document."
         };

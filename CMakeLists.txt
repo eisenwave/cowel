@@ -141,9 +141,9 @@ set(COMMON_LIBRARY_SOURCES
 
 set(NATIVE_LIBRARY_SOURCES
     ${COMMON_LIBRARY_SOURCES}
-
     src/main/cpp/util/io.cpp
     src/main/cpp/util/tty.cpp
+    src/main/cpp/relative_file_loader.cpp
 )
 
 if(DEFINED EMSCRIPTEN)
@@ -173,6 +173,7 @@ if(DEFINED EMSCRIPTEN)
     add_executable(cowel-wasm
         ${COMMON_LIBRARY_SOURCES}
         src/main/cpp/wasm.cpp
+        src/main/cpp/wasm_stubs.cpp
     )
     set_target_properties(cowel-wasm PROPERTIES
         OUTPUT_NAME "cowel"

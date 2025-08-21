@@ -17,7 +17,7 @@ a \gterm{document} is constructed as follows:
 
 \: FIXME: includes are meant to be relative to the current document,
 \: so specifying "intro/" as the base path should not be necessary.
-\codeblock(ebnf){\cowel_include_text{intro/grammar.ebnf}}
+\codeblock(ebnf){\cowel_include_text{grammar.ebnf}}
 
 \Bnote{
 At the top-level in the \gterm{document},
@@ -104,8 +104,8 @@ The meaning of the escape sequences is described in the table below.
       \cowdoc_esc{\N{LEFT CURLY BRACKET}},
       \cowdoc_esc{\N{RIGHT CURLY BRACKET}},
       \cowdoc_esc{\\},
-      \cowdoc_esc{(},
-      \cowdoc_esc{)},
+      \cowdoc_esc{\N{LEFT PARENTHESIS}},
+      \cowdoc_esc{\N{RIGHT PARENTHESIS}},
       \cowdoc_esc{,},
       \cowdoc_esc{.},
       \cowdoc_esc{=}
@@ -133,8 +133,8 @@ The meaning of the escape sequences is described in the table below.
       \cowdoc_esc{>},
       \cowdoc_esc{?},
       \cowdoc_esc{@},
-      \cowdoc_esc{[},
-      \cowdoc_esc{]},
+      \cowdoc_esc{\N{LEFT SQUARE BRACKET}},
+      \cowdoc_esc{\N{RIGHT SQUARE BRACKET}},
       \cowdoc_esc{^},
       \cowdoc_esc{|},
       \cowdoc_esc{~},

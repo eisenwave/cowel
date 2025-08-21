@@ -117,13 +117,21 @@ type LoadedFile = {
 };
 
 const files: LoadedFile[] = [];
+let mainFile: LoadedFile;
 
 let mainDocumentDir = "";
 let colorsEnabled = true;
 let wasm: cowel.CowelWasm | undefined;
 
-function loadFile(unresolvedPath: string): cowel.FileResult {
-    const resolvedPath = path.resolve(mainDocumentDir, unresolvedPath);
+function loadFile(unresolvedPath: string, baseFileId: number): cowel.FileResult {
+    const resolvedPath = ((): string => {
+        if (baseFileId < 0) {
+            return path.resolve(mainDocumentDir, unresolvedPath);
+        }
+        const parent = path.dirname(files[baseFileId].path);
+        return path.resolve(parent, unresolvedPath);
+    })();
+
     let status = cowel.IoStatus.ok;
     let data: Buffer | undefined;
     let id = 0;
@@ -170,7 +178,7 @@ function log(diagnostic: cowel.Diagnostic): void {
 
     const tag = severityTag(diagnostic.severity);
     const filePath = diagnostic.fileName.length !== 0 ? diagnostic.fileName
-        : file ? file.path : "";
+        : file ? file.path : mainFile.path;
 
     const hasLocation =
         diagnostic.begin !== 0 || diagnostic.length !== 0 || diagnostic.line !== 0;
@@ -233,7 +241,7 @@ async function run(
     const mainFileResult = ((): string => {
         try {
             const data = fs.readFileSync(inputPath);
-            files.push({ path: inputPath, data });
+            mainFile = { path: inputPath, data };
             return data.toString("utf8");
         } catch (_) {
             logError(

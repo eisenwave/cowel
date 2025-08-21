@@ -54,7 +54,6 @@ struct Document_Info;
 struct Document_Sections;
 struct Directive_Behavior;
 struct Error_Tag;
-using File_Id = int; // TODO: similar to Frame_Index, this should be a strong alias
 struct Generation_Options;
 enum struct HLJS_Scope : Default_Underlying;
 struct Ignorant_Logger;
@@ -76,9 +75,6 @@ struct Success_Tag;
 struct Syntax_Highlighter;
 enum struct Syntax_Highlight_Error : Default_Underlying;
 enum struct To_HTML_Mode : Default_Underlying;
-
-using File_Source_Position = Basic_File_Source_Position<File_Id>;
-using File_Source_Span = Basic_File_Source_Span<File_Id>;
 
 namespace ast {
 
@@ -113,10 +109,16 @@ using Transparent_String_View_Hash8 = Basic_Transparent_String_View_Hash<char8_t
 using Transparent_String_View_Less = Basic_Transparent_String_View_Less<char>;
 using Transparent_String_View_Less8 = Basic_Transparent_String_View_Less<char8_t>;
 
+/// @brief A numeric file identifier.
+enum struct File_Id : int { main = -1 }; // NOLINT(performance-enum-size)
+
 /// @brief A stack frame index.
 /// The special value `root = -1` expresses top-level content,
 /// i.e. content which is not expanded from any macro.
 enum struct Frame_Index : int { root = -1 }; // NOLINT(performance-enum-size)
+
+using File_Source_Position = Basic_File_Source_Position<File_Id>;
+using File_Source_Span = Basic_File_Source_Span<File_Id>;
 
 } // namespace cowel
 
