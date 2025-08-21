@@ -42,6 +42,8 @@ Relative_File_Loader::Relative_File_Loader(
 auto Relative_File_Loader::do_load(Char_Sequence8 path_chars, File_Id relative_to)
     -> Complete_Result
 {
+    COWEL_ASSERT(is_valid(relative_to));
+
     std::pmr::memory_resource* const memory = m_entries.get_allocator().resource();
     std::pmr::vector<char8_t> path_copy { memory };
     const std::u8string_view path_chars_string = path_chars.as_string_view();
@@ -91,6 +93,8 @@ auto Relative_File_Loader::do_load(Char_Sequence8 path_chars, File_Id relative_t
 Result<File_Entry, File_Load_Error>
 Relative_File_Loader::load(Char_Sequence8 path, File_Id relative_to)
 {
+    COWEL_ASSERT(is_valid(relative_to));
+
     const Complete_Result result = do_load(path, relative_to);
 
     if (result.file_result.status != COWEL_IO_OK) {

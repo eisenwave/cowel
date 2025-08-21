@@ -57,6 +57,12 @@ public:
     /// @brief Internal implementation for `File_Loader` service.
     [[nodiscard]]
     Result<File_Entry, File_Load_Error> load(Char_Sequence8 path, File_Id relative_to) final;
+
+    [[nodiscard]]
+    bool is_valid(File_Id id) const noexcept final
+    {
+        return int(id) < int(m_entries.size());
+    }
 };
 
 } // namespace cowel

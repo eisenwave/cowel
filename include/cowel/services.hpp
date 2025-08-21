@@ -176,6 +176,12 @@ struct File_Loader {
     [[nodiscard]]
     virtual Result<File_Entry, File_Load_Error> load(Char_Sequence8 path, File_Id relative_to)
         = 0;
+
+    /// @brief Returns `true` if the given id is a loaded file recognized by this `File_Loader`.
+    /// `is_valid(File_Id::main)` is always `true`.
+    [[nodiscard]]
+    virtual bool is_valid(File_Id) const noexcept
+        = 0;
 };
 
 struct Always_Failing_File_Loader final : File_Loader {
@@ -183,6 +189,12 @@ struct Always_Failing_File_Loader final : File_Loader {
     Result<File_Entry, File_Load_Error> load(Char_Sequence8, File_Id) final
     {
         return File_Load_Error::error;
+    }
+
+    [[nodiscard]]
+    bool is_valid(File_Id id) const noexcept final
+    {
+        return id == File_Id::main;
     }
 };
 

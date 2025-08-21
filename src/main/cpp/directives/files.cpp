@@ -125,6 +125,7 @@ Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
         );
         return Processing_Status::fatal;
     }
+    COWEL_ASSERT(context.get_file_loader().is_valid(entry->id));
 
     auto on_error
         = [&](std::u8string_view id, const Source_Span& location, std::u8string_view message) {

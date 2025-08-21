@@ -100,6 +100,7 @@ private:
     cowel_load_file_fn_u8* m_load_file;
     const void* m_load_file_data;
     std::pmr::vector<char8_t> m_buffer;
+    cowel_file_id m_max_valid_file_id = COWEL_FILE_ID_MAIN;
 
 public:
     explicit File_Loader_From_Options(
@@ -128,6 +129,8 @@ public:
     [[nodiscard]]
     Result<File_Entry, File_Load_Error> load(Char_Sequence8 path_chars, File_Id relative_to) final
     {
+        COWEL_ASSERT(is_valid(relative_to));
+
         if (!m_load_file) {
             return File_Load_Error::error;
         }
@@ -136,12 +139,20 @@ public:
 
         const cowel_file_result_u8 result
             = m_load_file(m_load_file_data, path, cowel_file_id(relative_to));
+        m_max_valid_file_id = std::max(m_max_valid_file_id, result.id);
+
         if (result.status != COWEL_IO_OK) {
             return io_status_to_load_error(result.status);
         }
         return File_Entry { .id = File_Id(result.id),
                             .source = as_u8string_view(result.data),
                             .name = as_u8string_view(path) };
+    }
+
+    [[nodiscard]]
+    bool is_valid(File_Id id) const noexcept final
+    {
+        return id <= File_Id(m_max_valid_file_id);
     }
 };
 
