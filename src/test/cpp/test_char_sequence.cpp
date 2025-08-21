@@ -69,7 +69,7 @@ TEST(Char_Sequence, repeated_code_unit)
 {
     Char_Sequence8 chars { 7, u8'x' };
     ASSERT_EQ(chars.length(), 7);
-    ASSERT_EQ(chars.as_contiguous(), nullptr);
+    ASSERT_EQ(chars.c_str(), nullptr);
 
     using array_type = std::array<char8_t, 5>;
     array_type buffer;
@@ -125,7 +125,7 @@ TEST(Char_Sequence, repeated_code_point)
     // would dangle.
     const Char_Sequence8 chars = source;
     ASSERT_EQ(chars.length(), code_units.length());
-    ASSERT_EQ(chars.as_contiguous(), nullptr);
+    ASSERT_EQ(chars.c_str(), nullptr);
     ASSERT_EQ(as_u8string_view(to_string(chars)), code_units);
 }
 
@@ -138,7 +138,7 @@ TEST(Char_Sequence, joined)
 
     const Char_Sequence8 chars = source;
     ASSERT_EQ(chars.length(), joined.length());
-    ASSERT_EQ(chars.as_contiguous(), nullptr);
+    ASSERT_EQ(chars.c_str(), nullptr);
     ASSERT_EQ(as_u8string_view(to_string(chars)), joined);
 }
 

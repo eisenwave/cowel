@@ -241,7 +241,7 @@ public:
     /// If none of these constructors were used, returns `nullptr`.
     /// If `empty()` is `true`, may return `nullptr` even if the data is contiguous.
     [[nodiscard]]
-    constexpr const char8_t* as_contiguous() const noexcept
+    constexpr const char8_t* c_str() const noexcept
     {
         using result_type = const char8_t*;
         return m_extract == &extract_from_string_view  ? result_type(m_entity.const_pointer)
@@ -249,20 +249,20 @@ public:
                                                        : nullptr;
     }
 
-    /// @brief Equivalent to `as_contiguous() != nullptr`.
+    /// @brief Equivalent to `c_str() != nullptr`.
     [[nodiscard]]
     constexpr bool is_contiguous() const noexcept
     {
-        return as_contiguous() != nullptr;
+        return c_str() != nullptr;
     }
 
-    /// @brief If `as_contiguous` returns a non-null pointer,
-    /// returns `std::u8string_view{as_contiguous(), size()}`.
+    /// @brief If `c_str()` returns a non-null pointer `p`,
+    /// returns `std::u8string_view{p, size()}`.
     /// Otherwise, returns an empty string view.
     [[nodiscard]]
     constexpr std::u8string_view as_string_view() const noexcept
     {
-        const char8_t* const result = as_contiguous();
+        const char8_t* const result = c_str();
         return result == nullptr ? std::u8string_view {} : std::u8string_view { result, m_size };
     }
 };
