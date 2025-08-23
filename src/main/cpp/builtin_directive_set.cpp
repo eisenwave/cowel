@@ -275,14 +275,10 @@ struct Builtin_Directive_Set::Impl {
         { Variable_Operation::set };
     Self_Closing_Behavior wbr //
         { HTML_Tag_Name(u8"wbr"), Directive_Display::in_line };
-    WG21_Block_Behavior wg21_example //
-        { u8"Example", u8"end example" };
     In_Tag_Behavior wg21_grammar //
         { HTML_Tag_Name(u8"dl"), u8"grammar", Policy_Usage::html, Directive_Display::block };
     WG21_Head_Behavior wg21_head //
         {};
-    WG21_Block_Behavior wg21_note //
-        { u8"Note", u8"end note" };
 
     // clang-format off
 #define COWEL_DEPRECATED_ALIAS(name, use_instead)                                                  \
@@ -796,14 +792,10 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
     case u8'w':
         if (name == u8"wbr")
             return &m_impl->wbr;
-        if (name == u8"wg21_example")
-            return &m_impl->wg21_example;
         if (name == u8"wg21_grammar")
             return &m_impl->wg21_grammar;
         if (name == u8"wg21_head")
             return &m_impl->wg21_head;
-        if (name == u8"wg21_note")
-            return &m_impl->wg21_note;
         break;
 
     default: break;
