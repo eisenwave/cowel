@@ -1,7 +1,6 @@
 #ifndef COWEL_DIRECTIVE_PROCESSING_HPP
 #define COWEL_DIRECTIVE_PROCESSING_HPP
 
-#include <cstddef>
 #include <ranges>
 #include <span>
 #include <string_view>
@@ -10,7 +9,6 @@
 #include <vector>
 
 #include "cowel/util/assert.hpp"
-#include "cowel/util/function_ref.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/severity.hpp"
 
@@ -63,9 +61,9 @@ enum struct To_Plaintext_Status : Default_Underlying { //
 [[nodiscard]]
 Processing_Status invoke(
     Content_Policy& out,
-    std::u8string_view name,
     const ast::Directive& directive,
-    Arguments_View args,
+    std::u8string_view name,
+    const ast::Group* args,
     const ast::Content_Sequence* content,
     Frame_Index content_frame,
     Context& context
@@ -187,6 +185,19 @@ Processing_Status to_plaintext(
     Context& context
 );
 
+struct Plaintext_Result {
+    Processing_Status status;
+    std::u8string_view string;
+};
+
+[[nodiscard]]
+Plaintext_Result to_plaintext_optimistic(
+    std::pmr::vector<char8_t>& buffer,
+    std::span<const ast::Content> content,
+    Frame_Index frame,
+    Context& context
+);
+
 enum struct To_HTML_Mode : Default_Underlying {
     direct,
     paragraphs,
@@ -211,65 +222,11 @@ enum struct Paragraphs_State : bool {
     inside,
 };
 
-enum struct Argument_Subset : Default_Underlying {
-    none = 0,
-    unmatched_positional = 1 << 0,
-    matched_positional = 1 << 1,
-    positional = unmatched_positional | matched_positional,
-    unmatched_named = 1 << 2,
-    unmatched = unmatched_positional | unmatched_named,
-    matched_named = 1 << 3,
-    matched = matched_positional | matched_named,
-    named = unmatched_named | matched_named,
-    all = unmatched | matched,
-};
-
-constexpr Argument_Subset operator|(Argument_Subset x, Argument_Subset y)
-{
-    return Argument_Subset(std::to_underlying(x) | std::to_underlying(y));
-}
-
-constexpr Argument_Subset operator&(Argument_Subset x, Argument_Subset y)
-{
-    return Argument_Subset(std::to_underlying(x) & std::to_underlying(y));
-}
-
-constexpr Argument_Subset argument_subset_matched_named(bool is_matched, bool is_named)
-{
-    return (is_matched ? Argument_Subset::matched : Argument_Subset::unmatched)
-        & (is_named ? Argument_Subset::named : Argument_Subset::positional);
-}
-
-constexpr bool argument_subset_contains(Argument_Subset x, Argument_Subset y)
-{
-    return (x | y) == x;
-}
-
-constexpr bool argument_subset_intersects(Argument_Subset x, Argument_Subset y)
-{
-    return (x & y) != Argument_Subset::none;
-}
-
-/// @brief Emits a warning which informs the user that all arguments to the directive are ignored.
-void warn_all_args_ignored(const Invocation& call, Context& context);
-
-/// @brief Emits a warning for all ignored arguments,
-/// where the caller can specify what subset of arguments were ignored.
-void warn_ignored_argument_subset(
-    Arguments_View args,
-    const Argument_Matcher& matcher,
+[[nodiscard]]
+Processing_Status match_empty_arguments(
+    const Invocation& call,
     Context& context,
-    Argument_Subset ignored_subset
-);
-
-/// @brief Emits a warning for all ignored arguments,
-/// where the caller can specify what subset of arguments were ignored.
-/// The given subset has to include either both `matched` and `unmatched`,
-/// or be `none`.
-void warn_ignored_argument_subset(
-    Arguments_View args,
-    Context& context,
-    Argument_Subset ignored_subset
+    Processing_Status fail_status = Processing_Status::error
 );
 
 void diagnose(
@@ -279,31 +236,20 @@ void diagnose(
     Context& context
 );
 
-using Argument_Filter = Function_Ref<bool(std::size_t index, Argument_Ref argument) const>;
-
 [[nodiscard]]
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    Arguments_View arguments,
+    std::span<const ast::Group_Member> arguments,
+    Frame_Index frame,
     Context& context,
-    Argument_Filter filter = {},
-    Attribute_Style style = Attribute_Style::double_if_needed
-);
-
-[[nodiscard]]
-Processing_Status named_arguments_to_attributes(
-    Text_Buffer_Attribute_Writer& out,
-    Arguments_View arguments,
-    const Argument_Matcher& matcher,
-    Context& context,
-    Argument_Subset subset,
     Attribute_Style style = Attribute_Style::double_if_needed
 );
 
 [[nodiscard]]
 Processing_Status named_argument_to_attribute(
     Text_Buffer_Attribute_Writer& out,
-    Argument_Ref a,
+    const ast::Group_Member& a,
+    Frame_Index frame,
     Context& context,
     Attribute_Style style = Attribute_Style::double_if_needed
 );
@@ -370,63 +316,6 @@ public:
         return m_status;
     }
 };
-
-/// @brief Converts a the content of the argument matching the given parameter.
-/// @param out The vector into which generated plaintext should be written.
-/// @param arguments The arguments.
-/// @param args The argument matcher. Matching must have already taken place.
-/// @param parameter The name of the parameter to which the argument belongs.
-/// @param context The context.
-[[nodiscard]]
-Result<bool, Processing_Status> argument_to_plaintext(
-    std::pmr::vector<char8_t>& out,
-    Arguments_View arguments,
-    const Argument_Matcher& args,
-    std::u8string_view parameter,
-    Context& context
-);
-
-/// @brief Returns the first positional argument in `args`
-/// or a null pointer if there is no positional argument.
-/// Furthermore, emits a warning for any additional positional arguments, if any.
-std::optional<Argument_Ref> get_first_positional_warn_rest(Arguments_View args, Context& context);
-
-[[nodiscard]]
-Greedy_Result<bool> get_yes_no_argument(
-    std::u8string_view name,
-    std::u8string_view diagnostic_id,
-    Arguments_View arguments,
-    const Argument_Matcher& args,
-    Context& context,
-    bool fallback
-);
-
-[[nodiscard]]
-Greedy_Result<std::size_t> get_integer_argument(
-    std::u8string_view name,
-    std::u8string_view parse_error_diagnostic,
-    std::u8string_view range_error_diagnostic,
-    Arguments_View arguments,
-    const Argument_Matcher& args,
-    Context& context,
-    std::size_t fallback,
-    std::size_t min = 0,
-    std::size_t max = std::size_t(-1)
-);
-
-struct String_Argument {
-    std::pmr::vector<char8_t> data;
-    std::u8string_view string;
-};
-
-[[nodiscard]]
-Greedy_Result<String_Argument> get_string_argument(
-    std::u8string_view name,
-    Arguments_View arguments,
-    const Argument_Matcher& args,
-    Context& context,
-    std::u8string_view fallback = u8""
-);
 
 /// @brief Uses the error behavior provided by `context` to process `call`.
 /// Returns `on_success` if that generation succeeded.

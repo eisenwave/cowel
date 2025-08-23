@@ -1,11 +1,11 @@
 #include <algorithm>
-#include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
 
+#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
@@ -23,7 +23,6 @@
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/document_sections.hpp"
 #include "cowel/invocation.hpp"
@@ -63,39 +62,38 @@ constexpr int max_listing_level = 6;
 Processing_Status
 Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    static constexpr std::u8string_view parameters[] { u8"id", u8"listed", u8"show-number" };
+    String_Matcher id_matcher { context.get_transient_memory() };
+    Group_Member_Matcher id_member { u8"id"sv, Optionality::optional, id_matcher };
+    Boolean_Matcher listed_boolean;
+    Group_Member_Matcher listed_member { u8"listed"sv, Optionality::optional, listed_boolean };
+    Boolean_Matcher show_number_boolean;
+    Group_Member_Matcher show_number_member { u8"show-number"sv, Optionality::optional,
+                                              show_number_boolean };
+    Group_Pack_Named_Lazy_Any_Matcher attr_group;
+    Group_Member_Matcher attr_member { u8"attr"sv, Optionality::optional, attr_group };
+    Group_Member_Matcher* const parameters[] {
+        &id_member,
+        &listed_member,
+        &show_number_member,
+        &attr_member,
+    };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
+    }
 
     const auto level_char = char8_t(int(u8'0') + m_level);
     const char8_t tag_name_data[2] { u8'h', level_char };
     const HTML_Tag_Name tag_name { std::u8string_view { tag_name_data, sizeof(tag_name_data) } };
-
-    Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(call.arguments, Parameter_Match_Mode::only_named);
-
-    // Determine whether the heading should be listed in the table of contents.
     const bool listed_by_default = m_level >= min_listing_level && m_level <= max_listing_level;
-    const Greedy_Result<bool> is_listed_result = get_yes_no_argument(
-        u8"listed", diagnostic::h::listed_invalid, call.arguments, args, context, listed_by_default
-    );
-    if (status_is_break(is_listed_result.status())) {
-        return is_listed_result.status();
-    }
 
-    const Greedy_Result<bool> is_number_shown_result = get_yes_no_argument(
-        u8"show-number", diagnostic::h::show_number_invalid, call.arguments, args, context,
-        listed_by_default
-    );
-    if (status_is_break(is_number_shown_result.status())) {
-        return is_number_shown_result.status();
-    }
-    Processing_Status current_status
-        = status_concat(is_listed_result.status(), is_number_shown_result.status());
-
-    // TODO: now that we use Greedy_Result, we should be able to get rid of these
-    //       extra variables, but it's not worth the trouble right now ...
-    const bool is_listed = is_listed_result ? *is_listed_result : listed_by_default;
-    const bool is_number_shown
-        = is_number_shown_result ? *is_number_shown_result : listed_by_default;
+    const bool is_listed = listed_boolean.get_or_default(listed_by_default);
+    const bool is_number_shown = show_number_boolean.get_or_default(listed_by_default);
 
     if (is_listed) {
         // Update heading numbers.
@@ -104,28 +102,35 @@ Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
         std::ranges::fill(h_counters + m_level, std::end(h_counters), 0);
     }
 
-    std::pmr::vector<char8_t> id_data { context.get_transient_memory() };
-    const auto id_status = [&] -> Processing_Status {
-        const int id_index = args.get_argument_index(u8"id");
-        if (id_index < 0) {
-            return synthesize_id(id_data, call.get_content_span(), call.content_frame, context);
-        }
-        const Argument_Ref id_arg = call.arguments[std::size_t(id_index)];
-        const auto* id_content = as_content_or_error(id_arg.ast_node.get_value(), context);
-        if (!id_content) {
-            return Processing_Status::error;
-        }
-        return to_plaintext(id_data, id_content->get_elements(), id_arg.frame_index, context);
-    }();
-    current_status = status_concat(current_status, id_status);
-    if (status_is_break(id_status)) {
-        return current_status;
-    }
-    const bool has_id = id_status == Processing_Status::ok && !id_data.empty();
+    struct Id {
+        Processing_Status status;
+        std::u8string_view string;
+        bool exists;
+    };
 
-    warn_ignored_argument_subset(
-        call.arguments, args, context, Argument_Subset::unmatched_positional
-    );
+    std::pmr::vector<char8_t> synthesized_id_buffer { context.get_transient_memory() };
+    const auto id = [&] -> Id {
+        if (id_matcher.was_matched()) {
+            return {
+                .status = Processing_Status::ok,
+                .string = id_matcher.get(),
+                .exists = true,
+            };
+        }
+
+        const auto status = synthesize_id(
+            synthesized_id_buffer, call.get_content_span(), call.content_frame, context
+        );
+        return {
+            .status = status,
+            .string = as_u8string_view(synthesized_id_buffer),
+            .exists = !synthesized_id_buffer.empty(),
+        };
+    }();
+    if (status_is_break(id.status)) {
+        return id.status;
+    }
+    Processing_Status current_status = id.status;
 
     // 0. Ensure that headings are not in paragraphs.
     try_leave_paragraph(out);
@@ -134,12 +139,14 @@ Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(tag_name);
-    if (has_id) {
-        attributes.write_id(as_u8string_view(id_data));
+    if (id.exists) {
+        attributes.write_id(id.string);
     }
-    const auto attributes_status = named_arguments_to_attributes(
-        attributes, call.arguments, args, context, Argument_Subset::unmatched_named
-    );
+    const auto attributes_status = attr_group.was_matched()
+        ? named_arguments_to_attributes(
+              attributes, attr_group.get().get_members(), attr_group.get_frame(), context
+          )
+        : Processing_Status::ok;
     attributes.end();
     current_status = status_concat(current_status, attributes_status);
     if (status_is_break(attributes_status)) {
@@ -166,33 +173,30 @@ Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
 
     // 3. Check for id duplication.
     const bool has_valid_id = [&] {
-        if (!has_id) {
+        if (!id.exists) {
             return false;
         }
-        const std::u8string_view id_string_view { id_data.data(), id_data.size() };
-        std::pmr::u8string id_string { id_string_view, context.get_transient_memory() };
-        if (context.emplace_id(std::move(id_string), { heading_html_string })) {
+        std::pmr::u8string persistent_id_string { id.string, context.get_transient_memory() };
+        if (context.emplace_id(std::move(persistent_id_string), { heading_html_string })) {
             return true;
         }
-        const std::u8string_view message[] {
-            u8"Duplicate id \"",
-            id_string_view,
-            u8"\". Heading will be generated, but references may be broken.",
-        };
         context.try_warning(
             diagnostic::duplicate_id, call.directive.get_source_span(),
-            joined_char_sequence(message)
+            joined_char_sequence({
+                u8"Duplicate id \"",
+                id.string,
+                u8"\". Heading will be generated, but references may be broken.",
+            })
         );
         return false;
     }();
 
     // 4. Surround user content with paragraph/anchor link.
     if (has_valid_id) {
-        id_data.insert(id_data.begin(), u8'#');
         writer
             .open_tag_with_attributes(html_tag::a) //
             .write_class(u8"para"sv)
-            .write_url_attribute(html_attr::href, as_u8string_view(id_data))
+            .write_url_attribute(html_attr::href, joined_char_sequence({ u8"#"sv, id.string }))
             .end();
         writer.close_tag(html_tag::a);
     }
@@ -219,8 +223,7 @@ Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
         std::pmr::u8string section_name { context.get_transient_memory() };
         section_name += section_name::id_preview;
         section_name += u8'.';
-        COWEL_ASSERT(id_data.front() == u8'#');
-        section_name += as_u8string_view(id_data).substr(1);
+        section_name += id.string;
 
         const auto scope = sections.go_to_scoped(section_name);
         HTML_Writer_Buffer id_preview_buffer { sections.current_policy(), Output_Language::html };
@@ -256,7 +259,7 @@ Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
         if (has_valid_id) {
             toc_writer
                 .open_tag_with_attributes(html_tag::a) //
-                .write_url_attribute(html_attr::href, as_u8string_view(id_data))
+                .write_url_attribute(html_attr::href, joined_char_sequence({ u8"#"sv, id.string }))
                 .end();
         }
 
@@ -278,38 +281,27 @@ namespace {
 
 [[nodiscard]]
 Processing_Status with_section_name(
+    Content_Policy& out,
     const Invocation& call,
     Context& context,
     std::u8string_view no_section_diagnostic,
     Function_Ref<Processing_Status(std::u8string_view section)> action
 )
 {
-    static constexpr std::u8string_view parameters[] { u8"section" };
-    Argument_Matcher args { parameters, context.get_persistent_memory() };
-    args.match(call.arguments);
+    String_Matcher section_matcher { context.get_transient_memory() };
+    Group_Member_Matcher section_member { u8"section"sv, Optionality::mandatory, section_matcher };
+    Group_Member_Matcher* parameters[] { &section_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
 
-    const int arg_index = args.get_argument_index(u8"section");
-    if (arg_index < 0) {
-        context.try_error(
-            no_section_diagnostic, call.directive.get_source_span(), u8"No section was provided."sv
-        );
-        return Processing_Status::error;
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
     }
 
-    std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
-    const Argument_Ref arg = call.arguments[std::size_t(arg_index)];
-    const auto* const arg_content = as_content_or_error(arg.ast_node.get_value(), context);
-    if (!arg_content) {
-        return Processing_Status::error;
-    }
-
-    const auto name_status
-        = to_plaintext(name_data, arg_content->get_elements(), arg.frame_index, context);
-    if (name_status != Processing_Status::ok) {
-        return name_status;
-    }
-
-    const auto section_string = as_u8string_view(name_data);
+    const auto section_string = as_u8string_view(section_matcher.get());
     if (section_string.empty()) {
         context.try_error(
             no_section_diagnostic, call.directive.get_source_span(), u8"No section was provided."sv
@@ -323,16 +315,16 @@ Processing_Status with_section_name(
 } // namespace
 
 Processing_Status
-There_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context) const
+There_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    auto action = [&](std::u8string_view section) -> Processing_Status {
+    const auto action = [&](std::u8string_view section) -> Processing_Status {
         const auto scope = context.get_sections().go_to_scoped(section);
         return consume_all(
             context.get_sections().current_policy(), call.get_content_span(), call.content_frame,
             context
         );
     };
-    return with_section_name(call, context, diagnostic::there::no_section, action);
+    return with_section_name(out, call, context, diagnostic::there::no_section, action);
 }
 
 Processing_Status
@@ -340,11 +332,11 @@ Here_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
 {
     ensure_paragraph_matches_display(out, m_display);
 
-    auto action = [&](std::u8string_view section) -> Processing_Status {
+    const auto action = [&](std::u8string_view section) -> Processing_Status {
         reference_section(out, section);
         return Processing_Status::ok;
     };
-    return with_section_name(call, context, diagnostic::there::no_section, action);
+    return with_section_name(out, call, context, diagnostic::here::no_section, action);
 }
 
 Processing_Status

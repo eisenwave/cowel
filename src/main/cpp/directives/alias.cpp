@@ -3,13 +3,32 @@
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
+#include "cowel/parameters.hpp"
 
 namespace cowel {
 
 Processing_Status
 Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context) const
 {
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::named);
+    Group_Pack_String_Matcher strings { context.get_transient_memory() };
+    Call_Matcher call_matcher { strings };
+
+    const Processing_Status match_status
+        = call_matcher.match_call(call, context, make_fail_callback(), Processing_Status::fatal);
+    switch (match_status) {
+    case Processing_Status::ok: break;
+    case Processing_Status::brk:
+    case Processing_Status::fatal: return match_status;
+    case Processing_Status::error:
+    case Processing_Status::error_brk: {
+        COWEL_ASSERT(call.content);
+        context.try_fatal(
+            diagnostic::alias_name_invalid, call.content->get_source_span(),
+            u8"Fatal error because generation of an alias failed."sv
+        );
+        return Processing_Status::fatal;
+    }
+    }
 
     std::pmr::vector<char8_t> target_text { context.get_transient_memory() };
     const Processing_Status target_status
@@ -21,7 +40,7 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
     case Processing_Status::error:
     case Processing_Status::error_brk: {
         context.try_fatal(
-            diagnostic::alias_name_invalid, call.get_content_source_span(),
+            diagnostic::alias_name_invalid, call.get_arguments_source_span(),
             u8"Fatal error because generation of the target name failed."sv
         );
         return Processing_Status::fatal;
@@ -63,41 +82,16 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
         return Processing_Status::fatal;
     }
 
-    std::pmr::vector<char8_t> alias_text { context.get_transient_memory() };
-    for (const Argument_Ref ref : call.arguments) {
-        const ast::Content_Sequence* arg_content
-            = as_content_or_error(ref.ast_node.get_value(), context);
-        if (!arg_content) {
-            return Processing_Status::fatal;
-        }
-
-        const Processing_Status name_status
-            = to_plaintext(alias_text, arg_content->get_elements(), ref.frame_index, context);
-        switch (name_status) {
-        case Processing_Status::ok: break;
-        case Processing_Status::brk:
-        case Processing_Status::fatal: return name_status;
-        case Processing_Status::error:
-        case Processing_Status::error_brk: {
-            COWEL_ASSERT(call.content);
-            context.try_fatal(
-                diagnostic::alias_name_invalid, call.content->get_source_span(),
-                u8"Fatal error because generation of an alias failed."sv
-            );
-        }
-        }
-        const auto alias_name = as_u8string_view(alias_text);
+    for (const auto& [alias_name, location] : strings.get_values()) {
         if (alias_name.empty()) {
             context.try_fatal(
-                diagnostic::alias_name_missing, ref.ast_node.get_source_span(),
-                u8"The alias name must not be empty."sv
+                diagnostic::alias_name_missing, location, u8"The alias name must not be empty."sv
             );
             return Processing_Status::fatal;
         }
         if (!is_directive_name(alias_name)) {
-            COWEL_ASSERT(!arg_content->empty());
             context.try_fatal(
-                diagnostic::alias_name_invalid, arg_content->get_source_span(),
+                diagnostic::alias_name_invalid, location,
                 joined_char_sequence({
                     u8"The alias name \""sv,
                     alias_name,
@@ -108,7 +102,7 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
         }
         if (context.find_macro(alias_name) || context.find_alias(alias_name)) {
             context.try_fatal(
-                diagnostic::alias_duplicate, arg_content->get_source_span(),
+                diagnostic::alias_duplicate, location,
                 joined_char_sequence({
                     u8"The alias name \""sv,
                     alias_name,
@@ -122,7 +116,6 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
             std::pmr::u8string { alias_name, context.get_transient_memory() }, target_behavior
         );
         COWEL_ASSERT(success);
-        alias_text.clear();
     }
 
     return Processing_Status::ok;

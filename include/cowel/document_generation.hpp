@@ -13,7 +13,6 @@
 #include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/services.hpp"
-#include "cowel/simple_bibliography.hpp"
 
 namespace cowel {
 
@@ -29,7 +28,6 @@ struct Generation_Options {
     File_Loader& file_loader = always_failing_file_loader;
     Logger& logger = ignorant_logger;
     Syntax_Highlighter& highlighter = no_support_syntax_highlighter;
-    Bibliography& bibliography = simple_bibliography;
 
     /// @brief A source of memory to be used throughout generation,
     /// emitting diagnostics, etc.

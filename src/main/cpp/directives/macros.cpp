@@ -5,6 +5,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/parameters.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/from_chars.hpp"
@@ -18,7 +19,6 @@
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
@@ -26,47 +26,120 @@
 using namespace std::string_view_literals;
 
 namespace cowel {
+namespace {
+
+struct Put_Named {
+    Content_Policy& out;
+    Context& context;
+
+    const std::u8string_view needle_name;
+
+    [[nodiscard]]
+    std::optional<Processing_Status>
+    operator()(std::span<const ast::Group_Member> members, Frame_Index frame) const
+    {
+        for (const ast::Group_Member& arg : members) {
+            switch (arg.get_kind()) {
+            case ast::Member_Kind::positional: {
+                continue;
+            }
+            case ast::Member_Kind::ellipsis: {
+                const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
+                const auto maybe_result = (*this)(
+                    ellipsis_frame.invocation.get_arguments_span(),
+                    ellipsis_frame.invocation.content_frame
+                );
+                if (maybe_result) {
+                    return maybe_result;
+                }
+                continue;
+            }
+            case ast::Member_Kind::named: {
+                if (arg.get_name() == needle_name) {
+                    return consume_all(out, arg.get_value(), frame, context);
+                }
+                continue;
+            }
+            }
+        }
+        return {};
+    }
+};
+
+struct Put_Positional {
+    Content_Policy& out;
+    Context& context;
+
+    const std::size_t needle_index;
+    std::size_t index = 0;
+
+    [[nodiscard]]
+    std::optional<Processing_Status>
+    operator()(std::span<const ast::Group_Member> members, Frame_Index frame)
+    {
+        for (const ast::Group_Member& arg : members) {
+            switch (arg.get_kind()) {
+            case ast::Member_Kind::named: {
+                continue;
+            }
+            case ast::Member_Kind::ellipsis: {
+                const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
+                const auto maybe_result = (*this)(
+                    ellipsis_frame.invocation.get_arguments_span(),
+                    ellipsis_frame.invocation.content_frame
+                );
+                if (maybe_result) {
+                    return maybe_result;
+                }
+                continue;
+            }
+            case ast::Member_Kind::positional: {
+                if (needle_index == index++) {
+                    return consume_all(out, arg.get_value(), frame, context);
+                }
+                continue;
+            }
+            }
+        }
+        return {};
+    }
+};
+
+}; // namespace
 
 Processing_Status
 Macro_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context) const
 {
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::named);
+    Group_Pack_String_Matcher strings { context.get_transient_memory() };
+    Call_Matcher call_matcher { strings };
 
-    std::pmr::vector<char8_t> alias_text { context.get_transient_memory() };
-    for (const Argument_Ref ref : call.arguments) {
-        const auto* const ref_content
-            = as_content_or_fatal_error(ref.ast_node.get_value(), context);
-        if (!ref_content) {
-            return Processing_Status::fatal;
-        }
+    const Processing_Status match_status
+        = call_matcher.match_call(call, context, make_fail_callback(), Processing_Status::fatal);
+    switch (match_status) {
+    case Processing_Status::ok: break;
+    case Processing_Status::brk:
+    case Processing_Status::fatal: return match_status;
+    case Processing_Status::error:
+    case Processing_Status::error_brk: {
+        COWEL_ASSERT(call.content);
+        context.try_fatal(
+            diagnostic::alias_name_invalid, call.content->get_source_span(),
+            u8"Fatal error because generation of an alias failed."sv
+        );
+        return Processing_Status::fatal;
+    }
+    }
 
-        const Processing_Status name_status
-            = to_plaintext(alias_text, ref_content->get_elements(), ref.frame_index, context);
-        switch (name_status) {
-        case Processing_Status::ok: break;
-        case Processing_Status::brk:
-        case Processing_Status::fatal: return name_status;
-        case Processing_Status::error:
-        case Processing_Status::error_brk: {
-            context.try_fatal(
-                diagnostic::alias_name_invalid, ref.ast_node.get_value().get_source_span(),
-                u8"Fatal error because generation of an alias failed."sv
-            );
-            return Processing_Status::fatal;
-        }
-        }
-        const auto alias_name = as_u8string_view(alias_text);
+    for (const auto& [alias_name, location] : strings.get_values()) {
         if (alias_name.empty()) {
             context.try_fatal(
-                diagnostic::macro_name_missing, ref.ast_node.get_source_span(),
-                u8"The alias name must not be empty."sv
+                diagnostic::macro_name_missing, location, u8"The alias name must not be empty."sv
             );
             return Processing_Status::fatal;
         }
         if (!is_directive_name(alias_name)) {
-            COWEL_ASSERT(!ref_content->empty());
             context.try_fatal(
-                diagnostic::macro_name_invalid, ref_content->get_source_span(),
+                diagnostic::macro_name_invalid, location,
                 joined_char_sequence({
                     u8"The alias name \""sv,
                     alias_name,
@@ -77,7 +150,7 @@ Macro_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
         }
         if (context.find_macro(alias_name) || context.find_alias(alias_name)) {
             context.try_fatal(
-                diagnostic::macro_duplicate, ref_content->get_source_span(),
+                diagnostic::macro_duplicate, location,
                 joined_char_sequence({
                     u8"The alias name \""sv,
                     alias_name,
@@ -92,7 +165,6 @@ Macro_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
             call.get_content_span()
         );
         COWEL_ASSERT(success);
-        alias_text.clear();
     }
 
     return Processing_Status::ok;
@@ -110,9 +182,18 @@ Put_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
         return try_generate_error(out, call, context);
     }
 
-    static constexpr std::u8string_view parameters[] { u8"else" };
-    Argument_Matcher matcher { parameters, context.get_transient_memory() };
-    matcher.match(call.arguments);
+    Lazy_Markup_Matcher else_matcher;
+    Group_Member_Matcher else_member { u8"else"sv, Optionality::optional, else_matcher };
+    Group_Member_Matcher* const parameters[] { &else_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
+    }
 
     try_inherit_paragraph(out);
 
@@ -126,12 +207,12 @@ Put_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
     }
 
     const auto try_else = [&] -> std::optional<Processing_Status> {
-        const int else_index = matcher.parameter_indices()[0];
-        if (else_index < 0) {
+        if (!else_matcher.was_matched()) {
             return {};
         }
-        const Argument_Ref else_arg = call.arguments[std::size_t(else_index)];
-        return consume_all(out, else_arg.ast_node.get_value(), else_arg.frame_index, context);
+        return consume_all(
+            out, else_matcher.get().get_elements(), else_matcher.get_frame(), context
+        );
     };
 
     std::pmr::vector<char8_t> target_text { context.get_transient_memory() };
@@ -149,20 +230,53 @@ Put_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
         );
     }
 
-    // Index case like \put{0} for selecting a given argument,
-    // possibly with a fallback like \put[else=abc]{0}.
-    const std::optional<std::size_t> arg_index = from_chars<std::size_t>(target_string);
-    if (!arg_index) {
-        for (const Argument_Ref arg : target_invocation.arguments) {
-            if (arg.ast_node.get_name() == target_string) {
-                return consume_all(out, arg.ast_node.get_value(), arg.frame_index, context);
-            }
+    const std::optional<std::size_t> needle_index = from_chars<std::size_t>(target_string);
+    if (needle_index) {
+        Put_Positional expand_positional {
+            .out = out,
+            .context = context,
+            .needle_index = *needle_index,
+        };
+        const std::optional<Processing_Status> maybe_result = expand_positional(
+            target_invocation.get_arguments_span(), target_invocation.content_frame
+        );
+        if (maybe_result) {
+            return *maybe_result;
+        }
+        if (const std::optional<Processing_Status> else_status = try_else()) {
+            return *else_status;
+        }
+
+        const Characters8 limit_chars = to_characters8(expand_positional.index);
+        context.try_error(
+            diagnostic::put_out_of_range, call.directive.get_source_span(),
+            joined_char_sequence({
+                u8"This \\put directive is invalid because the positional argument at index ["sv,
+                target_string,
+                u8"] was requested, but only "sv,
+                limit_chars.as_string(),
+                u8" were provided. "sv,
+            })
+        );
+        return try_generate_error(out, call, context);
+    }
+    // NOLINTNEXTLINE(readability-else-after-return)
+    else {
+        const Put_Named expand_named {
+            .out = out,
+            .context = context,
+            .needle_name = target_string,
+        };
+        const std::optional<Processing_Status> maybe_result
+            = expand_named(target_invocation.get_arguments_span(), target_invocation.content_frame);
+        if (maybe_result) {
+            return *maybe_result;
         }
         if (const std::optional<Processing_Status> else_status = try_else()) {
             return *else_status;
         }
         context.try_error(
-            diagnostic::put_invalid, call.get_content_source_span(),
+            diagnostic::put_invalid, call.get_arguments_source_span(),
             joined_char_sequence({
                 u8"The target \""sv,
                 target_string,
@@ -172,32 +286,6 @@ Put_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
         );
         return try_generate_error(out, call, context);
     }
-
-    std::size_t positional_index = 0;
-    for (const Argument_Ref arg : target_invocation.arguments) {
-        if (arg.ast_node.get_kind() != ast::Member_Kind::positional) {
-            continue;
-        }
-        if (*arg_index == positional_index++) {
-            return consume_all(out, arg.ast_node.get_value(), arg.frame_index, context);
-        }
-    }
-    if (const std::optional<Processing_Status> else_status = try_else()) {
-        return *else_status;
-    }
-    const Characters8 limit_chars = to_characters8(positional_index);
-    context.try_error(
-        diagnostic::put_out_of_range, call.directive.get_source_span(),
-        joined_char_sequence({
-            u8"This \\put directive is invalid because the positional argument at index ["sv,
-            target_string,
-            u8"] was requested, but only "sv,
-            limit_chars.as_string(),
-            u8" were provided. "sv,
-        })
-    );
-
-    return try_generate_error(out, call, context);
 }
 
 Processing_Status

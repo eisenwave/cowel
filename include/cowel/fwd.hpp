@@ -20,10 +20,7 @@ struct Annotated_String_Length;
 template <typename>
 struct Annotation_Span;
 enum struct Diagnostic_Highlight : Default_Underlying;
-struct Argument_Matcher;
-struct Argument_Ref;
 enum struct Argument_Status : Default_Underlying;
-struct Arguments_View;
 struct AST_Formatting_Options;
 struct AST_Instruction;
 enum struct AST_Instruction_Type : Default_Underlying;
@@ -58,6 +55,7 @@ struct Generation_Options;
 enum struct HLJS_Scope : Default_Underlying;
 struct Ignorant_Logger;
 enum struct IO_Error_Code : Default_Underlying;
+using Integer = long long;
 struct Invocation;
 struct Logger;
 struct Name_Resolver;

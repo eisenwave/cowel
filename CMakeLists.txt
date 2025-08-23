@@ -118,7 +118,6 @@ set(COMMON_LIBRARY_SOURCES
     src/main/cpp/directives/variables.cpp
     src/main/cpp/directives/wg21.cpp
 
-    src/main/cpp/argument_matching.cpp
     src/main/cpp/build_ast.cpp
     src/main/cpp/content_policies.cpp
     src/main/cpp/cowel_lib.cpp
@@ -126,6 +125,7 @@ set(COMMON_LIBRARY_SOURCES
     src/main/cpp/builtin_directive_set.cpp
     src/main/cpp/document_generation.cpp
     src/main/cpp/json.cpp
+    src/main/cpp/parameters.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/parse.cpp
     src/main/cpp/print.cpp

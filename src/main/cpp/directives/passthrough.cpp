@@ -1,6 +1,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
@@ -83,7 +84,13 @@ Processing_Status
 Passthrough_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
+    Group_Pack_Named_Lazy_Any_Matcher group_matcher;
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     ensure_paragraph_matches_display(out, m_display);
 
@@ -94,8 +101,9 @@ Passthrough_Behavior::operator()(Content_Policy& out, const Invocation& call, Co
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     Text_Buffer_Attribute_Writer attributes = writer.open_tag_with_attributes(name);
-    const auto attributes_status
-        = named_arguments_to_attributes(attributes, call.arguments, context);
+    const auto attributes_status = named_arguments_to_attributes(
+        attributes, call.get_arguments_span(), call.content_frame, context
+    );
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(name);
@@ -115,33 +123,28 @@ Processing_Status
 HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    const std::optional<Argument_Ref> first_positional
-        = get_first_positional_warn_rest(call.arguments, context);
-    if (!first_positional) {
-        context.try_error(
-            diagnostic::html_element_name_missing, call.directive.get_name_span(),
-            u8"A tag name must be provided (in the form of a positional argument)."sv
-        );
-        return try_generate_error(out, call, context);
-    }
-    const auto* const first_positional_content
-        = as_content_or_error(first_positional->ast_node.get_value(), context);
-    if (!first_positional_content) {
-        return try_generate_error(out, call, context);
+    String_Matcher name_string_matcher { context.get_transient_memory() };
+    Group_Member_Matcher name_member_matcher { u8"name"sv, Optionality::mandatory,
+                                               name_string_matcher };
+    Group_Pack_Named_Lazy_Any_Matcher attributes_group_matcher;
+    Group_Member_Matcher attributes_matcher { u8"attr"sv, Optionality::optional,
+                                              attributes_group_matcher };
+    Group_Member_Matcher* parameters[] { &name_member_matcher, &attributes_matcher };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
     }
 
-    std::pmr::vector<char8_t> name_text { context.get_transient_memory() };
-    const Processing_Status name_status = to_plaintext(
-        name_text, first_positional_content->get_elements(), first_positional->frame_index, context
-    );
-    if (name_status != Processing_Status::ok) {
-        return name_status;
-    }
-    const auto name_string = as_u8string_view(name_text);
+    const auto name_string = as_u8string_view(name_string_matcher.get());
     const std::optional<HTML_Tag_Name> name = HTML_Tag_Name::make(name_string);
     if (!name) {
         context.try_error(
-            diagnostic::html_element_name_invalid, first_positional->ast_node.get_source_span(),
+            diagnostic::html_element_name_invalid, name_string_matcher.get_location(),
             joined_char_sequence({
                 u8"The given tag name \""sv,
                 name_string,
@@ -154,7 +157,15 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(*name);
-    auto status = named_arguments_to_attributes(attributes, call.arguments, context);
+    auto status = [&] -> Processing_Status {
+        if (!attributes_group_matcher.was_matched()) {
+            return Processing_Status ::ok;
+        }
+        return named_arguments_to_attributes(
+            attributes, attributes_group_matcher.get().get_members(),
+            attributes_group_matcher.get_frame(), context
+        );
+    }();
 
     if (m_self_closing == HTML_Element_Self_Closing::self_closing) {
         attributes.end_empty();
@@ -171,7 +182,7 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
         if (status_is_continue(status)) {
             const auto content_status
                 = consume_all(out, call.get_content_span(), call.content_frame, context);
-            status = status_concat(content_status, status);
+            status = status_concat(status, content_status);
         }
         writer.close_tag(*name);
     }
@@ -185,7 +196,13 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 Processing_Status
 In_Tag_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
+    Group_Pack_Named_Lazy_Any_Matcher group_matcher;
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     ensure_paragraph_matches_display(out, m_display);
 
@@ -196,8 +213,9 @@ In_Tag_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(m_tag_name);
     attributes.write_class(m_class_name);
-    const auto attributes_status
-        = named_arguments_to_attributes(attributes, call.arguments, context);
+    const auto attributes_status = named_arguments_to_attributes(
+        attributes, call.get_arguments_span(), call.content_frame, context
+    );
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(m_tag_name);
@@ -218,7 +236,13 @@ Processing_Status
 Special_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
+    Group_Pack_Named_Lazy_Any_Matcher group_matcher;
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     try_leave_paragraph(out);
 
@@ -234,8 +258,9 @@ Special_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, 
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(m_name);
-    const auto attributes_status
-        = named_arguments_to_attributes(attributes, call.arguments, context);
+    const auto attributes_status = named_arguments_to_attributes(
+        attributes, call.get_arguments_span(), call.content_frame, context
+    );
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(m_name);
@@ -264,7 +289,13 @@ Special_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, 
 Processing_Status
 URL_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
+    Group_Pack_Named_Lazy_Any_Matcher group_matcher;
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     try_enter_paragraph(out);
 
@@ -281,8 +312,9 @@ URL_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(html_tag::a);
-    const auto attributes_status
-        = named_arguments_to_attributes(attributes, call.arguments, context);
+    const auto attributes_status = named_arguments_to_attributes(
+        attributes, call.get_arguments_span(), call.content_frame, context
+    );
     attributes.write_href(url_string);
     attributes.write_class(u8"sans"sv);
     attributes.end();
@@ -299,7 +331,13 @@ Processing_Status
 Self_Closing_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
+    Group_Pack_Named_Lazy_Any_Matcher group_matcher;
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     // TODO: this should use some utility function
     if (call.content && !call.content->empty()) {
@@ -315,7 +353,9 @@ Self_Closing_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(m_tag_name);
-    const auto status = named_arguments_to_attributes(attributes, call.arguments, context);
+    const auto status = named_arguments_to_attributes(
+        attributes, call.get_arguments_span(), call.content_frame, context
+    );
     attributes.end_empty();
     return status;
 }

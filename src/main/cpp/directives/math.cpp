@@ -5,6 +5,7 @@
 #include <string_view>
 #include <variant>
 
+#include "cowel/parameters.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/html_writer.hpp"
 
@@ -123,15 +124,29 @@ Processing_Status to_math_html(
         if (index < 0) {
             return out.consume(*d, content_frame, context);
         }
-        Homogeneous_Call_Arguments args { d->get_argument_span(), content_frame };
-        warn_ignored_argument_subset(args, context, Argument_Subset::positional);
+
+        Group_Pack_Named_Lazy_Any_Matcher args_matcher;
+
+        const auto match_status = args_matcher.match_group(
+            d->get_arguments(), content_frame, context,
+            {
+                .emit = make_fail_callback(),
+                .status = Processing_Status::error,
+                .location = d->get_name_span(),
+            }
+        );
+        if (match_status != Processing_Status::ok) {
+            return match_status;
+        }
 
         // directive names are HTML tag names
         const HTML_Tag_Name name { Unchecked {}, name_string };
         HTML_Writer_Buffer buffer { out, Output_Language::html };
         Text_Buffer_HTML_Writer writer { buffer };
         auto attributes = writer.open_tag_with_attributes(name);
-        const auto attributes_status = named_arguments_to_attributes(attributes, args, context);
+        const auto attributes_status = named_arguments_to_attributes(
+            attributes, d->get_argument_span(), content_frame, context
+        );
         attributes.end();
         if (status_is_break(attributes_status)) {
             writer.close_tag(name);
@@ -158,7 +173,14 @@ Math_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     const std::u8string_view display_string
         = m_display == Directive_Display::in_line ? u8"inline" : u8"block";
 
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
+    Group_Pack_Named_Lazy_Any_Matcher args_matcher;
+    Call_Matcher call_matcher { args_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
+    }
 
     ensure_paragraph_matches_display(out, m_display);
 
@@ -167,8 +189,9 @@ Math_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(tag_name);
     attributes.write_display(display_string);
-    const auto attributes_status
-        = named_arguments_to_attributes(attributes, call.arguments, context);
+    const auto attributes_status = named_arguments_to_attributes(
+        attributes, call.get_arguments_span(), call.content_frame, context
+    );
     attributes.end();
     if (status_is_break(attributes_status)) {
         writer.close_tag(tag_name);

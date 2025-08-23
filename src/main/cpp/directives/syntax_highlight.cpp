@@ -1,7 +1,7 @@
 #include <optional>
 #include <string_view>
-#include <vector>
 
+#include "cowel/parameters.hpp"
 #include "ulight/ulight.hpp"
 
 #include "cowel/util/assert.hpp"
@@ -21,7 +21,6 @@
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/directive_arguments.hpp"
 #include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/invocation.hpp"
@@ -36,49 +35,22 @@ namespace cowel {
 Processing_Status
 Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(call.arguments);
+    String_Matcher lang_string_matcher { context.get_transient_memory() };
+    Group_Member_Matcher lang_member { u8"lang"sv, Optionality::mandatory, lang_string_matcher };
+    Boolean_Matcher nested_boolean;
+    Group_Member_Matcher nested_member { u8"nested"sv, Optionality::optional, nested_boolean };
+    Boolean_Matcher borders_boolean;
+    Group_Member_Matcher borders_member { u8"borders"sv, Optionality::optional, borders_boolean };
+    Group_Member_Matcher* parameters[] { &lang_member, &nested_member, &borders_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
 
-    const Greedy_Result<String_Argument> lang
-        = get_string_argument(lang_parameter, call.arguments, args, context);
-    if (status_is_break(lang.status())) {
-        return lang.status();
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
     }
-
-    const Greedy_Result<String_Argument> prefix
-        = get_string_argument(prefix_parameter, call.arguments, args, context);
-    if (status_is_break(prefix.status())) {
-        return prefix.status();
-    }
-
-    const Greedy_Result<String_Argument> suffix
-        = get_string_argument(suffix_parameter, call.arguments, args, context);
-    if (status_is_break(suffix.status())) {
-        return suffix.status();
-    }
-
-    const auto borders = m_display == Directive_Display::in_line
-        ? Greedy_Result<bool> { true }
-        : get_yes_no_argument(
-              borders_parameter, diagnostic::codeblock::borders_invalid, call.arguments, args,
-              context, true
-          );
-    if (status_is_break(borders.status())) {
-        return borders.status();
-    }
-
-    const auto nested = m_display == Directive_Display::block
-        ? Greedy_Result<bool> { false }
-        : get_yes_no_argument(
-              nested_parameter, diagnostic::code::nested_invalid, call.arguments, args, context,
-              false
-          );
-    if (status_is_break(nested.status())) {
-        return nested.status();
-    }
-    const Processing_Status args_status = status_concat(
-        lang.status(), prefix.status(), suffix.status(), borders.status(), nested.status()
-    );
 
     // While syntax highlighting generally outputs HTML,
     // when plaintext content is needed (e.g. for ID synthesis),
@@ -88,7 +60,7 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     if (out.get_language() == Output_Language::text) {
         const Processing_Status text_status
             = consume_all(out, call.get_content_span(), call.content_frame, context);
-        return status_concat(args_status, text_status);
+        return text_status;
     }
 
     ensure_paragraph_matches_display(out, m_display);
@@ -99,35 +71,34 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     // so we don't need an extra HTML_Content_Policy here.
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
-    const bool has_enclosing_tags = !*nested;
+    const bool has_enclosing_tags
+        = m_display == Directive_Display::block || !nested_boolean.get_or_default(false);
+    const bool has_borders
+        = m_display == Directive_Display::in_line || borders_boolean.get_or_default(true);
 
     if (has_enclosing_tags) {
         auto attributes = writer.open_tag_with_attributes(m_tag_name);
-        if (!*borders) {
+        if (!has_borders) {
             COWEL_ASSERT(m_display != Directive_Display::in_line);
             attributes.write_class(u8"borderless"sv);
         }
         attributes.end();
     }
 
+    const std::u8string_view lang_string = lang_string_matcher.get();
+
     Syntax_Highlight_Policy highlight_policy //
         { context.get_transient_memory() };
-    if (!prefix->string.empty()) {
-        highlight_policy.write_phantom(prefix->string);
-    }
     const auto highlight_status
         = consume_all(highlight_policy, call.get_content_span(), call.content_frame, context);
-    if (!suffix->string.empty()) {
-        highlight_policy.write_phantom(suffix->string);
-    }
 
     const Result<void, Syntax_Highlight_Error> result = [&] {
         if (!should_trim) {
-            return highlight_policy.dump_html_to(buffer, context, lang->string);
+            return highlight_policy.dump_html_to(buffer, context, lang_string);
         }
         Vector_Text_Sink vector_sink { Output_Language::html, context.get_transient_memory() };
         const Result<void, Syntax_Highlight_Error> result
-            = highlight_policy.dump_html_to(vector_sink, context, lang->string);
+            = highlight_policy.dump_html_to(vector_sink, context, lang_string);
 
         // https://html.spec.whatwg.org/dev/grouping-content.html#the-pre-element
         // Leading newlines immediately following <pre> are stripped anyway.
@@ -145,7 +116,7 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
         return result;
     }();
     if (!result) {
-        diagnose(result.error(), lang->string, call, context);
+        diagnose(result.error(), lang_string, call, context);
     }
 
     if (has_enclosing_tags) {
@@ -153,36 +124,32 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     }
     buffer.flush();
 
-    return status_concat(args_status, highlight_status);
+    return highlight_status;
 }
 
 Processing_Status
 Highlight_As_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(call.arguments);
+    String_Matcher name_string { context.get_transient_memory() };
+    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_string };
+    Group_Member_Matcher* parameters[] { &name_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
 
-    std::pmr::vector<char8_t> name_data { context.get_transient_memory() };
-    const Result<bool, Processing_Status> has_name_result
-        = argument_to_plaintext(name_data, call.arguments, args, name_parameter, context);
-    if (!has_name_result) {
-        return has_name_result.error();
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
     }
-    if (!*has_name_result) {
-        context.try_error(
-            diagnostic::highlight_name_missing, call.directive.get_source_span(),
-            u8"A name parameter is required to specify the kind of highlight to apply."sv
-        );
-        return try_generate_error(out, call, context);
-    }
-    const auto name_string = as_u8string_view(name_data);
 
-    const std::optional<ulight::Highlight_Type> type = highlight_type_by_long_string(name_string);
+    const std::optional<ulight::Highlight_Type> type
+        = highlight_type_by_long_string(name_string.get());
     if (!type) {
         const std::u8string_view message[] {
             u8"The given highlight name \"",
-            name_string,
+            name_string.get(),
             u8"\" is not a valid ulight highlight name (long form).",
         };
         context.try_error(

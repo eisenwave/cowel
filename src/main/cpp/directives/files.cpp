@@ -46,7 +46,10 @@ Processing_Status
 Include_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    // TODO: warn about ignored arguments
+    const auto match_status = match_empty_arguments(call, context);
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
     const auto path_status
@@ -89,7 +92,10 @@ Include_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 Processing_Status
 Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    // TODO: warn about ignored arguments
+    const auto match_status = match_empty_arguments(call, context);
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
     const auto path_status

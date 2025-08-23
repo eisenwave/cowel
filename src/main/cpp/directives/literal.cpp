@@ -1,6 +1,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
@@ -25,7 +26,10 @@ namespace cowel {
 Processing_Status
 Literally_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    warn_all_args_ignored(call, context);
+    const auto match_status = match_empty_arguments(call, context);
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     try_enter_paragraph(out);
 
@@ -37,7 +41,10 @@ Processing_Status
 Unprocessed_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_all_args_ignored(call, context);
+    const auto match_status = match_empty_arguments(call, context);
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     try_enter_paragraph(out);
 
@@ -49,16 +56,22 @@ Processing_Status
 HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_all_args_ignored(call, context);
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::positional);
+    Group_Pack_Named_Lazy_Any_Matcher args_matcher {};
+    Call_Matcher call_matcher { args_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     try_leave_paragraph(out);
 
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     Text_Buffer_Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
-    const auto attributes_status
-        = named_arguments_to_attributes(attributes, call.arguments, context);
+    const auto attributes_status = named_arguments_to_attributes(
+        attributes, call.get_arguments_span(), call.content_frame, context
+    );
     attributes.end();
     if (status_is_break(attributes_status)) {
         return attributes_status;

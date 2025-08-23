@@ -7,6 +7,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
@@ -25,7 +26,6 @@
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
@@ -132,12 +132,9 @@ Result<char32_t, Processing_Status> code_point_by_generated_name(
 Processing_Status
 Code_Point_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    // TODO: this warning should use some blanket method
-    if (!call.arguments.empty()) {
-        const File_Source_Span pos = call.arguments.front().ast_node.get_source_span();
-        context.try_warning(
-            diagnostic::ignored_args, pos, u8"Arguments to this directive are ignored."sv
-        );
+    const auto match_status = match_empty_arguments(call, context);
+    if (match_status != Processing_Status::ok) {
+        return match_status;
     }
 
     const Result<char32_t, Processing_Status> code_point = get_code_point(call, context);
@@ -174,42 +171,46 @@ Processing_Status
 Char_Get_Num_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    static constexpr std::u8string_view parameters[] { u8"zfill", u8"base", u8"lower" };
+    constexpr Integer default_zfill = 0;
+    constexpr Integer min_zfill = 0;
+    constexpr Integer max_zfill = 1024;
 
-    constexpr std::size_t default_zfill = 0;
-    constexpr std::size_t min_zfill = 0;
-    constexpr std::size_t max_zfill = 1024;
+    constexpr Integer default_base = 16;
+    constexpr Integer min_base = 2;
+    constexpr Integer max_base = 16;
 
-    constexpr std::size_t default_base = 16;
-    constexpr std::size_t min_base = 2;
-    constexpr std::size_t max_base = 16;
+    Integer_Matcher zfill_integer;
+    Group_Member_Matcher zfill_member { u8"zfill", Optionality::optional, zfill_integer };
+    Integer_Matcher base_integer;
+    Group_Member_Matcher base_member { u8"base", Optionality::optional, base_integer };
+    Boolean_Matcher lower_boolean;
+    Group_Member_Matcher lower_member { u8"lower", Optionality::optional, lower_boolean };
 
-    Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(call.arguments);
+    Group_Member_Matcher* matchers[] { &zfill_member, &base_member, &lower_member };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
 
-    const Greedy_Result<std::size_t> zfill = get_integer_argument(
-        u8"zfill", diagnostic::char_zfill_not_an_integer, diagnostic::char_zfill_range, //
-        call.arguments, args, context, default_zfill, min_zfill, max_zfill
-    );
-    if (status_is_break(zfill.status())) {
-        return zfill.status();
+    const auto args_status
+        = call_matcher.match_call(call, context, make_fail_callback(), Processing_Status::error);
+
+    const Integer zfill = zfill_integer.get_or_default(default_zfill);
+    if (zfill < min_zfill || zfill > max_zfill) {
+        context.try_error(
+            diagnostic::char_zfill_range, zfill_integer.get_location(),
+            u8"Value for zfill is out of range."sv
+        );
+        return try_generate_error(out, call, context);
     }
 
-    const Greedy_Result<std::size_t> base = get_integer_argument(
-        u8"base", diagnostic::char_base_not_an_integer, diagnostic::char_base_range, //
-        call.arguments, args, context, default_base, min_base, max_base
-    );
-    if (status_is_break(base.status())) {
-        return base.status();
+    const Integer base = base_integer.get_or_default(default_base);
+    if (base < min_base || base > max_base) {
+        context.try_error(
+            diagnostic::char_base_range, zfill_integer.get_location(),
+            u8"Value for base is out of range."sv
+        );
+        return try_generate_error(out, call, context);
     }
-
-    const Greedy_Result<bool> is_lower = get_yes_no_argument(
-        u8"lower", diagnostic::char_lower_invalid, call.arguments, args, context, false
-    );
-    if (status_is_break(is_lower.status())) {
-        return is_lower.status();
-    }
-    const auto args_status = status_concat(zfill.status(), base.status(), is_lower.status());
 
     std::pmr::vector<char8_t> input { context.get_transient_memory() };
     const auto input_status
@@ -252,10 +253,10 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 
     ensure_paragraph_matches_display(out, m_display);
 
-    const bool convert_to_upper = !*is_lower;
+    const bool convert_to_upper = !lower_boolean.get_or_default(false);
     const Characters8 chars
-        = to_characters8(std::uint32_t(code_point), int(*base), convert_to_upper);
-    if (const std::size_t pad_length = std::min(*zfill, chars.length())) {
+        = to_characters8(std::uint32_t(code_point), int(base), convert_to_upper);
+    if (const auto pad_length = std::min(std::size_t(zfill), chars.length())) {
         out.write(repeated_char_sequence(pad_length, u8'0'), Output_Language::text);
     }
     out.write(chars.as_string(), Output_Language::text);

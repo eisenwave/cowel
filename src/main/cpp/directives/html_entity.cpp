@@ -98,7 +98,10 @@ Processing_Status
 Char_By_Entity_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
-    warn_all_args_ignored(call, context);
+    const auto match_status = match_empty_arguments(call, context);
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     ensure_paragraph_matches_display(out, m_display);
 

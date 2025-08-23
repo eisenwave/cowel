@@ -1,11 +1,7 @@
-#include <algorithm>
-#include <array>
-#include <cstddef>
 #include <iterator>
 #include <span>
 #include <string>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 #include "cowel/util/assert.hpp"
@@ -22,9 +18,8 @@
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/directive_arguments.hpp"
-#include "cowel/directive_processing.hpp"
 #include "cowel/invocation.hpp"
+#include "cowel/parameters.hpp"
 #include "cowel/services.hpp"
 
 using namespace std::string_view_literals;
@@ -135,103 +130,57 @@ Processing_Status
 Bibliography_Add_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context)
     const
 {
-    static constexpr struct Entry {
-        std::u8string_view parameter;
-        std::u8string_view Document_Info::* member;
-    } table[] {
-        { u8"id", &Document_Info::id },
-        { u8"title", &Document_Info::title },
-        { u8"date", &Document_Info::date },
-        { u8"publisher", &Document_Info::publisher },
-        { u8"link", &Document_Info::link },
-        { u8"long-link", &Document_Info::long_link },
-        { u8"issue-link", &Document_Info::issue_link },
-        { u8"author", &Document_Info::author },
+    auto* memory = context.get_transient_memory();
+
+    String_Matcher id_string { memory };
+    Group_Member_Matcher id_member { u8"id", Optionality::mandatory, id_string };
+    String_Matcher title_string { memory };
+    Group_Member_Matcher title_member { u8"title", Optionality::optional, title_string };
+    String_Matcher date_string { memory };
+    Group_Member_Matcher date_member { u8"date", Optionality::optional, date_string };
+    String_Matcher publisher_string { memory };
+    Group_Member_Matcher publisher_member { u8"publisher", Optionality::optional,
+                                            publisher_string };
+    String_Matcher link_string { memory };
+    Group_Member_Matcher link_member { u8"link", Optionality::optional, link_string };
+    String_Matcher long_link_string { memory };
+    Group_Member_Matcher long_link_member { u8"long-link", Optionality::optional,
+                                            long_link_string };
+    String_Matcher author_string { memory };
+    Group_Member_Matcher author_member { u8"author", Optionality::optional, author_string };
+
+    Group_Member_Matcher* const matchers[] {
+        &id_member,   &title_member,     &date_member,   &publisher_member,
+        &link_member, &long_link_member, &author_member,
     };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
 
-    // clang-format off
-    static constexpr auto parameters = []() {
-        std::array<std::u8string_view, std::size(table)> result;
-        std::ranges::transform(table, result.begin(), &Entry::parameter);
-        return result;
-    }();
-    // clang-format on
-    Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(call.arguments);
+    const Processing_Status match_status
+        = call_matcher.match_call(call, context, make_fail_callback(), Processing_Status::error);
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
-    Stored_Document_Info result { .text
-                                  = std::pmr::vector<char8_t> { context.get_transient_memory() },
-                                  .info {} };
-
-    if (args.get_argument_index(u8"id") < 0) {
+    if (id_string.get().empty()) {
         context.try_error(
-            diagnostic::bib::id_missing, call.directive.get_source_span(),
-            u8"An id argument is required to add a bibliography entry."sv
+            diagnostic::bib::id_empty, call.directive.get_source_span(),
+            u8"An id argument for a bibliography entry cannot be empty."sv
         );
         return Processing_Status::error;
     }
 
-    // The following process of converting directive arguments
-    // to members in the Document_Info object needs to be done in two passes
-    // because vector reallocation would invalidate string views.
-    //  1. Concatenate the text data and remember the string lengths.
-    //  2. Form string views and assign to members in the Document_Info.
-
-    std::pmr::vector<std::size_t> string_lengths { context.get_transient_memory() };
-    string_lengths.reserve(parameters.size());
-
-    for (const auto& entry : table) {
-        const int index = args.get_argument_index(entry.parameter);
-        if (index < 0) {
-            string_lengths.push_back(0);
-            continue;
-        }
-        const Argument_Ref arg = call.arguments[std::size_t(index)];
-        const auto* const arg_content = as_content_or_error(arg.ast_node.get_value(), context);
-        if (!arg_content) {
-            return Processing_Status::error;
-        }
-
-        const std::size_t initial_size = result.text.size();
-        const auto status
-            = to_plaintext(result.text, arg_content->get_elements(), arg.frame_index, context);
-        if (status != Processing_Status::ok) {
-            return status;
-        }
-        COWEL_ASSERT(result.text.size() >= initial_size);
-
-        if (entry.parameter == u8"id" && result.text.size() == initial_size) {
-            context.try_error(
-                diagnostic::bib::id_empty, call.directive.get_source_span(),
-                u8"An id argument for a bibliography entry cannot be empty."sv
-            );
-            return Processing_Status::error;
-        }
-
-        string_lengths.push_back(result.text.size() - initial_size);
-    }
-    {
-        const auto result_string = as_u8string_view(result.text);
-        std::size_t offset = 0;
-        for (std::size_t i = 0; i < string_lengths.size(); ++i) {
-            const auto length = string_lengths[i];
-            const auto part_string = result_string.substr(offset, length);
-            offset += length;
-            result.info.*table[i].member = part_string;
-        }
-    }
-    if (context.get_bibliography().contains(result.info.id)) {
-        const std::u8string_view message[] {
-            u8"A bibliography entry with id \"",
-            result.info.id,
-            u8"\" already exists.",
-        };
-        context.try_error(
-            diagnostic::bib::duplicate, call.directive.get_source_span(),
-            joined_char_sequence(message)
-        );
-        return Processing_Status::error;
-    }
+    const Document_Info info {
+        .id = id_string.get(),
+        .title = title_string.get_or_default(u8""),
+        .date = date_string.get_or_default(u8""),
+        .publisher = publisher_string.get_or_default(u8""),
+        .link = link_string.get_or_default(u8""),
+        .long_link = long_link_string.get_or_default(u8""),
+        .issue_link = {},
+        .author = author_string.get_or_default(u8""),
+    };
 
     // To facilitate later referencing,
     // we output the opening and closing HTML tags for this bibliography entry into sections.
@@ -240,27 +189,25 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const Invocation& call, C
     // otherwise the sections remain empty.
     {
         std::pmr::u8string section_name { u8"std.bib.", context.get_transient_memory() };
-        section_name += result.info.id;
+        section_name += info.id;
         const auto scope = context.get_sections().go_to_scoped(section_name);
         Content_Policy& section_out = context.get_sections().current_policy();
         HTML_Writer_Buffer buffer { section_out, Output_Language::html };
         Text_Buffer_HTML_Writer section_writer { buffer };
 
-        if (!result.info.link.empty()) {
+        if (!info.link.empty()) {
             // If the document info has a link,
             // then we want references to bibliography entries (e.g. "[N5008]")
             // to use that link.
             section_writer.write_inner_html(u8"<a href=\""sv);
-            url_encode_to_writer(
-                section_writer, result.info.link, context, is_url_always_encoded_lambda
-            );
+            url_encode_to_writer(section_writer, info.link, context, is_url_always_encoded_lambda);
             section_writer.write_inner_html(u8"\">"sv);
         }
         else {
             // Otherwise, the reference should redirect down
             // to the respective entry within the bibliography.
             // In any case, it's important to guarantee that an <a> element will be emitted.
-            const std::u8string_view id_parts[] { u8"#"sv, bib_item_id_prefix, result.info.id };
+            const std::u8string_view id_parts[] { u8"#"sv, bib_item_id_prefix, info.id };
             section_writer
                 .open_tag_with_attributes(html_tag::a) //
                 .write_id(joined_char_sequence(id_parts))
@@ -275,11 +222,10 @@ Bibliography_Add_Behavior::operator()(Content_Policy&, const Invocation& call, C
         HTML_Writer_Buffer buffer { context.get_sections().current_policy(),
                                     Output_Language::html };
         Text_Buffer_HTML_Writer bib_writer { buffer };
-        write_bibliography_entry(bib_writer, result.info, context);
+        write_bibliography_entry(bib_writer, info, context);
         buffer.flush();
     }
 
-    context.get_bibliography().insert(std::move(result));
     return Processing_Status::ok;
 }
 

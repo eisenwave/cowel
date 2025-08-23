@@ -1,17 +1,15 @@
 #include <cstddef>
 #include <cstring>
-#include <optional>
 #include <span>
 #include <string_view>
 #include <variant>
 #include <vector>
 
+#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
-#include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/strings.hpp"
-#include "cowel/util/to_chars.hpp"
 
 #include "cowel/policy/capture.hpp"
 #include "cowel/policy/content_policy.hpp"
@@ -22,7 +20,6 @@
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/directive_arguments.hpp"
 #include "cowel/directive_behavior.hpp"
 #include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
@@ -219,11 +216,31 @@ Processing_Status to_plaintext(
     return consume_all(policy, value, frame, context);
 }
 
+Plaintext_Result to_plaintext_optimistic(
+    std::pmr::vector<char8_t>& buffer,
+    std::span<const ast::Content> content,
+    Frame_Index frame,
+    Context& context
+)
+{
+    COWEL_ASSERT(buffer.empty());
+    if (content.empty()) {
+        return { Processing_Status::ok, u8""sv };
+    }
+    if (content.size() == 1) {
+        if (const auto* const text = std::get_if<ast::Text>(content.data())) {
+            return { Processing_Status::ok, text->get_source() };
+        }
+    }
+    const Processing_Status status = to_plaintext(buffer, content, frame, context);
+    return { status, as_u8string_view(buffer) };
+}
+
 Processing_Status invoke( //
     Content_Policy& out,
-    std::u8string_view name,
     const ast::Directive& directive,
-    const Arguments_View args,
+    std::u8string_view name,
+    const ast::Group* args,
     const ast::Content_Sequence* content,
     Frame_Index content_frame,
     Context& context
@@ -249,40 +266,6 @@ Processing_Status invoke( //
     return (*behavior)(out, call, context);
 }
 
-namespace {
-
-[[nodiscard]]
-bool expand_ellipses_recursively(
-    std::pmr::vector<Argument_Ref>& out,
-    Arguments_View args,
-    Context& context
-)
-{
-    for (const Argument_Ref arg : args) {
-        if (arg.ast_node.get_kind() != ast::Member_Kind::ellipsis) {
-            out.push_back(arg);
-            continue;
-        }
-
-        if (arg.frame_index == Frame_Index::root) {
-            context.try_error(
-                diagnostic::ellipsis_outside, arg.ast_node.get_source_span(),
-                u8"Ellipsis arguments cannot be used outside of a macro expansion, "
-                u8"similar to \\cowel_put."sv
-            );
-            break;
-        }
-
-        const Stack_Frame& frame = context.get_call_stack()[arg.frame_index];
-        if (!expand_ellipses_recursively(out, frame.invocation.arguments, context)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-} // namespace
-
 Processing_Status invoke_directive( //
     Content_Policy& out,
     const ast::Directive& d,
@@ -290,74 +273,7 @@ Processing_Status invoke_directive( //
     Context& context
 )
 {
-    const auto do_invoke = [&](Arguments_View args) {
-        return invoke(out, d.get_name(), d, args, d.get_content(), content_frame, context);
-    };
-    if (!d.has_ellipsis()) {
-        if (const ast::Group* args = d.get_arguments()) {
-            return do_invoke(Homogeneous_Call_Arguments { args->get_members(), content_frame });
-        }
-        return do_invoke({});
-    }
-
-    if (content_frame == Frame_Index::root && d.get_arguments()) {
-        for (const ast::Group_Member& arg : d.get_arguments()->get_members()) {
-            if (arg.get_kind() == ast::Member_Kind::ellipsis) {
-                context.try_error(
-                    diagnostic::ellipsis_outside, arg.get_source_span(),
-                    u8"Ellipsis arguments cannot be used outside of a macro expansion, "
-                    u8"similar to \\cowel_put."sv
-                );
-                break;
-            }
-        }
-        // TODO: generate error
-        return Processing_Status::error;
-    }
-    const Call_Stack& stack = context.get_call_stack();
-    const Stack_Frame& frame = stack[content_frame];
-
-    if (d.get_argument_span().empty()) {
-        return do_invoke({});
-    }
-    COWEL_ASSERT(d.get_arguments());
-
-    // A common, special case is to simply forward all arguments, like \d[...].
-    // In this case, we can simply yoink the arguments provided to the macro.
-    if (d.get_arguments()->size() == 1) {
-        const ast::Group_Member& arg = d.get_arguments()->get_members().front();
-        COWEL_ASSERT(arg.get_kind() == ast::Member_Kind::ellipsis);
-        return do_invoke(frame.invocation.arguments);
-    }
-
-    // TODO: It's likely worth supporting the common case of exactly one ellipsis,
-    //       like in \cowel_html_element[div, ...].
-    //       For only one ellipsis, we don't need to allocate and could imply form a
-    //       joined view of the ellipsis and the surrounding arguments.
-    //
-    //       Currently, which is not ideal, we recursively flatten all the expansions
-    //       into a vector, which requires dynamic allocations.
-    //       I suspect the performance downsides are relatively minimal though.
-
-    std::pmr::vector<Argument_Ref> recursively_flattened_args { context.get_transient_memory() };
-    recursively_flattened_args.reserve(64);
-
-    if (const ast::Group* args = d.get_arguments()) {
-        for (const ast::Group_Member& arg : args->get_members()) {
-            if (arg.get_kind() != ast::Member_Kind::ellipsis) {
-                recursively_flattened_args.push_back({ arg, content_frame });
-                continue;
-            }
-            if (!expand_ellipses_recursively(
-                    recursively_flattened_args, frame.invocation.arguments, context
-                )) {
-                // TODO: generate error
-                return Processing_Status::error;
-            }
-        }
-    }
-
-    return do_invoke(Heterogeneous_Call_Arguments { recursively_flattened_args });
+    return invoke(out, d, d.get_name(), d.get_arguments(), d.get_content(), content_frame, context);
 }
 
 [[nodiscard]]
@@ -376,64 +292,18 @@ as_content_or_error(const ast::Value& value, Context& context, Severity error_se
     return arg_content;
 }
 
-void warn_all_args_ignored(const Invocation& call, Context& context)
+Processing_Status
+match_empty_arguments(const Invocation& call, Context& context, Processing_Status fail_status)
 {
-    if (context.emits(Severity::warning)) {
-        for (Argument_Ref arg : call.arguments) {
-            context.emit_warning(
-                diagnostic::ignored_args, arg.ast_node.get_source_span(),
-                u8"This argument was ignored."sv
-            );
-        }
-    }
-}
+    Empty_Pack_Matcher args_matcher;
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
 
-void warn_ignored_argument_subset(
-    Arguments_View args,
-    const Argument_Matcher& matcher,
-    Context& context,
-    Argument_Subset ignored_subset
-)
-{
-    const std::span<const Argument_Status> statuses = matcher.argument_statuses();
-    COWEL_ASSERT(args.size() == statuses.size());
+    const auto fail_callback = fail_status == Processing_Status::fatal
+        ? make_fail_callback<Severity::fatal>()
+        : make_fail_callback<Severity::error>();
 
-    for (std::size_t i = 0; i < args.size(); ++i) {
-        const auto& arg = args[i];
-        const bool is_matched = statuses[i] != Argument_Status::unmatched;
-        const bool is_named = arg.ast_node.get_kind() == ast::Member_Kind::named;
-        const Argument_Subset subset = argument_subset_matched_named(is_matched, is_named);
-        if (argument_subset_contains(ignored_subset, subset)) {
-            context.try_warning(
-                diagnostic::ignored_args, arg.ast_node.get_source_span(),
-                u8"This argument was ignored."sv
-            );
-        }
-    }
-}
-
-void warn_ignored_argument_subset(
-    Arguments_View args,
-    Context& context,
-    Argument_Subset ignored_subset
-)
-{
-    COWEL_ASSERT(
-        argument_subset_contains(ignored_subset, Argument_Subset::matched)
-        == argument_subset_contains(ignored_subset, Argument_Subset::unmatched)
-    );
-
-    for (const auto& arg : args) {
-        const auto subset = arg.ast_node.get_kind() == ast::Member_Kind::named
-            ? Argument_Subset::named
-            : Argument_Subset::positional;
-        if (argument_subset_contains(ignored_subset, subset)) {
-            context.try_warning(
-                diagnostic::ignored_args, arg.ast_node.get_source_span(),
-                u8"This argument was ignored."sv
-            );
-        }
-    }
+    return call_matcher.match_call(call, context, fail_callback, fail_status);
 }
 
 void diagnose(
@@ -499,244 +369,44 @@ void diagnose(
 
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    Arguments_View arguments,
+    std::span<const ast::Group_Member> arguments,
+    Frame_Index frame,
     Context& context,
-    Argument_Filter filter,
     Attribute_Style style
 )
 {
-    std::size_t i = 0;
-    return process_greedy(arguments, [&](const Argument_Ref a) -> Processing_Status {
-        if (a.ast_node.get_kind() != ast::Member_Kind::named) {
-            return Processing_Status::ok;
-        }
-        const bool passed_filter = !filter || filter(i, a);
-        ++i;
-        return passed_filter ? named_argument_to_attribute(out, a, context, style)
-                             : Processing_Status::ok;
-    });
-}
-
-Processing_Status named_arguments_to_attributes(
-    Text_Buffer_Attribute_Writer& out,
-    Arguments_View arguments,
-    const Argument_Matcher& matcher,
-    Context& context,
-    Argument_Subset subset,
-    Attribute_Style style
-)
-{
-    COWEL_ASSERT(!argument_subset_intersects(subset, Argument_Subset::positional));
-
-    const auto filter = [&](std::size_t index, const Argument_Ref a) -> bool {
-        const Argument_Status status = matcher.argument_statuses()[index];
-        if (status == Argument_Status::duplicate_named) {
-            const std::u8string_view message[] = {
-                u8"This argument is a duplicate of a previous named argument also named \"",
-                a.ast_node.get_name(),
-                u8"\", and will be ignored.",
-            };
-            context.try_warning(
-                diagnostic::duplicate_args, a.ast_node.get_source_span(),
-                joined_char_sequence(message)
+    return process_greedy(arguments, [&](const ast::Group_Member& a) -> Processing_Status {
+        COWEL_ASSERT(a.get_kind() != ast::Member_Kind::positional);
+        if (a.get_kind() == ast::Member_Kind::ellipsis) {
+            const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
+            return named_arguments_to_attributes(
+                out, ellipsis_frame.invocation.get_arguments_span(),
+                ellipsis_frame.invocation.content_frame, context, style
             );
-            return false;
         }
-        const auto arg_subset = status == Argument_Status::unmatched
-            ? Argument_Subset::unmatched_named
-            : Argument_Subset::matched_named;
-        return argument_subset_contains(subset, arg_subset);
-    };
-    return named_arguments_to_attributes(out, arguments, context, filter, style);
+        return named_argument_to_attribute(out, a, frame, context, style);
+    });
 }
 
 Processing_Status named_argument_to_attribute(
     Text_Buffer_Attribute_Writer& out,
-    Argument_Ref a,
+    const ast::Group_Member& a,
+    Frame_Index frame,
     Context& context,
     Attribute_Style style
 )
 {
-    COWEL_ASSERT(a.ast_node.get_kind() == ast::Member_Kind::named);
+    COWEL_ASSERT(a.get_kind() == ast::Member_Kind::named);
     std::pmr::vector<char8_t> value { context.get_transient_memory() };
     // TODO: error handling
     value.clear();
-    const auto status = to_plaintext(value, a.ast_node.get_value(), a.frame_index, context);
+    const auto status = to_plaintext(value, a.get_value(), frame, context);
     const std::u8string_view value_string { value.data(), value.size() };
-    const std::u8string_view name = a.ast_node.get_name();
+    const std::u8string_view name = a.get_name();
     // TODO: this is simply going to crash if the attribute name is not valid;
     // investigate whether this needs work, and possibly leave a comment here if it's okay
     out.write_attribute(HTML_Attribute_Name(name), value_string, style);
     return status;
-}
-
-Result<bool, Processing_Status> argument_to_plaintext(
-    std::pmr::vector<char8_t>& out,
-    Arguments_View arguments,
-    const Argument_Matcher& args,
-    std::u8string_view parameter,
-    Context& context
-)
-{
-    const int i = args.get_argument_index(parameter);
-    if (i < 0) {
-        return false;
-    }
-    const Argument_Ref& arg = arguments[std::size_t(i)];
-    // TODO: warn when pure HTML argument was used as variable name
-    const auto status = to_plaintext(out, arg.ast_node.get_value(), arg.frame_index, context);
-    if (status != Processing_Status::ok) {
-        return status;
-    }
-    return true;
-}
-
-std::optional<Argument_Ref> get_first_positional_warn_rest(Arguments_View args, Context& context)
-{
-    std::optional<Argument_Ref> result;
-    for (const Argument_Ref arg : args) {
-        if (arg.ast_node.get_kind() != ast::Member_Kind::positional) {
-            continue;
-        }
-        if (!result) {
-            result.emplace(arg);
-            continue;
-        }
-        context.try_warning(
-            diagnostic::ignored_args, arg.ast_node.get_source_span(),
-            u8"This positional argument is ignored. "
-            u8"Only the first positional argument is used in this directive."sv
-        );
-    }
-    return result;
-}
-
-Greedy_Result<bool> get_yes_no_argument(
-    std::u8string_view name,
-    std::u8string_view diagnostic_id,
-    Arguments_View arguments,
-    const Argument_Matcher& args,
-    Context& context,
-    bool fallback
-)
-{
-    const int index = args.get_argument_index(name);
-    if (index < 0) {
-        return fallback;
-    }
-    const Argument_Ref arg = arguments[std::size_t(index)];
-    std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    const auto text_status = to_plaintext(data, arg.ast_node.get_value(), arg.frame_index, context);
-    if (text_status != Processing_Status::ok) {
-        return { fallback, text_status };
-    }
-
-    const auto string = as_u8string_view(data);
-    if (string == u8"yes") {
-        return true;
-    }
-    if (string == u8"no") {
-        return false;
-    }
-    const std::u8string_view message[] {
-        u8"Argument has to be \"yes\" or \"no\", but \"",
-        string,
-        u8"\" was given.",
-    };
-    context.try_warning(
-        diagnostic_id, arg.ast_node.get_source_span(), joined_char_sequence(message)
-    );
-    return fallback;
-}
-
-Greedy_Result<std::size_t> get_integer_argument(
-    std::u8string_view name,
-    std::u8string_view parse_error_diagnostic,
-    std::u8string_view range_error_diagnostic,
-    Arguments_View arguments,
-    const Argument_Matcher& args,
-    Context& context,
-    std::size_t fallback,
-    std::size_t min,
-    std::size_t max
-)
-{
-    COWEL_ASSERT(fallback >= min && fallback <= max);
-
-    const int index = args.get_argument_index(name);
-    if (index < 0) {
-        return fallback;
-    }
-    const Argument_Ref arg = arguments[std::size_t(index)];
-    std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
-    const auto text_status
-        = to_plaintext(arg_text, arg.ast_node.get_value(), arg.frame_index, context);
-    if (text_status != Processing_Status::ok) {
-        return { fallback, text_status };
-    }
-    const auto arg_string = as_u8string_view(arg_text);
-
-    const std::optional<std::size_t> value = from_chars<std::size_t>(arg_string);
-    if (!value) {
-        const std::u8string_view message[] {
-            u8"The specified ",
-            name,
-            u8" \"",
-            arg_string,
-            u8"\" is ignored because it could not be parsed as a (positive) integer.",
-        };
-        context.try_warning(
-            parse_error_diagnostic, arg.ast_node.get_source_span(), joined_char_sequence(message)
-        );
-        return fallback;
-    }
-    if (value < min || value > max) {
-        const Characters8 min_chars = to_characters8(min);
-        const Characters8 max_chars = to_characters8(max);
-        const std::u8string_view message[] {
-            u8"The specified ",
-            name,
-            u8" \"",
-            arg_string,
-            u8"\" is ignored because it is outside of the valid range [",
-            min_chars.as_string(),
-            u8", ",
-            max_chars.as_string(),
-            u8"].",
-        };
-        context.try_warning(
-            range_error_diagnostic, arg.ast_node.get_source_span(), joined_char_sequence(message)
-        );
-        return fallback;
-    }
-
-    return *value;
-}
-
-Greedy_Result<String_Argument> get_string_argument(
-    std::u8string_view name,
-    Arguments_View arguments,
-    const Argument_Matcher& args,
-    Context& context,
-    std::u8string_view fallback
-)
-{
-    String_Argument result { .data = std::pmr::vector<char8_t>(context.get_transient_memory()),
-                             .string = {} };
-    const int index = args.get_argument_index(name);
-    if (index < 0) {
-        result.string = fallback;
-        return result;
-    }
-    const Argument_Ref arg = arguments[std::size_t(index)];
-    const auto status
-        = to_plaintext(result.data, arg.ast_node.get_value(), arg.frame_index, context);
-    if (status != Processing_Status::ok) {
-        result.string = fallback;
-        return { result, status };
-    }
-    result.string = as_u8string_view(result.data);
-    return result;
 }
 
 Processing_Status try_generate_error(

@@ -1,25 +1,20 @@
-#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
 
+#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
-#include "cowel/util/char_sequence_factory.hpp"
-#include "cowel/util/from_chars.hpp"
 #include "cowel/util/result.hpp"
-#include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
 
 #include "cowel/policy/content_policy.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
@@ -52,54 +47,31 @@ Result<long long, Processing_Status> compute_expression(
     Context& context
 )
 {
-    long long result = expression_type_neutral_element(type);
+    Group_Pack_Integer_Matcher group_matcher { context.get_transient_memory() };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
+    }
+
+    Integer result = expression_type_neutral_element(type);
     bool first = true;
-    for (const Argument_Ref& arg : call.arguments) {
-        const auto* const arg_content = as_content_or_error(arg.ast_node.get_value(), context);
-        if (!arg_content) {
-            return try_generate_error(out, call, context);
-        }
-
-        std::pmr::vector<char8_t> arg_text { context.get_transient_memory() };
-        const auto arg_status
-            = to_plaintext(arg_text, arg_content->get_elements(), arg.frame_index, context);
-        if (arg_status != Processing_Status::ok) {
-            return arg_status;
-        }
-        const auto arg_string = as_u8string_view(arg_text);
-
-        const std::optional x = from_chars<long long>(arg_string);
-        if (!x) {
-            const std::u8string_view message[] {
-                u8"Unable to perform operation because \"",
-                arg_string,
-                u8"\" is not a valid integer.",
-            };
+    for (const auto& [value, location] : group_matcher.get_values()) {
+        if (type == Expression_Type::divide && value == 0) {
             context.try_error(
-                diagnostic::arithmetic_parse, arg.ast_node.get_source_span(),
-                joined_char_sequence(message)
-            );
-            return try_generate_error(out, call, context);
-        }
-        if (type == Expression_Type::divide && *x == 0) {
-            const std::u8string_view message[] {
-                u8"The dividend \"",
-                arg_string,
-                u8"\" evaluated to zero, and a division by zero would occur.",
-            };
-            context.try_error(
-                diagnostic::arithmetic_div_by_zero, arg.ast_node.get_source_span(),
-                joined_char_sequence(message)
+                diagnostic::arithmetic_div_by_zero, location, u8"Division by zero."sv
             );
             return try_generate_error(out, call, context);
         }
 
         if (first) {
             first = false;
-            result = *x;
+            result = value;
         }
         else {
-            result = operate(type, result, *x);
+            result = operate(type, result, value);
         }
     }
 
@@ -127,14 +99,20 @@ Expression_Behavior::operator()(Content_Policy& out, const Invocation& call, Con
 Processing_Status
 Variable_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(call.arguments);
+    String_Matcher name_matcher { context.get_transient_memory() };
+    Group_Member_Matcher to_member { u8"name"sv, Optionality::mandatory, name_matcher };
+    Group_Member_Matcher* const parameters[] { &to_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
 
-    std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    if (argument_to_plaintext(data, call.arguments, args, var_parameter, context)) {
-        return generate_var(out, call, as_u8string_view(data), context);
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
     }
-    return Processing_Status::error;
+
+    return generate_var(out, call, name_matcher.get(), context);
 }
 
 Processing_Status Get_Variable_Behavior::generate_var(

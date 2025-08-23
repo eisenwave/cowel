@@ -192,21 +192,6 @@ enum struct Pre_Trimming : bool { no, yes };
 /// @brief Responsible for syntax-highlighted directives like `\code` or `\codeblock`.
 struct [[nodiscard]] Code_Behavior : Directive_Behavior {
 private:
-    static constexpr std::u8string_view lang_parameter = u8"lang";
-    static constexpr std::u8string_view nested_parameter = u8"nested";
-    static constexpr std::u8string_view borders_parameter = u8"borders";
-    static constexpr std::u8string_view prefix_parameter = u8"prefix";
-    static constexpr std::u8string_view suffix_parameter = u8"suffix";
-    // clang-format off
-    static constexpr std::u8string_view parameters[] {
-        lang_parameter,
-        borders_parameter,
-        nested_parameter,
-        prefix_parameter,
-        suffix_parameter,
-    };
-    // clang-format on
-
     const HTML_Tag_Name m_tag_name;
     const Directive_Display m_display;
     const Pre_Trimming m_pre_compat_trim;
@@ -562,24 +547,6 @@ public:
     constexpr explicit Special_Block_Behavior(HTML_Tag_Name name, Intro_Policy intro)
         : m_name { name }
         , m_intro { intro }
-    {
-    }
-
-    [[nodiscard]]
-    Processing_Status
-    operator()(Content_Policy& out, const Invocation& call, Context& context) const final;
-};
-
-struct WG21_Block_Behavior final : Directive_Behavior {
-private:
-    const std::u8string_view m_prefix;
-    const std::u8string_view m_suffix;
-
-public:
-    [[nodiscard]]
-    constexpr explicit WG21_Block_Behavior(std::u8string_view prefix, std::u8string_view suffix)
-        : m_prefix { prefix }
-        , m_suffix { suffix }
     {
     }
 

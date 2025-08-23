@@ -1,15 +1,14 @@
 #include <cstddef>
 #include <optional>
 #include <string_view>
-#include <vector>
 
+#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/draft_uris.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
-#include "cowel/util/strings.hpp"
 
 #include "cowel/policy/content_policy.hpp"
 
@@ -17,7 +16,6 @@
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/directive_arguments.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/document_sections.hpp"
 #include "cowel/fwd.hpp"
@@ -119,41 +117,21 @@ Reference_Classification classify_reference(std::u8string_view ref)
 Processing_Status
 Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    static const std::u8string_view parameters[] { u8"to" };
-    Argument_Matcher args { parameters, context.get_transient_memory() };
-    args.match(call.arguments);
+    String_Matcher to_matcher { context.get_transient_memory() };
+    Group_Member_Matcher to_member { u8"to"sv, Optionality::mandatory, to_matcher };
+    Group_Member_Matcher* const parameters[] { &to_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
 
-    for (std::size_t i = 0; i < args.argument_statuses().size(); ++i) {
-        if (args.argument_statuses()[i] == Argument_Status::unmatched) {
-            context.try_warning(
-                diagnostic::ignored_args, call.arguments[i].ast_node.get_source_span(),
-                u8"This argument was ignored."sv
-            );
-        }
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
     }
 
-    const int to_index = args.get_argument_index(u8"to");
-    if (to_index < 0) {
-        context.try_error(
-            diagnostic::ref::to_missing, call.directive.get_source_span(),
-            u8"A \"to\" argument is required for a reference."sv
-        );
-        return try_generate_error(out, call, context);
-    }
-
-    std::pmr::vector<char8_t> target { context.get_transient_memory() };
-    const Argument_Ref to_arg = call.arguments[std::size_t(to_index)];
-    const auto* const to_arg_content = as_content_or_error(to_arg.ast_node.get_value(), context);
-    if (!to_arg_content) {
-        return try_generate_error(out, call, context);
-    }
-
-    const auto target_status
-        = to_plaintext(target, to_arg_content->get_elements(), to_arg.frame_index, context);
-    if (target_status != Processing_Status::ok) {
-        return target_status;
-    }
-    if (target.empty()) {
+    const std::u8string_view target_string = to_matcher.get();
+    if (target_string.empty()) {
         context.try_error(
             diagnostic::ref::to_empty, call.directive.get_source_span(),
             u8"A \"to\" argument cannot have an empty value."sv
@@ -166,7 +144,6 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
 
-    const auto target_string = as_u8string_view(target);
     const Reference_Classification classification = classify_reference(target_string);
     if (classification.type == Reference_Type::unknown) {
         const std::u8string_view section_name_parts[] {

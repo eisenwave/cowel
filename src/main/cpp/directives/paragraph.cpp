@@ -23,7 +23,10 @@ Processing_Status control_paragraph(
     Context& context
 )
 {
-    warn_all_args_ignored(call, context);
+    const auto match_status = match_empty_arguments(call, context);
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
 
     if (call.content && !call.content->get_elements().empty()) {
         context.try_warning(

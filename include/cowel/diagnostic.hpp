@@ -72,9 +72,6 @@ inline constexpr std::u8string_view directive_lookup_unresolved = u8"directive-l
 /// @brief Duplicate arguments to a directive were provided.
 inline constexpr std::u8string_view duplicate_args = u8"duplicate.args";
 
-/// @brief Arguments to a directive were ignored.
-inline constexpr std::u8string_view ignored_args = u8"ignored.args";
-
 /// @brief The content of a directive was ignored.
 inline constexpr std::u8string_view ignored_content = u8"ignored.content";
 
@@ -112,10 +109,6 @@ inline constexpr std::u8string_view raw_text_closing = u8"raw-text.closing";
 inline constexpr std::u8string_view type_mismatch = u8"type.mismatch";
 
 // DIRECTIVE-SPECIFIC DIAGNOSTICS ==================================================================
-
-/// @brief In an HTML element directive,
-/// no tag name/element name was provided.
-inline constexpr std::u8string_view html_element_name_missing = u8"html.element.name.missing";
 
 /// @brief In an HTML element directive,
 /// the provided tag name is invalid.
@@ -163,9 +156,6 @@ inline constexpr std::u8string_view char_base_range = u8"char.base.range";
 /// @brief The `lower` argument is neither `yes` nor `no`.
 inline constexpr std::u8string_view char_lower_invalid = u8"char.lower.invalid";
 
-/// @brief In `\cowel_invoke`,
-/// no directive name was provided.
-inline constexpr std::u8string_view invoke_name_missing = u8"invoke.name.missing";
 /// @brief In `\cowel_invoke`,
 /// the directive name is invalid.
 inline constexpr std::u8string_view invoke_name_invalid = u8"invoke.name.invalid";
@@ -296,10 +286,6 @@ inline constexpr std::u8string_view draft_verbalization = u8"ref:draft.verbaliza
 } // namespace ref
 
 namespace bib {
-
-/// @brief In a `\bib` directive,
-/// no `id` was provided.
-inline constexpr std::u8string_view id_missing = u8"bib:id.missing";
 
 /// @brief In a `\bib` directive,
 /// the specified `id` is empty.

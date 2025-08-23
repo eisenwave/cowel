@@ -1,3 +1,7 @@
+#include <span>
+#include <string_view>
+
+#include "cowel/parameters.hpp"
 #include "cowel/util/strings.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
@@ -12,34 +16,26 @@ namespace cowel {
 Processing_Status
 Invoke_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    warn_ignored_argument_subset(call.arguments, context, Argument_Subset::named);
+    String_Matcher directive_name_string { context.get_transient_memory() };
+    Group_Member_Matcher string_argument { u8"name", Optionality::mandatory,
+                                           directive_name_string };
+    Group_Member_Matcher* parameters[] { &string_argument };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
 
-    const std::optional<Argument_Ref> first_positional
-        = get_first_positional_warn_rest(call.arguments, context);
-    if (!first_positional) {
-        context.try_error(
-            diagnostic::invoke_name_missing, call.directive.get_name_span(),
-            u8"A directive name name must be provided (in the form of a positional argument)."sv
-        );
-        return try_generate_error(out, call, context);
-    }
-    const auto* const first_positional_content
-        = as_content_or_error(first_positional->ast_node.get_value(), context);
-    if (!first_positional_content) {
-        return try_generate_error(out, call, context);
-    }
-
-    std::pmr::vector<char8_t> name_text { context.get_transient_memory() };
-    const Processing_Status name_status = to_plaintext(
-        name_text, first_positional_content->get_elements(), first_positional->frame_index, context
+    const auto match_status = call_matcher.match_call(
+        call, context, make_fail_callback<Severity::fatal>(), Processing_Status::error
     );
-    if (name_status != Processing_Status::ok) {
-        return name_status;
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
     }
-    const auto name_string = as_u8string_view(name_text);
+
+    const std::u8string_view name_string = directive_name_string.get();
     if (!is_directive_name(name_string)) {
         context.try_error(
-            diagnostic::invoke_name_invalid, first_positional->ast_node.get_source_span(),
+            diagnostic::invoke_name_invalid, directive_name_string.get_location(),
             joined_char_sequence({
                 u8"The name \""sv,
                 name_string,
@@ -52,7 +48,7 @@ Invoke_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
     const Directive_Behavior* const behavior = context.find_directive(name_string);
     if (!behavior) {
         context.try_error(
-            diagnostic::invoke_lookup_failed, first_positional->ast_node.get_source_span(),
+            diagnostic::invoke_lookup_failed, directive_name_string.get_location(),
             joined_char_sequence({
                 u8"No directive with the name \""sv,
                 name_string,
@@ -63,8 +59,7 @@ Invoke_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
     }
 
     return invoke(
-        out, name_string, call.directive, Arguments_View {}, call.content, call.content_frame,
-        context
+        out, call.directive, name_string, nullptr, call.content, call.content_frame, context
     );
 }
 

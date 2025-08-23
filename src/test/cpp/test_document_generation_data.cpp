@@ -74,7 +74,7 @@ constexpr Basic_Test basic_tests_array[] {
     { Source { u8"\\cowel_invoke\n" },
       Source { u8"<error->\\cowel_invoke</error->\n" },
       Processing_Status::error,
-      { diagnostic::invoke_name_missing } },
+      { diagnostic::type_mismatch } },
 
     { Source { u8"\\cowel_invoke(???)\n" },
       Source { u8"<error->\\cowel_invoke(???)</error->\n" },
@@ -118,13 +118,13 @@ constexpr Basic_Test basic_tests_array[] {
     { Source { u8"\\h1{\\code(x){abcx}}\n" },
       Source { u8"<h1 id=abcx><a class=para href=#abcx></a><code>abc<h- data-h=kw>x</h-></code></h1>\n" } },
 
-    { Source { u8"\\h2(listed=no){ }\n" },
+    { Source { u8"\\h2(listed=false){ }\n" },
       Source { u8"<h2> </h2>\n" } },
 
-    { Source { u8"\\h3(id=user id,listed=no){Heading}\n" },
+    { Source { u8"\\h3(id=user id,listed=false){Heading}\n" },
       Source { u8"<h3 id=\"user id\"><a class=para href=\"#user%20id\"></a>Heading</h3>\n" } },
 
-    { Source { u8"\\h4(id=user-id,listed=no){Heading}\n" },
+    { Source { u8"\\h4(id=user-id,listed=false){Heading}\n" },
       Source { u8"<h4 id=user-id><a class=para href=#user-id></a>Heading</h4>\n" } },
 
     { Source { u8"\\style{b { color: red; }}\n" },
@@ -144,9 +144,9 @@ constexpr Basic_Test basic_tests_array[] {
       { diagnostic::raw_text_closing } },
 
     { Source { u8"\\code{}\n" },
-      Source { u8"<code></code>\n" },
-      Processing_Status::ok,
-      { diagnostic::highlight_language } },
+      Source { u8"<error->\\code{}</error->\n" },
+      Processing_Status::error,
+      { diagnostic::type_mismatch } },
 
     { Source { u8"\\code(x){}\n" },
       Source { u8"<code></code>\n" } },
@@ -236,15 +236,19 @@ constexpr Basic_Test basic_tests_array[] {
     { Source { u8"\\cowel_html_element(div)" },
       Source { u8"<div></div>" } },
 
-    { Source { u8"\\cowel_html_element(span, id=abc, x){span content}" },
+    { Source { u8"\\cowel_html_element(span, (id=abc)){span content}" },
       Source { u8"<span id=abc>span content</span>" },
-      Processing_Status::ok,
-      { diagnostic::ignored_args } },
+      Processing_Status::ok },
+
+    { Source { u8"\\cowel_html_element(span, (id=abc, x)){span content}" },
+      Source { u8"<error->\\cowel_html_element(span, (id=abc, x)){span content}</error->" },
+      Processing_Status::error,
+      { diagnostic::type_mismatch } },
 
     { Source { u8"\\cowel_html_element" },
       Source { u8"<error->\\cowel_html_element</error->" },
       Processing_Status::error,
-      { diagnostic::html_element_name_missing } },
+      { diagnostic::type_mismatch } },
 
     { Source { u8"\\cowel_html_element(<)" },
       Source { u8"<error->\\cowel_html_element(&lt;)</error->" },
@@ -254,15 +258,19 @@ constexpr Basic_Test basic_tests_array[] {
     { Source { u8"\\cowel_html_self_closing_element(hr)" },
       Source { u8"<hr/>" } },
 
-    { Source { u8"\\cowel_html_self_closing_element(hr, id=abc, x){span content}" },
+    { Source { u8"\\cowel_html_self_closing_element(hr, (id=abc))" },
       Source { u8"<hr id=abc />" },
-      Processing_Status::ok,
-      { diagnostic::ignored_content, diagnostic::ignored_args } },
+      Processing_Status::ok },
+
+    { Source { u8"\\cowel_html_self_closing_element(hr, (id=abc, x))" },
+      Source { u8"<error->\\cowel_html_self_closing_element(hr, (id=abc, x))</error->" },
+      Processing_Status::error,
+      { diagnostic::type_mismatch } },
 
     { Source { u8"\\cowel_html_self_closing_element" },
       Source { u8"<error->\\cowel_html_self_closing_element</error->" },
       Processing_Status::error,
-      { diagnostic::html_element_name_missing } },
+      { diagnostic::type_mismatch } },
 
     { Source { u8"\\cowel_html_self_closing_element(<)" },
       Source { u8"<error->\\cowel_html_self_closing_element(&lt;)</error->" },
