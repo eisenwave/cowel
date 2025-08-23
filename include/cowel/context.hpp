@@ -104,7 +104,6 @@ private:
     File_Loader& m_file_loader;
     Logger& m_logger;
     Syntax_Highlighter& m_syntax_highlighter;
-    Bibliography& m_bibliography;
 
     Document_Sections m_sections { m_memory };
     Variable_Map m_variables { m_memory };
@@ -131,7 +130,6 @@ public:
         File_Loader& file_loader,
         Logger& logger,
         Syntax_Highlighter& highlighter,
-        Bibliography& bibliography,
         std::pmr::memory_resource* persistent_memory,
         std::pmr::memory_resource* transient_memory
     )
@@ -143,7 +141,6 @@ public:
         , m_file_loader { file_loader }
         , m_logger { logger }
         , m_syntax_highlighter { highlighter }
-        , m_bibliography { bibliography }
     {
     }
 
@@ -182,17 +179,6 @@ public:
     const Syntax_Highlighter& get_highlighter() const
     {
         return m_syntax_highlighter;
-    }
-
-    [[nodiscard]]
-    Bibliography& get_bibliography()
-    {
-        return m_bibliography;
-    }
-    [[nodiscard]]
-    const Bibliography& get_bibliography() const
-    {
-        return m_bibliography;
     }
 
     [[nodiscard]]

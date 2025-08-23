@@ -118,29 +118,6 @@ struct Document_Info {
     std::u8string_view author;
 };
 
-struct Stored_Document_Info {
-    /// @brief The text storage for any dynamic strings in `info`.
-    std::pmr::vector<char8_t> text;
-    /// @brief Information about the document.
-    Document_Info info;
-};
-
-struct Bibliography {
-    [[nodiscard]]
-    virtual const Document_Info* find(std::u8string_view id) const
-        = 0;
-
-    [[nodiscard]]
-    virtual bool contains(std::u8string_view id) const
-    {
-        return find(id) != nullptr;
-    }
-
-    virtual bool insert(Stored_Document_Info&& info) = 0;
-
-    virtual void clear() = 0;
-};
-
 struct File_Entry {
     File_Id id;
     std::u8string_view source;

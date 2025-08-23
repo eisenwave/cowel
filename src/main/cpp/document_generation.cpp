@@ -44,18 +44,17 @@ Processing_Status run_generation(
 
     std::pmr::unsynchronized_pool_resource transient_memory { options.memory };
 
-    Context context { options.highlight_theme_source, //
-                      options.error_behavior, //
-                      options.builtin_name_resolver,
-                      options.file_loader,
-                      options.logger, //
-                      options.highlighter, //
-                      options.bibliography, //
-                      options.memory, //
-                      &transient_memory };
-    const auto result = generate(context);
-    context.get_bibliography().clear();
-    return result;
+    Context context {
+        options.highlight_theme_source,
+        options.error_behavior,
+        options.builtin_name_resolver,
+        options.file_loader,
+        options.logger,
+        options.highlighter,
+        options.memory,
+        &transient_memory,
+    };
+    return generate(context);
 }
 
 namespace {
