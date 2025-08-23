@@ -283,38 +283,56 @@ private:
         Attribute_Encoding encoding
     )
     {
+        constexpr std::size_t buffer_size = 512;
+
         if (value.empty()) {
             return write_empty_attribute(key, style);
         }
 
         COWEL_ASSERT(m_in_attributes);
 
+        const char8_t quote_char = attribute_style_quote_char(style);
+        if (attribute_style_demands_quotes(style)) {
+            return do_write_nonempty_attribute(key, value, quote_char, encoding);
+        }
+
+        if (const auto value_string = value.as_string_view(); !value_string.empty()) {
+            if (is_html_unquoted_attribute_value(value_string)) {
+                return do_write_nonempty_attribute(key, value, {}, encoding);
+            }
+            return do_write_nonempty_attribute(key, value, quote_char, encoding);
+        }
+
+        if (value.size() > buffer_size) [[unlikely]] {
+            return do_write_nonempty_attribute(key, value, quote_char, encoding);
+        }
+
+        char8_t id_buffer[buffer_size];
+        const std::size_t extracted = value.extract(id_buffer);
+        COWEL_ASSERT(extracted <= buffer_size);
+
+        const std::u8string_view buffered_string { id_buffer, extracted };
+        if (is_html_unquoted_attribute_value(buffered_string)) {
+            return do_write_nonempty_attribute(key, buffered_string, {}, encoding);
+        }
+        return do_write_nonempty_attribute(key, buffered_string, quote_char, encoding);
+    }
+
+    Attribute_Quoting do_write_nonempty_attribute(
+        HTML_Attribute_Name key,
+        Char_Sequence8 value,
+        std::optional<char8_t> quote_char,
+        Attribute_Encoding encoding
+    )
+    {
+        COWEL_ASSERT(!value.empty());
+
         m_out(u8' ');
         m_out(key.str());
-
-        const char8_t quote_char = attribute_style_quote_char(style);
         m_out(u8'=');
 
-        const bool omit_quotes = !attribute_style_demands_quotes(style) //
-            && value.is_contiguous() //
-            && is_html_unquoted_attribute_value(value.as_string_view());
-
-        if (omit_quotes) {
-            switch (encoding) {
-            case Attribute_Encoding::text: {
-                m_out(value);
-                break;
-            }
-            case Attribute_Encoding::url: {
-                url_encode_ascii_if(m_out, value, [](char8_t c) {
-                    return is_url_always_encoded(c);
-                });
-                break;
-            }
-            }
-        }
-        else {
-            m_out(quote_char);
+        if (quote_char) {
+            m_out(*quote_char);
             switch (encoding) {
             case Attribute_Encoding::text: {
                 append_html_escaped_of(m_out, value, u8"\"'"sv);
@@ -329,10 +347,25 @@ private:
                 break;
             }
             }
-            m_out(quote_char);
+            m_out(*quote_char);
+            return Attribute_Quoting::quoted;
         }
-
-        return omit_quotes ? Attribute_Quoting::none : Attribute_Quoting::quoted;
+        // NOLINTNEXTLINE(readability-else-after-return)
+        else {
+            switch (encoding) {
+            case Attribute_Encoding::text: {
+                m_out(value);
+                break;
+            }
+            case Attribute_Encoding::url: {
+                url_encode_ascii_if(m_out, value, [](char8_t c) {
+                    return is_url_always_encoded(c);
+                });
+                break;
+            }
+            }
+            return Attribute_Quoting::none;
+        }
     }
 
     Attribute_Quoting write_empty_attribute(HTML_Attribute_Name key, Attribute_Style style)
