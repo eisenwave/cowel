@@ -144,3 +144,12 @@ jobs:
         --target cowel-npm
         --config Release
         --verbose
+
+    - name: Test
+      run: |
+        node "${{ steps.strings.outputs.build_dir }}/npm/" run \
+          docs/index.cow \
+          docs/actual.html &&
+        diff --color=always -u \
+          docs/index.html \
+          docs/actual.html
