@@ -34,10 +34,20 @@
   - `\block` (use `\cowel_paragraph_leave` instead)
   - `\inline` (use `\cowel_paragraph_enter` instead)
   - `\paragraphs` (use `\cowel_paragraphs` instead)
+  - `\wg21_note` (use `\cowel_macro` instead)
+  - `\wg21_example` (use `\cowel_macro` instead)
+- remove duplicate checks for (deprecated) `\bib` entries
+- remove `prefix` and `suffix` parameters in `\code` (use `\cowel_highlight_phantom` instead)
 - change `[` and `]` argument syntax to `(` and `)` (#79)
+- change any use of `yes` and `no` arguments to `true` and `false`, respectively
+- change warnings for stray/missing arguments to errors in general
+- change in the following directives that HTML attributes are provided via `attr` group argument:
+  - `\h1`, `\h2`, `\h3`, `\h4`, `\h5`, `\h6`
+  - `\cowel_html_element`
 - add argument groups (#80)
 - add `\-` escape sequence
 - add EBNF grammar (`docs/intro/grammar.ebnf`)
+- improve consistency for when `"` are applied to HTML attribute values
 - fix includes relative to included files not resolving paths correctly (#84)
 - also update µlight to enable EBNF syntax highlighting
 

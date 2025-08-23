@@ -254,11 +254,13 @@ Every directive has three parts:
     The \cowdoc_c{\\directive_name} selects a specific directive to be processed.
   }
   \li{
-    An optional \cowdoc_c(prefix=\\d){(comma-separated, positional arguments, named-arguments = ...)}
+    An optional \cowdoc_c{\cowel_highlight_phantom{\\d}\
+(comma-separated, positional arguments, named-arguments = ...)}
     provides additional inputs to the directive.
   }
   \li{
-    An optional \cowdoc_c(prefix=\\d){{block of content}} provides a "main input" to a directive.
+    An optional \cowdoc_c{\cowel_highlight_phantom{\\d}{block of content}}
+    provides a "main input" to a directive.
   }
 }
 
@@ -461,7 +463,8 @@ you can use the escape sequence \cowdoc_c{\\...} (only the first dot is part of 
 \h5{Groups}
 
 Groups make it possible to group any of the aforementioned constructs.
-Groups begin with \code(cowel,prefix=\\d){(} and end with \code(cowel,prefix=\\d\(){)}.
+Groups begin with \code(cowel){\cowel_highlight_phantom{\\d}\N{LEFT PARENTHESIS}}
+and end with \code(cowel){\cowel_highlight_phantom{\\d\N{LEFT PARENTHESIS}}\N{RIGHT PARENTHESIS}}.
 They can appear both in positional and in named arguments.
 
 \Bex{

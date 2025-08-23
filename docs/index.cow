@@ -5,7 +5,7 @@
 }
 
 \cowel_macro(ellipsis){\
-\code(cowel, prefix=\\d\(){...}\
+\code(cowel){\cowel_highlight_phantom{\\d\(}...}\
 }
 
 \cowel_macro(cowdoc_html){\
@@ -59,8 +59,10 @@ U+\cowel_put\c{nbsp}(\tt{\U{\cowel_put}})\
 \cowel_macro(cowdoc_og_property){\
 \cowel_html_element(
   meta,
-  property = og:\cowel_put{0},
-  content = \cowel_put,
+  (
+    property = og:\cowel_put{0},
+    content = \cowel_put,
+  ),
 )\
 }
 
@@ -94,7 +96,7 @@ h1 {
 \ref(https://github.com/eisenwave/cowel)
 }
 
-\h2(listed=no){Contents}
+\h2(listed = false){Contents}
 
 \make_contents
 
@@ -164,7 +166,7 @@ run \code(sh){cowel} by itself or \code(sh){cowel --help}.
 
 \Btip{
 You may need to use \code(sh){sudo} or otherwise elevate your permissions
-because \code(sh,prefix=npm\ ){-g} performs a "global"/system-wide installation.
+because \code(sh){\cowel_highlight_phantom{npm }-g} performs a "global"/system-wide installation.
 This is necessary to make the \code(sh){cowel} command available everywhere.
 
 It is recommended to use a \tt{.cow} or \tt{.cowel} file extension for COWEL documents.
@@ -190,7 +192,8 @@ cmake --build build
 
 The \tt{npm} CLI is slightly different from the native CLI,
 but they share some options,
-such as \code(sh,prefix=c\ ){--severity} and \code(sh,prefix=c\ ){--help}.
+such as \code(sh){\cowel_highlight_phantom{c }--severity}
+and \code(sh){\cowel_highlight_phantom{c }--help}.
 Running \code(sh){./build/cowel-cli} without extra arguments also brings up the help menu.
 
 \cowel_include{intro/syntax.cow}\

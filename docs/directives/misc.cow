@@ -48,7 +48,7 @@ Note 1: Something else.
 Notice that because \cowdoc_dir{put} expands to no content,
 the trailing space after \cowdoc_c{Note} is eliminated.
 If it wasn't eliminated, we would end up with
-\code(cowel,prefix=\\trim){{Note :}},
+\code(cowel){\cowel_highlight_phantom{\\trim}{Note :}},
 but there should never be a space before the colon.
 }
 

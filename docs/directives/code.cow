@@ -12,37 +12,39 @@ deals with modern C++ features correctly.
 The \cowdoc_dir{code} directive produced syntax-highlighted text in code font.
 
 \dl{
-\dt{Arguments}
-\dd{
-\ul{
-\li{\cowdoc_attr{lang} (plaintext) \c{mdash} the syntax highlighting language.}
-\li{\cowdoc_attr{nested} (yes/no) \c{mdash} whether whether to omit \cowdoc_html{<code>} tags.}
-\li{\cowdoc_attr{prefix} (plaintext) \c{mdash} code before the input from the view of the highlighter.}
-\li{\cowdoc_attr{suffix} (plaintext) \c{mdash} code after input from the view of the highlighter.}
-}
-}
+  \dt{Arguments}
+  \dd{
+    \ul{
+      \li{
+        \cowdoc_attr{lang} (plaintext) \c{mdash} the syntax highlighting language.
+      }
+      \li{
+        \cowdoc_attr{nested} (true/false) \c{mdash} whether to omit \cowdoc_html{<code>} tags.
+      }
+    }
+  }
 
-\dt{Input content}
-\dd{
-The input to a \cowdoc_dir{code} directive is a plaintext context.
-However, there are special rules for formatting directives
-and pure plaintext directives (see below).
-}
+  \dt{Input content}
+  \dd{
+  The input to a \cowdoc_dir{code} directive is a plaintext context.
+  However, there are special rules for formatting directives
+  and pure plaintext directives (see below).
+  }
 
-\dt{HTML output}
-\dd{
-In an HTML context, the \cowdoc_dir{code} takes the input source code,
-applies syntax highlighting,
-and outputs the result surrounded by \cowdoc_html{<code>...</code>}.
-}
+  \dt{HTML output}
+  \dd{
+  In an HTML context, the \cowdoc_dir{code} takes the input source code,
+  applies syntax highlighting,
+  and outputs the result surrounded by \cowdoc_html{<code>...</code>}.
+  }
 
-\dt{Plaintext output}
-\dd{
-In a plaintext context, \cowdoc_dir{code} simply outputs the input source code.
-}
+  \dt{Plaintext output}
+  \dd{
+  In a plaintext context, \cowdoc_dir{code} simply outputs the input source code.
+  }
 
-\dt{Display style}
-\dd{Inline}
+  \dt{Display style}
+  \dd{Inline}
 }
 
 \Bex{
@@ -60,19 +62,19 @@ The \cowdoc_html{<h->} tags are an implementation detail and may be subject to c
 \h5{Manual nested highlighting}
 
 The \tt{nested} parameter is a plaintext context,
-which accepts either \tt{yes} or \tt{no}, where \tt{no} is the default.
+which accepts either \tt{true} or \tt{false}, where \tt{false} is the default.
 When enabled, the surrounding \cowdoc_html{<code>} tags are omitted,
-which makes it suitable for nesting languages within other \cowdoc_dir{code} or \cowdoc_dir{codeblock}
-directives.
+which makes it suitable for nesting languages
+within other \cowdoc_dir{code} or \cowdoc_dir{codeblock} directives.
 
 \Bex{
 You can nest JSON inside of a C++ string literal as follows:
 \cowblock{\unprocessed{
-Call: \code(cpp){out.write_json("\code(json,nested=yes){{"x":123,"y":true,"z":null}}")}
+Call: \code(cpp){out.write_json("\code(json,nested=true){{"x":123,"y":true,"z":null}}")}
 }}
 This renders as follows:
 \Bindent{
-Call: \code(cpp){out.write_json("\code(json,nested=yes){{"x":123,"y":true,"z":null}}")}
+Call: \code(cpp){out.write_json("\code(json,nested=true){{"x":123,"y":true,"z":null}}")}
 }
 }
 
@@ -81,37 +83,8 @@ you may often not even notice a visual difference between using the \tt{nested}
 parameter and not using it.
 However, the difference would be obvious once you want to style \cowdoc_html{<code>} elements
 to have borders, background color, padding, and other such styling features.
-\tt{nested=yes} directly emits the highlighting HTML elements,
+\tt{nested=true} directly emits the highlighting HTML elements,
 which is more composable.
-
-\h5{Highlighting prefix and suffix}
-
-The \tt{prefix} and \tt{suffix} parameters are plaintext contexts
-which can be used to further control highlighting.
-Especially with inline code,
-the highlighting depends on the surrounding code.
-
-\tt{prefix} and \tt{suffix} can be used to provide that surrounding code,
-without becoming part of the highlighted output.
-
-\Bex{
-Using \tt{prefix},
-we can control whether a JSON string is interpreted as a markup key,
-or as a string value:
-\cowblock{\literally{
-In JSON, there are \code(json,prefix=\{){"keys"} and \code(json){"values"}.
-}}
-This renders as:
-\Bindent{
-In JSON, there are \code(json,prefix=\{){"keys"} and \code(json){"values"}.
-}
-Notice that the color of \code(json,prefix=\{){"keys"} is different because it is interpreted
-as if it was positioned like:
-\codeblock(json){
-\{"keys"
-}
-}
-
 
 \h5{Further advice on highlighting}
 
@@ -139,7 +112,7 @@ This can be controlled using the \tt{borders}.
 // Borders enabled
 let x = 0;
 }
-\\codeblock(js,borders=no){
+\\codeblock(js, borders = false){
 // Borders disabled
 let x = 0;
 }
@@ -149,7 +122,7 @@ This renders as:
 // Borders enabled
 let x = 0;
 }
-\codeblock(js,borders=no){
+\codeblock(js, borders = false){
 // Borders disabled
 let x = 0;
 }

@@ -42,7 +42,9 @@ use \cowdoc_c{\\U{AD}} or \cowdoc_c{\\c{shy}} to output a U+00AD SOFT HYPHEN.
 The \cowdoc_dir{nobr} directive is a formatting directive
 which prevents word breaks within its content.
 Its content is an HTML context.
-This is done by applying a \code(css,prefix=x\{){white-space: nowrap;} style its content.
+This is done by applying a
+\code(css){\cowel_highlight_phantom{x\{}white-space: nowrap;}
+style its content.
 
 \Btip{
 Another way to prevent word-breaking is to use non-breaking spaces.

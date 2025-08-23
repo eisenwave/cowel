@@ -13,7 +13,7 @@ you can embed their content using \cowdoc_dir{cowel_text_as_html}:
 \cowblock{
 Math
 \\cowel_text_as_html{
-\code(xml,nested=yes){<math display=inline>
+\code(xml,nested=true){<math display=inline>
   <mfrac>
     <mi>x</mi>
     <mn>2</mn>

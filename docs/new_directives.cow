@@ -26,8 +26,7 @@ which all builtin directives have in common:
     text-only policy (\ref(#contexts-and-output)).
   }
   \li{
-    Unless otherwise stated,
-    arguments to builtin directives
+    Arguments to builtin directives
     use the usual argument matching (\ref(#usual-argument-matching)).
   }
   \li{
@@ -36,23 +35,147 @@ which all builtin directives have in common:
   }
 }
 
+\h4{Parameter notation}
+
+While COWEL does not yet support a syntax for defining directives with parameters
+of a specific type, this documentation does for the builtin directives.
+This notation consists of
+\ul{
+  \li{the directive name,}
+  \li{
+    a list of parameters in parentheses,
+    consisting of the parameter name and the parameter type, separated by '\tt{:}',
+    and optionally followed by '\tt{=}' and a \dfn{default value}, and
+  }
+  \li{
+    optionally,
+    the symbol \tt{{...}} to indicate that the directive accepts content.
+  }
+}
+
+The type notation \tt{type arg} is equivalent to \tt{type(arg)};
+in other words, \tt{type} is a unary prefix operator.
+The possible types are as follows:
+
+\dl{
+  \dt{\tt{any}}
+  \dd{Placeholder for any other type.}
+
+  \dt{\tt{integer}}
+  \dd{An integer, such as \tt{123}.}
+
+  \dt{\tt{boolean}}
+  \dd{An boolean; either \tt{true} or \tt{false}.}
+
+  \dt{\tt{string}}
+  \dd{A sequence of content.}
+
+  \dt{\tt{markup}}
+  \dd{
+    A sequence of content which is processed lazily, i.e. it is not evaluated
+    where the directive is invoked, but at some later point (or not at all).
+    This is essentially \tt{lazy string}.
+  }
+
+  \dt{\tt{pack(element: type)}}
+  \dd{
+    Multiple occurrences of the same \tt{element}, zero or more times.
+  }
+
+  \dt{\tt{group(members: pack type)}}
+  \dd{
+    A group of zero or more members, possibly of different types.
+  }
+
+  \dt{\tt{optional(t: type)}}
+  \dd{
+    Same as \tt{t}, but can be omitted in usual argument matching (\ref(#usual-argument-matching)).
+  }
+
+  \dt{\tt{lazy(t: type)}}
+  \dd{
+    Same as \tt{t}, but not processed during argument matching,
+    but within the directive.
+  }
+
+  \dt{\tt{named(t: type)}}
+  \dd{
+    A named argument with value type \tt{t}.
+  }
+}
+
+\Bex{
+The description of \cowdoc_dir{cowel_html_element} looks as follows:
+\pre{
+cowel_html_element(
+  name: string,
+  attr: optional group pack named lazy string,
+){...}
+}
+
+Or equivalently:
+\pre{
+cowel_html_element(
+  name: string,
+  attr: optional(group(pack(named(lazy(string))))),
+){...}
+}
+
+This describes that \cowdoc_dir{cowel_html_element} can be invoked as follows,
+among various options:
+\cowblock{\literally{
+\cowel_html_element(name = div, attr = (id = abc))
+}}
+
+\tt{div} matches the \cowdoc_attr{name} parameter,
+and the content \tt{div} is treated as a \tt{string} value.
+
+\cowdoc_c{\cowel_highlight_phantom{\\d}(id = abc)}
+matches the \cowdoc_attr{attr} parameter,
+and within that group,
+there is a single-element \tt{pack} of \tt{named} arguments
+of type \tt{string} with \tt{lazy} processing.
+\tt{lazy} processing implies that even if we were to reverse the order of
+\cowdoc_attr{name} and \cowdoc_attr{attr},
+\cowdoc_attr{name} would still be processed first.
+}
+
 \h4{Usual argument matching}
+
+The \dfn{usual argument matching} allows matching positional and named arguments
+to parameters of directives.
+An error is raised if positional and named arguments are mixed,
+unless all positional arguments appear contiguously at the start of the argument list.
+
+\Bex{
+\cowblock{\literally{
+\: OK, two positional arguments
+\cowel_html_element(div, (id = abc))
+\: OK, two named arguments
+\cowel_html_element(name = div, attr = (id = abc))
+\: OK, all positional arguments appear at the start
+\cowel_html_element(name = div, (id = abc))
+\: error: positional argument following named arguments
+\cowel_html_element(name = div, (id = abc))
+}}
+}
 
 The usual argument matching is performed as follows:
 
 \ol{
   \li{
-    Any parameters of the directive are compared against named arguments.
-    If the name of the parameter is equal to the name of the named argument,
-    the argument is a match for that parameter.
-    An error is raised if there is more than one named argument with the same name.
+    Positional arguments match parameters in the same order.
+    An error is raised if there are more positional arguments than parameters.
   }
   \li{
-    Any positional arguments are matched against any remaining parameters,
-    in the same order.
+    The following named arguments match parameters with the same name.
+    An error is raised if a named argument does not match any parameter.
   }
   \li{
-    Any arguments that do not match a parameter are ignored.
+    If any parameter has not been matched by an argument,
+    the parameter is matched by its default argument value if there is one,
+    otherwise, if it has \tt{optional} type, it is matched by nothing, and
+    otherwise an error is raised.
   }
 }
 
@@ -60,17 +183,19 @@ The usual argument matching is performed as follows:
 Let \cowdoc_dir{d} be a directive with parameters
 \cowdoc_attr{x}, \cowdoc_attr{y}, and \cowdoc_attr{z}:
 \cowblock{\literally{
-\: a, b, and c match x, y, and z, respectively
-\d(z = c, y = b, x = a)
+\: In each of these calls,
+\: a, b, and c match x, y, and z, respectively:
 
-\: a, b, and c match x, y, and z, respectively
-\d(a, b, c)
-
-\: d matches x, a matches y, b matches z, c is ignored
-\d(a, b, c, x = d)
+\d(z = c, y = b, x = a)  \: OK, all named arguments
+\d(a, b, c)              \: OK, all positional arguments
+\d(a, z = c, y = b)      \: OK, positional arguments followed by named arguments
 }}
 }
 
+\Bnote{
+The usual argument matching is essentially identical to function calls in Kotlin,
+but more restrictive when it comes to mixing positional and named arguments.
+}
 
 \h3(id=new-character-utilities){Character utilities}
 
@@ -86,6 +211,10 @@ COWEL has builtin directives for generating and querying characters.
 \h4(
   id = dir-cowel_char_by_entity
 ){\cowdoc_dir{cowel_char_by_entity} \c{mdash} Character by HTML character reference}
+
+\pre{
+cowel_char_by_entity(){...}
+}
 
 The \cowdoc_dir{cowel_char_by_entity} directive takes the name of a character
 and outputs the respective code points as text.
@@ -108,6 +237,10 @@ The '\tt{&}' character can be produced in a number of ways:
   id = dir-cowel_char_by_name
 ){\cowdoc_dir{cowel_char_by_name} \c{mdash} Character by Unicode name}
 
+\pre{
+cowel_char_by_name(){...}
+}
+
 The input to a \cowdoc_dir{cowel_char_by_num} directive is text content which should be a
 \ref(https://www.unicode.org/reports/tr34/#Names){Unicode name}
 for a code point.
@@ -121,6 +254,10 @@ or one of its "control", "alternate", or "correction" aliases.
 \h4(
   id = dir-cowel_char_by_num
 ){\cowdoc_dir{cowel_char_by_num} \c{mdash} Character by code point number}
+
+\pre{
+cowel_char_by_num(){...}
+}
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is text content
 which should be a sequence of hexadecimal numbers
@@ -146,6 +283,14 @@ they cannot easily tell what the purpose of the character is.
 \h4(
   id=dir-cowel_char_get_num
 ){\cowdoc_dir{cowel_char_get_num} \c{mdash} Get digits of character}
+
+\pre{
+cowel_char_get_num(
+  zfill: integer = 0,
+  base: integer = 16,
+  lower: boolean = false,
+){...}
+}
 
 The \cowdoc_dir{cowel_char_get_num} directive is essentially the
 inverse of the \cowdoc_dir{cowel_char_by_num} directive.
@@ -230,6 +375,13 @@ This renders as
   id=dir-cowel_html_element
 ){\cowdoc_dir{cowel_html_element} \c{mdash} HTML element}
 
+\pre{
+cowel_html_element(
+  name: string,
+  attr: optional group pack named lazy string,
+){...}
+}
+
 The \cowdoc_dir{cowel_html_element} directive generates content,
 surrounded in HTML opening and closing HTML tags.
 That is, it
@@ -247,13 +399,14 @@ That is, it
   }
 }
 
-The name of the HTML tag is provided
-as the first positional argument to the directive.
+The name of the HTML element is contained in the \cowdoc_attr{name} parameter,
+and the attributes within the HTML element
+are contained within the \cowdoc_attr{attr} parameter.
 
 \Bex{
 COWEL markup:
 \cowblock{\literally{
-This is \cowel_html_element(span, id=abc){a span}.
+This is \cowel_html_element(span, (id = abc)){a span}.
 }}
 Generated HTML:
 \htmlblock{
@@ -263,25 +416,33 @@ This is <span id=abc>a span</span>.
 
 A \cowdoc_dir{cowel_html_element} directive produces an error if the given
 tag name is not a valid HTML tag name, or
-if any of the argument names are invalid.
+if any of the argument names are not valid HTML attribute names.
 
 \h4(
   id=dir-cowel_html_self_closing_element
 ){\cowdoc_dir{cowel_html_self_closing_element} \c{mdash} Self-closing HTML element}
+
+\pre{
+cowel_html_self_closing_element(
+  name: string,
+  attr: optional group pack named lazy string,
+)
+}
 
 The \cowdoc_dir{cowel_html_self_closing_element} directive generates a self-closing HTML element.
 That is, an element with no content,
 and where there is no closing tag.
 Content is ignored.
 
-The name of the tag is provided as the first positional argument,
-and any named arguments are converted to attributes of the tag.
+The name of the HTML element is contained in the \cowdoc_attr{name} parameter,
+and the attributes within the HTML element
+are contained within the \cowdoc_attr{attr} parameter.
 
 \Bex{
 COWEL markup:
 \cowblock{\literally{
 Horizontal rule:
-\cowel_html_self_closing_element(hr, id=abc){ignored}
+\cowel_html_self_closing_element(hr, (id = abc)){ignored}
 }}
 Generated HTML:
 \htmlblock{
@@ -349,8 +510,11 @@ The table below lists directives which process content using some content policy
   id = dir-cowel_to_html
 ){\cowdoc_dir{cowel_to_html} \c{mdash} Process with to-HTML policy}
 
+\pre{
+cowel_to_html(){...}
+}
+
 \cowdoc_dir{cowel_to_html} simply processes the provided content using the to-HTML policy.
-All arguments are ignored.
 
 The purpose of this policy/directive is mainly to
 feed its parent policy pure HTML content,
@@ -391,9 +555,12 @@ Use of
   id = dir-cowel_no_invoke
 ){\cowdoc_dir{cowel_no_invoke} \c{mdash} Process with no-invoke policy}
 
+\pre{
+cowel_no_invoke(){...}
+}
+
 \cowdoc_dir{cowel_no_invoke} processes the provided content
 using the no-invoke policy.
-All arguments are ignored.
 
 \Bex{
 COWEL markup:
@@ -421,9 +588,12 @@ That is, comments are ignored, and escapes are expanded.
   id = dir-cowel_actions
 ){\cowdoc_dir{cowel_actions} \c{mdash} Process with actions policy}
 
+\pre{
+cowel_actions(){...}
+}
+
 \cowdoc_dir{cowel_actions} processes the provided content
 using the actions policy.
-All arguments are ignored.
 
 This is particularly useful in macros and surrounding macros
 because it prevents whitespace from being emitted into the HTML file.
@@ -479,9 +649,12 @@ but macro definitions produce no output.
   id = dir-cowel_text_only
 ){\cowdoc_dir{cowel_text_only} \c{mdash} Process with text-only policy}
 
+\pre{
+cowel_text_only(){...}
+}
+
 \cowdoc_dir{cowel_text_only} processes the provided content
 using the text-only policy.
-All arguments are ignored.
 
 \Bex{
 COWEL markup:
@@ -510,9 +683,12 @@ It is mainly useful in situations where it makes no sense to have non-plaintext 
   id = dir-cowel_text_as_html
 ){\cowdoc_dir{cowel_text_as_html} \c{mdash} Process with text-as-HTML policy}
 
+\pre{
+cowel_text_as_html(){...}
+}
+
 \cowdoc_dir{cowel_no_invoke} processes the provided content
 using the text-as-HTML policy.
-All arguments are ignored.
 
 \Bex{
 COWEL markup:
@@ -537,9 +713,12 @@ While there are legitimate uses (e.g. inline SVG images and other large HTML blo
   id = dir-cowel_source_as_text
 ){\cowdoc_dir{cowel_source_as_text} \c{mdash} Process with source-as-text policy}
 
+\pre{
+cowel_source_as_text(){...}
+}
+
 \cowdoc_dir{cowel_no_invoke} processes the provided content
 using the source-as-text policy.
-All arguments are ignored.
 
 \Bex{
 COWEL markup:
@@ -574,6 +753,12 @@ Many examples can be found in this document.
 \h4(
   id = dir-cowel_highlight
 ){\cowdoc_dir{cowel_highlight} \c{mdash} Perform syntax highlighting}
+
+\pre{
+cowel_highlight(
+  lang: string,
+){...}
+}
 
 The \cowdoc_dir{cowel_highlight}
 processes content using the highlight policy,
@@ -636,6 +821,10 @@ Only µlight long names should be used directly.
   id = dir-cowel_highlight_phantom
 ){\cowdoc_dir{cowel_highlight_phantom} \c{mdash} Syntax highlight phantom text}
 
+\pre{
+cowel_highlight_phantom(){...}
+}
+
 The \cowdoc_dir{cowel_highlight_phantom} directive
 can be used to further customize syntax highlighting.
 It outputs \dfn{phantom text}, which is fed into the syntax highlighter,
@@ -651,26 +840,23 @@ All arguments are ignored.
 Using \cowdoc_dir{cowel_highlight_phantom},
 we can control whether a JSON string is interpreted as a markup key,
 or as a string value:
-\cowblock{\literally{
+\cowblock{
 In JSON, there are
-\cowel_html_element(code){\cowel_highlight(json){\cowel_highlight_phantom{\{}"keys"}}
+\\cowel_html_element(code){\\cowel_highlight(json){\\cowel_highlight_phantom{\\\N{LEFT CURLY BRACKET}}"keys"}}
 and
-\cowel_html_element(code){\cowel_highlight(json){"values"}}.
-\: Note that this is low-level functionality intended to power macros like:
-\:   \code(json,prefix=\{){"keys"}
-\: or
-\:   \json_key{"keys"}
-}}
+\\cowel_html_element(code){\\cowel_highlight(json){"values"}}.
+}
 Using the highlight theme of this document, this renders as:
 \Bindent{
-In JSON, there are \code(json,prefix=\{){"keys"} and \code(json){"values"}.
+In JSON, there are
+\code(json){\cowel_highlight_phantom{\N{LEFT CURLY BRACKET}}"keys"}
+and \code(json){"values"}.
 }
-Notice that the color of \code(json,prefix=\{){"keys"} is different because it is highlighted
-as if it was positioned like:
+Notice that the color of \code(json){\cowel_highlight_phantom{\N{LEFT CURLY BRACKET}}"keys"} is different
+because it is highlighted as if it was positioned like:
 \codeblock(json){
-\{"keys"
+\N{LEFT CURLY BRACKET}"keys"
 }
-\:}}
 }
 
 \h3(id=new-paragraph-control){Paragraph control}
@@ -733,6 +919,10 @@ Generated HTML:
   id = dir-cowel_paragraphs
 ){\cowdoc_dir{cowel_paragraphs} \c{mdash} Perform paragraph splitting}
 
+\pre{
+cowel_paragraphs(){...}
+}
+
 The \cowdoc_dir{cowel_paragraphs} directive
 creates a paragraphs policy (\ref(#contexts-and-output))
 and feeds all provided content into that policy.
@@ -772,12 +962,15 @@ so if one wants to have paragraph splitting inside say,
   id = dir-cowel_paragraph_enter
 ){\cowdoc_dir{cowel_paragraph_enter} \c{mdash} Enter a paragraph}
 
+\pre{
+cowel_paragraph_enter()
+}
+
 If the current content policy is a paragraphs policy and
 and the paragraph state is "outside",
 the paragraph state becomes "inside",
 and a \cowdoc_html{<p>} tag is emitted.
 Otherwise, has no effect.
-All arguments are ignored.
 
 \Bex{
 COWEL markup, assuming a surrounding paragraphs policy:
@@ -811,12 +1004,15 @@ For example, the user can define an \cowdoc_dir{N} directive which combines
   id = dir-cowel_paragraph_leave
 ){\cowdoc_dir{cowel_paragraph_leave} \c{mdash} Leave a paragraph}
 
+\pre{
+cowel_paragraph_leave()
+}
+
 If the current content policy is a paragraphs policy and
 and the paragraph state is "inside",
 the paragraph state becomes "outside",
 and a closing \cowdoc_html{</p>} tag is emitted.
 Otherwise, has no effect.
-All arguments are ignored.
 
 \Bex{
 COWEL markup, assuming a surrounding paragraphs policy:
@@ -856,6 +1052,10 @@ For example, the user can define a \cowdoc_dir{hr} directive which combines
 \h4(
   id = dir-cowel_paragraph_inherit
 ){\cowdoc_dir{cowel_paragraph_inherit} \c{mdash} Activate paragraph splitting inside a directive}
+
+\pre{
+cowel_paragraph_inherit()
+}
 
 \Bimp{
 There is no support for programmatic directives yet,
@@ -934,11 +1134,14 @@ of \cowdoc_dir{cowel_include}s.
   id = dir-cowel_include_text
 ){\cowdoc_dir{cowel_include_text} \c{mdash} Include text from a file}
 
+\pre{
+cowel_include_text(){...}
+}
+
 The \cowdoc_dir{cowel_include_text} directive reads the UTF-8 text contents of another file
 and feeds that text into the current content policy.
 The path to the document is provided as content to \cowdoc_dir{cowel_include_text},
 and is assumed to be relative to the current file.
-All arguments are ignored.
 
 \Bex{
 Say we have a JavaScript file \tt{example.js} which we want to keep separate from the document.
@@ -986,6 +1189,12 @@ there are some stark differences:
   id = dir-cowel_alias
 ){\cowdoc_dir{cowel_alias} \c{mdash} Define aliases for an existing directive}
 
+\pre{
+cowel_alias(
+  names: pack string,
+){...}
+}
+
 The \cowdoc_dir{cowel_alias} directive defines one or more aliases for an existing directive.
 The content of \cowdoc_dir{cowel_alias} is converted to text,
 and must be the name of an existing directive or directive alias.
@@ -993,7 +1202,6 @@ Each positional argument is converted to text,
 and results in the definition of a new directive alias.
 After processing \cowdoc_dir{cowel_alias},
 the target can also be invoked using the alias name.
-Named arguments are ignored.
 
 A fatal error is raised if
 \ul{
@@ -1027,6 +1235,12 @@ One or multiple aliases can be defined as follows:
 \h4(
   id = dir-cowel_macro
 ){\cowdoc_dir{cowel_macro} \c{mdash} Define a macro}
+
+\pre{
+cowel_macro(
+  names: pack string,
+){...}
+}
 
 The \cowdoc_dir{cowel_macro} directive defines a block of content which
 can be processed at a later point in the document.
@@ -1068,9 +1282,14 @@ may also result in paragraph splits outside the macro.
   id = dir-cowel_put
 ){\cowdoc_dir{cowel_put} \c{mdash} Process provided macro content or arguments}
 
+\pre{
+cowel_put(
+  else: lazy any,
+){...}
+}
+
 The \cowdoc_dir{cowel_put} directive processes content
 which was provided when a macro was invoked.
-\cowdoc_dir{cowel_put} has a single \cowdoc_attr{else} parameter.
 
 The content provided to \cowdoc_dir{cowel_put} is converted to text,
 and \dfn{designates}
@@ -1202,6 +1421,12 @@ but it can have unintended side effects:
 \h4(
   id = dir-cowel_invoke
 ){\cowdoc_dir{cowel_invoke} \c{mdash} Invoke a directive}
+
+\pre{
+cowel_invoke(
+  name: string,
+){...}
+}
 
 The \cowdoc_dir{cowel_invoke} directive invokes a directive by name.
 This process is called a \dfn{dynamic invocation}.
