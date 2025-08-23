@@ -1,6 +1,6 @@
 {
     "name": "cowel",
-    "version": "0.5.1",
+    "version": "0.6.0",
     "description": "COWEL (Compact Web Language) command line utility",
     "main": "cowel.js",
     "type": "module",

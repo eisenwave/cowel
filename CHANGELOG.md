@@ -1,6 +1,6 @@
 # Changelog
 
-## **[v0.6.0]** (??)
+## **[v0.6.0](https://github.com/eisenwave/cowel/releases/tag/v0.6.0)** (2025-08-23)
 
 - remove support for `-` in directive names
 - remove the following deprecated directives:
@@ -51,7 +51,10 @@
 - fix includes relative to included files not resolving paths correctly (#84)
 - also update µlight to enable EBNF syntax highlighting
 
-## **[v0.5.1]** (2025-08-14)
+**Full Changelog**:
+[`v0.5.1...v0.6.0`](https://github.com/eisenwave/cowel/compare/v0.5.1...v0.6.0)
+
+## **[v0.5.1](https://github.com/eisenwave/cowel/releases/tag/v0.5.1)** (2025-08-14)
 
 - fix `\cowel_put` not inheriting paragraph,
   preventing paragraph splitting of expanded content
@@ -59,7 +62,7 @@
 **Full Changelog**:
 [`v0.5.0...v0.5.1`](https://github.com/eisenwave/cowel/compare/v0.5.0...v0.5.1)
 
-## **[v0.5.0]** (2025-08-12)
+## **[v0.5.0](https://github.com/eisenwave/cowel/releases/tag/v0.5.0)** (2025-08-12)
 
 - change that trailing empty arguments are not empty positionals (#77)
 - deprecate legacy `\macro` directive (#77)
@@ -72,7 +75,7 @@
 **Full Changelog**:
 [`v0.4.0...v0.5.0`](https://github.com/eisenwave/cowel/compare/v0.4.0...v0.5.0)
 
-## **[v0.4.0]** (2025-08-09)
+## **[v0.4.0](https://github.com/eisenwave/cowel/releases/tag/v0.4.0)** (2025-08-09)
 
 - remove deprecated `\item`/`\-item` behavior within `\ul` and `\li` (#68)
 - add `\cowel_alias` directive (#65)
@@ -91,7 +94,7 @@
 **Full Changelog**:
 [`v0.3.1...v0.4.0`](https://github.com/eisenwave/cowel/compare/v0.3.1...v0.4.0)
 
-## **[v0.3.1]** (2025-08-02)
+## **[v0.3.1](https://github.com/eisenwave/cowel/releases/tag/v0.3.1)** (2025-08-02)
 
 - add Node.js + WASM wrapper as an alternative to native CLI (#53, #54, #56)
 - add directives for controlling content policies (`\cowel_to_html` etc.)  (#45)
@@ -105,7 +108,7 @@
 
 Never properly published.
 
-## **[v0.2.2]** (2025-07-26)
+## **[v0.2.2](https://github.com/eisenwave/cowel/releases/tag/v0.2.2)** (2025-07-26)
 
 - deprecate legacy `\html-*` directives (#30)
 - deprecate hyphens in directive names (#31)
@@ -116,7 +119,7 @@ Never properly published.
 **Full Changelog**:
 [`v0.2.1...v0.2.2`](https://github.com/eisenwave/cowel/compare/v0.2.1...v0.2.2)
 
-## **[v0.2.1]** (2025-07-24)
+## **[v0.2.1](https://github.com/eisenwave/cowel/releases/tag/v0.2.1)** (2025-07-24)
 
 - fix paragraph splitting following a comment (#17)
 - fix wrong results for `\Cdiv` and `\Csub` (#18)
@@ -127,25 +130,16 @@ Never properly published.
 **Full Changelog**:
 [`v0.2.0...v0.2.1`](https://github.com/eisenwave/cowel/compare/v0.2.0...v0.2.1)
 
-## **[v0.2.0]** (2025-07-24)
+## **[v0.2.0](https://github.com/eisenwave/cowel/releases/tag/v0.2.0)** (2025-07-24)
 
 - mega refactor (#5, @eisenwave)
 
 **Full changelog**:
 [`v0.1.0...v0.2.0`](https://github.com/eisenwave/cowel/compare/v0.1.0...v0.2.0)
 
-## **[v0.1.0]** (2025-07-21)
+## **[v0.1.0](https://github.com/eisenwave/cowel/releases/tag/v0.1.0)** (2025-07-21)
 
 - first tagged release
 
 This build was used for generating C++ proposals
 up to the post-Sofia (2025-07) mailing.
-
-[v0.5.1]: https://github.com/eisenwave/cowel/releases/tag/v0.5.1
-[v0.5.0]: https://github.com/eisenwave/cowel/releases/tag/v0.5.0
-[v0.4.0]: https://github.com/eisenwave/cowel/releases/tag/v0.4.0
-[v0.3.1]: https://github.com/eisenwave/cowel/releases/tag/v0.3.1
-[v0.2.2]: https://github.com/eisenwave/cowel/releases/tag/v0.2.2
-[v0.2.1]: https://github.com/eisenwave/cowel/releases/tag/v0.2.1
-[v0.2.0]: https://github.com/eisenwave/cowel/releases/tag/v0.2.0
-[v0.1.0]: https://github.com/eisenwave/cowel/releases/tag/v0.1.0
