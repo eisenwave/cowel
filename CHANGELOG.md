@@ -1,5 +1,12 @@
 # Changelog
 
+## **Next version** (???)
+
+- fix some missing code citations for diagnostics in Node.js CLI (#91)
+
+**Full Changelog**:
+[`v0.6.0...master`](https://github.com/eisenwave/cowel/compare/v0.6.0...master)
+
 ## **[v0.6.0](https://github.com/eisenwave/cowel/releases/tag/v0.6.0)** (2025-08-23)
 
 - remove support for `-` in directive names

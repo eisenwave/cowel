@@ -184,9 +184,9 @@ function log(diagnostic: cowel.Diagnostic): void {
         diagnostic.begin !== 0 || diagnostic.length !== 0 || diagnostic.line !== 0;
     const location = hasLocation ? `:${diagnostic.line + 1}:${diagnostic.column + 1}` : "";
 
-    const isCitable = diagnostic.length !== 0 && file;
+    const isCitable = diagnostic.length !== 0 && diagnostic.fileName.length === 0;
     const citation = isCitable ? wasm!.generateCodeCitationFor({
-        source: file.data,
+        source: file ? file.data : mainFile.data,
         line: diagnostic.line,
         column: diagnostic.column,
         begin: diagnostic.begin,
