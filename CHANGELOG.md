@@ -3,6 +3,7 @@
 ## **Next version** (???)
 
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
+- fix typos in `link rel`
 
 **Full Changelog**:
 [`v0.6.0...master`](https://github.com/eisenwave/cowel/compare/v0.6.0...master)
