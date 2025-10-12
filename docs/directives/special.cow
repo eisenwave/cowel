@@ -78,7 +78,7 @@ An example block contains examples.
 \h4(id=dir-Bins){\cowdoc_dir{Bins} \c{mdash} Insertion blocks}
 
 \Bins{
-A deletion block acts as a wrapper for a large amount of inserted content.
+An insertion block acts as a wrapper for a large amount of inserted content.
 It is typically used when individual \cowdoc_dir{ins} directives would be too tedious to use.
 }
 
