@@ -259,13 +259,13 @@ write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Con
 
     writer
         .open_tag_with_attributes(html_tag::link) //
-        .write_rel(u8"preconnent"sv)
+        .write_rel(u8"preconnect"sv)
         .write_href(u8"https://fonts.googleapis.com"sv)
         .end_empty();
     writer.write_inner_html(newline_indent);
     writer
         .open_tag_with_attributes(html_tag::link) //
-        .write_rel(u8"preconnent"sv)
+        .write_rel(u8"preconnect"sv)
         .write_href(u8"https://fonts.gstatic.com"sv)
         .write_crossorigin()
         .end_empty();
