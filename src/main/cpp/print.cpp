@@ -18,12 +18,12 @@
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/source_position.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/diagnostic_highlight.hpp"
 #include "cowel/print.hpp"
 
@@ -203,241 +203,6 @@ void print_assertion_error(Diagnostic_String& out, const Assertion_Error& error)
     print_internal_error_notice(out);
 }
 
-namespace {
-
-void print_cut_off(Diagnostic_String& out, std::u8string_view v, std::size_t limit)
-{
-    std::size_t visual_length = 0;
-
-    for (std::size_t i = 0; i < v.length();) {
-        if (visual_length >= limit) {
-            out.append(u8"...", Diagnostic_Highlight::punctuation);
-            break;
-        }
-
-        if (v[i] == '\r') {
-            out.append(u8"\\r", Diagnostic_Highlight::escape);
-            visual_length += 2;
-            ++i;
-        }
-        else if (v[i] == '\t') {
-            out.append(u8"\\t", Diagnostic_Highlight::escape);
-            visual_length += 2;
-            ++i;
-        }
-        else if (v[i] == '\n') {
-            out.append(u8"\\n", Diagnostic_Highlight::escape);
-            visual_length += 2;
-            ++i;
-        }
-        else {
-            const auto remainder = v.substr(i, limit - visual_length);
-            const auto part = remainder.substr(0, remainder.find_first_of(u8"\r\t\n"));
-            out.append(part, Diagnostic_Highlight::code_citation);
-            visual_length += part.size();
-            i += part.size();
-        }
-    }
-}
-
-} // namespace
-
-struct [[nodiscard]]
-AST_Printer final : ast::Const_Visitor {
-private:
-    using char_type = char8_t;
-    using string_view_type = std::u8string_view;
-    using annotated_string_type = Diagnostic_String;
-
-    annotated_string_type& out;
-    string_view_type source;
-    const AST_Formatting_Options options;
-    int indent_level = 0;
-
-    struct [[nodiscard]] Scoped_Indent {
-        int& level;
-
-        explicit Scoped_Indent(int& level)
-            : level { ++level }
-        {
-        }
-
-        Scoped_Indent(const Scoped_Indent&) = delete;
-        Scoped_Indent& operator=(const Scoped_Indent&) = delete;
-
-        ~Scoped_Indent()
-        {
-            --level;
-        }
-    };
-
-public:
-    AST_Printer(
-        annotated_string_type& out,
-        string_view_type source,
-        const AST_Formatting_Options& options
-    )
-        : out { out }
-        , source { source }
-        , options { options }
-    {
-        COWEL_ASSERT(options.max_node_text_length >= 3);
-    }
-
-    void visit(const ast::Text& node) final
-    {
-        print_indent();
-
-        out.append(u8"Text", Diagnostic_Highlight::tag);
-        out.append(u8'(', Diagnostic_Highlight::punctuation);
-        print_cut_off(out, node.get_source(), std::size_t(options.max_node_text_length));
-        out.append(u8')', Diagnostic_Highlight::punctuation);
-        out.append(u8'\n');
-    }
-
-    void visit(const ast::Comment& node) final
-    {
-        print_indent();
-
-        out.append(u8"Comment", Diagnostic_Highlight::tag);
-        out.append(u8'(', Diagnostic_Highlight::punctuation);
-        print_cut_off(out, node.get_source(), std::size_t(options.max_node_text_length));
-        out.append(u8')', Diagnostic_Highlight::punctuation);
-        out.append(u8'\n');
-    }
-
-    void visit(const ast::Escaped& node) final
-    {
-        print_indent();
-
-        out.append(u8"Escaped", Diagnostic_Highlight::tag);
-        out.append(u8'(', Diagnostic_Highlight::punctuation);
-        print_cut_off(out, node.get_source(), std::size_t(options.max_node_text_length));
-        out.append(u8')', Diagnostic_Highlight::punctuation);
-        out.append(u8'\n');
-    }
-
-    void visit(const ast::Directive& directive) final
-    {
-        print_indent();
-
-        out.build(Diagnostic_Highlight::tag).append(u8'\\').append(directive.get_name());
-
-        if (const ast::Group* const args = directive.get_arguments()) {
-            out.append(u8'(', Diagnostic_Highlight::punctuation);
-            if (!args->empty()) {
-                out.append(u8'\n');
-                {
-                    const Scoped_Indent i = indented();
-                    visit_arguments(directive);
-                }
-                print_indent();
-            }
-            out.append(u8')', Diagnostic_Highlight::punctuation);
-        }
-
-        if (const ast::Content_Sequence* const content = directive.get_content()) {
-            out.append(u8'{', Diagnostic_Highlight::punctuation);
-            if (!content->empty()) {
-                out.append(u8'\n');
-                {
-                    const Scoped_Indent i = indented();
-                    visit_content_sequence(content->get_elements());
-                }
-                print_indent();
-            }
-            out.append(u8'}', Diagnostic_Highlight::punctuation);
-        }
-        else {
-            out.append(u8"{}", Diagnostic_Highlight::punctuation);
-        }
-
-        out.append(u8'\n');
-    }
-
-    void visit(const ast::Generated& generated) final
-    {
-        print_indent();
-
-        out.append(u8"Generated", Diagnostic_Highlight::tag);
-
-        out.append(u8'{', Diagnostic_Highlight::punctuation);
-        out.append(generated.as_string(), Diagnostic_Highlight::text);
-        out.append(u8'}', Diagnostic_Highlight::punctuation);
-
-        out.append(u8'\n');
-    }
-
-    void visit(const ast::Group_Member& arg) final
-    {
-        print_indent();
-
-        switch (arg.get_kind()) {
-        case ast::Member_Kind::named: {
-            out.append(u8"Named_Argument", Diagnostic_Highlight::tag);
-            out.append(u8'(', Diagnostic_Highlight::punctuation);
-            out.append(arg.get_name(), Diagnostic_Highlight::attribute);
-            out.append(u8')', Diagnostic_Highlight::punctuation);
-            break;
-        }
-        case ast::Member_Kind::positional: {
-            out.append(u8"Positional_Argument", Diagnostic_Highlight::tag);
-            break;
-        }
-        case ast::Member_Kind::ellipsis: {
-            out.append(u8"Ellipsis", Diagnostic_Highlight::tag);
-            break;
-        }
-        }
-
-        if (const auto* const content = std::get_if<ast::Content_Sequence>(&arg.get_value())) {
-            if (content->empty()) {
-                out.append(u8'\n');
-                const Scoped_Indent i = indented();
-                visit_content_sequence(content->get_elements());
-            }
-            else {
-                out.append(u8" (empty value)", Diagnostic_Highlight::internal);
-                out.append(u8'\n');
-            }
-        }
-        else if (const auto* const group = std::get_if<ast::Group>(&arg.get_value())) {
-            out.append(u8"Group", Diagnostic_Highlight::tag);
-            out.append(u8'(', Diagnostic_Highlight::punctuation);
-            visit_group_members(group->get_members());
-            out.append(u8')', Diagnostic_Highlight::punctuation);
-        }
-        else {
-            COWEL_ASSERT_UNREACHABLE(u8"Invalid argument value.");
-        }
-    }
-
-private:
-    Scoped_Indent indented()
-    {
-        return Scoped_Indent { indent_level };
-    }
-
-    void print_indent() const
-    {
-        COWEL_ASSERT(indent_level >= 0);
-        COWEL_ASSERT(options.indent_width >= 0);
-
-        const auto indent = std::size_t(options.indent_width * indent_level);
-        out.append(indent, u8' ');
-    }
-};
-
-void print_ast(
-    Diagnostic_String& out,
-    std::u8string_view source,
-    std::span<const ast::Content> root_content,
-    AST_Formatting_Options options
-)
-{
-    AST_Printer { out, source, options }.visit_content_sequence(root_content);
-}
-
 void print_internal_error_notice(Diagnostic_String& out)
 {
     constexpr std::u8string_view notice
@@ -468,6 +233,27 @@ void dump_code_string(std::pmr::vector<char8_t>& out, const Diagnostic_String& s
     const std::size_t last_span_end = previous.begin + previous.length;
     if (last_span_end != text.size()) {
         append(out, text.substr(last_span_end));
+    }
+}
+
+void append_char_sequence(
+    Diagnostic_String& out,
+    Char_Sequence8 chars,
+    Diagnostic_Highlight highlight
+)
+{
+    if (chars.empty()) {
+        return;
+    }
+    if (const std::u8string_view sv = chars.as_string_view(); !sv.empty()) {
+        out.append(sv, highlight);
+        return;
+    }
+    auto builder = out.build(highlight);
+    char8_t buffer[default_char_sequence_buffer_size];
+    while (!chars.empty()) {
+        const std::size_t n = chars.extract(buffer);
+        builder.append(std::u8string_view { buffer, n });
     }
 }
 

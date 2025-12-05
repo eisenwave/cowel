@@ -2,6 +2,7 @@
 #define COWEL_DIAGNOSTICS_HPP
 
 #include "cowel/fwd.hpp"
+#include "cowel/util/char_sequence.hpp"
 
 #ifndef COWEL_EMSCRIPTEN
 #include <iosfwd>
@@ -10,7 +11,6 @@
 #endif
 
 #include <cstddef>
-#include <span>
 #include <string_view>
 #include <vector>
 
@@ -60,21 +60,15 @@ void print_assertion_error(Diagnostic_String& out, const Assertion_Error& error)
 
 void print_io_error(Diagnostic_String& out, std::u8string_view file, IO_Error_Code error);
 
-struct AST_Formatting_Options {
-    int indent_width;
-    int max_node_text_length;
-};
-
-void print_ast(
-    Diagnostic_String& out,
-    std::u8string_view source,
-    std::span<const ast::Content> root_content,
-    AST_Formatting_Options
-);
-
 void print_internal_error_notice(Diagnostic_String& out);
 
 void dump_code_string(std::pmr::vector<char8_t>& out, const Diagnostic_String& string, bool colors);
+
+void append_char_sequence(
+    Diagnostic_String& out,
+    Char_Sequence8 chars,
+    Diagnostic_Highlight highlight
+);
 
 #ifndef COWEL_EMSCRIPTEN
 std::ostream& operator<<(std::ostream& out, std::u8string_view str);
