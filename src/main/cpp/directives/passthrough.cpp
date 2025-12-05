@@ -38,7 +38,7 @@ void Deprecated_Behavior::warn(const Invocation& call, Context& context) const
 }
 
 Processing_Status
-Error_Behavior::operator()(Content_Policy& out, const Invocation& call, Context&) const
+Error_Behavior::splice(Content_Policy& out, const Invocation& call, Context&) const
 {
     // TODO: inline display
     switch (out.get_language()) {
@@ -58,33 +58,30 @@ Error_Behavior::operator()(Content_Policy& out, const Invocation& call, Context&
     }
 }
 
-Processing_Status Plaintext_Wrapper_Behavior::operator()(
-    Content_Policy& out,
-    const Invocation& call,
-    Context& context
-) const
+Processing_Status
+Plaintext_Wrapper_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context)
+    const
 {
     // TODO: warn about unused arguments
     ensure_paragraph_matches_display(out, m_display);
 
     Plaintext_Content_Policy policy { out };
-    return consume_all(policy, call.get_content_span(), call.content_frame, context);
+    return splice_all(policy, call.get_content_span(), call.content_frame, context);
 }
 
 Processing_Status
-Trim_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Trim_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     // TODO: warn about unused arguments
     ensure_paragraph_matches_display(out, m_display);
 
-    return consume_all_trimmed(out, call.get_content_span(), call.content_frame, context);
+    return splice_all_trimmed(out, call.get_content_span(), call.content_frame, context);
 }
 
 Processing_Status
-Passthrough_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Passthrough_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Any_Matcher group_matcher;
+    Group_Pack_Named_Lazy_Spliceable_Matcher group_matcher;
     Call_Matcher call_matcher { group_matcher };
 
     const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
@@ -113,20 +110,19 @@ Passthrough_Behavior::operator()(Content_Policy& out, const Invocation& call, Co
     buffer.flush();
 
     const auto content_status
-        = consume_all(policy, call.get_content_span(), call.content_frame, context);
+        = splice_all(policy, call.get_content_span(), call.content_frame, context);
     writer.close_tag(name);
     buffer.flush();
     return status_concat(attributes_status, content_status);
 }
 
 Processing_Status
-HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
+HTML_Element_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    String_Matcher name_string_matcher { context.get_transient_memory() };
+    Spliceable_To_String_Matcher name_string_matcher { context.get_transient_memory() };
     Group_Member_Matcher name_member_matcher { u8"name"sv, Optionality::mandatory,
                                                name_string_matcher };
-    Group_Pack_Named_Lazy_Any_Matcher attributes_group_matcher;
+    Group_Pack_Named_Lazy_Spliceable_Matcher attributes_group_matcher;
     Group_Member_Matcher attributes_matcher { u8"attr"sv, Optionality::optional,
                                               attributes_group_matcher };
     Group_Member_Matcher* parameters[] { &name_member_matcher, &attributes_matcher };
@@ -169,7 +165,7 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 
     if (m_self_closing == HTML_Element_Self_Closing::self_closing) {
         attributes.end_empty();
-        if (call.content && !call.content->empty()) {
+        if (!call.get_content_span().empty()) {
             context.try_warning(
                 diagnostic::ignored_content, call.content->get_source_span(),
                 u8"Content in a self-closing HTML element is ignored."sv
@@ -181,7 +177,7 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
         buffer.flush();
         if (status_is_continue(status)) {
             const auto content_status
-                = consume_all(out, call.get_content_span(), call.content_frame, context);
+                = splice_all(out, call.get_content_span(), call.content_frame, context);
             status = status_concat(status, content_status);
         }
         writer.close_tag(*name);
@@ -194,9 +190,9 @@ HTML_Element_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 // TODO: Passthrough_Behavior and In_Tag_Behavior are virtually identical.
 //       It would be better to merge them into one.
 Processing_Status
-In_Tag_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+In_Tag_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Any_Matcher group_matcher;
+    Group_Pack_Named_Lazy_Spliceable_Matcher group_matcher;
     Call_Matcher call_matcher { group_matcher };
 
     const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
@@ -225,7 +221,7 @@ In_Tag_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
     buffer.flush();
 
     const auto content_status
-        = consume_all(policy, call.get_content_span(), call.content_frame, context);
+        = splice_all(policy, call.get_content_span(), call.content_frame, context);
 
     writer.close_tag(m_tag_name);
     buffer.flush();
@@ -233,10 +229,9 @@ In_Tag_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
 }
 
 Processing_Status
-Special_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Special_Block_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Any_Matcher group_matcher;
+    Group_Pack_Named_Lazy_Spliceable_Matcher group_matcher;
     Call_Matcher call_matcher { group_matcher };
 
     const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
@@ -278,7 +273,7 @@ Special_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, 
     buffer.flush();
 
     const auto content_status
-        = consume_all(policy, call.get_content_span(), call.content_frame, context);
+        = splice_all(policy, call.get_content_span(), call.content_frame, context);
 
     policy.leave_paragraph();
     writer.close_tag(m_name);
@@ -287,9 +282,9 @@ Special_Block_Behavior::operator()(Content_Policy& out, const Invocation& call, 
 }
 
 Processing_Status
-URL_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+URL_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Any_Matcher group_matcher;
+    Group_Pack_Named_Lazy_Spliceable_Matcher group_matcher;
     Call_Matcher call_matcher { group_matcher };
 
     const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
@@ -302,7 +297,7 @@ URL_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
     std::pmr::vector<char8_t> url { context.get_transient_memory() };
     append(url, m_url_prefix);
     const auto text_status
-        = to_plaintext(url, call.get_content_span(), call.content_frame, context);
+        = splice_to_plaintext(url, call.get_content_span(), call.content_frame, context);
     if (text_status != Processing_Status::ok) {
         return text_status;
     }
@@ -328,10 +323,9 @@ URL_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
 }
 
 Processing_Status
-Self_Closing_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Self_Closing_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Any_Matcher group_matcher;
+    Group_Pack_Named_Lazy_Spliceable_Matcher group_matcher;
     Call_Matcher call_matcher { group_matcher };
 
     const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
@@ -340,7 +334,7 @@ Self_Closing_Behavior::operator()(Content_Policy& out, const Invocation& call, C
     }
 
     // TODO: this should use some utility function
-    if (call.content && !call.content->empty()) {
+    if (!call.get_content_span().empty()) {
         context.try_warning(
             diagnostic::ignored_content, call.content->get_source_span(),
             u8"Content was ignored. Use empty braces,"

@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <span>
 #include <string_view>
-#include <variant>
 
 #include "cowel/parameters.hpp"
 #include "cowel/util/chars.hpp"
@@ -94,27 +93,29 @@ static_assert(!mathml_permits_text_bits[mathml_element_index(u8"munderover")]);
 [[nodiscard]]
 Processing_Status to_math_html(
     Content_Policy& out,
-    std::span<const ast::Content> contents,
+    std::span<const ast::Markup_Element> contents,
     Frame_Index content_frame,
     Context& context,
     bool permit_text = false
 )
 {
-    return process_greedy(contents, [&](const ast::Content& c) -> Processing_Status {
-        const auto* const d = std::get_if<ast::Directive>(&c);
+    return process_greedy(contents, [&](const ast::Markup_Element& c) -> Processing_Status {
+        const auto* const d = c.try_as_directive();
         if (!d) {
             if (!permit_text) {
-                const auto* const t = std::get_if<ast::Text>(&c);
-                const bool is_blank_text = std::ranges::all_of(t->get_source(), [](char8_t c) {
-                    return is_ascii_blank(c);
-                });
-                if (!is_blank_text) {
-                    context.try_warning(
-                        diagnostic::math::text, c.get_source_span(),
-                        u8"Text cannot appear in this context. "
-                        u8"MathML requires text to be enclosed in <mi>, <mn>, etc., "
-                        u8"which correspond to \\mi, \\mn, and other pseudo-directives."sv
-                    );
+                const auto* const t = c.try_as_primary();
+                if (t && t->get_kind() == ast::Primary_Kind::text) {
+                    const bool is_blank_text = std::ranges::all_of(t->get_source(), [](char8_t c) {
+                        return is_ascii_blank(c);
+                    });
+                    if (!is_blank_text) {
+                        context.try_warning(
+                            diagnostic::math::text, c.get_source_span(),
+                            u8"Text cannot appear in this context. "
+                            u8"MathML requires text to be enclosed in <mi>, <mn>, etc., "
+                            u8"which correspond to \\mi, \\mn, and other pseudo-directives."sv
+                        );
+                    }
                 }
             }
             return out.consume_content(c, content_frame, context);
@@ -125,7 +126,7 @@ Processing_Status to_math_html(
             return out.consume(*d, content_frame, context);
         }
 
-        Group_Pack_Named_Lazy_Any_Matcher args_matcher;
+        Group_Pack_Named_Lazy_Spliceable_Matcher args_matcher;
 
         const auto match_status = args_matcher.match_group(
             d->get_arguments(), content_frame, context,
@@ -167,13 +168,13 @@ Processing_Status to_math_html(
 } // namespace
 
 Processing_Status
-Math_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Math_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     constexpr auto tag_name = html_tag::math;
     const std::u8string_view display_string
         = m_display == Directive_Display::in_line ? u8"inline" : u8"block";
 
-    Group_Pack_Named_Lazy_Any_Matcher args_matcher;
+    Group_Pack_Named_Lazy_Spliceable_Matcher args_matcher;
     Call_Matcher call_matcher { args_matcher };
 
     const auto match_status = call_matcher.match_call(call, context, make_fail_callback());

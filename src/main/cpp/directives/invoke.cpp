@@ -14,9 +14,9 @@ namespace cowel {
 
 [[nodiscard]]
 Processing_Status
-Invoke_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Invoke_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    String_Matcher directive_name_string { context.get_transient_memory() };
+    Spliceable_To_String_Matcher directive_name_string { context.get_transient_memory() };
     Group_Member_Matcher string_argument { u8"name", Optionality::mandatory,
                                            directive_name_string };
     Group_Member_Matcher* parameters[] { &string_argument };
@@ -58,7 +58,7 @@ Invoke_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
         return try_generate_error(out, call, context);
     }
 
-    return invoke(
+    return splice_invocation(
         out, call.directive, name_string, nullptr, call.content, call.content_frame, context
     );
 }

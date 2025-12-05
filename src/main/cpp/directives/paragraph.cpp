@@ -28,7 +28,7 @@ Processing_Status control_paragraph(
         return match_status;
     }
 
-    if (call.content && !call.content->get_elements().empty()) {
+    if (!call.get_content_span().empty()) {
         context.try_warning(
             diagnostic::ignored_content, call.content->get_source_span(),
             u8"Content in a paragraph control directive is ignored."sv
@@ -43,24 +43,22 @@ Processing_Status control_paragraph(
 } // namespace
 
 Processing_Status
-Paragraph_Enter_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
+Paragraph_Enter_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
     return control_paragraph(&Paragraph_Split_Policy::enter_paragraph, out, call, context);
 }
 
 Processing_Status
-Paragraph_Leave_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
+Paragraph_Leave_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context)
     const
 {
     return control_paragraph(&Paragraph_Split_Policy::leave_paragraph, out, call, context);
 }
 
-Processing_Status Paragraph_Inherit_Behavior::operator()(
-    Content_Policy& out,
-    const Invocation& call,
-    Context& context
-) const
+Processing_Status
+Paragraph_Inherit_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context)
+    const
 {
     return control_paragraph(&Paragraph_Split_Policy::inherit_paragraph, out, call, context);
 }

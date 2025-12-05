@@ -1,12 +1,17 @@
 document
-  = { markup-element };
-markup-element
-  = text
-  | escape
+  = { document-markup-element };
+document-markup-element
+  = document-text
+  | common-markup-element;
+document-text
+  = document-text-character, { document-text-character };
+document-text-character
+  = ? Any character ? - "\";
+
+common-markup-element
+  = escape
   | comment
   | directive;
-text
-  = ? Maximal character sequence excluding "\" ?;
 escape
   = "\", escapable
   | "\", line-terminator;
@@ -15,46 +20,88 @@ escapable
   |  '"' |  "#" |  "$" |  "%" |  "&" |  "'" |  "*" |  "+" |  "/" |  ";"
   |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
   |  " " |  TAB |   VT ;
-line-terminator
-  = LF | CR, LF | CR
-  (* Ambiguities are resolved in favor of a single CRLF line-terminator,
-     instead of two CR and LF line-terminators *);
 comment
   = "\:", ? Maximal character sequence up to and including line-terminator ?;
+
 directive
-  = "\", directive-name, [ group ], [ "{", { markup-element }, "}" ];
+  = "\", directive-name, [ group ], [ block ];
 directive-name
   = directive-name-character - digit, { directive-name-character };
 directive-name-character
   = "_" | digit | ? ASCII alphabetic character ?;
 digit
   = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+
 group
-  = "(", group-member-list, whitespace, ")";
+  = "(", blank, [ group-member-list ], blank, ")";
 group-member-list
-  = member-comments, group-member,
-    { whitespace, ",", member-comments, group-member },
-    whitespace, [ "," ];
+  = group-member,
+    { blank, ",", blank, group-member },
+    blank, [ "," ];
 group-member
-  = member-name, whitespace, "=", whitespace, member-value
+  = member-name, blank, "=", blank, member-value
   | member-value
   | "...";
 member-name
+  = member-name-character, { member-name-character };
+member-name-character
   = ? HTML attribute name ? - ("\" | "(" | ")" | "{", "}" | ",");
 member-value
-  = { member-value-markup-element }
-  | group;
-member-value-markup-element
-  = member-value-text
-  | escape
-  | comment
-  | directive;
-member-value-text
-  = ? Maximal character sequence excluding "\", ",", or balanced ")" ?;
-member-comments
+  = directive-call
+  | primary-value;
+directive-call
+  = directive-name, blank, group, [ blank, block ]
+  | directive-name, blank, block;
+primary-value
+  = unit-literal
+  | null-literal
+  | boolean-literal
+  | integer-literal
+  | unquoted-string
+  | quoted-string
+  | group
+  | block;
+unit-literal
+  = "unit";
+null-literal
+  = "null";
+boolean-literal
+  = "true" | "false";
+integer-literal
+  =  [ "-" ], digit, { digit };
+unquoted-string
+  = unquoted-string-character, { unquoted-string-character };
+unquoted-string-character
+  = directive-name-character | "-";
+
+quoted-string
+  = '"', { quoted-string-markup-element }, '"';
+quoted-string-markup-element
+  = quoted-string-text
+  | common-markup-element;
+quoted-string-text
+  = quoted-string-text-character, { quoted-string-text-character };
+quoted-string-text-character
+  = ? Any character ? - ("\" | '"');
+
+block
+  = "{", { block-markup-element }, "}";
+block-markup-element
+  = block-text
+  | common-markup-element;
+block-text
+  = block-text-character, { block-text-character } (* brace-balanced *);
+block-text-character
+  = ? Any character ? - "\";
+
+blank
   = { comment | whitespace };
 whitespace
   = { " " | TAB | LF | CR | VT };
+line-terminator
+  = LF
+  | CR, LF
+  | CR (* unless the next character is LF *);
 TAB = ? U+0009 CHARACTER TABULATION ? (* \t in C *);
 LF =  ? U+000A END OF LINE ?          (* \n in C *);
 CR =  ? U+000D CARRIAGE RETURN ?      (* \r in C *);

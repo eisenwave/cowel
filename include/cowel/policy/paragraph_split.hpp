@@ -105,35 +105,45 @@ public:
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Text& t, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Primary& node, Frame_Index, Context&) override
     {
-        if (m_directive_depth != 0) {
-            write(t.get_source(), Output_Language::text);
+        switch (node.get_kind()) {
+        case ast::Primary_Kind::text: {
+            if (m_directive_depth != 0) {
+                write(node.get_source(), Output_Language::text);
+            }
+            else {
+                split_into_paragraphs(node.get_source());
+            }
+            break;
         }
-        else {
-            split_into_paragraphs(t.get_source());
+        case ast::Primary_Kind::comment: {
+            // Comments syntactically include the terminating newline,
+            // so a leading newline following a comment would be considered a paragraph break.
+            m_line_state = Blank_Line_Initial_State::normal;
+            break;
         }
-        return Processing_Status::ok;
-    }
+        case ast::Primary_Kind::escape: {
+            m_line_state = Blank_Line_Initial_State::middle;
+            const std::u8string_view text = expand_escape(node);
+            if (!text.empty()) {
+                enter_paragraph();
+                HTML_Content_Policy::write(text, Output_Language::text);
+            }
+            break;
+        }
+        case ast::Primary_Kind::unit:
+        case ast::Primary_Kind::null:
+        case ast::Primary_Kind::boolean:
+        case ast::Primary_Kind::integer:
+        case ast::Primary_Kind::unquoted_string:
+        case ast::Primary_Kind::quoted_string:
+        case ast::Primary_Kind::block:
+        case ast::Primary_Kind::group: {
+            COWEL_ASSERT_UNREACHABLE(u8"Consuming non-markup element.");
+        }
+        }
 
-    [[nodiscard]]
-    Processing_Status consume(const ast::Comment&, Frame_Index, Context&) override
-    {
-        // Comments syntactically include the terminating newline,
-        // so a leading newline following a comment would be considered a paragraph break.
-        m_line_state = Blank_Line_Initial_State::normal;
-        return Processing_Status::ok;
-    }
-
-    [[nodiscard]]
-    Processing_Status consume(const ast::Escaped& escape, Frame_Index, Context&) override
-    {
-        m_line_state = Blank_Line_Initial_State::middle;
-        const std::u8string_view text = expand_escape(escape);
-        if (!text.empty()) {
-            enter_paragraph();
-            HTML_Content_Policy::write(text, Output_Language::text);
-        }
         return Processing_Status::ok;
     }
 
@@ -152,7 +162,7 @@ public:
         // a simple bool is insufficient to keep track of whether we are in a directive.
         m_line_state = Blank_Line_Initial_State::middle;
         const Directive_Depth_Guard depth_guard { *this };
-        return invoke_directive(*this, directive, frame, context);
+        return splice_directive_invocation(*this, directive, frame, context);
     }
 
     [[nodiscard]]

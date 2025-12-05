@@ -81,7 +81,7 @@ Result<long long, Processing_Status> compute_expression(
 } // namespace
 
 Processing_Status
-Expression_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Expression_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     const Result<long long, Processing_Status> result
         = compute_expression(m_type, out, call, context);
@@ -97,9 +97,9 @@ Expression_Behavior::operator()(Content_Policy& out, const Invocation& call, Con
 }
 
 Processing_Status
-Variable_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Variable_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    String_Matcher name_matcher { context.get_transient_memory() };
+    Spliceable_To_String_Matcher name_matcher { context.get_transient_memory() };
     Group_Member_Matcher to_member { u8"name"sv, Optionality::mandatory, name_matcher };
     Group_Member_Matcher* const parameters[] { &to_member };
     Pack_Usual_Matcher args_matcher { parameters };
@@ -143,7 +143,7 @@ Processing_Status set_variable_to_op_result(
 {
     std::pmr::vector<char8_t> body_string { context.get_transient_memory() };
     const auto status
-        = to_plaintext(body_string, call.get_content_span(), call.content_frame, context);
+        = splice_to_plaintext(body_string, call.get_content_span(), call.content_frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }

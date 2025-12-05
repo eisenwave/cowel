@@ -51,6 +51,8 @@ struct Document_Info;
 struct Document_Sections;
 struct Directive_Behavior;
 struct Error_Tag;
+using Float32 = float;
+using Float64 = double;
 struct Generation_Options;
 enum struct HLJS_Scope : Default_Underlying;
 struct Ignorant_Logger;
@@ -59,6 +61,7 @@ using Integer = long long;
 struct Invocation;
 struct Logger;
 struct Name_Resolver;
+struct Null;
 struct Simple_Bibliography;
 struct No_Support_Syntax_Highlighter;
 template <typename, typename>
@@ -73,19 +76,19 @@ struct Success_Tag;
 struct Syntax_Highlighter;
 enum struct Syntax_Highlight_Error : Default_Underlying;
 enum struct To_HTML_Mode : Default_Underlying;
+struct Type;
+enum struct Type_Kind : Default_Underlying;
+struct Unit;
+struct Value;
 
 namespace ast {
 
-struct Comment;
-struct Content_Sequence;
-struct Content;
+struct Markup_Element;
+struct Member_Value;
 struct Directive;
-struct Escaped;
 struct Generated;
-struct Group;
 struct Group_Member;
-struct Text;
-struct Value;
+struct Primary;
 
 } // namespace ast
 

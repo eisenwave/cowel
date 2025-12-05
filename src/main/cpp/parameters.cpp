@@ -1,48 +1,68 @@
 #include <algorithm>
 #include <string_view>
-#include <variant>
 
 #include "cowel/util/char_sequence_factory.hpp"
-#include "cowel/util/from_chars.hpp"
 
 #include "cowel/context.hpp"
 #include "cowel/parameters.hpp"
 
 namespace cowel {
 
-Processing_Status Content_Value_Matcher::match_value(
-    const ast::Value& argument,
+Processing_Status Lazy_Value_Of_Type_Matcher::match_value(
+    const ast::Member_Value& argument,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
 {
-    COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
+    const Type& actual_type = get_static_type(argument, context);
+    COWEL_DEBUG_ASSERT(actual_type.is_canonical());
 
-    const auto* const content = std::get_if<ast::Content_Sequence>(&argument);
-    if (!content) {
-        COWEL_ASSERT(std::holds_alternative<ast::Group>(argument));
+    if (actual_type != Type::any && !actual_type.analytically_convertible_to(*m_expected_type)) {
         on_fail.emit(
             argument.get_source_span(),
-            u8"Expected a sequence of markup content, but got a group."sv, context
+            joined_char_sequence({
+                u8"Expected a value of type "sv,
+                m_expected_type->get_display_name(),
+                u8", but got "sv,
+                actual_type.get_display_name(),
+                u8".",
+            }),
+            context
         );
         return on_fail.status;
     }
-    return match_markup_value(*content, frame, context, on_fail);
+    m_markup = &argument;
+    m_markup_frame = frame;
+    return Processing_Status::ok;
 }
 
-Processing_Status Textual_Matcher::match_markup_value(
-    const ast::Content_Sequence& argument,
+Processing_Status Textual_Matcher::match_value(
+    const ast::Member_Value& argument,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
 {
     COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
+    COWEL_DEBUG_ASSERT(argument.is_value());
+
+    if (!argument.is_spliceable_value()) {
+        on_fail.emit(
+            argument.get_source_span(),
+            joined_char_sequence({
+                u8"Expected a spliceable value, but got "sv,
+                get_static_type(argument, context).get_display_name(),
+                u8"."sv,
+            }),
+            context
+        );
+        return on_fail.status;
+    }
 
     std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
     const auto [status, string]
-        = to_plaintext_optimistic(buffer, argument.get_elements(), frame, context);
+        = splice_value_to_plaintext_optimistic(buffer, argument, frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -50,18 +70,32 @@ Processing_Status Textual_Matcher::match_markup_value(
                                                                  : on_fail.status;
 }
 
-Processing_Status String_Matcher::match_markup_value(
-    const ast::Content_Sequence& argument, //
+Processing_Status Spliceable_To_String_Matcher::match_value(
+    const ast::Member_Value& argument, //
     Frame_Index frame, //
     Context& context, //
     const Match_Fail_Options& on_fail
 )
 {
     COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
+    COWEL_DEBUG_ASSERT(argument.is_value());
+
+    if (!argument.is_spliceable_value()) {
+        on_fail.emit(
+            argument.get_source_span(),
+            joined_char_sequence({
+                u8"Expected a spliceable value, but got "sv,
+                get_static_type(argument, context).get_display_name(),
+                u8"."sv,
+            }),
+            context
+        );
+        return on_fail.status;
+    }
 
     std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
     const auto [status, string]
-        = to_plaintext_optimistic(buffer, argument.get_elements(), frame, context);
+        = splice_value_to_plaintext_optimistic(buffer, argument, frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -74,59 +108,86 @@ Processing_Status String_Matcher::match_markup_value(
     return Processing_Status::ok;
 }
 
-bool Boolean_Matcher::match_string(
-    const ast::Content_Sequence& argument,
-    std::u8string_view str,
-    Context& context,
-    Fail_Callback on_fail
+Processing_Status String_Matcher::match_value(
+    const ast::Member_Value& argument, //
+    Frame_Index frame, //
+    Context& context, //
+    const Match_Fail_Options& on_fail
 )
 {
-    if (str == u8"true"sv) {
-        m_value = { true, argument.get_source_span() };
-        return true;
+    COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
+    COWEL_DEBUG_ASSERT(argument.is_spliceable_value());
+
+    const Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    if (!val) {
+        return status_max(val.error(), on_fail.status);
     }
-    if (str == u8"false"sv) {
-        m_value = { false, argument.get_source_span() };
-        return true;
+    if (val->get_type() != Type::str) {
+        // TODO: improve diagnostic
+        on_fail.emit(argument.get_source_span(), u8"Expected a string."sv, context);
+        return on_fail.status;
     }
-    on_fail(
-        argument.get_source_span(),
-        joined_char_sequence({
-            u8"Expected the given argument to be \"true\" or \"false\", but got \"",
-            str,
-            u8"\".",
-        }),
-        context
-    );
-    return false;
+    val->extract_string(m_data);
+
+    m_value = { as_u8string_view(m_data), argument.get_source_span() };
+    return Processing_Status::ok;
 }
 
-bool Integer_Matcher::match_string(
-    const ast::Content_Sequence& argument,
-    std::u8string_view str,
+Processing_Status Boolean_Matcher::match_value(
+    const ast::Member_Value& argument,
+    Frame_Index frame,
     Context& context,
-    Fail_Callback on_fail
+    const Match_Fail_Options& on_fail
 )
 {
-    const std::optional<long long> parsed = from_chars<long long>(str);
-    if (!parsed) {
-        on_fail(
-            argument.get_source_span(),
-            joined_char_sequence({ u8"\"", str, u8"\" is not a valid integer." }), context
-        );
-        return false;
+    COWEL_DEBUG_ASSERT(argument.is_spliceable_value());
+
+    const Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    if (!val) {
+        return status_max(val.error(), on_fail.status);
     }
-    m_value = { *parsed, argument.get_source_span() };
-    return true;
+    if (val->get_type() != Type::boolean) {
+        // TODO: improve diagnostic
+        on_fail.emit(
+            argument.get_source_span(), u8"Expected a boolean (true or false)."sv, context
+        );
+        return on_fail.status;
+    }
+    m_value = { val.value().as_boolean(), argument.get_source_span() };
+    return Processing_Status::ok;
+}
+
+Processing_Status Integer_Matcher::match_value(
+    const ast::Member_Value& argument,
+    Frame_Index frame,
+    Context& context,
+    const Match_Fail_Options& on_fail
+)
+{
+    COWEL_DEBUG_ASSERT(argument.is_spliceable_value());
+
+    const Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    if (!val) {
+        return status_max(val.error(), on_fail.status);
+    }
+    if (val->get_type() != Type::integer) {
+        // TODO: improve diagnostic
+        on_fail.emit(argument.get_source_span(), u8"Expected an integer."sv, context);
+        return on_fail.status;
+    }
+    m_value = { val.value().as_integer(), argument.get_source_span() };
+    return Processing_Status::ok;
 }
 
 bool Sorted_Options_Matcher::match_string(
-    const ast::Content_Sequence& argument,
+    const ast::Member_Value& argument,
     std::u8string_view str,
     Context& context,
     Fail_Callback on_fail
 )
 {
+    COWEL_DEBUG_ASSERT(argument.is_spliceable_value());
+
     const auto it = std::ranges::lower_bound(m_options, str);
 
     if (it == m_options.end() || *it != str) {
@@ -205,7 +266,7 @@ Processing_Status Empty_Pack_Matcher::match_pack(
 }
 
 Processing_Status Group_Matcher::match_value(
-    const ast::Value& argument,
+    const ast::Member_Value& argument,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
@@ -213,13 +274,27 @@ Processing_Status Group_Matcher::match_value(
 {
     COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
 
-    const auto* const group = std::get_if<ast::Group>(&argument);
-    if (!group) {
-        COWEL_ASSERT(std::holds_alternative<ast::Content_Sequence>(argument));
-        on_fail.emit(argument.get_source_span(), u8"Expected a group, but got markup."sv, context);
+    if (argument.is_directive()) {
+        on_fail.emit(
+            argument.get_source_span(), u8"Expected a group, but got directive."sv, context
+        );
         return on_fail.status;
     }
-    return match_group(group, frame, context, on_fail);
+    COWEL_ASSERT(argument.is_primary());
+    const auto& primary = argument.as_primary();
+    if (primary.get_kind() != ast::Primary_Kind::group) {
+        on_fail.emit(
+            argument.get_source_span(),
+            joined_char_sequence({
+                u8"Expected a group, but got "sv,
+                ast::primary_kind_display_name(primary.get_kind()),
+                u8"."sv,
+            }),
+            context
+        );
+        return on_fail.status;
+    }
+    return match_group(&primary, frame, context, on_fail);
 }
 
 Processing_Status Pack_Usual_Matcher::do_match(
@@ -250,7 +325,7 @@ Processing_Status Pack_Usual_Matcher::do_match(
                 return on_fail.status;
             }
             argument_indices_by_parameter[arg_index + cumulative_arg_index] = int(arg_index);
-            const ast::Value& value = member.get_value();
+            const ast::Member_Value& value = member.get_value();
             const auto member_status = m_member_matchers[arg_index + cumulative_arg_index]
                                            ->get_value_matcher()
                                            .match_value(value, frame, context, on_fail);
@@ -347,6 +422,14 @@ Processing_Status Group_Pack_Named_Lazy_Any_Matcher::match_pack(
     for (const ast::Group_Member& member : members) {
         switch (member.get_kind()) {
         case ast::Member_Kind::named: {
+            if (m_filter && !m_filter(member)) {
+                // TODO: add customizable warning within the filter
+                on_fail.emit(
+                    member.get_name_span(),
+                    u8"This member does not satisfy the type requirements."sv, context
+                );
+                return on_fail.status;
+            }
             continue;
         }
         case ast::Member_Kind::ellipsis: {
@@ -422,7 +505,7 @@ Processing_Status detail::Group_Pack_Value_Matcher_Base::match_pack(
 template <std::derived_from<Value_Matcher> VM>
 [[nodiscard]]
 Processing_Status Group_Pack_Value_Matcher<VM>::match_value_in_pack(
-    const ast::Value& value,
+    const ast::Member_Value& value,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
@@ -445,6 +528,7 @@ Processing_Status Group_Pack_Value_Matcher<VM>::match_value_in_pack(
     return result;
 }
 
+template struct Group_Pack_Value_Matcher<Spliceable_To_String_Matcher>;
 template struct Group_Pack_Value_Matcher<String_Matcher>;
 template struct Group_Pack_Value_Matcher<Boolean_Matcher>;
 template struct Group_Pack_Value_Matcher<Integer_Matcher>;

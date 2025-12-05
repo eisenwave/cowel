@@ -35,7 +35,7 @@ Processing_Status consume_simply(Content_Policy& out, const Invocation& call, Co
         return match_status;
     }
     T policy { out };
-    return consume_all(policy, call.get_content_span(), call.content_frame, context);
+    return splice_all(policy, call.get_content_span(), call.content_frame, context);
 }
 
 [[nodiscard]]
@@ -47,7 +47,7 @@ Processing_Status consume_paragraphs(Content_Policy& out, const Invocation& call
     }
     Paragraph_Split_Policy policy { out, context.get_transient_memory() };
     const Processing_Status result
-        = consume_all(policy, call.get_content_span(), call.content_frame, context);
+        = splice_all(policy, call.get_content_span(), call.content_frame, context);
     policy.leave_paragraph();
     return result;
 }
@@ -56,7 +56,7 @@ Processing_Status consume_paragraphs(Content_Policy& out, const Invocation& call
 Processing_Status
 consume_syntax_highlighted(Content_Policy& out, const Invocation& call, Context& context)
 {
-    String_Matcher lang_string { context.get_transient_memory() };
+    Spliceable_To_String_Matcher lang_string { context.get_transient_memory() };
     Group_Member_Matcher lang_member { u8"lang"sv, Optionality::mandatory, lang_string };
     Group_Member_Matcher* parameters[] { &lang_member };
     Pack_Usual_Matcher args_matcher { parameters };
@@ -71,7 +71,7 @@ consume_syntax_highlighted(Content_Policy& out, const Invocation& call, Context&
 
     Syntax_Highlight_Policy policy { context.get_transient_memory() };
     const Processing_Status consume_status
-        = consume_all(policy, call.get_content_span(), call.content_frame, context);
+        = splice_all(policy, call.get_content_span(), call.content_frame, context);
     const Result<void, Syntax_Highlight_Error> result
         = policy.dump_html_to(out, context, lang_string.get());
     if (!result) {
@@ -84,7 +84,7 @@ consume_syntax_highlighted(Content_Policy& out, const Invocation& call, Context&
 } // namespace
 
 Processing_Status
-Policy_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Policy_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     switch (m_policy) {
     case Known_Content_Policy::current: {
@@ -92,7 +92,7 @@ Policy_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
         if (match_status != Processing_Status::ok) {
             return match_status;
         }
-        return consume_all(out, call.get_content_span(), call.content_frame, context);
+        return splice_all(out, call.get_content_span(), call.content_frame, context);
     }
     case Known_Content_Policy::to_html: {
         const auto match_status = match_empty_arguments(call, context);
@@ -100,7 +100,7 @@ Policy_Behavior::operator()(Content_Policy& out, const Invocation& call, Context
             return match_status;
         }
         HTML_Content_Policy policy = ensure_html_policy(out);
-        return consume_all(policy, call.get_content_span(), call.content_frame, context);
+        return splice_all(policy, call.get_content_span(), call.content_frame, context);
     }
     case Known_Content_Policy::highlight: {
         return consume_syntax_highlighted(out, call, context);

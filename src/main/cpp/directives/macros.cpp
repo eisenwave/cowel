@@ -29,14 +29,17 @@ namespace cowel {
 namespace {
 
 struct Put_Named {
-    Content_Policy& out;
     Context& context;
 
     const std::u8string_view needle_name;
 
+    /// @brief Finds argument with name `needle_name`,
+    /// recursively traversing any ellipses.
+    /// @param members The group members, usually call arguments.
+    /// @param frame The content frame of the call.
     [[nodiscard]]
-    std::optional<Processing_Status>
-    operator()(std::span<const ast::Group_Member> members, Frame_Index frame) const
+    const ast::Group_Member*
+    find(std::span<const ast::Group_Member> members, Frame_Index frame) const
     {
         for (const ast::Group_Member& arg : members) {
             switch (arg.get_kind()) {
@@ -45,7 +48,7 @@ struct Put_Named {
             }
             case ast::Member_Kind::ellipsis: {
                 const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
-                const auto maybe_result = (*this)(
+                const auto* maybe_result = find(
                     ellipsis_frame.invocation.get_arguments_span(),
                     ellipsis_frame.invocation.content_frame
                 );
@@ -56,7 +59,7 @@ struct Put_Named {
             }
             case ast::Member_Kind::named: {
                 if (arg.get_name() == needle_name) {
-                    return consume_all(out, arg.get_value(), frame, context);
+                    return &arg;
                 }
                 continue;
             }
@@ -67,15 +70,17 @@ struct Put_Named {
 };
 
 struct Put_Positional {
-    Content_Policy& out;
     Context& context;
 
     const std::size_t needle_index;
     std::size_t index = 0;
 
+    /// @brief Finds argument with index `needle_index`,
+    /// recursively traversing any ellipses.
+    /// @param members The group members, usually call arguments.
+    /// @param frame The content frame of the call.
     [[nodiscard]]
-    std::optional<Processing_Status>
-    operator()(std::span<const ast::Group_Member> members, Frame_Index frame)
+    const ast::Group_Member* find(std::span<const ast::Group_Member> members, Frame_Index frame)
     {
         for (const ast::Group_Member& arg : members) {
             switch (arg.get_kind()) {
@@ -84,7 +89,7 @@ struct Put_Positional {
             }
             case ast::Member_Kind::ellipsis: {
                 const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
-                const auto maybe_result = (*this)(
+                const auto* maybe_result = find(
                     ellipsis_frame.invocation.get_arguments_span(),
                     ellipsis_frame.invocation.content_frame
                 );
@@ -95,7 +100,7 @@ struct Put_Positional {
             }
             case ast::Member_Kind::positional: {
                 if (needle_index == index++) {
-                    return consume_all(out, arg.get_value(), frame, context);
+                    return &arg;
                 }
                 continue;
             }
@@ -107,8 +112,7 @@ struct Put_Positional {
 
 }; // namespace
 
-Processing_Status
-Macro_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context) const
+Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     Group_Pack_String_Matcher strings { context.get_transient_memory() };
     Call_Matcher call_matcher { strings };
@@ -170,19 +174,22 @@ Macro_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
     return Processing_Status::ok;
 }
 
-Processing_Status
-Put_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Result<const ast::Member_Value*, Processing_Status>
+Put_Behavior::resolve(const Invocation& call, Context& context) const
 {
+    constexpr const ast::Member_Value* found_content_result {};
+
     if (call.content_frame == Frame_Index::root) {
         context.try_error(
             diagnostic::put_outside, call.directive.get_source_span(),
             u8"\\cowel_put can only be used when expanded from macros, "
             u8"and this directive appeared at the top-level in the document."sv
         );
-        return try_generate_error(out, call, context);
+        return Processing_Status::error;
     }
 
-    Lazy_Markup_Matcher else_matcher;
+    static const auto else_type = Type::canonical_union_of({ Type::block, Type::str });
+    Lazy_Value_Of_Type_Matcher else_matcher { &else_type };
     Group_Member_Matcher else_member { u8"else"sv, Optionality::optional, else_matcher };
     Group_Member_Matcher* const parameters[] { &else_member };
     Pack_Usual_Matcher args_matcher { parameters };
@@ -191,33 +198,22 @@ Put_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
 
     const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
     if (match_status != Processing_Status::ok) {
-        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
-                                             : match_status;
+        return match_status;
     }
-
-    try_inherit_paragraph(out);
 
     Call_Stack& stack = context.get_call_stack();
     const Invocation& target_invocation = stack[call.content_frame].invocation;
 
+    // Simple case like \put where we expand the given contents.
     if (call.has_empty_content()) {
-        return consume_all(
-            out, target_invocation.get_content_span(), target_invocation.content_frame, context
-        );
+        return found_content_result;
     }
 
-    const auto try_else = [&] -> std::optional<Processing_Status> {
-        if (!else_matcher.was_matched()) {
-            return {};
-        }
-        return consume_all(
-            out, else_matcher.get().get_elements(), else_matcher.get_frame(), context
-        );
-    };
+    const bool has_else = else_matcher.was_matched();
 
     std::pmr::vector<char8_t> target_text { context.get_transient_memory() };
     const Processing_Status target_status
-        = to_plaintext(target_text, call.get_content_span(), call.content_frame, context);
+        = splice_to_plaintext(target_text, call.get_content_span(), call.content_frame, context);
     if (target_status != Processing_Status::ok) {
         return target_status;
     }
@@ -225,74 +221,123 @@ Put_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
 
     // Simple case like \put where we expand the given contents.
     if (target_string.empty()) {
-        return consume_all(
-            out, target_invocation.get_content_span(), target_invocation.content_frame, context
-        );
+        return found_content_result;
     }
 
     const std::optional<std::size_t> needle_index = from_chars<std::size_t>(target_string);
-    if (needle_index) {
-        Put_Positional expand_positional {
-            .out = out,
-            .context = context,
-            .needle_index = *needle_index,
-        };
-        const std::optional<Processing_Status> maybe_result = expand_positional(
-            target_invocation.get_arguments_span(), target_invocation.content_frame
-        );
-        if (maybe_result) {
-            return *maybe_result;
+    const ast::Group_Member* const arg = [&] -> const ast::Group_Member* {
+        if (needle_index) {
+            Put_Positional expand_positional {
+                .context = context,
+                .needle_index = *needle_index,
+            };
+            const ast::Group_Member* const maybe_result = expand_positional.find(
+                target_invocation.get_arguments_span(), target_invocation.content_frame
+            );
+            if (!maybe_result && !has_else) {
+                const Characters8 limit_chars = to_characters8(expand_positional.index);
+                context.try_error(
+                    diagnostic::put_out_of_range, call.directive.get_source_span(),
+                    joined_char_sequence({
+                        u8"This \\put directive is invalid "
+                        u8"because the positional argument at index ["sv,
+                        target_string,
+                        u8"] was requested, but only "sv,
+                        limit_chars.as_string(),
+                        u8" were provided. "sv,
+                    })
+                );
+            }
+            return maybe_result;
         }
-        if (const std::optional<Processing_Status> else_status = try_else()) {
-            return *else_status;
+        // NOLINTNEXTLINE(readability-else-after-return)
+        else {
+            const Put_Named expand_named {
+                .context = context,
+                .needle_name = target_string,
+            };
+            const ast::Group_Member* const maybe_result = expand_named.find(
+                target_invocation.get_arguments_span(), target_invocation.content_frame
+            );
+            if (!maybe_result && !has_else) {
+                context.try_error(
+                    diagnostic::put_invalid, call.get_arguments_source_span(),
+                    joined_char_sequence({
+                        u8"The target \""sv,
+                        target_string,
+                        u8"\" is neither an integer, "sv
+                        u8"nor does it refer to any named argument of the macro invocation."sv,
+                    })
+                );
+            }
+            return maybe_result;
         }
+    }();
+    if (!arg) {
+        if (!has_else) {
+            // Error has already been printed above.
+            return Processing_Status::error;
+        }
+        return &else_matcher.get();
+    }
 
-        const Characters8 limit_chars = to_characters8(expand_positional.index);
-        context.try_error(
-            diagnostic::put_out_of_range, call.directive.get_source_span(),
-            joined_char_sequence({
-                u8"This \\put directive is invalid because the positional argument at index ["sv,
-                target_string,
-                u8"] was requested, but only "sv,
-                limit_chars.as_string(),
-                u8" were provided. "sv,
-            })
-        );
-        return try_generate_error(out, call, context);
+    return &arg->get_value();
+}
+
+// FIXME: Something is seriously inconsistent here.
+//        `splice` should usually be a shortcut for evaluation
+//        followed by splicing the result,
+//        but this can't be reconciled with the fact
+//        that `cowel_put` also inherits the paragraph when splicing.
+Result<Value, Processing_Status>
+Put_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    const Result<const ast::Member_Value*, Processing_Status> result = resolve(call, context);
+    if (!result) {
+        return result.error();
     }
-    // NOLINTNEXTLINE(readability-else-after-return)
-    else {
-        const Put_Named expand_named {
-            .out = out,
-            .context = context,
-            .needle_name = target_string,
-        };
-        const std::optional<Processing_Status> maybe_result
-            = expand_named(target_invocation.get_arguments_span(), target_invocation.content_frame);
-        if (maybe_result) {
-            return *maybe_result;
-        }
-        if (const std::optional<Processing_Status> else_status = try_else()) {
-            return *else_status;
-        }
-        context.try_error(
-            diagnostic::put_invalid, call.get_arguments_source_span(),
-            joined_char_sequence({
-                u8"The target \""sv,
-                target_string,
-                u8"\" is neither an integer, "sv
-                u8"nor does it refer to any named argument of the macro invocation."sv,
-            })
-        );
-        return try_generate_error(out, call, context);
+
+    Call_Stack& stack = context.get_call_stack();
+    const Invocation& target_invocation = stack[call.content_frame].invocation;
+
+    if (*result == nullptr) {
+        // FIXME: I'm pretty sure nothing so far has guaranteed that the block exists.
+        //        We don't need to worry about that for splicing,
+        //        but when evaluating, we need to obtain some Value.
+        COWEL_ASSERT(target_invocation.content);
+        return Value::block(*target_invocation.content, target_invocation.content_frame);
     }
+    return evaluate_member_value(**result, target_invocation.content_frame, context);
 }
 
 Processing_Status
-Macro_Definition::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Put_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
+{
+    // FIXME: Maybe this function should just go away
+    const Result<const ast::Member_Value*, Processing_Status> result = resolve(call, context);
+    if (!result) {
+        return try_generate_error(out, call, context, result.error());
+    }
+
+    Call_Stack& stack = context.get_call_stack();
+    const Invocation& target_invocation = stack[call.content_frame].invocation;
+
+    try_inherit_paragraph(out);
+    if (*result == nullptr) {
+        return splice_all(
+            out, target_invocation.get_content_span(), target_invocation.content_frame, context
+        );
+    }
+    // FIXME: This may not be a spliceable value,
+    //        such as when a group was found.
+    return splice_value(out, **result, target_invocation.content_frame, context);
+}
+
+Processing_Status
+Macro_Definition::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     try_inherit_paragraph(out);
-    return consume_all(out, m_body, call.call_frame, context);
+    return splice_all(out, m_body, call.call_frame, context);
 }
 
 } // namespace cowel

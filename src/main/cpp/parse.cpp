@@ -1,28 +1,35 @@
 #include <cstddef>
 #include <expected>
-#include <optional>
 #include <string_view>
 #include <vector>
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/lang/cowel.hpp"
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
 
+#include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/parse.hpp"
+
+using namespace std::string_view_literals;
 
 namespace cowel {
 namespace {
 
-enum struct Content_Context : Default_Underlying { document, argument_value, block };
+enum struct Content_Context : Default_Underlying {
+    document,
+    block,
+    string,
+};
 
 struct [[nodiscard]] Parser {
 private:
     struct [[nodiscard]] Scoped_Attempt {
     private:
         Parser* m_self;
-        const std::size_t m_initial_pos;
+        const Source_Position m_initial_pos;
         const std::size_t m_initial_size;
 
     public:
@@ -63,26 +70,45 @@ private:
 
     std::pmr::vector<AST_Instruction>& m_out;
     const std::u8string_view m_source;
+    const Parse_Error_Consumer m_on_error;
 
-    std::size_t m_pos = 0;
+    Source_Position m_pos {};
+    bool m_success = true;
 
 public:
-    Parser(std::pmr::vector<AST_Instruction>& out, std::u8string_view source)
+    [[nodiscard]]
+    Parser(
+        std::pmr::vector<AST_Instruction>& out,
+        std::u8string_view source,
+        Parse_Error_Consumer on_error
+    )
         : m_out { out }
         , m_source { source }
+        , m_on_error { on_error }
     {
     }
 
-    void operator()()
+    bool operator()()
     {
-        const std::size_t document_instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type::push_document, 0 });
-        const std::size_t content_amount = match_content_sequence(Content_Context::document);
-        m_out[document_instruction_index].n = content_amount;
-        m_out.push_back({ AST_Instruction_Type::pop_document, 0 });
+        consume_document();
+        return m_success;
     }
 
 private:
+    void error(const Source_Span& pos, Char_Sequence8 message)
+    {
+        if (m_on_error) {
+            m_on_error(diagnostic::parse, pos, message);
+        }
+        m_success = false;
+    }
+
+    void advance_by(std::size_t n)
+    {
+        COWEL_DEBUG_ASSERT(m_pos.begin + n <= m_source.size());
+        advance(m_pos, m_source.substr(m_pos.begin, n));
+    }
+
     Scoped_Attempt attempt()
     {
         return Scoped_Attempt { *this };
@@ -94,7 +120,8 @@ private:
     [[nodiscard]]
     std::u8string_view peek_all() const
     {
-        return m_source.substr(m_pos);
+        COWEL_DEBUG_ASSERT(m_pos.begin <= m_source.size());
+        return m_source.substr(m_pos.begin);
     }
 
     /// @brief Returns the next character and advances the parser position.
@@ -103,7 +130,7 @@ private:
     char8_t pop()
     {
         const char8_t c = peek();
-        ++m_pos;
+        advance_by(1);
         return c;
     }
 
@@ -114,14 +141,14 @@ private:
     char8_t peek() const
     {
         COWEL_ASSERT(!eof());
-        return m_source[m_pos];
+        return m_source[m_pos.begin];
     }
 
     /// @return `true` if the parser is at the end of the file, `false` otherwise.
     [[nodiscard]]
     bool eof() const
     {
-        return m_pos == m_source.length();
+        return m_pos.begin == m_source.length();
     }
 
     /// @return `peek_all().starts_with(text)`.
@@ -138,7 +165,7 @@ private:
     [[nodiscard]]
     bool peek(char8_t c) const
     {
-        return !eof() && m_source[m_pos] == c;
+        return !eof() && m_source[m_pos.begin] == c;
     }
 
     /// @brief Checks whether the next character satisfies a predicate without advancing
@@ -147,7 +174,7 @@ private:
     /// @return `true` if the next character satisfies `predicate`, `false` otherwise.
     bool peek(bool predicate(char8_t)) const
     {
-        return !eof() && predicate(m_source[m_pos]);
+        return !eof() && predicate(m_source[m_pos.begin]);
     }
 
     [[nodiscard]]
@@ -156,7 +183,17 @@ private:
         if (!peek(c)) {
             return false;
         }
-        ++m_pos;
+        advance_by(1);
+        return true;
+    }
+
+    [[nodiscard]]
+    bool expect(std::u8string_view text)
+    {
+        if (!peek(text)) {
+            return false;
+        }
+        advance_by(text.size());
         return true;
     }
 
@@ -166,24 +203,33 @@ private:
         if (eof()) {
             return false;
         }
-        const char8_t c = m_source[m_pos];
+        const char8_t c = m_source[m_pos.begin];
         if (!predicate(c)) {
             return false;
         }
         // This function is only safe to call when we have expectations towards ASCII characters.
         // Any non-ASCII character should have already been rejected.
         COWEL_ASSERT(is_ascii(c));
-        ++m_pos;
+        advance_by(1);
         return true;
     }
 
+    void consume_document()
+    {
+        const std::size_t document_instruction_index = m_out.size();
+        m_out.push_back({ AST_Instruction_Type::push_document, 0 });
+        const std::size_t content_amount = match_markup_sequence(Content_Context::document);
+        m_out[document_instruction_index].n = content_amount;
+        m_out.push_back({ AST_Instruction_Type::pop_document, 0 });
+    }
+
     [[nodiscard]]
-    std::size_t match_content_sequence(Content_Context context)
+    std::size_t match_markup_sequence(Content_Context context)
     {
         Bracket_Levels levels {};
         std::size_t elements = 0;
 
-        while (try_match_content(context, levels)) {
+        while (try_match_markup_element(context, levels)) {
             ++elements;
         }
 
@@ -203,18 +249,18 @@ private:
     /// is terminated by `}`.
     /// It may also happen if the parser has already reached the EOF.
     [[nodiscard]]
-    bool try_match_content(Content_Context context, Bracket_Levels& levels)
+    bool try_match_markup_element(Content_Context context, Bracket_Levels& levels)
     {
-        if (peek(u8'\\') && (try_match_escaped() || try_match_comment() || try_match_directive())) {
+        if (peek(u8'\\') && (try_match_escape() || try_match_comment() || try_match_directive())) {
             return true;
         }
 
-        const std::size_t initial_pos = m_pos;
+        const std::size_t initial_pos = m_pos.begin;
 
-        for (; !eof(); ++m_pos) {
-            const char8_t c = m_source[m_pos];
+        for (; !eof(); advance_by(1)) {
+            const char8_t c = peek();
             if (c == u8'\\') {
-                const std::u8string_view remainder { m_source.substr(m_pos + 1) };
+                const std::u8string_view remainder { m_source.substr(m_pos.begin + 1) };
 
                 // Trailing \ at the end of the file.
                 // No need to break, we'll just run into it next iteration.
@@ -226,44 +272,75 @@ private:
                 }
                 continue;
             }
-            // At the document level, we don't care about brace mismatches,
-            // commas, etc.
-            if (context == Content_Context::document) {
+            switch (context) {
+            case Content_Context::document: {
+                // At the document level, we don't care about brace mismatches,
+                // commas, etc.
                 continue;
             }
-            if (context == Content_Context::argument_value) {
-                if (c == u8',') {
+            case Content_Context::string: {
+                // Within strings, braces have no special meaning,
+                // but an unescaped quote ends the string.
+                if (c == u8'"') {
+                    goto done;
+                }
+                continue;
+            }
+            case Content_Context::block: {
+                if (c == u8'{') {
+                    ++levels.brace;
                     break;
                 }
-                if (c == u8'(') {
-                    ++levels.argument;
-                }
-                else if (c == u8')') {
-                    if (levels.argument == 0) {
-                        break;
+                if (c == u8'}') {
+                    if (levels.brace == 0) {
+                        goto done;
                     }
-                    --levels.argument;
+                    --levels.brace;
+                    continue;
                 }
             }
-            if (c == u8'{') {
-                ++levels.brace;
-            }
-            else if (c == u8'}') {
-                if (levels.brace == 0) {
-                    break;
-                }
-                --levels.brace;
-                continue;
             }
         }
 
-        COWEL_ASSERT(m_pos >= initial_pos);
-        if (m_pos == initial_pos) {
+    done:
+        COWEL_ASSERT(m_pos.begin >= initial_pos);
+        if (m_pos.begin == initial_pos) {
             return false;
         }
 
-        m_out.push_back({ AST_Instruction_Type::text, m_pos - initial_pos });
+        m_out.push_back({ AST_Instruction_Type::text, m_pos.begin - initial_pos });
         return true;
+    }
+
+    [[nodiscard]]
+    bool try_match_escape()
+    {
+        const std::u8string_view remainder = peek_all();
+        if (const std::size_t length = ulight::cowel::match_escape(remainder)) {
+            advance_by(length);
+            m_out.push_back({ AST_Instruction_Type::escape, length });
+            return true;
+        }
+        return false;
+    }
+
+    [[nodiscard]]
+    bool try_match_comment()
+    {
+        const std::u8string_view remainder = peek_all();
+        if (const std::size_t length = ulight::cowel::match_line_comment(remainder)) {
+            COWEL_ASSERT(remainder.starts_with(u8"\\:"));
+            const std::u8string_view suffix = remainder.substr(length);
+            const std::size_t suffix_length = //
+                suffix.starts_with(u8"\r\n") ? 2
+                : suffix.starts_with(u8'\n') ? 1
+                                             : 0;
+
+            advance_by(length + suffix_length);
+            m_out.push_back({ AST_Instruction_Type::comment, length + suffix_length });
+            return true;
+        }
+        return false;
     }
 
     [[nodiscard]]
@@ -278,168 +355,123 @@ private:
         if (name_length == 0) {
             return false;
         }
-        m_pos += name_length;
+        advance_by(name_length);
 
         m_out.push_back({ AST_Instruction_Type::push_directive, name_length + 1 });
 
-        try_match_argument_group();
-        try_match_block();
+        if (peek(u8'(')) {
+            consume_group();
+        }
+        if (peek(u8'{')) {
+            consume_block();
+        }
 
-        m_out.push_back({ AST_Instruction_Type::pop_directive, 0 });
+        m_out.push_back({ AST_Instruction_Type::pop_directive });
 
         a.commit();
         return true;
     }
 
-    // intentionally discardable
-    bool try_match_argument_group()
+    bool consume_group()
     {
-        Scoped_Attempt a = attempt();
+        COWEL_ASSERT(expect(u8'('));
 
-        if (!expect(u8'(')) {
-            return false;
-        }
-        const std::size_t arguments_instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type::push_arguments, 0 });
+        const std::size_t instruction_index = m_out.size();
+        m_out.push_back({ AST_Instruction_Type::push_group, 0 });
 
-        for (std::size_t i = 0; try_match_argument(); ++i) {
+        std::size_t member_count = 0;
+        while (!eof()) {
+            skip_blank();
             if (expect(u8')')) {
-                const bool last_removed = try_remove_trailing_empty_argument();
-                m_out[arguments_instruction_index].n = i + !last_removed;
-                m_out.push_back({ AST_Instruction_Type::pop_arguments });
-                a.commit();
+                m_out[instruction_index].n = member_count;
+                m_out.push_back({ AST_Instruction_Type::pop_group });
                 return true;
             }
             if (expect(u8',')) {
-                m_out.push_back({ AST_Instruction_Type::argument_comma });
+                m_out.push_back({ AST_Instruction_Type::member_comma });
                 continue;
             }
-            COWEL_ASSERT_UNREACHABLE(
-                u8"Successfully matched arguments must be followed by ')' or ','"
-            );
-        }
-
-        return true;
-    }
-
-    /// @brief Removes the topmost trailing argument, if any,
-    /// and returns `true` iff the argument was removed.
-    // To support the use of trailing commas in arguments
-    // and to not consider [ ] or arguments containing only comments as an argument,
-    // we sometimes have to remove an argument at the end of the list.
-    // If need be, we replace it with a skip.
-    bool try_remove_trailing_empty_argument()
-    {
-        COWEL_ASSERT(m_out.size() >= 3);
-        COWEL_ASSERT(ast_instruction_type_is_pop_argument(m_out.back().type));
-
-        const AST_Instruction middle = m_out[m_out.size() - 2];
-        // Pattern 1: push argument, skip, pop argument
-        if (middle.type == AST_Instruction_Type::skip) {
-            if (ast_instruction_type_is_push_argument(m_out[m_out.size() - 3].type)) {
-                const std::size_t skip_length = middle.n;
-                m_out.resize(m_out.size() - 3);
-                m_out.push_back({ AST_Instruction_Type::skip, skip_length });
-                return true;
-            }
-        }
-        // Pattern 2: push argument, pop argument
-        else if (ast_instruction_type_is_push_argument(middle.type)) {
-            m_out.resize(m_out.size() - 2);
-            return true;
+            consume_group_member();
+            ++member_count;
         }
 
         return false;
     }
 
-    [[nodiscard]]
-    bool try_match_escaped()
-    {
-        const std::u8string_view remainder = m_source.substr(m_pos);
-        if (const std::size_t length = ulight::cowel::match_escape(remainder)) {
-            m_pos += length;
-            m_out.push_back({ AST_Instruction_Type::escape, length });
-            return true;
-        }
-        return false;
-    }
-
-    [[nodiscard]]
-    bool try_match_comment()
-    {
-        const std::u8string_view remainder = m_source.substr(m_pos);
-        if (const std::size_t length = ulight::cowel::match_line_comment(remainder)) {
-            COWEL_ASSERT(remainder.starts_with(u8"\\:"));
-            const std::u8string_view suffix = remainder.substr(length);
-            const std::size_t suffix_length = //
-                suffix.starts_with(u8"\r\n") ? 2
-                : suffix.starts_with(u8'\n') ? 1
-                                             : 0;
-
-            m_pos += length + suffix_length;
-            m_out.push_back({ AST_Instruction_Type::comment, length + suffix_length });
-            return true;
-        }
-        return false;
-    }
-
-    [[nodiscard]]
-    bool try_match_argument()
+    bool consume_group_member()
     {
         if (eof()) {
             return false;
         }
-        Scoped_Attempt a = attempt();
 
         const std::size_t argument_instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type {} });
+        m_out.push_back({ AST_Instruction_Type {}, 0 });
 
-        try_skip_comments_and_whitespace();
+        skip_blank();
 
         AST_Instruction_Type push_type;
         AST_Instruction_Type pop_type;
 
-        const bool is_named = try_match_argument_name();
+        const bool is_named = try_match_member_name();
         if (is_named) {
+            // TODO: This seems to be a historical artifact.
+            //       This could probably just be skip_blank().
+            //       If not, comment why this skips only whitespace and no comments.
             const std::size_t leading_whitespace = ulight::cowel::match_whitespace(peek_all());
             if (leading_whitespace != 0) {
                 m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
-                m_pos += leading_whitespace;
+                advance_by(leading_whitespace);
             }
-            push_type = AST_Instruction_Type::push_named_argument;
-            pop_type = AST_Instruction_Type::pop_named_argument;
+            push_type = AST_Instruction_Type::push_named_member;
+            pop_type = AST_Instruction_Type::pop_named_member;
         }
         else if (try_match_ellipsis()) {
             push_type = AST_Instruction_Type::push_ellipsis_argument;
             pop_type = AST_Instruction_Type::pop_ellipsis_argument;
         }
         else {
-            push_type = AST_Instruction_Type::push_positional_argument;
-            pop_type = AST_Instruction_Type::pop_positional_argument;
+            push_type = AST_Instruction_Type::push_positional_member;
+            pop_type = AST_Instruction_Type::pop_positional_member;
         }
 
-        if (try_match_argument_group()) {
-            m_out[argument_instruction_index].n = 0;
-        }
-        else {
-            const std::optional<std::size_t> result = try_match_right_trimmed_argument_value();
-            if (!result) {
+        skip_blank();
+
+        if (push_type != AST_Instruction_Type::push_ellipsis_argument) {
+            if (!consume_member_value()) {
                 return false;
             }
-            m_out[argument_instruction_index].n = *result;
+            skip_blank();
+        }
+
+        if (!peek(u8',') && !peek(')')) {
+            const auto initial_pos = m_pos;
+            const std::size_t error_length = consume_error_until_one_of(u8",)");
+            error(Source_Span { initial_pos, error_length }, u8"Invalid group member."sv);
+            return false;
         }
 
         m_out[argument_instruction_index].type = push_type;
         m_out.push_back({ pop_type });
 
-        a.commit();
         return true;
+    }
+
+    [[nodiscard]]
+    bool try_match_ellipsis()
+    {
+        if (const std::size_t ellipsis = ulight::cowel::match_ellipsis(peek_all())) {
+            advance_by(ellipsis);
+            m_out.push_back({ AST_Instruction_Type::ellipsis, ellipsis });
+            return true;
+        }
+        return false;
     }
 
     /// @brief Matches the name of an argument, including any surrounding whitespace and the `=`
     /// character following it.
     /// If the argument couldn't be matched, returns `false` and keeps the parser state unchanged.
-    bool try_match_argument_name()
+    [[nodiscard]]
+    bool try_match_member_name()
     {
         Scoped_Attempt a = attempt();
 
@@ -448,16 +480,16 @@ private:
         }
 
         const std::size_t name_length = ulight::cowel::match_argument_name(peek_all());
-        m_out.push_back({ AST_Instruction_Type::argument_name, name_length });
+        m_out.push_back({ AST_Instruction_Type::member_name, name_length });
         if (name_length == 0) {
             return false;
         }
-        m_pos += name_length;
+        advance_by(name_length);
 
         const std::size_t trailing_whitespace = ulight::cowel::match_whitespace(peek_all());
         if (trailing_whitespace != 0) {
             m_out.push_back({ AST_Instruction_Type::skip, trailing_whitespace });
-            m_pos += trailing_whitespace;
+            advance_by(trailing_whitespace);
         }
         if (eof()) {
             return false;
@@ -467,55 +499,154 @@ private:
             return false;
         }
 
-        m_out.push_back({ AST_Instruction_Type::argument_equal });
+        m_out.push_back({ AST_Instruction_Type::member_equal });
         a.commit();
         return true;
     }
 
-    [[nodiscard]]
-    std::optional<std::size_t> try_match_right_trimmed_argument_value()
+    bool consume_member_value()
     {
-        Scoped_Attempt a = attempt();
+        COWEL_ASSERT(!eof());
 
-        const std::size_t content_amount = match_content_sequence(Content_Context::argument_value);
-        if (eof() || peek(u8'}')) {
-            return {};
+        const std::u8string_view remainder = peek_all();
+
+        switch (remainder[0]) {
+        case u8'"': {
+            return consume_quoted_string();
         }
-        // match_content_sequence is very aggressive, so I think at this point,
-        // we have to be at the end of an argument due to a comma separator or closing square.
-        const char8_t c = m_source[m_pos];
-        COWEL_ASSERT(c == u8',' || c == u8')');
-
-        trim_trailing_whitespace_in_matched_content();
-
-        a.commit();
-        return content_amount;
+        case u8'(': {
+            return consume_group();
+        }
+        case u8'{': {
+            return consume_block();
+        }
+        default: {
+            return try_match_directive_call() || consume_unquoted_value();
+        }
+        }
     }
 
-    std::size_t try_skip_comments_and_whitespace()
+    bool try_match_directive_call()
     {
-        // Comments before arguments are not considered part of any content sequence,
-        // and are instead treated like whitespace.
-        //
-        //     \d[
-        //       \: Documentation
-        //       \: for upcoming argument:
-        //       a = b
-        //     ]
+        const std::u8string_view remainder = peek_all();
+        const std::size_t name_length = ulight::cowel::match_directive_name(remainder);
+        if (name_length == 0) {
+            return false;
+        }
 
-        const std::size_t start = m_pos;
+        Scoped_Attempt a = attempt();
+        advance_by(name_length);
+        m_out.push_back({ AST_Instruction_Type::push_directive, name_length });
+
+        skip_blank();
+        const bool has_group = peek(u8'(') && consume_group();
+
+        skip_blank();
+        const bool has_block = peek(u8'{') && consume_block();
+
+        if (!has_group && !has_block) {
+            return false;
+        }
+
+        m_out.push_back({ AST_Instruction_Type::pop_directive });
+
+        a.commit();
+        return true;
+    }
+
+    bool consume_unquoted_value()
+    {
+        const std::u8string_view remainder = peek_all();
+        const std::size_t length = ulight::ascii::length_if(remainder, [](char8_t c) {
+            return ulight::is_cowel_unquoted_string(c);
+        });
+
+        if (length == 0) {
+            const auto initial_pos = m_pos;
+            const std::size_t error_length = consume_error_until_one_of(u8",)"sv);
+            error(Source_Span { initial_pos, error_length }, u8"Invalid member value."sv);
+            return false;
+        }
+
+        const std::u8string_view match = m_source.substr(m_pos.begin, length);
+        const bool has_minus = match[0] == u8'-';
+        {
+            const std::u8string_view digits = match.substr(std::size_t(has_minus));
+            const std::size_t digits_length
+                = ulight::ascii::length_if(digits, [](char8_t c) { return is_ascii_digit(c); });
+            COWEL_ASSERT(digits_length + std::size_t(has_minus) <= length);
+
+            if (digits.length() == digits_length) {
+                advance_by(length);
+                m_out.push_back({ AST_Instruction_Type::decimal_integer, length });
+                return true;
+            }
+        }
+        if (!has_minus) {
+            if (match == u8"unit"sv) {
+                advance_by(length);
+                m_out.push_back({ AST_Instruction_Type::keyword_unit, length });
+                return true;
+            }
+            if (match == u8"null"sv) {
+                advance_by(length);
+                m_out.push_back({ AST_Instruction_Type::keyword_null, length });
+                return true;
+            }
+            if (match == u8"true"sv) {
+                advance_by(length);
+                m_out.push_back({ AST_Instruction_Type::keyword_true, length });
+                return true;
+            }
+            if (match == u8"false"sv) {
+                advance_by(length);
+                m_out.push_back({ AST_Instruction_Type::keyword_false, length });
+                return true;
+            }
+        }
+
+        advance_by(length);
+        m_out.push_back({ AST_Instruction_Type::unquoted_string, length });
+        return true;
+    }
+
+    bool consume_quoted_string()
+    {
+        const auto initial_pos = m_pos;
+        COWEL_ASSERT(expect(u8'"'));
+
+        const std::size_t instruction_index = m_out.size();
+        m_out.push_back({ AST_Instruction_Type::push_quoted_string });
+
+        const std::size_t elements = match_markup_sequence(Content_Context::string);
+
+        if (!expect(u8'"')) {
+            error(Source_Span { initial_pos, 1 }, u8"No matching '}'. This block is unclosed."sv);
+            return false;
+        }
+
+        m_out.push_back({ AST_Instruction_Type::pop_quoted_string });
+        m_out[instruction_index].n = elements;
+        return true;
+    }
+
+    std::size_t skip_blank()
+    {
+        const std::size_t start = m_pos.begin;
 
         while (true) {
-            m_pos += ulight::cowel::match_whitespace(peek_all());
+            const std::size_t white_length = ulight::cowel::match_whitespace(peek_all());
+            advance_by(white_length);
+
             const std::size_t comment_length = ulight::cowel::match_line_comment(peek_all());
             if (comment_length) {
-                m_pos += comment_length;
+                advance_by(comment_length);
                 continue;
             }
             break;
         }
 
-        const std::size_t skip_length = m_pos - start;
+        const std::size_t skip_length = m_pos.begin - start;
         if (skip_length) {
             m_out.push_back({ AST_Instruction_Type::skip, skip_length });
         }
@@ -523,81 +654,50 @@ private:
         return skip_length;
     }
 
-    bool try_match_ellipsis()
+    bool consume_block()
     {
-        if (const std::size_t ellipsis = ulight::cowel::match_ellipsis(peek_all())) {
-            m_pos += ellipsis;
-            m_out.push_back({ AST_Instruction_Type::argument_ellipsis, ellipsis });
-            return true;
-        }
-        return false;
-    }
+        const auto initial_pos = m_pos;
+        COWEL_ASSERT(expect(u8'{'));
 
-    /// @brief Trims trailing whitespace in just matched content.
-    ///
-    /// This is done by splitting the most recently written instruction
-    /// into `text` and `skip` if that instruction is `text`.
-    /// If the most recent instruction is entirely made of whitespace,
-    /// it is simply replaced with `skip`.
-    void trim_trailing_whitespace_in_matched_content()
-    {
-        COWEL_ASSERT(!m_out.empty());
-
-        AST_Instruction& latest = m_out.back();
-        if (latest.type != AST_Instruction_Type::text) {
-            return;
-        }
-        const std::size_t total_length = latest.n;
-        COWEL_ASSERT(total_length != 0);
-
-        const std::size_t text_begin = m_pos - total_length;
-
-        const std::u8string_view last_text = m_source.substr(text_begin, total_length);
-        const std::size_t last_non_white = last_text.find_last_not_of(u8" \t\r\n\f");
-        const std::size_t non_white_length = last_non_white + 1;
-
-        if (last_non_white == std::u8string_view::npos) {
-            latest.type = AST_Instruction_Type::skip;
-        }
-        else if (non_white_length < total_length) {
-            latest.n = non_white_length;
-            m_out.push_back({ AST_Instruction_Type::skip, total_length - non_white_length });
-        }
-        else {
-            COWEL_ASSERT(non_white_length == total_length);
-        }
-    }
-
-    bool try_match_block()
-    {
-        if (!expect(u8'{')) {
-            return false;
-        }
-
-        Scoped_Attempt a = attempt();
-
-        const std::size_t block_instruction_index = m_out.size();
+        const std::size_t instruction_index = m_out.size();
         m_out.push_back({ AST_Instruction_Type::push_block });
 
-        // A possible optimization should be to find the closing brace and then run the parser
-        // on the brace-enclosed block.
-        // This would prevent ever discarding any matched content, but might not be worth it.
-        //
-        // I suspect we only have to discard if we reach the EOF unexpectedly,
-        // and that seems like a broken file anyway.
-        const std::size_t elements = match_content_sequence(Content_Context::block);
+        const std::size_t elements = match_markup_sequence(Content_Context::block);
 
         if (!expect(u8'}')) {
-            a.abort();
-            m_out.push_back({ AST_Instruction_Type::error_unclosed_block });
+            error(Source_Span { initial_pos, 1 }, u8"No matching '}'. This block is unclosed."sv);
             return false;
         }
-
-        m_out[block_instruction_index].n = elements;
+        m_out[instruction_index].n = elements;
         m_out.push_back({ AST_Instruction_Type::pop_block });
-
-        a.commit();
         return true;
+    }
+
+    [[nodiscard]]
+    std::size_t consume_error_until_one_of(std::u8string_view set)
+    {
+        COWEL_ASSERT(!set.contains(u8'\\'));
+
+        const std::size_t initial_begin = m_pos.begin;
+        while (!eof()) {
+            const std::size_t skip_length
+                = ulight::ascii::length_if_not(peek_all(), [&](char8_t c) {
+                      return c == u8'\\' || set.contains(c);
+                  });
+            advance_by(skip_length);
+
+            if (peek(u8'\\')) {
+                const std::size_t comment_length = ulight::cowel::match_line_comment(peek_all());
+                // It is possible that we have matched a backslash but did not encounter a
+                // comment, in which case we simply skip the backslash.
+                advance_by(comment_length ? comment_length : 1);
+                continue;
+            }
+
+            break;
+        }
+
+        return m_pos.begin - initial_begin;
     }
 };
 
@@ -610,33 +710,44 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         COWEL_ENUM_STRING_CASE8(skip);
         COWEL_ENUM_STRING_CASE8(escape);
         COWEL_ENUM_STRING_CASE8(text);
+        COWEL_ENUM_STRING_CASE8(unquoted_string);
+        COWEL_ENUM_STRING_CASE8(decimal_integer);
+        COWEL_ENUM_STRING_CASE8(keyword_true);
+        COWEL_ENUM_STRING_CASE8(keyword_false);
+        COWEL_ENUM_STRING_CASE8(keyword_null);
+        COWEL_ENUM_STRING_CASE8(keyword_unit);
         COWEL_ENUM_STRING_CASE8(comment);
-        COWEL_ENUM_STRING_CASE8(argument_name);
-        COWEL_ENUM_STRING_CASE8(argument_ellipsis);
-        COWEL_ENUM_STRING_CASE8(argument_equal);
-        COWEL_ENUM_STRING_CASE8(argument_comma);
+        COWEL_ENUM_STRING_CASE8(member_name);
+        COWEL_ENUM_STRING_CASE8(ellipsis);
+        COWEL_ENUM_STRING_CASE8(member_equal);
+        COWEL_ENUM_STRING_CASE8(member_comma);
         COWEL_ENUM_STRING_CASE8(push_document);
         COWEL_ENUM_STRING_CASE8(pop_document);
         COWEL_ENUM_STRING_CASE8(push_directive);
         COWEL_ENUM_STRING_CASE8(pop_directive);
-        COWEL_ENUM_STRING_CASE8(push_arguments);
-        COWEL_ENUM_STRING_CASE8(pop_arguments);
-        COWEL_ENUM_STRING_CASE8(push_named_argument);
-        COWEL_ENUM_STRING_CASE8(pop_named_argument);
-        COWEL_ENUM_STRING_CASE8(push_positional_argument);
-        COWEL_ENUM_STRING_CASE8(pop_positional_argument);
+        COWEL_ENUM_STRING_CASE8(push_group);
+        COWEL_ENUM_STRING_CASE8(pop_group);
+        COWEL_ENUM_STRING_CASE8(push_named_member);
+        COWEL_ENUM_STRING_CASE8(pop_named_member);
+        COWEL_ENUM_STRING_CASE8(push_positional_member);
+        COWEL_ENUM_STRING_CASE8(pop_positional_member);
         COWEL_ENUM_STRING_CASE8(push_ellipsis_argument);
         COWEL_ENUM_STRING_CASE8(pop_ellipsis_argument);
         COWEL_ENUM_STRING_CASE8(push_block);
         COWEL_ENUM_STRING_CASE8(pop_block);
-        COWEL_ENUM_STRING_CASE8(error_unclosed_block);
+        COWEL_ENUM_STRING_CASE8(push_quoted_string);
+        COWEL_ENUM_STRING_CASE8(pop_quoted_string);
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid type.");
 }
 
-void parse(std::pmr::vector<AST_Instruction>& out, std::u8string_view source)
+bool parse(
+    std::pmr::vector<AST_Instruction>& out,
+    std::u8string_view source,
+    Parse_Error_Consumer on_error
+)
 {
-    Parser { out, source }();
+    return Parser { out, source, on_error }();
 }
 
 } // namespace cowel

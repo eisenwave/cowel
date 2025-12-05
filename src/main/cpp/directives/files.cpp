@@ -43,8 +43,7 @@ std::u8string_view file_load_error_explanation(File_Load_Error error)
 } // namespace
 
 Processing_Status
-Include_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Include_Text_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     const auto match_status = match_empty_arguments(call, context);
     if (match_status != Processing_Status::ok) {
@@ -53,7 +52,7 @@ Include_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
     const auto path_status
-        = to_plaintext(path_data, call.get_content_span(), call.content_frame, context);
+        = splice_to_plaintext(path_data, call.get_content_span(), call.content_frame, context);
     switch (path_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk: return Processing_Status::brk;
@@ -90,7 +89,7 @@ Include_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 }
 
 Processing_Status
-Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Include_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     const auto match_status = match_empty_arguments(call, context);
     if (match_status != Processing_Status::ok) {
@@ -99,7 +98,7 @@ Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
 
     std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
     const auto path_status
-        = to_plaintext(path_data, call.get_content_span(), call.content_frame, context);
+        = splice_to_plaintext(path_data, call.get_content_span(), call.content_frame, context);
     switch (path_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk: return Processing_Status::brk;
@@ -133,8 +132,8 @@ Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
     }
     COWEL_ASSERT(context.get_file_loader().is_valid(entry->id));
 
-    auto on_error
-        = [&](std::u8string_view id, const Source_Span& location, std::u8string_view message) {
+    const Parse_Error_Consumer on_parse_error
+        = [&](std::u8string_view id, const Source_Span& location, const Char_Sequence8& message) {
               constexpr auto severity = Severity::error;
               if (!context.emits(severity)) {
                   return;
@@ -143,11 +142,24 @@ Include_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
               context.emit(severity, id, file_location, message);
           };
 
-    const ast::Pmr_Vector<ast::Content> imported_content
-        = parse_and_build(entry->source, entry->id, context.get_transient_memory(), on_error);
+    ast::Pmr_Vector<ast::Markup_Element> imported_content { context.get_transient_memory() };
+    const bool parse_success = parse_and_build(
+        imported_content, entry->source, entry->id, context.get_transient_memory(), on_parse_error
+    );
+    if (!parse_success) {
+        context.try_fatal(
+            diagnostic::parse, call.directive.get_source_span(),
+            joined_char_sequence({
+                u8"Abandoning processing because the included file \"",
+                path_string,
+                u8"\" could not be parsed, i.e. raised syntax errors.",
+            })
+        );
+        return Processing_Status::fatal;
+    }
 
     try_inherit_paragraph(out);
-    return consume_all(out, imported_content, call.call_frame, context);
+    return splice_all(out, imported_content, call.call_frame, context);
 }
 
 } // namespace cowel

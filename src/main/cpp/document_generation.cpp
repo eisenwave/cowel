@@ -158,10 +158,12 @@ bool Reference_Resolver::operator()(std::u8string_view text, File_Id file)
 
 Processing_Status write_head_body_document(
     Text_Sink& out,
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Context& context,
-    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Content>, Context&)> head,
-    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Content>, Context&)> body
+    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Markup_Element>, Context&)>
+        head,
+    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Markup_Element>, Context&)>
+        body
 )
 {
     Document_Sections& sections = context.get_sections();
@@ -233,8 +235,11 @@ bool resolve_references(Text_Sink& out, std::u8string_view text, Context& contex
 constexpr std::u8string_view indent = u8"  ";
 constexpr std::u8string_view newline_indent = u8"\n  ";
 
-Processing_Status
-write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Context& context)
+Processing_Status write_wg21_head_contents(
+    Content_Policy& out,
+    std::span<const ast::Markup_Element>,
+    Context& context
+)
 {
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
@@ -314,7 +319,7 @@ write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Con
 
 Processing_Status write_wg21_body_contents(
     Content_Policy& out,
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Context& context
 )
 {
@@ -325,7 +330,7 @@ Processing_Status write_wg21_body_contents(
     writer.write_inner_html(u8'\n');
 
     Paragraph_Split_Policy policy { buffer, context.get_transient_memory() };
-    const Processing_Status result = consume_all(policy, content, Frame_Index::root, context);
+    const Processing_Status result = splice_all(policy, content, Frame_Index::root, context);
     policy.leave_paragraph();
 
     writer.close_tag(html_tag::main);

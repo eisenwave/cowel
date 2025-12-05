@@ -24,21 +24,9 @@ public:
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Text& text, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Primary& text, Frame_Index, Context&) override
     {
         write(text.get_source(), Output_Language::text);
-        return Processing_Status::ok;
-    }
-    [[nodiscard]]
-    Processing_Status consume(const ast::Comment& comment, Frame_Index, Context&) override
-    {
-        write(comment.get_source(), Output_Language::text);
-        return Processing_Status::ok;
-    }
-    [[nodiscard]]
-    Processing_Status consume(const ast::Escaped& escaped, Frame_Index, Context&) override
-    {
-        write(escaped.get_source(), Output_Language::text);
         return Processing_Status::ok;
     }
     [[nodiscard]]

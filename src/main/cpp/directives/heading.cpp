@@ -36,14 +36,14 @@ namespace {
 [[nodiscard]]
 Processing_Status synthesize_id(
     std::pmr::vector<char8_t>& out,
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Frame_Index content_frame,
     Context& context
 )
 {
     // TODO: diagnostic on bad status
     // TODO: disallow side effects, or maybe use content policies to pull out just the text?
-    const auto status = to_plaintext(out, content, content_frame, context);
+    const auto status = splice_to_plaintext(out, content, content_frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -60,16 +60,16 @@ constexpr int max_listing_level = 6;
 } // namespace
 
 Processing_Status
-Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Heading_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    String_Matcher id_matcher { context.get_transient_memory() };
+    Spliceable_To_String_Matcher id_matcher { context.get_transient_memory() };
     Group_Member_Matcher id_member { u8"id"sv, Optionality::optional, id_matcher };
     Boolean_Matcher listed_boolean;
     Group_Member_Matcher listed_member { u8"listed"sv, Optionality::optional, listed_boolean };
     Boolean_Matcher show_number_boolean;
     Group_Member_Matcher show_number_member { u8"show-number"sv, Optionality::optional,
                                               show_number_boolean };
-    Group_Pack_Named_Lazy_Any_Matcher attr_group;
+    Group_Pack_Named_Lazy_Spliceable_Matcher attr_group;
     Group_Member_Matcher attr_member { u8"attr"sv, Optionality::optional, attr_group };
     Group_Member_Matcher* const parameters[] {
         &id_member,
@@ -161,7 +161,7 @@ Heading_Behavior::operator()(Content_Policy& out, const Invocation& call, Contex
         Capturing_Ref_Text_Sink heading_sink { heading_html, Output_Language::html };
         HTML_Content_Policy html_policy { heading_sink };
         const auto heading_status
-            = consume_all(html_policy, call.get_content_span(), call.content_frame, context);
+            = splice_all(html_policy, call.get_content_span(), call.content_frame, context);
         current_status = status_concat(current_status, heading_status);
         if (status_is_break(heading_status)) {
             writer.close_tag(tag_name);
@@ -288,7 +288,7 @@ Processing_Status with_section_name(
     Function_Ref<Processing_Status(std::u8string_view section)> action
 )
 {
-    String_Matcher section_matcher { context.get_transient_memory() };
+    Spliceable_To_String_Matcher section_matcher { context.get_transient_memory() };
     Group_Member_Matcher section_member { u8"section"sv, Optionality::mandatory, section_matcher };
     Group_Member_Matcher* parameters[] { &section_member };
     Pack_Usual_Matcher args_matcher { parameters };
@@ -315,11 +315,11 @@ Processing_Status with_section_name(
 } // namespace
 
 Processing_Status
-There_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+There_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     const auto action = [&](std::u8string_view section) -> Processing_Status {
         const auto scope = context.get_sections().go_to_scoped(section);
-        return consume_all(
+        return splice_all(
             context.get_sections().current_policy(), call.get_content_span(), call.content_frame,
             context
         );
@@ -328,7 +328,7 @@ There_Behavior::operator()(Content_Policy& out, const Invocation& call, Context&
 }
 
 Processing_Status
-Here_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Here_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     ensure_paragraph_matches_display(out, m_display);
 
@@ -340,7 +340,7 @@ Here_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
 }
 
 Processing_Status
-Make_Section_Behavior::operator()(Content_Policy& out, const Invocation&, Context& context) const
+Make_Section_Behavior::splice(Content_Policy& out, const Invocation&, Context& context) const
 {
     ensure_paragraph_matches_display(out, m_display);
 

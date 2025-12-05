@@ -7,12 +7,11 @@
 
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
+#include "cowel/util/char_sequence_ops.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_entities.hpp"
 #include "cowel/util/strings.hpp"
-
-#include "cowel/policy/content_policy.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
@@ -22,7 +21,7 @@
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
-#include "cowel/output_language.hpp"
+#include "cowel/value.hpp"
 
 using namespace std::string_view_literals;
 
@@ -94,20 +93,17 @@ get_code_points(std::u8string_view trimmed_text, const Invocation& call, Context
 
 } // namespace
 
-Processing_Status
-Char_By_Entity_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Result<Short_String_Value, Processing_Status>
+Char_By_Entity_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     const auto match_status = match_empty_arguments(call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
 
-    ensure_paragraph_matches_display(out, m_display);
-
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
     const auto input_status
-        = to_plaintext(data, call.get_content_span(), call.content_frame, context);
+        = splice_to_plaintext(data, call.get_content_span(), call.content_frame, context);
     if (input_status != Processing_Status::ok) {
         return input_status;
     }
@@ -115,10 +111,13 @@ Char_By_Entity_Behavior::operator()(Content_Policy& out, const Invocation& call,
     const std::u8string_view trimmed_text = trim_ascii_blank(as_u8string_view(data));
     const std::array<char32_t, 2> code_points = get_code_points(trimmed_text, call, context);
     if (code_points[0] == 0) {
-        return try_generate_error(out, call, context);
+        // We don't need to print an error here;
+        // get_code_points should have done that.
+        return Processing_Status::error;
     }
-    out.write(make_char_sequence(as_string_view(code_points)), Output_Language::text);
-    return Processing_Status::ok;
+    return to_static_string<Short_String_Value::max_size_v>(
+        make_char_sequence(as_string_view(code_points))
+    );
 }
 
 } // namespace cowel

@@ -29,84 +29,175 @@ using Suppress_Unused_Include_Source_Position_2 = Basic_File_Source_Span<void>;
 template <typename T>
 using Pmr_Vector = std::vector<T, Propagated_Polymorphic_Allocator<T>>;
 
-struct Content_Sequence {
-private:
-    File_Source_Span m_source_span;
-    std::u8string_view m_source;
-    Pmr_Vector<Content> m_elements;
-
-public:
-    [[nodiscard]]
-    explicit Content_Sequence(
-        File_Source_Span source_span,
-        std::u8string_view source,
-        Pmr_Vector<Content>&& elements
-    );
-    [[nodiscard]]
-    explicit Content_Sequence(File_Source_Span source_span, std::u8string_view source);
-    [[nodiscard]]
-    Content_Sequence(const Content_Sequence&);
-    [[nodiscard]]
-    Content_Sequence(Content_Sequence&&) noexcept;
-
-    Content_Sequence& operator=(const Content_Sequence&);
-    Content_Sequence& operator=(Content_Sequence&&) noexcept;
-
-    ~Content_Sequence();
-
-    [[nodiscard]]
-    File_Source_Span get_source_span() const
-    {
-        return m_source_span;
-    }
-
-    [[nodiscard]]
-    std::u8string_view get_source() const
-    {
-        return m_source;
-    }
-
-    [[nodiscard]]
-    std::span<const Content> get_elements() const;
-
-    [[nodiscard]]
-    bool empty() const
-    {
-        return get_elements().empty();
-    }
-
-    [[nodiscard]]
-    std::size_t size() const
-    {
-        return get_elements().size();
-    }
+enum struct Primary_Kind : Default_Underlying {
+    unit,
+    null,
+    boolean,
+    integer,
+    unquoted_string,
+    text,
+    escape,
+    comment,
+    quoted_string,
+    block,
+    group,
 };
 
-struct Group final {
-private:
-    File_Source_Span m_source_span;
-    std::u8string_view m_source;
-    Pmr_Vector<Group_Member> m_members;
+/// @brief Returns `true` iff `kind` is a value.
+/// That is, something that can be passed around within the COWEL's scripting sublanguage,
+/// passed as arguments to directives, etc.
+///
+/// Notably, markup elements like `text` or `comment` are not values.
+[[nodiscard]]
+constexpr bool primary_kind_is_value(Primary_Kind kind)
+{
+    using enum Primary_Kind;
+    switch (kind) {
+    case unit:
+    case null:
+    case boolean:
+    case integer:
+    case unquoted_string:
+    case block:
+    case quoted_string:
+    case group: return true;
 
+    case text:
+    case escape:
+    case comment: return false;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid kind.");
+}
+
+/// @brief Returns `true` iff `kind` can be spliced into markup.
+[[nodiscard]]
+constexpr bool primary_kind_is_spliceable(Primary_Kind kind)
+{
+    using enum Primary_Kind;
+    switch (kind) {
+    case unit:
+    case null:
+    case boolean:
+    case integer:
+    case unquoted_string:
+    case quoted_string:
+    case block:
+    case text:
+    case escape:
+    case comment: return true;
+
+    case group: return false;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid kind.");
+}
+
+/// @brief Returns `true` iff `kind` is a value that can be spliced into markup.
+[[nodiscard]]
+constexpr bool primary_kind_is_spliceable_value(Primary_Kind kind)
+{
+    return primary_kind_is_value(kind) && primary_kind_is_spliceable(kind);
+}
+
+[[nodiscard]]
+constexpr std::u8string_view primary_kind_display_name(Primary_Kind kind)
+{
+    using enum Primary_Kind;
+    switch (kind) {
+    case unit: return u8"unit";
+    case null: return u8"null";
+    case boolean: return u8"boolean";
+    case integer: return u8"integer";
+    case unquoted_string: return u8"unquoted string";
+    case text: return u8"text";
+    case escape: return u8"escape";
+    case comment: return u8"comment";
+    case quoted_string: return u8"quoted string";
+    case block: return u8"block";
+    case group: return u8"group";
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid kind.");
+}
+
+struct Primary {
 public:
     [[nodiscard]]
-    explicit Group(File_Source_Span source_span, std::u8string_view source);
+    static Primary quoted_string(
+        File_Source_Span source_span,
+        std::u8string_view source,
+        Pmr_Vector<Markup_Element>&& elements
+    );
+
     [[nodiscard]]
-    explicit Group(
+    static Primary block(
+        File_Source_Span source_span,
+        std::u8string_view source,
+        Pmr_Vector<Markup_Element>&& elements
+    );
+
+    [[nodiscard]]
+    static Primary group(
         File_Source_Span source_span,
         std::u8string_view source,
         Pmr_Vector<Group_Member>&& members
     );
 
-    [[nodiscard]]
-    Group(const Group&);
-    [[nodiscard]]
-    Group(Group&&) noexcept;
+private:
+    Primary_Kind m_kind;
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+    std::variant<std::size_t, Pmr_Vector<Markup_Element>, Pmr_Vector<Group_Member>> m_extra;
 
-    Group& operator=(const Group&);
-    Group& operator=(Group&&) noexcept;
+    [[nodiscard]]
+    Primary(
+        Primary_Kind kind,
+        File_Source_Span source_span,
+        std::u8string_view source,
+        Pmr_Vector<Markup_Element>&& elements
+    );
 
-    ~Group();
+    [[nodiscard]]
+    Primary(
+        Primary_Kind kind,
+        File_Source_Span source_span,
+        std::u8string_view source,
+        Pmr_Vector<Group_Member>&& members
+    );
+
+public:
+    [[nodiscard]]
+    Primary(Primary_Kind kind, File_Source_Span source_span, std::u8string_view source);
+
+    [[nodiscard]]
+    Primary(const Primary&);
+    [[nodiscard]]
+    Primary(Primary&&) noexcept;
+
+    Primary& operator=(const Primary&);
+    Primary& operator=(Primary&&) noexcept;
+
+    ~Primary();
+
+    [[nodiscard]]
+    Primary_Kind get_kind() const
+    {
+        return m_kind;
+    }
+
+    [[nodiscard]]
+    bool is_value() const
+    {
+        return primary_kind_is_value(m_kind);
+    }
+    [[nodiscard]]
+    bool is_spliceable() const
+    {
+        return primary_kind_is_spliceable(m_kind);
+    }
+    [[nodiscard]]
+    bool is_spliceable_value() const
+    {
+        return primary_kind_is_spliceable_value(m_kind);
+    }
 
     [[nodiscard]]
     File_Source_Span get_source_span() const
@@ -118,52 +209,281 @@ public:
     std::u8string_view get_source() const
     {
         return m_source;
+    }
+
+    /// @brief Returns the source span covering the escaped characters.
+    [[nodiscard]]
+    File_Source_Span get_escaped_span() const
+    {
+        COWEL_ASSERT(m_kind == Primary_Kind::escape);
+        return m_source_span.to_right(1);
+    }
+
+    /// @brief Returns the escaped characters.
+    [[nodiscard]]
+    std::u8string_view get_escaped() const
+    {
+        COWEL_ASSERT(m_kind == Primary_Kind::escape);
+        COWEL_DEBUG_ASSERT(m_source.size() >= 2);
+        return m_source.substr(1);
+    }
+
+    [[nodiscard]]
+    std::size_t get_comment_suffix_length() const
+    {
+        COWEL_ASSERT(m_kind == Primary_Kind::comment);
+        return std::get<std::size_t>(m_extra);
+    }
+
+    /// @brief Returns the suffix of the comment.
+    /// That is, an empty string (if the comment ends with EOF),
+    /// or a string containing the terminating LF/CRLF.
+    [[nodiscard]]
+    std::u8string_view get_comment_suffix() const
+    {
+        COWEL_ASSERT(m_kind == Primary_Kind::comment);
+        return m_source.substr(m_source.length() - get_comment_suffix_length());
+    }
+
+    /// @brief Returns the text content of the comment, excluding the prefix and suffix.
+    [[nodiscard]]
+    std::u8string_view get_comment_text() const
+    {
+        COWEL_ASSERT(m_kind == Primary_Kind::comment);
+        constexpr std::size_t prefix_length = 2; // \:
+        return m_source.substr(
+            prefix_length, m_source.length() - prefix_length - get_comment_suffix_length()
+        );
+    }
+
+    [[nodiscard]]
+    std::span<const Markup_Element> get_elements() const;
+
+    [[nodiscard]]
+    bool has_elements() const
+    {
+        COWEL_ASSERT(m_kind == Primary_Kind::block || m_kind == Primary_Kind::quoted_string);
+        return !get_elements().empty();
+    }
+
+    [[nodiscard]]
+    std::size_t get_elements_size() const
+    {
+        COWEL_ASSERT(m_kind == Primary_Kind::block || m_kind == Primary_Kind::quoted_string);
+        return get_elements().size();
     }
 
     [[nodiscard]]
     std::span<const Group_Member> get_members() const;
 
     [[nodiscard]]
-    bool empty() const
+    bool has_members() const
     {
-        return get_members().empty();
+        COWEL_ASSERT(m_kind == Primary_Kind::group);
+        return !get_members().empty();
     }
 
     [[nodiscard]]
-    std::size_t size() const
+    std::size_t get_members_size() const
     {
+        COWEL_ASSERT(m_kind == Primary_Kind::group);
         return get_members().size();
     }
-};
 
-using Value_Variant = std::variant<Content_Sequence, Group>;
+    void swap(Primary& other) noexcept;
 
-struct Value : Value_Variant {
-    using Value_Variant::variant;
-
-    [[nodiscard]]
-    File_Source_Span get_source_span() const
-    {
-        if (const auto* const group = std::get_if<ast::Group>(this)) {
-            return group->get_source_span();
-        }
-        return std::get<ast::Content_Sequence>(*this).get_source_span();
-    }
-
-    [[nodiscard]]
-    std::u8string_view get_source() const
-    {
-        if (const auto* const group = std::get_if<ast::Group>(this)) {
-            return group->get_source();
-        }
-        return std::get<ast::Content_Sequence>(*this).get_source();
-    }
+private:
+    void assert_validity() const;
 };
 
 enum struct Member_Kind : Default_Underlying {
     named,
     positional,
     ellipsis,
+};
+
+struct Directive final {
+private:
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+    std::u8string_view m_name;
+    bool m_has_ellipsis = false;
+
+    std::optional<Primary> m_arguments;
+    std::optional<Primary> m_content;
+
+public:
+    [[nodiscard]]
+    Directive(
+        const File_Source_Span& source_span,
+        std::u8string_view source,
+        std::u8string_view name,
+        std::optional<Primary>&& args,
+        std::optional<Primary>&& content
+    );
+
+    [[nodiscard]]
+    Directive(Directive&&) noexcept;
+    [[nodiscard]]
+    Directive(const Directive&);
+
+    Directive& operator=(Directive&&) noexcept;
+    Directive& operator=(const Directive&);
+
+    ~Directive();
+
+    [[nodiscard]]
+    bool has_ellipsis() const
+    {
+        return m_has_ellipsis;
+    }
+
+    [[nodiscard]]
+    File_Source_Span get_source_span() const
+    {
+        return m_source_span;
+    }
+
+    /// @brief Returns the source code of this directive.
+    /// This may include a leading backslash.
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        return m_source;
+    }
+
+    [[nodiscard]]
+    File_Source_Span get_name_span() const
+    {
+        return m_source_span.with_length(m_name.length());
+    }
+
+    /// @brief Returns the name of the directive,
+    /// not including the leading backslash.
+    [[nodiscard]]
+    std::u8string_view get_name() const
+    {
+        return m_name;
+    }
+
+    [[nodiscard]]
+    Primary* get_arguments()
+    {
+        return m_arguments ? &*m_arguments : nullptr;
+    }
+    [[nodiscard]]
+    const Primary* get_arguments() const
+    {
+        return m_arguments ? &*m_arguments : nullptr;
+    }
+
+    [[nodiscard]]
+    std::span<const ast::Group_Member> get_argument_span() const
+    {
+        if (m_arguments) {
+            return m_arguments->get_members();
+        }
+        return {};
+    }
+
+    [[nodiscard]]
+    Primary* get_content()
+    {
+        return m_content ? &*m_content : nullptr;
+    }
+    [[nodiscard]]
+    const Primary* get_content() const
+    {
+        return m_content ? &*m_content : nullptr;
+    }
+
+    [[nodiscard]]
+    std::span<const ast::Markup_Element> get_content_span() const
+    {
+        if (m_content) {
+            return m_content->get_elements();
+        }
+        return {};
+    }
+};
+
+using Member_Value_Variant = std::variant<Directive, Primary>;
+
+struct Member_Value : Member_Value_Variant {
+    using std::variant<Directive, Primary>::variant;
+
+    [[nodiscard]]
+    bool is_directive() const
+    {
+        return std::holds_alternative<ast::Directive>(*this);
+    }
+    [[nodiscard]]
+    bool is_primary() const
+    {
+        return std::holds_alternative<ast::Primary>(*this);
+    }
+
+    [[nodiscard]]
+    const ast::Directive& as_directive() const
+    {
+        return std::get<ast::Directive>(*this);
+    }
+    [[nodiscard]]
+    const ast::Directive* try_as_directive() const
+    {
+        return std::get_if<ast::Directive>(this);
+    }
+
+    [[nodiscard]]
+    const ast::Primary& as_primary() const
+    {
+        return std::get<ast::Primary>(*this);
+    }
+    [[nodiscard]]
+    const ast::Primary* try_as_primary() const
+    {
+        return std::get_if<ast::Primary>(this);
+    }
+
+    [[nodiscard]]
+    bool is_spliceable_value() const noexcept
+    {
+        // FIXME: This doesn't seem correct;
+        //        directives can return `void` or `group`,
+        //        and aren't necessarily spliceable.
+        return is_directive() || as_primary().is_spliceable_value();
+    }
+
+    [[nodiscard]]
+    bool is_spliceable() const noexcept
+    {
+        // FIXME: This doesn't seem correct;
+        //        directives can return `void` or `group`,
+        //        and aren't necessarily spliceable.
+        return is_directive() || as_primary().is_spliceable();
+    }
+
+    [[nodiscard]]
+    bool is_value() const noexcept
+    {
+        return is_directive() || as_primary().is_value();
+    }
+
+    [[nodiscard]]
+    File_Source_Span get_source_span() const
+    {
+        return std::visit(
+            [&](const auto& v) -> File_Source_Span { return v.get_source_span(); }, *this
+        );
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        return std::visit(
+            [&](const auto& v) -> std::u8string_view { return v.get_source(); }, *this
+        );
+    }
 };
 
 struct [[nodiscard]]
@@ -178,17 +498,17 @@ public:
     static Group_Member named( //
         const File_Source_Span& name_span,
         std::u8string_view name,
-        Value&& value
+        Member_Value&& value
     );
     [[nodiscard]]
     static Group_Member positional( //
-        Value&& value
+        Member_Value&& value
     );
 
 private:
     File_Source_Span m_source_span;
     std::u8string_view m_source;
-    Value m_value;
+    std::optional<Member_Value> m_value;
     File_Source_Span m_name_span;
     std::u8string_view m_name;
     Member_Kind m_kind;
@@ -199,7 +519,7 @@ private:
         std::u8string_view source,
         const File_Source_Span& name_span,
         std::u8string_view name,
-        Value&& value,
+        std::optional<Member_Value>&& value,
         Member_Kind type
     );
 
@@ -249,226 +569,13 @@ public:
     [[nodiscard]]
     bool has_value() const
     {
-        return m_kind != Member_Kind::ellipsis;
+        return m_value.has_value();
     }
 
     [[nodiscard]]
-    const Value& get_value() const
+    const Member_Value& get_value() const
     {
-        COWEL_ASSERT(has_value());
-        return m_value;
-    }
-};
-
-struct Directive final {
-private:
-    File_Source_Span m_source_span;
-    std::u8string_view m_source;
-    std::u8string_view m_name;
-    bool m_has_ellipsis = false;
-
-    std::optional<Group> m_arguments;
-    std::optional<Content_Sequence> m_content;
-
-public:
-    [[nodiscard]]
-    Directive(
-        const File_Source_Span& source_span,
-        std::u8string_view source,
-        std::u8string_view name,
-        std::optional<Group>&& args,
-        std::optional<Content_Sequence>&& content
-    );
-
-    [[nodiscard]]
-    Directive(Directive&&) noexcept;
-    [[nodiscard]]
-    Directive(const Directive&);
-
-    Directive& operator=(Directive&&) noexcept;
-    Directive& operator=(const Directive&);
-
-    ~Directive();
-
-    [[nodiscard]]
-    bool has_ellipsis() const
-    {
-        return m_has_ellipsis;
-    }
-
-    [[nodiscard]]
-    File_Source_Span get_source_span() const
-    {
-        return m_source_span;
-    }
-
-    [[nodiscard]]
-    std::u8string_view get_source() const
-    {
-        return m_source;
-    }
-
-    [[nodiscard]]
-    File_Source_Span get_name_span() const
-    {
-        return m_source_span.with_length(m_name.length());
-    }
-
-    [[nodiscard]]
-    std::u8string_view get_name() const
-    {
-        return m_name;
-    }
-
-    [[nodiscard]]
-    Group* get_arguments()
-    {
-        return m_arguments ? &*m_arguments : nullptr;
-    }
-    [[nodiscard]]
-    const Group* get_arguments() const
-    {
-        return m_arguments ? &*m_arguments : nullptr;
-    }
-
-    [[nodiscard]]
-    std::span<const ast::Group_Member> get_argument_span() const
-    {
-        if (m_arguments) {
-            return m_arguments->get_members();
-        }
-        return {};
-    }
-
-    [[nodiscard]]
-    Content_Sequence* get_content()
-    {
-        return m_content ? &*m_content : nullptr;
-    }
-    [[nodiscard]]
-    const Content_Sequence* get_content() const
-    {
-        return m_content ? &*m_content : nullptr;
-    }
-
-    [[nodiscard]]
-    std::span<const ast::Content> get_content_span() const
-    {
-        if (m_content) {
-            return m_content->get_elements();
-        }
-        return {};
-    }
-};
-
-struct Text final {
-private:
-    File_Source_Span m_source_span;
-    std::u8string_view m_source;
-
-public:
-    [[nodiscard]]
-    Text(const File_Source_Span& source_span, std::u8string_view source);
-
-    [[nodiscard]]
-    File_Source_Span get_source_span() const
-    {
-        return m_source_span;
-    }
-
-    [[nodiscard]]
-    std::u8string_view get_source() const
-    {
-        return m_source;
-    }
-};
-
-struct Comment final {
-private:
-    File_Source_Span m_source_span;
-    std::u8string_view m_source;
-    std::size_t m_suffix_length;
-
-public:
-    [[nodiscard]]
-    Comment(const File_Source_Span& source_span, std::u8string_view source);
-
-    [[nodiscard]]
-    File_Source_Span get_source_span() const
-    {
-        return m_source_span;
-    }
-
-    /// @brief Returns a string containing all the source characters comprising the comment,
-    /// including the `\:` prefix and the LF/CRLF suffix, if any.
-    [[nodiscard]]
-    std::u8string_view get_source() const
-    {
-        return m_source;
-    }
-
-    [[nodiscard]]
-    std::size_t get_suffix_length() const
-    {
-        return m_suffix_length;
-    }
-
-    /// @brief Returns the suffix of the comment.
-    /// That is, an empty string (if the comment ends with EOF),
-    /// or a string containing the terminating LF/CRLF.
-    [[nodiscard]]
-    std::u8string_view get_suffix() const
-    {
-        return m_source.substr(m_source.length() - m_suffix_length);
-    }
-
-    /// @brief Returns the text content of the comment, excluding the prefix and suffix.
-    [[nodiscard]]
-    std::u8string_view get_text() const
-    {
-        constexpr std::size_t prefix_length = 2; // \:
-        return m_source.substr(prefix_length, m_source.length() - prefix_length - m_suffix_length);
-    }
-};
-
-/// @brief An escape sequence, such as `\\{`, `\\}`, or `\\\\`.
-struct Escaped final {
-private:
-    File_Source_Span m_source_span;
-    std::u8string_view m_source;
-
-public:
-    [[nodiscard]]
-    Escaped(const File_Source_Span& source_span, std::u8string_view source);
-
-    [[nodiscard]]
-    File_Source_Span get_source_span() const
-    {
-        return m_source_span;
-    }
-
-    /// @brief Returns a two-character substring of the `source`,
-    /// where the first character is the escaping backslash,
-    /// and the second character is the escaped character.
-    [[nodiscard]]
-    std::u8string_view get_source() const
-    {
-        return m_source;
-    }
-
-    /// @brief Returns the source span covering the escaped characters.
-    [[nodiscard]]
-    File_Source_Span get_escaped_span() const
-    {
-        return m_source_span.to_right(1);
-    }
-
-    /// @brief Returns the escaped characters.
-    [[nodiscard]]
-    std::u8string_view get_escaped() const
-    {
-        COWEL_DEBUG_ASSERT(m_source.size() >= 2);
-        return m_source.substr(1);
+        return m_value.value();
     }
 };
 
@@ -522,25 +629,58 @@ public:
     }
 };
 
-using Content_Variant = std::variant<Directive, Text, Comment, Escaped, Generated>;
+using Markup_Element_Variant = std::variant<Directive, Primary, Generated>;
 
 template <typename T>
 concept content_variant_alternative = []<typename... Ts>(std::variant<Ts...>*) {
     return one_of<T, Ts...>;
-}(static_cast<Content_Variant*>(nullptr));
+}(static_cast<Markup_Element_Variant*>(nullptr));
 
 template <typename T>
 concept user_written = content_variant_alternative<T> && !std::same_as<T, Generated>;
 
-struct Content : Content_Variant {
-    using Content_Variant::variant;
+struct Markup_Element : Markup_Element_Variant {
+    using Markup_Element_Variant::variant;
+
+    [[nodiscard]]
+    const ast::Directive& as_directive() const
+    {
+        return std::get<ast::Directive>(*this);
+    }
+    [[nodiscard]]
+    const ast::Directive* try_as_directive() const
+    {
+        return std::get_if<ast::Directive>(this);
+    }
+
+    [[nodiscard]]
+    const ast::Primary& as_primary() const
+    {
+        return std::get<ast::Primary>(*this);
+    }
+    [[nodiscard]]
+    const ast::Primary* try_as_primary() const
+    {
+        return std::get_if<ast::Primary>(this);
+    }
+
+    [[nodiscard]]
+    const ast::Generated& as_generated() const
+    {
+        return std::get<ast::Generated>(*this);
+    }
+    [[nodiscard]]
+    const ast::Generated* try_as_generated() const
+    {
+        return std::get_if<ast::Generated>(this);
+    }
 
     [[nodiscard]]
     File_Source_Span get_source_span() const
     {
-        return visit(
+        return std::visit(
             [&]<typename T>(const T& v) -> File_Source_Span {
-                if constexpr (one_of<T, Text, Escaped, Directive>) {
+                if constexpr (user_written<T>) {
                     return v.get_source_span();
                 }
                 else {
@@ -554,7 +694,7 @@ struct Content : Content_Variant {
     [[nodiscard]]
     std::u8string_view get_source() const
     {
-        return visit(
+        return std::visit(
             []<typename T>(const T& v) -> std::u8string_view {
                 if constexpr (user_written<T>) {
                     return v.get_source();
@@ -568,13 +708,19 @@ struct Content : Content_Variant {
     }
 };
 
-static_assert(std::is_move_constructible_v<Content>);
-static_assert(std::is_move_constructible_v<Content>);
-static_assert(std::is_copy_assignable_v<Content>);
-static_assert(std::is_move_assignable_v<Content>);
+static_assert(std::is_move_constructible_v<Markup_Element>);
+static_assert(std::is_move_constructible_v<Markup_Element>);
+static_assert(std::is_copy_assignable_v<Markup_Element>);
+static_assert(std::is_move_assignable_v<Markup_Element>);
 
 // Suppress false positive: https://github.com/llvm/llvm-project/issues/130745
 // NOLINTBEGIN(readability-redundant-inline-specifier)
+inline Primary::Primary(Primary&&) noexcept = default;
+inline Primary::Primary(const Primary&) = default;
+inline Primary& Primary::operator=(Primary&&) noexcept = default;
+inline Primary& Primary::operator=(const Primary&) = default;
+inline Primary::~Primary() = default;
+
 inline Group_Member::Group_Member(Group_Member&&) noexcept = default;
 inline Group_Member::Group_Member(const Group_Member&) = default;
 inline Group_Member& Group_Member::operator=(Group_Member&&) noexcept = default;
@@ -587,87 +733,18 @@ inline Directive& Directive::operator=(Directive&&) noexcept = default;
 inline Directive& Directive::operator=(const Directive&) = default;
 inline Directive::~Directive() = default;
 
-inline Group::Group(const Group&) = default;
-inline Group::Group(Group&&) noexcept = default;
-inline Group& Group::operator=(const Group&) = default;
-inline Group& Group::operator=(Group&&) noexcept = default;
-inline Group::~Group() = default;
-
-inline Content_Sequence::Content_Sequence(const Content_Sequence&) = default;
-inline Content_Sequence::Content_Sequence(Content_Sequence&&) noexcept = default;
-inline Content_Sequence& Content_Sequence::operator=(const Content_Sequence&) = default;
-inline Content_Sequence& Content_Sequence::operator=(Content_Sequence&&) noexcept = default;
-inline Content_Sequence::~Content_Sequence() = default;
-
-inline std::span<const Content> Content_Sequence::get_elements() const
+inline std::span<const Markup_Element> Primary::get_elements() const
 {
-    return m_elements;
+    COWEL_DEBUG_ASSERT(m_kind == Primary_Kind::block || m_kind == Primary_Kind::quoted_string);
+    return std::get<Pmr_Vector<Markup_Element>>(m_extra);
 }
 
-inline std::span<const ast::Group_Member> Group::get_members() const
+inline std::span<const Group_Member> Primary::get_members() const
 {
-    return m_members;
+    COWEL_DEBUG_ASSERT(m_kind == Primary_Kind::group);
+    return std::get<Pmr_Vector<Group_Member>>(m_extra);
 }
 // NOLINTEND(readability-redundant-inline-specifier)
-
-template <bool constant>
-struct Visitor_Impl {
-    using Group_Type = const_if_t<Group, constant>;
-    using Group_Member_Type = const_if_t<Group_Member, constant>;
-    using Text_Type = const_if_t<Text, constant>;
-    using Comment_Type = const_if_t<Comment, constant>;
-    using Escaped_Type = const_if_t<Escaped, constant>;
-    using Directive_Type = const_if_t<Directive, constant>;
-    using Generated_Type = const_if_t<Generated, constant>;
-    using Content_Type = const_if_t<Content, constant>;
-
-    void visit_arguments(Directive_Type& directive)
-    {
-        if (Group_Type* const args = directive.get_arguments()) {
-            visit_group_members(args->get_members());
-        }
-    }
-
-    void visit_group_members(std::span<Group_Member_Type> members)
-    {
-        for (Group_Member_Type& arg : members) {
-            this->visit(arg);
-        }
-    }
-
-    void visit_children(Directive_Type& directive)
-    {
-        visit_arguments();
-        visit_content_sequence(directive.get_content());
-    }
-
-    void visit_children(Group_Member_Type& argument)
-    {
-        visit_content_sequence(argument.get_content());
-    }
-
-    void visit_content(Content_Type& content)
-    {
-        std::visit([&](auto& c) { this->visit(c); }, content);
-    }
-
-    void visit_content_sequence(std::span<Content_Type> content)
-    {
-        for (Content_Type& c : content) {
-            this->visit_content(c);
-        }
-    }
-
-    virtual void visit(Group_Member_Type& argument) = 0;
-    virtual void visit(Directive_Type& directive) = 0;
-    virtual void visit(Generated_Type& generated) = 0;
-    virtual void visit(Text_Type& text) = 0;
-    virtual void visit(Comment_Type& text) = 0;
-    virtual void visit(Escaped_Type& text) = 0;
-};
-
-using Visitor = Visitor_Impl<false>;
-using Const_Visitor = Visitor_Impl<true>;
 
 } // namespace cowel::ast
 

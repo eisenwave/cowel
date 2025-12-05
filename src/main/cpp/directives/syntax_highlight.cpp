@@ -33,9 +33,9 @@ using namespace std::string_view_literals;
 namespace cowel {
 
 Processing_Status
-Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Code_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    String_Matcher lang_string_matcher { context.get_transient_memory() };
+    Spliceable_To_String_Matcher lang_string_matcher { context.get_transient_memory() };
     Group_Member_Matcher lang_member { u8"lang"sv, Optionality::mandatory, lang_string_matcher };
     Boolean_Matcher nested_boolean;
     Group_Member_Matcher nested_member { u8"nested"sv, Optionality::optional, nested_boolean };
@@ -59,7 +59,7 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     // we still process all the arguments above.
     if (out.get_language() == Output_Language::text) {
         const Processing_Status text_status
-            = consume_all(out, call.get_content_span(), call.content_frame, context);
+            = splice_all(out, call.get_content_span(), call.content_frame, context);
         return text_status;
     }
 
@@ -90,7 +90,7 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
     Syntax_Highlight_Policy highlight_policy //
         { context.get_transient_memory() };
     const auto highlight_status
-        = consume_all(highlight_policy, call.get_content_span(), call.content_frame, context);
+        = splice_all(highlight_policy, call.get_content_span(), call.content_frame, context);
 
     const Result<void, Syntax_Highlight_Error> result = [&] {
         if (!should_trim) {
@@ -128,10 +128,9 @@ Code_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& 
 }
 
 Processing_Status
-Highlight_As_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Highlight_As_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    String_Matcher name_string { context.get_transient_memory() };
+    Spliceable_To_String_Matcher name_string { context.get_transient_memory() };
     Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_string };
     Group_Member_Matcher* parameters[] { &name_member };
     Pack_Usual_Matcher args_matcher { parameters };
@@ -164,7 +163,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 
     // We do the same special casing as for \code (see above for explanation).
     if (out.get_language() == Output_Language::text) {
-        return consume_all(out, call.get_content_span(), call.content_frame, context);
+        return splice_all(out, call.get_content_span(), call.content_frame, context);
     }
 
     HTML_Content_Policy policy = ensure_html_policy(out);
@@ -176,7 +175,7 @@ Highlight_As_Behavior::operator()(Content_Policy& out, const Invocation& call, C
         .end();
     buffer.flush();
     const Processing_Status result
-        = consume_all(policy, call.get_content_span(), call.content_frame, context);
+        = splice_all(policy, call.get_content_span(), call.content_frame, context);
     if (status_is_break(result)) {
         return result;
     }

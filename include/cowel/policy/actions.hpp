@@ -29,17 +29,7 @@ public:
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Text&, Frame_Index, Context&) override
-    {
-        return Processing_Status::ok;
-    }
-    [[nodiscard]]
-    Processing_Status consume(const ast::Comment&, Frame_Index, Context&) override
-    {
-        return Processing_Status::ok;
-    }
-    [[nodiscard]]
-    Processing_Status consume(const ast::Escaped&, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Primary&, Frame_Index, Context&) override
     {
         return Processing_Status::ok;
     }

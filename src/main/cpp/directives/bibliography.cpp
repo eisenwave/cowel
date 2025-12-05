@@ -127,26 +127,25 @@ void write_bibliography_entry(
 } // namespace
 
 Processing_Status
-Bibliography_Add_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context)
-    const
+Bibliography_Add_Behavior::splice(Content_Policy&, const Invocation& call, Context& context) const
 {
     auto* memory = context.get_transient_memory();
 
-    String_Matcher id_string { memory };
+    Spliceable_To_String_Matcher id_string { memory };
     Group_Member_Matcher id_member { u8"id", Optionality::mandatory, id_string };
-    String_Matcher title_string { memory };
+    Spliceable_To_String_Matcher title_string { memory };
     Group_Member_Matcher title_member { u8"title", Optionality::optional, title_string };
-    String_Matcher date_string { memory };
+    Spliceable_To_String_Matcher date_string { memory };
     Group_Member_Matcher date_member { u8"date", Optionality::optional, date_string };
-    String_Matcher publisher_string { memory };
+    Spliceable_To_String_Matcher publisher_string { memory };
     Group_Member_Matcher publisher_member { u8"publisher", Optionality::optional,
                                             publisher_string };
-    String_Matcher link_string { memory };
+    Spliceable_To_String_Matcher link_string { memory };
     Group_Member_Matcher link_member { u8"link", Optionality::optional, link_string };
-    String_Matcher long_link_string { memory };
+    Spliceable_To_String_Matcher long_link_string { memory };
     Group_Member_Matcher long_link_member { u8"long-link", Optionality::optional,
                                             long_link_string };
-    String_Matcher author_string { memory };
+    Spliceable_To_String_Matcher author_string { memory };
     Group_Member_Matcher author_member { u8"author", Optionality::optional, author_string };
 
     Group_Member_Matcher* const matchers[] {

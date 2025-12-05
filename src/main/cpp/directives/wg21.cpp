@@ -20,9 +20,9 @@ using namespace std::string_view_literals;
 namespace cowel {
 
 Processing_Status
-WG21_Head_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+WG21_Head_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Lazy_Markup_Matcher title_markup;
+    Lazy_Value_Of_Type_Matcher title_markup { &Type::block };
     Group_Member_Matcher title_member { u8"title"sv, Optionality::mandatory, title_markup };
     Group_Member_Matcher* const parameters[] { &title_member };
     Pack_Usual_Matcher args_matcher { parameters };
@@ -43,11 +43,13 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const Invocation& call, Cont
         .write_class(u8"wg21-head"sv)
         .end();
 
+    const std::span<const ast::Markup_Element> title_elements
+        = title_markup.get().as_primary().get_elements();
     {
         // FIXME: multiple evaluations of title input
         std::pmr::vector<char8_t> title_plaintext { context.get_transient_memory() };
-        const auto status = to_plaintext(
-            title_plaintext, title_markup.get().get_elements(), title_markup.get_frame(), context
+        const auto status = splice_to_plaintext(
+            title_plaintext, title_elements, title_markup.get_frame(), context
         );
         if (status != Processing_Status::ok) {
             writer.close_tag(html_tag::div);
@@ -68,9 +70,8 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const Invocation& call, Cont
     writer.open_tag(html_tag::h1);
 
     HTML_Content_Policy html_policy { buffer };
-    const auto title_status = consume_all(
-        html_policy, title_markup.get().get_elements(), title_markup.get_frame(), context
-    );
+    const auto title_status
+        = splice_all(html_policy, title_elements, title_markup.get_frame(), context);
 
     writer.close_tag(html_tag::h1);
     if (status_is_break(title_status)) {
@@ -79,7 +80,7 @@ WG21_Head_Behavior::operator()(Content_Policy& out, const Invocation& call, Cont
 
     writer.write_inner_html(u8'\n');
     const auto status
-        = consume_all(html_policy, call.get_content_span(), call.content_frame, context);
+        = splice_all(html_policy, call.get_content_span(), call.content_frame, context);
     writer.close_tag(html_tag::div);
 
     return status;

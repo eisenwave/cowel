@@ -10,6 +10,7 @@
 
 #include "cowel/ast.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/util/char_sequence.hpp"
 #include "cowel/util/function_ref.hpp"
 
 namespace cowel {
@@ -23,17 +24,29 @@ enum struct AST_Instruction_Type : Default_Underlying {
     escape,
     /// @brief The next `n` characters are literal text.
     text,
+    /// @brief The next `n` characters are an unquoted string.
+    unquoted_string,
+    /// @brief The next `n` characters are decimal integer literal.
+    decimal_integer,
+    /// @brief The next `n` characters are `true`.
+    keyword_true,
+    /// @brief The next `n` characters are `false`.
+    keyword_false,
+    /// @brief The next `n` characters are `null`.
+    keyword_null,
+    /// @brief The next `n` characters are `unit`.
+    keyword_unit,
     /// @brief The next `n` characters are a comment,
     /// including the `\:` prefix and the terminating newline, if any.
     comment,
     /// @brief The next `n` characters are an argument name.
-    argument_name,
+    member_name,
     /// @brief The next `n` characters are an ellipsis (currently always `3`).
-    argument_ellipsis,
+    ellipsis,
     /// @brief Advance past `=` following an argument name.
-    argument_equal,
+    member_equal,
     /// @brief Advance past `,` between arguments.
-    argument_comma,
+    member_comma,
     /// @brief Begins the document.
     /// Always the first instruction.
     /// The operand is the amount of pieces that comprise the argument content,
@@ -49,19 +62,19 @@ enum struct AST_Instruction_Type : Default_Underlying {
     /// The operand is the amount of arguments.
     ///
     /// Advance past `(`.
-    push_arguments,
+    push_group,
     /// @brief Advance past `)`.
-    pop_arguments,
+    pop_group,
     /// @brief Begin argument.
     /// The operand is the amount of elements in the content sequence,
     /// or zero if the argument is a group.
-    push_named_argument,
-    pop_named_argument,
+    push_named_member,
+    pop_named_member,
     /// @brief Begin argument.
     /// The operand is the amount of elements in the content sequence,
     /// or zero if the argument is a group.
-    push_positional_argument,
-    pop_positional_argument,
+    push_positional_member,
+    pop_positional_member,
     /// @brief Begin argument.
     /// The operand is the amount of elements in the content sequence.
     push_ellipsis_argument,
@@ -74,8 +87,13 @@ enum struct AST_Instruction_Type : Default_Underlying {
     push_block,
     /// @brief Advance past `}`.
     pop_block,
-    /// @brief Advance past `{`.
-    error_unclosed_block,
+    /// @brief Begin quoted string.
+    /// The operand is the amount of pieces that comprise the string.
+    ///
+    /// Advance past `"`.
+    push_quoted_string,
+    /// Advance past `"`.
+    pop_quoted_string,
 };
 
 [[nodiscard]]
@@ -85,13 +103,21 @@ constexpr bool ast_instruction_type_has_operand(AST_Instruction_Type type)
     switch (type) {
     case pop_document:
     case pop_directive:
-    case pop_arguments:
-    case pop_named_argument:
-    case pop_positional_argument:
-    case pop_ellipsis_argument:
+    case pop_group:
+    case pop_quoted_string:
     case pop_block:
-    case argument_comma:
-    case argument_equal: return false;
+
+    case push_named_member:
+    case pop_named_member:
+
+    case push_positional_member:
+    case pop_positional_member:
+
+    case push_ellipsis_argument:
+    case pop_ellipsis_argument:
+
+    case member_comma:
+    case member_equal: return false;
     default: return true;
     }
 }
@@ -99,16 +125,16 @@ constexpr bool ast_instruction_type_has_operand(AST_Instruction_Type type)
 [[nodiscard]]
 constexpr bool ast_instruction_type_is_push_argument(AST_Instruction_Type type)
 {
-    return type == AST_Instruction_Type::push_named_argument
-        || type == AST_Instruction_Type::push_positional_argument
+    return type == AST_Instruction_Type::push_named_member
+        || type == AST_Instruction_Type::push_positional_member
         || type == AST_Instruction_Type::push_ellipsis_argument;
 }
 
 [[nodiscard]]
 constexpr bool ast_instruction_type_is_pop_argument(AST_Instruction_Type type)
 {
-    return type == AST_Instruction_Type::pop_named_argument
-        || type == AST_Instruction_Type::pop_positional_argument
+    return type == AST_Instruction_Type::pop_named_member
+        || type == AST_Instruction_Type::pop_positional_member
         || type == AST_Instruction_Type::pop_ellipsis_argument;
 }
 
@@ -123,52 +149,49 @@ struct AST_Instruction {
         = default;
 };
 
+using Parse_Error_Consumer = Function_Ref<
+    void(std::u8string_view id, const Source_Span& location, Char_Sequence8 message)>;
+
 /// @brief Parses the COWEL document.
 /// This process does not result in an AST, but a vector of instructions that can be used to
 /// construct an AST.
-///
-/// Note that parsing is infallible.
-/// In the grammar, any syntax violation can fall back onto literal text,
-/// so the parsed result may be undesirable, but always valid.
-void parse(std::pmr::vector<AST_Instruction>& out, std::u8string_view source);
-
-using Parse_Error_Consumer = Function_Ref<
-    void(std::u8string_view id, const File_Source_Span& location, std::u8string_view message)>;
+/// @param out A vector where instructions for constructing a syntax tree are emitted.
+/// @param source The source code to parse.
+/// @param on_error If not empty, invoked whenever a parse error is encountered.
+/// @returns `true` iff parsing succeeded without any errors.
+[[nodiscard]]
+bool parse(
+    std::pmr::vector<AST_Instruction>& out,
+    std::u8string_view source,
+    Parse_Error_Consumer on_error = {}
+);
 
 /// @brief Builds an AST from a span of instructions,
 /// usually obtained from `parse`.
 void build_ast(
-    ast::Pmr_Vector<ast::Content>& out,
+    ast::Pmr_Vector<ast::Markup_Element>& out,
     std::u8string_view source,
     File_Id file,
     std::span<const AST_Instruction> instructions,
-    std::pmr::memory_resource* memory,
-    Parse_Error_Consumer on_error = {}
+    std::pmr::memory_resource* memory
 );
 
 /// @brief Builds an AST from a span of instructions,
 /// usually obtained from `parse`.
 [[nodiscard]]
-ast::Pmr_Vector<ast::Content> build_ast(
+ast::Pmr_Vector<ast::Markup_Element> build_ast(
     std::u8string_view source,
     File_Id file,
     std::span<const AST_Instruction> instructions,
-    std::pmr::memory_resource* memory,
-    Parse_Error_Consumer on_error = {}
+    std::pmr::memory_resource* memory
 );
 
-/// @brief Parses a document and runs `build_ast` on the results.
-void parse_and_build(
-    ast::Pmr_Vector<ast::Content>& out,
-    std::u8string_view source,
-    File_Id file,
-    std::pmr::memory_resource* memory,
-    Parse_Error_Consumer on_error = {}
-);
-
-/// @brief Parses a document and runs `build_ast` on the results.
+/// @brief Parses a document via `parse(out, source, on_error)`.
+/// If `parse` returns `true`, runs `build_ast` on the resulting parse instructions.
+/// Otherwise, returns `false`.
 [[nodiscard]]
-ast::Pmr_Vector<ast::Content> parse_and_build(
+bool parse_and_build(
+    ast::Pmr_Vector<ast::Markup_Element>& out,
     std::u8string_view source,
     File_Id file,
     std::pmr::memory_resource* memory,

@@ -44,19 +44,19 @@ struct Referred {
     std::u8string_view mask_html;
 };
 
-struct Macro_Definition final : Directive_Behavior {
+struct Macro_Definition final : Block_Directive_Behavior {
 private:
-    std::pmr::vector<ast::Content> m_body;
+    std::pmr::vector<ast::Markup_Element> m_body;
 
 public:
     [[nodiscard]]
-    explicit Macro_Definition(std::pmr::vector<ast::Content>&& body) noexcept
+    explicit Macro_Definition(std::pmr::vector<ast::Markup_Element>&& body) noexcept
         : m_body { std::move(body) }
     {
     }
 
     [[nodiscard]]
-    Processing_Status operator()(Content_Policy& out, const Invocation&, Context&) const final;
+    Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const final;
 };
 
 /// @brief Stores contextual information during document processing.
@@ -422,11 +422,11 @@ public:
     }
 
     [[nodiscard]]
-    bool emplace_macro(std::pmr::u8string&& name, std::span<const ast::Content> definition)
+    bool emplace_macro(std::pmr::u8string&& name, std::span<const ast::Markup_Element> definition)
     {
         // TODO: once available, upgrade this to std::from_range construction
-        std::pmr::vector<ast::Content> body { definition.begin(), definition.end(),
-                                              m_macros.get_allocator() };
+        std::pmr::vector<ast::Markup_Element> body { definition.begin(), definition.end(),
+                                                     m_macros.get_allocator() };
         const auto [_, success] = m_macros.try_emplace(std::move(name), std::move(body));
         return success;
     }

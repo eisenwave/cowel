@@ -48,26 +48,31 @@ bool resolve_references(Text_Sink& out, std::u8string_view text, Context& contex
 [[nodiscard]]
 Processing_Status write_head_body_document(
     Text_Sink& out,
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Context& context,
-    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Content>, Context&)> head,
-    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Content>, Context&)> body
+    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Markup_Element>, Context&)>
+        head,
+    Function_Ref<Processing_Status(Content_Policy&, std::span<const ast::Markup_Element>, Context&)>
+        body
 );
 
 [[nodiscard]]
-Processing_Status
-write_wg21_head_contents(Content_Policy& out, std::span<const ast::Content>, Context& context);
+Processing_Status write_wg21_head_contents(
+    Content_Policy& out,
+    std::span<const ast::Markup_Element>,
+    Context& context
+);
 
 [[nodiscard]]
 Processing_Status write_wg21_body_contents(
     Content_Policy& out,
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Context& context
 );
 
 [[nodiscard]]
 inline Processing_Status
-write_wg21_document(Text_Sink& out, std::span<const ast::Content> content, Context& context)
+write_wg21_document(Text_Sink& out, std::span<const ast::Markup_Element> content, Context& context)
 {
     return write_head_body_document(out, content, context, //
         const_v<&write_wg21_head_contents>, //

@@ -115,9 +115,9 @@ Reference_Classification classify_reference(std::u8string_view ref)
 } // namespace
 
 Processing_Status
-Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Ref_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    String_Matcher to_matcher { context.get_transient_memory() };
+    Spliceable_To_String_Matcher to_matcher { context.get_transient_memory() };
     Group_Member_Matcher to_member { u8"to"sv, Optionality::mandatory, to_matcher };
     Group_Member_Matcher* const parameters[] { &to_member };
     Pack_Usual_Matcher args_matcher { parameters };
@@ -178,7 +178,7 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
         }
         else {
             buffer.flush();
-            status = consume_all(out, call.get_content_span(), call.content_frame, context);
+            status = splice_all(out, call.get_content_span(), call.content_frame, context);
         }
         writer.close_tag(html_tag::a);
         buffer.flush();
@@ -193,7 +193,7 @@ Ref_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& c
             .write_href(target_string)
             .end();
         buffer.flush();
-        const auto status = consume_all(out, call.get_content_span(), call.content_frame, context);
+        const auto status = splice_all(out, call.get_content_span(), call.content_frame, context);
         writer.close_tag(html_tag::a);
         buffer.flush();
         return status;

@@ -38,14 +38,14 @@ namespace {
 
 [[nodiscard]]
 Result<char32_t, Processing_Status> code_point_by_generated_digits(
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Frame_Index content_frame,
     const File_Source_Span& source_span,
     Context& context
 )
 {
     std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    const auto status = to_plaintext(data, content, content_frame, context);
+    const auto status = splice_to_plaintext(data, content, content_frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -88,7 +88,7 @@ Result<char32_t, Processing_Status> code_point_by_generated_digits(
 
 [[nodiscard]]
 Result<char32_t, Processing_Status> code_point_by_generated_name(
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Frame_Index content_frame,
     const File_Source_Span& source_span,
     Context& context
@@ -97,7 +97,7 @@ Result<char32_t, Processing_Status> code_point_by_generated_name(
     constexpr auto error_point = char32_t(-1);
 
     std::pmr::vector<char8_t> name { context.get_transient_memory() };
-    const auto status = to_plaintext(name, content, content_frame, context);
+    const auto status = splice_to_plaintext(name, content, content_frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -129,8 +129,8 @@ Result<char32_t, Processing_Status> code_point_by_generated_name(
 } // namespace
 
 [[nodiscard]]
-Processing_Status
-Code_Point_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Result<Short_String_Value, Processing_Status>
+Code_Point_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     const auto match_status = match_empty_arguments(call, context);
     if (match_status != Processing_Status::ok) {
@@ -140,13 +140,10 @@ Code_Point_Behavior::operator()(Content_Policy& out, const Invocation& call, Con
     const Result<char32_t, Processing_Status> code_point = get_code_point(call, context);
     if (!code_point) {
         COWEL_ASSERT(code_point.error() != Processing_Status::ok);
-        return try_generate_error(out, call, context, code_point.error());
+        return code_point.error();
     }
 
-    ensure_paragraph_matches_display(out, m_display);
-
-    out.write(make_char_sequence(*code_point), Output_Language::text);
-    return Processing_Status::ok;
+    return to_static_string<Short_String_Value::max_size_v>(make_char_sequence(*code_point));
 }
 
 [[nodiscard]]
@@ -168,8 +165,7 @@ Char_By_Name_Behavior::get_code_point(const Invocation& call, Context& context) 
 }
 
 Processing_Status
-Char_Get_Num_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Char_Get_Num_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     constexpr Integer default_zfill = 0;
     constexpr Integer min_zfill = 0;
@@ -214,7 +210,7 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const Invocation& call, C
 
     std::pmr::vector<char8_t> input { context.get_transient_memory() };
     const auto input_status
-        = to_plaintext(input, call.get_content_span(), call.content_frame, context);
+        = splice_to_plaintext(input, call.get_content_span(), call.content_frame, context);
     if (input_status != Processing_Status::ok) {
         return status_concat(args_status, input_status);
     }
@@ -250,8 +246,6 @@ Char_Get_Num_Behavior::operator()(Content_Policy& out, const Invocation& call, C
             u8"code points, like a country flag."sv
         );
     }
-
-    ensure_paragraph_matches_display(out, m_display);
 
     const bool convert_to_upper = !lower_boolean.get_or_default(false);
     const Characters8 chars

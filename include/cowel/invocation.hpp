@@ -19,9 +19,9 @@ struct Invocation {
     /// but a directive like `\cowel_invoke` which performs that invocation programmatically.
     const ast::Directive& directive;
     /// @brief The arguments with which the directive is invoked.
-    const ast::Group* arguments;
+    const ast::Primary* arguments;
     /// @brief The content with which the directive is invoked.
-    const ast::Content_Sequence* content;
+    const ast::Primary* content;
     /// @brief The stack frame index of the content.
     /// For root content, this is zero.
     /// All content in a macro definition (and arguments of directives within)
@@ -38,7 +38,7 @@ struct Invocation {
     [[nodiscard]]
     bool has_arguments() const
     {
-        return arguments && !arguments->empty();
+        return arguments && arguments->has_members();
     }
 
     [[nodiscard]]
@@ -59,11 +59,11 @@ struct Invocation {
     [[nodiscard]]
     bool has_empty_content() const
     {
-        return !content || content->empty();
+        return !content || !content->has_elements();
     }
 
     [[nodiscard]]
-    std::span<const ast::Content> get_content_span() const
+    std::span<const ast::Markup_Element> get_content_span() const
     {
         if (content) {
             return content->get_elements();

@@ -10,7 +10,6 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/html_writer.hpp"
-#include "cowel/util/severity.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/content_status.hpp"
@@ -32,19 +31,19 @@ std::u8string_view expand_escape(std::u8string_view escape);
 /// For most escape sequences, this is simply the character following the initial `\`.
 /// For LF and CRLF escapes, this is an empty string.
 [[nodiscard]]
-inline std::u8string_view expand_escape(const ast::Escaped& escape)
+inline std::u8string_view expand_escape(const ast::Primary& escape)
 {
     return expand_escape(escape.get_escaped());
 }
 
 [[nodiscard]]
-std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content>);
+std::span<const ast::Markup_Element> trim_blank_text_left(std::span<const ast::Markup_Element>);
 [[nodiscard]]
-std::span<const ast::Content> trim_blank_text_right(std::span<const ast::Content>);
+std::span<const ast::Markup_Element> trim_blank_text_right(std::span<const ast::Markup_Element>);
 
 /// @brief Trims leading and trailing completely blank text content.
 [[nodiscard]]
-std::span<const ast::Content> trim_blank_text(std::span<const ast::Content>);
+std::span<const ast::Markup_Element> trim_blank_text(std::span<const ast::Markup_Element>);
 
 enum struct To_Plaintext_Mode : Default_Underlying { //
     normal,
@@ -59,12 +58,12 @@ enum struct To_Plaintext_Status : Default_Underlying { //
 };
 
 [[nodiscard]]
-Processing_Status invoke(
+Processing_Status splice_invocation(
     Content_Policy& out,
     const ast::Directive& directive,
     std::u8string_view name,
-    const ast::Group* args,
-    const ast::Content_Sequence* content,
+    const ast::Primary* args,
+    const ast::Primary* content,
     Frame_Index content_frame,
     Context& context
 );
@@ -72,26 +71,12 @@ Processing_Status invoke(
 /// @brief Convenience function which performs a direct call of a directive
 /// via `invoke`.
 [[nodiscard]]
-Processing_Status invoke_directive(
+Processing_Status splice_directive_invocation(
     Content_Policy& out,
     const ast::Directive& d,
     Frame_Index content_frame,
     Context& context
 );
-
-[[nodiscard]]
-const ast::Content_Sequence* as_content_or_error(
-    const ast::Value& value,
-    Context& context,
-    Severity error_severity = Severity::error
-);
-
-[[nodiscard]]
-inline const ast::Content_Sequence*
-as_content_or_fatal_error(const ast::Value& value, Context& context)
-{
-    return as_content_or_error(value, context, Severity::fatal);
-}
 
 template <std::ranges::input_range R, typename Consumer>
     requires std::is_invocable_r_v<Processing_Status, Consumer, std::ranges::range_reference_t<R>>
@@ -131,56 +116,112 @@ Processing_Status process_lazy(R&& content, Consumer consumer)
 }
 
 [[nodiscard]]
-inline Processing_Status consume_all(
+inline Processing_Status splice_all(
     Content_Policy& out,
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Frame_Index frame,
     Context& context
 )
 {
-    return process_greedy(content, [&](const ast::Content& c) {
+    return process_greedy(content, [&](const ast::Markup_Element& c) {
         return out.consume_content(c, frame, context);
     });
 }
 
 [[nodiscard]]
-inline Processing_Status consume_all(
+Processing_Status splice_value(Content_Policy& out, const Value& value, Context& context);
+
+/// @brief Splices the given `value` into the given policy.
+/// That is, consumes all elements in a quoted string or block.
+/// For primitive spliceable values such as unquoted strings, booleans, etc.,
+/// converts the value into its string representation and writes it as plaintext to `out.`
+/// @param value The primary.
+/// `primary.is_spliceable_value()` shall be `true`.
+[[nodiscard]]
+Processing_Status splice_value(
     Content_Policy& out,
-    const ast::Value& value,
+    const ast::Member_Value& value,
     Frame_Index frame,
-    Context& context,
-    Processing_Status error_status = Processing_Status::error
+    Context& context
+);
+
+[[nodiscard]]
+Processing_Status splice_primary(
+    Content_Policy& out, //
+    const ast::Primary& primary,
+    Frame_Index frame,
+    Context& context
+);
+
+/// @brief Converts a spliceable value to plaintext.
+[[nodiscard]]
+Processing_Status splice_value_to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Member_Value& value,
+    Frame_Index frame,
+    Context& context
+);
+
+[[nodiscard]]
+inline Processing_Status splice_quoted_string(
+    Content_Policy& out,
+    const ast::Primary& quoted_string,
+    Frame_Index frame,
+    Context& context
 )
 {
-    const auto* const content = as_content_or_error(value, context);
-    if (!content) {
-        return error_status;
-    }
-    return process_greedy(content->get_elements(), [&](const ast::Content& c) {
-        return out.consume_content(c, frame, context);
-    });
+    COWEL_ASSERT(quoted_string.get_kind() == ast::Primary_Kind::quoted_string);
+    return splice_all(out, quoted_string.get_elements(), frame, context);
 }
 
 [[nodiscard]]
-Processing_Status consume_all_trimmed(
+inline Processing_Status
+splice_block(Content_Policy& out, const ast::Primary& block, Frame_Index frame, Context& context)
+{
+    COWEL_ASSERT(block.get_kind() == ast::Primary_Kind::block);
+    return splice_all(out, block.get_elements(), frame, context);
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate_member_value(const ast::Member_Value& value, Frame_Index frame, Context& context);
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate(const ast::Directive& directive, Frame_Index frame, Context& context);
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate(const ast::Primary& value, Frame_Index frame, Context& context);
+
+[[nodiscard]]
+const Type& get_static_type(const ast::Member_Value& v, Context& context);
+
+/// @brief Returns the static type of a directive,
+/// based on its behavior within the `context`.
+/// If name lookup fails, returns `Type::any`.
+[[nodiscard]]
+const Type& get_static_type(const ast::Directive& directive, Context& context);
+
+/// @brief Returns the type of a primary.
+/// This is never `any`, but some specific type
+/// because primaries are things like boolean literals,
+/// whose type is easily determined.
+[[nodiscard]]
+const Type& get_type(const ast::Primary& primary);
+
+[[nodiscard]]
+Processing_Status splice_all_trimmed(
     Content_Policy& out,
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Frame_Index,
     Context& context
 );
 
 [[nodiscard]]
-Processing_Status to_plaintext(
+Processing_Status splice_to_plaintext(
     std::pmr::vector<char8_t>& out,
-    std::span<const ast::Content> content,
-    Frame_Index frame,
-    Context& context
-);
-
-[[nodiscard]]
-Processing_Status to_plaintext(
-    std::pmr::vector<char8_t>& out,
-    const ast::Value& value,
+    std::span<const ast::Markup_Element> content,
     Frame_Index frame,
     Context& context
 );
@@ -191,9 +232,34 @@ struct Plaintext_Result {
 };
 
 [[nodiscard]]
-Plaintext_Result to_plaintext_optimistic(
+Plaintext_Result splice_value_to_plaintext_optimistic(
     std::pmr::vector<char8_t>& buffer,
-    std::span<const ast::Content> content,
+    const ast::Member_Value& value,
+    Frame_Index frame,
+    Context& context
+);
+
+/// @brief Like `splice_to_plaintext`,
+/// but optimistically assumes that empty or short literals are passed.
+/// If so, writing characters to `buffer` can be avoided completely,
+/// and the string contents of a literal are returned directly.
+/// @param buffer The output buffer.
+/// @param value The value to be converted to plaintext.
+/// `value.is_spliceable_value()` shall be true.
+/// @param frame The content frame of the value.
+/// @param context The context.
+[[nodiscard]]
+Plaintext_Result splice_to_plaintext_optimistic(
+    std::pmr::vector<char8_t>& buffer,
+    const ast::Primary& value,
+    Frame_Index frame,
+    Context& context
+);
+
+[[nodiscard]]
+Plaintext_Result splice_to_plaintext_optimistic(
+    std::pmr::vector<char8_t>& buffer,
+    const ast::Directive& directive,
     Frame_Index frame,
     Context& context
 );

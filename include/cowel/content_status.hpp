@@ -76,6 +76,12 @@ status_concat(Processing_Status first, Processing_Status second) noexcept
                                            : second;
 }
 
+[[nodiscard]]
+constexpr Processing_Status status_max(Processing_Status first, Processing_Status second) noexcept
+{
+    return second > first ? second : first;
+}
+
 template <std::same_as<Processing_Status>... S>
 [[nodiscard]]
 constexpr Processing_Status status_concat(S... s) noexcept

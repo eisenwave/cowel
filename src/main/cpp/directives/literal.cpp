@@ -24,7 +24,7 @@ using namespace std::string_view_literals;
 namespace cowel {
 
 Processing_Status
-Literally_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context) const
+Literally_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     const auto match_status = match_empty_arguments(call, context);
     if (match_status != Processing_Status::ok) {
@@ -34,12 +34,11 @@ Literally_Behavior::operator()(Content_Policy& out, const Invocation& call, Cont
     try_enter_paragraph(out);
 
     To_Source_Content_Policy policy { out };
-    return consume_all(policy, call.get_content_span(), call.content_frame, context);
+    return splice_all(policy, call.get_content_span(), call.content_frame, context);
 }
 
 Processing_Status
-Unprocessed_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Unprocessed_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     const auto match_status = match_empty_arguments(call, context);
     if (match_status != Processing_Status::ok) {
@@ -49,14 +48,13 @@ Unprocessed_Behavior::operator()(Content_Policy& out, const Invocation& call, Co
     try_enter_paragraph(out);
 
     Unprocessed_Content_Policy policy { out };
-    return consume_all(policy, call.get_content_span(), call.content_frame, context);
+    return splice_all(policy, call.get_content_span(), call.content_frame, context);
 }
 
 Processing_Status
-HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, Context& context)
-    const
+HTML_Raw_Text_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Any_Matcher args_matcher {};
+    Group_Pack_Named_Lazy_Spliceable_Matcher args_matcher {};
     Call_Matcher call_matcher { args_matcher };
 
     const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
@@ -80,7 +78,7 @@ HTML_Raw_Text_Behavior::operator()(Content_Policy& out, const Invocation& call, 
 
     std::pmr::vector<char8_t> raw_text { context.get_transient_memory() };
     const auto content_status
-        = to_plaintext(raw_text, call.get_content_span(), call.content_frame, context);
+        = splice_to_plaintext(raw_text, call.get_content_span(), call.content_frame, context);
     status = status_concat(status, content_status);
     if (status_is_continue(content_status)) {
         COWEL_ASSERT(m_tag_name == u8"style"sv || m_tag_name == u8"script"sv);

@@ -7,8 +7,7 @@
 
 namespace cowel {
 
-Processing_Status
-Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& context) const
+Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     Group_Pack_String_Matcher strings { context.get_transient_memory() };
     Call_Matcher call_matcher { strings };
@@ -32,7 +31,7 @@ Alias_Behavior::operator()(Content_Policy&, const Invocation& call, Context& con
 
     std::pmr::vector<char8_t> target_text { context.get_transient_memory() };
     const Processing_Status target_status
-        = to_plaintext(target_text, call.get_content_span(), call.content_frame, context);
+        = splice_to_plaintext(target_text, call.get_content_span(), call.content_frame, context);
     switch (target_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk:

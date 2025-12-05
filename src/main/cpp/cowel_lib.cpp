@@ -240,12 +240,17 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 
     const auto source = as_u8string_view(options.source);
 
-    const ast::Pmr_Vector<ast::Content> root_content = parse_and_build(
-        source, File_Id::main, memory,
-        [&](std::u8string_view id, File_Source_Span pos, std::u8string_view message) {
-            logger(Diagnostic { Severity::error, id, pos, message });
-        }
-    );
+    const Parse_Error_Consumer on_parse_error
+        = [&](std::u8string_view id, const Source_Span& pos, Char_Sequence8 message) {
+              const File_Source_Span file_pos { pos, File_Id::main };
+              logger(Diagnostic { Severity::error, id, file_pos, message });
+          };
+    ast::Pmr_Vector<ast::Markup_Element> root_content;
+    const bool parse_success
+        = parse_and_build(root_content, source, File_Id::main, memory, on_parse_error);
+    if (!parse_success) {
+        return { .status = COWEL_PROCESSING_ERROR, .output = {} };
+    }
 
     const std::u8string_view highlight_theme_source = options.highlight_theme_json.length == 0
         ? assets::wg21_json
@@ -264,7 +269,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
     const Processing_Status status = run_generation(
         [&](Context& context) -> Processing_Status {
             if (options.mode == COWEL_MODE_MINIMAL) {
-                return consume_all(html_policy, root_content, Frame_Index::root, context);
+                return splice_all(html_policy, root_content, Frame_Index::root, context);
             }
             COWEL_ASSERT(options.mode == COWEL_MODE_DOCUMENT);
             return write_wg21_document(html_policy, root_content, context);

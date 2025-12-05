@@ -5,11 +5,13 @@
 #include <variant>
 #include <vector>
 
-#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
+#include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_writer.hpp"
+#include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
+#include "cowel/util/to_chars.hpp"
 
 #include "cowel/policy/capture.hpp"
 #include "cowel/policy/content_policy.hpp"
@@ -26,10 +28,93 @@
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
+#include "cowel/parameters.hpp"
+#include "cowel/value.hpp"
 
 using namespace std::string_view_literals;
 
 namespace cowel {
+
+Processing_Status
+Directive_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
+{
+    const Result<Value, Processing_Status> result = evaluate(call, context);
+    if (!result) {
+        return try_generate_error(out, call, context, result.error());
+    }
+    return splice_value(out, *result, context);
+}
+
+Result<Value, Processing_Status>
+Short_String_Directive_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    const Result<Short_String_Value, Processing_Status> result = do_evaluate(call, context);
+    if (!result) {
+        return result.error();
+    }
+    return Value::short_string(*result);
+}
+
+Processing_Status Short_String_Directive_Behavior::splice(
+    Content_Policy& out,
+    const Invocation& call,
+    Context& context
+) const
+{
+    const Result<Short_String_Value, Processing_Status> result = do_evaluate(call, context);
+    if (!result) {
+        return try_generate_error(out, call, context, result.error());
+    }
+    out.write(result->as_string(), Output_Language::text);
+    return Processing_Status::ok;
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+Block_Directive_Behavior::evaluate(const Invocation& call, Context&) const
+{
+    return Value::block(call.directive, call.content_frame);
+}
+
+[[nodiscard]]
+const Type& get_static_type(const ast::Member_Value& v, Context& context)
+{
+    if (const auto* const d = v.try_as_directive()) {
+        return get_static_type(*d, context);
+    }
+    return get_type(v.as_primary());
+}
+
+[[nodiscard]]
+const Type& get_static_type(const ast::Directive& directive, Context& context)
+{
+    const Directive_Behavior* const behavior = context.find_directive(directive.get_name());
+    return behavior ? behavior->get_static_type() : Type::any;
+}
+
+[[nodiscard]]
+const Type& get_type(const ast::Primary& primary)
+{
+    // FIXME: This isn't actually the correct type.
+    static const Type group_anything = Type::group_of({ Type::pack_of(auto(Type::any)) });
+
+    switch (primary.get_kind()) {
+    case ast::Primary_Kind::unit: return Type::unit;
+    case ast::Primary_Kind::null: return Type::null;
+    case ast::Primary_Kind::boolean: return Type::boolean;
+    case ast::Primary_Kind::integer: return Type::integer;
+    case ast::Primary_Kind::unquoted_string:
+    case ast::Primary_Kind::quoted_string: return Type::str;
+    case ast::Primary_Kind::block: return Type::block;
+    case ast::Primary_Kind::group: return group_anything;
+
+    case ast::Primary_Kind::text:
+    case ast::Primary_Kind::comment:
+    case ast::Primary_Kind::escape:
+        COWEL_ASSERT_UNREACHABLE(u8"Expected a value, not a markup element.");
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid primary kind.");
+}
 
 std::u8string_view expand_escape(std::u8string_view escape)
 {
@@ -49,16 +134,17 @@ const Directive_Behavior* Context::find_directive(std::u8string_view name)
     return m_builtin_name_resolver(name);
 }
 
-std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content> content)
+std::span<const ast::Markup_Element>
+trim_blank_text_left(std::span<const ast::Markup_Element> content)
 {
     while (!content.empty()) {
-        if (const auto* const text = std::get_if<ast::Text>(&content.front())) {
-            if (is_ascii_blank(text->get_source())) {
+        if (const auto* const text = content.front().try_as_primary()) {
+            if (text->get_kind() == ast::Primary_Kind::text && is_ascii_blank(text->get_source())) {
                 content = content.subspan(1);
                 continue;
             }
         }
-        if (const auto* const text = std::get_if<ast::Generated>(&content.front())) {
+        if (const auto* const text = content.front().try_as_generated()) {
             if (is_ascii_blank(text->as_string())) {
                 content = content.subspan(1);
                 continue;
@@ -69,17 +155,18 @@ std::span<const ast::Content> trim_blank_text_left(std::span<const ast::Content>
     return content;
 }
 
-std::span<const ast::Content> trim_blank_text_right(std::span<const ast::Content> content)
+std::span<const ast::Markup_Element>
+trim_blank_text_right(std::span<const ast::Markup_Element> content)
 {
     while (!content.empty()) {
-        if (const auto* const text = std::get_if<ast::Text>(&content.back())) {
-            if (is_ascii_blank(text->get_source())) {
+        if (const auto* const text = content.back().try_as_primary()) {
+            if (text->get_kind() == ast::Primary_Kind::text && is_ascii_blank(text->get_source())) {
                 content = content.subspan(0, content.size() - 1);
                 continue;
             }
         }
-        if (const auto* const text = std::get_if<ast::Generated>(&content.back())) {
-            if (is_ascii_blank(text->as_string())) {
+        if (const auto* const generated = content.back().try_as_generated()) {
+            if (is_ascii_blank(generated->as_string())) {
                 content = content.subspan(0, content.size() - 1);
                 continue;
             }
@@ -89,7 +176,7 @@ std::span<const ast::Content> trim_blank_text_right(std::span<const ast::Content
     return content;
 }
 
-std::span<const ast::Content> trim_blank_text(std::span<const ast::Content> content)
+std::span<const ast::Markup_Element> trim_blank_text(std::span<const ast::Markup_Element> content)
 {
     return trim_blank_text_right(trim_blank_text_left(content));
 }
@@ -115,9 +202,9 @@ void try_lookup_error(const ast::Directive& directive, Context& context)
 
 } // namespace
 
-Processing_Status consume_all_trimmed(
+Processing_Status splice_all_trimmed(
     Content_Policy& out,
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Frame_Index frame,
     Context& context
 )
@@ -147,16 +234,13 @@ Processing_Status consume_all_trimmed(
         }
 
         [[nodiscard]]
-        Processing_Status operator()(const ast::Text& text) const
+        Processing_Status operator()(const ast::Primary& node) const
         {
-            write_trimmed(text.get_source());
+            if (node.get_kind() != ast::Primary_Kind::text) {
+                return out.consume(node, frame, context);
+            }
+            write_trimmed(node.get_source());
             return Processing_Status::ok;
-        }
-
-        [[nodiscard]]
-        Processing_Status operator()(const ast::Comment& c) const
-        {
-            return out.consume(c, frame, context);
         }
 
         [[nodiscard]]
@@ -170,12 +254,6 @@ Processing_Status consume_all_trimmed(
         }
 
         [[nodiscard]]
-        Processing_Status operator()(const ast::Escaped& e) const
-        {
-            return out.consume(e, frame, context);
-        }
-
-        [[nodiscard]]
         Processing_Status operator()(const ast::Directive& e) const
         {
             return out.consume(e, frame, context);
@@ -184,7 +262,7 @@ Processing_Status consume_all_trimmed(
 
     return process_greedy(
         content,
-        [&, i = 0uz](const ast::Content& c) mutable -> Processing_Status {
+        [&, i = 0uz](const ast::Markup_Element& c) mutable -> Processing_Status {
             const auto result = std::visit(Visitor { out, context, i, content.size(), frame }, c);
             ++i;
             return result;
@@ -192,56 +270,299 @@ Processing_Status consume_all_trimmed(
     );
 }
 
-Processing_Status to_plaintext(
+Processing_Status splice_to_plaintext(
     std::pmr::vector<char8_t>& out,
-    std::span<const ast::Content> content,
+    std::span<const ast::Markup_Element> content,
     Frame_Index frame,
     Context& context
 )
 {
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
     Plaintext_Content_Policy policy { sink };
-    return consume_all(policy, content, frame, context);
+    return splice_all(policy, content, frame, context);
 }
 
-Processing_Status to_plaintext(
-    std::pmr::vector<char8_t>& out,
-    const ast::Value& value,
+[[nodiscard]]
+Processing_Status splice_value(
+    Content_Policy& out,
+    const ast::Member_Value& value,
     Frame_Index frame,
     Context& context
 )
 {
-    Capturing_Ref_Text_Sink sink { out, Output_Language::text };
-    Plaintext_Content_Policy policy { sink };
-    return consume_all(policy, value, frame, context);
+    if (const auto* const directive = value.try_as_directive()) {
+        return splice_directive_invocation(out, *directive, frame, context);
+    }
+    return splice_primary(out, value.as_primary(), frame, context);
 }
 
-Plaintext_Result to_plaintext_optimistic(
+[[nodiscard]]
+Processing_Status splice_primary(
+    Content_Policy& out,
+    const ast::Primary& primary,
+    Frame_Index frame,
+    Context& context
+)
+{
+    COWEL_ASSERT(primary.is_spliceable_value());
+
+    switch (primary.get_kind()) {
+    case ast::Primary_Kind::null:
+    case ast::Primary_Kind::boolean:
+    case ast::Primary_Kind::integer:
+    case ast::Primary_Kind::unquoted_string: {
+        out.write(primary.get_source(), Output_Language::text);
+        return Processing_Status::ok;
+    }
+    case ast::Primary_Kind::quoted_string: {
+        return splice_quoted_string(out, primary, frame, context);
+    }
+    case ast::Primary_Kind::block: {
+        return splice_block(out, primary, frame, context);
+    }
+    default: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"All spliceable kinds should have been handled above.");
+}
+
+Processing_Status splice_value(Content_Policy& out, const Value& value, Context& context)
+{
+    const auto write_characters = [&](auto x) -> Processing_Status {
+        const auto chars = to_characters8(x);
+        out.write(chars.as_string(), Output_Language::text);
+        return Processing_Status::ok;
+    };
+
+    switch (value.get_type_kind()) {
+    case Type_Kind::any:
+    case Type_Kind::nothing:
+    case Type_Kind::union_:
+    case Type_Kind::pack:
+    case Type_Kind::named:
+    case Type_Kind::lazy: {
+        COWEL_ASSERT_UNREACHABLE(u8"Values of this type should not exist.");
+    }
+    case Type_Kind::group:
+    case Type_Kind::null: {
+        // FIXME: print diagnostic
+        return Processing_Status::error;
+    }
+
+    case Type_Kind::unit: {
+        return Processing_Status::ok;
+    }
+    case Type_Kind::boolean: {
+        const auto str = value.as_boolean() ? u8"true"sv : u8"false"sv;
+        out.write(str, Output_Language::text);
+        return Processing_Status::ok;
+    }
+    case Type_Kind::integer: {
+        return write_characters(value.as_integer());
+    }
+    case Type_Kind::f32: {
+        return write_characters(value.as_f32());
+    }
+    case Type_Kind::f64: {
+        return write_characters(value.as_f64());
+    }
+    case Type_Kind::str: {
+        out.write(value.as_string(), Output_Language::text);
+        return Processing_Status::ok;
+    }
+    case Type_Kind::block: {
+        // FIXME: this is almost certainly wrong; shouldn't this be the frame of the block?
+        return value.splice_block(out, context);
+    }
+    }
+}
+
+[[nodiscard]]
+Processing_Status Value::splice_block(Content_Policy& out, Context& context) const
+{
+    if (const auto* const block_and_frame = std::get_if<Block_And_Frame>(&m_value)) {
+        return splice_all(
+            out, block_and_frame->block->get_elements(), block_and_frame->frame, context
+        );
+    }
+    if (const auto* const dir_and_frame = std::get_if<Directive_And_Frame>(&m_value)) {
+        return splice_directive_invocation(
+            out, *dir_and_frame->directive, dir_and_frame->frame, context
+        );
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Expected block.");
+}
+
+Processing_Status splice_value_to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const ast::Member_Value& value,
+    Frame_Index frame,
+    Context& context
+)
+{
+    COWEL_DEBUG_ASSERT(value.is_spliceable_value());
+
+    Capturing_Ref_Text_Sink sink { out, Output_Language::text };
+    Plaintext_Content_Policy policy { sink };
+    return splice_value(policy, value, frame, context);
+}
+
+[[nodiscard]]
+Plaintext_Result splice_value_to_plaintext_optimistic(
     std::pmr::vector<char8_t>& buffer,
-    std::span<const ast::Content> content,
+    const ast::Member_Value& value,
+    Frame_Index frame,
+    Context& context
+)
+{
+    const auto visitor
+        = [&](const auto& v) { return splice_to_plaintext_optimistic(buffer, v, frame, context); };
+    return std::visit(visitor, value);
+}
+
+Plaintext_Result splice_to_plaintext_optimistic(
+    std::pmr::vector<char8_t>& buffer,
+    const ast::Primary& value,
     Frame_Index frame,
     Context& context
 )
 {
     COWEL_ASSERT(buffer.empty());
-    if (content.empty()) {
-        return { Processing_Status::ok, u8""sv };
+    switch (value.get_kind()) {
+    case ast::Primary_Kind::unit: {
+        return { Processing_Status::ok, {} };
     }
-    if (content.size() == 1) {
-        if (const auto* const text = std::get_if<ast::Text>(content.data())) {
-            return { Processing_Status::ok, text->get_source() };
+
+    case ast::Primary_Kind::null:
+    case ast::Primary_Kind::boolean:
+    case ast::Primary_Kind::integer:
+    case ast::Primary_Kind::unquoted_string: {
+        return { Processing_Status::ok, value.get_source() };
+    }
+
+    case ast::Primary_Kind::quoted_string:
+    case ast::Primary_Kind::block: {
+        if (value.get_elements().empty()) {
+            return { Processing_Status::ok, u8""sv };
         }
+        if (value.get_elements().size() == 1) {
+            if (const auto* const text = value.get_elements().front().try_as_primary()) {
+                if (text->get_kind() == ast::Primary_Kind::text) {
+                    return { Processing_Status::ok, text->get_source() };
+                }
+            }
+        }
+        const Processing_Status status
+            = splice_to_plaintext(buffer, value.get_elements(), frame, context);
+        return { status, as_u8string_view(buffer) };
     }
-    const Processing_Status status = to_plaintext(buffer, content, frame, context);
-    return { status, as_u8string_view(buffer) };
+
+    case ast::Primary_Kind::text:
+    case ast::Primary_Kind::comment:
+    case ast::Primary_Kind::escape: {
+        COWEL_ASSERT_UNREACHABLE(u8"Conversion from markup element to text requested.");
+    }
+    case ast::Primary_Kind::group: {
+        COWEL_ASSERT_UNREACHABLE(u8"Conversion from group to text requested.");
+    }
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid primary kind.");
 }
 
-Processing_Status invoke( //
+Plaintext_Result splice_to_plaintext_optimistic(
+    std::pmr::vector<char8_t>& buffer,
+    const ast::Directive& directive,
+    Frame_Index frame,
+    Context& context
+)
+{
+    // TODO: There's nothing actually optimistic about this.
+    //       However, we could special-case certain directive behaviors
+    //       which are known to produce short string constants.
+    Capturing_Ref_Text_Sink sink { buffer, Output_Language::text };
+    Plaintext_Content_Policy out { sink };
+    const Processing_Status status = splice_directive_invocation(out, directive, frame, context);
+    return { .status = status, .string = as_u8string_view(buffer) };
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate_member_value(const ast::Member_Value& value, Frame_Index frame, Context& context)
+{
+    const auto visitor = [&](const auto& v) { return evaluate(v, frame, context); };
+    return std::visit(visitor, value);
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
+{
+    Invocation call {
+        .name = directive.get_name(),
+        .directive = directive,
+        .arguments = directive.get_arguments(),
+        .content = directive.get_content(),
+        .content_frame = frame,
+        .call_frame = {},
+    };
+    const Directive_Behavior* const behavior = context.find_directive(call.name);
+    if (!behavior) {
+        try_lookup_error(directive, context);
+        call.call_frame = context.get_call_stack().get_top_index();
+        return Processing_Status::error;
+    }
+
+    const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
+    call.call_frame = scope.get_index();
+    return behavior->evaluate(call, context);
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
+{
+    COWEL_ASSERT(value.is_value());
+
+    switch (value.get_kind()) {
+    case ast::Primary_Kind::null: return Value::null;
+    case ast::Primary_Kind::boolean: {
+        const bool v = value.get_source() == u8"true"sv;
+        COWEL_DEBUG_ASSERT(v || value.get_source() == u8"false");
+        return Value::boolean(v);
+    }
+    case ast::Primary_Kind::integer: {
+        const std::optional<Integer> parsed = from_chars<Integer>(value.get_source());
+        return Value::integer(parsed.value());
+    }
+    case ast::Primary_Kind::unquoted_string: {
+        return Value::static_string(value.get_source());
+    }
+    case ast::Primary_Kind::quoted_string: {
+        std::pmr::vector<char8_t> text { context.get_transient_memory() };
+        const Plaintext_Result result = splice_to_plaintext_optimistic(text, value, frame, context);
+        if (result.status != Processing_Status::ok) {
+            return result.status;
+        }
+        return text.empty() ? Value::static_string(result.string)
+                            : Value::dynamic_string(std::move(text));
+    }
+    case ast::Primary_Kind::block: {
+        return Value::block(value, frame);
+    }
+    case ast::Primary_Kind::group: {
+        COWEL_ASSERT_UNREACHABLE(u8"Sorry, values of group type not yet supported :(");
+    }
+    default: break;
+    }
+
+    COWEL_ASSERT_UNREACHABLE(u8"Unexpected kind of value.");
+}
+
+Processing_Status splice_invocation( //
     Content_Policy& out,
     const ast::Directive& directive,
     std::u8string_view name,
-    const ast::Group* args,
-    const ast::Content_Sequence* content,
+    const ast::Primary* args,
+    const ast::Primary* content,
     Frame_Index content_frame,
     Context& context
 )
@@ -263,33 +584,19 @@ Processing_Status invoke( //
 
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
     call.call_frame = scope.get_index();
-    return (*behavior)(out, call, context);
+    return behavior->splice(out, call, context);
 }
 
-Processing_Status invoke_directive( //
+Processing_Status splice_directive_invocation( //
     Content_Policy& out,
     const ast::Directive& d,
     Frame_Index content_frame,
     Context& context
 )
 {
-    return invoke(out, d, d.get_name(), d.get_arguments(), d.get_content(), content_frame, context);
-}
-
-[[nodiscard]]
-const ast::Content_Sequence*
-as_content_or_error(const ast::Value& value, Context& context, Severity error_severity)
-{
-    const auto* const arg_content = std::get_if<ast::Content_Sequence>(&value);
-    if (!arg_content) {
-        COWEL_ASSERT(std::holds_alternative<ast::Group>(value));
-        context.try_emit(
-            error_severity, diagnostic::type_mismatch, value.get_source_span(),
-            u8"Expected value to be content sequence, but found group."sv
-        );
-        return nullptr;
-    }
-    return arg_content;
+    return splice_invocation(
+        out, d, d.get_name(), d.get_arguments(), d.get_content(), content_frame, context
+    );
 }
 
 Processing_Status
@@ -376,7 +683,6 @@ Processing_Status named_arguments_to_attributes(
 )
 {
     return process_greedy(arguments, [&](const ast::Group_Member& a) -> Processing_Status {
-        COWEL_ASSERT(a.get_kind() != ast::Member_Kind::positional);
         if (a.get_kind() == ast::Member_Kind::ellipsis) {
             const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
             return named_arguments_to_attributes(
@@ -384,6 +690,7 @@ Processing_Status named_arguments_to_attributes(
                 ellipsis_frame.invocation.content_frame, context, style
             );
         }
+        COWEL_ASSERT(a.get_kind() == ast::Member_Kind::named);
         return named_argument_to_attribute(out, a, frame, context, style);
     });
 }
@@ -397,10 +704,11 @@ Processing_Status named_argument_to_attribute(
 )
 {
     COWEL_ASSERT(a.get_kind() == ast::Member_Kind::named);
+
     std::pmr::vector<char8_t> value { context.get_transient_memory() };
     // TODO: error handling
     value.clear();
-    const auto status = to_plaintext(value, a.get_value(), frame, context);
+    const auto status = splice_value_to_plaintext(value, a.get_value(), frame, context);
     const std::u8string_view value_string { value.data(), value.size() };
     const std::u8string_view name = a.get_name();
     // TODO: this is simply going to crash if the attribute name is not valid;
@@ -417,7 +725,7 @@ Processing_Status try_generate_error(
 )
 {
     if (const Directive_Behavior* const behavior = context.get_error_behavior()) {
-        const Processing_Status result = (*behavior)(out, call, context);
+        const Processing_Status result = behavior->splice(out, call, context);
         if (result != Processing_Status::ok) {
             context.try_error(
                 diagnostic::error_error, call.directive.get_source_span(),

@@ -2,6 +2,7 @@
 #define COWEL_SOURCE_POSITION_HPP
 
 #include <cstddef>
+#include <string_view>
 #include <type_traits>
 
 #include "cowel/util/assert.hpp"
@@ -37,6 +38,26 @@ struct Source_Position {
         return { .line = line, .column = column - offset, .begin = begin - offset };
     }
 };
+
+constexpr void advance(Source_Position& pos, char8_t c)
+{
+    switch (c) {
+    case '\r': pos.column = 0; break;
+    case '\n':
+        pos.column = 0;
+        pos.line += 1;
+        break;
+    default: pos.column += 1;
+    }
+    pos.begin += 1;
+}
+
+constexpr void advance(Source_Position& pos, std::u8string_view str)
+{
+    for (const char8_t c : str) {
+        advance(pos, c);
+    }
+}
 
 /// Represents a position in a source file.
 struct Source_Span : Source_Position {

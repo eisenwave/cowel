@@ -25,6 +25,7 @@ using ulight::is_cowel_directive_name;
 using ulight::is_cowel_directive_name_start;
 using ulight::is_cowel_escapeable;
 using ulight::is_cowel_special;
+using ulight::is_cowel_unquoted_string;
 using ulight::is_html_ascii_unquoted_attribute_value_character;
 using ulight::is_html_attribute_name_character;
 using ulight::is_html_min_raw_passthrough_character;

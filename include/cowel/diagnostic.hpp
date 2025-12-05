@@ -75,11 +75,8 @@ inline constexpr std::u8string_view duplicate_args = u8"duplicate.args";
 /// @brief The content of a directive was ignored.
 inline constexpr std::u8string_view ignored_content = u8"ignored.content";
 
-/// @brief When parsing, a directive block was not terminated via closing brace.
-inline constexpr std::u8string_view parse_block_unclosed = u8"parse.block.unclosed";
-
-/// @brief When parsing, an ellipsis was followed by additional content.
-inline constexpr std::u8string_view parse_ellipsis_trailer = u8"parse.ellipsis.trailer";
+/// @brief Parse error.
+inline constexpr std::u8string_view parse = u8"parse";
 
 /// @brief An attempt was made to expand an ellipsis argument
 /// outside of a macro expansion,
