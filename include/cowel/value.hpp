@@ -2,84 +2,277 @@
 #define COWEL_VALUE_HPP
 
 #include <string_view>
+#include <variant>
 #include <vector>
 
+#include "cowel/content_status.hpp"
+#include "cowel/util/assert.hpp"
+#include "cowel/util/static_string.hpp"
+#include "cowel/util/strings.hpp"
+
 #include "cowel/fwd.hpp"
+#include "cowel/type.hpp"
 
 namespace cowel {
 
-struct Maybe_Owning_String {
-private:
-    std::pmr::vector<char8_t> m_data;
-    std::u8string_view m_str;
-
-public:
-    Maybe_Owning_String(std::u8string_view str)
-        : m_str { str }
-    {
-    }
-
-    Maybe_Owning_String(std::pmr::vector<char8_t>&& str)
-        : m_data { std::move(str) }
-        , m_str { m_data.data(), m_data.size() }
-    {
-    }
+/// @brief A symbolic empty class indicating a `null` value or type in COWEL.
+struct Null {
+    friend bool operator==(Null, Null) = default;
 };
 
-struct Markup_And_Frame {
-    const ast::Content_Sequence* markup;
+/// @brief A symbolic empty class indicating a `void` value or type in COWEL.
+struct Unit {
+    friend bool operator==(Unit, Unit) = default;
+};
+
+using Short_String_Value = Static_String8<48>;
+
+struct Block_And_Frame {
+    const ast::Primary* block;
     Frame_Index frame;
 };
 
-enum struct Type : Default_Underlying {
-    boolean,
-    integer,
-    string,
-    markup,
+struct Directive_And_Frame {
+    const ast::Directive* directive;
+    Frame_Index frame;
 };
 
+using Value_Variant = std::variant<
+    Unit, //
+    Null,
+    bool,
+    Integer,
+    Float32,
+    Float64,
+    std::u8string_view,
+    Short_String_Value,
+    std::pmr::vector<char8_t>,
+    Block_And_Frame,
+    Directive_And_Frame>;
+
+/// @brief A value in the COWEL language.
 struct Value {
+    /// @brief The only possible value for a `unit` type.
+    static const Value unit;
+    /// @brief The only possible value for a `null` type.
+    /// That is, the value a `null` literal has.
+    static const Value null;
+    /// @brief The value of a `true` boolean literal.
+    static const Value true_;
+    /// @brief the value of a `false` boolean literal.
+    static const Value false_;
+    /// @brief the value of a `0` integer literal.
+    static const Value zero;
+    /// @brief the value of a `""` string literal.
+    static const Value empty_string;
+
+    [[nodiscard]]
+    static constexpr Value boolean(bool value) noexcept
+    {
+        return Value { value };
+    }
+    [[nodiscard]]
+    static constexpr Value integer(Integer value) noexcept
+    {
+        return Value { value };
+    }
+
+    /// @brief Creates a value of type `str` from a string with static storage duration.
+    /// This performs no allocation and is very cheap,
+    /// but should be used with great caution
+    /// because it gives this string reference semantics.
+    [[nodiscard]]
+    static constexpr Value static_string(std::u8string_view value) noexcept
+    {
+        return Value { value };
+    }
+    /// @brief Creates a value of type `str` from a string that fits into `Short_String_Value`.
+    [[nodiscard]]
+    static constexpr Value short_string(Short_String_Value value) noexcept
+    {
+        return Value { value };
+    }
+    /// @brief Creates a value of type `str` with dynamically sized contents.
+    [[nodiscard]]
+    static Value dynamic_string_forced(std::pmr::vector<char8_t>&& value) noexcept
+    {
+        return Value { std::move(value) };
+    }
+    /// @brief Creates a value of type `str` with dynamically sized contents.
+    /// If `value` can be represented as `Short_String_Value`,
+    /// creates a short string instead.
+    [[nodiscard]]
+    static Value dynamic_string(std::pmr::vector<char8_t>&& value) noexcept
+    {
+        if (value.size() <= Short_String_Value::max_size_v) {
+            Value result = short_string({ value.data(), value.size() });
+            // Clearing the original prevents inconsistent behavior
+            // where the vector sometimes stays filled.
+            value.clear();
+            return result;
+        }
+        return Value { std::move(value) };
+    }
+
+    [[nodiscard]]
+    static Value block(const ast::Primary& block, Frame_Index frame);
+    [[nodiscard]]
+    static Value block(const ast::Directive& block, Frame_Index frame);
+
 private:
-    Type m_type;
-    union {
-        bool boolean;
-        long long integer;
-        Maybe_Owning_String string;
-        Markup_And_Frame markup;
-    };
+    Value_Variant m_value;
+
+    [[nodiscard]]
+    constexpr Value(Value_Variant&& value) noexcept
+        : m_value { std::move(value) }
+    {
+    }
 
 public:
+    /// @brief Returns the type of this value.
     [[nodiscard]]
-    Value(bool value)
-        : m_type { Type::boolean }
-        , boolean { value }
+    constexpr Type get_type() const noexcept
     {
+        return Type::basic(get_type_kind());
     }
+
+    /// @brief Equivalent to `get_type().get_kind()`.
     [[nodiscard]]
-    Value(long long value)
-        : m_type { Type::integer }
-        , integer { value }
+    constexpr Type_Kind get_type_kind() const noexcept
     {
-    }
-    [[nodiscard]]
-    Value(Maybe_Owning_String&& value)
-        : m_type { Type::string }
-        , string { std::move(value) }
-    {
-    }
-    [[nodiscard]]
-    Value(Markup_And_Frame value)
-        : m_type { Type::markup }
-        , markup { value }
-    {
+        switch (m_value.index()) {
+        case 0: return Type_Kind::unit;
+        case 1: return Type_Kind::null;
+        case 2: return Type_Kind::boolean;
+        case 3: return Type_Kind::integer;
+        case 4: return Type_Kind::f32;
+        case 5: return Type_Kind::f64;
+        case 6:
+        case 7:
+        case 8: return Type_Kind::str;
+        case 9:
+        case 10: return Type_Kind::block;
+        default: break;
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid index (valueless by exception impossible).");
     }
 
     [[nodiscard]]
-    Type get_type() const
+    friend constexpr bool operator==(const Value& x, const Value& y)
     {
-        return m_type;
+        switch (const auto x_kind = x.get_type_kind()) {
+        case Type_Kind::any:
+        case Type_Kind::nothing:
+        case Type_Kind::pack:
+        case Type_Kind::union_:
+        case Type_Kind::named:
+        case Type_Kind::lazy: {
+            break;
+        }
+        case Type_Kind::unit:
+        case Type_Kind::null: {
+            return x_kind == y.get_type_kind();
+        }
+        case Type_Kind::boolean: {
+            return y.get_type_kind() == Type_Kind::boolean && x.as_boolean() == y.as_boolean();
+        }
+        case Type_Kind::integer: {
+            return y.get_type_kind() == Type_Kind::integer && x.as_integer() == y.as_integer();
+        }
+        case Type_Kind::f32: {
+            return y.get_type_kind() == Type_Kind::f32 && x.as_f32() == y.as_f32();
+        }
+        case Type_Kind::f64: {
+            return y.get_type_kind() == Type_Kind::f64 && x.as_f64() == y.as_f64();
+        }
+        case Type_Kind::str: {
+            return y.get_type_kind() == Type_Kind::str && x.as_string() == y.as_string();
+        }
+        case Type_Kind::block:
+        case Type_Kind::group: {
+            COWEL_ASSERT_UNREACHABLE(u8"Blocks and groups are not equality-comparable.");
+        }
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid type of value.");
     }
+
+    [[nodiscard]]
+    constexpr bool is_any() const noexcept
+    {
+        return get_type_kind() == Type_Kind::any;
+    }
+    [[nodiscard]]
+    constexpr bool is_nothing() const noexcept
+    {
+        return get_type_kind() == Type_Kind::nothing;
+    }
+    [[nodiscard]]
+    constexpr bool is_unit() const noexcept
+    {
+        return get_type_kind() == Type_Kind::unit;
+    }
+    [[nodiscard]]
+    constexpr bool is_null() const noexcept
+    {
+        return get_type_kind() == Type_Kind::null;
+    }
+    [[nodiscard]]
+    constexpr bool is_static_string() const noexcept
+    {
+        return std::holds_alternative<std::u8string_view>(m_value);
+    }
+
+    [[nodiscard]]
+    constexpr bool as_boolean() const
+    {
+        return std::get<bool>(m_value);
+    }
+    [[nodiscard]]
+    constexpr Integer as_integer() const
+    {
+        return std::get<Integer>(m_value);
+    }
+    [[nodiscard]]
+    constexpr Float32 as_f32() const
+    {
+        return std::get<Float32>(m_value);
+    }
+    [[nodiscard]]
+    constexpr Float64 as_f64() const
+    {
+        return std::get<Float64>(m_value);
+    }
+    [[nodiscard]]
+    constexpr std::u8string_view as_string() const
+    {
+        if (const auto* const static_string = std::get_if<std::u8string_view>(&m_value)) {
+            return *static_string;
+        }
+        if (const auto* const short_string = std::get_if<Short_String_Value>(&m_value)) {
+            return short_string->as_string();
+        }
+        return as_u8string_view(std::get<std::pmr::vector<char8_t>>(m_value));
+    }
+    constexpr void extract_string(std::pmr::vector<char8_t>& out) const
+    {
+        const std::u8string_view str = as_string();
+        out.insert(out.end(), str.begin(), str.end());
+    }
+    // TODO: There is currently no efficient way to move strings out of a Value.
+    //       Maybe an rvalue reference overload for the functions above would make sense.
+
+    [[nodiscard]]
+    Processing_Status splice_block(Content_Policy& out, Context& context) const;
 };
+
+inline constexpr Value Value::unit { Unit {} };
+inline constexpr Value Value::null { Null {} };
+inline constexpr Value Value::true_ = Value::boolean(true);
+inline constexpr Value Value::false_ = Value::boolean(false);
+inline constexpr Value Value::zero = Value::integer(0);
+inline constexpr Value Value::empty_string = Value::static_string(std::u8string_view {});
+
+static_assert(sizeof(Value) <= 64, "Value should not be too large to be passed by value");
 
 } // namespace cowel
 
