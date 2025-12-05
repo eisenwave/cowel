@@ -2,9 +2,13 @@
 
 ## **Next version** (???)
 
+- change the syntax of directive arguments (#87)
+- add support for typed values in builtin directives (#88)
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
-- fix typos in `link rel`
-- fix documentation of insertion block
+- fix typos in `link rel` (#93)
+- fix documentation of insertion block (#92)
+- also update µlight to a more recent version
+  with highlighting support for Python and some other languages
 
 **Full Changelog**:
 [`v0.6.0...master`](https://github.com/eisenwave/cowel/compare/v0.6.0...master)
