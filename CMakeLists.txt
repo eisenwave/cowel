@@ -95,6 +95,87 @@ set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
 include_directories(${INCLUDE_DIRS})
 
 set(COMMON_LIBRARY_SOURCES
+    include/cowel/cedilla/name_to_cp.hpp
+
+    include/cowel/policy/content_policy.hpp
+    include/cowel/policy/factory.hpp
+    include/cowel/policy/html.hpp
+    include/cowel/policy/html_literal.hpp
+    include/cowel/policy/ignorant.hpp
+    include/cowel/policy/literally.hpp
+    include/cowel/policy/paragraph_split.hpp
+    include/cowel/policy/phantom.hpp
+    include/cowel/policy/plaintext.hpp
+    include/cowel/policy/syntax_highlight.hpp
+    include/cowel/policy/text_buffer.hpp
+    include/cowel/policy/unprocessed.hpp
+
+    include/cowel/util/annotated_string.hpp
+    include/cowel/util/annotation_span.hpp
+    include/cowel/util/ansi.hpp
+    include/cowel/util/assert.hpp
+    include/cowel/util/bit_permutations.hpp
+    include/cowel/util/buffer.hpp
+    include/cowel/util/char_sequence.hpp
+    include/cowel/util/char_sequence_factory.hpp
+    include/cowel/util/char_sequence_ops.hpp
+    include/cowel/util/chars.hpp
+    include/cowel/util/code_point_names.hpp
+    include/cowel/util/draft_uris.hpp
+    include/cowel/util/from_chars.hpp
+    include/cowel/util/function_ref.hpp
+    include/cowel/util/html.hpp
+    include/cowel/util/html_entities.hpp
+    include/cowel/util/html_names.hpp
+    include/cowel/util/html_writer.hpp
+    include/cowel/util/io.hpp
+    include/cowel/util/levenshtein.hpp
+    include/cowel/util/levenshtein_utf8.hpp
+    include/cowel/util/meta.hpp
+    include/cowel/util/result.hpp
+    include/cowel/util/severity.hpp
+    include/cowel/util/source_position.hpp
+    include/cowel/util/static_string.hpp
+    include/cowel/util/strings.hpp
+    include/cowel/util/to_chars.hpp
+    include/cowel/util/transparent_comparison.hpp
+    include/cowel/util/tty.hpp
+    include/cowel/util/typo.hpp
+    include/cowel/util/unicode.hpp
+    include/cowel/util/url_encode.hpp
+
+    include/cowel/assets.hpp
+    include/cowel/ast.hpp
+    include/cowel/builtin_directive_set.hpp
+    include/cowel/call_stack.hpp
+    include/cowel/content_status.hpp
+    include/cowel/context.hpp
+    include/cowel/cowel_lib.hpp
+    include/cowel/cowel.h
+    include/cowel/diagnostic_highlight.hpp
+    include/cowel/diagnostic.hpp
+    include/cowel/directive_behavior.hpp
+    include/cowel/directive_display.hpp
+    include/cowel/directive_processing.hpp
+    include/cowel/document_generation.hpp
+    include/cowel/document_sections.hpp
+    include/cowel/fwd.hpp
+    include/cowel/invocation.hpp
+    include/cowel/json.hpp
+    include/cowel/memory_resources.hpp
+    include/cowel/output_language.hpp
+    include/cowel/parameters.hpp
+    include/cowel/parse_utils.hpp
+    include/cowel/parse.hpp
+    include/cowel/print.hpp
+    include/cowel/relative_file_loader.hpp
+    include/cowel/services.hpp
+    include/cowel/settings.hpp
+    include/cowel/theme_to_css.hpp
+    include/cowel/type.hpp
+    include/cowel/ulight_highlighter.hpp
+    include/cowel/value.hpp
+
     src/main/cpp/util/code_point_names.cpp
     src/main/cpp/util/draft_uris.cpp
     src/main/cpp/util/html_entities.cpp
@@ -129,6 +210,7 @@ set(COMMON_LIBRARY_SOURCES
     src/main/cpp/parse_utils.cpp
     src/main/cpp/parse.cpp
     src/main/cpp/print.cpp
+    src/main/cpp/semantics.cpp
     src/main/cpp/services.cpp
     src/main/cpp/theme_to_css.cpp
 
@@ -246,6 +328,7 @@ else()
         src/test/cpp/test_to_chars.cpp
         src/test/cpp/test_typo.cpp
         src/test/cpp/test_valid.cpp
+        src/test/cpp/test_value.cpp
     )
 
     include(GoogleTest)
