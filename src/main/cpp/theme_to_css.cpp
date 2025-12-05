@@ -41,6 +41,15 @@ constexpr auto highlight_type_lookup = []() {
     return std::to_array(result);
 }();
 
+static_assert(
+    std::ranges::is_sorted(highlight_type_lookup, {}, &Highlight_Lookup_Entry::long_string)
+);
+static_assert(
+    std::ranges::adjacent_find(highlight_type_lookup, {}, &Highlight_Lookup_Entry::long_string)
+        == highlight_type_lookup.end(),
+    "highlight_type_lookup contains duplicate entries"
+);
+
 } // namespace
 
 std::optional<ulight::Highlight_Type> highlight_type_by_long_string(std::u8string_view str)
