@@ -1280,7 +1280,7 @@ TEST(Parse, directive_names)
 {
     // clang-format off
     static constexpr AST_Instruction expected[] {
-        { AST_Instruction_Type::push_document, 14 },
+        { AST_Instruction_Type::push_document, 16 },
 
         { AST_Instruction_Type::push_directive, 2 }, // \x
         { AST_Instruction_Type::pop_directive },
@@ -1291,6 +1291,10 @@ TEST(Parse, directive_names)
         { AST_Instruction_Type::text, 1 },
 
         { AST_Instruction_Type::escape, 2 }, // \-x
+        { AST_Instruction_Type::text, 2 },
+
+        { AST_Instruction_Type::push_directive, 2 }, // \x-
+        { AST_Instruction_Type::pop_directive },
         { AST_Instruction_Type::text, 2 },
 
         { AST_Instruction_Type::push_directive, 3 }, // \_x

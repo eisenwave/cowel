@@ -2,6 +2,7 @@
 
 ## **Next version** (???)
 
+- remove support for `-` in directive names (this time for real) (#96)
 - change the syntax of directive arguments (#87)
 - add support for typed values in builtin directives (#88)
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
