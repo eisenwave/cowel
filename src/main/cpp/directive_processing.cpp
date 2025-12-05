@@ -374,6 +374,7 @@ Processing_Status splice_value(Content_Policy& out, const Value& value, Context&
         return value.splice_block(out, context);
     }
     }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid kind of value.");
 }
 
 [[nodiscard]]

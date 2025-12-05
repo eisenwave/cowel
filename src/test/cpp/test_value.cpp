@@ -16,6 +16,8 @@ using namespace std::string_view_literals;
 namespace cowel {
 
 // NOLINTNEXTLINE(misc-use-internal-linkage)
+std::ostream& operator<<(std::ostream& out, const Type& type);
+
 std::ostream& operator<<(std::ostream& out, const Type& type)
 {
     if (type.get_kind() == Type_Kind::union_) {
