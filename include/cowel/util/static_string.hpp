@@ -17,12 +17,21 @@ struct Basic_Static_String {
     using array_type = std::array<Char, capacity>;
     using iterator = array_type::iterator;
     using const_iterator = array_type::const_iterator;
+    static constexpr std::size_t max_size_v = capacity;
 
 private:
     array_type m_buffer {};
     std::size_t m_length = 0;
 
 public:
+    [[nodiscard]]
+    constexpr Basic_Static_String(const Char* str, std::size_t length)
+        : m_length { length }
+    {
+        COWEL_ASSERT(length <= capacity);
+        std::ranges::copy(str, str + length, m_buffer.data());
+    }
+
     [[nodiscard]]
     constexpr Basic_Static_String(array_type array, std::size_t length)
         : m_buffer { array }
@@ -33,10 +42,8 @@ public:
 
     [[nodiscard]]
     constexpr Basic_Static_String(std::basic_string_view<Char> str)
-        : m_length { str.length() }
+        : Basic_Static_String { str.data(), str.size() }
     {
-        COWEL_ASSERT(str.length() <= capacity);
-        std::ranges::copy(str, m_buffer.data());
     }
 
     [[nodiscard]]
@@ -57,6 +64,11 @@ public:
         return m_length == 0;
     }
 
+    [[nodiscard]]
+    constexpr std::size_t max_size() noexcept
+    {
+        return capacity;
+    }
     [[nodiscard]]
     constexpr std::size_t size() const noexcept
     {
