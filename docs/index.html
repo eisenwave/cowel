@@ -1873,14 +1873,19 @@ grammar format,
 a <g-term>document</g-term> is constructed as follows:
 </p>
 <code-block><h- data-h=id_nt_dcl>document</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>markup-element</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>markup-element</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>text</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>escape</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>document-markup-element</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>document-markup-element</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>document-text</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>common-markup-element</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>document-text</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>document-text-character</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>document-text-character</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>document-text-character</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? Any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=id_nt_dcl>common-markup-element</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>escape</h->
   <h- data-h=sym_op>|</h-> <h- data-h=id_nt>comment</h->
   <h- data-h=sym_op>|</h-> <h- data-h=id_nt>directive</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>text</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? Maximal character sequence excluding "\" ?</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>escape</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>escapable</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>line-terminator</h-><h- data-h=sym_punc>;</h->
@@ -1889,46 +1894,88 @@ a <g-term>document</g-term> is constructed as follows:
   <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>#</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>$</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>%</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&amp;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>*</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>/</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>;</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&lt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&gt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>?</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>@</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>^</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>|</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>~</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str> </h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=id_nt>TAB</h-> <h- data-h=sym_op>|</h->   <h- data-h=id_nt>VT</h-> <h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>line-terminator</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>CR</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>CR</h->
-  <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> Ambiguities are resolved in favor of a single CRLF line-terminator,
-     instead of two CR and LF line-terminators </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>comment</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\:</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=mac>? Maximal character sequence up to and including line-terminator ?</h-><h- data-h=sym_punc>;</h->
+
 <h- data-h=id_nt_dcl>directive</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>directive-name</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=id_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>markup-element</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>directive-name</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=id_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=id_nt>block</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>directive-name</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>directive-name-character</h-> <h- data-h=sym_op>-</h-> <h- data-h=id_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>directive-name-character</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>directive-name-character</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>_</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>digit</h-> <h- data-h=sym_op>|</h-> <h- data-h=mac>? ASCII alphabetic character ?</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>digit</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>2</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>3</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>4</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>5</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>6</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>7</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>8</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>9</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
 <h- data-h=id_nt_dcl>group</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group-member-list</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>blank</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=id_nt>group-member-list</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>blank</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>group-member-list</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-comments</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group-member</h-><h- data-h=sym_op>,</h->
-    <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>member-comments</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group-member</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h->
-    <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>group-member</h-><h- data-h=sym_op>,</h->
+    <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>blank</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>blank</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group-member</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h->
+    <h- data-h=id_nt>blank</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>group-member</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-name</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>whitespace</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>member-value</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-name</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>blank</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>blank</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>member-value</h->
   <h- data-h=sym_op>|</h-> <h- data-h=id_nt>member-value</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>...</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>member-name</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-name-character</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>member-name-character</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>member-name-character</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=mac>? HTML attribute name ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>member-value</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>member-value-markup-element</h-> <h- data-h=sym_brac>}</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>group</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>member-value-markup-element</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>member-value-text</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>escape</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>comment</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>directive</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>member-value-text</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? Maximal character sequence excluding "\", ",", or balanced ")" ?</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>member-comments</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>directive-call</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>primary-value</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>directive-call</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>directive-name</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>blank</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>group</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=id_nt>blank</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>block</h-> <h- data-h=sym_sqr>]</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>directive-name</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>blank</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>block</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>primary-value</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>unit-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>null-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>boolean-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>integer-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>unquoted-string</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>quoted-string</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>group</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>block</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>unit-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>unit</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>null-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>null</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>boolean-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>true</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>false</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>integer-literal</h->
+  <h- data-h=sym_punc>=</h->  <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>unquoted-string</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>unquoted-string-character</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>unquoted-string-character</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>unquoted-string-character</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>directive-name-character</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=id_nt_dcl>quoted-string</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>quoted-string-markup-element</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>quoted-string-markup-element</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>quoted-string-text</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>common-markup-element</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>quoted-string-text</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>quoted-string-text-character</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>quoted-string-text-character</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>quoted-string-text-character</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? Any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=id_nt_dcl>block</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>block-markup-element</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>block-markup-element</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>block-text</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>common-markup-element</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>block-text</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>block-text-character</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>block-text-character</h-> <h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> brace-balanced </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>block-text-character</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=mac>? Any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=id_nt_dcl>blank</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id_nt>comment</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>whitespace</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>whitespace</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=str_dlim>"</h-><h- data-h=str> </h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>TAB</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>CR</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>VT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=id_nt_dcl>line-terminator</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>LF</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>CR</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>LF</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=id_nt>CR</h-> <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> unless the next character is LF </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>TAB</h-> <h- data-h=sym_punc>=</h-> <h- data-h=mac>? U+0009 CHARACTER TABULATION ?</h-> <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> \t in C </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>LF</h-> <h- data-h=sym_punc>=</h->  <h- data-h=mac>? U+000A END OF LINE ?</h->          <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> \n in C </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=id_nt_dcl>CR</h-> <h- data-h=sym_punc>=</h->  <h- data-h=mac>? U+000D CARRIAGE RETURN ?</h->      <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> \r in C </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
@@ -2241,9 +2288,9 @@ and noncharacters.
 If you want to provide a positional argument that is <code>name = value</code> instead,
 you can do so by writing:
 </p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> "name = value" as a positional argument</h->
-<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->name <h- data-h=esc>\\</h->= value<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->"name = value"<h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> named argument with name "name" and value "value"</h->
-<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> value<h- data-h=sym_par>)</h-></code-block>
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->"name = value"<h- data-h=sym_par>)</h-></code-block>
 <p>Only the literal <code>=</code> character can be used for named arguments,
 not its escaped variant <code><h- data-h=esc>\</h-><h- data-h=esc>=</h-></code>.
 </p></tip-block>
@@ -2262,11 +2309,11 @@ ends the content.
 <tip-block><p><intro-></intro-> 
 You can use escape sequences to continue otherwise ended content.
 </p><code-block><h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->hello<h- data-h=sym_punc>,</h-> world<h- data-h=sym_par>)</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Two positional arguments</h->
-<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->hello<h- data-h=esc>\,</h-> world<h- data-h=sym_par>)</h->  <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> One positional argument containing a comma.</h->
-<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->hello()world<h- data-h=sym_par>)</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, () is balanced and included in single argument</h->
-<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->hello<h- data-h=esc>\)</h->world<h- data-h=sym_par>)</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK</h->
-<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->hello<h- data-h=esc>\(</h->world<h- data-h=sym_par>)</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK</h->
-<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->hello(world)    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: unterminated arguments</h-></code-block>
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->"hello<h- data-h=esc>\,</h-> world"<h- data-h=sym_par>)</h->  <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> One positional argument containing a comma.</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->"hello()world"<h- data-h=sym_par>)</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, () is balanced and included in single argument</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->"hello<h- data-h=esc>\)</h->world"<h- data-h=sym_par>)</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->"hello<h- data-h=esc>\(</h->world"<h- data-h=sym_par>)</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->"hello(world")    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: unterminated arguments</h-></code-block>
 </tip-block>
 
 <p>Grammatically, a positional argument is a <g-term>member-value</g-term>,
@@ -3664,19 +3711,19 @@ the target can also be invoked using the alias name.
 <example-block><p><intro-></intro-> 
 One or multiple aliases can be defined as follows:
 </p><code-block><h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->N<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_char_by_name<h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h->DIGIT ZERO<h- data-h=sym_brac>}</h->              <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_char_by_name{DIGIT ZERO}</h->
+<h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h->DIGIT ZERO<h- data-h=sym_brac>}</h->                 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_char_by_name{DIGIT ZERO}</h->
 
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->incl<h- data-h=sym_punc>,</h-> include<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_include<h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\incl</h-><h- data-h=sym_brac>{</h->file.cow<h- data-h=sym_brac>}</h->             <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_include{file.cow}</h->
-<h- data-h=mk_tag>\include</h-><h- data-h=sym_brac>{</h->file.cow<h- data-h=sym_brac>}</h->          <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, same</h->
+<h- data-h=mk_tag>\incl</h-><h- data-h=sym_brac>{</h->file.cow<h- data-h=sym_brac>}</h->                <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_include{file.cow}</h->
+<h- data-h=mk_tag>\include</h-><h- data-h=sym_brac>{</h->file.cow<h- data-h=sym_brac>}</h->             <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, same</h->
 
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->cowel_to_html<h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, but no effect</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->cowel_to_html<h- data-h=sym_brac>}</h->    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, but no effect</h->
 
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h->???<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->        <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: generation of target name failed</h->
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->??<h- data-h=sym_brac>}</h->             <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid target name</h->
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->undefined<h- data-h=sym_brac>}</h->      <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: target not found</h->
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->?<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_alias<h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid alias name</h->
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->N<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->N<h- data-h=sym_brac>}</h->           <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: redefinition of N</h-></code-block>
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h->???<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->          <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: generation of target name failed</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->??<h- data-h=sym_brac>}</h->               <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid target name</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->undefined<h- data-h=sym_brac>}</h->        <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: target not found</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->"?"<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_alias<h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid alias name</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->N<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->N<h- data-h=sym_brac>}</h->             <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: redefinition of N</h-></code-block>
 </example-block>
 
 <h4 id=dir-cowel_macro><a class=para href=#dir-cowel_macro></a>7.8.2. <code><h- data-h=mk_tag>\cowel_macro</h-></code> — Define a macro</h4>
@@ -3787,7 +3834,7 @@ COWEL markup:
 
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> All together:</h->
 <h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->m<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->greeting<h- data-h=sym_brac>}</h->, <h- data-h=mk_tag>\cowel_put</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=esc>\</h->
-<h- data-h=mk_tag>\m</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>greeting</h-> <h- data-h=sym_punc>=</h-> Hello<h- data-h=sym_punc>,</h-> !<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->macros<h- data-h=sym_brac>}</h-></code-block>
+<h- data-h=mk_tag>\m</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>greeting</h-> <h- data-h=sym_punc>=</h-> "Hello<h- data-h=sym_punc>,</h-> !"<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->macros<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block>Content
 
@@ -4152,9 +4199,9 @@ which is more composable.
 <tip-block><p><intro-></intro-> 
 Writing <code><h- data-h=mk_tag>\code</h-></code> directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:
-</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Defines a \js directive that can be used in place of \code(js) from now on:</h->
-<h- data-h=mk_tag>\macro</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\js</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\code</h-><h- data-h=sym_par>(</h->js<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
-Let's highlight <h- data-h=mk_tag>\js</h-><h- data-h=sym_brac>{</h->var<h- data-h=sym_brac>}</h-> in JavaScript.</code-block>
+</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> Defines a </h-><h- data-h=cmt>\</h-><h- data-h=cmt>js directive that can be used in place of </h-><h- data-h=cmt>\</h-><h- data-h=cmt>code(js) from now on:</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>js</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_par>(</h->js<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+Let's highlight <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>js</h-><h- data-h=sym_brac>{</h->var<h- data-h=sym_brac>}</h-> in JavaScript.</code-block>
 </tip-block>
 
 <h4 id=dir-codeblock><a class=para href=#dir-codeblock></a>8.3.2. <code><h- data-h=mk_tag>\codeblock</h-></code> — Code blocks</h4>
@@ -4975,11 +5022,11 @@ Everyday
 We might not want to space-separate content if some of it is empty.
 For example, we could define a <code><h- data-h=mk_tag>\Note</h-></code> macro
 where the user can <em>optionally</em> provide a number for that note:
-</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\Note</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\trim</h-><h- data-h=sym_brac>{</h->Note <h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h->:<h- data-h=sym_brac>}</h->
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Note</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>trim</h-><h- data-h=sym_brac>{</h->Note <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h->:<h- data-h=sym_brac>}</h->
 
-<h- data-h=mk_tag>\Note</h-> Something something.
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Note</h-> Something something.
 
-<h- data-h=mk_tag>\Note</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-> Something else.</code-block>
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Note</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-> Something else.</code-block>
 <p>This renders as:
 </p><div class=indent>
 <p>Note: Something something.
@@ -5070,18 +5117,18 @@ COWEL markup:
 <tip-block><p><intro-></intro-> 
 You can also combine <code><h- data-h=mk_tag>\Cadd</h-></code> with <code><h- data-h=mk_tag>\Vget</h-></code> and <code><h- data-h=mk_tag>\Vset</h-></code> to store the results
 of your calculations:
-</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Reset paragraph number</h->
-<h- data-h=mk_tag>\Vset</h-><h- data-h=sym_par>(</h->index<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h->
+</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> Reset paragraph number</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Vset</h-><h- data-h=sym_par>(</h->index<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h->
 
-<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Define a macro for automatically incrementing paragraph numbers.</h->
-<h- data-h=mk_tag>\macro</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\p_num</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
-<h- data-h=mk_tag>\Vset</h-><h- data-h=sym_par>(</h->index<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\Cadd</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\Vget</h-><h- data-h=sym_par>(</h->index<h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h->1<h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\Vget</h-><h- data-h=sym_par>(</h->index<h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> Define a macro for automatically incrementing paragraph numbers.</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>p_num</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Vset</h-><h- data-h=sym_par>(</h->index<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Cadd</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Vget</h-><h- data-h=sym_par>(</h->index<h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h->1<h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Vget</h-><h- data-h=sym_par>(</h->index<h- data-h=sym_par>)</h->
 <h- data-h=sym_brac>}</h->
 
-Paragraph <h- data-h=mk_tag>\p_num</h->
+Paragraph <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>p_num</h->
 
-Paragraph <h- data-h=mk_tag>\p_num</h-></code-block>
+Paragraph <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>p_num</h-></code-block>
 <p>This renders as:
 </p><div class=indent>
 <p>Paragraph 1

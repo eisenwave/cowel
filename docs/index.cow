@@ -60,13 +60,13 @@ U+\cowel_put\c{nbsp}(\tt{\U{\cowel_put}})\
 \cowel_html_element(
   meta,
   (
-    property = og:\cowel_put{0},
-    content = \cowel_put,
+    property = "og:\cowel_put{0}",
+    content = cowel_put{},
   ),
 )\
 }
 
-\there(std.head){
+\there("std.head"){
 \cowel_html_element(title){COWEL - Compact Web Language Documentation}
 \cowdoc_og_property(title){Compact Web Language (COWEL)}
 \cowdoc_og_property(description){\
@@ -93,7 +93,7 @@ h1 {
     margin-bottom: 3em;
 }
 }
-\ref(https://github.com/eisenwave/cowel)
+\ref("https://github.com/eisenwave/cowel")
 }
 
 \h2(listed = false){Contents}
@@ -144,7 +144,7 @@ and more, all in one, simple syntax.
 \h2{Getting started}
 
 To use and install COWEL,
-you need to \ref(https://docs.npmjs.com/downloading-and-installing-node-js-and-npm){install Node.js and \tt{npm}}.
+you need to \ref("https://docs.npmjs.com/downloading-and-installing-node-js-and-npm"){install Node.js and \tt{npm}}.
 With \tt{npm} installed, open a terminal and run:
 
 \codeblock(sh){

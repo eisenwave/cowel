@@ -68,20 +68,20 @@ This renders as:
 \Btip{
 You can also combine \cowdoc_dir{Cadd} with \cowdoc_dir{Vget} and \cowdoc_dir{Vset} to store the results
 of your calculations:
-\cowblock{\literally{
-\: Reset paragraph number
-\Vset(index){0}
+\cowblock{
+\\: Reset paragraph number
+\\Vset(index){0}
 
-\: Define a macro for automatically incrementing paragraph numbers.
-\macro(\p_num){
-\Vset(index){\Cadd(\Vget(index),1)}
-\Vget(index)
+\\: Define a macro for automatically incrementing paragraph numbers.
+\\macro(\\p_num){
+\\Vset(index){\\Cadd(\\Vget(index),1)}
+\\Vget(index)
 }
 
-Paragraph \p_num
+Paragraph \\p_num
 
-Paragraph \p_num
-}}
+Paragraph \\p_num
+}
 This renders as:
 \Bindent{\cowel_paragraphs{
 Paragraph 1

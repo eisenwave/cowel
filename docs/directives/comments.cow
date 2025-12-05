@@ -12,7 +12,7 @@ It outputs no plaintext or HTML.
 
 \Bex{
 While comments don't output anything,
-\ref(#paragraph-splitting) is based on blank lines in the source,
+\ref("#paragraph-splitting") is based on blank lines in the source,
 so comments don't split paragraphs:
 \cowblock{
 Text

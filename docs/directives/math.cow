@@ -1,7 +1,7 @@
 \h3(id=math){Math}
 
 In recent years, browser support for
-\ref(https://developer.mozilla.org/en-US/docs/Web/MathML){MathML}
+\ref("https://developer.mozilla.org/en-US/docs/Web/MathML"){MathML}
 within HTML has become widespread.
 COWEL relies entirely on the browser for properly rendering math as MathML,
 which is very simple and lightweight,
@@ -54,11 +54,11 @@ and within it, additional pseudo-directives like \cowdoc_dir{mi} or \cowdoc_dir{
 corresponding to MathML elements can be used.
 Essentially, this allows you to build MathML using COWEL syntax.
 
-See \ref(https://developer.mozilla.org/en-US/docs/Web/MathML/Reference/Element){Mozilla's MathML elements reference}
+See \ref("https://developer.mozilla.org/en-US/docs/Web/MathML/Reference/Element"){Mozilla's MathML elements reference}
 for a list of supported elements/directives.
 
 \Bex{
-The previous example in \ref(#math) could also be written like:
+The previous example in \ref("#math") could also be written like:
 \cowblock{
 Math
 \\math{ \\mfrac{\\mi{x}\\mn{2}} }

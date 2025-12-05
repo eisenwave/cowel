@@ -83,7 +83,7 @@ to produce the corresponding HTML tags with the same name.
 
 Headings take a \cowdoc_attr{listed} argument, which is a yes/no plaintext argument.
 Unless its value is \tt{no}, headings are numbered and added to the table of contents
-(\ref(#dir-make_contents)) automatically.
+(\ref("#dir-make_contents")) automatically.
 
 Headings also take a \cowdoc_attr{show-number} argument, which is a yes/no plaintext argument.
 Unless this is \tt{no},
@@ -115,7 +115,7 @@ which is comprised of all the headings within the document.
 It takes no arguments and its content is ignored.
 It displays as a block.
 
-The table of contents is is populated by headings (\ref(#headings))
+The table of contents is is populated by headings (\ref("#headings"))
 as the document is processed.
 
 \Btip{
@@ -126,7 +126,7 @@ an unlisted heading may be used:
 \\make_contents
 }
 A similar effect can be achieved using
-\cowdoc_c{\\cowel_html_element[h2]} (\ref(#dir-cowel_html_element)).
+\cowdoc_c{\\cowel_html_element[h2]} (\ref("#dir-cowel_html_element")).
 However, using \cowdoc_c{\\cowel_html_element[h2]}
 will also not emit a link icon in the gutter,
 and it will not synthesize an \cowdoc_attr{id} for that heading.

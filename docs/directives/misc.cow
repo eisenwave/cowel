@@ -10,7 +10,7 @@ It displays as a block, and its content is an HTML context.
 \h4(id=dir-trim){\cowdoc_dir{trim} \c{mdash} Trim input}
 
 The content of a \cowdoc_dir{text} directive is an HTML context
-(\ref(#contexts-and-output)).
+(\ref("#contexts-and-output")).
 Its arguments are ignored.
 \cowdoc_dir{text} is a formatting directive.
 
@@ -32,13 +32,13 @@ Every\trim{ day}
 We might not want to space-separate content if some of it is empty.
 For example, we could define a \cowdoc_dir{Note} macro
 where the user can \em{optionally} provide a number for that note:
-\cowblock{\literally{
-\macro(\Note){\trim{Note \put}:}
+\cowblock{
+\\macro(\\Note){\\trim{Note \\put}:}
 
-\Note Something something.
+\\Note Something something.
 
-\Note{1} Something else.
-}}
+\\Note{1} Something else.
+}
 This renders as:
 \Bindent{\cowel_paragraphs{
 Note: Something something.
@@ -55,7 +55,7 @@ but there should never be a space before the colon.
 \h4(id=dir-text){\cowdoc_dir{text} \c{mdash} Plaintext context}
 
 The content of a \cowdoc_dir{text} directive is a plaintext context
-(\ref(#contexts-and-output)).
+(\ref("#contexts-and-output")).
 Its arguments are ignored.
 
 It simply outputs the input that it was given as text.

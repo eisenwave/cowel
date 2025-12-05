@@ -1,7 +1,7 @@
 \h3(id=code){Code and syntax highlighting}
 
 COWEL uses
-\ref(https://github.com/Eisenwave/ulight){µlight}
+\ref("https://github.com/Eisenwave/ulight"){µlight}
 for syntax highlighting.
 While the set of supported language is relatively small,
 the highlighter is ultra-light, extremely fast, and
@@ -91,11 +91,11 @@ which is more composable.
 \Btip{
 Writing \cowdoc_dir{code} directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:
-\cowblock{\literally{
-\: Defines a \js directive that can be used in place of \code(js) from now on:
-\macro(\js){\code(js){\put}}
-Let's highlight \js{var} in JavaScript.
-}}
+\cowblock{
+\\: Defines a \\js directive that can be used in place of \\code(js) from now on:
+\\macro(\\js){\\code(js){\\put}}
+Let's highlight \\js{var} in JavaScript.
+}
 }
 
 \h4(id=dir-codeblock){\cowdoc_dir{codeblock} \c{mdash} Code blocks}
@@ -137,7 +137,7 @@ in the appropriate syntax highlighting tags.
 
 It has a single \tt{name} argument, which is the µlight \dfn{long name} for a highlight type.
 You can obtain a list of possible long names at
-\ref(https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h){\tt{ulight.h}}
+\ref("https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h"){\tt{ulight.h}}
 from the definition of \code(cpp){enum ulight_highlight_type}.
 The long name is the enumerator name without the \tt{ULIGHT_HL} prefix,
 all lowercase, and with hyphens instead of underscores.

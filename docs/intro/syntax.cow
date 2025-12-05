@@ -11,7 +11,7 @@ built on top of only three syntactical constructs:
 
 \h3{EBNF grammar}
 
-Formally, in \ref(https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form){EBNF}
+Formally, in \ref("https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form"){EBNF}
 grammar format,
 a \gterm{document} is constructed as follows:
 
@@ -40,7 +40,7 @@ text
 
 \Bnote{
 In most situations, text is not processed specially.
-However, the output may depend on the context (\ref(#contexts-and-output)).
+However, the output may depend on the context (\ref("#contexts-and-output")).
 For example, \cowdoc_c{<} in text will render as a < character,
 but will be converted to \cowdoc_html{&lt;} when fed into a To-HTML Policy.
 Furthermore, text is subject to special effects like syntax highlighting
@@ -56,7 +56,7 @@ or to have it merged into spaces,
 which happens by default.
 
 At the document top-level,
-\ref(#paragraph-splitting) takes place.
+\ref("#paragraph-splitting") takes place.
 
 \Bex{
 COWEL markup:
@@ -202,7 +202,7 @@ This makes them useful for adding information to the COWEL markup.
 \Bnote{
 Comments, just like any other content,
 are actually part of the AST and don't simply get discarded during parsing.
-This means that a comment wrapped in \ref(#dir-cowel_source_as_text) will render as expected:
+This means that a comment wrapped in \ref("#dir-cowel_source_as_text") will render as expected:
 \cowblock{\cowel_source_as_text{
 \cowblock{\cowel_source_as_text{
 \: A comment ...
@@ -356,9 +356,9 @@ If you want to provide a positional argument that is \cowdoc_c{name = value} ins
 you can do so by writing:
 \cowblock{\literally{
 \: "name = value" as a positional argument
-\xyz(name \\= value)
+\xyz("name = value")
 \: named argument with name "name" and value "value"
-\xyz(name = value)
+\xyz("name = value")
 }}
 Only the literal \cowdoc_c{=} character can be used for named arguments,
 not its escaped variant \cowdoc_c{\\=}.
@@ -381,11 +381,11 @@ ends the content.
 You can use escape sequences to continue otherwise ended content.
 \cowblock{\literally{
 \xyz(hello, world)   \: Two positional arguments
-\xyz(hello\, world)  \: One positional argument containing a comma.
-\xyz(hello()world)   \: OK, () is balanced and included in single argument
-\xyz(hello\)world)   \: OK
-\xyz(hello\(world)   \: OK
-\xyz(hello(world)    \: error: unterminated arguments
+\xyz("hello\, world")  \: One positional argument containing a comma.
+\xyz("hello()world")   \: OK, () is balanced and included in single argument
+\xyz("hello\)world")   \: OK
+\xyz("hello\(world")   \: OK
+\xyz("hello(world")    \: error: unterminated arguments
 }}
 }
 
@@ -411,7 +411,7 @@ member-comments
 
 Ellipsis arguments (spelled \ellipsis)
 are placeholders which expand to arguments provided to a surrounding macro.
-See also \ref(#dir-cowel_macro) and \ref(#dir-cowel_put).
+See also \ref("#dir-cowel_macro") and \ref("#dir-cowel_put").
 
 \Bex{
 COWEL markup:

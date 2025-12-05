@@ -35,7 +35,7 @@ C++ standard draft links can be synthesized into human-readable descriptions.
 }
 This renders as:
 \Bindent{
-\ref(https://eel.is/c++draft/expr#1)
+\ref("https://eel.is/c++draft/expr#1")
 }
 }
 

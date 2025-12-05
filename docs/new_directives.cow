@@ -23,11 +23,11 @@ which all builtin directives have in common:
   \li{
     Unless otherwise stated,
     arguments to builtin directives are processed using the
-    text-only policy (\ref(#contexts-and-output)).
+    text-only policy (\ref("#contexts-and-output")).
   }
   \li{
     Arguments to builtin directives
-    use the usual argument matching (\ref(#usual-argument-matching)).
+    use the usual argument matching (\ref("#usual-argument-matching")).
   }
   \li{
     Whenever content or arguments are said to be ignored,
@@ -89,7 +89,7 @@ The possible types are as follows:
 
   \dt{\tt{optional(t: type)}}
   \dd{
-    Same as \tt{t}, but can be omitted in usual argument matching (\ref(#usual-argument-matching)).
+    Same as \tt{t}, but can be omitted in usual argument matching (\ref("#usual-argument-matching")).
   }
 
   \dt{\tt{lazy(t: type)}}
@@ -242,7 +242,7 @@ cowel_char_by_name(){...}
 }
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is text content which should be a
-\ref(https://www.unicode.org/reports/tr34/#Names){Unicode name}
+\ref("https://www.unicode.org/reports/tr34/#Names"){Unicode name}
 for a code point.
 That is, the name of a code point,
 or one of its "control", "alternate", or "correction" aliases.
@@ -261,7 +261,7 @@ cowel_char_by_num(){...}
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is text content
 which should be a sequence of hexadecimal numbers
-specifying a \ref(https://infra.spec.whatwg.org/#scalar-value){Unicode scalar value};
+specifying a \ref("https://infra.spec.whatwg.org/#scalar-value"){Unicode scalar value};
 that is, a code point which UTF-8 permits to be encoded.
 All arguments are ignored.
 
@@ -453,7 +453,7 @@ Horizontal rule:
 
 \h3(id=new-content-policies){Content policies}
 
-As explained in \ref(#contexts-and-output),
+As explained in \ref("#contexts-and-output"),
 all content within the document and produced by directives is fed into a content policy,
 which, in turn, feeds content into some parent content policy.
 
@@ -474,12 +474,12 @@ The table below lists directives which process content using some content policy
   \tr{
     \td{\cowdoc_dir{cowel_highlight}}
     \td{highlight policy}
-    \td{see \ref(#dir-cowel_highlight)}
+    \td{see \ref("#dir-cowel_highlight")}
   }
   \tr{
     \td{\cowdoc_dir{cowel_paragraphs}}
     \td{paragraphs policy}
-    \td{see \ref(#dir-cowel_paragraphs)}
+    \td{see \ref("#dir-cowel_paragraphs")}
   }
   \tr{
     \td{\cowdoc_dir{cowel_no_invoke}}
@@ -768,7 +768,7 @@ which wraps parts of code in HTML tags for the purpose of syntax highlighting.
 This specifies the name of language (e.g. \tt{cowel})
 in which the content is to be highlighted.
 The name has to be one of the language short names
-supported by the \ref(https://github.com/Eisenwave/ulight){µlight syntax highlighter},
+supported by the \ref("https://github.com/Eisenwave/ulight"){µlight syntax highlighter},
 which is the highlighter that COWEL uses internally.
 
 \h4(
@@ -787,7 +787,7 @@ which is the µlight \dfn{long name} for a highlight type.
 
 \Btip{
 You can obtain a list of possible long names at
-\ref(https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h){\tt{ulight.h}}
+\ref("https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h"){\tt{ulight.h}}
 from the definition of \code(cpp){enum ulight_highlight_type}.
 The long name is the enumerator name without the \tt{ULIGHT_HL} prefix,
 all lowercase, and with hyphens instead of underscores.
@@ -830,7 +830,7 @@ can be used to further customize syntax highlighting.
 It outputs \dfn{phantom text}, which is fed into the syntax highlighter,
 but is not part of the output content.
 
-The provided content is processed using a text-only policy (\ref(#contexts-and-output)).
+The provided content is processed using a text-only policy (\ref("#contexts-and-output")).
 If the current policy is a highlight policy,
 the text output by the former is turned into phantom text within the latter.
 Otherwise, the generated text is discarded.
@@ -863,7 +863,7 @@ because it is highlighted as if it was positioned like:
 
 Dividing content into paragraphs manually would take a huge amount of effort,
 so COWEL provides means of doing so semi-automatically.
-Text within in a paragraphs policy (\ref(#contexts-and-output))
+Text within in a paragraphs policy (\ref("#contexts-and-output"))
 is automatically wrapped in paragraphs (\cowdoc_html{<p>...</p>}),
 divided at blank lines.
 
@@ -924,7 +924,7 @@ cowel_paragraphs(){...}
 }
 
 The \cowdoc_dir{cowel_paragraphs} directive
-creates a paragraphs policy (\ref(#contexts-and-output))
+creates a paragraphs policy (\ref("#contexts-and-output"))
 and feeds all provided content into that policy.
 The beginning and end of the provided content are considered to be outside a paragraph.
 All arguments are ignored.
@@ -1092,7 +1092,7 @@ The path to the document is provided as content to \cowdoc_dir{cowel_include},
 and is assumed to be relative to the current file.
 All arguments are ignored.
 
-If the current content policy is a paragraphs policy (\ref(#contexts-and-output)),
+If the current content policy is a paragraphs policy (\ref("#contexts-and-output")),
 paragraph splitting of the included sub-document takes place
 as if its contents were expanded directly where \cowdoc_dir{cowel_include} appears.
 In other words, \cowdoc_dir{cowel_include} inherits the paragraph context,
@@ -1216,19 +1216,19 @@ A fatal error is raised if
 One or multiple aliases can be defined as follows:
 \cowblock{\literally{
 \cowel_alias(N){cowel_char_by_name}
-\N{DIGIT ZERO}              \: OK, equivalent to \cowel_char_by_name{DIGIT ZERO}
+\N{DIGIT ZERO}                 \: OK, equivalent to \cowel_char_by_name{DIGIT ZERO}
 
 \cowel_alias(incl, include){cowel_include}
-\incl{file.cow}             \: OK, equivalent to \cowel_include{file.cow}
-\include{file.cow}          \: OK, same
+\incl{file.cow}                \: OK, equivalent to \cowel_include{file.cow}
+\include{file.cow}             \: OK, same
 
-\cowel_alias{cowel_to_html} \: OK, but no effect
+\cowel_alias{cowel_to_html}    \: OK, but no effect
 
-\cowel_alias{\N{???}}        \: error: generation of target name failed
-\cowel_alias{??}             \: error: invalid target name
-\cowel_alias{undefined}      \: error: target not found
-\cowel_alias(?){cowel_alias} \: error: invalid alias name
-\cowel_alias(N){N}           \: error: redefinition of N
+\cowel_alias{\N{???}}          \: error: generation of target name failed
+\cowel_alias{??}               \: error: invalid target name
+\cowel_alias{undefined}        \: error: target not found
+\cowel_alias("?"){cowel_alias} \: error: invalid alias name
+\cowel_alias(N){N}             \: error: redefinition of N
 }}
 }
 
@@ -1273,7 +1273,7 @@ Hello, macros!
 }
 
 When a macro is processed,
-the behavior is as if \cowdoc_dir{cowel_paragraph_inherit} (\ref(#dir-cowel_paragraph_inherit))
+the behavior is as if \cowdoc_dir{cowel_paragraph_inherit} (\ref("#dir-cowel_paragraph_inherit"))
 was invoked immediately before processing the content in the macro definition.
 This means that blank lines in the macro definition
 may also result in paragraph splits outside the macro.
@@ -1349,7 +1349,7 @@ COWEL markup:
 
 \: All together:
 \cowel_macro(m){\cowel_put{greeting}, \cowel_put\cowel_put{0}}\
-\m(greeting = Hello, !){macros}
+\m(greeting = "Hello, !"){macros}
 }}
 Generated HTML:
 \htmlblock{

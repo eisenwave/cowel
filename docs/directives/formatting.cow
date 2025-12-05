@@ -142,7 +142,7 @@ For example, \cowdoc_dir{cite}, \cowdoc_dir{var}, \cowdoc_dir{i} and \cowdoc_dir
 Both \cowdoc_dir{strong} and \cowdoc_dir{b} are bold.
 Both \cowdoc_dir{tt} and \cowdoc_dir{samp} use teletype font.
 
-However, you can customize the style; see \ref(#dir-style).
+However, you can customize the style; see \ref("#dir-style").
 }
 
 \Bnote{

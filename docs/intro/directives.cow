@@ -47,7 +47,7 @@ The following builtin content policies exist:
     Like a to-HTML policy,
     but surrounds given text content in paragraphs,
     and treats blank lines in text as paragraph separators.
-    See \ref(#paragraph-splitting) for details.
+    See \ref("#paragraph-splitting") for details.
   }
 
   \dt{No-invoke policy}
