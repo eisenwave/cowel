@@ -25,7 +25,7 @@ U+\cowel_put\c{nbsp}(\tt{\U{\cowel_put}})\
 }
 
 \cowel_macro(cowdoc_esc){\
-\tt{\cowel_highlight_as(escape){\\\cowel_put}}\
+\tt{\cowel_highlight_as(string-escape){\\\cowel_put}}\
 }
 
 \cowel_macro(cowblock){\
