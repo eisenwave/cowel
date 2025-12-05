@@ -27,6 +27,7 @@ struct Printing_Diagnostic_Policy : Diagnostic_Policy {
     std::u8string_view source;
 };
 
+// TODO: do we even need this now that we have all those file tests?
 bool test_validity(std::u8string_view file, Printing_Diagnostic_Policy& policy)
 {
 #define COWEL_SWITCH_ON_POLICY_ACTION(...)                                                         \
@@ -48,21 +49,12 @@ bool test_validity(std::u8string_view file, Printing_Diagnostic_Policy& policy)
     const std::u8string_view source { source_data.data(), source_data.size() };
     policy.source = source;
 
-    auto doc = parse_and_build(source, File_Id::main, &memory);
-    COWEL_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
-
-// FIXME reimplement
-#if 0 // NOLINT(readability-avoid-unconditional-preprocessor-if)
-    Ignoring_HTML_Token_Consumer consumer;
-    Result<void, bmd::Document_Error> result
-        = bmd::doc_to_html(consumer, *doc, { .indent_width = 4 }, &memory);
-    if (!result) {
-        COWEL_SWITCH_ON_POLICY_ACTION(policy.error(result.error()));
+    ast::Pmr_Vector<ast::Markup_Element> doc { &memory };
+    if (!parse_and_build(doc, source, File_Id::main, &memory)) {
+        // TODO: this does not permit making parse errors count as success
+        return false;
     }
-    COWEL_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::process));
-
-    return policy.is_success();
-#endif
+    COWEL_SWITCH_ON_POLICY_ACTION(policy.done(Compilation_Stage::parse));
     return true;
 }
 

@@ -1,6 +1,6 @@
 \cowel_macro(cat3){\cowel_put{0}\cowel_put{1}\cowel_put{2}}\
 \cowel_macro(a){\cat3(...)}\
-\cowel_macro(b){\cat3(\cowel_put{0}, ...)}\
+\cowel_macro(b){\cat3(cowel_put{0}, ...)}\
 \cowel_macro(c){\cat3(c, ...)}\
 \cowel_macro(d){\cat3(..., d)}\
 \cowel_macro(e){\cat3(e, ..., E)}\

@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <cstddef>
-#include <iostream>
 #include <memory_resource>
 #include <optional>
+#include <ostream>
 #include <span>
 #include <string>
 #include <string_view>
@@ -36,9 +36,17 @@ std::ostream& operator<<(std::ostream& out, std::u8string_view str)
 }
 
 enum struct Node_Kind : Default_Underlying {
+    unit,
+    null,
+    boolean,
+    integer,
+    unquoted_string,
     text,
     escape,
+    comment,
     directive,
+    string,
+    block,
     group,
     named_argument,
     positional_argument,
@@ -46,72 +54,139 @@ enum struct Node_Kind : Default_Underlying {
 };
 
 struct Node {
-    Node_Kind type;
+    Node_Kind kind;
     std::u8string_view name_or_text {};
-    std::vector<Node> arguments {};
     std::vector<Node> children {};
+
+    [[nodiscard]]
+    static Node unit(std::u8string_view text)
+    {
+        return { .kind = Node_Kind::unit, .name_or_text = text };
+    }
+
+    [[nodiscard]]
+    static Node null(std::u8string_view text)
+    {
+        return { .kind = Node_Kind::null, .name_or_text = text };
+    }
+
+    [[nodiscard]]
+    static Node boolean(std::u8string_view text)
+    {
+        return { .kind = Node_Kind::boolean, .name_or_text = text };
+    }
+
+    [[nodiscard]]
+    static Node unquoted_string(std::u8string_view text)
+    {
+        return { .kind = Node_Kind::unquoted_string, .name_or_text = text };
+    }
+
+    [[nodiscard]]
+    static Node integer(std::u8string_view integer)
+    {
+        return { .kind = Node_Kind::integer, .name_or_text = integer };
+    }
 
     [[nodiscard]]
     static Node text(std::u8string_view text)
     {
-        return { .type = Node_Kind::text, .name_or_text = text };
+        return { .kind = Node_Kind::text, .name_or_text = text };
     }
 
     [[nodiscard]]
     static Node escape(std::u8string_view text)
     {
-        return { .type = Node_Kind::escape, .name_or_text = text };
+        COWEL_ASSERT(text.starts_with(u8'\\'));
+        return { .kind = Node_Kind::escape, .name_or_text = text };
+    }
+
+    [[nodiscard]]
+    static Node comment(std::u8string_view text)
+    {
+        COWEL_ASSERT(text.starts_with(u8"\\:"));
+        return { .kind = Node_Kind::comment, .name_or_text = text };
     }
 
     [[nodiscard]]
     static Node directive(std::u8string_view name)
     {
-        return { .type = Node_Kind::directive, .name_or_text = name };
+        return { .kind = Node_Kind::directive, .name_or_text = name };
     }
     [[nodiscard]]
-    static Node directive_with_arguments(std::u8string_view name, std::vector<Node>&& arguments)
+    static Node directive(std::u8string_view name, Node&& args, Node&& content)
     {
+        COWEL_ASSERT(args.kind == Node_Kind::group);
+        COWEL_ASSERT(content.kind == Node_Kind::block);
         return {
-            .type = Node_Kind::directive,
+            .kind = Node_Kind::directive,
             .name_or_text = name,
-            .arguments = std::move(arguments),
+            .children = { std::move(args), std::move(content) },
         };
     }
     [[nodiscard]]
-    static Node directive_with_content(std::u8string_view name, std::vector<Node>&& content)
+    static Node directive_with_arguments(std::u8string_view name, Node&& arguments)
     {
+        COWEL_ASSERT(arguments.kind == Node_Kind::group);
         return {
-            .type = Node_Kind::directive,
+            .kind = Node_Kind::directive,
             .name_or_text = name,
-            .children = std::move(content),
+            .children = { std::move(arguments) },
         };
     }
     [[nodiscard]]
-    static Node
-    directive(std::u8string_view name, std::vector<Node>&& arguments, std::vector<Node>&& content)
+    static Node directive_with_content(std::u8string_view name, Node&& content)
+    {
+        COWEL_ASSERT(content.kind == Node_Kind::block);
+        return {
+            .kind = Node_Kind::directive,
+            .name_or_text = name,
+            .children = { std::move(content) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node string(std::vector<Node>&& elements)
     {
         return {
-            .type = Node_Kind::directive,
-            .name_or_text = name,
-            .arguments = std::move(arguments),
-            .children = std::move(content),
+            .kind = Node_Kind::string,
+            .children = std::move(elements),
         };
+    }
+
+    [[nodiscard]]
+    static Node block(std::vector<Node>&& elements)
+    {
+        return {
+            .kind = Node_Kind::block,
+            .children = std::move(elements),
+        };
+    }
+    [[nodiscard]]
+    static Node block()
+    {
+        return block({});
     }
 
     [[nodiscard]]
     static Node group(std::vector<Node>&& arguments)
     {
         return {
-            .type = Node_Kind::group,
-            .arguments = std::move(arguments),
+            .kind = Node_Kind::group,
+            .children = std::move(arguments),
         };
+    }
+    [[nodiscard]]
+    static Node group()
+    {
+        return group({});
     }
 
     [[nodiscard]]
     static Node named(std::u8string_view name, std::vector<Node>&& children)
     {
         return {
-            .type = Node_Kind::named_argument,
+            .kind = Node_Kind::named_argument,
             .name_or_text = name,
             .children = std::move(children),
         };
@@ -121,7 +196,7 @@ struct Node {
     static Node positional(std::vector<Node>&& children)
     {
         return {
-            .type = Node_Kind::positional_argument,
+            .kind = Node_Kind::positional_argument,
             .children = std::move(children),
         };
     }
@@ -129,38 +204,97 @@ struct Node {
     [[nodiscard]]
     static Node ellipsis()
     {
-        return { .type = Node_Kind::ellipsis };
+        return { .kind = Node_Kind::ellipsis };
     }
 
     [[nodiscard]]
-    static Node from(const ast::Content& actual)
+    static Node from(const ast::Markup_Element& actual)
     {
         if (const auto* const d = get_if<ast::Directive>(&actual)) {
             return from(*d);
         }
-        if (const auto* const e = get_if<ast::Escaped>(&actual)) {
-            return escape(e->get_source());
+        return from(std::get<ast::Primary>(actual));
+    }
+
+    [[nodiscard]]
+    static Node from(const ast::Primary& actual)
+    {
+        switch (const auto kind = actual.get_kind()) {
+
+        case ast::Primary_Kind::unit: {
+            return unit(actual.get_source());
         }
-        const std::u8string_view result = get<ast::Text>(actual).get_source();
-        return text(result);
+
+        case ast::Primary_Kind::null: {
+            return null(actual.get_source());
+        }
+
+        case ast::Primary_Kind::boolean: {
+            return boolean(actual.get_source());
+        }
+
+        case ast::Primary_Kind::unquoted_string: {
+            return unquoted_string(actual.get_source());
+        }
+
+        case ast::Primary_Kind::integer: {
+            return integer(actual.get_source());
+        }
+
+        case ast::Primary_Kind::text: {
+            return text(actual.get_source());
+        }
+
+        case ast::Primary_Kind::escape: {
+            return escape(actual.get_source());
+        }
+
+        case ast::Primary_Kind::comment: {
+            return comment(actual.get_source());
+        }
+
+        case ast::Primary_Kind::quoted_string:
+        case ast::Primary_Kind::block: {
+            std::vector<Node> children;
+            children.reserve(actual.get_elements_size());
+            for (const ast::Markup_Element& c : actual.get_elements()) {
+                children.push_back(from(c));
+            }
+            return kind == ast::Primary_Kind::quoted_string ? string(std::move(children))
+                                                            : block(std::move(children));
+        }
+
+        case ast::Primary_Kind::group: {
+            std::vector<Node> group_members;
+            group_members.reserve(actual.get_members_size());
+            for (const ast::Group_Member& member : actual.get_members()) {
+                group_members.push_back(from(member));
+            }
+            return group(std::move(group_members));
+        }
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid primary.");
     }
 
     [[nodiscard]]
     static Node from(const ast::Directive& actual)
     {
-        std::vector<Node> arguments;
-        arguments.reserve(actual.get_argument_span().size());
-        for (const ast::Group_Member& arg : actual.get_argument_span()) {
-            arguments.push_back(from(arg));
+        if (const ast::Primary* args = actual.get_arguments()) {
+            if (const ast::Primary* content = actual.get_content()) {
+                return directive(actual.get_name(), from(*args), from(*content));
+            }
+            else { // NOLINT(readability-else-after-return)
+                return directive_with_arguments(actual.get_name(), from(*args));
+            }
         }
-
-        std::vector<Node> content;
-        content.reserve(actual.get_content_span().size());
-        for (const ast::Content& c : actual.get_content_span()) {
-            content.push_back(from(c));
+        else {
+            if (const ast::Primary* content = actual.get_content()) {
+                return directive_with_content(actual.get_name(), from(*content));
+            }
+            else { // NOLINT(readability-else-after-return)
+                return directive(actual.get_name());
+            }
         }
-
-        return directive(actual.get_name(), std::move(arguments), std::move(content));
     }
 
     [[nodiscard]]
@@ -168,22 +302,7 @@ struct Node {
     {
         std::vector<Node> children;
         if (arg.has_value()) {
-            const auto* const arg_content = std::get_if<ast::Content_Sequence>(&arg.get_value());
-            if (arg_content) {
-                children.reserve(arg_content->size());
-                for (const ast::Content& c : arg_content->get_elements()) {
-                    children.push_back(from(c));
-                }
-            }
-            else {
-                const auto& group = std::get<ast::Group>(arg.get_value());
-                std::vector<Node> group_members;
-                group_members.reserve(group.size());
-                for (const ast::Group_Member& member : group.get_members()) {
-                    group_members.push_back(from(member));
-                }
-                children.push_back(Node::group(std::move(group_members)));
-            }
+            children.push_back(from(arg.get_value()));
         }
 
         switch (arg.get_kind()) {
@@ -202,10 +321,11 @@ struct Node {
     }
 
     [[nodiscard]]
-    bool matches(const ast::Content& other, std::u8string_view source) const;
-
-    [[nodiscard]]
-    bool matches(const ast::Directive& actual, std::u8string_view source) const;
+    static Node from(const ast::Member_Value& arg)
+    {
+        const auto visitor = [&](const auto& v) -> Node { return from(v); };
+        return std::visit(visitor, arg);
+    }
 
     [[maybe_unused]]
     friend bool operator==(const Node&, const Node&)
@@ -236,48 +356,76 @@ constexpr Static_String8<2> special_escaped(char8_t c)
     }
 }
 
-std::ostream& operator<<(std::ostream& out, const Node& content)
+std::ostream& operator<<(std::ostream& out, const Node& node)
 {
-    switch (content.type) {
-    case Node_Kind::directive: {
-        out << '\\' << content.name_or_text //
-            << '(' << content.arguments << ')' //
-            << "{" << content.children << '}';
-        break;
+    switch (node.kind) {
+    case Node_Kind::unit: {
+        return out << "Unit(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::null: {
+        return out << "Null(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::boolean: {
+        return out << "Boolean(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::integer: {
+        return out << "Integer(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::unquoted_string: {
+        return out << "UnqString(" << node.name_or_text << ')';
     }
 
     case Node_Kind::text: {
         out << "Text(";
-        for (const char8_t c : content.name_or_text) {
+        for (const char8_t c : node.name_or_text) {
             out << special_escaped(c).as_string();
         }
         out << ')';
         break;
     }
 
+    case Node_Kind::comment: {
+        return out << "Comment(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::directive: {
+        out << '\\' << node.name_or_text << '(';
+        for (const auto& c : node.children) {
+            out << c;
+        }
+        return out << ')';
+    }
+
     case Node_Kind::escape: {
-        out << "Escape(" << content.name_or_text << ')';
-        break;
+        return out << "Escape(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::string: {
+        return out << "String(" << node.children << ')';
     }
 
     case Node_Kind::group: {
-        out << "Group(" << content.arguments << ')';
-        break;
+        return out << "Group(" << node.children << ')';
+    }
+
+    case Node_Kind::block: {
+        return out << "Block(" << node.children << ')';
     }
 
     case Node_Kind::named_argument: {
-        out << "NamedArg(" << content.name_or_text << "){" << content.children << '}';
-        break;
+        return out << "NamedArg(" << node.name_or_text << "){" << node.children << '}';
     }
 
     case Node_Kind::positional_argument: {
-        out << "PosArg" << "{" << content.children << '}';
-        break;
+        return out << "PosArg" << "{" << node.children << '}';
     }
 
     case Node_Kind::ellipsis: {
-        out << "...";
-        break;
+        return out << "Ellipsis(" << node.name_or_text << ')';
     }
     }
     return out;
@@ -285,7 +433,7 @@ std::ostream& operator<<(std::ostream& out, const Node& content)
 
 struct [[nodiscard]] Actual_Document {
     std::pmr::vector<char8_t> source;
-    ast::Pmr_Vector<ast::Content> content;
+    ast::Pmr_Vector<ast::Markup_Element> content;
 
     [[nodiscard]]
     std::u8string_view source_string() const
@@ -325,15 +473,26 @@ std::optional<Parsed_File> parse_file(std::u8string_view file, std::pmr::memory_
     Parsed_File result { .source = std::pmr::vector<char8_t> { memory },
                          .instructions = std::pmr::vector<AST_Instruction> { memory } };
 
-    Result<void, cowel::IO_Error_Code> r = load_utf8_file(result.source, full_file);
+    const Result<void, cowel::IO_Error_Code> r = load_utf8_file(result.source, full_file);
     if (!r) {
         Diagnostic_String out { memory };
         print_io_error(out, full_file, r.error());
-        print_code_string(std::cout, out, is_stdout_tty);
+        print_code_string_stdout(out);
         return {};
     }
 
-    parse(result.instructions, result.get_source_string());
+    const Parse_Error_Consumer consumer
+        = [&](std::u8string_view /* id */, const Source_Span& location, Char_Sequence8 message) {
+              Diagnostic_String out { memory };
+              print_file_position(out, file, location);
+              out.append(u8' ');
+              append_char_sequence(out, message, Diagnostic_Highlight::text);
+              out.append(u8'\n');
+              print_code_string_stdout(out);
+          };
+    if (!parse(result.instructions, result.get_source_string(), consumer)) {
+        return {};
+    }
     return result;
 }
 
@@ -347,7 +506,7 @@ parse_and_build_file(std::u8string_view file, std::pmr::memory_resource* memory)
     }
     const std::u8string_view source_string = parsed->get_source_string();
 
-    ast::Pmr_Vector<ast::Content> content
+    ast::Pmr_Vector<ast::Markup_Element> content
         = build_ast(source_string, File_Id::main, parsed->instructions, memory);
     return Actual_Document { std::move(parsed->source), std::move(content) };
 }
@@ -380,6 +539,10 @@ void dump_instructions(
 
 bool run_parse_test(std::u8string_view file, std::span<const AST_Instruction> expected)
 {
+    for (const auto& e : expected) {
+        COWEL_ASSERT(ast_instruction_type_has_operand(e.type) || e.n == 0);
+    }
+
     constexpr std::u8string_view indent = u8"    ";
 
     std::pmr::monotonic_buffer_resource memory;
@@ -390,7 +553,7 @@ bool run_parse_test(std::u8string_view file, std::span<const AST_Instruction> ex
             u8"Test failed because file couldn't be loaded and parsed.\n",
             Diagnostic_Highlight::error_text
         );
-        print_code_string(std::cout, error, is_stdout_tty);
+        print_code_string_stdout(error);
         return false;
     }
     if (!std::ranges::equal(expected, actual->instructions)) {
@@ -415,7 +578,7 @@ bool run_parse_test(std::u8string_view file, std::span<const AST_Instruction> ex
         );
         print_lines_diff(error, expected_text.get_text(), actual_text.get_text());
 
-        print_code_string(std::cout, error, is_stdout_tty);
+        print_code_string_stdout(error);
         return false;
     }
     return true;
@@ -466,6 +629,57 @@ TEST(Parse, directive_brace_escape_2)
     ASSERT_TRUE(run_parse_test(u8"directive_brace_escape_2.cow", expected));
 }
 
+TEST(Parse, directive_multiline)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_named_member },
+        { AST_Instruction_Type::member_name, 2 },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::member_equal },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::unquoted_string, 1 },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::pop_named_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"directive_multiline.cow", expected));
+}
+
+TEST(Parse, directive_multiline_trailing_comma)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_named_member },
+        { AST_Instruction_Type::member_name, 2 },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::member_equal },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::unquoted_string, 1 },
+        { AST_Instruction_Type::pop_named_member },
+        { AST_Instruction_Type::member_comma },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"directive_multiline_trailing_comma.cow", expected));
+}
+
 TEST(Parse, comments)
 {
     // clang-format off
@@ -493,9 +707,9 @@ TEST(Parse, arguments_comments_1)
     static constexpr AST_Instruction expected[] {
         { AST_Instruction_Type::push_document, 2 },
         { AST_Instruction_Type::push_directive, 2 },
-        { AST_Instruction_Type::push_arguments, 0 },
+        { AST_Instruction_Type::push_group, 0 },
         { AST_Instruction_Type::skip, 21 },
-        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_group },
         { AST_Instruction_Type::pop_directive },
         { AST_Instruction_Type::text, 1 },
         { AST_Instruction_Type::pop_document },
@@ -510,7 +724,7 @@ TEST(Parse_And_Build, arguments_comments_1)
 
     static const ast::Pmr_Vector<Node> expected {
         {
-            Node::directive(u8"a"),
+            Node::directive_with_arguments(u8"a", Node::group()),
             Node::text(u8"\n"),
         },
         &memory,
@@ -525,26 +739,26 @@ TEST(Parse, arguments_comments_2)
     static constexpr AST_Instruction expected[] {
         { AST_Instruction_Type::push_document, 2 },
         { AST_Instruction_Type::push_directive, 2 },
-        { AST_Instruction_Type::push_arguments, 2 },
+        { AST_Instruction_Type::push_group, 2 },
 
-        { AST_Instruction_Type::push_positional_argument, 1 },
         { AST_Instruction_Type::skip, 13 },
-        { AST_Instruction_Type::text, 4 },
-        { AST_Instruction_Type::pop_positional_argument },
-        { AST_Instruction_Type::argument_comma },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::unquoted_string, 4 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
 
-        { AST_Instruction_Type::push_named_argument, 1 },
         { AST_Instruction_Type::skip, 13 },
-        { AST_Instruction_Type::argument_name, 5 },
+        { AST_Instruction_Type::push_named_member },
+        { AST_Instruction_Type::member_name, 5 },
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::argument_equal },
+        { AST_Instruction_Type::member_equal },
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::text, 3 },
-        { AST_Instruction_Type::pop_named_argument },
-        { AST_Instruction_Type::argument_comma },
+        { AST_Instruction_Type::unquoted_string, 3 },
+        { AST_Instruction_Type::pop_named_member },
+        { AST_Instruction_Type::member_comma },
         { AST_Instruction_Type::skip, 1 },
 
-        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_group },
         { AST_Instruction_Type::pop_directive },
         { AST_Instruction_Type::text, 1 },
         { AST_Instruction_Type::pop_document },
@@ -561,10 +775,10 @@ TEST(Parse_And_Build, arguments_comments_2)
         {
             Node::directive_with_arguments(
                 u8"b",
-                {
-                    Node::positional({ Node::text(u8"text") }),
-                    Node::named(u8"named", { Node::text(u8"arg") }),
-                }
+                Node::group({
+                    Node::positional({ Node::unquoted_string(u8"text") }),
+                    Node::named(u8"named", { Node::unquoted_string(u8"arg") }),
+                })
             ),
             Node::text(u8"\n"),
         },
@@ -579,11 +793,11 @@ TEST(Parse, arguments_ellipsis)
     static constexpr AST_Instruction expected[] {
         { AST_Instruction_Type::push_document, 2 },
         { AST_Instruction_Type::push_directive, 2 },
-        { AST_Instruction_Type::push_arguments, 1 },
-        { AST_Instruction_Type::push_ellipsis_argument, 0 },
-        { AST_Instruction_Type::argument_ellipsis, 3 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_ellipsis_argument },
+        { AST_Instruction_Type::ellipsis, 3 },
         { AST_Instruction_Type::pop_ellipsis_argument },
-        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_group },
         { AST_Instruction_Type::pop_directive },
         { AST_Instruction_Type::text, 1 },
         { AST_Instruction_Type::pop_document },
@@ -597,7 +811,7 @@ TEST(Parse_And_Build, arguments_ellipsis)
 
     static const ast::Pmr_Vector<Node> expected {
         {
-            Node::directive_with_arguments(u8"x", { Node::ellipsis() }),
+            Node::directive_with_arguments(u8"x", Node::group({ Node::ellipsis() })),
             Node::text(u8"\n"),
         },
         &memory,
@@ -606,73 +820,30 @@ TEST(Parse_And_Build, arguments_ellipsis)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/ellipsis.cow");
 }
 
-TEST(Parse, arguments_not_ellipsis)
-{
-    // clang-format off
-    static constexpr AST_Instruction expected[] {
-        { AST_Instruction_Type::push_document, 6 },
-
-        { AST_Instruction_Type::push_directive, 2 }, // \a
-        { AST_Instruction_Type::push_arguments, 1 },
-        { AST_Instruction_Type::push_positional_argument, 1 },
-        { AST_Instruction_Type::text, 7 },
-        { AST_Instruction_Type::pop_positional_argument },
-        { AST_Instruction_Type::pop_arguments },
-        { AST_Instruction_Type::pop_directive },
-        { AST_Instruction_Type::text, 1 },
-
-        { AST_Instruction_Type::push_directive, 2 }, // \b
-        { AST_Instruction_Type::push_arguments, 1 },
-        { AST_Instruction_Type::push_named_argument, 1 },
-        { AST_Instruction_Type::argument_name, 1 },
-        { AST_Instruction_Type::argument_equal },
-        { AST_Instruction_Type::text, 3 },
-        { AST_Instruction_Type::pop_named_argument },
-        { AST_Instruction_Type::pop_arguments },
-        { AST_Instruction_Type::pop_directive },
-        { AST_Instruction_Type::text, 1 },
-
-        { AST_Instruction_Type::push_directive, 2 }, // \c
-        { AST_Instruction_Type::push_arguments, 1 },
-        { AST_Instruction_Type::push_ellipsis_argument, 1 },
-        { AST_Instruction_Type::argument_ellipsis, 3 },
-        { AST_Instruction_Type::text, 4 },
-        { AST_Instruction_Type::pop_ellipsis_argument },
-        { AST_Instruction_Type::pop_arguments },
-        { AST_Instruction_Type::pop_directive },
-        { AST_Instruction_Type::text, 1 },
-
-        { AST_Instruction_Type::pop_document },
-    };
-    // clang-format on
-
-    ASSERT_TRUE(run_parse_test(u8"arguments/not_ellipsis.cow", expected));
-}
-
 TEST(Parse, group_1)
 {
     // clang-format off
     static constexpr AST_Instruction expected[] {
         { AST_Instruction_Type::push_document, 2 },
         { AST_Instruction_Type::push_directive, 2 },
-        { AST_Instruction_Type::push_arguments, 2 },
+        { AST_Instruction_Type::push_group, 2 },
 
-        { AST_Instruction_Type::push_positional_argument, 0 }, // (x)
-        { AST_Instruction_Type::push_arguments, 1 },
-        { AST_Instruction_Type::push_positional_argument, 1 },
-        { AST_Instruction_Type::text, 1 },
-        { AST_Instruction_Type::pop_positional_argument },
-        { AST_Instruction_Type::pop_arguments },
-        { AST_Instruction_Type::pop_positional_argument },
-        { AST_Instruction_Type::argument_comma },
+        { AST_Instruction_Type::push_positional_member }, // (x)
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::unquoted_string, 1 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
 
-        { AST_Instruction_Type::push_positional_argument }, // ()
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::push_arguments, 0 },
-        { AST_Instruction_Type::pop_arguments },
-        { AST_Instruction_Type::pop_positional_argument },
+        { AST_Instruction_Type::push_positional_member }, // ()
+        { AST_Instruction_Type::push_group, 0 },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_positional_member },
 
-        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_group },
         { AST_Instruction_Type::pop_directive },
         { AST_Instruction_Type::text, 1 },
         { AST_Instruction_Type::pop_document },
@@ -688,10 +859,12 @@ TEST(Parse_And_Build, group_1)
         {
             Node::directive_with_arguments(
                 u8"d",
-                {
-                    Node::positional({ Node::group({ Node::positional({ Node::text(u8"x") }) }) }),
+                Node::group({
+                    Node::positional({ Node::group({ Node::positional({
+                        Node::unquoted_string(u8"x"),
+                    }) }) }),
                     Node::positional({ Node::group({}) }),
-                }
+                })
             ),
             Node::text(u8"\n"),
         },
@@ -707,28 +880,28 @@ TEST(Parse, group_2)
     static constexpr AST_Instruction expected[] {
         { AST_Instruction_Type::push_document, 2 },
         { AST_Instruction_Type::push_directive, 2 },
-        { AST_Instruction_Type::push_arguments, 1 },
+        { AST_Instruction_Type::push_group, 1 },
 
-        { AST_Instruction_Type::push_named_argument, 0 }, // n =  (x, y)
-        { AST_Instruction_Type::argument_name, 1 },
+        { AST_Instruction_Type::push_named_member }, // n =  (x, y)
+        { AST_Instruction_Type::member_name, 1 },
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::argument_equal },
+        { AST_Instruction_Type::member_equal },
         { AST_Instruction_Type::skip, 1 },
         
-        { AST_Instruction_Type::push_arguments, 2 }, // (x, y)
-        { AST_Instruction_Type::push_positional_argument, 1 },
-        { AST_Instruction_Type::text, 1 },
-        { AST_Instruction_Type::pop_positional_argument },
-        { AST_Instruction_Type::argument_comma },
-        { AST_Instruction_Type::push_positional_argument, 1 },
+        { AST_Instruction_Type::push_group, 2 }, // (x, y)
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::unquoted_string, 1 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::text, 1 },
-        { AST_Instruction_Type::pop_positional_argument },
-        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::unquoted_string, 1 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
 
-        { AST_Instruction_Type::pop_named_argument },
+        { AST_Instruction_Type::pop_named_member },
 
-        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_group },
         { AST_Instruction_Type::pop_directive },
         { AST_Instruction_Type::text, 1 },
         { AST_Instruction_Type::pop_document },
@@ -744,13 +917,13 @@ TEST(Parse_And_Build, group_2)
         {
             Node::directive_with_arguments(
                 u8"d",
-                { Node::named(
+                Node::group({ Node::named(
                     u8"n",
                     { Node::group({
-                        Node::positional({ Node::text(u8"x") }),
-                        Node::positional({ Node::text(u8"y") }),
+                        Node::positional({ Node::unquoted_string(u8"x") }),
+                        Node::positional({ Node::unquoted_string(u8"y") }),
                     }) }
-                ) }
+                ) })
             ),
             Node::text(u8"\n"),
         },
@@ -766,20 +939,20 @@ TEST(Parse, group_3)
     static constexpr AST_Instruction expected[] {
         { AST_Instruction_Type::push_document, 2 },
         { AST_Instruction_Type::push_directive, 2 },
-        { AST_Instruction_Type::push_arguments, 1 },
-        { AST_Instruction_Type::push_positional_argument, 0 },
-        { AST_Instruction_Type::push_arguments, 1 },
-        { AST_Instruction_Type::push_positional_argument, 0 },
-        { AST_Instruction_Type::push_arguments, 1 },
-        { AST_Instruction_Type::push_positional_argument, 0 },
-        { AST_Instruction_Type::push_arguments, 0 },
-        { AST_Instruction_Type::pop_arguments },
-        { AST_Instruction_Type::pop_positional_argument },
-        { AST_Instruction_Type::pop_arguments },
-        { AST_Instruction_Type::pop_positional_argument },
-        { AST_Instruction_Type::pop_arguments },
-        { AST_Instruction_Type::pop_positional_argument },
-        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_group, 0 },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
         { AST_Instruction_Type::pop_directive },
         { AST_Instruction_Type::text, 1 },
         { AST_Instruction_Type::pop_document },
@@ -795,7 +968,7 @@ TEST(Parse_And_Build, group_3)
         {
             Node::directive_with_arguments(
                 u8"d",
-                { Node::positional({
+                Node::group({ Node::positional({
                     Node::group({
                         Node::positional({
                             Node::group({
@@ -805,7 +978,7 @@ TEST(Parse_And_Build, group_3)
                             }),
                         }),
                     }),
-                }) }
+                }) })
             ),
             Node::text(u8"\n"),
         },
@@ -813,6 +986,181 @@ TEST(Parse_And_Build, group_3)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/group_3.cow");
+}
+
+TEST(Parse, unquoted)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 10 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::keyword_null, 4 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::keyword_true, 4 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::keyword_false, 5 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::unquoted_string, 4 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::unquoted_string, 6 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"arguments/unquoted.cow", expected));
+}
+
+TEST(Parse, string)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 8 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_quoted_string, 0 },
+        { AST_Instruction_Type::pop_quoted_string },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_quoted_string, 1 },
+        { AST_Instruction_Type::text, 4 },
+        { AST_Instruction_Type::pop_quoted_string },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_quoted_string, 1 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::pop_quoted_string },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_quoted_string, 3 },
+        { AST_Instruction_Type::escape, 2 },
+        { AST_Instruction_Type::text, 4 },
+        { AST_Instruction_Type::escape, 2 },
+        { AST_Instruction_Type::pop_quoted_string },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"arguments/string.cow", expected));
+}
+
+TEST(Parse, block)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 8 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_block, 0 },
+        { AST_Instruction_Type::pop_block },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_block, 1 },
+        { AST_Instruction_Type::text, 4 },
+        { AST_Instruction_Type::pop_block },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_block, 1 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::pop_block },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_block, 5 },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::escape, 2 },
+        { AST_Instruction_Type::text, 4 },
+        { AST_Instruction_Type::escape, 2 },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_block },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"arguments/block.cow", expected));
 }
 
 TEST(Parse, illegal_backslash)
@@ -825,6 +1173,107 @@ TEST(Parse, illegal_backslash)
     };
     // clang-format on
     ASSERT_TRUE(run_parse_test(u8"illegal_backslash.cow", expected));
+}
+
+TEST(Parse, integers)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 4 },
+
+        { AST_Instruction_Type::push_positional_member }, // 0
+        { AST_Instruction_Type::decimal_integer, 1 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+        { AST_Instruction_Type::skip, 1 },
+
+        { AST_Instruction_Type::push_positional_member }, // 123
+        { AST_Instruction_Type::decimal_integer, 3 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+        { AST_Instruction_Type::skip, 1 },
+
+        { AST_Instruction_Type::push_positional_member }, // -123
+        { AST_Instruction_Type::decimal_integer, 4 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+        { AST_Instruction_Type::skip, 1 },
+
+        { AST_Instruction_Type::push_positional_member }, // 0xff
+        { AST_Instruction_Type::unquoted_string, 4 },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"integers.cow", expected));
+}
+
+TEST(Parse, literals)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 7 },
+
+        { AST_Instruction_Type::skip, 3 }, // unit
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::keyword_unit, 4 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 }, // null
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::keyword_null, 4 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 }, // true
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::keyword_true, 4 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 }, // false
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::keyword_false, 5 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 }, // 0
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::decimal_integer, 1 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 }, // ""
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::push_quoted_string, 0 }, 
+        { AST_Instruction_Type::pop_quoted_string }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 }, // awoo
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::unquoted_string, 4 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"literals.cow", expected));
 }
 
 TEST(Parse, directive_names)
@@ -917,7 +1366,7 @@ TEST(Parse_And_Build, hello_code)
     static std::pmr::monotonic_buffer_resource memory;
     static const ast::Pmr_Vector<Node> expected {
         {
-            Node::directive_with_content(u8"c", { Node::text(u8"/* awoo */") }),
+            Node::directive_with_content(u8"c", Node::block({ Node::text(u8"/* awoo */") })),
             Node::text(u8"\n"),
         },
         &memory,
@@ -935,28 +1384,28 @@ TEST(Parse, hello_directive)
     static constexpr AST_Instruction expected[] {
         { AST_Instruction_Type::push_document, 2 },
         { AST_Instruction_Type::push_directive, 2 },
-        { AST_Instruction_Type::push_arguments, 2 },
+        { AST_Instruction_Type::push_group, 2 },
 
-        { AST_Instruction_Type::push_named_argument, 1 },
-        { AST_Instruction_Type::argument_name, 5 }, // "hello"
+        { AST_Instruction_Type::push_named_member },
+        { AST_Instruction_Type::member_name, 5 }, // "hello"
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::argument_equal },
+        { AST_Instruction_Type::member_equal },
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::text, 5 },          // "world"
-        { AST_Instruction_Type::pop_named_argument },
+        { AST_Instruction_Type::unquoted_string, 5 },          // "world"
+        { AST_Instruction_Type::pop_named_member },
 
-        { AST_Instruction_Type::argument_comma },
+        { AST_Instruction_Type::member_comma },
 
-        { AST_Instruction_Type::push_named_argument, 1 },
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::argument_name, 1 }, // "x"
+        { AST_Instruction_Type::push_named_member },
+        { AST_Instruction_Type::member_name, 1 }, // "x"
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::argument_equal },
+        { AST_Instruction_Type::member_equal },
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::text, 1 },          // "0"
-        { AST_Instruction_Type::pop_named_argument },
+        { AST_Instruction_Type::decimal_integer, 1 },          // "0"
+        { AST_Instruction_Type::pop_named_member },
 
-        { AST_Instruction_Type::pop_arguments },
+        { AST_Instruction_Type::pop_group },
         { AST_Instruction_Type::push_block, 1 },    // {
         { AST_Instruction_Type::text, 4 },          // "test"
         { AST_Instruction_Type::pop_block },        // }
@@ -971,12 +1420,16 @@ TEST(Parse, hello_directive)
 TEST(Parse_And_Build, hello_directive)
 {
     static std::pmr::monotonic_buffer_resource memory;
-    static const auto arg0 = Node::named(u8"hello", { Node::text(u8"world") });
-    static const auto arg1 = Node::named(u8"x", { Node::text(u8"0") });
-
     static const ast::Pmr_Vector<Node> expected {
         {
-            Node::directive(u8"b", { arg0, arg1 }, { Node::text(u8"test") }),
+            Node::directive(
+                u8"b",
+                Node::group({
+                    Node::named(u8"hello", { Node::unquoted_string(u8"world") }),
+                    Node::named(u8"x", { Node::integer(u8"0") }),
+                }),
+                Node::block({ Node::text(u8"test") })
+            ),
             Node::text(u8"\n"),
         },
         &memory,
@@ -985,65 +1438,133 @@ TEST(Parse_And_Build, hello_directive)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"hello_directive.cow");
 }
 
+TEST(Parse, directive_as_argument)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 8 },
+        
+        { AST_Instruction_Type::push_directive, 2 }, // \a(x())
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_directive, 1 },
+        { AST_Instruction_Type::push_group, 0 },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 }, // \n
+
+        { AST_Instruction_Type::push_directive, 2 }, // \b(x(){})
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_directive, 1 },
+        { AST_Instruction_Type::push_group, 0 },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::push_block, 0 },
+        { AST_Instruction_Type::pop_block },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 }, // \n
+
+        { AST_Instruction_Type::push_directive, 2 }, // \c(x () {})
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_directive, 1 },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::push_group, 0 },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::push_block, 0 },
+        { AST_Instruction_Type::pop_block },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 }, // \n
+
+        { AST_Instruction_Type::push_directive, 2 }, // \d(x{})
+        { AST_Instruction_Type::push_group, 1 },
+        { AST_Instruction_Type::push_positional_member },
+        { AST_Instruction_Type::push_directive, 1 },
+        { AST_Instruction_Type::push_block, 0 },
+        { AST_Instruction_Type::pop_block },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 }, // \n
+
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"directive_as_argument.cow", expected));
+}
+
+TEST(Parse_And_Build, directive_as_argument)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"a"sv,
+                Node::group({
+                    Node::positional({ Node::directive_with_arguments(u8"x", Node::group()) }),
+                })
+            ),
+            Node::text(u8"\n"),
+
+            Node::directive_with_arguments(
+                u8"b"sv,
+                Node::group({
+                    Node::positional({ Node::directive(u8"y", Node::group(), Node::block()) }),
+                })
+            ),
+            Node::text(u8"\n"),
+
+            Node::directive_with_arguments(
+                u8"c"sv,
+                Node::group({
+                    Node::positional({ Node::directive(u8"z", Node::group(), Node::block()) }),
+                })
+            ),
+            Node::text(u8"\n"),
+
+            Node::directive_with_arguments(
+                u8"d"sv,
+                Node::group({
+                    Node::positional({ Node::directive_with_content(u8"w", Node::block()) }),
+                })
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_as_argument.cow");
+}
+
 TEST(Parse_And_Build, arguments_balanced_braces)
 {
     static std::pmr::monotonic_buffer_resource memory;
-    static const auto arg0 = Node::named(u8"x", { Node::text(u8"{}") });
-    static const auto arg1 = Node::positional({ Node::text(u8"{}") });
-
     static const ast::Pmr_Vector<Node> expected {
         {
-            Node::directive_with_arguments(u8"d", { arg0, arg1 }),
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group({
+                    Node::named(u8"x", { Node::block() }),
+                    Node::positional({ Node::block() }),
+                })
+            ),
             Node::text(u8"\n"),
         },
         &memory,
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/balanced_braces.cow");
-}
-
-TEST(Parse_And_Build, arguments_unbalanced_brace_1)
-{
-    static std::pmr::monotonic_buffer_resource memory;
-    static const ast::Pmr_Vector<Node> expected {
-        {
-            Node::directive(u8"d"),
-            Node::text(u8"(})\n"),
-        },
-        &memory,
-    };
-
-    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/unbalanced_brace_1.cow");
-}
-
-TEST(Parse_And_Build, arguments_unbalanced_brace_2)
-{
-    static std::pmr::monotonic_buffer_resource memory;
-    static const ast::Pmr_Vector<Node> expected {
-        {
-            Node::directive_with_content(u8"x", { Node::directive(u8"y"), Node::text(u8"(") }),
-            Node::text(u8")\n"),
-        },
-        &memory,
-    };
-
-    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/unbalanced_brace_2.cow");
-}
-
-TEST(Parse_And_Build, arguments_unbalanced_through_brace_escape)
-{
-    static std::pmr::monotonic_buffer_resource memory;
-    static const ast::Pmr_Vector<Node> expected {
-        {
-            Node::directive(u8"d"),
-            Node::text(u8"("),
-            Node::escape(u8"\\{"),
-            Node::text(u8"})\n"),
-        },
-        &memory,
-    };
-
-    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/unbalanced_through_brace_escape.cow");
 }
 
 } // namespace

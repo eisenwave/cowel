@@ -45,16 +45,17 @@ namespace {
 using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
 
 [[nodiscard]]
-Processing_Status
-write_empty_head_document(Text_Sink& out, std::span<const ast::Content> content, Context& context)
+Processing_Status write_empty_head_document(
+    Text_Sink& out,
+    std::span<const ast::Markup_Element> content,
+    Context& context
+)
 {
-    constexpr auto write_head = [](Content_Policy&, std::span<const ast::Content>, Context&) {
-        return Processing_Status::ok;
-    };
+    constexpr auto write_head = [](Content_Policy&, std::span<const ast::Markup_Element>,
+                                   Context&) { return Processing_Status::ok; };
     constexpr auto write_body
-        = [](Content_Policy& policy, std::span<const ast::Content> content, Context& context) {
-              return consume_all(policy, content, Frame_Index::root, context);
-          };
+        = [](Content_Policy& policy, std::span<const ast::Markup_Element> content,
+             Context& context) { return splice_all(policy, content, Frame_Index::root, context); };
 
     return write_head_body_document(out, content, context, const_v<write_head>, const_v<write_body>);
 }
@@ -74,7 +75,7 @@ private:
 public:
     std::u8string_view source_string {};
     std::u8string_view theme_source_string {};
-    ast::Pmr_Vector<ast::Content> content { &memory };
+    ast::Pmr_Vector<ast::Markup_Element> content { &memory };
 
     Collecting_Logger logger { &memory };
 
@@ -92,14 +93,14 @@ public:
         switch (behavior) {
         case Test_Behavior::trivial: {
             HTML_Content_Policy policy { sink };
-            return consume_all(policy, content, Frame_Index::root, context);
+            return splice_all(policy, content, Frame_Index::root, context);
         }
 
         case Test_Behavior::paragraphs: {
             Vector_Text_Sink buffer { Output_Language::html, context.get_transient_memory() };
             Paragraph_Split_Policy policy { buffer, context.get_transient_memory() };
             const Processing_Status result
-                = consume_all(policy, content, Frame_Index::root, context);
+                = splice_all(policy, content, Frame_Index::root, context);
             policy.leave_paragraph();
             resolve_references(sink, as_u8string_view(*buffer), context, File_Id::main);
             return result;
@@ -146,15 +147,27 @@ public:
             return false;
         }
         source_string = as_u8string_view(source);
-        content
-            = parse_and_build(source_string, File_Id::main, &memory, make_parse_error_consumer());
+        content.clear();
+
+        const bool parse_success = parse_and_build(
+            content, source_string, File_Id::main, &memory,
+            Parse_Error_Consumer { const_v<on_parse_error>, this }
+        );
+        COWEL_ASSERT(parse_success);
         return true;
     }
 
     void load_source(std::u8string_view source)
     {
         source_string = source;
-        content = parse_and_build(source, File_Id::main, &memory, make_parse_error_consumer());
+        content.clear();
+        const bool parse_success = parse_and_build(
+            content, source, File_Id::main, &memory,
+            Parse_Error_Consumer { const_v<on_parse_error>, this }
+        );
+        // Any parse issues should have been caught by parsing tests.
+        // Documentation generation tests only deal with COWEL markup that can be parsed.
+        COWEL_ASSERT(parse_success);
     }
 
     [[nodiscard]]
@@ -201,15 +214,16 @@ public:
         return as_u8string_view(out);
     }
 
-    [[nodiscard]]
-    Parse_Error_Consumer make_parse_error_consumer()
+    static void on_parse_error(
+        Doc_Gen_Test* self,
+        std::u8string_view id,
+        const Source_Span& location,
+        Char_Sequence8 message
+    )
     {
-        constexpr auto invoker = [](Doc_Gen_Test* self, std::u8string_view id,
-                                    const File_Source_Span& location, std::u8string_view message) {
-            const Diagnostic d { Severity::error, id, location, message };
-            self->logger(d);
-        };
-        return Parse_Error_Consumer { const_v<invoker>, this };
+        const File_Source_Span file_location { location, File_Id::main };
+        const Diagnostic d { Severity::error, id, file_location, message };
+        self->logger(d);
     }
 
     void clear()
