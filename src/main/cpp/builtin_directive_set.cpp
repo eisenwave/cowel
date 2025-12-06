@@ -2,7 +2,6 @@
 #include <array>
 #include <cstddef>
 #include <memory>
-#include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
@@ -17,281 +16,423 @@
 #include "cowel/fwd.hpp"
 
 namespace cowel {
+namespace {
+
+constexpr Policy_Behavior cowel_actions //
+    { Known_Content_Policy::actions };
+constexpr Expression_Behavior cowel_add //
+    { Numeric_Expression_Kind::add };
+constexpr Alias_Behavior cowel_alias //
+    {};
+constexpr Char_By_Entity_Behavior cowel_char_by_entity //
+    {};
+constexpr Char_By_Name_Behavior cowel_char_by_name //
+    {};
+constexpr Char_By_Num_Behavior cowel_char_by_num //
+    {};
+constexpr Char_Get_Num_Behavior cowel_char_get_num //
+    {};
+constexpr Expression_Behavior cowel_div //
+    { Numeric_Expression_Kind::div };
+constexpr Policy_Behavior cowel_highlight //
+    { Known_Content_Policy::highlight };
+constexpr Highlight_As_Behavior cowel_highlight_as //
+    {};
+constexpr Policy_Behavior cowel_highlight_phantom //
+    { Known_Content_Policy::phantom };
+constexpr HTML_Element_Behavior cowel_html_element //
+    { HTML_Element_Self_Closing::normal };
+constexpr HTML_Element_Behavior cowel_html_self_closing_element //
+    { HTML_Element_Self_Closing::self_closing };
+constexpr Include_Behavior cowel_include //
+    {};
+constexpr Include_Text_Behavior cowel_include_text //
+    {};
+constexpr Invoke_Behavior cowel_invoke //
+    {};
+constexpr Macro_Behavior cowel_macro //
+    {};
+constexpr Expression_Behavior cowel_mul //
+    { Numeric_Expression_Kind::mul };
+constexpr Expression_Behavior cowel_neg //
+    { Numeric_Expression_Kind::neg };
+constexpr Policy_Behavior cowel_no_invoke //
+    { Known_Content_Policy::no_invoke };
+constexpr Policy_Behavior cowel_paragraphs //
+    { Known_Content_Policy::paragraphs };
+constexpr Paragraph_Enter_Behavior cowel_paragraph_enter //
+    {};
+constexpr Paragraph_Inherit_Behavior cowel_paragraph_inherit //
+    {};
+constexpr Paragraph_Leave_Behavior cowel_paragraph_leave //
+    {};
+constexpr Put_Behavior cowel_put //
+    {};
+constexpr Policy_Behavior cowel_source_as_text //
+    { Known_Content_Policy::source_as_text };
+constexpr Expression_Behavior cowel_sub //
+    { Numeric_Expression_Kind::sub };
+constexpr Policy_Behavior cowel_text_as_html //
+    { Known_Content_Policy::text_as_html };
+constexpr Policy_Behavior cowel_text_only //
+    { Known_Content_Policy::text_only };
+constexpr Policy_Behavior cowel_to_html //
+    { Known_Content_Policy::to_html };
+
+// Legacy directives
+constexpr Fixed_Name_Passthrough_Behavior b //
+    { html_tag::b, Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Special_Block_Behavior Babstract //
+    { HTML_Tag_Name(u8"abstract-block"), Intro_Policy::yes };
+constexpr Special_Block_Behavior Bdecision //
+    { HTML_Tag_Name(u8"decision-block"), Intro_Policy::yes };
+constexpr Special_Block_Behavior Bdel //
+    { HTML_Tag_Name(u8"del-block"), Intro_Policy::no };
+constexpr Fixed_Name_Passthrough_Behavior Bdetails //
+    { HTML_Tag_Name(u8"details"), Policy_Usage::inherit, Directive_Display::block };
+constexpr Special_Block_Behavior Bdiff //
+    { HTML_Tag_Name(u8"diff-block"), Intro_Policy::no };
+constexpr Special_Block_Behavior Bex //
+    { HTML_Tag_Name(u8"example-block"), Intro_Policy::yes };
+constexpr Bibliography_Add_Behavior bib //
+    {};
+constexpr Special_Block_Behavior Bimp //
+    { HTML_Tag_Name(u8"important-block"), Intro_Policy::yes };
+constexpr In_Tag_Behavior Bindent //
+    { html_tag::div, u8"indent", Policy_Usage::html, Directive_Display::block };
+constexpr Special_Block_Behavior Bins //
+    { HTML_Tag_Name(u8"ins-block"), Intro_Policy::no };
+constexpr Special_Block_Behavior blockquote //
+    { HTML_Tag_Name(u8"blockquote"), Intro_Policy::no };
+constexpr Special_Block_Behavior Bnote //
+    { HTML_Tag_Name(u8"note-block"), Intro_Policy::yes };
+constexpr Special_Block_Behavior Bquote //
+    { HTML_Tag_Name(u8"blockquote"), Intro_Policy::no };
+constexpr Self_Closing_Behavior br //
+    { html_tag::br, Directive_Display::in_line };
+constexpr Special_Block_Behavior Btip //
+    { HTML_Tag_Name(u8"tip-block"), Intro_Policy::yes };
+constexpr Special_Block_Behavior Btodo //
+    { HTML_Tag_Name(u8"todo-block"), Intro_Policy::yes };
+constexpr Special_Block_Behavior Bug //
+    { HTML_Tag_Name(u8"bug-block"), Intro_Policy::yes };
+constexpr Special_Block_Behavior Bwarn //
+    { HTML_Tag_Name(u8"warning-block"), Intro_Policy::yes };
+constexpr Fixed_Name_Passthrough_Behavior caption //
+    { HTML_Tag_Name(u8"caption"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior cite //
+    { HTML_Tag_Name(u8"cite"), Policy_Usage::html, Directive_Display::in_line };
+constexpr Code_Behavior code //
+    { HTML_Tag_Name(u8"code"), Directive_Display::in_line, Pre_Trimming::no };
+constexpr Code_Behavior codeblock //
+    { HTML_Tag_Name(u8"code-block"), Directive_Display::block, Pre_Trimming::yes };
+constexpr Fixed_Name_Passthrough_Behavior col //
+    { HTML_Tag_Name(u8"col"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior colgroup //
+    { HTML_Tag_Name(u8"colgroup"), Policy_Usage::html, Directive_Display::block };
+constexpr Comment_Behavior comment //
+    {};
+constexpr Fixed_Name_Passthrough_Behavior dd //
+    { HTML_Tag_Name(u8"dd"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior del //
+    { HTML_Tag_Name(u8"del"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior details //
+    { HTML_Tag_Name(u8"details"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior dfn //
+    { HTML_Tag_Name(u8"dfn"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior div //
+    { html_tag::div, Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior dl //
+    { HTML_Tag_Name(u8"dl"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior dt //
+    { HTML_Tag_Name(u8"dt"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior em //
+    { HTML_Tag_Name(u8"em"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Error_Behavior error //
+    {};
+constexpr Fixed_Name_Passthrough_Behavior gterm //
+    { HTML_Tag_Name(u8"g-term"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Heading_Behavior h1 //
+    { 1 };
+constexpr Heading_Behavior h2 //
+    { 2 };
+constexpr Heading_Behavior h3 //
+    { 3 };
+constexpr Heading_Behavior h4 //
+    { 4 };
+constexpr Heading_Behavior h5 //
+    { 5 };
+constexpr Heading_Behavior h6 //
+    { 6 };
+constexpr Here_Behavior here //
+    { Directive_Display::in_line };
+constexpr Here_Behavior hereblock //
+    { Directive_Display::block };
+constexpr Self_Closing_Behavior hr //
+    { HTML_Tag_Name(u8"hr"), Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior i //
+    { HTML_Tag_Name(u8"i"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior ins //
+    { HTML_Tag_Name(u8"ins"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior kbd //
+    { HTML_Tag_Name(u8"kbd"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior li //
+    { HTML_Tag_Name(u8"li"), Policy_Usage::html, Directive_Display::block };
+constexpr Literally_Behavior literally //
+    {};
+constexpr Lorem_Ipsum_Behavior lorem_ipsum //
+    {};
+constexpr URL_Behavior mail //
+    { u8"mailto:" };
+constexpr Make_Section_Behavior make_bib //
+    { Directive_Display::block, class_name::bibliography, section_name::bibliography };
+constexpr Make_Section_Behavior make_contents //
+    { Directive_Display::block, class_name::table_of_contents, section_name::table_of_contents };
+constexpr Fixed_Name_Passthrough_Behavior mark //
+    { HTML_Tag_Name(u8"mark"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Math_Behavior math //
+    { Directive_Display::in_line };
+constexpr Math_Behavior mathblock //
+    { Directive_Display::block };
+constexpr In_Tag_Behavior nobr //
+    { html_tag::span, u8"word", Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior noscript //
+    { HTML_Tag_Name(u8"noscript"), Policy_Usage::html, Directive_Display::block };
+constexpr In_Tag_Behavior o //
+    { html_tag::span, u8"oblique", Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior ol //
+    { html_tag::ol, Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior p //
+    { HTML_Tag_Name(u8"p"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior pre //
+    { HTML_Tag_Name(u8"pre"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior q //
+    { HTML_Tag_Name(u8"q"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Ref_Behavior ref //
+    {};
+constexpr Fixed_Name_Passthrough_Behavior s //
+    { HTML_Tag_Name(u8"s"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior samp //
+    { HTML_Tag_Name(u8"samp"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior sans //
+    { HTML_Tag_Name(u8"f-sans"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr HTML_Raw_Text_Behavior script //
+    { html_tag::script };
+constexpr Fixed_Name_Passthrough_Behavior serif //
+    { HTML_Tag_Name(u8"f-serif"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior small //
+    { HTML_Tag_Name(u8"small"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior span //
+    { html_tag::span, Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior strong //
+    { HTML_Tag_Name(u8"strong"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr HTML_Raw_Text_Behavior style //
+    { html_tag::style };
+constexpr Fixed_Name_Passthrough_Behavior sub //
+    { HTML_Tag_Name(u8"sub"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior summary //
+    { HTML_Tag_Name(u8"summary"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior sup //
+    { HTML_Tag_Name(u8"sup"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior table //
+    { HTML_Tag_Name(u8"table"), Policy_Usage::html, Directive_Display::block };
+constexpr URL_Behavior tel //
+    { u8"tel:" };
+constexpr Plaintext_Wrapper_Behavior text //
+    { Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior tbody //
+    { HTML_Tag_Name(u8"tbody"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior td //
+    { HTML_Tag_Name(u8"td"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior tfoot //
+    { HTML_Tag_Name(u8"tfoot"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior th //
+    { HTML_Tag_Name(u8"th"), Policy_Usage::html, Directive_Display::block };
+constexpr Fixed_Name_Passthrough_Behavior thead //
+    { HTML_Tag_Name(u8"thead"), Policy_Usage::html, Directive_Display::block };
+constexpr There_Behavior there //
+    {};
+constexpr Fixed_Name_Passthrough_Behavior tr //
+    { HTML_Tag_Name(u8"tr"), Policy_Usage::html, Directive_Display::block };
+constexpr Trim_Behavior trim //
+    { Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior tt //
+    { HTML_Tag_Name(u8"tt-"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior u //
+    { HTML_Tag_Name(u8"u"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior ul //
+    { html_tag::ul, Policy_Usage::html, Directive_Display::block };
+constexpr Unprocessed_Behavior unprocessed //
+    {};
+constexpr URL_Behavior url //
+    {};
+constexpr Fixed_Name_Passthrough_Behavior var //
+    { HTML_Tag_Name(u8"var"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Get_Variable_Behavior Vget //
+    {};
+constexpr Modify_Variable_Behavior Vset //
+    { Variable_Operation::set };
+constexpr Self_Closing_Behavior wbr //
+    { HTML_Tag_Name(u8"wbr"), Directive_Display::in_line };
+constexpr In_Tag_Behavior wg21_grammar //
+    { HTML_Tag_Name(u8"dl"), u8"grammar", Policy_Usage::html, Directive_Display::block };
+constexpr WG21_Head_Behavior wg21_head //
+    {};
+
+// clang-format off
+#define COWEL_DEPRECATED_ALIAS(name, use_instead)                                                  \
+    constexpr Deprecated_Behavior name { use_instead, u8## #use_instead }
+// clang-format on
+
+// Usage:
+// COWEL_DEPRECATED_ALIAS(abstract, Babstract);
+
+struct Name_And_Behavior {
+    std::u8string_view name;
+    const Directive_Behavior* behavior;
+};
+
+#define COWEL_NAME_AND_BEHAVIOR_ENTRY(...) { u8## #__VA_ARGS__##sv, &__VA_ARGS__ }
+
+constexpr Name_And_Behavior behaviors_by_name[] {
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Babstract),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bdecision),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bdel),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bdetails),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bdiff),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bex),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bimp),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bindent),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bins),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bnote),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bquote),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Btip),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Btodo),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bug),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Bwarn),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Vget),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(Vset),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(b),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(bib),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(blockquote),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(br),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(caption),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cite),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(code),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(codeblock),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(col),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(colgroup),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(comment),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_actions),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_add),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_alias),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_entity),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_name),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_num),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_get_num),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_div),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_highlight),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_highlight_as),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_highlight_phantom),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_html_element),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_html_self_closing_element),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_include),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_include_text),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_invoke),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_macro),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_mul),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_neg),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_no_invoke),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraph_enter),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraph_inherit),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraph_leave),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraphs),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_put),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_source_as_text),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_sub),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_text_as_html),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_text_only),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_to_html),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(dd),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(del),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(details),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(dfn),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(div),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(dl),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(dt),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(em),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(error),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(gterm),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(h1),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(h2),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(h3),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(h4),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(h5),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(h6),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(here),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(hereblock),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(hr),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(i),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(ins),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(kbd),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(li),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(literally),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(lorem_ipsum),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(mail),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(make_bib),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(make_contents),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(mark),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(math),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(mathblock),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(nobr),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(noscript),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(o),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(ol),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(p),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(pre),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(q),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(ref),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(s),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(samp),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(sans),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(script),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(serif),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(small),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(span),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(strong),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(style),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(sub),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(summary),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(sup),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(table),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(tbody),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(td),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(tel),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(text),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(tfoot),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(th),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(thead),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(there),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(tr),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(trim),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(tt),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(u),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(ul),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(unprocessed),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(url),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(var),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(wbr),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(wg21_grammar),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(wg21_head),
+};
+
+static_assert(std::ranges::is_sorted(behaviors_by_name, {}, &Name_And_Behavior::name));
+
+} // namespace
 
 struct Builtin_Directive_Set::Impl {
-    // New directives
-    Policy_Behavior cowel_actions //
-        { Known_Content_Policy::actions };
-    Expression_Behavior cowel_add //
-        { Numeric_Expression_Kind::add };
-    Alias_Behavior cowel_alias //
-        {};
-    Char_By_Entity_Behavior cowel_char_by_entity //
-        {};
-    Char_By_Name_Behavior cowel_char_by_name //
-        {};
-    Char_By_Num_Behavior cowel_char_by_num //
-        {};
-    Char_Get_Num_Behavior cowel_char_get_num //
-        {};
-    Expression_Behavior cowel_div //
-        { Numeric_Expression_Kind::div };
-    Policy_Behavior cowel_highlight //
-        { Known_Content_Policy::highlight };
-    Highlight_As_Behavior cowel_highlight_as //
-        {};
-    Policy_Behavior cowel_highlight_phantom //
-        { Known_Content_Policy::phantom };
-    HTML_Element_Behavior cowel_html_element //
-        { HTML_Element_Self_Closing::normal };
-    HTML_Element_Behavior cowel_html_self_closing_element //
-        { HTML_Element_Self_Closing::self_closing };
-    Include_Behavior cowel_include //
-        {};
-    Include_Text_Behavior cowel_include_text //
-        {};
-    Invoke_Behavior cowel_invoke //
-        {};
-    Macro_Behavior cowel_macro //
-        {};
-    Expression_Behavior cowel_mul //
-        { Numeric_Expression_Kind::mul };
-    Expression_Behavior cowel_neg //
-        { Numeric_Expression_Kind::neg };
-    Policy_Behavior cowel_no_invoke //
-        { Known_Content_Policy::no_invoke };
-    Policy_Behavior cowel_paragraphs //
-        { Known_Content_Policy::paragraphs };
-    Paragraph_Enter_Behavior cowel_paragraph_enter //
-        {};
-    Paragraph_Inherit_Behavior cowel_paragraph_inherit //
-        {};
-    Paragraph_Leave_Behavior cowel_paragraph_leave //
-        {};
-    Put_Behavior cowel_put //
-        {};
-    Policy_Behavior cowel_source_as_text //
-        { Known_Content_Policy::source_as_text };
-    Expression_Behavior cowel_sub //
-        { Numeric_Expression_Kind::sub };
-    Policy_Behavior cowel_text_as_html //
-        { Known_Content_Policy::text_as_html };
-    Policy_Behavior cowel_text_only //
-        { Known_Content_Policy::text_only };
-    Policy_Behavior cowel_to_html //
-        { Known_Content_Policy::to_html };
-
-    // Legacy directives
-    Fixed_Name_Passthrough_Behavior b //
-        { html_tag::b, Policy_Usage::inherit, Directive_Display::in_line };
-    Special_Block_Behavior Babstract //
-        { HTML_Tag_Name(u8"abstract-block"), Intro_Policy::yes };
-    Special_Block_Behavior Bdecision //
-        { HTML_Tag_Name(u8"decision-block"), Intro_Policy::yes };
-    Special_Block_Behavior Bdel //
-        { HTML_Tag_Name(u8"del-block"), Intro_Policy::no };
-    Fixed_Name_Passthrough_Behavior Bdetails //
-        { HTML_Tag_Name(u8"details"), Policy_Usage::inherit, Directive_Display::block };
-    Special_Block_Behavior Bdiff //
-        { HTML_Tag_Name(u8"diff-block"), Intro_Policy::no };
-    Special_Block_Behavior Bex //
-        { HTML_Tag_Name(u8"example-block"), Intro_Policy::yes };
-    Bibliography_Add_Behavior bib //
-        {};
-    Special_Block_Behavior Bimp //
-        { HTML_Tag_Name(u8"important-block"), Intro_Policy::yes };
-    In_Tag_Behavior Bindent //
-        { html_tag::div, u8"indent", Policy_Usage::html, Directive_Display::block };
-    Special_Block_Behavior Bins //
-        { HTML_Tag_Name(u8"ins-block"), Intro_Policy::no };
-    Special_Block_Behavior blockquote //
-        { HTML_Tag_Name(u8"blockquote"), Intro_Policy::no };
-    Special_Block_Behavior Bnote //
-        { HTML_Tag_Name(u8"note-block"), Intro_Policy::yes };
-    Special_Block_Behavior Bquote //
-        { HTML_Tag_Name(u8"blockquote"), Intro_Policy::no };
-    Self_Closing_Behavior br //
-        { html_tag::br, Directive_Display::in_line };
-    Special_Block_Behavior Btip //
-        { HTML_Tag_Name(u8"tip-block"), Intro_Policy::yes };
-    Special_Block_Behavior Btodo //
-        { HTML_Tag_Name(u8"todo-block"), Intro_Policy::yes };
-    Special_Block_Behavior Bug //
-        { HTML_Tag_Name(u8"bug-block"), Intro_Policy::yes };
-    Special_Block_Behavior Bwarn //
-        { HTML_Tag_Name(u8"warning-block"), Intro_Policy::yes };
-    Fixed_Name_Passthrough_Behavior caption //
-        { HTML_Tag_Name(u8"caption"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior cite //
-        { HTML_Tag_Name(u8"cite"), Policy_Usage::html, Directive_Display::in_line };
-    Code_Behavior code //
-        { HTML_Tag_Name(u8"code"), Directive_Display::in_line, Pre_Trimming::no };
-    Code_Behavior codeblock //
-        { HTML_Tag_Name(u8"code-block"), Directive_Display::block, Pre_Trimming::yes };
-    Fixed_Name_Passthrough_Behavior col //
-        { HTML_Tag_Name(u8"col"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior colgroup //
-        { HTML_Tag_Name(u8"colgroup"), Policy_Usage::html, Directive_Display::block };
-    Comment_Behavior comment //
-        {};
-    Fixed_Name_Passthrough_Behavior dd //
-        { HTML_Tag_Name(u8"dd"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior del //
-        { HTML_Tag_Name(u8"del"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior details //
-        { HTML_Tag_Name(u8"details"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior dfn //
-        { HTML_Tag_Name(u8"dfn"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior div //
-        { html_tag::div, Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior dl //
-        { HTML_Tag_Name(u8"dl"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior dt //
-        { HTML_Tag_Name(u8"dt"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior em //
-        { HTML_Tag_Name(u8"em"), Policy_Usage::inherit, Directive_Display::in_line };
-    Error_Behavior error //
-        {};
-    Fixed_Name_Passthrough_Behavior gterm //
-        { HTML_Tag_Name(u8"g-term"), Policy_Usage::inherit, Directive_Display::in_line };
-    Heading_Behavior h1 //
-        { 1 };
-    Heading_Behavior h2 //
-        { 2 };
-    Heading_Behavior h3 //
-        { 3 };
-    Heading_Behavior h4 //
-        { 4 };
-    Heading_Behavior h5 //
-        { 5 };
-    Heading_Behavior h6 //
-        { 6 };
-    Here_Behavior here //
-        { Directive_Display::in_line };
-    Here_Behavior hereblock //
-        { Directive_Display::block };
-    Self_Closing_Behavior hr //
-        { HTML_Tag_Name(u8"hr"), Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior i //
-        { HTML_Tag_Name(u8"i"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior ins //
-        { HTML_Tag_Name(u8"ins"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior kbd //
-        { HTML_Tag_Name(u8"kbd"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior li //
-        { HTML_Tag_Name(u8"li"), Policy_Usage::html, Directive_Display::block };
-    Literally_Behavior literally //
-        {};
-    Lorem_Ipsum_Behavior lorem_ipsum //
-        {};
-    URL_Behavior mail //
-        { u8"mailto:" };
-    Make_Section_Behavior make_bib //
-        { Directive_Display::block, class_name::bibliography, section_name::bibliography };
-    Make_Section_Behavior make_contents //
-        { Directive_Display::block, class_name::table_of_contents,
-          section_name::table_of_contents };
-    Fixed_Name_Passthrough_Behavior mark //
-        { HTML_Tag_Name(u8"mark"), Policy_Usage::inherit, Directive_Display::in_line };
-    Math_Behavior math //
-        { Directive_Display::in_line };
-    Math_Behavior mathblock //
-        { Directive_Display::block };
-    In_Tag_Behavior nobr //
-        { html_tag::span, u8"word", Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior noscript //
-        { HTML_Tag_Name(u8"noscript"), Policy_Usage::html, Directive_Display::block };
-    In_Tag_Behavior o //
-        { html_tag::span, u8"oblique", Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior ol //
-        { html_tag::ol, Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior p //
-        { HTML_Tag_Name(u8"p"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior pre //
-        { HTML_Tag_Name(u8"pre"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior q //
-        { HTML_Tag_Name(u8"q"), Policy_Usage::inherit, Directive_Display::in_line };
-    Ref_Behavior ref //
-        {};
-    Fixed_Name_Passthrough_Behavior s //
-        { HTML_Tag_Name(u8"s"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior samp //
-        { HTML_Tag_Name(u8"samp"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior sans //
-        { HTML_Tag_Name(u8"f-sans"), Policy_Usage::inherit, Directive_Display::in_line };
-    HTML_Raw_Text_Behavior script //
-        { html_tag::script };
-    Fixed_Name_Passthrough_Behavior serif //
-        { HTML_Tag_Name(u8"f-serif"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior small //
-        { HTML_Tag_Name(u8"small"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior span //
-        { html_tag::span, Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior strong //
-        { HTML_Tag_Name(u8"strong"), Policy_Usage::inherit, Directive_Display::in_line };
-    HTML_Raw_Text_Behavior style //
-        { html_tag::style };
-    Fixed_Name_Passthrough_Behavior sub //
-        { HTML_Tag_Name(u8"sub"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior summary //
-        { HTML_Tag_Name(u8"summary"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior sup //
-        { HTML_Tag_Name(u8"sup"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior table //
-        { HTML_Tag_Name(u8"table"), Policy_Usage::html, Directive_Display::block };
-    URL_Behavior tel //
-        { u8"tel:" };
-    Plaintext_Wrapper_Behavior text //
-        { Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior tbody //
-        { HTML_Tag_Name(u8"tbody"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior td //
-        { HTML_Tag_Name(u8"td"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior tfoot //
-        { HTML_Tag_Name(u8"tfoot"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior th //
-        { HTML_Tag_Name(u8"th"), Policy_Usage::html, Directive_Display::block };
-    Fixed_Name_Passthrough_Behavior thead //
-        { HTML_Tag_Name(u8"thead"), Policy_Usage::html, Directive_Display::block };
-    There_Behavior there //
-        {};
-    Fixed_Name_Passthrough_Behavior tr //
-        { HTML_Tag_Name(u8"tr"), Policy_Usage::html, Directive_Display::block };
-    Trim_Behavior trim //
-        { Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior tt //
-        { HTML_Tag_Name(u8"tt-"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior u //
-        { HTML_Tag_Name(u8"u"), Policy_Usage::inherit, Directive_Display::in_line };
-    Fixed_Name_Passthrough_Behavior ul //
-        { html_tag::ul, Policy_Usage::html, Directive_Display::block };
-    Unprocessed_Behavior unprocessed //
-        {};
-    URL_Behavior url //
-        {};
-    Fixed_Name_Passthrough_Behavior var //
-        { HTML_Tag_Name(u8"var"), Policy_Usage::inherit, Directive_Display::in_line };
-    Get_Variable_Behavior Vget //
-        {};
-    Modify_Variable_Behavior Vset //
-        { Variable_Operation::set };
-    Self_Closing_Behavior wbr //
-        { HTML_Tag_Name(u8"wbr"), Directive_Display::in_line };
-    In_Tag_Behavior wg21_grammar //
-        { HTML_Tag_Name(u8"dl"), u8"grammar", Policy_Usage::html, Directive_Display::block };
-    WG21_Head_Behavior wg21_head //
-        {};
-
-    // clang-format off
-#define COWEL_DEPRECATED_ALIAS(name, use_instead)                                                  \
-    Deprecated_Behavior name { use_instead, u8## #use_instead }
-    // clang-format on
-
-    // Usage:
-    // COWEL_DEPRECATED_ALIAS(abstract, Babstract);
-
-    Impl() = default;
-    ~Impl() = default;
+    constexpr Impl() = default;
+    constexpr ~Impl() = default;
 
     Impl(const Impl&) = delete;
     Impl& operator=(const Impl&) = delete;
@@ -306,149 +447,15 @@ Builtin_Directive_Set::~Builtin_Directive_Set() = default;
 
 const Directive_Behavior& Builtin_Directive_Set::get_error_behavior() const noexcept
 {
-    return m_impl->error;
+    return error;
 }
 
 Distant<std::u8string_view>
 Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& context) const
 {
-    // clang-format off
-    static constexpr std::u8string_view prefixed_names[] {
-        u8"-Babstract",
-        u8"-Bdecision",
-        u8"-Bdel",
-        u8"-Bdetails",
-        u8"-Bdiff",
-        u8"-Bex",
-        u8"-Bimp",
-        u8"-Bindent",
-        u8"-Bins",
-        u8"-Bnote",
-        u8"-Bquote",
-        u8"-Btip",
-        u8"-Btodo",
-        u8"-Bug",
-        u8"-Bwarn",
-        u8"-Vget",
-        u8"-Vset",
-        u8"-abstract",
-        u8"-b",
-        u8"-bib",
-        u8"-block",
-        u8"-blockquote",
-        u8"-br",
-        u8"-bug",
-        u8"-c",
-        u8"-caption",
-        u8"-cite",
-        u8"-code",
-        u8"-codeblock",
-        u8"-comment",
-        u8"-dd",
-        u8"-decision",
-        u8"-del",
-        u8"-delblock",
-        u8"-details",
-        u8"-dfn",
-        u8"-diff",
-        u8"-div",
-        u8"-dl",
-        u8"-dt",
-        u8"-em",
-        u8"-error",
-        u8"-example",
-        u8"-gterm",
-        u8"-h1",
-        u8"-h2",
-        u8"-h3",
-        u8"-h4",
-        u8"-h5",
-        u8"-h6",
-        u8"-here",
-        u8"-hereblock",
-        u8"-hl",
-        u8"-hr",
-        u8"-html",
-        u8"-html-",
-        u8"-htmlblock",
-        u8"-i",
-        u8"-import",
-        u8"-important",
-        u8"-indent",
-        u8"-inline",
-        u8"-ins",
-        u8"-insblock",
-        u8"-item",
-        u8"-k",
-        u8"-kbd",
-        u8"-li",
-        u8"-literally",
-        u8"-lorem_ipsum",
-        u8"-macro",
-        u8"-mail",
-        u8"-make_bib",
-        u8"-make_contents",
-        u8"-mark",
-        u8"-math",
-        u8"-mathblock",
-        u8"-nobr",
-        u8"-noscript",
-        u8"-note",
-        u8"-ol",
-        u8"-p",
-        u8"-paragraphs",
-        u8"-pre",
-        u8"-q",
-        u8"-ref",
-        u8"-s",
-        u8"-samp",
-        u8"-sans",
-        u8"-script",
-        u8"-serif",
-        u8"-small",
-        u8"-span",
-        u8"-strong",
-        u8"-style",
-        u8"-sub",
-        u8"-summary",
-        u8"-sup",
-        u8"-table",
-        u8"-tbody",
-        u8"-td",
-        u8"-tel",
-        u8"-text",
-        u8"-tfoot",
-        u8"-th",
-        u8"-thead",
-        u8"-tip",
-        u8"-todo",
-        u8"-tr",
-        u8"-trim",
-        u8"-tt",
-        u8"-u",
-        u8"-ul",
-        u8"-unprocessed",
-        u8"-url",
-        u8"-var",
-        u8"-warning",
-        u8"-wbr",
-        u8"-wg21_example",
-        u8"-wg21_grammar",
-        u8"-wg21_head",
-        u8"-wg21_note",
-    };
-    // clang-format on
-    static_assert(std::ranges::is_sorted(prefixed_names));
-    static_assert(prefixed_names[0][0] == builtin_directive_prefix);
-
     static constexpr auto all_names = [] {
-        std::array<std::u8string_view, std::size(prefixed_names) * 2> result;
-        std::ranges::copy(prefixed_names, result.data());
-        std::ranges::copy(
-            prefixed_names
-                | std::views::transform([](std::u8string_view n) { return n.substr(1); }),
-            result.data() + std::size(prefixed_names)
-        );
+        std::array<std::u8string_view, std::size(behaviors_by_name)> result;
+        std::ranges::transform(behaviors_by_name, result.data(), &Name_And_Behavior::name);
         return result;
     }();
     const Distant<std::size_t> result
@@ -461,342 +468,12 @@ Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& conte
 
 const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) const
 {
-    if (name.empty()) {
+    const auto* const it
+        = std::ranges::lower_bound(behaviors_by_name, name, {}, &Name_And_Behavior::name);
+    if (it == std::end(behaviors_by_name) || it->name != name) {
         return nullptr;
     }
-    // NOLINTBEGIN(readability-braces-around-statements)
-    switch (name[0]) {
-    case u8'B':
-        if (name == u8"Babstract")
-            return &m_impl->Babstract;
-        if (name == u8"Bdecision")
-            return &m_impl->Bdecision;
-        if (name == u8"Bdel")
-            return &m_impl->Bdel;
-        if (name == u8"Bdetails")
-            return &m_impl->Bdetails;
-        if (name == u8"Bdiff")
-            return &m_impl->Bdiff;
-        if (name == u8"Bex")
-            return &m_impl->Bex;
-        if (name == u8"Bimp")
-            return &m_impl->Bimp;
-        if (name == u8"Bindent")
-            return &m_impl->Bindent;
-        if (name == u8"Bins")
-            return &m_impl->Bins;
-        if (name == u8"Bnote")
-            return &m_impl->Bnote;
-        if (name == u8"Bquote")
-            return &m_impl->Bquote;
-        if (name == u8"Btip")
-            return &m_impl->Btip;
-        if (name == u8"Btodo")
-            return &m_impl->Btodo;
-        if (name == u8"Bug")
-            return &m_impl->Bug;
-        if (name == u8"Bwarn")
-            return &m_impl->Bwarn;
-        break;
-
-    case u8'b':
-        if (name == u8"b")
-            return &m_impl->b;
-        if (name == u8"bib")
-            return &m_impl->bib;
-        if (name == u8"blockquote")
-            return &m_impl->blockquote;
-        if (name == u8"br")
-            return &m_impl->br;
-        break;
-
-    case u8'c':
-        if (name.starts_with(u8"cowel_")) {
-            if (name == u8"cowel_actions")
-                return &m_impl->cowel_actions;
-            if (name == u8"cowel_add")
-                return &m_impl->cowel_add;
-            if (name == u8"cowel_alias")
-                return &m_impl->cowel_alias;
-            if (name == u8"cowel_char_by_entity")
-                return &m_impl->cowel_char_by_entity;
-            if (name == u8"cowel_char_by_name")
-                return &m_impl->cowel_char_by_name;
-            if (name == u8"cowel_char_by_num")
-                return &m_impl->cowel_char_by_num;
-            if (name == u8"cowel_char_get_num")
-                return &m_impl->cowel_char_get_num;
-            if (name == u8"cowel_div")
-                return &m_impl->cowel_div;
-            if (name == u8"cowel_highlight")
-                return &m_impl->cowel_highlight;
-            if (name == u8"cowel_highlight_as")
-                return &m_impl->cowel_highlight_as;
-            if (name == u8"cowel_highlight_phantom")
-                return &m_impl->cowel_highlight_phantom;
-            if (name == u8"cowel_html_element")
-                return &m_impl->cowel_html_element;
-            if (name == u8"cowel_html_self_closing_element")
-                return &m_impl->cowel_html_self_closing_element;
-            if (name == u8"cowel_include")
-                return &m_impl->cowel_include;
-            if (name == u8"cowel_include_text")
-                return &m_impl->cowel_include_text;
-            if (name == u8"cowel_invoke")
-                return &m_impl->cowel_invoke;
-            if (name == u8"cowel_macro")
-                return &m_impl->cowel_macro;
-            if (name == u8"cowel_mul")
-                return &m_impl->cowel_mul;
-            if (name == u8"cowel_neg")
-                return &m_impl->cowel_neg;
-            if (name == u8"cowel_no_invoke")
-                return &m_impl->cowel_no_invoke;
-            if (name == u8"cowel_paragraphs")
-                return &m_impl->cowel_paragraphs;
-            if (name == u8"cowel_paragraph_enter")
-                return &m_impl->cowel_paragraph_enter;
-            if (name == u8"cowel_paragraph_inherit")
-                return &m_impl->cowel_paragraph_inherit;
-            if (name == u8"cowel_paragraph_leave")
-                return &m_impl->cowel_paragraph_leave;
-            if (name == u8"cowel_put")
-                return &m_impl->cowel_put;
-            if (name == u8"cowel_source_as_text")
-                return &m_impl->cowel_source_as_text;
-            if (name == u8"cowel_sub")
-                return &m_impl->cowel_sub;
-            if (name == u8"cowel_text_as_html")
-                return &m_impl->cowel_text_as_html;
-            if (name == u8"cowel_text_only")
-                return &m_impl->cowel_text_only;
-            if (name == u8"cowel_to_html")
-                return &m_impl->cowel_to_html;
-        }
-        if (name == u8"caption")
-            return &m_impl->caption;
-        if (name == u8"cite")
-            return &m_impl->cite;
-        if (name == u8"code")
-            return &m_impl->code;
-        if (name == u8"codeblock")
-            return &m_impl->codeblock;
-        if (name == u8"col")
-            return &m_impl->col;
-        if (name == u8"colgroup")
-            return &m_impl->colgroup;
-        if (name == u8"comment")
-            return &m_impl->comment;
-        break;
-
-    case u8'd':
-        if (name == u8"dd")
-            return &m_impl->dd;
-        if (name == u8"del")
-            return &m_impl->del;
-        if (name == u8"details")
-            return &m_impl->details;
-        if (name == u8"dfn")
-            return &m_impl->dfn;
-        if (name == u8"div")
-            return &m_impl->div;
-        if (name == u8"dl")
-            return &m_impl->dl;
-        if (name == u8"dt")
-            return &m_impl->dt;
-        break;
-
-    case u8'e':
-        if (name == u8"em")
-            return &m_impl->em;
-        if (name == u8"error")
-            return &m_impl->error;
-        break;
-
-    case u8'g':
-        if (name == u8"gterm")
-            return &m_impl->gterm;
-        break;
-
-    case u8'h':
-        if (name == u8"h1")
-            return &m_impl->h1;
-        if (name == u8"h2")
-            return &m_impl->h2;
-        if (name == u8"h3")
-            return &m_impl->h3;
-        if (name == u8"h4")
-            return &m_impl->h4;
-        if (name == u8"h5")
-            return &m_impl->h5;
-        if (name == u8"h6")
-            return &m_impl->h6;
-        if (name == u8"here")
-            return &m_impl->here;
-        if (name == u8"hereblock")
-            return &m_impl->hereblock;
-        if (name == u8"hr")
-            return &m_impl->hr;
-        break;
-
-    case u8'i':
-        if (name == u8"i")
-            return &m_impl->i;
-        if (name == u8"ins")
-            return &m_impl->ins;
-        break;
-
-    case u8'k':
-        if (name == u8"kbd")
-            return &m_impl->kbd;
-        break;
-
-    case u8'l':
-        if (name == u8"li")
-            return &m_impl->li;
-        if (name == u8"literally")
-            return &m_impl->literally;
-        if (name == u8"lorem_ipsum")
-            return &m_impl->lorem_ipsum;
-        break;
-
-    case u8'm':
-        if (name == u8"mail")
-            return &m_impl->mail;
-        if (name == u8"make_bib")
-            return &m_impl->make_bib;
-        if (name == u8"make_contents")
-            return &m_impl->make_contents;
-        if (name == u8"mark")
-            return &m_impl->mark;
-        if (name == u8"math")
-            return &m_impl->math;
-        if (name == u8"mathblock")
-            return &m_impl->mathblock;
-        break;
-
-    case u8'n':
-        if (name == u8"nobr")
-            return &m_impl->nobr;
-        if (name == u8"noscript")
-            return &m_impl->noscript;
-        break;
-
-    case u8'o':
-        if (name == u8"o")
-            return &m_impl->o;
-        if (name == u8"ol")
-            return &m_impl->ol;
-        break;
-
-    case u8'p':
-        if (name == u8"p")
-            return &m_impl->p;
-        if (name == u8"pre")
-            return &m_impl->pre;
-        break;
-
-    case u8'q':
-        if (name == u8"q")
-            return &m_impl->q;
-        break;
-
-    case u8'r':
-        if (name == u8"ref")
-            return &m_impl->ref;
-        break;
-
-    case u8's':
-        if (name == u8"s")
-            return &m_impl->s;
-        if (name == u8"samp")
-            return &m_impl->samp;
-        if (name == u8"sans")
-            return &m_impl->sans;
-        if (name == u8"script")
-            return &m_impl->script;
-        if (name == u8"serif")
-            return &m_impl->serif;
-        if (name == u8"small")
-            return &m_impl->small;
-        if (name == u8"span")
-            return &m_impl->span;
-        if (name == u8"strong")
-            return &m_impl->strong;
-        if (name == u8"style")
-            return &m_impl->style;
-        if (name == u8"sub")
-            return &m_impl->sub;
-        if (name == u8"summary")
-            return &m_impl->summary;
-        if (name == u8"sup")
-            return &m_impl->sup;
-        break;
-
-    case u8't':
-        if (name == u8"table")
-            return &m_impl->table;
-        if (name == u8"tbody")
-            return &m_impl->tbody;
-        if (name == u8"td")
-            return &m_impl->td;
-        if (name == u8"tel")
-            return &m_impl->tel;
-        if (name == u8"text")
-            return &m_impl->text;
-        if (name == u8"tfoot")
-            return &m_impl->tfoot;
-        if (name == u8"th")
-            return &m_impl->th;
-        if (name == u8"thead")
-            return &m_impl->thead;
-        if (name == u8"there")
-            return &m_impl->there;
-        if (name == u8"tr")
-            return &m_impl->tr;
-        if (name == u8"trim")
-            return &m_impl->trim;
-        if (name == u8"tt")
-            return &m_impl->tt;
-        break;
-
-    case u8'u':
-        if (name == u8"u")
-            return &m_impl->u;
-        if (name == u8"ul")
-            return &m_impl->ul;
-        if (name == u8"unprocessed")
-            return &m_impl->unprocessed;
-        if (name == u8"url")
-            return &m_impl->url;
-        break;
-
-    case u8'V':
-        if (name == u8"Vget")
-            return &m_impl->Vget;
-        if (name == u8"Vset")
-            return &m_impl->Vset;
-        break;
-
-    case u8'v':
-        if (name == u8"var")
-            return &m_impl->var;
-        break;
-
-    case u8'w':
-        if (name == u8"wbr")
-            return &m_impl->wbr;
-        if (name == u8"wg21_grammar")
-            return &m_impl->wg21_grammar;
-        if (name == u8"wg21_head")
-            return &m_impl->wg21_head;
-        break;
-
-    default: break;
-    }
-    // NOLINTEND(readability-braces-around-statements)
-
-    return nullptr;
+    return it->behavior;
 }
 
 } // namespace cowel
