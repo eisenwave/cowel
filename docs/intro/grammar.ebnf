@@ -4,30 +4,32 @@ document-markup-element
   = document-text
   | common-markup-element;
 document-text
-  = document-text-character, { document-text-character };
-document-text-character
+  = document-text-char, { document-text-char };
+document-text-char
   = ? Any character ? - "\";
 
 common-markup-element
   = escape
   | comment
-  | directive;
+  | directive-splice;
 escape
-  = "\", escapable
+  = "\", escapable-char
   | "\", line-terminator;
-escapable
+escapable-char
   =  "{" |  "}" |  "[" |  "]" |  "(" |  ")" |  "," |  "." |  "=" |  "!"
   |  '"' |  "#" |  "$" |  "%" |  "&" |  "'" |  "*" |  "+" |  "/" |  ";"
   |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
   |  " " |  TAB |   VT ;
 comment
-  = "\:", ? Maximal character sequence up to and including line-terminator ?;
+  = "\:", { comment-char }, line-terminator;
+comment-char
+  = ? Any character ? - line-terminator;
 
-directive
+directive-splice
   = "\", directive-name, [ group ], [ block ];
 directive-name
-  = directive-name-character - digit, { directive-name-character };
-directive-name-character
+  = directive-name-char - digit, { directive-name-char };
+directive-name-char
   = "_" | digit | ? ASCII alphabetic character ?;
 digit
   = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
@@ -43,8 +45,8 @@ group-member
   | member-value
   | "...";
 member-name
-  = member-name-character, { member-name-character };
-member-name-character
+  = member-name-char, { member-name-char };
+member-name-char
   = ? HTML attribute name ? - ("\" | "(" | ")" | "{", "}" | ",");
 member-value
   = directive-call
@@ -70,9 +72,9 @@ boolean-literal
 integer-literal
   =  [ "-" ], digit, { digit };
 unquoted-string
-  = unquoted-string-character, { unquoted-string-character };
-unquoted-string-character
-  = directive-name-character | "-";
+  = unquoted-string-char, { unquoted-string-char };
+unquoted-string-char
+  = directive-name-char | "-";
 
 quoted-string
   = '"', { quoted-string-markup-element }, '"';
@@ -80,8 +82,8 @@ quoted-string-markup-element
   = quoted-string-text
   | common-markup-element;
 quoted-string-text
-  = quoted-string-text-character, { quoted-string-text-character };
-quoted-string-text-character
+  = quoted-string-text-char, { quoted-string-text-char };
+quoted-string-text-char
   = ? Any character ? - ("\" | '"');
 
 block
@@ -90,8 +92,8 @@ block-markup-element
   = block-text
   | common-markup-element;
 block-text
-  = block-text-character, { block-text-character } (* brace-balanced *);
-block-text-character
+  = block-text-char, { block-text-char } (* brace-balanced *);
+block-text-char
   = ? Any character ? - "\";
 
 blank
