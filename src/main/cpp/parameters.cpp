@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <string_view>
 
 #include "cowel/util/char_sequence_factory.hpp"
@@ -34,6 +33,37 @@ Processing_Status Lazy_Value_Of_Type_Matcher::match_value(
     }
     m_markup = &argument;
     m_markup_frame = frame;
+    return Processing_Status::ok;
+}
+
+Processing_Status Value_Of_Type_Matcher::match_value(
+    const ast::Member_Value& argument,
+    Frame_Index frame,
+    Context& context,
+    const Match_Fail_Options& on_fail
+)
+{
+    COWEL_DEBUG_ASSERT(argument.is_value());
+
+    Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    if (!val) {
+        return status_max(val.error(), on_fail.status);
+    }
+    if (val->get_type().analytically_convertible_to(*m_expected_type)) {
+        on_fail.emit(
+            argument.get_source_span(),
+            joined_char_sequence({
+                u8"Expected a value of type "sv,
+                m_expected_type->get_display_name(),
+                u8", but got "sv,
+                val->get_type().get_display_name(),
+                u8".",
+            }),
+            context
+        );
+        return on_fail.status;
+    }
+    m_value = { std::move(val.value()), argument.get_source_span() };
     return Processing_Status::ok;
 }
 
@@ -456,7 +486,7 @@ Processing_Status Group_Pack_Named_Lazy_Any_Matcher::match_pack(
 }
 
 [[nodiscard]]
-Processing_Status detail::Group_Pack_Value_Matcher_Base::match_pack(
+Processing_Status Group_Pack_Value_Matcher::match_pack(
     std::span<const ast::Group_Member> members,
     Frame_Index frame,
     Context& context,
@@ -469,11 +499,12 @@ Processing_Status detail::Group_Pack_Value_Matcher_Base::match_pack(
         switch (member.get_kind()) {
 
         case ast::Member_Kind::positional: {
-            const auto member_status
-                = match_value_in_pack(member.get_value(), frame, context, on_fail);
-            if (member_status != Processing_Status::ok) {
-                return member_status;
+            Result<Value, Processing_Status> member_result
+                = evaluate_member_value(member.get_value(), frame, context);
+            if (!member_result) {
+                return status_max(member_result.error(), on_fail.status);
             }
+            m_values.push_back({ std::move(*member_result), member.get_source_span() });
             continue;
         }
 
@@ -501,36 +532,5 @@ Processing_Status detail::Group_Pack_Value_Matcher_Base::match_pack(
     }
     return Processing_Status::ok;
 }
-
-template <std::derived_from<Value_Matcher> VM>
-[[nodiscard]]
-Processing_Status Group_Pack_Value_Matcher<VM>::match_value_in_pack(
-    const ast::Member_Value& value,
-    Frame_Index frame,
-    Context& context,
-    const Match_Fail_Options& on_fail
-)
-{
-    COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
-
-    auto value_matcher = [&] -> VM {
-        if constexpr (std::is_default_constructible_v<VM>) {
-            return VM {};
-        }
-        else {
-            return VM { m_values.get_allocator().resource() };
-        }
-    }();
-    const auto result = value_matcher.match_value(value, frame, context, on_fail);
-    if (result == Processing_Status::ok) {
-        m_values.emplace_back(std::move(value_matcher.get()), value.get_source_span());
-    }
-    return result;
-}
-
-template struct Group_Pack_Value_Matcher<Spliceable_To_String_Matcher>;
-template struct Group_Pack_Value_Matcher<String_Matcher>;
-template struct Group_Pack_Value_Matcher<Boolean_Matcher>;
-template struct Group_Pack_Value_Matcher<Integer_Matcher>;
 
 } // namespace cowel

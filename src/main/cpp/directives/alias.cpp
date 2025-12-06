@@ -9,7 +9,7 @@ namespace cowel {
 
 Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    Group_Pack_String_Matcher strings { context.get_transient_memory() };
+    Group_Pack_Value_Matcher strings { context.get_transient_memory() };
     Call_Matcher call_matcher { strings };
 
     const Processing_Status match_status
@@ -27,6 +27,22 @@ Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& c
         );
         return Processing_Status::fatal;
     }
+    }
+
+    for (const auto& [alias_name, location] : strings.get_values()) {
+        if (!alias_name.is_str()) {
+            context.try_error(
+                diagnostic::type_mismatch, location,
+                joined_char_sequence({
+                    u8"Macro names must be of type "sv,
+                    Type::str.get_display_name(),
+                    u8", but the argument is of type "sv,
+                    alias_name.get_type().get_display_name(),
+                    u8"."sv,
+                })
+            );
+            return Processing_Status::error;
+        }
     }
 
     std::pmr::vector<char8_t> target_text { context.get_transient_memory() };
@@ -81,7 +97,8 @@ Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& c
         return Processing_Status::fatal;
     }
 
-    for (const auto& [alias_name, location] : strings.get_values()) {
+    for (const auto& [alias_name_value, location] : strings.get_values()) {
+        const std::u8string_view alias_name = alias_name_value.as_string();
         if (alias_name.empty()) {
             context.try_fatal(
                 diagnostic::alias_name_missing, location, u8"The alias name must not be empty."sv

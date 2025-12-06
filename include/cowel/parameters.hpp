@@ -34,6 +34,10 @@ struct Was_Matched {
     [[nodiscard]]
     virtual bool was_matched() const
         = 0;
+
+    /// @brief Resets the matcher for re-matching in the future.
+    /// After a call to `reset()`, `was_matched()` shall be `false`.
+    virtual void reset() noexcept = 0;
 };
 
 using Fail_Callback = Function_Ref<
@@ -71,8 +75,7 @@ struct Value_Matcher : virtual Was_Matched {
     /// @param argument The argument to match.
     /// @param frame The frame index of the argument.
     /// @param context The current context.
-    /// @return Either a `bool` indicating whether matching succeeded,
-    /// or a `Processing_Status` if content generation failed during the matching process.
+    /// @return A `Processing_Status` if content generation failed during the matching process.
     [[nodiscard]]
     virtual Processing_Status match_value(
         const ast::Member_Value& argument,
@@ -102,6 +105,11 @@ public:
     bool was_matched() const override
     {
         return m_markup != nullptr;
+    }
+
+    void reset() noexcept override
+    {
+        m_markup = nullptr;
     }
 
     [[nodiscard]]
@@ -185,6 +193,11 @@ public:
         return has_value();
     }
 
+    void reset() noexcept override
+    {
+        m_value.reset();
+    }
+
     [[nodiscard]]
     bool has_value() const
     {
@@ -198,15 +211,62 @@ public:
     }
 
     [[nodiscard]]
-    const T& get() const
+    T& get() &
     {
         return m_value->value;
+    }
+    [[nodiscard]]
+    const T& get() const&
+    {
+        return m_value->value;
+    }
+    [[nodiscard]]
+    T&& get() &&
+    {
+        return std::move(m_value->value);
+    }
+    [[nodiscard]]
+    const T&& get() const&&
+    {
+        return std::move(m_value->value);
     }
 
     [[nodiscard]]
     T get_or_default(const T& fallback) const
     {
         return m_value ? m_value->value : fallback;
+    }
+};
+
+struct Value_Of_Type_Matcher : Value_Matcher, Value_Holder<Value> {
+private:
+    const Type* m_expected_type;
+
+public:
+    [[nodiscard]]
+    explicit Value_Of_Type_Matcher(const Type* expected_type)
+        : m_expected_type { expected_type }
+    {
+        COWEL_ASSERT(expected_type);
+    }
+
+    [[nodiscard]]
+    Processing_Status match_value(
+        const ast::Member_Value& argument,
+        Frame_Index frame,
+        Context& context,
+        const Match_Fail_Options& on_fail
+    ) override;
+};
+
+template <const auto& type>
+    requires requires { Value_Of_Type_Matcher(&type); }
+struct Value_Of_Constant_Type_Matcher final : Value_Of_Type_Matcher {
+
+    [[nodiscard]]
+    explicit Value_Of_Constant_Type_Matcher()
+        : Value_Of_Type_Matcher(&type)
+    {
     }
 };
 
@@ -307,6 +367,11 @@ public:
     bool was_matched() const override
     {
         return m_index >= 0;
+    }
+
+    void reset() noexcept override
+    {
+        m_index = -1;
     }
 
     [[nodiscard]]
@@ -484,6 +549,11 @@ public:
         return m_group != nullptr;
     }
 
+    void reset() noexcept override
+    {
+        m_group = nullptr;
+    }
+
     [[nodiscard]]
     const ast::Primary& get() const
     {
@@ -537,6 +607,11 @@ public:
     bool was_matched() const override
     {
         return m_group != nullptr;
+    }
+
+    void reset() noexcept override
+    {
+        m_group = nullptr;
     }
 
     [[nodiscard]]
@@ -600,17 +675,34 @@ struct Group_Pack_Named_Lazy_Spliceable_Matcher : Group_Pack_Named_Lazy_Any_Matc
     }
 };
 
-namespace detail {
-
-struct Group_Pack_Value_Matcher_Base : Group_Matcher {
-protected:
+struct Group_Pack_Value_Matcher : Group_Matcher {
+private:
     bool m_matched = false;
+    std::pmr::vector<Value_And_Location<Value>> m_values;
 
 public:
+    [[nodiscard]]
+    explicit Group_Pack_Value_Matcher(std::pmr::memory_resource* memory)
+        : m_values { memory }
+    {
+    }
+
     [[nodiscard]]
     bool was_matched() const override
     {
         return m_matched;
+    }
+
+    void reset() noexcept override
+    {
+        m_matched = false;
+    }
+
+    [[nodiscard]]
+    std::span<const Value_And_Location<Value>> get_values() const
+    {
+        COWEL_ASSERT(m_matched);
+        return m_values;
     }
 
     [[nodiscard]]
@@ -630,10 +722,14 @@ public:
             }
             return {};
         }();
-        return match_pack(members, frame, context, on_fail);
+        const Processing_Status result = match_pack(members, frame, context, on_fail);
+        if (result == Processing_Status::ok) {
+            m_matched = true;
+        }
+        return result;
     }
 
-protected:
+private:
     [[nodiscard]]
     Processing_Status match_pack(
         std::span<const ast::Group_Member> members,
@@ -641,60 +737,7 @@ protected:
         Context& context,
         const Match_Fail_Options& on_fail
     );
-
-    [[nodiscard]]
-    virtual Processing_Status match_value_in_pack(
-        const ast::Member_Value& value,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) = 0;
 };
-
-} // namespace detail
-
-template <std::derived_from<Value_Matcher> VM>
-struct Group_Pack_Value_Matcher final : detail::Group_Pack_Value_Matcher_Base {
-private:
-    static_assert(std::is_default_constructible_v<VM> || //
-        std::is_constructible_v<VM, std::pmr::memory_resource*>);
-
-    using value_type = VM::value_type;
-
-    std::pmr::vector<Value_And_Location<value_type>> m_values;
-    bool m_matched;
-
-public:
-    [[nodiscard]]
-    explicit Group_Pack_Value_Matcher(std::pmr::memory_resource* memory)
-        : m_values(memory)
-    {
-    }
-
-    [[nodiscard]]
-    std::span<const Value_And_Location<value_type>> get_values() const
-    {
-        return m_values;
-    }
-
-private:
-    [[nodiscard]]
-    Processing_Status match_value_in_pack(
-        const ast::Member_Value& value,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) override;
-};
-
-extern template struct Group_Pack_Value_Matcher<Spliceable_To_String_Matcher>;
-extern template struct Group_Pack_Value_Matcher<String_Matcher>;
-extern template struct Group_Pack_Value_Matcher<Boolean_Matcher>;
-extern template struct Group_Pack_Value_Matcher<Integer_Matcher>;
-
-using Group_Pack_String_Matcher = Group_Pack_Value_Matcher<Spliceable_To_String_Matcher>;
-using Group_Pack_Integer_Matcher = Group_Pack_Value_Matcher<Integer_Matcher>;
-using Group_Pack_Boolean_Matcher = Group_Pack_Value_Matcher<Boolean_Matcher>;
 
 struct Group_Pack_Matcher final : Group_Matcher {
 private:
@@ -712,6 +755,11 @@ public:
     bool was_matched() const override
     {
         return m_group != nullptr;
+    }
+
+    void reset() noexcept override
+    {
+        m_group = nullptr;
     }
 
     [[nodiscard]]
