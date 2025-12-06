@@ -6,7 +6,7 @@ built on top of only three syntactical constructs:
   \li{\cowdoc_c{Text.}}
   \li{Escape sequences, such as \cowdoc_c{\\\U{7B}}, \cowdoc_c{\\\U{7D}}, \cowdoc_c{\\\\}, etc.}
   \li{\cowdoc_c{\\:Comments}}
-  \li{\cowdoc_c{\\various_directives(positional args, named-args = 0){and content}}}
+  \li{\cowdoc_c{\\directive_splices(positional, args, named-args = 0){and content}}}
 }
 
 \h3{EBNF grammar}
@@ -15,8 +15,6 @@ Formally, in \ref("https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_fo
 grammar format,
 a \gterm{document} is constructed as follows:
 
-\: FIXME: includes are meant to be relative to the current document,
-\: so specifying "intro/" as the base path should not be necessary.
 \codeblock(ebnf){\cowel_include_text{grammar.ebnf}}
 
 \Bnote{
@@ -29,13 +27,15 @@ This makes COWEL exceptionally suited to nest other languages inside of it in co
 
 \h3{Text}
 
-\dfn{Text} (\gterm{text} in the grammar) is a \gterm{markup-element}
-which consists of as many characters as possible,
+\dfn{Text} (such as \gterm{document-text} in the grammar)
+is a markup element which consists of as many characters as possible,
 excluding \cowdoc_cp{005C}.
 
 \codeblock(ebnf){
-text
-  = ? Maximal character sequence excluding "\\" ?;
+document-text
+  = document-text-char, { document-text-char };
+document-text-char
+  = ? Any character ? - "\\";
 }
 
 \Bnote{
@@ -104,11 +104,7 @@ The meaning of the escape sequences is described in the table below.
       \cowdoc_esc{\N{LEFT CURLY BRACKET}},
       \cowdoc_esc{\N{RIGHT CURLY BRACKET}},
       \cowdoc_esc{\\},
-      \cowdoc_esc{\N{LEFT PARENTHESIS}},
-      \cowdoc_esc{\N{RIGHT PARENTHESIS}},
-      \cowdoc_esc{,},
-      \cowdoc_esc{.},
-      \cowdoc_esc{=}
+      \cowdoc_esc{"},
     }
     \td{
       Expands to the second character in the escape sequence.
@@ -118,18 +114,22 @@ The meaning of the escape sequences is described in the table below.
   \tr{
     \td{
       \cowdoc_esc{!},
-      \cowdoc_esc{"},
       \cowdoc_esc{#},
       \cowdoc_esc{\N{DOLLAR SIGN}},
       \cowdoc_esc{\N{PERCENT SIGN}},
       \cowdoc_esc{&},
       \cowdoc_esc{'},
+      \cowdoc_esc{\N{LEFT PARENTHESIS}},
+      \cowdoc_esc{\N{RIGHT PARENTHESIS}},
       \cowdoc_esc{*},
       \cowdoc_esc{+},
+      \cowdoc_esc{,},
       \cowdoc_esc{-},
+      \cowdoc_esc{.},
       \cowdoc_esc{/},
       \cowdoc_esc{;},
       \cowdoc_esc{<},
+      \cowdoc_esc{=}
       \cowdoc_esc{>},
       \cowdoc_esc{?},
       \cowdoc_esc{@},
@@ -165,17 +165,17 @@ In EBNF grammar, an \gterm{escape} is constructed like:
 
 \codeblock(ebnf){
 escape
-  = "\", escapable
-  | "\", line-terminator;
-escapable
+  = "\\", escapable-char
+  | "\\", line-terminator;
+escapable-char
   =  "{" |  "}" |  "[" |  "]" |  "(" |  ")" |  "," |  "." |  "=" |  "!"
   |  '"' |  "#" |  "\N{DOLLAR SIGN}" |  "%" |  "&" |  "'" |  "*" |  "+" |  "/" |  ";"
   |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
   |  " " |  TAB |   VT ;
 line-terminator
-  = LF | CR, LF | CR
-  (* Ambiguities are resolved in favor of a single CRLF line-terminator,
-     instead of two CR and LF line-terminators *);
+  = LF
+  | CR, LF
+  | CR (* unless the next character is LF *);
 }
 
 If there is an ambiguity between a CRLF escape and a simple U+000D CARRIAGE RETURN escape,
@@ -218,7 +218,9 @@ In EBNF grammar, a \gterm{comment} is constructed as follows:
 
 \codeblock(ebnf){
 comment
-  = "\\:", ? Maximal character sequence up to and including line-terminator ?;
+  = "\\:", { comment-char }, line-terminator;
+comment-char
+  = ? Any character ? - line-terminator;
 }
 
 Comments include a \gterm{line-terminator},
@@ -243,10 +245,57 @@ Hello World
 }
 }
 
-\h3{Directives}
+\h3{Directives splices}
 
 A \dfn{directive} is a way of generating plaintext, HTML, both, or neither.
 You can think of it as a "command" or "function call".
+
+\dfn{Splicing} means to evaluate a directive (or something else, in the future)
+and to insert the result between the surrounding markup elements.
+Splicing consists of three steps:
+
+\ol{
+  \li{
+    Looking up the name of the spliced directive.
+  }
+  \li{
+    Evaluating the directive (and its arguments, if any).
+    Evaluation of the directive usually produces a result.
+    This may not happen when evaluation raises an error.
+  }
+  \li{
+    Feeding the result into the current content policy (\ref("#contexts-and-output")).
+  }
+}
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+1 + 2 + 3 = \cowel_add(1, 2, 3)
+}}
+Generated HTML:
+\htmlblock{
+1 + 2 + 3 = \cowel_add(1, 2, 3)
+}
+As explained, this markup is processed in three steps:
+\ol{
+  \li{
+    \cowdoc_dir{cowel_add} is looked up by name.
+    This succeeds because \cowdoc_dir{cowel_add} is a builtin directive.
+  }
+  \li{
+    The three arguments (of type \cowdoc_type{int}) to \cowdoc_dir{cowel_add}
+    are evaluated,
+    and \cowdoc_dir{cowel_add} itself is evaluated,
+    which produces a value \cowdoc_c{6} of type \cowdoc_type{int}.
+  }
+  \li{
+    The resulting value \cowdoc_c{6} is fed as plaintext
+    into the surrounding content policy,
+    which usually results in a single \cowdoc_cp{0036} character being output.
+  }
+}
+}
 
 Every directive has three parts:
 \ul{
@@ -255,8 +304,8 @@ Every directive has three parts:
   }
   \li{
     An optional \cowdoc_c{\cowel_highlight_phantom{\\d}\
-(comma-separated, positional arguments, named-arguments = ...)}
-    provides additional inputs to the directive.
+(comma-separated, positional, arguments, named-arguments = ...)}
+    group provides additional inputs to the directive.
   }
   \li{
     An optional \cowdoc_c{\cowel_highlight_phantom{\\d}{block of content}}
@@ -264,14 +313,14 @@ Every directive has three parts:
   }
 }
 
-In EBNF grammar, a \gterm{directive} is constructed as follows:
+In EBNF grammar, a \gterm{directive-splice} is constructed as follows:
 
 \codeblock(ebnf){
-directive
-  = "\", directive-name, [ group ], [ "{", { markup-element }, "}" ];
+directive-splice
+  = "\\", directive-name, [ group ], [ block ];
 directive-name
-  = directive-name-character - digit, { directive-name-character };
-directive-name-character
+  = directive-name-char - digit, { directive-name-char };
+directive-name-char
   = "_" | digit | ? ASCII alphabetic character ?;
 }
 
@@ -291,31 +340,31 @@ Doing so is equivalent to writing
 \cowdoc_c{\\wbr} and \cowdoc_c{longword} immediately following one another.
 }
 
+\h4{Directive arguments}
+
 Grammatically, the arguments are a \gterm{group},
 which is constructed as follows:
 
 \codeblock(ebnf){
 group
-  = "(", group-member-list, whitespace, ")";
+  = "(", blank, [ group-member-list ], blank, ")";
 group-member-list
-  = member-comments, group-member,
-    { whitespace, ",", member-comments, group-member },
-    whitespace, [ "," ];
+  = group-member,
+    { blank, ",", blank, group-member },
+    blank, [ "," ];
 group-member
-  = member-name, whitespace, "=", whitespace, member-value
+  = member-name, blank, "=", blank, member-value
   | member-value
   | "...";
 }
-
-\h4{Directive arguments}
 
 \dfn{Directive arguments} can be
 \dfn{positional arguments},
 \dfn{named arguments}, or
 \dfn{ellipses}.
 Arguments are separated by commas.
-Unlike anywhere else, whitespace surrounding directive arguments is ignored.
-The value of positional or named argument is either a \dfn{markup sequence} or a \dfn{group}.
+Unlike in the surrounding markup,
+whitespace and comments surrounding directive arguments (i.e. \gterm{blank}) are ignored.
 
 \Bex{
 Often, arguments are converted to HTML attributes.
@@ -330,8 +379,9 @@ Generated HTML:
 
 \h5{Named arguments}
 
-Named arguments are of the form
-\cowdoc_c{name = value}, where spaces anywhere around \cowdoc_c{name} and \cowdoc_c{value} are ignored.
+A \dfn{named argument} is a \gterm{group-member} of the form
+\cowdoc_c{\cowel_highlight_phantom{\\d\N{LEFT PARENTHESIS}}name = value},
+where spaces anywhere around \cowdoc_attr{name} and \cowdoc_c{value} are ignored.
 Named arguments are matched to directive parameters before any positional arguments,
 meaning that positional arguments fill the remaining unmatched arguments.
 
@@ -358,7 +408,7 @@ you can do so by writing:
 \: "name = value" as a positional argument
 \xyz("name = value")
 \: named argument with name "name" and value "value"
-\xyz("name = value")
+\xyz(name = value)
 }}
 Only the literal \cowdoc_c{=} character can be used for named arguments,
 not its escaped variant \cowdoc_c{\\=}.
@@ -368,56 +418,32 @@ Grammatically, a \gterm{member-name} is constructed as follows:
 
 \codeblock(ebnf){
 member-name
-  = ? HTML attribute name ? - ("\\" | "(" | ")" | "{", "}" | ",");
+  = member-name-char, { member-name-char };
+member-name-char
+  = ? HTML attribute name ? - ("\" | "(" | ")" | "{", "}" | ",");
 }
 
 \h5{Positional arguments}
+
+A \dfn{positional argument} is a \gterm{group-member} of the form
+\gterm{member-value}.
 
 Positional arguments are content just like any other content,
 except that an unbalanced closing \cowdoc_cp{005D} or a \cowdoc_cp{002C}
 ends the content.
 
-\Btip{
-You can use escape sequences to continue otherwise ended content.
-\cowblock{\literally{
-\xyz(hello, world)   \: Two positional arguments
-\xyz("hello\, world")  \: One positional argument containing a comma.
-\xyz("hello()world")   \: OK, () is balanced and included in single argument
-\xyz("hello\)world")   \: OK
-\xyz("hello\(world")   \: OK
-\xyz("hello(world")    \: error: unterminated arguments
-}}
-}
-
-Grammatically, a positional argument is a \gterm{member-value},
-constructed as follows:
-
-\codeblock(ebnf){
-member-value
-  = { member-value-markup-element }
-  | group;
-member-value-markup-element
-  = member-value-text
-  | escape
-  | comment
-  | directive;
-member-value-text
-  = ? Maximal character sequence excluding "\\", ",", or balanced ")" ?;
-member-comments
-  = { comment | whitespace };
-}
-
 \h5{Ellipses}
 
-Ellipsis arguments (spelled \ellipsis)
-are placeholders which expand to arguments provided to a surrounding macro.
+An \dfn{ellipsis argument} is a \gterm{group-member}
+spelled \ellipsis.
+Ellipsis arguments are placeholders which expand to arguments provided to a surrounding macro.
 See also \ref("#dir-cowel_macro") and \ref("#dir-cowel_put").
 
 \Bex{
 COWEL markup:
 \cowblock{\literally{
 \: Define a macro for generating <div> elements
-\cowel_macro(div){\cowel_html_element(div, ...){\cowel_put}}
+\cowel_macro(div){\cowel_html_element(div, attr = (...)){\cowel_put}}
 
 \div(id = abc){inner text}
 }}
@@ -433,31 +459,13 @@ is considered an ellipsis.
 The text \tt{...} is not considered an ellipsis if it appears anywhere else
 or has preceding content within an argument.
 
-An error is raised if
-\ul{
-  \li{
-    any content follows the ellipsis, or
-  }
-  \li{
-    an ellipsis is used as an argument outside of a macro expansion.
-  }
-}
-
-\Btip{
-To literally provide the text \tt{...} as an argument,
-you can use the escape sequence \cowdoc_c{\\...} (only the first dot is part of the escape).
-}
+An error is raised if an ellipsis is used as an argument outside of a macro expansion.
 
 \Bex{
-\: We cannot use \literally here because it would cause a parse error
-\cowblock{
-\\cowel_macro(m){\\x(...)}        \\: OK, all macro arguments are forwarded to \\x
-\\cowel_macro(e){\\x(...text)}    \\: error: content following an ellipsis
-
-\\m(...)                         \\: error: ellipsis is not expanded from a macro
-\\m(\\...)                        \\: OK
-\\m(\\.\\.\\.)                      \\: OK
-}
+\cowblock{\literally{
+\m("...") \: OK, providing string "...", not an ellipsis
+\m(...)   \: error: ellipsis is not expanded from a macro
+}}
 }
 
 \h5{Groups}
@@ -469,10 +477,22 @@ They can appear both in positional and in named arguments.
 
 \Bex{
 \codeblock(cowel){\literally{
-\d((x), ())    \: groups as positional arguments
-\d(n = (x, y)) \: group as named argument
-\d(((())))     \: nested empty groups
+\d((x), (), (y,))    \: groups as positional arguments
+\d(n = (x, y))       \: group as named argument
+\d(((())))           \: nested empty groups
 }}
+}
+
+\Bwarn{
+In the future, parentheses surrounding a single positional argument
+will be treated as (ignored) parentheses around an expression,
+like in typical programming languages.
+
+For a group containing a single positional member,
+\cowdoc_c{(x,)} may also be used.
+That is, the trailing comma can only be used in a group,
+not in an expression,
+so it acts as a disambiguator.
 }
 
 \h4{Directive content}

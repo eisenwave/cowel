@@ -44,81 +44,36 @@ This notation consists of
   \li{the directive name,}
   \li{
     a list of parameters in parentheses,
-    consisting of the parameter name and the parameter type, separated by '\tt{:}',
+    consisting of the parameter name and
+    the parameter \gterm{type} (\ref("#types-intro")),
+    separated by '\tt{:}'
     and optionally followed by '\tt{=}' and a \dfn{default value}, and
   }
   \li{
     optionally,
     the symbol \tt{{...}} to indicate that the directive accepts content.
   }
-}
-
-The type notation \tt{type arg} is equivalent to \tt{type(arg)};
-in other words, \tt{type} is a unary prefix operator.
-The possible types are as follows:
-
-\dl{
-  \dt{\tt{any}}
-  \dd{Placeholder for any other type.}
-
-  \dt{\tt{integer}}
-  \dd{An integer, such as \tt{123}.}
-
-  \dt{\tt{boolean}}
-  \dd{An boolean; either \tt{true} or \tt{false}.}
-
-  \dt{\tt{string}}
-  \dd{A sequence of content.}
-
-  \dt{\tt{markup}}
-  \dd{
-    A sequence of content which is processed lazily, i.e. it is not evaluated
-    where the directive is invoked, but at some later point (or not at all).
-    This is essentially \tt{lazy string}.
-  }
-
-  \dt{\tt{pack(element: type)}}
-  \dd{
-    Multiple occurrences of the same \tt{element}, zero or more times.
-  }
-
-  \dt{\tt{group(members: pack type)}}
-  \dd{
-    A group of zero or more members, possibly of different types.
-  }
-
-  \dt{\tt{optional(t: type)}}
-  \dd{
-    Same as \tt{t}, but can be omitted in usual argument matching (\ref("#usual-argument-matching")).
-  }
-
-  \dt{\tt{lazy(t: type)}}
-  \dd{
-    Same as \tt{t}, but not processed during argument matching,
-    but within the directive.
-  }
-
-  \dt{\tt{named(t: type)}}
-  \dd{
-    A named argument with value type \tt{t}.
+  \li{
+    the result type of the directive,
+    separated by '\tt{:}'
   }
 }
 
 \Bex{
 The description of \cowdoc_dir{cowel_html_element} looks as follows:
 \pre{
-cowel_html_element(
-  name: string,
-  attr: optional group pack named lazy string,
-){...}
+\cowel_highlight_as(markup-tag){cowel_html_element}(
+  \cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){str},
+  \cowel_highlight_as(markup-attr){attr}: \cowel_highlight_as(keyword-type){lazy(group pack named string)?},
+){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 Or equivalently:
 \pre{
-cowel_html_element(
-  name: string,
-  attr: optional(group(pack(named(lazy(string))))),
-){...}
+\cowel_highlight_as(markup-tag){cowel_html_element}(
+  \cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){string},
+  \cowel_highlight_as(markup-attr){attr}: \cowel_highlight_as(keyword-type){lazy(group(pack(named(string))))?},
+){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 This describes that \cowdoc_dir{cowel_html_element} can be invoked as follows,
@@ -213,7 +168,7 @@ COWEL has builtin directives for generating and querying characters.
 ){\cowdoc_dir{cowel_char_by_entity} \c{mdash} Character by HTML character reference}
 
 \pre{
-cowel_char_by_entity(){...}
+\cowel_highlight_as(markup-tag){cowel_char_by_entity}(){...}
 }
 
 The \cowdoc_dir{cowel_char_by_entity} directive takes the name of a character
@@ -227,9 +182,9 @@ All arguments are ignored.
 The '\tt{&}' character can be produced in a number of ways:
 \ul{
     \li{Literally '\tt{&}' in text}
-    \li{\cowdoc_c{\\c{amp}} (like \cowdoc_html{&amp;}, named character reference)}
-    \li{\cowdoc_c{\\c{#38}} (like \cowdoc_html{&38;}, decimal character reference)}
-    \li{\cowdoc_c{\\c{#x26}} (like \cowdoc_html{&x26;}, hexadecimal character reference)}
+    \li{\cowdoc_c{\\cowel_char_by_entity{amp}} (like \cowdoc_html{&amp;}, named character reference)}
+    \li{\cowdoc_c{\\cowel_char_by_entity{#38}} (like \cowdoc_html{&38;}, decimal character reference)}
+    \li{\cowdoc_c{\\cowel_char_by_entity{#x26}} (like \cowdoc_html{&x26;}, hexadecimal character reference)}
 }
 }
 
@@ -238,7 +193,7 @@ The '\tt{&}' character can be produced in a number of ways:
 ){\cowdoc_dir{cowel_char_by_name} \c{mdash} Character by Unicode name}
 
 \pre{
-cowel_char_by_name(){...}
+\cowel_highlight_as(markup-tag){cowel_char_by_name}(){...}
 }
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is text content which should be a
@@ -256,7 +211,7 @@ or one of its "control", "alternate", or "correction" aliases.
 ){\cowdoc_dir{cowel_char_by_num} \c{mdash} Character by code point number}
 
 \pre{
-cowel_char_by_num(){...}
+\cowel_highlight_as(markup-tag){cowel_char_by_num}(){...}
 }
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is text content
@@ -285,11 +240,11 @@ they cannot easily tell what the purpose of the character is.
 ){\cowdoc_dir{cowel_char_get_num} \c{mdash} Get digits of character}
 
 \pre{
-cowel_char_get_num(
-  zfill: integer = 0,
-  base: integer = 16,
-  lower: boolean = false,
-){...}
+\cowel_highlight_as(markup-tag){cowel_char_get_num}(
+  \cowel_highlight_as(markup-attr){zfill}: \cowel_highlight_as(keyword-type){bool} = 0,
+  \cowel_highlight_as(markup-attr){base}: \cowel_highlight_as(keyword-type){int} = 16,
+  \cowel_highlight_as(markup-attr){lower}: \cowel_highlight_as(keyword-type){bool} = false,
+){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 The \cowdoc_dir{cowel_char_get_num} directive is essentially the
@@ -376,10 +331,10 @@ This renders as
 ){\cowdoc_dir{cowel_html_element} \c{mdash} HTML element}
 
 \pre{
-cowel_html_element(
-  name: string,
-  attr: optional group pack named lazy string,
-){...}
+\cowel_highlight_as(markup-tag){cowel_html_element}(
+  \cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){string},
+  \cowel_highlight_as(markup-attr){attr}: \cowel_highlight_as(keyword-type){lazy(group pack named string)?},
+){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 The \cowdoc_dir{cowel_html_element} directive generates content,
@@ -423,10 +378,10 @@ if any of the argument names are not valid HTML attribute names.
 ){\cowdoc_dir{cowel_html_self_closing_element} \c{mdash} Self-closing HTML element}
 
 \pre{
-cowel_html_self_closing_element(
-  name: string,
-  attr: optional group pack named lazy string,
-)
+\cowel_highlight_as(markup-tag){cowel_html_self_closing_element}(
+  \cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){string},
+  \cowel_highlight_as(markup-attr){attr}: \cowel_highlight_as(keyword-type){lazy(group pack named string)?},
+): \cowel_highlight_as(keyword-type){block}
 }
 
 The \cowdoc_dir{cowel_html_self_closing_element} directive generates a self-closing HTML element.
@@ -511,7 +466,7 @@ The table below lists directives which process content using some content policy
 ){\cowdoc_dir{cowel_to_html} \c{mdash} Process with to-HTML policy}
 
 \pre{
-cowel_to_html(){...}
+\cowel_highlight_as(markup-tag){cowel_to_html}(){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 \cowdoc_dir{cowel_to_html} simply processes the provided content using the to-HTML policy.
@@ -556,7 +511,7 @@ Use of
 ){\cowdoc_dir{cowel_no_invoke} \c{mdash} Process with no-invoke policy}
 
 \pre{
-cowel_no_invoke(){...}
+\cowel_highlight_as(markup-tag){cowel_no_invoke}(){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 \cowdoc_dir{cowel_no_invoke} processes the provided content
@@ -589,7 +544,7 @@ That is, comments are ignored, and escapes are expanded.
 ){\cowdoc_dir{cowel_actions} \c{mdash} Process with actions policy}
 
 \pre{
-cowel_actions(){...}
+\cowel_highlight_as(markup-tag){cowel_actions}(){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 \cowdoc_dir{cowel_actions} processes the provided content
@@ -650,7 +605,7 @@ but macro definitions produce no output.
 ){\cowdoc_dir{cowel_text_only} \c{mdash} Process with text-only policy}
 
 \pre{
-cowel_text_only(){...}
+\cowel_highlight_as(markup-tag){cowel_text_only}(){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 \cowdoc_dir{cowel_text_only} processes the provided content
@@ -684,7 +639,7 @@ It is mainly useful in situations where it makes no sense to have non-plaintext 
 ){\cowdoc_dir{cowel_text_as_html} \c{mdash} Process with text-as-HTML policy}
 
 \pre{
-cowel_text_as_html(){...}
+\cowel_highlight_as(markup-tag){cowel_text_as_html}(){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 \cowdoc_dir{cowel_no_invoke} processes the provided content
@@ -714,7 +669,7 @@ While there are legitimate uses (e.g. inline SVG images and other large HTML blo
 ){\cowdoc_dir{cowel_source_as_text} \c{mdash} Process with source-as-text policy}
 
 \pre{
-cowel_source_as_text(){...}
+\cowel_highlight_as(markup-tag){cowel_source_as_text}(){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 \cowdoc_dir{cowel_no_invoke} processes the provided content
@@ -755,9 +710,9 @@ Many examples can be found in this document.
 ){\cowdoc_dir{cowel_highlight} \c{mdash} Perform syntax highlighting}
 
 \pre{
-cowel_highlight(
-  lang: string,
-){...}
+\cowel_highlight_as(markup-tag){cowel_highlight}(
+  \cowel_highlight_as(markup-attr){lang}: \cowel_highlight_as(keyword-type){string},
+){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 The \cowdoc_dir{cowel_highlight}
@@ -774,6 +729,12 @@ which is the highlighter that COWEL uses internally.
 \h4(
   id = dir-cowel_highlight_as
 ){\cowdoc_dir{cowel_highlight_as} \c{mdash} Syntax highlight override}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_highlight_as}(
+  \cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){string},
+){...}: \cowel_highlight_as(keyword-type){block}
+}
 
 The \cowdoc_dir{cowel_highlight_as} directive forces certain syntax highlighting
 to be applied to some text;
@@ -822,7 +783,7 @@ Only µlight long names should be used directly.
 ){\cowdoc_dir{cowel_highlight_phantom} \c{mdash} Syntax highlight phantom text}
 
 \pre{
-cowel_highlight_phantom(){...}
+\cowel_highlight_as(markup-tag){cowel_highlight_phantom}(){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 The \cowdoc_dir{cowel_highlight_phantom} directive
@@ -920,7 +881,7 @@ Generated HTML:
 ){\cowdoc_dir{cowel_paragraphs} \c{mdash} Perform paragraph splitting}
 
 \pre{
-cowel_paragraphs(){...}
+\cowel_highlight_as(markup-tag){cowel_paragraphs}(){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 The \cowdoc_dir{cowel_paragraphs} directive
@@ -963,7 +924,7 @@ so if one wants to have paragraph splitting inside say,
 ){\cowdoc_dir{cowel_paragraph_enter} \c{mdash} Enter a paragraph}
 
 \pre{
-cowel_paragraph_enter()
+\cowel_highlight_as(markup-tag){cowel_paragraph_enter}(): \cowel_highlight_as(keyword-type){block}
 }
 
 If the current content policy is a paragraphs policy and
@@ -1005,7 +966,7 @@ For example, the user can define an \cowdoc_dir{N} directive which combines
 ){\cowdoc_dir{cowel_paragraph_leave} \c{mdash} Leave a paragraph}
 
 \pre{
-cowel_paragraph_leave()
+\cowel_highlight_as(markup-tag){cowel_paragraph_leave}(): \cowel_highlight_as(keyword-type){block}
 }
 
 If the current content policy is a paragraphs policy and
@@ -1054,7 +1015,7 @@ For example, the user can define a \cowdoc_dir{hr} directive which combines
 ){\cowdoc_dir{cowel_paragraph_inherit} \c{mdash} Activate paragraph splitting inside a directive}
 
 \pre{
-cowel_paragraph_inherit()
+\cowel_highlight_as(markup-tag){cowel_paragraph_inherit}(): \cowel_highlight_as(keyword-type){block}
 }
 
 \Bimp{
@@ -1085,6 +1046,10 @@ COWEL provides directives to load content from other files.
 \h4(
   id = dir-cowel_include
 ){\cowdoc_dir{cowel_include} \c{mdash} Include a sub-document}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_include}(){...}: \cowel_highlight_as(keyword-type){block}
+}
 
 The \cowdoc_dir{cowel_include} directive loads the content from another COWEL document,
 and processes it using the current content policy.
@@ -1135,7 +1100,7 @@ of \cowdoc_dir{cowel_include}s.
 ){\cowdoc_dir{cowel_include_text} \c{mdash} Include text from a file}
 
 \pre{
-cowel_include_text(){...}
+\cowel_highlight_as(markup-tag){cowel_include_text}(){...}: \cowel_highlight_as(keyword-type){block}
 }
 
 The \cowdoc_dir{cowel_include_text} directive reads the UTF-8 text contents of another file
@@ -1190,9 +1155,9 @@ there are some stark differences:
 ){\cowdoc_dir{cowel_alias} \c{mdash} Define aliases for an existing directive}
 
 \pre{
-cowel_alias(
-  names: pack string,
-){...}
+\cowel_highlight_as(markup-tag){cowel_alias}(
+  \cowel_highlight_as(markup-attr){names}: \cowel_highlight_as(keyword-type){pack string},
+){...}: \cowel_highlight_as(keyword-type){unit}
 }
 
 The \cowdoc_dir{cowel_alias} directive defines one or more aliases for an existing directive.
@@ -1237,9 +1202,9 @@ One or multiple aliases can be defined as follows:
 ){\cowdoc_dir{cowel_macro} \c{mdash} Define a macro}
 
 \pre{
-cowel_macro(
-  names: pack string,
-){...}
+\cowel_highlight_as(markup-tag){cowel_macro}(
+  \cowel_highlight_as(markup-attr){names}: \cowel_highlight_as(keyword-type){pack string},
+){...}: \cowel_highlight_as(keyword-type){unit}
 }
 
 The \cowdoc_dir{cowel_macro} directive defines a block of content which
@@ -1283,9 +1248,9 @@ may also result in paragraph splits outside the macro.
 ){\cowdoc_dir{cowel_put} \c{mdash} Process provided macro content or arguments}
 
 \pre{
-cowel_put(
-  else: lazy any,
-){...}
+\cowel_highlight_as(markup-tag){cowel_put}(
+  \cowel_highlight_as(markup-attr){else}: \cowel_highlight_as(keyword-type){lazy any},
+){...}: \cowel_highlight_as(keyword-type){any}
 }
 
 The \cowdoc_dir{cowel_put} directive processes content
@@ -1423,9 +1388,9 @@ but it can have unintended side effects:
 ){\cowdoc_dir{cowel_invoke} \c{mdash} Invoke a directive}
 
 \pre{
-cowel_invoke(
-  name: string,
-){...}
+\cowel_highlight_as(markup-tag){cowel_invoke}(
+  \cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){string},
+){...}: \cowel_highlight_as(keyword-type){any}
 }
 
 The \cowdoc_dir{cowel_invoke} directive invokes a directive by name.

@@ -28,6 +28,10 @@ U+\cowel_put\c{nbsp}(\tt{\U{\cowel_put}})\
 \tt{\cowel_highlight_as(string-escape){\\\cowel_put}}\
 }
 
+\cowel_macro(cowdoc_type){\
+\tt{\cowel_highlight_as(keyword-type){\cowel_put}}\
+}
+
 \cowel_macro(cowblock){\
 \codeblock(cowel){\cowel_put}\
 }
@@ -198,6 +202,7 @@ Running \code(sh){./build/cowel-cli} without extra arguments also brings up the 
 
 \cowel_include{intro/syntax.cow}\
 \cowel_include{intro/directives.cow}\
+\cowel_include{intro/semantics.cow}\
 \cowel_include{intro/themes.cow}\
 \
 \cowel_include{new_directives.cow}\

@@ -1,0 +1,370 @@
+\h2(id=types-intro){Types}
+
+While most of the content a user writes tends to be in a markup context,
+some is written in a \dfn{scripting context}.
+For example, inside the \gterm{group} of a \gterm{directive-splice}.
+
+A scripting context functions similarly to other programming languages,
+like JavaScript;
+there are values and types,
+which can be combined using expressions.
+
+\Bnote{
+The capabilities of the scripting context are currently extremely limited,
+but should be expanded greatly in the near future.
+}
+
+\codeblock(ebnf){\cowel_include_text{type_grammar.ebnf}}
+
+The commas in a *type-list* act as separators and have no impact on the type.
+
+Note that the type `group(int)` is a unambigously a *prefix-type* where `int` is the only element in the *type-list*,
+not a `group` *type-prefix* followed by an `(int)` *optional-type*.
+
+Also note that in `group(int)?`, the `?` forms an optional group, not a group of an optional `int`.
+
+\h3{General principles}
+
+The process of converting any union type $U$ into its canonical form
+is called *canonicalization*.
+A type is in its *canonical* form if canonicalization leaves the type unchanged;
+otherwise it is in its *degenerate* form.
+
+Two types are *equivalent* if they are identical after both are canonicalized.
+Equivalent types are semantically the same, but may be spelled differently.
+
+For example, the degenerate union type `any | any` is equivalent to `any`.
+
+\h3{Basic types}
+
+Basic types are the most simple building block of the type system.
+They cannot be broken down any further, although some basic types
+(namely `any` and `nothing` are symbolic types).
+
+Canonicalization has no effect for basic types;
+they are always in their canonical form.
+
+\h4(id=type-any){\cowdoc_type{any} \N{EM DASH} Top type}
+
+\cowdoc_type{any} is the root of the type hierarchy,
+i.e. every other type is a subtype of \cowdoc_type{any}.
+This is also known as a "top type".
+
+\cowdoc_type{any} may be used as a type for parameters and variables,
+but there are no value of type \cowdoc_type{any}.
+
+\h4(id=type-nothing){\cowdoc_type{nothing} \N{EM DASH} Bottom type}
+
+\cowdoc_type{nothing} is a type of which there are no values.
+This is also known as a "bottom type".
+
+It is the type of expressions that terminate, i.e. don't return.
+
+\h4(id=type-unit){\cowdoc_type{unit} \N{EM DASH} Unit type}
+
+\cowdoc_type{unit} is a unit type, i.e. a type with only one possible value
+also spelled \cowdoc_type{unit}.
+
+This is used as a result for directives that don't produce any other result.
+
+\h4(id=type-null){\cowdoc_type{null} \N{EM DASH} Null type}
+
+\cowdoc_type{null} is a unit type with only one possible value
+also spelled \cowdoc_type{null}.
+
+Unlike \cowdoc_type{unit}, \cowdoc_type{null} is used to indicate errors.
+
+\h4(id=type-bool){\cowdoc_type{bool} \N{EM DASH} Boolean type}
+
+\cowdoc_type{bool} is a boolean type.
+It can represent two values: \cowdoc_type{true} and \cowdoc_type{false}.
+
+\h4(id=type-int){\cowdoc_type{int} \N{EM DASH} Integer}
+
+\cowdoc_type{int} is an integer.
+It can represent any integer value (although in practice, there is an implementation limit);
+this includes negative numbers.
+
+An \cowdoc_type{int} can be obtained using integer literals
+such as \cowdoc_c{123} or \cowdoc_c{0xff}.
+
+\h4(id=type-f32){\cowdoc_type{f32} \N{EM DASH} 32-bit floating-point number}
+
+\cowdoc_type{f32} is a single-precision floating-point number.
+That is, a number in \em{binary32} format, as specified in IEEE-754.
+
+\Bnote{
+There is no way to obtain a value of type \cowdoc_type{f32} yet,
+but in the future,
+one can be obtained using floating-point literals such as \cowdoc_c{0f32}.
+}
+
+\h4(id=type-f64){\cowdoc_type{f64} \N{EM DASH} 64-bit floating-point number}
+
+\cowdoc_type{f32} is a single-precision floating-point number.
+That is, a number in \em{binary64} format, as specified in IEEE-754.
+
+\Bnote{
+There is no way to obtain a value of type \cowdoc_type{f64} yet,
+but in the future,
+one can be obtained using floating-point literals
+such as \cowdoc_c{0f64} or \cowdoc_c{0.0}.
+
+That is, all floating-point literals have type `f64` unless a suffix was explicitly specified.
+}
+
+\h4(id=type-str){\cowdoc_type{str} \N{EM DASH} String}
+
+\cowdoc_type{str} is a UTF-8 encoded string.
+
+A value of type \cowdoc_type{str} can be obtained using string literals
+such as \cowdoc_c{"abc"}.
+
+\h4(id=type-block){\cowdoc_type{block} \N{EM DASH} Block}
+
+\cowdoc_type{block} stores markup elements.
+It is very similar to \cowdoc_type{str},
+but is evaluated lazily, meaning that it has no effect until spliced.
+
+A value of type \cowdoc_type{block} can be obtained using block literals
+such as \cowdoc_c{{abc}}.
+
+\h3{Compound types}
+
+Compound types are formed from other types, possibly from other compound types.
+
+\h4(id=type-group){\cowdoc_type{group} \N{EM DASH} Product type}
+
+\cowdoc_type{group} combines other types,
+called its \dfn{members}, in sequence.
+This is also known as a product type.
+
+\Bex{
+For example \cowdoc_type{group(int, string)} is group containing an \cowdoc_c{int}
+followed by a \cowdoc_type{string}.
+A value of such a type can be obtained with the literal \cowdoc_c{(0, "x")}.
+}
+
+Canonicalization of a \cowdoc_type{group} \math{\mi{G}} is performed as follows:
+
+\ol{
+  \li{
+    All members of \math{\mi{G}} are canonicalized.
+  }
+  \li{
+    If any member of \math{\mi{G}} is \cowdoc_type{nothing},
+    \math{\mi{G}} is \cowdoc_type{nothing}.
+  }
+}
+
+\h4(id=type-named){\cowdoc_type{named} \N{EM DASH} Named group member}
+
+\cowdoc_type{named} is a compound type only nestable
+in a \cowdoc_type{group} or \cowdoc_type{pack}.
+
+For example, \cowdoc_type{group named int} is a \cowdoc_type{group}
+containing only a single \cowdoc_type{int}.
+A value of such a type can be obtained with the literal \cowdoc_c{(x = 0)}.
+
+Canonicalization of a \cowdoc_type{named} \math{\mi{N}} is performed as follows:
+
+\ol{
+  \li{
+    The nested type of \math{\mi{N}} is canonicalized.
+  }
+  \li{
+    If the nested type of \math{\mi{N}} is \cowdoc_type{nothing},
+    \math{\mi{N}} is \cowdoc_type{nothing}.
+  }
+}
+
+\h4(id=type-pack){\cowdoc_type{pack} \N{EM DASH} Variadic pack of group members}
+
+\cowdoc_type{pack} is a compound type only nestable in a \cowdoc_type{group}.
+It indicates a variadic repetition of the same type.
+
+\Bex{
+For example, \cowdoc_type{group pack int}
+is a \cowdoc_type{group} containing any amount of \cowdoc_type{int}s.
+A value of such a type can be obtained with the literals
+\ul{
+  \li{\cowdoc_c{(,)} (for an empty group)}
+  \li{\cowdoc_c{(1,)} (for a group with a single member),}
+  \li{\cowdoc_c{(1,1)} (for a group with two members), etc.}
+}
+}
+
+Canonicalization of a \cowdoc_type{pack} \math{\mi{P}} is performed as follows:
+
+\ol{
+    \li{
+      The nested type of \math{\mi{P}} is canonicalized.
+    }
+    \li{
+      If the nested type of \math{\mi{P}} is \cowdoc_type{nothing},
+      \math{\mi{P}} is \cowdoc_type{nothing}.
+    }
+}
+
+\h4(id=type-lazy){\cowdoc_type{lazy}}
+
+\cowdoc_type{lazy} is a lazily evaluated value.
+That is, when specified as a parameter of a directive,
+it only gets evaluated when actually needed by that directive.
+
+Canonicalization of a \cowdoc_type{lazy} \math{\mi{L}} is performed
+by canonicalizing its nested type.
+
+\h4(id=type-union){Union}
+
+Unions can be formed by combining other types with \cowdoc_c{|}.
+They describe variables and parameters that can hold one of a fixed number of alternatives.
+However, a value cannot be of union type.
+
+Alternatives of a union type are subtypes of that union type.
+Furthermore, a union type \math{\mi{S}} is a subtype of a union type \math{\mi{U}}
+if the set of alternatives of \math{\mi{S}} is a subset of the alternatives of \math{\mi{U}}.
+
+\Bex{
+For example, \cowdoc_type{int | str} is a union of
+\cowdoc_type{int} and \cowdoc_type{str}.
+\cowdoc_type{int} and \cowdoc_type{str} are subtypes of this union,
+so a value convertible to this union type can be obtained with
+either \cowdoc_c{0} or \cowdoc_c{"x"}.
+}
+
+Canonicalization of a \cowdoc_type{union} \math{\mi{U}} is performed as follows:
+
+\ol{
+  \li{
+    Every alternative of \math{\mi{U}} is canonicalized.
+    \math{\mi{U}} is converted to another union type
+    where each alternative that is also a union
+    is expanded or "flattened" into the top-level union.
+    For example, \cowdoc_type{int | (str | bool)}
+    is converted to \cowdoc_type{int | str | bool}.
+  }
+  \li{
+    Any \cowdoc_type{nothing} alternatives are removed.
+  }
+  \li{
+    The alternatives are sorted using an unspecified total order of types.
+  }
+  \li{
+    Any duplicate alternatives are removed.
+  }
+  \li{
+    If \math{\mi{U}} now holds a single alternative,
+    \math{\mi{U}} is that alternative.
+  }
+  \li{
+    If \math{\mi{U}} now holds no alternatives,
+    \math{\mi{U}} is \cowdoc_type{nothing}.
+  }
+  \li{
+    If any alternative of \math{\mi{U}} is \cowdoc_type{any},
+    \math{\mi{U}} is \cowdoc_type{any}.
+  }
+}
+
+\h5{Shorthand notation for optional types (\tt{?})}
+
+The type suffix \cowdoc_type{?} forms a union of the given type and \cowdoc_type{null}.
+
+\Bex{
+\cowdoc_type{int?} is equivalent to \cowdoc_type{int | null}.
+}
+
+\h3{Splicing}
+
+Values can be spliced into strings and blocks.
+For example, \cowdoc_c{"Hello, \\d!"} splices the result of the directive \cowdoc_dir{d}
+(with no arguments and no block provided)
+into a string,
+and \cowdoc_c{{Hello, \\d!}} splices the result of \cowdoc_dir{d} into a block.
+
+Splicing a directive always results in evaluation of that directive.
+For example, splicing \cowdoc_dir{cowel_macro} evaluates \cowdoc_dir{cowel_macro},
+and its resulting \cowdoc_type{unit} is spliced (resulting in no produced text).
+
+When a value is spliced, it is converted into plaintext.
+When splicing into strings, that plaintext simply becomes part of the string content.
+For blocks (which are always lazy-evaluated),
+splicing means that the resulting plaintext
+is fed into the current content policy once the block itself is spliced.
+
+The effect of splicing depends on the type of value:
+\ul{
+  \li{
+    Splicing a value of type \cowdoc_type{unit} produces no characters.
+  }
+  \li{
+    Splicing a value of type \cowdoc_type{null} produces the string \cowdoc_c{"null"}.
+  }
+  \li{
+    Splicing a value of type \cowdoc_type{bool} produces
+    \cowdoc_c{"true"} if the value is \cowdoc_type{true}, and
+    \cowdoc_c{"false"} otherwise.
+  }
+  \li{
+    Splicing a value of type \cowdoc_type{int} produces
+    a string representing the value in decimal form.
+    For example, both \cowdoc_c{15} and \cowdoc_c{0xf}
+    result in \cowdoc_c{"15"} when spliced.
+  }
+  \li{
+    Splicing a value of type \cowdoc_type{f32} or \cowdoc_type{f64} produces
+    a string representing the value in decimal form.
+    For example, both \cowdoc_c{0.5f32} \cowdoc_c{0.5f64}
+    result in \cowdoc_c{"0.5"} when spliced.
+  }
+  \li{
+    Splicing a value of type \cowdoc_type{str} produces
+    its string contents.
+  }
+  \li{
+    Splicing a value of type \cowdoc_type{block} splices each markup element within.
+  }
+  \li{
+    Splicing a value of type \cowdoc_type{group} raises an error.
+  }
+}
+
+\comment{
+\h3{Type checking}
+
+Values always have a type,
+regardless of whether those are specified for variables.
+Type annotations can be added optionally and are checked at the earliest opportunity.
+Depending on the situation,
+this either happens when a function is declared or when it is evaluated:
+
+\cowblock{
+\\: Checked immediately
+val s = "awoo"
+val x: int = s
+
+\\: Checked during evaluation
+val s_or_i: str | int = "awoo"
+val y: int = s_or_i
+}
+
+In the initialization of \cowdoc_c{x},
+a variable of type \cowdoc_type{int} is initialized
+with an expression of type \cowdoc_type{str}.
+There exist no possible evaluation where this is valid,
+so an error is raised immediately.
+
+In the initialization of \cowdoc_c{y},
+the expression \cowdoc_c{s_or_i} is of type \cowdoc_type{str | int},
+and there exists a hypothetical evaluation
+where \cowdoc_c{s_or_i} holds an \cowdoc_type{int},
+so no error is raised immediately.
+However, when the function is evaluated,
+\cowdoc_c{s_or_i} always holds a \cowdoc_type{str},
+so an error is raised when initializing \cowdoc_c{y}.
+
+In any case, it is checked that \cowdoc_c{y} holds an \cowdoc_type{int};
+this condition cannot be violated.
+}
+
