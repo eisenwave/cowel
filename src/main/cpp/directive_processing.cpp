@@ -380,6 +380,7 @@ Processing_Status splice_value(Content_Policy& out, const Value& value, Context&
 [[nodiscard]]
 Processing_Status Value::splice_block(Content_Policy& out, Context& context) const
 {
+    COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::block);
     if (const auto* const block_and_frame = std::get_if<Block_And_Frame>(&m_value)) {
         return splice_all(
             out, block_and_frame->block->get_elements(), block_and_frame->frame, context
