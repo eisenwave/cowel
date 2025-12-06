@@ -1,0 +1,34 @@
+type
+  = prefix-type, { "|", prefix-type };
+prefix-type
+  = suffix-type
+  | type-prefix, "(", type-list, ")"
+  | type-prefix, prefixed-type;
+type-prefix
+  = "group"
+  | "pack"
+  | "named"
+  | "opt";
+type-list
+  = type, { ",", type }, [ "," ];
+prefixed-type
+  = prefixed-suffix-type
+  | type-prefix, prefixed-type;
+suffix-type
+  = optional-type, { "?" };
+prefixed-suffix-type
+  = basic-type, { "?" };
+optional-type
+  = basic-type
+  | "(", type, ")";
+basic-type
+  = "any"
+  | "nothing"
+  | "unit"
+  | "null"
+  | "bool"
+  | "int"
+  | "f32"
+  | "f64"
+  | "str"
+  | "block";
