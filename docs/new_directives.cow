@@ -168,7 +168,7 @@ COWEL has builtin directives for generating and querying characters.
 ){\cowdoc_dir{cowel_char_by_entity} \c{mdash} Character by HTML character reference}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_char_by_entity}(){...}
+\cowel_highlight_as(markup-tag){cowel_char_by_entity}(){...}: \cowel_highlight_as(keyword-type){str}
 }
 
 The \cowdoc_dir{cowel_char_by_entity} directive takes the name of a character
@@ -193,7 +193,7 @@ The '\tt{&}' character can be produced in a number of ways:
 ){\cowdoc_dir{cowel_char_by_name} \c{mdash} Character by Unicode name}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_char_by_name}(){...}
+\cowel_highlight_as(markup-tag){cowel_char_by_name}(){...}: \cowel_highlight_as(keyword-type){str}
 }
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is text content which should be a
@@ -211,7 +211,7 @@ or one of its "control", "alternate", or "correction" aliases.
 ){\cowdoc_dir{cowel_char_by_num} \c{mdash} Character by code point number}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_char_by_num}(){...}
+\cowel_highlight_as(markup-tag){cowel_char_by_num}(){...}: \cowel_highlight_as(keyword-type){str}
 }
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is text content
