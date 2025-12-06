@@ -3,11 +3,9 @@
 #include <utility>
 #include <vector>
 
-#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/result.hpp"
-#include "cowel/util/to_chars.hpp"
 
 #include "cowel/policy/content_policy.hpp"
 
@@ -18,10 +16,45 @@
 #include "cowel/directive_processing.hpp"
 #include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
+#include "cowel/parameters.hpp"
+#include "cowel/type.hpp"
 
 namespace cowel {
 
 namespace {
+
+// FIXME: the whole neutral element picking is technically dead code right now.
+//        Specifically, this happens because we always require nonempty packs,
+//        which is necessary because it would be unclear which type of zero cowel_add()
+//        should return otherwise.
+//        However, it is plausible that something like cowel_add_f32()
+//        may clarify that in the future.
+
+[[nodiscard]]
+int expression_type_neutral_element(Numeric_Expression_Kind e)
+{
+    switch (e) {
+    case Numeric_Expression_Kind::neg:
+    case Numeric_Expression_Kind::add:
+    case Numeric_Expression_Kind::sub: return 0;
+    case Numeric_Expression_Kind::mul:
+    case Numeric_Expression_Kind::div: return 1;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid expression type.");
+}
+
+[[maybe_unused]] [[nodiscard]]
+Value expression_type_neutral_element(Numeric_Expression_Kind e, const Type& type)
+{
+    const int result = expression_type_neutral_element(e);
+    switch (type.get_kind()) {
+    case Type_Kind::integer: return Value::integer(result);
+    case Type_Kind::f32: return Value::f32(Float32(result));
+    case Type_Kind::f64: return Value::f64(Float64(result));
+    default: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Unexpected type.");
+}
 
 [[nodiscard]] [[maybe_unused]]
 std::pmr::string vec_to_string(const std::pmr::vector<char>& v)
@@ -29,71 +62,152 @@ std::pmr::string vec_to_string(const std::pmr::vector<char>& v)
     return { v.data(), v.size(), v.get_allocator() };
 }
 
-long long operate(Expression_Type type, long long x, long long y)
+template <typename T>
+[[nodiscard]]
+T operate_binary(Numeric_Expression_Kind type, T x, T y)
 {
     switch (type) {
-    case Expression_Type::add: return x + y;
-    case Expression_Type::subtract: return x - y;
-    case Expression_Type::multiply: return x * y;
-    case Expression_Type::divide: return x / y;
+    case Numeric_Expression_Kind::neg:
+        COWEL_ASSERT_UNREACHABLE(u8"Negation is not a binary operation.");
+    case Numeric_Expression_Kind::add: return x + y;
+    case Numeric_Expression_Kind::sub: return x - y;
+    case Numeric_Expression_Kind::mul: return x * y;
+    case Numeric_Expression_Kind::div: return x / y;
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid expression type.");
 }
 
-Result<long long, Processing_Status> compute_expression(
-    Expression_Type type,
-    Content_Policy& out,
-    const Invocation& call,
-    Context& context
-)
+} // namespace
+
+Result<Value, Processing_Status>
+Expression_Behavior::evaluate(const Invocation& call, Context& context) const
 {
-    Group_Pack_Integer_Matcher group_matcher { context.get_transient_memory() };
+    static const Type numeric_type
+        = Type::canonical_union_of({ Type::integer, Type::f32, Type::f64 });
+
+    Group_Pack_Value_Matcher group_matcher { context.get_transient_memory() };
     Call_Matcher call_matcher { group_matcher };
 
     const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
     if (match_status != Processing_Status::ok) {
-        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
-                                             : match_status;
+        return match_status;
     }
 
-    Integer result = expression_type_neutral_element(type);
-    bool first = true;
-    for (const auto& [value, location] : group_matcher.get_values()) {
-        if (type == Expression_Type::divide && value == 0) {
+    if (group_matcher.get_values().empty()) {
+        context.try_error(
+            diagnostic::type_mismatch, call.get_arguments_source_span(),
+            u8"Cannot perform arithmetic with empty pack of arguments."sv
+        );
+        return Processing_Status::error;
+    }
+
+    const auto& first_value = group_matcher.get_values().front().value;
+    const auto& first_type = first_value.get_type();
+
+    if (m_expression_kind == Numeric_Expression_Kind::neg) {
+        if (group_matcher.get_values().size() != 1) {
             context.try_error(
-                diagnostic::arithmetic_div_by_zero, location, u8"Division by zero."sv
+                diagnostic::type_mismatch, call.get_arguments_source_span(),
+                u8"Negation is unary and requires exactly one argument"sv
             );
-            return try_generate_error(out, call, context);
+            return Processing_Status::error;
         }
+        switch (first_type.get_kind()) {
+        case Type_Kind::integer: {
+            return Value::integer(-first_value.as_integer());
+        }
+        case Type_Kind::f32: {
+            return Value::f32(-first_value.as_f32());
+        }
+        case Type_Kind::f64: {
+            return Value::f64(-first_value.as_f64());
+        }
+        default: break;
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Type of value should have already been checked.");
+    }
 
-        if (first) {
-            first = false;
-            result = value;
+    // Type checks and check for integer division by zero.
+    for (const auto& [value, location] : group_matcher.get_values()) {
+        if (!value.get_type().analytically_convertible_to(numeric_type)) {
+            context.try_error(
+                diagnostic::type_mismatch, location,
+                joined_char_sequence({
+                    u8"Expected a value of type "sv,
+                    numeric_type.get_display_name(),
+                    u8", but got "sv,
+                    value.get_type().get_display_name(),
+                    u8".",
+                })
+            );
         }
-        else {
-            result = operate(type, result, value);
+        if (value.get_type() != first_type) {
+            context.try_error(
+                diagnostic::type_mismatch, location,
+                joined_char_sequence({
+                    u8"All arguments have to be of the same type, i.e. "sv,
+                    first_type.get_display_name(),
+                    u8".",
+                })
+            );
         }
     }
 
-    return result;
-}
+    bool first = true;
+    switch (first_type.get_kind()) {
+    case Type_Kind::integer: {
+        auto result = Integer(expression_type_neutral_element(m_expression_kind));
+        for (const auto& [value, location] : group_matcher.get_values()) {
+            if (first) {
+                first = false;
+                result = value.as_integer();
+            }
+            else if (m_expression_kind == Numeric_Expression_Kind::div && value.as_integer() == 0) {
+                context.try_error(
+                    diagnostic::arithmetic_div_by_zero, location, u8"Division by zero."sv
+                );
+                return Processing_Status::error;
+            }
+            else {
 
-} // namespace
-
-Processing_Status
-Expression_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
-{
-    const Result<long long, Processing_Status> result
-        = compute_expression(m_type, out, call, context);
-    if (!result) {
-        return result.error();
+                result = operate_binary(m_expression_kind, result, value.as_integer());
+            }
+        }
+        return Value::integer(result);
     }
 
-    try_enter_paragraph(out);
+    case Type_Kind::f32: {
+        auto result = Float32(expression_type_neutral_element(m_expression_kind));
+        for (const auto& [value, location] : group_matcher.get_values()) {
+            if (first) {
+                first = false;
+                result = value.as_f32();
+            }
+            else {
+                result = operate_binary(m_expression_kind, result, value.as_f32());
+            }
+        }
+        return Value::f32(result);
+    }
 
-    const Characters8 result_chars = to_characters8(*result);
-    out.write(result_chars.as_string(), Output_Language::text);
-    return Processing_Status::ok;
+    case Type_Kind::f64: {
+        auto result = Float64(expression_type_neutral_element(m_expression_kind));
+        for (const auto& [value, location] : group_matcher.get_values()) {
+            if (first) {
+                first = false;
+                result = value.as_f64();
+            }
+            else {
+                result = operate_binary(m_expression_kind, result, value.as_f64());
+            }
+        }
+        return Value::f64(result);
+    }
+
+    default: break;
+    }
+
+    COWEL_ASSERT_UNREACHABLE(u8"Unexpected type.");
 }
 
 Processing_Status

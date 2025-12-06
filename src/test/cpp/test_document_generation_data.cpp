@@ -277,6 +277,11 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::error,
       { diagnostic::html_element_name_invalid } },
 
+    { Source { u8"\\cowel_div(1, 0)" },
+      Source { u8"<error->\\cowel_div(1, 0)</error->" },
+      Processing_Status::error,
+      { diagnostic::arithmetic_div_by_zero } },
+
     { Source { u8"" },
       Path { u8"document/empty.html" },
       Processing_Status::ok,
@@ -294,6 +299,9 @@ constexpr Basic_Test basic_tests_array[] {
     
     { Path { u8"comments.cow" },
       Path { u8"comments.cow.html" } },
+
+    { Path { u8"arithmetic/basic.cow" },
+      Path { u8"arithmetic/basic.cow.html" } },
 
     { Path { u8"policy/no_invoke.cow" },
       Path { u8"policy/no_invoke.cow.html" } },

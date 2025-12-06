@@ -307,32 +307,28 @@ protected:
         = 0;
 };
 
-enum struct Expression_Type : Default_Underlying {
+enum struct Numeric_Expression_Kind : Default_Underlying {
+    neg,
     add,
-    subtract,
-    multiply,
-    divide,
+    sub,
+    mul,
+    div,
 };
 
-[[nodiscard]]
-constexpr int expression_type_neutral_element(Expression_Type e)
-{
-    return e == Expression_Type::add || e == Expression_Type::subtract ? 0 : 1;
-}
-
-struct Expression_Behavior final : Block_Directive_Behavior {
+struct Expression_Behavior final : Directive_Behavior {
 private:
-    const Expression_Type m_type;
+    const Numeric_Expression_Kind m_expression_kind;
 
 public:
     [[nodiscard]]
-    constexpr explicit Expression_Behavior(Expression_Type type)
-        : m_type { type }
+    constexpr explicit Expression_Behavior(Numeric_Expression_Kind type)
+        : Directive_Behavior { Type::any }
+        , m_expression_kind { type }
     {
     }
 
     [[nodiscard]]
-    Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const final;
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const override;
 };
 
 struct Get_Variable_Behavior final : Variable_Behavior {

@@ -1,0 +1,22 @@
+\cowel_neg( 2)
+\cowel_neg(-2)
+
+\cowel_add(8)
+\cowel_add(8, 2)
+\cowel_add(8, 2, 5)
+\cowel_add(2, 8)
+
+\cowel_sub(8)
+\cowel_sub(8, 2)
+\cowel_sub(8, 2, 2)
+\cowel_sub(2, 8)
+
+\cowel_mul(8)
+\cowel_mul(8, 2)
+\cowel_mul(8, 2, 5)
+\cowel_mul(2, 8)
+
+\cowel_div(8)
+\cowel_div(8, 2)
+\cowel_div(8, 2, 2)
+\cowel_div(2, 8)

@@ -3,8 +3,19 @@
 ## **Next version** (???)
 
 - remove support for `-` in directive names (this time for real) (#96)
+- remove the following deprecated directives (#98):
+  - `Cadd` (use `cowel_add` instead)
+  - `Csub` (use `cowel_sub` instead)
+  - `Cmul` (use `cowel_mul` instead)
+  - `Cdiv` (use `cowel_div` instead)
 - change the syntax of directive arguments (#87)
 - add support for typed values in builtin directives (#88)
+- add the following basic arithmetic directives (#98):
+  - `cowel_neg`
+  - `cowel_add`
+  - `cowel_sub`
+  - `cowel_mul`
+  - `cowel_div`
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
 - fix typos in `link rel` (#93)
 - fix documentation of insertion block (#92)

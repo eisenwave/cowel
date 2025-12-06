@@ -22,6 +22,8 @@ struct Builtin_Directive_Set::Impl {
     // New directives
     Policy_Behavior cowel_actions //
         { Known_Content_Policy::actions };
+    Expression_Behavior cowel_add //
+        { Numeric_Expression_Kind::add };
     Alias_Behavior cowel_alias //
         {};
     Char_By_Entity_Behavior cowel_char_by_entity //
@@ -32,6 +34,8 @@ struct Builtin_Directive_Set::Impl {
         {};
     Char_Get_Num_Behavior cowel_char_get_num //
         {};
+    Expression_Behavior cowel_div //
+        { Numeric_Expression_Kind::div };
     Policy_Behavior cowel_highlight //
         { Known_Content_Policy::highlight };
     Highlight_As_Behavior cowel_highlight_as //
@@ -50,6 +54,10 @@ struct Builtin_Directive_Set::Impl {
         {};
     Macro_Behavior cowel_macro //
         {};
+    Expression_Behavior cowel_mul //
+        { Numeric_Expression_Kind::mul };
+    Expression_Behavior cowel_neg //
+        { Numeric_Expression_Kind::neg };
     Policy_Behavior cowel_no_invoke //
         { Known_Content_Policy::no_invoke };
     Policy_Behavior cowel_paragraphs //
@@ -64,6 +72,8 @@ struct Builtin_Directive_Set::Impl {
         {};
     Policy_Behavior cowel_source_as_text //
         { Known_Content_Policy::source_as_text };
+    Expression_Behavior cowel_sub //
+        { Numeric_Expression_Kind::sub };
     Policy_Behavior cowel_text_as_html //
         { Known_Content_Policy::text_as_html };
     Policy_Behavior cowel_text_only //
@@ -110,14 +120,6 @@ struct Builtin_Directive_Set::Impl {
         { HTML_Tag_Name(u8"bug-block"), Intro_Policy::yes };
     Special_Block_Behavior Bwarn //
         { HTML_Tag_Name(u8"warning-block"), Intro_Policy::yes };
-    Expression_Behavior Cadd //
-        { Expression_Type::add };
-    Expression_Behavior Cdiv //
-        { Expression_Type::divide };
-    Expression_Behavior Cmul //
-        { Expression_Type::multiply };
-    Expression_Behavior Csub //
-        { Expression_Type::subtract };
     Fixed_Name_Passthrough_Behavior caption //
         { HTML_Tag_Name(u8"caption"), Policy_Usage::html, Directive_Display::block };
     Fixed_Name_Passthrough_Behavior cite //
@@ -327,13 +329,6 @@ Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& conte
         u8"-Btodo",
         u8"-Bug",
         u8"-Bwarn",
-        u8"-Cadd",
-        u8"-Cdiv",
-        u8"-Cmul",
-        u8"-Csub",
-        u8"-N",
-        u8"-U",
-        u8"-Udigits",
         u8"-Vget",
         u8"-Vset",
         u8"-abstract",
@@ -515,21 +510,12 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
             return &m_impl->br;
         break;
 
-    case u8'C':
-        if (name == u8"Cadd")
-            return &m_impl->Cadd;
-        if (name == u8"Cdiv")
-            return &m_impl->Cdiv;
-        if (name == u8"Cmul")
-            return &m_impl->Cmul;
-        if (name == u8"Csub")
-            return &m_impl->Csub;
-        break;
-
     case u8'c':
         if (name.starts_with(u8"cowel_")) {
             if (name == u8"cowel_actions")
                 return &m_impl->cowel_actions;
+            if (name == u8"cowel_add")
+                return &m_impl->cowel_add;
             if (name == u8"cowel_alias")
                 return &m_impl->cowel_alias;
             if (name == u8"cowel_char_by_entity")
@@ -540,6 +526,8 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
                 return &m_impl->cowel_char_by_num;
             if (name == u8"cowel_char_get_num")
                 return &m_impl->cowel_char_get_num;
+            if (name == u8"cowel_div")
+                return &m_impl->cowel_div;
             if (name == u8"cowel_highlight")
                 return &m_impl->cowel_highlight;
             if (name == u8"cowel_highlight_as")
@@ -558,6 +546,10 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
                 return &m_impl->cowel_invoke;
             if (name == u8"cowel_macro")
                 return &m_impl->cowel_macro;
+            if (name == u8"cowel_mul")
+                return &m_impl->cowel_mul;
+            if (name == u8"cowel_neg")
+                return &m_impl->cowel_neg;
             if (name == u8"cowel_no_invoke")
                 return &m_impl->cowel_no_invoke;
             if (name == u8"cowel_paragraphs")
@@ -572,6 +564,8 @@ const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view n
                 return &m_impl->cowel_put;
             if (name == u8"cowel_source_as_text")
                 return &m_impl->cowel_source_as_text;
+            if (name == u8"cowel_sub")
+                return &m_impl->cowel_sub;
             if (name == u8"cowel_text_as_html")
                 return &m_impl->cowel_text_as_html;
             if (name == u8"cowel_text_only")
