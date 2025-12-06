@@ -59,7 +59,7 @@ static_assert(Value::null.get_type() == Type::null);
 static_assert(Value::boolean(true).get_type() == Type::boolean);
 static_assert(Value::boolean(false).get_type() == Type::boolean);
 static_assert(Value::integer(0).get_type() == Type::integer);
-static_assert(Value::zero.get_type() == Type::integer);
+static_assert(Value::zero_int.get_type() == Type::integer);
 static_assert(Value::empty_string.get_type() == Type::str);
 
 TEST(Value, void_)

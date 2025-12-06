@@ -5,11 +5,11 @@
 #include <variant>
 #include <vector>
 
-#include "cowel/content_status.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/static_string.hpp"
 #include "cowel/util/strings.hpp"
 
+#include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/type.hpp"
 
@@ -25,7 +25,7 @@ struct Unit {
     friend bool operator==(Unit, Unit) = default;
 };
 
-using Short_String_Value = Static_String8<48>;
+using Short_String_Value = Static_String8<40>;
 
 struct Block_And_Frame {
     const ast::Primary* block;
@@ -51,6 +51,15 @@ using Value_Variant = std::variant<
     Directive_And_Frame>;
 
 /// @brief A value in the COWEL language.
+/// In short, this combines a `Value_Variant` with a (non-owning) reference
+/// to a type for that value.
+///
+/// For values of basic type (`int`, `str`, etc.),
+/// the type reference is to a static `Type` object.
+/// For values of group type,
+/// the type reference is either to a static object or to some group
+/// stored in processing pass memory.
+/// At least, the value shouldn't outlive its type reference.
 struct Value {
     /// @brief The only possible value for a `unit` type.
     static const Value unit;
@@ -61,20 +70,34 @@ struct Value {
     static const Value true_;
     /// @brief the value of a `false` boolean literal.
     static const Value false_;
-    /// @brief the value of a `0` integer literal.
-    static const Value zero;
+    /// @brief the value of a `0` literal.
+    static const Value zero_int;
+    /// @brief the value of a `0f32` literal.
+    static const Value zero_f32;
+    /// @brief the value of a `0f64` literal.
+    static const Value zero_f64;
     /// @brief the value of a `""` string literal.
     static const Value empty_string;
 
     [[nodiscard]]
     static constexpr Value boolean(bool value) noexcept
     {
-        return Value { value };
+        return Value { value, &Type::boolean };
     }
     [[nodiscard]]
     static constexpr Value integer(Integer value) noexcept
     {
-        return Value { value };
+        return Value { value, &Type::integer };
+    }
+    [[nodiscard]]
+    static constexpr Value f32(Float32 value) noexcept
+    {
+        return Value { value, &Type::f32 };
+    }
+    [[nodiscard]]
+    static constexpr Value f64(Float64 value) noexcept
+    {
+        return Value { value, &Type::f64 };
     }
 
     /// @brief Creates a value of type `str` from a string with static storage duration.
@@ -84,19 +107,19 @@ struct Value {
     [[nodiscard]]
     static constexpr Value static_string(std::u8string_view value) noexcept
     {
-        return Value { value };
+        return Value { value, &Type::str };
     }
     /// @brief Creates a value of type `str` from a string that fits into `Short_String_Value`.
     [[nodiscard]]
     static constexpr Value short_string(Short_String_Value value) noexcept
     {
-        return Value { value };
+        return Value { value, &Type::str };
     }
     /// @brief Creates a value of type `str` with dynamically sized contents.
     [[nodiscard]]
     static Value dynamic_string_forced(std::pmr::vector<char8_t>&& value) noexcept
     {
-        return Value { std::move(value) };
+        return Value { std::move(value), &Type::str };
     }
     /// @brief Creates a value of type `str` with dynamically sized contents.
     /// If `value` can be represented as `Short_String_Value`,
@@ -111,7 +134,7 @@ struct Value {
             value.clear();
             return result;
         }
-        return Value { std::move(value) };
+        return Value { std::move(value), &Type::str };
     }
 
     [[nodiscard]]
@@ -121,40 +144,29 @@ struct Value {
 
 private:
     Value_Variant m_value;
+    const Type* m_type;
 
     [[nodiscard]]
-    constexpr Value(Value_Variant&& value) noexcept
+    constexpr Value(Value_Variant&& value, const Type* type) noexcept
         : m_value { std::move(value) }
+        , m_type { type }
     {
+        COWEL_ASSERT(type);
     }
 
 public:
     /// @brief Returns the type of this value.
     [[nodiscard]]
-    constexpr Type get_type() const noexcept
+    constexpr const Type& get_type() const noexcept
     {
-        return Type::basic(get_type_kind());
+        return *m_type;
     }
 
     /// @brief Equivalent to `get_type().get_kind()`.
     [[nodiscard]]
     constexpr Type_Kind get_type_kind() const noexcept
     {
-        switch (m_value.index()) {
-        case 0: return Type_Kind::unit;
-        case 1: return Type_Kind::null;
-        case 2: return Type_Kind::boolean;
-        case 3: return Type_Kind::integer;
-        case 4: return Type_Kind::f32;
-        case 5: return Type_Kind::f64;
-        case 6:
-        case 7:
-        case 8: return Type_Kind::str;
-        case 9:
-        case 10: return Type_Kind::block;
-        default: break;
-        }
-        COWEL_ASSERT_UNREACHABLE(u8"Invalid index (valueless by exception impossible).");
+        return m_type->get_kind();
     }
 
     [[nodiscard]]
@@ -217,6 +229,31 @@ public:
         return get_type_kind() == Type_Kind::null;
     }
     [[nodiscard]]
+    constexpr bool is_bool() const noexcept
+    {
+        return get_type_kind() == Type_Kind::boolean;
+    }
+    [[nodiscard]]
+    constexpr bool is_int() const noexcept
+    {
+        return get_type_kind() == Type_Kind::integer;
+    }
+    [[nodiscard]]
+    constexpr bool is_f32() const noexcept
+    {
+        return get_type_kind() == Type_Kind::f32;
+    }
+    [[nodiscard]]
+    constexpr bool is_f64() const noexcept
+    {
+        return get_type_kind() == Type_Kind::f64;
+    }
+    [[nodiscard]]
+    constexpr bool is_str() const noexcept
+    {
+        return get_type_kind() == Type_Kind::str;
+    }
+    [[nodiscard]]
     constexpr bool is_static_string() const noexcept
     {
         return std::holds_alternative<std::u8string_view>(m_value);
@@ -225,26 +262,31 @@ public:
     [[nodiscard]]
     constexpr bool as_boolean() const
     {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::boolean);
         return std::get<bool>(m_value);
     }
     [[nodiscard]]
     constexpr Integer as_integer() const
     {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::integer);
         return std::get<Integer>(m_value);
     }
     [[nodiscard]]
     constexpr Float32 as_f32() const
     {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::f32);
         return std::get<Float32>(m_value);
     }
     [[nodiscard]]
     constexpr Float64 as_f64() const
     {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::f64);
         return std::get<Float64>(m_value);
     }
     [[nodiscard]]
     constexpr std::u8string_view as_string() const
     {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::str);
         if (const auto* const static_string = std::get_if<std::u8string_view>(&m_value)) {
             return *static_string;
         }
@@ -265,11 +307,13 @@ public:
     Processing_Status splice_block(Content_Policy& out, Context& context) const;
 };
 
-inline constexpr Value Value::unit { Unit {} };
-inline constexpr Value Value::null { Null {} };
+inline constexpr Value Value::unit { Unit {}, &Type::unit };
+inline constexpr Value Value::null { Null {}, &Type::null };
 inline constexpr Value Value::true_ = Value::boolean(true);
 inline constexpr Value Value::false_ = Value::boolean(false);
-inline constexpr Value Value::zero = Value::integer(0);
+inline constexpr Value Value::zero_int = Value::integer(0);
+inline constexpr Value Value::zero_f32 = Value::f32(0);
+inline constexpr Value Value::zero_f64 = Value::f64(0);
 inline constexpr Value Value::empty_string = Value::static_string(std::u8string_view {});
 
 static_assert(sizeof(Value) <= 64, "Value should not be too large to be passed by value");
