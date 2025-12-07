@@ -11,11 +11,22 @@
 - change the syntax of directive arguments (#87)
 - add support for typed values in builtin directives (#88)
 - add the following basic arithmetic directives (#98):
-  - `cowel_neg`
-  - `cowel_add`
-  - `cowel_sub`
-  - `cowel_mul`
-  - `cowel_div`
+  - `cowel_neg` (`-`)
+  - `cowel_add` (`+`)
+  - `cowel_sub` (`-`)
+  - `cowel_mul` (`*`)
+  - `cowel_div` (`/`)
+- add the following logical operation directives:
+  - `cowel_not` (`!`)
+  - `cowel_and` (`&&`)
+  - `cowel_or` (`||`)
+- add the following comparison directives:
+  - `cowel_eq` (`==`)
+  - `cowel_ne` (`!=`)
+  - `cowel_lt` (`<`)
+  - `cowel_gt` (`>`)
+  - `cowel_le` (`<=`)
+  - `cowel_ge` (`>=`)
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
 - fix typos in `link rel` (#93)
 - fix documentation of insertion block (#92)

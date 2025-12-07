@@ -1420,3 +1420,204 @@ so that they can be bundled up in an \cowdoc_attr{args} group.
 To avoid changing how \cowdoc_dir{cowel_invoke} works in the future,
 argument forwarding is not supported at all right now.
 }
+
+\h3(id=logical-operations){Logical operations}
+
+\Bnote{
+There is no \cowdoc_dir{cowel_xor} logical operation
+for "logical exclusive OR";
+however, the same can be accomplished with \cowdoc_dir{cowel_ne}.
+\cowdoc_dir{cowel_eq} can be used for logical equivalence.
+}
+
+\h4(
+  id = dir-cowel_not
+){\cowdoc_dir{cowel_not} \c{mdash} Logical NOT}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_not}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){bool}): \cowel_highlight_as(keyword-type){bool}
+}
+
+Returns \cowdoc_c{true} if \cowdoc_attr{x} is \cowdoc_c{false},
+otherwise \cowdoc_c{false}.
+
+\h4(
+  id = dir-cowel_and
+){\cowdoc_dir{cowel_and} \c{mdash} Logical AND}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_and}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack lazy bool}): \cowel_highlight_as(keyword-type){bool}
+}
+
+Returns \cowdoc_c{true} if none of \cowdoc_attr{args} is \cowdoc_c{false},
+otherwise \cowdoc_c{false}.
+
+\cowdoc_attr{args} is evaluated from left to right,
+and any remaining elements are ignored once the result is known.
+
+\Bex{
+In the following example,
+no error is raised despite the second argument containing a division by zero.
+\cowblock{\literally{
+\cowel_and(false, cowel_eq(0, cowel_div(0, 0)))
+}}
+That is because the result of \cowdoc_dir{cowel_and} is already known
+after the first \cowdoc_c{false}.
+}
+
+\h4(
+  id = dir-cowel_or
+){\cowdoc_dir{cowel_or} \c{mdash} Logical OR}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_or}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack lazy bool}): \cowel_highlight_as(keyword-type){bool}
+}
+
+Returns \cowdoc_c{true} if any of \cowdoc_attr{args} is \cowdoc_c{true},
+otherwise \cowdoc_c{false}.
+
+\cowdoc_attr{args} is evaluated from left to right,
+and any remaining elements are ignored once the result is known.
+
+\h3(id=comparison-operations){Comparison operations}
+
+In all relational comparison below
+(\cowdoc_dir{cowel_lt}, \cowdoc_dir{cowel_gt}, \cowdoc_dir{cowel_le}, and \cowdoc_dir{cowel_ge}),
+if \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{str},
+the comparison is performed lexicographically on the Unicode code points of the string.
+The result is unspecified if either string is not valid UTF-8.
+If two strings are equal up to the last common code point,
+the shorter string is lexicographically less.
+
+\Bnote{
+Relational string comparison can be implemented by comparing the UTF-8 code units of a string.
+}
+
+Some of the operations below are specified in terms of
+"compareQuiet…" or "compareSignaling…" IEEE-754 operations.
+This is only done to define behavior for infinities and NaNs;
+there is no way to tell apart signaling and quiet operations in COWEL.
+
+\h4(
+  id = dir-cowel_eq
+){\cowdoc_dir{cowel_eq} \c{mdash} Equals}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){unit}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){unit}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){null}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){null}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){bool}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){bool}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
+}
+
+Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{=}\mi{y}}},
+otherwise \cowdoc_c{false}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{unit} or \cowdoc_type{null},
+returns \cowdoc_c{true}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{compareQuietEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_ne
+){\cowdoc_dir{cowel_ne} \c{mdash} Not equals}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){unit}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){unit}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){null}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){null}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){bool}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){bool}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
+}
+
+Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≠}\mi{y}}},
+otherwise \cowdoc_c{false}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{unit} or \cowdoc_type{null},
+returns \cowdoc_c{false}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{compareQuietNotEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\Bnote{
+The result is \cowdoc_c{cowel_not(cowel_eq(x, y))}.
+}
+
+\h4(
+  id = dir-cowel_lt
+){\cowdoc_dir{cowel_lt} \c{mdash} Less than}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_lt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_lt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_lt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_lt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
+}
+
+Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{<}\mi{y}}},
+otherwise \cowdoc_c{false}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{compareSignalingLess}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_gt
+){\cowdoc_dir{cowel_gt} \c{mdash} Greater than}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_gt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_gt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_gt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_gt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
+}
+
+Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{>}\mi{y}}},
+otherwise \cowdoc_c{false}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{compareSignalingGreater}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_le
+){\cowdoc_dir{cowel_le} \c{mdash} Less than or equal}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_le}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_le}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_le}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_le}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
+}
+
+Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≤}\mi{y}}},
+otherwise \cowdoc_c{false}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{compareSignalingLessEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_ge
+){\cowdoc_dir{cowel_ge} \c{mdash} Greater than or equal}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_ge}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ge}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ge}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ge}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
+}
+
+Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≥}\mi{y}}},
+otherwise \cowdoc_c{false}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{compareSignalingGreaterEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
