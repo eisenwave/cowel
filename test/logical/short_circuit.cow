@@ -1,0 +1,2 @@
+\cowel_and(false, cowel_eq(0, cowel_div(0, 0)))
+\cowel_or(true, cowel_eq(0, cowel_div(0, 0)))

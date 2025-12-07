@@ -20,10 +20,12 @@ namespace {
 
 constexpr Policy_Behavior cowel_actions //
     { Known_Content_Policy::actions };
-constexpr Expression_Behavior cowel_add //
+constexpr Numeric_Expression_Behavior cowel_add //
     { Numeric_Expression_Kind::add };
 constexpr Alias_Behavior cowel_alias //
     {};
+constexpr Logical_Expression_Behavior cowel_and //
+    { Logical_Expression_Kind::logical_and };
 constexpr Char_By_Entity_Behavior cowel_char_by_entity //
     {};
 constexpr Char_By_Name_Behavior cowel_char_by_name //
@@ -32,8 +34,14 @@ constexpr Char_By_Num_Behavior cowel_char_by_num //
     {};
 constexpr Char_Get_Num_Behavior cowel_char_get_num //
     {};
-constexpr Expression_Behavior cowel_div //
+constexpr Numeric_Expression_Behavior cowel_div //
     { Numeric_Expression_Kind::div };
+constexpr Comparison_Expression_Behavior cowel_eq //
+    { Comparison_Expression_Kind::eq };
+constexpr Comparison_Expression_Behavior cowel_ge //
+    { Comparison_Expression_Kind::ge };
+constexpr Comparison_Expression_Behavior cowel_gt //
+    { Comparison_Expression_Kind::gt };
 constexpr Policy_Behavior cowel_highlight //
     { Known_Content_Policy::highlight };
 constexpr Highlight_As_Behavior cowel_highlight_as //
@@ -50,14 +58,24 @@ constexpr Include_Text_Behavior cowel_include_text //
     {};
 constexpr Invoke_Behavior cowel_invoke //
     {};
+constexpr Comparison_Expression_Behavior cowel_le //
+    { Comparison_Expression_Kind::le };
+constexpr Comparison_Expression_Behavior cowel_lt //
+    { Comparison_Expression_Kind::lt };
 constexpr Macro_Behavior cowel_macro //
     {};
-constexpr Expression_Behavior cowel_mul //
+constexpr Numeric_Expression_Behavior cowel_mul //
     { Numeric_Expression_Kind::mul };
-constexpr Expression_Behavior cowel_neg //
+constexpr Comparison_Expression_Behavior cowel_ne //
+    { Comparison_Expression_Kind::ne };
+constexpr Numeric_Expression_Behavior cowel_neg //
     { Numeric_Expression_Kind::neg };
 constexpr Policy_Behavior cowel_no_invoke //
     { Known_Content_Policy::no_invoke };
+constexpr Logical_Not_Behavior cowel_not //
+    {};
+constexpr Logical_Expression_Behavior cowel_or //
+    { Logical_Expression_Kind::logical_or };
 constexpr Policy_Behavior cowel_paragraphs //
     { Known_Content_Policy::paragraphs };
 constexpr Paragraph_Enter_Behavior cowel_paragraph_enter //
@@ -70,7 +88,7 @@ constexpr Put_Behavior cowel_put //
     {};
 constexpr Policy_Behavior cowel_source_as_text //
     { Known_Content_Policy::source_as_text };
-constexpr Expression_Behavior cowel_sub //
+constexpr Numeric_Expression_Behavior cowel_sub //
     { Numeric_Expression_Kind::sub };
 constexpr Policy_Behavior cowel_text_as_html //
     { Known_Content_Policy::text_as_html };
@@ -326,11 +344,15 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_actions),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_add),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_alias),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_and),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_entity),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_name),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_num),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_get_num),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_div),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_eq),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_ge),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_gt),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_highlight),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_highlight_as),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_highlight_phantom),
@@ -339,10 +361,15 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_include),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_include_text),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_invoke),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_le),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_lt),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_macro),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_mul),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_ne),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_neg),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_no_invoke),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_not),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_or),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraph_enter),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraph_inherit),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraph_leave),

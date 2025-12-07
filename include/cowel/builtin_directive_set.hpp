@@ -307,6 +307,59 @@ protected:
         = 0;
 };
 
+struct Logical_Not_Behavior final : Bool_Directive_Behavior {
+    [[nodiscard]]
+    explicit Logical_Not_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+};
+
+enum struct Logical_Expression_Kind : Default_Underlying {
+    logical_and,
+    logical_or,
+};
+
+struct Logical_Expression_Behavior final : Bool_Directive_Behavior {
+private:
+    const Logical_Expression_Kind m_expression_kind;
+
+public:
+    [[nodiscard]]
+    constexpr explicit Logical_Expression_Behavior(Logical_Expression_Kind kind)
+        : m_expression_kind { kind }
+    {
+    }
+
+    [[nodiscard]]
+    Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+};
+
+enum struct Comparison_Expression_Kind : Default_Underlying {
+    eq,
+    ne,
+    lt,
+    gt,
+    le,
+    ge,
+};
+
+struct Comparison_Expression_Behavior final : Bool_Directive_Behavior {
+private:
+    const Comparison_Expression_Kind m_expression_kind;
+
+public:
+    [[nodiscard]]
+    constexpr explicit Comparison_Expression_Behavior(Comparison_Expression_Kind kind)
+        : m_expression_kind { kind }
+    {
+    }
+
+    [[nodiscard]]
+    Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+};
+
 enum struct Numeric_Expression_Kind : Default_Underlying {
     neg,
     add,
@@ -315,15 +368,15 @@ enum struct Numeric_Expression_Kind : Default_Underlying {
     div,
 };
 
-struct Expression_Behavior final : Directive_Behavior {
+struct Numeric_Expression_Behavior final : Directive_Behavior {
 private:
     const Numeric_Expression_Kind m_expression_kind;
 
 public:
     [[nodiscard]]
-    constexpr explicit Expression_Behavior(Numeric_Expression_Kind type)
+    constexpr explicit Numeric_Expression_Behavior(Numeric_Expression_Kind kind)
         : Directive_Behavior { Type::any }
-        , m_expression_kind { type }
+        , m_expression_kind { kind }
     {
     }
 

@@ -20,7 +20,6 @@
 #include "cowel/type.hpp"
 
 namespace cowel {
-
 namespace {
 
 // FIXME: the whole neutral element picking is technically dead code right now.
@@ -62,6 +61,68 @@ std::pmr::string vec_to_string(const std::pmr::vector<char>& v)
     return { v.data(), v.size(), v.get_allocator() };
 }
 
+template <Comparison_Expression_Kind kind, typename T>
+bool do_compare(T x, T y)
+{
+    if constexpr (kind == Comparison_Expression_Kind::eq) {
+        return x == y;
+    }
+    else if constexpr (kind == Comparison_Expression_Kind::ne) {
+        return x != y;
+    }
+    else if constexpr (kind == Comparison_Expression_Kind::lt) {
+        return x < y;
+    }
+    else if constexpr (kind == Comparison_Expression_Kind::gt) {
+        return x > y;
+    }
+    else if constexpr (kind == Comparison_Expression_Kind::le) {
+        return x <= y;
+    }
+    else if constexpr (kind == Comparison_Expression_Kind::ge) {
+        return x >= y;
+    }
+    else {
+        static_assert(false);
+    }
+}
+
+template <Comparison_Expression_Kind kind>
+bool compare(const Value& x, const Value& y)
+{
+    switch (x.get_type_kind()) {
+    case Type_Kind::unit:
+    case Type_Kind::null: {
+        if constexpr (kind == Comparison_Expression_Kind::eq) {
+            return true;
+        }
+        else if constexpr (kind == Comparison_Expression_Kind::ne) {
+            return false;
+        }
+        else {
+            COWEL_ASSERT_UNREACHABLE(u8"Relational comparison of unit types?!");
+        }
+    }
+    case Type_Kind::boolean: {
+        return do_compare<kind>(x.as_boolean(), y.as_boolean());
+    }
+    case Type_Kind::integer: {
+        return do_compare<kind>(x.as_integer(), y.as_integer());
+    }
+    case Type_Kind::f32: {
+        return do_compare<kind>(x.as_f32(), y.as_f32());
+    }
+    case Type_Kind::f64: {
+        return do_compare<kind>(x.as_f64(), y.as_f64());
+    }
+    case Type_Kind::str: {
+        return do_compare<kind>(x.as_string(), y.as_string());
+    }
+    default: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid type in comparison.");
+}
+
 template <typename T>
 [[nodiscard]]
 T operate_binary(Numeric_Expression_Kind type, T x, T y)
@@ -79,8 +140,191 @@ T operate_binary(Numeric_Expression_Kind type, T x, T y)
 
 } // namespace
 
+Result<bool, Processing_Status>
+Logical_Not_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    Group_Pack_Value_Matcher group_matcher { context.get_transient_memory() };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
+
+    if (group_matcher.get_values().size() != 1) {
+        context.try_error(
+            diagnostic::type_mismatch, call.get_arguments_source_span(),
+            u8"Logical NOT is unary and requires exactly one argument"sv
+        );
+        return Processing_Status::error;
+    }
+
+    const auto& argument = group_matcher.get_values().front();
+
+    if (argument.value.get_type() != Type::boolean) {
+        context.try_error(
+            diagnostic::type_mismatch, argument.location,
+            joined_char_sequence({
+                u8"Expected a value of type "sv,
+                Type::boolean.get_display_name(),
+                u8", but got "sv,
+                argument.value.get_type().get_display_name(),
+                u8".",
+            })
+        );
+    }
+
+    return !argument.value.as_boolean();
+}
+
+namespace {
+
+struct Logical_Expression_Evaluator {
+    const Logical_Expression_Kind kind;
+    Context& context;
+
+    [[nodiscard]]
+    Processing_Status type_error(const Type& type, const File_Source_Span& location) const
+    {
+        context.try_error(
+            diagnostic::type_mismatch, location,
+            joined_char_sequence({
+                u8"Expected a value of type "sv,
+                Type::boolean.get_display_name(),
+                u8", but got "sv,
+                type.get_display_name(),
+                u8".",
+            })
+        );
+        return Processing_Status::error;
+    }
+
+    [[nodiscard]]
+    Result<bool, Processing_Status>
+    operator()(std::span<const ast::Group_Member> members, Frame_Index frame) const
+    {
+        const bool neutral_element = kind == Logical_Expression_Kind::logical_and;
+        const bool terminator = !neutral_element;
+
+        for (const ast::Group_Member& member : members) {
+            switch (member.get_kind()) {
+            case ast::Member_Kind::named: {
+                return Processing_Status::error;
+            }
+            case ast::Member_Kind::ellipsis: {
+                const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
+                Result<bool, Processing_Status> maybe_result = (*this)(
+                    ellipsis_frame.invocation.get_arguments_span(),
+                    ellipsis_frame.invocation.content_frame
+                );
+                if (!maybe_result) {
+                    return maybe_result;
+                }
+                if (*maybe_result == terminator) {
+                    return *maybe_result;
+                }
+                continue;
+            }
+            case ast::Member_Kind::positional: {
+                const ast::Member_Value& member_value = member.get_value();
+                const std::optional<Type> static_type
+                    = cowel::get_static_type(member_value, context);
+                if (static_type && *static_type != Type::boolean) {
+                    return type_error(*static_type, member_value.get_source_span());
+                }
+                const Result<Value, Processing_Status> member_result
+                    = evaluate_member_value(member_value, frame, context);
+                if (!member_result) {
+                    return member_result.error();
+                }
+                if (!member_result->is_bool()) {
+                    return type_error(member_result->get_type(), member_value.get_source_span());
+                }
+                if (member_result->as_boolean() == terminator) {
+                    return terminator;
+                }
+                continue;
+            }
+            }
+            COWEL_ASSERT_UNREACHABLE(u8"Invalid member kind.");
+        }
+        return neutral_element;
+    }
+};
+
+} // namespace
+
+Result<bool, Processing_Status>
+Logical_Expression_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    Group_Pack_Lazy_Any_Matcher group_matcher;
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
+
+    const Logical_Expression_Evaluator evaluator { m_expression_kind, context };
+    return evaluator(group_matcher.get().get_members(), call.content_frame);
+}
+
+Result<bool, Processing_Status>
+Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    static const auto equality_comparable
+        = Type::canonical_union_of({ Type::unit, Type::null, Type::integer, Type::f32, Type::f64 });
+    static const auto relation_comparable
+        = Type::canonical_union_of({ Type::integer, Type::f32, Type::f64 });
+    const auto* parameter_type = m_expression_kind <= Comparison_Expression_Kind::ne
+        ? &equality_comparable
+        : &relation_comparable;
+
+    Value_Of_Type_Matcher x_value { parameter_type };
+    Group_Member_Matcher x_member { u8"x"sv, Optionality::mandatory, x_value };
+    Value_Of_Type_Matcher y_value { parameter_type };
+    Group_Member_Matcher y_member { u8"y"sv, Optionality::mandatory, y_value };
+    Group_Member_Matcher* const matchers[] { &x_member, &y_member };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
+
+    const Value& x = x_value.get();
+    const Value& y = x_value.get();
+
+    if (x.get_type() != y.get_type()) {
+        context.try_error(
+            diagnostic::type_mismatch, y_value.get_location(),
+            joined_char_sequence({
+                u8"Cannot compare values of different type; that is, cannot compare "sv,
+                y.get_type().get_display_name(),
+                u8" with left-hand-side type "sv,
+                x.get_type().get_display_name(),
+                u8".",
+            })
+        );
+        return Processing_Status::error;
+    }
+
+    switch (m_expression_kind) {
+    case Comparison_Expression_Kind::eq: return compare<Comparison_Expression_Kind::eq>(x, y);
+    case Comparison_Expression_Kind::ne: return compare<Comparison_Expression_Kind::ne>(x, y);
+    case Comparison_Expression_Kind::lt: return compare<Comparison_Expression_Kind::lt>(x, y);
+    case Comparison_Expression_Kind::gt: return compare<Comparison_Expression_Kind::gt>(x, y);
+    case Comparison_Expression_Kind::le: return compare<Comparison_Expression_Kind::le>(x, y);
+    case Comparison_Expression_Kind::ge: return compare<Comparison_Expression_Kind::ge>(x, y);
+    }
+
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid expression kind.");
+}
+
 Result<Value, Processing_Status>
-Expression_Behavior::evaluate(const Invocation& call, Context& context) const
+Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& context) const
 {
     static const Type numeric_type
         = Type::canonical_union_of({ Type::integer, Type::f32, Type::f64 });

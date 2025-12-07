@@ -303,6 +303,12 @@ constexpr Basic_Test basic_tests_array[] {
     { Path { u8"arithmetic/basic.cow" },
       Path { u8"arithmetic/basic.cow.html" } },
 
+    { Path { u8"logical/ops.cow" },
+      Path { u8"logical/ops.cow.html" } },
+
+    { Path { u8"logical/short_circuit.cow" },
+      Path { u8"logical/short_circuit.cow.html" } },
+
     { Path { u8"policy/no_invoke.cow" },
       Path { u8"policy/no_invoke.cow.html" } },
 
