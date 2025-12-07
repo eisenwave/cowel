@@ -49,7 +49,7 @@ Processing_Status Value_Of_Type_Matcher::match_value(
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
-    if (val->get_type().analytically_convertible_to(*m_expected_type)) {
+    if (!val->get_type().analytically_convertible_to(*m_expected_type)) {
         on_fail.emit(
             argument.get_source_span(),
             joined_char_sequence({
