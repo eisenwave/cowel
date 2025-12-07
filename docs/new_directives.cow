@@ -1421,6 +1421,91 @@ To avoid changing how \cowdoc_dir{cowel_invoke} works in the future,
 argument forwarding is not supported at all right now.
 }
 
+\h3(id=basic-arithmetic-operations){Basic arithmetic operations}
+
+\h4(
+  id = dir-cowel_neg
+){\cowdoc_dir{cowel_neg} \c{mdash} Negation}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_neg}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_neg}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_neg}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mrow{\mo(form=prefix){−}\mi{x}}}.
+
+If \cowdoc_attr{x} is of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{negate}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_add
+){\cowdoc_dir{cowel_add} \c{mdash} Addition}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mrow{\mi{x}\mo{+}\mi{y}}}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{addition}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_sub
+){\cowdoc_dir{cowel_sub} \c{mdash} Subtraction}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mrow{\mi{x}\mo{−}\mi{y}}}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{subtraction}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_mul
+){\cowdoc_dir{cowel_mul} \c{mdash} multiplication}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mrow{\mi{x}\mo{×}\mi{y}}}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{multiplication}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_div
+){\cowdoc_dir{cowel_div} \c{mdash} Division}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mrow{\mi{x}\mo{÷}\mi{y}}}.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{int},
+the result is rounded toward zero.
+
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{division}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
 \h3(id=logical-operations){Logical operations}
 
 \Bnote{
