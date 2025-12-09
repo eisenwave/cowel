@@ -79,11 +79,8 @@ bool compare(const Value& x, const Value& y)
     case Type_Kind::integer: {
         return do_compare<kind>(x.as_integer(), y.as_integer());
     }
-    case Type_Kind::f32: {
-        return do_compare<kind>(x.as_f32(), y.as_f32());
-    }
-    case Type_Kind::f64: {
-        return do_compare<kind>(x.as_f64(), y.as_f64());
+    case Type_Kind::floating: {
+        return do_compare<kind>(x.as_float(), y.as_float());
     }
     case Type_Kind::str: {
         return do_compare<kind>(x.as_string(), y.as_string());
@@ -303,9 +300,9 @@ Result<bool, Processing_Status>
 Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     static const auto equality_comparable
-        = Type::canonical_union_of({ Type::unit, Type::null, Type::integer, Type::f32, Type::f64 });
+        = Type::canonical_union_of({ Type::unit, Type::null, Type::integer, Type::floating });
     static const auto relation_comparable
-        = Type::canonical_union_of({ Type::integer, Type::f32, Type::f64 });
+        = Type::canonical_union_of({ Type::integer, Type::floating });
     const auto* parameter_type = m_expression_kind <= Comparison_Expression_Kind::ne
         ? &equality_comparable
         : &relation_comparable;
@@ -356,8 +353,7 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
 Result<Value, Processing_Status>
 Unary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& context) const
 {
-    static const Type numeric_type
-        = Type::canonical_union_of({ Type::integer, Type::f32, Type::f64 });
+    static const Type numeric_type = Type::canonical_union_of({ Type::integer, Type::floating });
 
     Group_Pack_Value_Matcher group_matcher { context.get_transient_memory() };
     Call_Matcher call_matcher { group_matcher };
@@ -382,11 +378,8 @@ Unary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
     case Type_Kind::integer: {
         return Value::integer(operate_unary(m_expression_kind, first_value.as_integer()));
     }
-    case Type_Kind::f32: {
-        return Value::f32(operate_unary(m_expression_kind, first_value.as_f32()));
-    }
-    case Type_Kind::f64: {
-        return Value::f64(operate_unary(m_expression_kind, first_value.as_f64()));
+    case Type_Kind::floating: {
+        return Value::floating(operate_unary(m_expression_kind, first_value.as_float()));
     }
     default: break;
     }
@@ -469,13 +462,13 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
     bool type_check_ok = true;
     for (const auto& [value, location] : group_matcher.get_values()) {
         if (m_expression_kind == N_Ary_Numeric_Expression_Kind::div) {
-            static const Type floating_type = Type::canonical_union_of({ Type::f32, Type::f64 });
-
-            if (!value.get_type().analytically_convertible_to(floating_type)) {
+            if (value.get_type() != Type::floating) {
                 context.try_error(
                     diagnostic::type_mismatch, location,
                     joined_char_sequence({
-                        u8"Expected a value of floating-point type, but got "sv,
+                        u8"Expected a value of type "sv,
+                        Type::floating.get_display_name(),
+                        u8", but got "sv,
                         value.get_type().get_display_name(),
                         u8".",
                     })
@@ -485,7 +478,7 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
         }
         else {
             static const Type numeric_type
-                = Type::canonical_union_of({ Type::integer, Type::f32, Type::f64 });
+                = Type::canonical_union_of({ Type::integer, Type::floating });
 
             if (!value.get_type().analytically_convertible_to(numeric_type)) {
                 context.try_error(
@@ -530,20 +523,12 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
         return Value::integer(result);
     }
 
-    case Type_Kind::f32: {
-        Float32 result = first_value.as_f32();
+    case Type_Kind::floating: {
+        Float result = first_value.as_float();
         for (const auto& [value, location] : values_without_first) {
-            result = operate_binary(m_expression_kind, result, value.as_f32());
+            result = operate_binary(m_expression_kind, result, value.as_float());
         }
-        return Value::f32(result);
-    }
-
-    case Type_Kind::f64: {
-        Float64 result = first_value.as_f64();
-        for (const auto& [value, location] : values_without_first) {
-            result = operate_binary(m_expression_kind, result, value.as_f64());
-        }
-        return Value::f64(result);
+        return Value::floating(result);
     }
 
     default: break;

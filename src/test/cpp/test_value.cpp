@@ -136,7 +136,7 @@ TEST(Type, canonical_union_of)
 
 TEST(Type, analytically_convertible_to)
 {
-    const auto int_or_float = Type::canonical_union_of({ Type::integer, Type::f32 });
+    const auto int_or_float = Type::canonical_union_of({ Type::integer, Type::floating });
     const auto lazy_int = Type::lazy(Type::integer);
 
     EXPECT_TRUE(Type::any.analytically_convertible_to(Type::any));
@@ -144,16 +144,15 @@ TEST(Type, analytically_convertible_to)
     EXPECT_TRUE(Type::unit.analytically_convertible_to(Type::unit));
     EXPECT_TRUE(Type::null.analytically_convertible_to(Type::null));
     EXPECT_TRUE(Type::integer.analytically_convertible_to(Type::integer));
-    EXPECT_TRUE(Type::f32.analytically_convertible_to(Type::f32));
-    EXPECT_TRUE(Type::f64.analytically_convertible_to(Type::f64));
+    EXPECT_TRUE(Type::floating.analytically_convertible_to(Type::floating));
 
     EXPECT_TRUE(int_or_float.analytically_convertible_to(Type::any));
     EXPECT_FALSE(Type::any.analytically_convertible_to(int_or_float));
     EXPECT_TRUE(Type::nothing.analytically_convertible_to(int_or_float));
     EXPECT_TRUE(Type::integer.analytically_convertible_to(int_or_float));
-    EXPECT_TRUE(Type::f32.analytically_convertible_to(int_or_float));
+    EXPECT_TRUE(Type::floating.analytically_convertible_to(int_or_float));
     EXPECT_FALSE(int_or_float.analytically_convertible_to(Type::integer));
-    EXPECT_FALSE(int_or_float.analytically_convertible_to(Type::f32));
+    EXPECT_FALSE(int_or_float.analytically_convertible_to(Type::floating));
 
     EXPECT_TRUE(Type::integer.analytically_convertible_to(lazy_int));
     EXPECT_FALSE(lazy_int.analytically_convertible_to(Type::integer));

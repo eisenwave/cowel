@@ -42,8 +42,7 @@ using Value_Variant = std::variant<
     Null,
     bool,
     Integer,
-    Float32,
-    Float64,
+    Float,
     std::u8string_view,
     Short_String_Value,
     std::pmr::vector<char8_t>,
@@ -72,10 +71,8 @@ struct Value {
     static const Value false_;
     /// @brief the value of a `0` literal.
     static const Value zero_int;
-    /// @brief the value of a `0f32` literal.
-    static const Value zero_f32;
     /// @brief the value of a `0f64` literal.
-    static const Value zero_f64;
+    static const Value zero_float;
     /// @brief the value of a `""` string literal.
     static const Value empty_string;
 
@@ -90,14 +87,9 @@ struct Value {
         return Value { value, &Type::integer };
     }
     [[nodiscard]]
-    static constexpr Value f32(Float32 value) noexcept
+    static constexpr Value floating(Float value) noexcept
     {
-        return Value { value, &Type::f32 };
-    }
-    [[nodiscard]]
-    static constexpr Value f64(Float64 value) noexcept
-    {
-        return Value { value, &Type::f64 };
+        return Value { value, &Type::floating };
     }
 
     /// @brief Creates a value of type `str` from a string with static storage duration.
@@ -191,11 +183,8 @@ public:
         case Type_Kind::integer: {
             return y.get_type_kind() == Type_Kind::integer && x.as_integer() == y.as_integer();
         }
-        case Type_Kind::f32: {
-            return y.get_type_kind() == Type_Kind::f32 && x.as_f32() == y.as_f32();
-        }
-        case Type_Kind::f64: {
-            return y.get_type_kind() == Type_Kind::f64 && x.as_f64() == y.as_f64();
+        case Type_Kind::floating: {
+            return y.get_type_kind() == Type_Kind::floating && x.as_float() == y.as_float();
         }
         case Type_Kind::str: {
             return y.get_type_kind() == Type_Kind::str && x.as_string() == y.as_string();
@@ -239,14 +228,9 @@ public:
         return get_type_kind() == Type_Kind::integer;
     }
     [[nodiscard]]
-    constexpr bool is_f32() const noexcept
+    constexpr bool is_float() const noexcept
     {
-        return get_type_kind() == Type_Kind::f32;
-    }
-    [[nodiscard]]
-    constexpr bool is_f64() const noexcept
-    {
-        return get_type_kind() == Type_Kind::f64;
+        return get_type_kind() == Type_Kind::floating;
     }
     [[nodiscard]]
     constexpr bool is_str() const noexcept
@@ -272,16 +256,10 @@ public:
         return std::get<Integer>(m_value);
     }
     [[nodiscard]]
-    constexpr Float32 as_f32() const
+    constexpr Float as_float() const
     {
-        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::f32);
-        return std::get<Float32>(m_value);
-    }
-    [[nodiscard]]
-    constexpr Float64 as_f64() const
-    {
-        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::f64);
-        return std::get<Float64>(m_value);
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::floating);
+        return std::get<Float>(m_value);
     }
     [[nodiscard]]
     constexpr std::u8string_view as_string() const
@@ -312,8 +290,7 @@ inline constexpr Value Value::null { Null {}, &Type::null };
 inline constexpr Value Value::true_ = Value::boolean(true);
 inline constexpr Value Value::false_ = Value::boolean(false);
 inline constexpr Value Value::zero_int = Value::integer(0);
-inline constexpr Value Value::zero_f32 = Value::f32(0);
-inline constexpr Value Value::zero_f64 = Value::f64(0);
+inline constexpr Value Value::zero_float = Value::floating(0);
 inline constexpr Value Value::empty_string = Value::static_string(std::u8string_view {});
 
 static_assert(sizeof(Value) <= 64, "Value should not be too large to be passed by value");

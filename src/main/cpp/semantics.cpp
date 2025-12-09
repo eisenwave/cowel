@@ -11,10 +11,8 @@
 
 namespace cowel {
 
-static_assert(std::numeric_limits<Float32>::is_iec559);
-static_assert(sizeof(Float32) == 4);
-static_assert(std::numeric_limits<Float64>::is_iec559);
-static_assert(sizeof(Float64) == 8);
+static_assert(std::numeric_limits<Float>::is_iec559);
+static_assert(sizeof(Float) == 8);
 
 [[nodiscard]]
 std::u8string Type::get_display_name() const

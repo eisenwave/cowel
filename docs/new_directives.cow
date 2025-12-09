@@ -1464,13 +1464,12 @@ argument forwarding is not supported at all right now.
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_pos}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_pos}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_pos}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_pos}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \math{\mrow{\mo(form=prefix){+}\mi{x}}}.
 
-If \cowdoc_attr{x} is of floating-point type,
+If \cowdoc_attr{x} is of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{copy}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
 
@@ -1484,13 +1483,12 @@ The result is bitwise identical to \cowdoc_attr{x}.
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_neg}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_neg}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_neg}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_neg}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \math{\mrow{\mo(form=prefix){−}\mi{x}}}.
 
-If \cowdoc_attr{x} is of floating-point type,
+If \cowdoc_attr{x} is of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{negate}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
 
@@ -1504,13 +1502,12 @@ Negating positive zero results in negative zero, and vice versa.
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_abs}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_abs}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_abs}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_abs}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns the absolute value of \cowdoc_attr{x}.
 
-If \cowdoc_attr{x} is of floating-point type,
+If \cowdoc_attr{x} is of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{abs}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
 
@@ -1519,8 +1516,7 @@ the result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_sqrt} \c{mdash} Square root}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_sqrt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_sqrt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_sqrt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \math{\msqrt{\mi{x}}}.
@@ -1533,8 +1529,7 @@ The result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_trunc} \c{mdash} Round toward zero}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_trunc}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_trunc}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_trunc}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \math{\mi{x}},
@@ -1548,8 +1543,7 @@ The result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_floor} \c{mdash} Round toward negative infinity}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_floor}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_floor}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_floor}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \math{\mi{x}},
@@ -1563,8 +1557,7 @@ The result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_ceil} \c{mdash} Round toward positive infinity}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_ceil}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_ceil}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_ceil}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \math{\mi{x}},
@@ -1578,8 +1571,7 @@ The result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_nearest} \c{mdash} Round toward the nearest integer}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_nearest}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_nearest}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_nearest}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \math{\mi{x}},
@@ -1599,8 +1591,7 @@ and is the default IEEE-754 rounding mode.
 ){\cowdoc_dir{cowel_nearest_away_zero} \c{mdash} Round toward the nearest integer, with ties broken away from zero}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_nearest_away_zero}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_nearest_away_zero}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_nearest_away_zero}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \math{\mi{x}},
@@ -1616,15 +1607,14 @@ The result is that of the IEEE-754 operation
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_min}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_min}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_min}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_min}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns the lowest of the given values.
 
 An error is raised of \cowdoc_attr{args} is empty.
 
-If \cowdoc_attr{args} is a pack of floating-point type,
+If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
 \left_fold_math_func{minimum}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
@@ -1640,15 +1630,14 @@ ignoring NaN representations.
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_max}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_max}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_max}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_max}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns the greatest of the given values.
 
 An error is raised of \cowdoc_attr{args} is empty.
 
-If \cowdoc_attr{args} is a pack of floating-point type,
+If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
 \left_fold_math_func{maximum}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
@@ -1664,8 +1653,7 @@ ignoring NaN representations.
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \left_fold_math_op{+}
@@ -1673,7 +1661,7 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
 An error is raised of \cowdoc_attr{args} is empty.
 
-If \cowdoc_attr{args} is a pack of floating-point type,
+If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
 \left_fold_math_func{addition}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
@@ -1684,8 +1672,7 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \left_fold_math_op{−}
@@ -1693,7 +1680,7 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
 An error is raised of \cowdoc_attr{args} is empty.
 
-If \cowdoc_attr{args} is a pack of floating-point type,
+If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
 \left_fold_math_func{subtraction}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
@@ -1704,8 +1691,7 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \left_fold_math_op{×}
@@ -1713,7 +1699,7 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
 An error is raised of \cowdoc_attr{args} is empty.
 
-If \cowdoc_attr{args} is a pack of floating-point type,
+If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
 \left_fold_math_func{multiplication}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
@@ -1723,12 +1709,13 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 ){\cowdoc_dir{cowel_div} \c{mdash} Division}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack float}): \cowel_highlight_as(keyword-type){float}
 }
 
 Returns \left_fold_math_op{÷}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
+
+An error is raised of \cowdoc_attr{args} is empty.
 
 The result is that of the IEEE-754 operations
 \left_fold_math_func{division}
@@ -1921,8 +1908,7 @@ there is no way to tell apart signaling and quiet operations in COWEL.
 \cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){null}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){null}): \cowel_highlight_as(keyword-type){bool}
 \cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){bool}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){bool}): \cowel_highlight_as(keyword-type){bool}
 \cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){bool}
 \cowel_highlight_as(markup-tag){cowel_eq}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
 }
 
@@ -1932,7 +1918,7 @@ otherwise \cowdoc_c{false}.
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{unit} or \cowdoc_type{null},
 returns \cowdoc_c{true}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareQuietEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
 
@@ -1945,8 +1931,7 @@ the result is that of the IEEE-754 operation
 \cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){null}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){null}): \cowel_highlight_as(keyword-type){bool}
 \cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){bool}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){bool}): \cowel_highlight_as(keyword-type){bool}
 \cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){bool}
 \cowel_highlight_as(markup-tag){cowel_ne}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str},  \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
 }
 
@@ -1956,7 +1941,7 @@ otherwise \cowdoc_c{false}.
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{unit} or \cowdoc_type{null},
 returns \cowdoc_c{false}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareQuietNotEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
 
@@ -1970,15 +1955,14 @@ The result is \cowdoc_c{cowel_not(cowel_eq(x, y))}.
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_lt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_lt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_lt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_lt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){bool}
 \cowel_highlight_as(markup-tag){cowel_lt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
 }
 
 Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{<}\mi{y}}},
 otherwise \cowdoc_c{false}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareSignalingLess}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
 
@@ -1988,15 +1972,14 @@ the result is that of the IEEE-754 operation
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_gt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_gt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_gt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_gt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){bool}
 \cowel_highlight_as(markup-tag){cowel_gt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
 }
 
 Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{>}\mi{y}}},
 otherwise \cowdoc_c{false}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareSignalingGreater}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
 
@@ -2006,15 +1989,14 @@ the result is that of the IEEE-754 operation
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_le}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_le}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_le}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_le}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){bool}
 \cowel_highlight_as(markup-tag){cowel_le}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
 }
 
 Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≤}\mi{y}}},
 otherwise \cowdoc_c{false}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareSignalingLessEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
 
@@ -2024,14 +2006,13 @@ the result is that of the IEEE-754 operation
 
 \pre{
 \cowel_highlight_as(markup-tag){cowel_ge}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_ge}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){bool}
-\cowel_highlight_as(markup-tag){cowel_ge}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){bool}
+\cowel_highlight_as(markup-tag){cowel_ge}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){bool}
 \cowel_highlight_as(markup-tag){cowel_ge}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
 }
 
 Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≥}\mi{y}}},
 otherwise \cowdoc_c{false}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
+If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareSignalingGreaterEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.

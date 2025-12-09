@@ -1540,12 +1540,10 @@ h1 {
 <div class=toc-num data-level=4>6.2.6</div>
 <a href=#type-int><h4><tt-><h- data-h=kw_type>int</h-></tt-> — Integer</h4></a>
 <div class=toc-num data-level=4>6.2.7</div>
-<a href=#type-f32><h4><tt-><h- data-h=kw_type>f32</h-></tt-> — 32-bit floating-point number</h4></a>
+<a href=#type-float><h4><tt-><h- data-h=kw_type>float</h-></tt-> — 64-bit floating-point number</h4></a>
 <div class=toc-num data-level=4>6.2.8</div>
-<a href=#type-f64><h4><tt-><h- data-h=kw_type>f64</h-></tt-> — 64-bit floating-point number</h4></a>
-<div class=toc-num data-level=4>6.2.9</div>
 <a href=#type-str><h4><tt-><h- data-h=kw_type>str</h-></tt-> — String</h4></a>
-<div class=toc-num data-level=4>6.2.10</div>
+<div class=toc-num data-level=4>6.2.9</div>
 <a href=#type-block><h4><tt-><h- data-h=kw_type>block</h-></tt-> — Block</h4></a>
 <div class=toc-num data-level=3>6.3</div>
 <a href=#compound-types><h3>Compound types</h3></a>
@@ -2744,7 +2742,6 @@ but should be expanded greatly in the near future.
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>null</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>bool</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>int</h-><h- data-h=str_dlim>"</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>f32</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>f64</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>str</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>block</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
@@ -2821,39 +2818,26 @@ this includes negative numbers.
 <p>An <tt-><h- data-h=kw_type>int</h-></tt-> can be obtained using integer literals
 such as <code>123</code> or <code>0xff</code>.
 </p>
-<h4 id=type-f32><a class=para href=#type-f32></a>6.2.7. <tt-><h- data-h=kw_type>f32</h-></tt-> — 32-bit floating-point number</h4>
+<h4 id=type-float><a class=para href=#type-float></a>6.2.7. <tt-><h- data-h=kw_type>float</h-></tt-> — 64-bit floating-point number</h4>
 
-<p><tt-><h- data-h=kw_type>f32</h-></tt-> is a single-precision floating-point number.
-That is, a number in <em>binary32</em> format, as specified in IEEE-754.
-</p>
-<note-block><p><intro-></intro-> 
-There is no way to obtain a value of type <tt-><h- data-h=kw_type>f32</h-></tt-> yet,
-but in the future,
-one can be obtained using floating-point literals such as <code>0f32</code>.
-</p></note-block>
-
-<h4 id=type-f64><a class=para href=#type-f64></a>6.2.8. <tt-><h- data-h=kw_type>f64</h-></tt-> — 64-bit floating-point number</h4>
-
-<p><tt-><h- data-h=kw_type>f32</h-></tt-> is a single-precision floating-point number.
+<p><tt-><h- data-h=kw_type>float</h-></tt-> is a single-precision floating-point number.
 That is, a number in <em>binary64</em> format, as specified in IEEE-754.
 </p>
 <note-block><p><intro-></intro-> 
-There is no way to obtain a value of type <tt-><h- data-h=kw_type>f64</h-></tt-> yet,
+There is no way to obtain a value of type <tt-><h- data-h=kw_type>float</h-></tt-> yet,
 but in the future,
 one can be obtained using floating-point literals
-such as <code>0f64</code> or <code>0.0</code>.
-</p>
-<p>That is, all floating-point literals have type `f64` unless a suffix was explicitly specified.
+such as <code>0.0</code>.
 </p></note-block>
 
-<h4 id=type-str><a class=para href=#type-str></a>6.2.9. <tt-><h- data-h=kw_type>str</h-></tt-> — String</h4>
+<h4 id=type-str><a class=para href=#type-str></a>6.2.8. <tt-><h- data-h=kw_type>str</h-></tt-> — String</h4>
 
 <p><tt-><h- data-h=kw_type>str</h-></tt-> is a UTF-8 encoded string.
 </p>
 <p>A value of type <tt-><h- data-h=kw_type>str</h-></tt-> can be obtained using string literals
 such as <code>"abc"</code>.
 </p>
-<h4 id=type-block><a class=para href=#type-block></a>6.2.10. <tt-><h- data-h=kw_type>block</h-></tt-> — Block</h4>
+<h4 id=type-block><a class=para href=#type-block></a>6.2.9. <tt-><h- data-h=kw_type>block</h-></tt-> — Block</h4>
 
 <p><tt-><h- data-h=kw_type>block</h-></tt-> stores markup elements.
 It is very similar to <tt-><h- data-h=kw_type>str</h-></tt->,
@@ -3046,10 +3030,9 @@ is fed into the current content policy once the block itself is spliced.
     result in <code>"15"</code> when spliced.
   </li>
   <li>
-    Splicing a value of type <tt-><h- data-h=kw_type>f32</h-></tt-> or <tt-><h- data-h=kw_type>f64</h-></tt-> produces
+    Splicing a value of type <tt-><h- data-h=kw_type>float</h-></tt-> produces
     a string representing the value in decimal form.
-    For example, both <code>0.5f32</code> <code>0.5f64</code>
-    result in <code>"0.5"</code> when spliced.
+    For example, <code>0.5</code> results in <code>"0.5"</code> when spliced.
   </li>
   <li>
     Splicing a value of type <tt-><h- data-h=kw_type>str</h-></tt-> produces
@@ -4368,13 +4351,12 @@ argument forwarding is not supported at all right now.
 
 <pre>
 <h- data-h=mk_tag>cowel_pos</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_pos</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_pos</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_pos</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mrow><mo form=prefix>+</mo><mi>x</mi></mrow></math>.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> is of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> is of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>copy</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
@@ -4386,13 +4368,12 @@ The result is bitwise identical to <tt-><h- data-h=mk_attr>x</h-></tt->.
 
 <pre>
 <h- data-h=mk_tag>cowel_neg</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_neg</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_neg</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_neg</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mrow><mo form=prefix>−</mo><mi>x</mi></mrow></math>.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> is of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> is of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>negate</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
@@ -4404,21 +4385,19 @@ Negating positive zero results in negative zero, and vice versa.
 
 <pre>
 <h- data-h=mk_tag>cowel_abs</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_abs</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_abs</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_abs</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns the absolute value of <tt-><h- data-h=mk_attr>x</h-></tt->.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> is of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> is of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>abs</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
 <h4 id=dir-cowel_sqrt><a class=para href=#dir-cowel_sqrt></a>8.10.4. <code><h- data-h=mk_tag>\cowel_sqrt</h-></code> — Square root</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_sqrt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_sqrt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_sqrt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><msqrt><mi>x</mi></msqrt></math>.
@@ -4429,8 +4408,7 @@ the result is that of the IEEE-754 operation
 <h4 id=dir-cowel_trunc><a class=para href=#dir-cowel_trunc></a>8.10.5. <code><h- data-h=mk_tag>\cowel_trunc</h-></code> — Round toward zero</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_trunc</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_trunc</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_trunc</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mi>x</mi></math>,
@@ -4442,8 +4420,7 @@ rounded to the next integer toward zero.
 <h4 id=dir-cowel_floor><a class=para href=#dir-cowel_floor></a>8.10.6. <code><h- data-h=mk_tag>\cowel_floor</h-></code> — Round toward negative infinity</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_floor</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_floor</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_floor</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mi>x</mi></math>,
@@ -4455,8 +4432,7 @@ rounded to the next integer toward negative infinity.
 <h4 id=dir-cowel_ceil><a class=para href=#dir-cowel_ceil></a>8.10.7. <code><h- data-h=mk_tag>\cowel_ceil</h-></code> — Round toward positive infinity</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_ceil</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_ceil</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_ceil</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mi>x</mi></math>,
@@ -4468,8 +4444,7 @@ rounded to the next integer toward positive infinity.
 <h4 id=dir-cowel_nearest><a class=para href=#dir-cowel_nearest></a>8.10.8. <code><h- data-h=mk_tag>\cowel_nearest</h-></code> — Round toward the nearest integer</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_nearest</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_nearest</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_nearest</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mi>x</mi></math>,
@@ -4487,8 +4462,7 @@ and is the default IEEE-754 rounding mode.
 <h4 id=dir-cowel_nearest_away_zero><a class=para href=#dir-cowel_nearest_away_zero></a>8.10.9. <code><h- data-h=mk_tag>\cowel_nearest_away_zero</h-></code> — Round toward the nearest integer, with ties broken away from zero</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_nearest_away_zero</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_nearest_away_zero</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_nearest_away_zero</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mi>x</mi></math>,
@@ -4502,15 +4476,14 @@ with ties broken away from zero.
 
 <pre>
 <h- data-h=mk_tag>cowel_min</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_min</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_min</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_min</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns the lowest of the given values.
 </p>
 <p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
-<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operations
 </p><math display=block><mrow>
 <mi>minimum</mi><mo stretchy=false>(</mo><mo>…</mo><mi>minimum</mi><mo stretchy=false>(</mo><mi>minimum</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
@@ -4525,15 +4498,14 @@ ignoring NaN representations.
 
 <pre>
 <h- data-h=mk_tag>cowel_max</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_max</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_max</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_max</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns the greatest of the given values.
 </p>
 <p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
-<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operations
 </p><math display=block><mrow>
 <mi>maximum</mi><mo stretchy=false>(</mo><mo>…</mo><mi>maximum</mi><mo stretchy=false>(</mo><mi>maximum</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
@@ -4548,8 +4520,7 @@ ignoring NaN representations.
 
 <pre>
 <h- data-h=mk_tag>cowel_add</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_add</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_add</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_add</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mrow>
@@ -4558,7 +4529,7 @@ for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><
 </p>
 <p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
-<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operations
 </p><math display=block><mrow>
 <mi>addition</mi><mo stretchy=false>(</mo><mo>…</mo><mi>addition</mi><mo stretchy=false>(</mo><mi>addition</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
@@ -4568,8 +4539,7 @@ the result is that of the IEEE-754 operations
 
 <pre>
 <h- data-h=mk_tag>cowel_sub</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_sub</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_sub</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_sub</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mrow>
@@ -4578,7 +4548,7 @@ for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><
 </p>
 <p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
-<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operations
 </p><math display=block><mrow>
 <mi>subtraction</mi><mo stretchy=false>(</mo><mo>…</mo><mi>subtraction</mi><mo stretchy=false>(</mo><mi>subtraction</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
@@ -4588,8 +4558,7 @@ the result is that of the IEEE-754 operations
 
 <pre>
 <h- data-h=mk_tag>cowel_mul</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_mul</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_mul</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_mul</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mrow>
@@ -4598,7 +4567,7 @@ for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><
 </p>
 <p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
-<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operations
 </p><math display=block><mrow>
 <mi>multiplication</mi><mo stretchy=false>(</mo><mo>…</mo><mi>multiplication</mi><mo stretchy=false>(</mo><mi>multiplication</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
@@ -4607,13 +4576,14 @@ the result is that of the IEEE-754 operations
 <h4 id=dir-cowel_div><a class=para href=#dir-cowel_div></a>8.10.15. <code><h- data-h=mk_tag>\cowel_div</h-></code> — Division</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_div</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_div</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_div</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack float</h->): <h- data-h=kw_type>float</h->
 </pre>
 
 <p>Returns <math display=inline><mrow>
 <msub><mi>x</mi><mn>0</mn></msub><mo>÷</mo><msub><mi>x</mi><mn>1</mn></msub><mo>÷</mo><mo>…</mo><mo>÷</mo><msub><mi>x</mi><mi>n</mi></msub></mrow></math>
 for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
 <p>The result is that of the IEEE-754 operations
 </p><math display=block><mrow>
@@ -4785,8 +4755,7 @@ there is no way to tell apart signaling and quiet operations in COWEL.
 <h- data-h=mk_tag>cowel_eq</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>null</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>null</h->): <h- data-h=kw_type>bool</h->
 <h- data-h=mk_tag>cowel_eq</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>bool</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>bool</h->): <h- data-h=kw_type>bool</h->
 <h- data-h=mk_tag>cowel_eq</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_eq</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_eq</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>bool</h->
+<h- data-h=mk_tag>cowel_eq</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>bool</h->
 <h- data-h=mk_tag>cowel_eq</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
@@ -4796,7 +4765,7 @@ otherwise <code>false</code>.
 <p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>unit</h-></tt-> or <tt-><h- data-h=kw_type>null</h-></tt->,
 returns <code>true</code>.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareQuietEqual</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
@@ -4807,8 +4776,7 @@ the result is that of the IEEE-754 operation
 <h- data-h=mk_tag>cowel_ne</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>null</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>null</h->): <h- data-h=kw_type>bool</h->
 <h- data-h=mk_tag>cowel_ne</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>bool</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>bool</h->): <h- data-h=kw_type>bool</h->
 <h- data-h=mk_tag>cowel_ne</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_ne</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_ne</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>bool</h->
+<h- data-h=mk_tag>cowel_ne</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>bool</h->
 <h- data-h=mk_tag>cowel_ne</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
@@ -4818,7 +4786,7 @@ otherwise <code>false</code>.
 <p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>unit</h-></tt-> or <tt-><h- data-h=kw_type>null</h-></tt->,
 returns <code>false</code>.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareQuietNotEqual</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
@@ -4830,15 +4798,14 @@ The result is <code>cowel_not(cowel_eq(x, y))</code>.
 
 <pre>
 <h- data-h=mk_tag>cowel_lt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_lt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_lt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>bool</h->
+<h- data-h=mk_tag>cowel_lt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>bool</h->
 <h- data-h=mk_tag>cowel_lt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
 <p>Return <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>&lt;</mo><mi>y</mi></mrow></math>,
 otherwise <code>false</code>.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareSignalingLess</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
@@ -4846,15 +4813,14 @@ the result is that of the IEEE-754 operation
 
 <pre>
 <h- data-h=mk_tag>cowel_gt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_gt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_gt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>bool</h->
+<h- data-h=mk_tag>cowel_gt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>bool</h->
 <h- data-h=mk_tag>cowel_gt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
 <p>Return <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>&gt;</mo><mi>y</mi></mrow></math>,
 otherwise <code>false</code>.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareSignalingGreater</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
@@ -4862,15 +4828,14 @@ the result is that of the IEEE-754 operation
 
 <pre>
 <h- data-h=mk_tag>cowel_le</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_le</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_le</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>bool</h->
+<h- data-h=mk_tag>cowel_le</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>bool</h->
 <h- data-h=mk_tag>cowel_le</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
 <p>Return <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>≤</mo><mi>y</mi></mrow></math>,
 otherwise <code>false</code>.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareSignalingLessEqual</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
@@ -4878,15 +4843,14 @@ the result is that of the IEEE-754 operation
 
 <pre>
 <h- data-h=mk_tag>cowel_ge</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_ge</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>bool</h->
-<h- data-h=mk_tag>cowel_ge</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>bool</h->
+<h- data-h=mk_tag>cowel_ge</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>bool</h->
 <h- data-h=mk_tag>cowel_ge</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
 <p>Return <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>≥</mo><mi>y</mi></mrow></math>,
 otherwise <code>false</code>.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareSignalingGreaterEqual</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 

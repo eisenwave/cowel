@@ -34,10 +34,8 @@ enum struct Type_Kind : Default_Underlying {
     /// While this is intended to eventually hold any integer (i.e. "big int"),
     /// this is currently limited (see `Integer`).
     integer,
-    /// @brief A type which holds binary32 floating-point numbers.
-    f32,
     /// @brief A type which holds binary64 floating-point numbers.
-    f64,
+    floating,
     /// @brief A UTF-8 string of characters.
     str,
     /// @brief A block of markup.
@@ -95,8 +93,7 @@ constexpr bool type_kind_is_spliceable(Type_Kind kind)
     case null:
     case boolean:
     case integer:
-    case f32:
-    case f64:
+    case floating:
     case str:
     case block: return true;
 
@@ -122,8 +119,7 @@ constexpr std::u8string_view type_kind_display_name(Type_Kind kind)
     case null: return u8"null";
     case boolean: return u8"bool";
     case integer: return u8"int";
-    case f32: return u8"f32";
-    case f64: return u8"f64";
+    case floating: return u8"float";
     case str: return u8"str";
     case block: return u8"block";
     case group: return u8"group";
@@ -157,8 +153,7 @@ struct Type {
     static const Type null;
     static const Type boolean;
     static const Type integer;
-    static const Type f32;
-    static const Type f64;
+    static const Type floating;
     static const Type str;
     static const Type block;
 
@@ -566,8 +561,7 @@ inline constexpr Type Type::unit = Type::basic(Type_Kind::unit);
 inline constexpr Type Type::null = Type::basic(Type_Kind::null);
 inline constexpr Type Type::boolean = Type::basic(Type_Kind::boolean);
 inline constexpr Type Type::integer = Type::basic(Type_Kind::integer);
-inline constexpr Type Type::f32 = Type::basic(Type_Kind::f32);
-inline constexpr Type Type::f64 = Type::basic(Type_Kind::f64);
+inline constexpr Type Type::floating = Type::basic(Type_Kind::floating);
 inline constexpr Type Type::str = Type::basic(Type_Kind::str);
 inline constexpr Type Type::block = Type::basic(Type_Kind::block);
 

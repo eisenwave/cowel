@@ -401,11 +401,8 @@ Processing_Status splice_value(Content_Policy& out, const Value& value, Context&
     case Type_Kind::integer: {
         return write_characters(value.as_integer());
     }
-    case Type_Kind::f32: {
-        return write_characters(value.as_f32());
-    }
-    case Type_Kind::f64: {
-        return write_characters(value.as_f64());
+    case Type_Kind::floating: {
+        return write_characters(value.as_float());
     }
     case Type_Kind::str: {
         out.write(value.as_string(), Output_Language::text);

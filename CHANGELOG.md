@@ -9,7 +9,7 @@
   - `Cmul` (use `cowel_mul` instead)
   - `Cdiv` (use `cowel_div_to_zero` instead)
 - change the syntax of directive arguments (#87)
-- add support for typed values in builtin directives (#88)
+- add support for typed values in builtin directives (#88, #107)
 - add the following basic arithmetic directives (#98):
   - `cowel_pos` (`+`)
   - `cowel_neg` (`-`)

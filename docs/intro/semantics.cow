@@ -88,29 +88,16 @@ this includes negative numbers.
 An \cowdoc_type{int} can be obtained using integer literals
 such as \cowdoc_c{123} or \cowdoc_c{0xff}.
 
-\h4(id=type-f32){\cowdoc_type{f32} \N{EM DASH} 32-bit floating-point number}
+\h4(id=type-float){\cowdoc_type{float} \N{EM DASH} 64-bit floating-point number}
 
-\cowdoc_type{f32} is a single-precision floating-point number.
-That is, a number in \em{binary32} format, as specified in IEEE-754.
-
-\Bnote{
-There is no way to obtain a value of type \cowdoc_type{f32} yet,
-but in the future,
-one can be obtained using floating-point literals such as \cowdoc_c{0f32}.
-}
-
-\h4(id=type-f64){\cowdoc_type{f64} \N{EM DASH} 64-bit floating-point number}
-
-\cowdoc_type{f32} is a single-precision floating-point number.
+\cowdoc_type{float} is a single-precision floating-point number.
 That is, a number in \em{binary64} format, as specified in IEEE-754.
 
 \Bnote{
-There is no way to obtain a value of type \cowdoc_type{f64} yet,
+There is no way to obtain a value of type \cowdoc_type{float} yet,
 but in the future,
 one can be obtained using floating-point literals
-such as \cowdoc_c{0f64} or \cowdoc_c{0.0}.
-
-That is, all floating-point literals have type `f64` unless a suffix was explicitly specified.
+such as \cowdoc_c{0.0}.
 }
 
 \h4(id=type-str){\cowdoc_type{str} \N{EM DASH} String}
@@ -313,10 +300,9 @@ The effect of splicing depends on the type of value:
     result in \cowdoc_c{"15"} when spliced.
   }
   \li{
-    Splicing a value of type \cowdoc_type{f32} or \cowdoc_type{f64} produces
+    Splicing a value of type \cowdoc_type{float} produces
     a string representing the value in decimal form.
-    For example, both \cowdoc_c{0.5f32} \cowdoc_c{0.5f64}
-    result in \cowdoc_c{"0.5"} when spliced.
+    For example, \cowdoc_c{0.5} results in \cowdoc_c{"0.5"} when spliced.
   }
   \li{
     Splicing a value of type \cowdoc_type{str} produces

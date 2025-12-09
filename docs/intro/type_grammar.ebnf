@@ -28,7 +28,6 @@ basic-type
   | "null"
   | "bool"
   | "int"
-  | "f32"
   | "f64"
   | "str"
   | "block";
