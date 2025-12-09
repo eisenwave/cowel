@@ -360,21 +360,74 @@ public:
     Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
 };
 
-enum struct Numeric_Expression_Kind : Default_Underlying {
+enum struct Unary_Numeric_Expression_Kind : Default_Underlying {
+    pos,
     neg,
+    abs,
+    sqrt,
+    trunc,
+    floor,
+    ceil,
+    nearest,
+    nearest_away_zero,
+};
+
+struct Unary_Numeric_Expression_Behavior final : Directive_Behavior {
+private:
+    const Unary_Numeric_Expression_Kind m_expression_kind;
+
+public:
+    [[nodiscard]]
+    constexpr explicit Unary_Numeric_Expression_Behavior(Unary_Numeric_Expression_Kind kind)
+        : Directive_Behavior { Type::any }
+        , m_expression_kind { kind }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const override;
+};
+
+enum struct Integer_Division_Kind : Default_Underlying {
+    div_to_zero,
+    rem_to_zero,
+    div_to_pos_inf,
+    rem_to_pos_inf,
+    div_to_neg_inf,
+    rem_to_neg_inf,
+};
+
+struct Integer_Division_Expression_Behavior final : Int_Directive_Behavior {
+private:
+    const Integer_Division_Kind m_expression_kind;
+
+public:
+    [[nodiscard]]
+    constexpr explicit Integer_Division_Expression_Behavior(Integer_Division_Kind kind)
+        : m_expression_kind { kind }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Integer, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+};
+
+enum struct N_Ary_Numeric_Expression_Kind : Default_Underlying {
     add,
     sub,
     mul,
     div,
+    min,
+    max,
 };
 
-struct Numeric_Expression_Behavior final : Directive_Behavior {
+struct N_Ary_Numeric_Expression_Behavior final : Directive_Behavior {
 private:
-    const Numeric_Expression_Kind m_expression_kind;
+    const N_Ary_Numeric_Expression_Kind m_expression_kind;
 
 public:
     [[nodiscard]]
-    constexpr explicit Numeric_Expression_Behavior(Numeric_Expression_Kind kind)
+    constexpr explicit N_Ary_Numeric_Expression_Behavior(N_Ary_Numeric_Expression_Kind kind)
         : Directive_Behavior { Type::any }
         , m_expression_kind { kind }
     {

@@ -18,14 +18,18 @@
 namespace cowel {
 namespace {
 
+constexpr Unary_Numeric_Expression_Behavior cowel_abs //
+    { Unary_Numeric_Expression_Kind::abs };
 constexpr Policy_Behavior cowel_actions //
     { Known_Content_Policy::actions };
-constexpr Numeric_Expression_Behavior cowel_add //
-    { Numeric_Expression_Kind::add };
+constexpr N_Ary_Numeric_Expression_Behavior cowel_add //
+    { N_Ary_Numeric_Expression_Kind::add };
 constexpr Alias_Behavior cowel_alias //
     {};
 constexpr Logical_Expression_Behavior cowel_and //
     { Logical_Expression_Kind::logical_and };
+constexpr Unary_Numeric_Expression_Behavior cowel_ceil //
+    { Unary_Numeric_Expression_Kind::ceil };
 constexpr Char_By_Entity_Behavior cowel_char_by_entity //
     {};
 constexpr Char_By_Name_Behavior cowel_char_by_name //
@@ -34,10 +38,18 @@ constexpr Char_By_Num_Behavior cowel_char_by_num //
     {};
 constexpr Char_Get_Num_Behavior cowel_char_get_num //
     {};
-constexpr Numeric_Expression_Behavior cowel_div //
-    { Numeric_Expression_Kind::div };
+constexpr N_Ary_Numeric_Expression_Behavior cowel_div //
+    { N_Ary_Numeric_Expression_Kind::div };
+constexpr Integer_Division_Expression_Behavior cowel_div_to_neg_inf //
+    { Integer_Division_Kind::div_to_neg_inf };
+constexpr Integer_Division_Expression_Behavior cowel_div_to_pos_inf //
+    { Integer_Division_Kind::div_to_pos_inf };
+constexpr Integer_Division_Expression_Behavior cowel_div_to_zero //
+    { Integer_Division_Kind::div_to_zero };
 constexpr Comparison_Expression_Behavior cowel_eq //
     { Comparison_Expression_Kind::eq };
+constexpr Unary_Numeric_Expression_Behavior cowel_floor //
+    { Unary_Numeric_Expression_Kind::floor };
 constexpr Comparison_Expression_Behavior cowel_ge //
     { Comparison_Expression_Kind::ge };
 constexpr Comparison_Expression_Behavior cowel_gt //
@@ -64,12 +76,20 @@ constexpr Comparison_Expression_Behavior cowel_lt //
     { Comparison_Expression_Kind::lt };
 constexpr Macro_Behavior cowel_macro //
     {};
-constexpr Numeric_Expression_Behavior cowel_mul //
-    { Numeric_Expression_Kind::mul };
+constexpr N_Ary_Numeric_Expression_Behavior cowel_max //
+    { N_Ary_Numeric_Expression_Kind::max };
+constexpr N_Ary_Numeric_Expression_Behavior cowel_min //
+    { N_Ary_Numeric_Expression_Kind::min };
+constexpr N_Ary_Numeric_Expression_Behavior cowel_mul //
+    { N_Ary_Numeric_Expression_Kind::mul };
 constexpr Comparison_Expression_Behavior cowel_ne //
     { Comparison_Expression_Kind::ne };
-constexpr Numeric_Expression_Behavior cowel_neg //
-    { Numeric_Expression_Kind::neg };
+constexpr Unary_Numeric_Expression_Behavior cowel_nearest //
+    { Unary_Numeric_Expression_Kind::nearest };
+constexpr Unary_Numeric_Expression_Behavior cowel_nearest_away_zero //
+    { Unary_Numeric_Expression_Kind::nearest_away_zero };
+constexpr Unary_Numeric_Expression_Behavior cowel_neg //
+    { Unary_Numeric_Expression_Kind::neg };
 constexpr Policy_Behavior cowel_no_invoke //
     { Known_Content_Policy::no_invoke };
 constexpr Logical_Not_Behavior cowel_not //
@@ -84,18 +104,30 @@ constexpr Paragraph_Inherit_Behavior cowel_paragraph_inherit //
     {};
 constexpr Paragraph_Leave_Behavior cowel_paragraph_leave //
     {};
+constexpr Unary_Numeric_Expression_Behavior cowel_pos //
+    { Unary_Numeric_Expression_Kind::pos };
 constexpr Put_Behavior cowel_put //
     {};
+constexpr Integer_Division_Expression_Behavior cowel_rem_to_neg_inf //
+    { Integer_Division_Kind::rem_to_neg_inf };
+constexpr Integer_Division_Expression_Behavior cowel_rem_to_pos_inf //
+    { Integer_Division_Kind::rem_to_pos_inf };
+constexpr Integer_Division_Expression_Behavior cowel_rem_to_zero //
+    { Integer_Division_Kind::rem_to_zero };
 constexpr Policy_Behavior cowel_source_as_text //
     { Known_Content_Policy::source_as_text };
-constexpr Numeric_Expression_Behavior cowel_sub //
-    { Numeric_Expression_Kind::sub };
+constexpr Unary_Numeric_Expression_Behavior cowel_sqrt //
+    { Unary_Numeric_Expression_Kind::sqrt };
+constexpr N_Ary_Numeric_Expression_Behavior cowel_sub //
+    { N_Ary_Numeric_Expression_Kind::sub };
 constexpr Policy_Behavior cowel_text_as_html //
     { Known_Content_Policy::text_as_html };
 constexpr Policy_Behavior cowel_text_only //
     { Known_Content_Policy::text_only };
 constexpr Policy_Behavior cowel_to_html //
     { Known_Content_Policy::to_html };
+constexpr Unary_Numeric_Expression_Behavior cowel_trunc //
+    { Unary_Numeric_Expression_Kind::trunc };
 
 // Legacy directives
 constexpr Fixed_Name_Passthrough_Behavior b //
@@ -341,16 +373,22 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(col),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(colgroup),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(comment),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_abs),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_actions),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_add),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_alias),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_and),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_ceil),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_entity),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_name),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_num),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_get_num),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_div),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_div_to_neg_inf),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_div_to_pos_inf),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_div_to_zero),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_eq),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_floor),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_ge),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_gt),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_highlight),
@@ -364,8 +402,12 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_le),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_lt),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_macro),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_max),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_min),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_mul),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_ne),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_nearest),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_nearest_away_zero),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_neg),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_no_invoke),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_not),
@@ -374,12 +416,18 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraph_inherit),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraph_leave),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraphs),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_pos),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_put),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_rem_to_neg_inf),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_rem_to_pos_inf),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_rem_to_zero),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_source_as_text),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_sqrt),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_sub),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_text_as_html),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_text_only),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_to_html),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_trunc),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(dd),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(del),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(details),

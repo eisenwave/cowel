@@ -1644,15 +1644,47 @@ h1 {
 <div class=toc-num data-level=3>8.10</div>
 <a href=#basic-arithmetic-operations><h3>Basic arithmetic operations</h3></a>
 <div class=toc-num data-level=4>8.10.1</div>
-<a href=#dir-cowel_neg><h4><code><h- data-h=mk_tag>\cowel_neg</h-></code> — Negation</h4></a>
+<a href=#dir-cowel_pos><h4><code><h- data-h=mk_tag>\cowel_pos</h-></code> — Copy</h4></a>
 <div class=toc-num data-level=4>8.10.2</div>
-<a href=#dir-cowel_add><h4><code><h- data-h=mk_tag>\cowel_add</h-></code> — Addition</h4></a>
+<a href=#dir-cowel_neg><h4><code><h- data-h=mk_tag>\cowel_neg</h-></code> — Negation</h4></a>
 <div class=toc-num data-level=4>8.10.3</div>
-<a href=#dir-cowel_sub><h4><code><h- data-h=mk_tag>\cowel_sub</h-></code> — Subtraction</h4></a>
+<a href=#dir-cowel_abs><h4><code><h- data-h=mk_tag>\cowel_abs</h-></code> — Absolute value</h4></a>
 <div class=toc-num data-level=4>8.10.4</div>
-<a href=#dir-cowel_mul><h4><code><h- data-h=mk_tag>\cowel_mul</h-></code> — multiplication</h4></a>
+<a href=#dir-cowel_sqrt><h4><code><h- data-h=mk_tag>\cowel_sqrt</h-></code> — Square root</h4></a>
 <div class=toc-num data-level=4>8.10.5</div>
+<a href=#dir-cowel_trunc><h4><code><h- data-h=mk_tag>\cowel_trunc</h-></code> — Round toward zero</h4></a>
+<div class=toc-num data-level=4>8.10.6</div>
+<a href=#dir-cowel_floor><h4><code><h- data-h=mk_tag>\cowel_floor</h-></code> — Round toward negative infinity</h4></a>
+<div class=toc-num data-level=4>8.10.7</div>
+<a href=#dir-cowel_ceil><h4><code><h- data-h=mk_tag>\cowel_ceil</h-></code> — Round toward positive infinity</h4></a>
+<div class=toc-num data-level=4>8.10.8</div>
+<a href=#dir-cowel_nearest><h4><code><h- data-h=mk_tag>\cowel_nearest</h-></code> — Round toward the nearest integer</h4></a>
+<div class=toc-num data-level=4>8.10.9</div>
+<a href=#dir-cowel_nearest_away_zero><h4><code><h- data-h=mk_tag>\cowel_nearest_away_zero</h-></code> — Round toward the nearest integer, with ties broken away from zero</h4></a>
+<div class=toc-num data-level=4>8.10.10</div>
+<a href=#dir-cowel_min><h4><code><h- data-h=mk_tag>\cowel_min</h-></code> — Minimum</h4></a>
+<div class=toc-num data-level=4>8.10.11</div>
+<a href=#dir-cowel_max><h4><code><h- data-h=mk_tag>\cowel_max</h-></code> — Maximum</h4></a>
+<div class=toc-num data-level=4>8.10.12</div>
+<a href=#dir-cowel_add><h4><code><h- data-h=mk_tag>\cowel_add</h-></code> — Addition</h4></a>
+<div class=toc-num data-level=4>8.10.13</div>
+<a href=#dir-cowel_sub><h4><code><h- data-h=mk_tag>\cowel_sub</h-></code> — Subtraction</h4></a>
+<div class=toc-num data-level=4>8.10.14</div>
+<a href=#dir-cowel_mul><h4><code><h- data-h=mk_tag>\cowel_mul</h-></code> — Multiplication</h4></a>
+<div class=toc-num data-level=4>8.10.15</div>
 <a href=#dir-cowel_div><h4><code><h- data-h=mk_tag>\cowel_div</h-></code> — Division</h4></a>
+<div class=toc-num data-level=4>8.10.16</div>
+<a href=#dir-cowel_div_to_zero><h4><code><h- data-h=mk_tag>\cowel_div_to_zero</h-></code> — Division rounded toward zero</h4></a>
+<div class=toc-num data-level=4>8.10.17</div>
+<a href=#dir-cowel_rem_to_zero><h4><code><h- data-h=mk_tag>\cowel_rem_to_zero</h-></code> — Remainder rounded toward zero</h4></a>
+<div class=toc-num data-level=4>8.10.18</div>
+<a href=#dir-cowel_div_to_pos_inf><h4><code><h- data-h=mk_tag>\cowel_div_to_pos_inf</h-></code> — Division rounded toward positive infinity</h4></a>
+<div class=toc-num data-level=4>8.10.19</div>
+<a href=#dir-cowel_rem_to_pos_inf><h4><code><h- data-h=mk_tag>\cowel_rem_to_pos_inf</h-></code> — Remainder rounded toward positive infinity</h4></a>
+<div class=toc-num data-level=4>8.10.20</div>
+<a href=#dir-cowel_div_to_neg_inf><h4><code><h- data-h=mk_tag>\cowel_div_to_neg_inf</h-></code> — Division rounded toward negative infinity</h4></a>
+<div class=toc-num data-level=4>8.10.21</div>
+<a href=#dir-cowel_rem_to_neg_inf><h4><code><h- data-h=mk_tag>\cowel_rem_to_neg_inf</h-></code> — Remainder rounded toward negative infinity</h4></a>
 <div class=toc-num data-level=3>8.11</div>
 <a href=#logical-operations><h3>Logical operations</h3></a>
 <div class=toc-num data-level=4>8.11.1</div>
@@ -4331,7 +4363,26 @@ argument forwarding is not supported at all right now.
 
 <h3 id=basic-arithmetic-operations><a class=para href=#basic-arithmetic-operations></a>8.10. Basic arithmetic operations</h3>
 
-<h4 id=dir-cowel_neg><a class=para href=#dir-cowel_neg></a>8.10.1. <code><h- data-h=mk_tag>\cowel_neg</h-></code> — Negation</h4>
+
+<h4 id=dir-cowel_pos><a class=para href=#dir-cowel_pos></a>8.10.1. <code><h- data-h=mk_tag>\cowel_pos</h-></code> — Copy</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_pos</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
+<h- data-h=mk_tag>cowel_pos</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_pos</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+</pre>
+
+<p>Returns <math display=inline><mrow><mo form=prefix>+</mo><mi>x</mi></mrow></math>.
+</p>
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> is of floating-point type,
+the result is that of the IEEE-754 operation
+<math display=inline><mrow><mi>copy</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
+</p>
+<note-block><p><intro-></intro-> 
+The result is bitwise identical to <tt-><h- data-h=mk_attr>x</h-></tt->.
+</p></note-block>
+
+<h4 id=dir-cowel_neg><a class=para href=#dir-cowel_neg></a>8.10.2. <code><h- data-h=mk_tag>\cowel_neg</h-></code> — Negation</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_neg</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
@@ -4345,65 +4396,319 @@ argument forwarding is not supported at all right now.
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>negate</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
-<h4 id=dir-cowel_add><a class=para href=#dir-cowel_add></a>8.10.2. <code><h- data-h=mk_tag>\cowel_add</h-></code> — Addition</h4>
+<note-block><p><intro-></intro-> 
+Negating positive zero results in negative zero, and vice versa.
+</p></note-block>
+
+<h4 id=dir-cowel_abs><a class=para href=#dir-cowel_abs></a>8.10.3. <code><h- data-h=mk_tag>\cowel_abs</h-></code> — Absolute value</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_add</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_add</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_add</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_abs</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
+<h- data-h=mk_tag>cowel_abs</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_abs</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
 </pre>
 
-<p>Returns <math display=inline><mrow><mi>x</mi><mo>+</mo><mi>y</mi></mrow></math>.
+<p>Returns the absolute value of <tt-><h- data-h=mk_attr>x</h-></tt->.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of floating-point type,
+<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> is of floating-point type,
 the result is that of the IEEE-754 operation
-<math display=inline><mrow><mi>addition</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
+<math display=inline><mrow><mi>abs</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
-<h4 id=dir-cowel_sub><a class=para href=#dir-cowel_sub></a>8.10.3. <code><h- data-h=mk_tag>\cowel_sub</h-></code> — Subtraction</h4>
+<h4 id=dir-cowel_sqrt><a class=para href=#dir-cowel_sqrt></a>8.10.4. <code><h- data-h=mk_tag>\cowel_sqrt</h-></code> — Square root</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_sub</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_sub</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_sub</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_sqrt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_sqrt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
 </pre>
 
-<p>Returns <math display=inline><mrow><mi>x</mi><mo>−</mo><mi>y</mi></mrow></math>.
+<p>Returns <math display=inline><msqrt><mi>x</mi></msqrt></math>.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of floating-point type,
-the result is that of the IEEE-754 operation
-<math display=inline><mrow><mi>subtraction</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
+<p>The result is that of the IEEE-754 operation
+<math display=inline><mrow><mi>squareRoot</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
-<h4 id=dir-cowel_mul><a class=para href=#dir-cowel_mul></a>8.10.4. <code><h- data-h=mk_tag>\cowel_mul</h-></code> — multiplication</h4>
+<h4 id=dir-cowel_trunc><a class=para href=#dir-cowel_trunc></a>8.10.5. <code><h- data-h=mk_tag>\cowel_trunc</h-></code> — Round toward zero</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_mul</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_mul</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_mul</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_trunc</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_trunc</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
 </pre>
 
-<p>Returns <math display=inline><mrow><mi>x</mi><mo>×</mo><mi>y</mi></mrow></math>.
+<p>Returns <math display=inline><mi>x</mi></math>,
+rounded to the next integer toward zero.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of floating-point type,
-the result is that of the IEEE-754 operation
-<math display=inline><mrow><mi>multiplication</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
+<p>The result is that of the IEEE-754 operation
+<math display=inline><mrow><mi>roundToIntegralTowardZero</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
-<h4 id=dir-cowel_div><a class=para href=#dir-cowel_div></a>8.10.5. <code><h- data-h=mk_tag>\cowel_div</h-></code> — Division</h4>
+<h4 id=dir-cowel_floor><a class=para href=#dir-cowel_floor></a>8.10.6. <code><h- data-h=mk_tag>\cowel_floor</h-></code> — Round toward negative infinity</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_div</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
-<h- data-h=mk_tag>cowel_div</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
-<h- data-h=mk_tag>cowel_div</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+<h- data-h=mk_tag>cowel_floor</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_floor</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
 </pre>
 
-<p>Returns <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>.
+<p>Returns <math display=inline><mi>x</mi></math>,
+rounded to the next integer toward negative infinity.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>int</h-></tt->,
-the result is rounded toward zero.
+<p>The result is that of the IEEE-754 operation
+<math display=inline><mrow><mi>roundToIntegralTowardNegative</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
-<p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of floating-point type,
-the result is that of the IEEE-754 operation
-<math display=inline><mrow><mi>division</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
+<h4 id=dir-cowel_ceil><a class=para href=#dir-cowel_ceil></a>8.10.7. <code><h- data-h=mk_tag>\cowel_ceil</h-></code> — Round toward positive infinity</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_ceil</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_ceil</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+</pre>
+
+<p>Returns <math display=inline><mi>x</mi></math>,
+rounded to the next integer toward positive infinity.
 </p>
+<p>The result is that of the IEEE-754 operation
+<math display=inline><mrow><mi>roundToIntegralTowardPositive</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
+</p>
+<h4 id=dir-cowel_nearest><a class=para href=#dir-cowel_nearest></a>8.10.8. <code><h- data-h=mk_tag>\cowel_nearest</h-></code> — Round toward the nearest integer</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_nearest</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_nearest</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+</pre>
+
+<p>Returns <math display=inline><mi>x</mi></math>,
+rounded to the nearest integer,
+with ties broken toward the integer with an even least significant digit.
+</p>
+<p>The result is that of the IEEE-754 operation
+<math display=inline><mrow><mi>roundToIntegralTiesToEven</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
+</p>
+<note-block><p><intro-></intro-> 
+This is also known as Banker's Rounding,
+and is the default IEEE-754 rounding mode.
+</p></note-block>
+
+<h4 id=dir-cowel_nearest_away_zero><a class=para href=#dir-cowel_nearest_away_zero></a>8.10.9. <code><h- data-h=mk_tag>\cowel_nearest_away_zero</h-></code> — Round toward the nearest integer, with ties broken away from zero</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_nearest_away_zero</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_nearest_away_zero</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>f64</h->): <h- data-h=kw_type>f64</h->
+</pre>
+
+<p>Returns <math display=inline><mi>x</mi></math>,
+rounded to the nearest integer,
+with ties broken away from zero.
+</p>
+<p>The result is that of the IEEE-754 operation
+<math display=inline><mrow><mi>roundToIntegralTiesAwayZero</mi><mo stretchy=false>(</mo><mi>x</mi><mo stretchy=false>)</mo></mrow></math>.
+</p>
+<h4 id=dir-cowel_min><a class=para href=#dir-cowel_min></a>8.10.10. <code><h- data-h=mk_tag>\cowel_min</h-></code> — Minimum</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_min</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack int</h->): <h- data-h=kw_type>int</h->
+<h- data-h=mk_tag>cowel_min</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_min</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+</pre>
+
+<p>Returns the lowest of the given values.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+</p>
+<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of floating-point type,
+the result is that of the IEEE-754 operations
+</p><math display=block><mrow>
+<mi>minimum</mi><mo stretchy=false>(</mo><mo>…</mo><mi>minimum</mi><mo stretchy=false>(</mo><mi>minimum</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
+<p>for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<note-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_min</h-></code> is associative and commutative,
+ignoring NaN representations.
+</p></note-block>
+
+<h4 id=dir-cowel_max><a class=para href=#dir-cowel_max></a>8.10.11. <code><h- data-h=mk_tag>\cowel_max</h-></code> — Maximum</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_max</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack int</h->): <h- data-h=kw_type>int</h->
+<h- data-h=mk_tag>cowel_max</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_max</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+</pre>
+
+<p>Returns the greatest of the given values.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+</p>
+<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of floating-point type,
+the result is that of the IEEE-754 operations
+</p><math display=block><mrow>
+<mi>maximum</mi><mo stretchy=false>(</mo><mo>…</mo><mi>maximum</mi><mo stretchy=false>(</mo><mi>maximum</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
+<p>for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<note-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_max</h-></code> is associative and commutative,
+ignoring NaN representations.
+</p></note-block>
+
+<h4 id=dir-cowel_add><a class=para href=#dir-cowel_add></a>8.10.12. <code><h- data-h=mk_tag>\cowel_add</h-></code> — Addition</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_add</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack int</h->): <h- data-h=kw_type>int</h->
+<h- data-h=mk_tag>cowel_add</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_add</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+</pre>
+
+<p>Returns <math display=inline><mrow>
+<msub><mi>x</mi><mn>0</mn></msub><mo>+</mo><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><mo>…</mo><mo>+</mo><msub><mi>x</mi><mi>n</mi></msub></mrow></math>
+for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+</p>
+<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of floating-point type,
+the result is that of the IEEE-754 operations
+</p><math display=block><mrow>
+<mi>addition</mi><mo stretchy=false>(</mo><mo>…</mo><mi>addition</mi><mo stretchy=false>(</mo><mi>addition</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
+<p>for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<h4 id=dir-cowel_sub><a class=para href=#dir-cowel_sub></a>8.10.13. <code><h- data-h=mk_tag>\cowel_sub</h-></code> — Subtraction</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_sub</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack int</h->): <h- data-h=kw_type>int</h->
+<h- data-h=mk_tag>cowel_sub</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_sub</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+</pre>
+
+<p>Returns <math display=inline><mrow>
+<msub><mi>x</mi><mn>0</mn></msub><mo>−</mo><msub><mi>x</mi><mn>1</mn></msub><mo>−</mo><mo>…</mo><mo>−</mo><msub><mi>x</mi><mi>n</mi></msub></mrow></math>
+for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+</p>
+<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of floating-point type,
+the result is that of the IEEE-754 operations
+</p><math display=block><mrow>
+<mi>subtraction</mi><mo stretchy=false>(</mo><mo>…</mo><mi>subtraction</mi><mo stretchy=false>(</mo><mi>subtraction</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
+<p>for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<h4 id=dir-cowel_mul><a class=para href=#dir-cowel_mul></a>8.10.14. <code><h- data-h=mk_tag>\cowel_mul</h-></code> — Multiplication</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_mul</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack int</h->): <h- data-h=kw_type>int</h->
+<h- data-h=mk_tag>cowel_mul</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_mul</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+</pre>
+
+<p>Returns <math display=inline><mrow>
+<msub><mi>x</mi><mn>0</mn></msub><mo>×</mo><msub><mi>x</mi><mn>1</mn></msub><mo>×</mo><mo>…</mo><mo>×</mo><msub><mi>x</mi><mi>n</mi></msub></mrow></math>
+for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+</p>
+<p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of floating-point type,
+the result is that of the IEEE-754 operations
+</p><math display=block><mrow>
+<mi>multiplication</mi><mo stretchy=false>(</mo><mo>…</mo><mi>multiplication</mi><mo stretchy=false>(</mo><mi>multiplication</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
+<p>for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<h4 id=dir-cowel_div><a class=para href=#dir-cowel_div></a>8.10.15. <code><h- data-h=mk_tag>\cowel_div</h-></code> — Division</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_div</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f32</h->): <h- data-h=kw_type>f32</h->
+<h- data-h=mk_tag>cowel_div</h->(<h- data-h=mk_attr>args</h->: <h- data-h=kw_type>pack f64</h->): <h- data-h=kw_type>f64</h->
+</pre>
+
+<p>Returns <math display=inline><mrow>
+<msub><mi>x</mi><mn>0</mn></msub><mo>÷</mo><msub><mi>x</mi><mn>1</mn></msub><mo>÷</mo><mo>…</mo><mo>÷</mo><msub><mi>x</mi><mi>n</mi></msub></mrow></math>
+for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<p>The result is that of the IEEE-754 operations
+</p><math display=block><mrow>
+<mi>division</mi><mo stretchy=false>(</mo><mo>…</mo><mi>division</mi><mo stretchy=false>(</mo><mi>division</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
+<p>for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
+</p>
+<note-block><p><intro-></intro-> 
+Division by zero does not raise an error.
+Instead, it results in infinity or NaN depending on the dividend.
+</p></note-block>
+
+<h4 id=dir-cowel_div_to_zero><a class=para href=#dir-cowel_div_to_zero></a>8.10.16. <code><h- data-h=mk_tag>\cowel_div_to_zero</h-></code> — Division rounded toward zero</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_div_to_zero</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
+</pre>
+
+<p>Returns the quotient of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
+with rounding toward zero.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+</p>
+<note-block><p><intro-></intro-> 
+The result is that of the <tt->/</tt-> operator in C.
+</p></note-block>
+
+<h4 id=dir-cowel_rem_to_zero><a class=para href=#dir-cowel_rem_to_zero></a>8.10.17. <code><h- data-h=mk_tag>\cowel_rem_to_zero</h-></code> — Remainder rounded toward zero</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_rem_to_zero</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
+</pre>
+
+<p>Returns the remainder of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
+with rounding toward zero.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+</p>
+<note-block><p><intro-></intro-> 
+The result is that of the <tt->%</tt-> operator in C.
+The sign of the result is the sign of the dividend <tt-><h- data-h=mk_attr>x</h-></tt->.
+</p></note-block>
+
+<h4 id=dir-cowel_div_to_pos_inf><a class=para href=#dir-cowel_div_to_pos_inf></a>8.10.18. <code><h- data-h=mk_tag>\cowel_div_to_pos_inf</h-></code> — Division rounded toward positive infinity</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_div_to_pos_inf</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
+</pre>
+
+<p>Returns the quotient of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
+with rounding toward positive infinity.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+</p>
+<h4 id=dir-cowel_rem_to_pos_inf><a class=para href=#dir-cowel_rem_to_pos_inf></a>8.10.19. <code><h- data-h=mk_tag>\cowel_rem_to_pos_inf</h-></code> — Remainder rounded toward positive infinity</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_rem_to_pos_inf</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
+</pre>
+
+<p>Returns the remainder of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
+with rounding toward positive infinity.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+</p>
+<h4 id=dir-cowel_div_to_neg_inf><a class=para href=#dir-cowel_div_to_neg_inf></a>8.10.20. <code><h- data-h=mk_tag>\cowel_div_to_neg_inf</h-></code> — Division rounded toward negative infinity</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_div_to_neg_inf</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
+</pre>
+
+<p>Returns the quotient of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
+with rounding toward negative infinity.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+</p>
+<note-block><p><intro-></intro-> 
+The result is that of the <tt->//</tt-> operator in Python.
+</p></note-block>
+
+<h4 id=dir-cowel_rem_to_neg_inf><a class=para href=#dir-cowel_rem_to_neg_inf></a>8.10.21. <code><h- data-h=mk_tag>\cowel_rem_to_neg_inf</h-></code> — Remainder rounded toward negative infinity</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_rem_to_neg_inf</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>int</h->
+</pre>
+
+<p>Returns the remainder of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
+with rounding toward negative infinity.
+</p>
+<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+</p>
+<note-block><p><intro-></intro-> 
+The result is that of the <tt->%</tt-> operator in Python.
+The sign of the result is the sign of the divisor <tt-><h- data-h=mk_attr>y</h-></tt->.
+</p></note-block>
+
 <h3 id=logical-operations><a class=para href=#logical-operations></a>8.11. Logical operations</h3>
 
 <note-block><p><intro-></intro-> 
@@ -4437,7 +4742,7 @@ and any remaining elements are ignored once the result is known.
 <example-block><p><intro-></intro-> 
 In the following example,
 no error is raised despite the second argument containing a division by zero.
-</p><code-block><h- data-h=mk_tag>\cowel_and</h-><h- data-h=sym_par>(</h->false<h- data-h=sym_punc>,</h-> cowel_eq(0, cowel_div(0, 0))<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_and</h-><h- data-h=sym_par>(</h->false<h- data-h=sym_punc>,</h-> cowel_eq(0, cowel_div_to_zero(0, 0))<h- data-h=sym_par>)</h-></code-block>
 <p>That is because the result of <code><h- data-h=mk_tag>\cowel_and</h-></code> is already known
 after the first <code>false</code>.
 </p></example-block>

@@ -7,15 +7,31 @@
   - `Cadd` (use `cowel_add` instead)
   - `Csub` (use `cowel_sub` instead)
   - `Cmul` (use `cowel_mul` instead)
-  - `Cdiv` (use `cowel_div` instead)
+  - `Cdiv` (use `cowel_div_to_zero` instead)
 - change the syntax of directive arguments (#87)
 - add support for typed values in builtin directives (#88)
 - add the following basic arithmetic directives (#98):
+  - `cowel_pos` (`+`)
   - `cowel_neg` (`-`)
+  - `cowel_abs`
+  - `cowel_sqrt`
+  - `cowel_trunc`
+  - `cowel_floor`
+  - `cowel_ceil`
+  - `cowel_nearest`
+  - `cowel_nearest_away_zero`
+  - `cowel_min`
+  - `cowel_max`
   - `cowel_add` (`+`)
   - `cowel_sub` (`-`)
   - `cowel_mul` (`*`)
-  - `cowel_div` (`/`)
+  - `cowel_div` (`/` for floating-point)
+  - `cowel_div_to_zero`
+  - `cowel_rem_to_zero`
+  - `cowel_div_to_pos_inf`
+  - `cowel_rem_to_pos_inf`
+  - `cowel_rem_to_neg_inf`
+  - `cowel_rem_to_neg_inf`
 - add the following logical operation directives:
   - `cowel_not` (`!`)
   - `cowel_and` (`&&`)
@@ -42,8 +58,8 @@
 - remove support for `-` in directive names
 - remove the following deprecated directives:
   - `\html` (use `\cowel_text_as_html` instead)
-  - `htmlblock` (use `\cowel_text_as_html` instead)
-  - `html-*` (use `\cowel_html_element` instead)
+  - `\htmlblock` (use `\cowel_text_as_html` instead)
+  - `\html-*` (use `\cowel_html_element` instead)
   - `\wg21-*` (use `\wg21_*` instead)
   - `\make-*` (use `\make_*` instead)
   - `\lorem-ipsum` (use `\lorem_ipsum` instead)

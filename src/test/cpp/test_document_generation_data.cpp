@@ -280,6 +280,11 @@ constexpr Basic_Test basic_tests_array[] {
     { Source { u8"\\cowel_div(1, 0)" },
       Source { u8"<error->\\cowel_div(1, 0)</error->" },
       Processing_Status::error,
+      { diagnostic::type_mismatch } },
+
+    { Source { u8"\\cowel_div_to_zero(1, 0)" },
+      Source { u8"<error->\\cowel_div_to_zero(1, 0)</error->" },
+      Processing_Status::error,
       { diagnostic::arithmetic_div_by_zero } },
 
     { Source { u8"" },
@@ -302,6 +307,9 @@ constexpr Basic_Test basic_tests_array[] {
 
     { Path { u8"arithmetic/basic.cow" },
       Path { u8"arithmetic/basic.cow.html" } },
+
+    { Path { u8"arithmetic/min_max.cow" },
+      Path { u8"arithmetic/min_max.cow.html" } },
 
     { Path { u8"logical/ops.cow" },
       Path { u8"logical/ops.cow.html" } },

@@ -67,6 +67,27 @@ Bool_Directive_Behavior::splice(Content_Policy& out, const Invocation& call, Con
 }
 
 Result<Value, Processing_Status>
+Int_Directive_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    const Result<Integer, Processing_Status> result = do_evaluate(call, context);
+    if (!result) {
+        return result.error();
+    }
+    return Value::boolean(*result);
+}
+
+Processing_Status
+Int_Directive_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
+{
+    const Result<Integer, Processing_Status> result = do_evaluate(call, context);
+    if (!result) {
+        return try_generate_error(out, call, context, result.error());
+    }
+    out.write(to_characters8(*result).as_string(), Output_Language::text);
+    return Processing_Status::ok;
+}
+
+Result<Value, Processing_Status>
 Short_String_Directive_Behavior::evaluate(const Invocation& call, Context& context) const
 {
     const Result<Short_String_Value, Processing_Status> result = do_evaluate(call, context);

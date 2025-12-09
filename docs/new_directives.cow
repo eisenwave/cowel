@@ -1423,6 +1423,61 @@ argument forwarding is not supported at all right now.
 
 \h3(id=basic-arithmetic-operations){Basic arithmetic operations}
 
+\cowel_macro(left_fold_math_func){\
+\mathblock{\mrow{
+\mi{\cowel_put}\
+\mo(stretchy=false){(}\
+\mo{…}\
+\mi{\cowel_put}\
+\mo(stretchy=false){(}\
+\mi{\cowel_put}\
+\mo(stretchy=false){(}\
+\msub{\mi{x}\mn{0}}\
+\mo(separator=true){,}\
+\msub{\mi{x}\mn{1}}\
+\mo(stretchy=false){)}\
+\mo(separator=true){,}\
+\msub{\mi{x}\mn{2}}\
+\mo(stretchy=false){)}\
+\mo{…}\
+\mo(separator=true){,}\
+\msub{\mi{x}\mi{n}}\
+\mo(stretchy=false){)}\
+}}\
+}\
+\
+\cowel_macro(left_fold_math_op){\
+\math{\mrow{
+\msub{\mi{x}\mn{0}}\
+\mo{\cowel_put}\
+\msub{\mi{x}\mn{1}}\
+\mo{\cowel_put}\
+\mo{…}\
+\mo{\cowel_put}\
+\msub{\mi{x}\mi{n}}\
+}}\
+}\
+
+\h4(
+  id = dir-cowel_pos
+){\cowdoc_dir{cowel_pos} \c{mdash} Copy}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_pos}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_pos}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_pos}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mrow{\mo(form=prefix){+}\mi{x}}}.
+
+If \cowdoc_attr{x} is of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{copy}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
+
+\Bnote{
+The result is bitwise identical to \cowdoc_attr{x}.
+}
+
 \h4(
   id = dir-cowel_neg
 ){\cowdoc_dir{cowel_neg} \c{mdash} Negation}
@@ -1439,72 +1494,346 @@ If \cowdoc_attr{x} is of floating-point type,
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{negate}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
 
+\Bnote{
+Negating positive zero results in negative zero, and vice versa.
+}
+
+\h4(
+  id = dir-cowel_abs
+){\cowdoc_dir{cowel_abs} \c{mdash} Absolute value}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_abs}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_abs}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_abs}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns the absolute value of \cowdoc_attr{x}.
+
+If \cowdoc_attr{x} is of floating-point type,
+the result is that of the IEEE-754 operation
+\math{\mrow{\mi{abs}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_sqrt
+){\cowdoc_dir{cowel_sqrt} \c{mdash} Square root}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_sqrt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_sqrt}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\msqrt{\mi{x}}}.
+
+The result is that of the IEEE-754 operation
+\math{\mrow{\mi{squareRoot}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_trunc
+){\cowdoc_dir{cowel_trunc} \c{mdash} Round toward zero}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_trunc}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_trunc}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mi{x}},
+rounded to the next integer toward zero.
+
+The result is that of the IEEE-754 operation
+\math{\mrow{\mi{roundToIntegralTowardZero}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_floor
+){\cowdoc_dir{cowel_floor} \c{mdash} Round toward negative infinity}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_floor}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_floor}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mi{x}},
+rounded to the next integer toward negative infinity.
+
+The result is that of the IEEE-754 operation
+\math{\mrow{\mi{roundToIntegralTowardNegative}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_ceil
+){\cowdoc_dir{cowel_ceil} \c{mdash} Round toward positive infinity}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_ceil}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_ceil}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mi{x}},
+rounded to the next integer toward positive infinity.
+
+The result is that of the IEEE-754 operation
+\math{\mrow{\mi{roundToIntegralTowardPositive}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_nearest
+){\cowdoc_dir{cowel_nearest} \c{mdash} Round toward the nearest integer}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_nearest}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_nearest}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mi{x}},
+rounded to the nearest integer,
+with ties broken toward the integer with an even least significant digit.
+
+The result is that of the IEEE-754 operation
+\math{\mrow{\mi{roundToIntegralTiesToEven}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
+
+\Bnote{
+This is also known as Banker's Rounding,
+and is the default IEEE-754 rounding mode.
+}
+
+\h4(
+  id = dir-cowel_nearest_away_zero
+){\cowdoc_dir{cowel_nearest_away_zero} \c{mdash} Round toward the nearest integer, with ties broken away from zero}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_nearest_away_zero}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_nearest_away_zero}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns \math{\mi{x}},
+rounded to the nearest integer,
+with ties broken away from zero.
+
+The result is that of the IEEE-754 operation
+\math{\mrow{\mi{roundToIntegralTiesAwayZero}\mo(stretchy=false){(}\mi{x}\mo(stretchy=false){)}}}.
+
+\h4(
+  id = dir-cowel_min
+){\cowdoc_dir{cowel_min} \c{mdash} Minimum}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_min}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_min}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_min}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns the lowest of the given values.
+
+An error is raised of \cowdoc_attr{args} is empty.
+
+If \cowdoc_attr{args} is a pack of floating-point type,
+the result is that of the IEEE-754 operations
+\left_fold_math_func{minimum}
+for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
+
+\Bnote{
+\cowdoc_dir{cowel_min} is associative and commutative,
+ignoring NaN representations.
+}
+
+\h4(
+  id = dir-cowel_max
+){\cowdoc_dir{cowel_max} \c{mdash} Maximum}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_max}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_max}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_max}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
+}
+
+Returns the greatest of the given values.
+
+An error is raised of \cowdoc_attr{args} is empty.
+
+If \cowdoc_attr{args} is a pack of floating-point type,
+the result is that of the IEEE-754 operations
+\left_fold_math_func{maximum}
+for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
+
+\Bnote{
+\cowdoc_dir{cowel_max} is associative and commutative,
+ignoring NaN representations.
+}
+
 \h4(
   id = dir-cowel_add
 ){\cowdoc_dir{cowel_add} \c{mdash} Addition}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_add}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
 }
 
-Returns \math{\mrow{\mi{x}\mo{+}\mi{y}}}.
+Returns \left_fold_math_op{+}
+for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
-the result is that of the IEEE-754 operation
-\math{\mrow{\mi{addition}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+An error is raised of \cowdoc_attr{args} is empty.
+
+If \cowdoc_attr{args} is a pack of floating-point type,
+the result is that of the IEEE-754 operations
+\left_fold_math_func{addition}
+for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
 \h4(
   id = dir-cowel_sub
 ){\cowdoc_dir{cowel_sub} \c{mdash} Subtraction}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_sub}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
 }
 
-Returns \math{\mrow{\mi{x}\mo{−}\mi{y}}}.
+Returns \left_fold_math_op{−}
+for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
-the result is that of the IEEE-754 operation
-\math{\mrow{\mi{subtraction}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+An error is raised of \cowdoc_attr{args} is empty.
+
+If \cowdoc_attr{args} is a pack of floating-point type,
+the result is that of the IEEE-754 operations
+\left_fold_math_func{subtraction}
+for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
 \h4(
   id = dir-cowel_mul
-){\cowdoc_dir{cowel_mul} \c{mdash} multiplication}
+){\cowdoc_dir{cowel_mul} \c{mdash} Multiplication}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack int}): \cowel_highlight_as(keyword-type){int}
+\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_mul}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
 }
 
-Returns \math{\mrow{\mi{x}\mo{×}\mi{y}}}.
+Returns \left_fold_math_op{×}
+for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
-the result is that of the IEEE-754 operation
-\math{\mrow{\mi{multiplication}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+An error is raised of \cowdoc_attr{args} is empty.
+
+If \cowdoc_attr{args} is a pack of floating-point type,
+the result is that of the IEEE-754 operations
+\left_fold_math_func{multiplication}
+for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
 \h4(
   id = dir-cowel_div
 ){\cowdoc_dir{cowel_div} \c{mdash} Division}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
-\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f32}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f32}): \cowel_highlight_as(keyword-type){f32}
-\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){f64}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){f64}): \cowel_highlight_as(keyword-type){f64}
+\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f32}): \cowel_highlight_as(keyword-type){f32}
+\cowel_highlight_as(markup-tag){cowel_div}(\cowel_highlight_as(markup-attr){args}: \cowel_highlight_as(keyword-type){pack f64}): \cowel_highlight_as(keyword-type){f64}
 }
 
-Returns \math{\mrow{\mi{x}\mo{÷}\mi{y}}}.
+Returns \left_fold_math_op{÷}
+for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{int},
-the result is rounded toward zero.
+The result is that of the IEEE-754 operations
+\left_fold_math_func{division}
+for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
-If \cowdoc_attr{x} and \cowdoc_attr{y} are of floating-point type,
-the result is that of the IEEE-754 operation
-\math{\mrow{\mi{division}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+\Bnote{
+Division by zero does not raise an error.
+Instead, it results in infinity or NaN depending on the dividend.
+}
+
+\h4(
+  id = dir-cowel_div_to_zero
+){\cowdoc_dir{cowel_div_to_zero} \c{mdash} Division rounded toward zero}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_div_to_zero}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+}
+
+Returns the quotient of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
+with rounding toward zero.
+
+An error is raised of \cowdoc_attr{y} is zero.
+
+\Bnote{
+The result is that of the \tt{/} operator in C.
+}
+
+\h4(
+  id = dir-cowel_rem_to_zero
+){\cowdoc_dir{cowel_rem_to_zero} \c{mdash} Remainder rounded toward zero}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_rem_to_zero}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+}
+
+Returns the remainder of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
+with rounding toward zero.
+
+An error is raised of \cowdoc_attr{y} is zero.
+
+\Bnote{
+The result is that of the \tt{\N{PERCENT SIGN}} operator in C.
+The sign of the result is the sign of the dividend \cowdoc_attr{x}.
+}
+
+\h4(
+  id = dir-cowel_div_to_pos_inf
+){\cowdoc_dir{cowel_div_to_pos_inf} \c{mdash} Division rounded toward positive infinity}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_div_to_pos_inf}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+}
+
+Returns the quotient of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
+with rounding toward positive infinity.
+
+An error is raised of \cowdoc_attr{y} is zero.
+
+\h4(
+  id = dir-cowel_rem_to_pos_inf
+){\cowdoc_dir{cowel_rem_to_pos_inf} \c{mdash} Remainder rounded toward positive infinity}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_rem_to_pos_inf}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+}
+
+Returns the remainder of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
+with rounding toward positive infinity.
+
+An error is raised of \cowdoc_attr{y} is zero.
+
+\h4(
+  id = dir-cowel_div_to_neg_inf
+){\cowdoc_dir{cowel_div_to_neg_inf} \c{mdash} Division rounded toward negative infinity}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_div_to_neg_inf}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+}
+
+Returns the quotient of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
+with rounding toward negative infinity.
+
+An error is raised of \cowdoc_attr{y} is zero.
+
+\Bnote{
+The result is that of the \tt{//} operator in Python.
+}
+
+\h4(
+  id = dir-cowel_rem_to_neg_inf
+){\cowdoc_dir{cowel_rem_to_neg_inf} \c{mdash} Remainder rounded toward negative infinity}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_rem_to_neg_inf}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){y}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){int}
+}
+
+Returns the remainder of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
+with rounding toward negative infinity.
+
+An error is raised of \cowdoc_attr{y} is zero.
+
+\Bnote{
+The result is that of the \tt{\N{PERCENT SIGN}} operator in Python.
+The sign of the result is the sign of the divisor \cowdoc_attr{y}.
+}
 
 \h3(id=logical-operations){Logical operations}
 
@@ -1544,7 +1873,7 @@ and any remaining elements are ignored once the result is known.
 In the following example,
 no error is raised despite the second argument containing a division by zero.
 \cowblock{\literally{
-\cowel_and(false, cowel_eq(0, cowel_div(0, 0)))
+\cowel_and(false, cowel_eq(0, cowel_div_to_zero(0, 0)))
 }}
 That is because the result of \cowdoc_dir{cowel_and} is already known
 after the first \cowdoc_c{false}.

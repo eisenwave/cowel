@@ -1,5 +1,11 @@
+\cowel_pos( 2)
+\cowel_pos(-2)
+
 \cowel_neg( 2)
 \cowel_neg(-2)
+
+\cowel_abs( 2)
+\cowel_abs(-2)
 
 \cowel_add(8)
 \cowel_add(8, 2)
@@ -16,7 +22,5 @@
 \cowel_mul(8, 2, 5)
 \cowel_mul(2, 8)
 
-\cowel_div(8)
-\cowel_div(8, 2)
-\cowel_div(8, 2, 2)
-\cowel_div(2, 8)
+\cowel_div_to_zero(8, 2)
+\cowel_div_to_zero(2, 8)
