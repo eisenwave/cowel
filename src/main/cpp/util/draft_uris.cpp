@@ -36,7 +36,7 @@ std::optional<Draft_Location> match_location(std::u8string_view uri)
         }
         auto number = std::size_t(-1);
         const auto number_string = uri.substr(prefix.length());
-        const auto number_result = from_chars(number_string, number);
+        const auto number_result = from_characters(number_string, number);
         if (number_result.ec != std::errc {}) {
             return Draft_Location { type, 0, prefix.length() };
         }

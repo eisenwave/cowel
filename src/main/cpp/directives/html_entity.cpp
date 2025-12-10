@@ -43,7 +43,7 @@ std::array<char32_t, 2> get_code_points_from_digits(
     Context& context
 )
 {
-    std::optional<std::uint32_t> value = from_chars<std::uint32_t>(digits, base);
+    const std::optional<std::uint32_t> value = from_characters<std::uint32_t>(digits, base);
     if (!value) {
         const std::u8string_view message = base == 10
             ? u8"Expected a sequence of decimal digits."sv

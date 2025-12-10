@@ -241,7 +241,7 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
         return found_content_result;
     }
 
-    const std::optional<std::size_t> needle_index = from_chars<std::size_t>(target_string);
+    const std::optional<std::size_t> needle_index = from_characters<std::size_t>(target_string);
     const ast::Group_Member* const arg = [&] -> const ast::Group_Member* {
         if (needle_index) {
             Put_Positional expand_positional {

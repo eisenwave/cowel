@@ -59,7 +59,7 @@ Result<char32_t, Processing_Status> code_point_by_generated_digits(
         return Processing_Status::error;
     }
 
-    const std::optional<std::uint32_t> value = from_chars<std::uint32_t>(digits, 16);
+    const std::optional<std::uint32_t> value = from_characters<std::uint32_t>(digits, 16);
     if (!value) {
         const std::u8string_view message[] {
             u8"Expected a sequence of hexadecimal digits, but got \""sv,
