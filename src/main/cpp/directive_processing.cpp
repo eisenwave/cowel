@@ -145,6 +145,7 @@ const Type& get_type(const ast::Primary& primary)
     case ast::Primary_Kind::null: return Type::null;
     case ast::Primary_Kind::boolean: return Type::boolean;
     case ast::Primary_Kind::integer: return Type::integer;
+    case ast::Primary_Kind::floating_point: return Type::floating;
     case ast::Primary_Kind::unquoted_string:
     case ast::Primary_Kind::quoted_string: return Type::str;
     case ast::Primary_Kind::block: return Type::block;
@@ -349,12 +350,18 @@ Processing_Status splice_primary(
     COWEL_ASSERT(primary.is_spliceable_value());
 
     switch (primary.get_kind()) {
+    case ast::Primary_Kind::unit:
     case ast::Primary_Kind::null:
     case ast::Primary_Kind::boolean:
-    case ast::Primary_Kind::integer:
     case ast::Primary_Kind::unquoted_string: {
         out.write(primary.get_source(), Output_Language::text);
         return Processing_Status::ok;
+    }
+    case ast::Primary_Kind::integer:
+    case ast::Primary_Kind::floating_point: {
+        const Result<Value, Processing_Status> value = evaluate(primary, frame, context);
+        COWEL_ASSERT(value);
+        return splice_value(out, *value, context);
     }
     case ast::Primary_Kind::quoted_string: {
         return splice_quoted_string(out, primary, frame, context);
@@ -369,12 +376,6 @@ Processing_Status splice_primary(
 
 Processing_Status splice_value(Content_Policy& out, const Value& value, Context& context)
 {
-    const auto write_characters = [&](auto x) -> Processing_Status {
-        const auto chars = to_characters8(x);
-        out.write(chars.as_string(), Output_Language::text);
-        return Processing_Status::ok;
-    };
-
     switch (value.get_type_kind()) {
     case Type_Kind::any:
     case Type_Kind::nothing:
@@ -394,26 +395,78 @@ Processing_Status splice_value(Content_Policy& out, const Value& value, Context&
         return Processing_Status::ok;
     }
     case Type_Kind::boolean: {
-        const auto str = value.as_boolean() ? u8"true"sv : u8"false"sv;
-        out.write(str, Output_Language::text);
+        splice_bool(out, value.as_boolean());
         return Processing_Status::ok;
     }
     case Type_Kind::integer: {
-        return write_characters(value.as_integer());
+        splice_int(out, value.as_integer());
+        return Processing_Status::ok;
     }
     case Type_Kind::floating: {
-        return write_characters(value.as_float());
+        splice_float(out, value.as_float());
+        return Processing_Status::ok;
     }
     case Type_Kind::str: {
         out.write(value.as_string(), Output_Language::text);
         return Processing_Status::ok;
     }
     case Type_Kind::block: {
-        // FIXME: this is almost certainly wrong; shouldn't this be the frame of the block?
         return value.splice_block(out, context);
     }
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid kind of value.");
+}
+
+void splice_bool(Content_Policy& out, bool value)
+{
+    const auto str = value ? u8"true"sv : u8"false"sv;
+    out.write(str, Output_Language::text);
+}
+
+void splice_int(Content_Policy& out, Integer value)
+{
+    const auto chars = to_characters8(value);
+    out.write(chars.as_string(), Output_Language::text);
+}
+
+void splice_float(Content_Policy& out, Float value)
+{
+    if (std::isnan(value)) {
+        out.write(u8"NaN"sv, Output_Language::text);
+        return;
+    }
+    if (std::isinf(value)) {
+        out.write(value < 0 ? u8"-infinity"sv : u8"infinity"sv, Output_Language::text);
+        return;
+    }
+    const auto fixed = to_characters8(value, std::chars_format::fixed);
+    auto scientific = to_characters8(value, std::chars_format::scientific);
+    // The problem we face is that to_chars outputs an exponent with a leading zero,
+    // meaning that 10000 is printed as 1e+05,
+    // making it a worse candidate for the shortest representation.
+    struct Handicap {
+        bool has_handicap;
+        std::size_t handicap_index;
+    };
+    const auto [has_handicap, zero_index] = [&] -> Handicap {
+        const std::u8string_view sci_string = scientific.as_string();
+        const std::size_t e_index = sci_string.find(u8'e');
+        COWEL_ASSERT(e_index != std::u8string_view::npos);
+        COWEL_DEBUG_ASSERT(sci_string[e_index + 1] == u8'+' || sci_string[e_index + 1] == u8'-');
+        if (sci_string[e_index + 2] == u8'0') {
+            return { true, e_index + 2 };
+        }
+        return { false, 0 };
+    }();
+    if (fixed.size() + std::size_t(has_handicap) <= scientific.size()) {
+        out.write(fixed.as_string(), Output_Language::text);
+    }
+    else {
+        if (has_handicap) {
+            scientific.erase(zero_index);
+        }
+        out.write(scientific.as_string(), Output_Language::text);
+    }
 }
 
 [[nodiscard]]
@@ -476,6 +529,7 @@ Plaintext_Result splice_to_plaintext_optimistic(
     case ast::Primary_Kind::null:
     case ast::Primary_Kind::boolean:
     case ast::Primary_Kind::integer:
+    case ast::Primary_Kind::floating_point:
     case ast::Primary_Kind::unquoted_string: {
         return { Processing_Status::ok, value.get_source() };
     }
@@ -564,6 +618,7 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
     COWEL_ASSERT(value.is_value());
 
     switch (value.get_kind()) {
+    case ast::Primary_Kind::unit: return Value::unit;
     case ast::Primary_Kind::null: return Value::null;
     case ast::Primary_Kind::boolean: {
         const bool v = value.get_source() == u8"true"sv;
@@ -571,8 +626,26 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         return Value::boolean(v);
     }
     case ast::Primary_Kind::integer: {
-        const std::optional<Integer> parsed = from_chars<Integer>(value.get_source());
+        const std::optional<Integer> parsed = from_characters<Integer>(value.get_source());
         return Value::integer(parsed.value());
+    }
+    case ast::Primary_Kind::floating_point: {
+        const std::optional<Float> parsed = from_characters_or_inf<Float>(value.get_source());
+        COWEL_ASSERT(parsed); // If parsing fails, the language parser has a bug.
+        COWEL_DEBUG_ASSERT(!std::isnan(*parsed));
+        if (std::isinf(*parsed)) {
+            context.try_warning(
+                diagnostic::literal_out_of_range, value.get_source_span(),
+                joined_char_sequence({
+                    u8"The parsed value is too large to be represented as "sv,
+                    Type::floating.get_display_name(),
+                    u8" and is rounded to "sv,
+                    (*parsed < 0 ? u8"negative"sv : u8"positive"sv),
+                    u8" infinity instead."sv,
+                })
+            );
+        }
+        return Value::floating(*parsed);
     }
     case ast::Primary_Kind::unquoted_string: {
         return Value::static_string(value.get_source());
@@ -592,10 +665,11 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
     case ast::Primary_Kind::group: {
         COWEL_ASSERT_UNREACHABLE(u8"Sorry, values of group type not yet supported :(");
     }
-    default: break;
+    case ast::Primary_Kind::text:
+    case ast::Primary_Kind::comment:
+    case ast::Primary_Kind::escape: break;
     }
-
-    COWEL_ASSERT_UNREACHABLE(u8"Unexpected kind of value.");
+    COWEL_ASSERT_UNREACHABLE(u8"Unexpected kind of primary.");
 }
 
 Processing_Status splice_invocation( //

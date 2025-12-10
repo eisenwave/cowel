@@ -164,7 +164,11 @@ void Primary::assert_validity() const
         COWEL_ASSERT(m_source == u8"true"sv || m_source == u8"false"sv);
         break;
     }
-    case Primary_Kind::integer:
+    case Primary_Kind::integer: {
+        COWEL_ASSERT(is_ascii_digit(m_source.at(0 + std::size_t(m_source.starts_with(u8'-')))));
+        break;
+    }
+    case Primary_Kind::floating_point:
     case Primary_Kind::unquoted_string:
     case Primary_Kind::text: {
         break;
@@ -245,14 +249,15 @@ Primary::Primary(
 namespace {
 
 [[nodiscard]]
-constexpr std::optional<ast::Primary_Kind> instruction_type_simple_kind(AST_Instruction_Type type)
+constexpr std::optional<ast::Primary_Kind> instruction_type_primary_kind(AST_Instruction_Type type)
 {
     using enum AST_Instruction_Type;
     switch (type) {
     case escape: return ast::Primary_Kind::escape;
     case text: return ast::Primary_Kind::text;
     case unquoted_string: return ast::Primary_Kind::unquoted_string;
-    case decimal_integer: return ast::Primary_Kind::integer;
+    case decimal_int_literal: return ast::Primary_Kind::integer;
+    case float_literal: return ast::Primary_Kind::floating_point;
     case keyword_unit: return ast::Primary_Kind::unit;
     case keyword_null: return ast::Primary_Kind::null;
     case keyword_true:
@@ -339,24 +344,8 @@ private:
         const AST_Instruction instruction = peek();
         switch (instruction.type) {
             using enum AST_Instruction_Type;
-        case skip: {
-            advance_by(instruction.n);
-            pop();
-            break;
-        }
-        case member_comma:
-        case member_equal: {
-            advance_by(1);
-            pop();
-            break;
-        }
         case escape:
         case text:
-        case unquoted_string:
-        case decimal_integer:
-        case keyword_true:
-        case keyword_false:
-        case keyword_null:
         case comment: {
             out.push_back(build_simple_primary());
             break;
@@ -365,7 +354,7 @@ private:
             out.push_back(build_directive(Directive_Context::markup));
             break;
         }
-        default: COWEL_ASSERT_UNREACHABLE(u8"Invalid content creating instruction.");
+        default: COWEL_ASSERT_UNREACHABLE(u8"Invalid markup element instruction.");
         }
     }
 
@@ -374,7 +363,7 @@ private:
     {
         const AST_Instruction instruction = pop();
         const std::optional<ast::Primary_Kind> kind
-            = instruction_type_simple_kind(instruction.type);
+            = instruction_type_primary_kind(instruction.type);
         COWEL_ASSERT(kind);
 
         const File_Source_Span span { m_pos, instruction.n, m_file };
@@ -563,7 +552,8 @@ private:
         case AST_Instruction_Type::keyword_true:
         case AST_Instruction_Type::keyword_false:
         case AST_Instruction_Type::unquoted_string:
-        case AST_Instruction_Type::decimal_integer: {
+        case AST_Instruction_Type::decimal_int_literal:
+        case AST_Instruction_Type::float_literal: {
             return build_simple_primary();
         }
         case AST_Instruction_Type::push_group: {

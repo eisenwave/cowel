@@ -84,6 +84,7 @@ public:
         case ast::Primary_Kind::null:
         case ast::Primary_Kind::boolean:
         case ast::Primary_Kind::integer:
+        case ast::Primary_Kind::floating_point:
         case ast::Primary_Kind::unquoted_string:
         case ast::Primary_Kind::quoted_string:
         case ast::Primary_Kind::block:

@@ -27,7 +27,9 @@ enum struct AST_Instruction_Type : Default_Underlying {
     /// @brief The next `n` characters are an unquoted string.
     unquoted_string,
     /// @brief The next `n` characters are decimal integer literal.
-    decimal_integer,
+    decimal_int_literal,
+    /// @brief The next `n` characters are decimal floating-point literal.
+    float_literal,
     /// @brief The next `n` characters are `true`.
     keyword_true,
     /// @brief The next `n` characters are `false`.

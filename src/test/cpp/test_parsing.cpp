@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 
 #include "cowel/util/annotated_string.hpp"
+#include "cowel/util/from_chars.hpp"
 #include "cowel/util/io.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
@@ -38,8 +39,9 @@ std::ostream& operator<<(std::ostream& out, std::u8string_view str)
 enum struct Node_Kind : Default_Underlying {
     unit,
     null,
-    boolean,
-    integer,
+    bool_literal,
+    int_literal,
+    float_literal,
     unquoted_string,
     text,
     escape,
@@ -73,7 +75,7 @@ struct Node {
     [[nodiscard]]
     static Node boolean(std::u8string_view text)
     {
-        return { .kind = Node_Kind::boolean, .name_or_text = text };
+        return { .kind = Node_Kind::bool_literal, .name_or_text = text };
     }
 
     [[nodiscard]]
@@ -83,9 +85,15 @@ struct Node {
     }
 
     [[nodiscard]]
-    static Node integer(std::u8string_view integer)
+    static Node integer(std::u8string_view text)
     {
-        return { .kind = Node_Kind::integer, .name_or_text = integer };
+        return { .kind = Node_Kind::int_literal, .name_or_text = text };
+    }
+
+    [[nodiscard]]
+    static Node floating_point(std::u8string_view text)
+    {
+        return { .kind = Node_Kind::float_literal, .name_or_text = text };
     }
 
     [[nodiscard]]
@@ -241,6 +249,10 @@ struct Node {
             return integer(actual.get_source());
         }
 
+        case ast::Primary_Kind::floating_point: {
+            return floating_point(actual.get_source());
+        }
+
         case ast::Primary_Kind::text: {
             return text(actual.get_source());
         }
@@ -367,12 +379,16 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
         return out << "Null(" << node.name_or_text << ')';
     }
 
-    case Node_Kind::boolean: {
-        return out << "Boolean(" << node.name_or_text << ')';
+    case Node_Kind::bool_literal: {
+        return out << "BoolLiteral(" << node.name_or_text << ')';
     }
 
-    case Node_Kind::integer: {
-        return out << "Integer(" << node.name_or_text << ')';
+    case Node_Kind::int_literal: {
+        return out << "IntLiteral(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::float_literal: {
+        return out << "FloatLiteral(" << node.name_or_text << ')';
     }
 
     case Node_Kind::unquoted_string: {
@@ -1184,19 +1200,19 @@ TEST(Parse, integers)
         { AST_Instruction_Type::push_group, 4 },
 
         { AST_Instruction_Type::push_positional_member }, // 0
-        { AST_Instruction_Type::decimal_integer, 1 },
+        { AST_Instruction_Type::decimal_int_literal, 1 },
         { AST_Instruction_Type::pop_positional_member },
         { AST_Instruction_Type::member_comma },
         { AST_Instruction_Type::skip, 1 },
 
         { AST_Instruction_Type::push_positional_member }, // 123
-        { AST_Instruction_Type::decimal_integer, 3 },
+        { AST_Instruction_Type::decimal_int_literal, 3 },
         { AST_Instruction_Type::pop_positional_member },
         { AST_Instruction_Type::member_comma },
         { AST_Instruction_Type::skip, 1 },
 
         { AST_Instruction_Type::push_positional_member }, // -123
-        { AST_Instruction_Type::decimal_integer, 4 },
+        { AST_Instruction_Type::decimal_int_literal, 4 },
         { AST_Instruction_Type::pop_positional_member },
         { AST_Instruction_Type::member_comma },
         { AST_Instruction_Type::skip, 1 },
@@ -1249,7 +1265,7 @@ TEST(Parse, literals)
 
         { AST_Instruction_Type::skip, 3 }, // 0
         { AST_Instruction_Type::push_positional_member }, 
-        { AST_Instruction_Type::decimal_integer, 1 }, 
+        { AST_Instruction_Type::decimal_int_literal, 1 }, 
         { AST_Instruction_Type::pop_positional_member },
         { AST_Instruction_Type::member_comma },
 
@@ -1274,6 +1290,154 @@ TEST(Parse, literals)
     };
     // clang-format on
     ASSERT_TRUE(run_parse_test(u8"literals.cow", expected));
+}
+
+TEST(Parse, floats)
+{
+    // clang-format off
+    static constexpr AST_Instruction expected[] {
+        { AST_Instruction_Type::push_document, 2 },
+        { AST_Instruction_Type::push_directive, 2 },
+        { AST_Instruction_Type::push_group, 15 },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 2 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 2 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 3 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 3 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 4 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 4 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 5 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 3 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 4 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 4 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 3 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 4 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 4 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 11 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 3 },
+        { AST_Instruction_Type::push_positional_member }, 
+        { AST_Instruction_Type::float_literal, 12 }, 
+        { AST_Instruction_Type::pop_positional_member },
+        { AST_Instruction_Type::member_comma },
+
+        { AST_Instruction_Type::skip, 1 },
+        { AST_Instruction_Type::pop_group },
+        { AST_Instruction_Type::pop_directive },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"floats.cow", expected));
+}
+
+TEST(Parse_And_Build, floats)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group({
+                    Node::positional({ Node::floating_point(u8"0."sv) }),
+                    Node::positional({ Node::floating_point(u8".0"sv) }),
+                    Node::positional({ Node::floating_point(u8"0.0"sv) }),
+                    Node::positional({ Node::floating_point(u8"0e0"sv) }),
+                    Node::positional({ Node::floating_point(u8"0.e0"sv) }),
+                    Node::positional({ Node::floating_point(u8".0e0"sv) }),
+                    Node::positional({ Node::floating_point(u8"0.0e0"sv) }),
+                    Node::positional({ Node::floating_point(u8"0e0"sv) }),
+                    Node::positional({ Node::floating_point(u8"0e+0"sv) }),
+                    Node::positional({ Node::floating_point(u8"0e-0"sv) }),
+                    Node::positional({ Node::floating_point(u8"0E0"sv) }),
+                    Node::positional({ Node::floating_point(u8"0E+0"sv) }),
+                    Node::positional({ Node::floating_point(u8"0E-0"sv) }),
+                    Node::positional({ Node::floating_point(u8"123.456e789"sv) }),
+                    Node::positional({ Node::floating_point(u8"-123.456e789"sv) }),
+                })
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    for (const auto& arg : expected.front().children.front().children) {
+        COWEL_ASSERT(arg.kind == Node_Kind::positional_argument);
+        const std::u8string_view literal = arg.children.front().name_or_text;
+        const std::optional<double> d = from_characters_or_inf<double>(literal);
+        ASSERT_TRUE(d);
+    }
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"floats.cow");
 }
 
 TEST(Parse, directive_names)
@@ -1406,7 +1570,7 @@ TEST(Parse, hello_directive)
         { AST_Instruction_Type::skip, 1 },
         { AST_Instruction_Type::member_equal },
         { AST_Instruction_Type::skip, 1 },
-        { AST_Instruction_Type::decimal_integer, 1 },          // "0"
+        { AST_Instruction_Type::decimal_int_literal, 1 },          // "0"
         { AST_Instruction_Type::pop_named_member },
 
         { AST_Instruction_Type::pop_group },

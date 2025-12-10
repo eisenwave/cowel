@@ -521,7 +521,9 @@ private:
             return consume_block();
         }
         default: {
-            return try_match_directive_call() || consume_unquoted_value();
+            return try_match_directive_call() //
+                || try_match_numeric_literal() //
+                || consume_unquoted_value();
         }
         }
     }
@@ -554,6 +556,27 @@ private:
         return true;
     }
 
+    bool try_match_numeric_literal()
+    {
+        const std::u8string_view remainder = peek_all();
+        if (remainder.empty()) {
+            return false;
+        }
+
+        const ulight::Common_Number_Result result = ulight::cowel::match_number(remainder);
+        if (!result || result.erroneous
+            || (result.length < remainder.length()
+                && ulight::is_cowel_unquoted_string(remainder[result.length]))) {
+            return false;
+        }
+
+        const auto type = result.is_integer() ? AST_Instruction_Type::decimal_int_literal
+                                              : AST_Instruction_Type::float_literal;
+        advance_by(result.length);
+        m_out.push_back({ type, result.length });
+        return true;
+    }
+
     bool consume_unquoted_value()
     {
         const std::u8string_view remainder = peek_all();
@@ -567,42 +590,27 @@ private:
             error(Source_Span { initial_pos, error_length }, u8"Invalid member value."sv);
             return false;
         }
-
         const std::u8string_view match = m_source.substr(m_pos.begin, length);
-        const bool has_minus = match[0] == u8'-';
-        {
-            const std::u8string_view digits = match.substr(std::size_t(has_minus));
-            const std::size_t digits_length
-                = ulight::ascii::length_if(digits, [](char8_t c) { return is_ascii_digit(c); });
-            COWEL_ASSERT(digits_length + std::size_t(has_minus) <= length);
 
-            if (digits.length() == digits_length) {
-                advance_by(length);
-                m_out.push_back({ AST_Instruction_Type::decimal_integer, length });
-                return true;
-            }
+        if (match == u8"unit"sv) {
+            advance_by(length);
+            m_out.push_back({ AST_Instruction_Type::keyword_unit, length });
+            return true;
         }
-        if (!has_minus) {
-            if (match == u8"unit"sv) {
-                advance_by(length);
-                m_out.push_back({ AST_Instruction_Type::keyword_unit, length });
-                return true;
-            }
-            if (match == u8"null"sv) {
-                advance_by(length);
-                m_out.push_back({ AST_Instruction_Type::keyword_null, length });
-                return true;
-            }
-            if (match == u8"true"sv) {
-                advance_by(length);
-                m_out.push_back({ AST_Instruction_Type::keyword_true, length });
-                return true;
-            }
-            if (match == u8"false"sv) {
-                advance_by(length);
-                m_out.push_back({ AST_Instruction_Type::keyword_false, length });
-                return true;
-            }
+        if (match == u8"null"sv) {
+            advance_by(length);
+            m_out.push_back({ AST_Instruction_Type::keyword_null, length });
+            return true;
+        }
+        if (match == u8"true"sv) {
+            advance_by(length);
+            m_out.push_back({ AST_Instruction_Type::keyword_true, length });
+            return true;
+        }
+        if (match == u8"false"sv) {
+            advance_by(length);
+            m_out.push_back({ AST_Instruction_Type::keyword_false, length });
+            return true;
         }
 
         advance_by(length);
@@ -711,7 +719,8 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         COWEL_ENUM_STRING_CASE8(escape);
         COWEL_ENUM_STRING_CASE8(text);
         COWEL_ENUM_STRING_CASE8(unquoted_string);
-        COWEL_ENUM_STRING_CASE8(decimal_integer);
+        COWEL_ENUM_STRING_CASE8(decimal_int_literal);
+        COWEL_ENUM_STRING_CASE8(float_literal);
         COWEL_ENUM_STRING_CASE8(keyword_true);
         COWEL_ENUM_STRING_CASE8(keyword_false);
         COWEL_ENUM_STRING_CASE8(keyword_null);

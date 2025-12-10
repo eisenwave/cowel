@@ -34,6 +34,7 @@ enum struct Primary_Kind : Default_Underlying {
     null,
     boolean,
     integer,
+    floating_point,
     unquoted_string,
     text,
     escape,
@@ -57,6 +58,7 @@ constexpr bool primary_kind_is_value(Primary_Kind kind)
     case null:
     case boolean:
     case integer:
+    case floating_point:
     case unquoted_string:
     case block:
     case quoted_string:
@@ -79,6 +81,7 @@ constexpr bool primary_kind_is_spliceable(Primary_Kind kind)
     case null:
     case boolean:
     case integer:
+    case floating_point:
     case unquoted_string:
     case quoted_string:
     case block:
@@ -105,8 +108,9 @@ constexpr std::u8string_view primary_kind_display_name(Primary_Kind kind)
     switch (kind) {
     case unit: return u8"unit";
     case null: return u8"null";
-    case boolean: return u8"boolean";
-    case integer: return u8"integer";
+    case boolean: return u8"boolean literal";
+    case integer: return u8"integer literal";
+    case floating_point: return u8"floating-point literal";
     case unquoted_string: return u8"unquoted string";
     case text: return u8"text";
     case escape: return u8"escape";

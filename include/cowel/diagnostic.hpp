@@ -93,6 +93,9 @@ inline constexpr std::u8string_view highlight_malformed = u8"highlight.malformed
 /// something went wrong.
 inline constexpr std::u8string_view highlight_error = u8"highlight.error";
 
+/// @brief The parsed value of a literal is too large to be represented as a value.
+inline constexpr std::u8string_view literal_out_of_range = u8"literal.out-of-range";
+
 /// @brief Unable to perform arithmetic due to a parse error.
 inline constexpr std::u8string_view arithmetic_parse = u8"arithmetic.parse";
 /// @brief Division by zero in arithmetic.
