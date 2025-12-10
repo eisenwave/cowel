@@ -606,6 +606,9 @@ The \gterm{int-literal} \cowdoc_c{-0123} represents the integer value -123.
 
 \codeblock(ebnf){
 float-literal
+  = [ "-" ], "infinity"
+  | decimal-float-literal;
+decimal-float-literal
   = [ "-" ], digit, { digit }, ".", { digit }, [ exponent ]
   | [ "-" ], ".", digit, { digit }, [ exponent ]
   | [ "-" ], digit, { digit }, exponent;
@@ -616,7 +619,10 @@ exponent
 A \gterm{float-literal} represents a value of type \cowdoc_type{float}
 (\ref("#type-float")).
 
-A \gterm{float-literal} consists of several parts:
+The value of '\tt{-infinity}' is negative infinity, and
+the value of '\tt{infinity}' is positive infinity.
+
+A \gterm{decimal-float-literal} consists of several parts:
 \ul{
   \li{
     An \dfn{integral part}, either matching a \gterm{int-literal}
@@ -635,7 +641,7 @@ A \gterm{float-literal} consists of several parts:
   }
 }
 
-The value of a \gterm{float-literal} is determined as follows:
+The value of a \gterm{decimal-float-literal} is determined as follows:
 
 \ol{
   \li{
@@ -648,7 +654,7 @@ The value of a \gterm{float-literal} is determined as follows:
     let \math{\mi{e}} be the integer value of the exponent.
   }
   \li{
-    Let the \dfn{scaled value} of the \gterm{float-literal} be
+    Let the \dfn{scaled value} of the \gterm{decimal-float-literal} be
     \mathblock{\mrow{
       \mi{s}
       \mo{×}
@@ -662,7 +668,7 @@ The value of a \gterm{float-literal} is determined as follows:
     }}
   }
   \li{
-    The value of the \gterm{float-literal} is the scaled value,
+    The value of the \gterm{decimal-float-literal} is the scaled value,
     rounded using the roundTiesToEven rounding direction
     as specified in IEEE-754.
   }

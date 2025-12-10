@@ -612,6 +612,16 @@ private:
             m_out.push_back({ AST_Instruction_Type::keyword_false, length });
             return true;
         }
+        if (match == u8"infinity"sv) {
+            advance_by(length);
+            m_out.push_back({ AST_Instruction_Type::keyword_infinity, length });
+            return true;
+        }
+        if (match == u8"-infinity"sv) {
+            advance_by(length);
+            m_out.push_back({ AST_Instruction_Type::keyword_neg_infinity, length });
+            return true;
+        }
 
         advance_by(length);
         m_out.push_back({ AST_Instruction_Type::unquoted_string, length });
@@ -725,6 +735,8 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         COWEL_ENUM_STRING_CASE8(keyword_false);
         COWEL_ENUM_STRING_CASE8(keyword_null);
         COWEL_ENUM_STRING_CASE8(keyword_unit);
+        COWEL_ENUM_STRING_CASE8(keyword_infinity);
+        COWEL_ENUM_STRING_CASE8(keyword_neg_infinity);
         COWEL_ENUM_STRING_CASE8(comment);
         COWEL_ENUM_STRING_CASE8(member_name);
         COWEL_ENUM_STRING_CASE8(ellipsis);

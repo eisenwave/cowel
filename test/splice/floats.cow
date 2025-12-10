@@ -5,3 +5,6 @@
 \cowel_pos(1e5)
 \cowel_pos(1e-10)
 \cowel_pos(1e100)
+
+\cowel_pos(infinity)
+\cowel_pos(-infinity)

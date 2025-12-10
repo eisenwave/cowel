@@ -38,6 +38,10 @@ enum struct AST_Instruction_Type : Default_Underlying {
     keyword_null,
     /// @brief The next `n` characters are `unit`.
     keyword_unit,
+    /// @brief The next `n` characters are `infinity`.
+    keyword_infinity,
+    /// @brief The next `n` characters are `-infinity`.
+    keyword_neg_infinity,
     /// @brief The next `n` characters are a comment,
     /// including the `\:` prefix and the terminating newline, if any.
     comment,

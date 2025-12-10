@@ -152,23 +152,27 @@ void Primary::assert_validity() const
     COWEL_ASSERT(m_source.length() == m_source_span.length);
 
     switch (m_kind) {
-    case Primary_Kind::unit: {
+    case Primary_Kind::unit_literal: {
         COWEL_ASSERT(m_source == u8"unit"sv);
         break;
     }
-    case Primary_Kind::null: {
+    case Primary_Kind::null_literal: {
         COWEL_ASSERT(m_source == u8"null"sv);
         break;
     }
-    case Primary_Kind::boolean: {
+    case Primary_Kind::bool_literal: {
         COWEL_ASSERT(m_source == u8"true"sv || m_source == u8"false"sv);
         break;
     }
-    case Primary_Kind::integer: {
+    case Primary_Kind::infinity: {
+        COWEL_ASSERT(m_source == u8"-infinity"sv || m_source == u8"infinity"sv);
+        break;
+    }
+    case Primary_Kind::int_literal: {
         COWEL_ASSERT(is_ascii_digit(m_source.at(0 + std::size_t(m_source.starts_with(u8'-')))));
         break;
     }
-    case Primary_Kind::floating_point:
+    case Primary_Kind::decimal_float_literal:
     case Primary_Kind::unquoted_string:
     case Primary_Kind::text: {
         break;
@@ -256,12 +260,14 @@ constexpr std::optional<ast::Primary_Kind> instruction_type_primary_kind(AST_Ins
     case escape: return ast::Primary_Kind::escape;
     case text: return ast::Primary_Kind::text;
     case unquoted_string: return ast::Primary_Kind::unquoted_string;
-    case decimal_int_literal: return ast::Primary_Kind::integer;
-    case float_literal: return ast::Primary_Kind::floating_point;
-    case keyword_unit: return ast::Primary_Kind::unit;
-    case keyword_null: return ast::Primary_Kind::null;
+    case decimal_int_literal: return ast::Primary_Kind::int_literal;
+    case float_literal: return ast::Primary_Kind::decimal_float_literal;
+    case keyword_unit: return ast::Primary_Kind::unit_literal;
+    case keyword_null: return ast::Primary_Kind::null_literal;
     case keyword_true:
-    case keyword_false: return ast::Primary_Kind::boolean;
+    case keyword_false: return ast::Primary_Kind::bool_literal;
+    case keyword_infinity:
+    case keyword_neg_infinity: return ast::Primary_Kind::infinity;
     case comment: return ast::Primary_Kind::comment;
     default: return {};
     }
@@ -551,6 +557,8 @@ private:
         case AST_Instruction_Type::keyword_null:
         case AST_Instruction_Type::keyword_true:
         case AST_Instruction_Type::keyword_false:
+        case AST_Instruction_Type::keyword_infinity:
+        case AST_Instruction_Type::keyword_neg_infinity:
         case AST_Instruction_Type::unquoted_string:
         case AST_Instruction_Type::decimal_int_literal:
         case AST_Instruction_Type::float_literal: {

@@ -141,11 +141,12 @@ const Type& get_type(const ast::Primary& primary)
     static const Type group_anything = Type::group_of({ Type::pack_of(auto(Type::any)) });
 
     switch (primary.get_kind()) {
-    case ast::Primary_Kind::unit: return Type::unit;
-    case ast::Primary_Kind::null: return Type::null;
-    case ast::Primary_Kind::boolean: return Type::boolean;
-    case ast::Primary_Kind::integer: return Type::integer;
-    case ast::Primary_Kind::floating_point: return Type::floating;
+    case ast::Primary_Kind::unit_literal: return Type::unit;
+    case ast::Primary_Kind::null_literal: return Type::null;
+    case ast::Primary_Kind::bool_literal: return Type::boolean;
+    case ast::Primary_Kind::int_literal: return Type::integer;
+    case ast::Primary_Kind::decimal_float_literal:
+    case ast::Primary_Kind::infinity: return Type::floating;
     case ast::Primary_Kind::unquoted_string:
     case ast::Primary_Kind::quoted_string: return Type::str;
     case ast::Primary_Kind::block: return Type::block;
@@ -350,15 +351,15 @@ Processing_Status splice_primary(
     COWEL_ASSERT(primary.is_spliceable_value());
 
     switch (primary.get_kind()) {
-    case ast::Primary_Kind::unit:
-    case ast::Primary_Kind::null:
-    case ast::Primary_Kind::boolean:
+    case ast::Primary_Kind::unit_literal:
+    case ast::Primary_Kind::null_literal:
+    case ast::Primary_Kind::bool_literal:
     case ast::Primary_Kind::unquoted_string: {
         out.write(primary.get_source(), Output_Language::text);
         return Processing_Status::ok;
     }
-    case ast::Primary_Kind::integer:
-    case ast::Primary_Kind::floating_point: {
+    case ast::Primary_Kind::int_literal:
+    case ast::Primary_Kind::decimal_float_literal: {
         const Result<Value, Processing_Status> value = evaluate(primary, frame, context);
         COWEL_ASSERT(value);
         return splice_value(out, *value, context);
@@ -522,14 +523,16 @@ Plaintext_Result splice_to_plaintext_optimistic(
 {
     COWEL_ASSERT(buffer.empty());
     switch (value.get_kind()) {
-    case ast::Primary_Kind::unit: {
+    case ast::Primary_Kind::unit_literal: {
         return { Processing_Status::ok, {} };
     }
 
-    case ast::Primary_Kind::null:
-    case ast::Primary_Kind::boolean:
-    case ast::Primary_Kind::integer:
-    case ast::Primary_Kind::floating_point:
+    case ast::Primary_Kind::null_literal:
+    case ast::Primary_Kind::bool_literal:
+    // FIXME: simply taking the original source representation is wrong for int and float
+    case ast::Primary_Kind::int_literal:
+    case ast::Primary_Kind::decimal_float_literal:
+    case ast::Primary_Kind::infinity:
     case ast::Primary_Kind::unquoted_string: {
         return { Processing_Status::ok, value.get_source() };
     }
@@ -618,18 +621,18 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
     COWEL_ASSERT(value.is_value());
 
     switch (value.get_kind()) {
-    case ast::Primary_Kind::unit: return Value::unit;
-    case ast::Primary_Kind::null: return Value::null;
-    case ast::Primary_Kind::boolean: {
+    case ast::Primary_Kind::unit_literal: return Value::unit;
+    case ast::Primary_Kind::null_literal: return Value::null;
+    case ast::Primary_Kind::bool_literal: {
         const bool v = value.get_source() == u8"true"sv;
         COWEL_DEBUG_ASSERT(v || value.get_source() == u8"false");
         return Value::boolean(v);
     }
-    case ast::Primary_Kind::integer: {
+    case ast::Primary_Kind::int_literal: {
         const std::optional<Integer> parsed = from_characters<Integer>(value.get_source());
         return Value::integer(parsed.value());
     }
-    case ast::Primary_Kind::floating_point: {
+    case ast::Primary_Kind::decimal_float_literal: {
         const std::optional<Float> parsed = from_characters_or_inf<Float>(value.get_source());
         COWEL_ASSERT(parsed); // If parsing fails, the language parser has a bug.
         COWEL_DEBUG_ASSERT(!std::isnan(*parsed));
@@ -646,6 +649,10 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
             );
         }
         return Value::floating(*parsed);
+    }
+    case ast::Primary_Kind::infinity: {
+        const Float sign = value.get_source().starts_with(u8'-') ? -1 : 1;
+        return Value::floating(std::copysign(std::numeric_limits<Float>::infinity(), sign));
     }
     case ast::Primary_Kind::unquoted_string: {
         return Value::static_string(value.get_source());

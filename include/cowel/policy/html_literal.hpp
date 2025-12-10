@@ -50,11 +50,12 @@ struct HTML_Literal_Content_Policy : virtual HTML_Content_Policy {
         case ast::Primary_Kind::comment: {
             break;
         }
-        case ast::Primary_Kind::unit:
-        case ast::Primary_Kind::null:
-        case ast::Primary_Kind::boolean:
-        case ast::Primary_Kind::integer:
-        case ast::Primary_Kind::floating_point:
+        case ast::Primary_Kind::unit_literal:
+        case ast::Primary_Kind::null_literal:
+        case ast::Primary_Kind::bool_literal:
+        case ast::Primary_Kind::int_literal:
+        case ast::Primary_Kind::decimal_float_literal:
+        case ast::Primary_Kind::infinity:
         case ast::Primary_Kind::unquoted_string:
         case ast::Primary_Kind::quoted_string:
         case ast::Primary_Kind::block:

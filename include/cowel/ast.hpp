@@ -30,11 +30,12 @@ template <typename T>
 using Pmr_Vector = std::vector<T, Propagated_Polymorphic_Allocator<T>>;
 
 enum struct Primary_Kind : Default_Underlying {
-    unit,
-    null,
-    boolean,
-    integer,
-    floating_point,
+    unit_literal,
+    null_literal,
+    bool_literal,
+    int_literal,
+    decimal_float_literal,
+    infinity,
     unquoted_string,
     text,
     escape,
@@ -54,11 +55,12 @@ constexpr bool primary_kind_is_value(Primary_Kind kind)
 {
     using enum Primary_Kind;
     switch (kind) {
-    case unit:
-    case null:
-    case boolean:
-    case integer:
-    case floating_point:
+    case unit_literal:
+    case null_literal:
+    case bool_literal:
+    case int_literal:
+    case decimal_float_literal:
+    case infinity:
     case unquoted_string:
     case block:
     case quoted_string:
@@ -77,11 +79,12 @@ constexpr bool primary_kind_is_spliceable(Primary_Kind kind)
 {
     using enum Primary_Kind;
     switch (kind) {
-    case unit:
-    case null:
-    case boolean:
-    case integer:
-    case floating_point:
+    case unit_literal:
+    case null_literal:
+    case bool_literal:
+    case int_literal:
+    case decimal_float_literal:
+    case infinity:
     case unquoted_string:
     case quoted_string:
     case block:
@@ -106,11 +109,12 @@ constexpr std::u8string_view primary_kind_display_name(Primary_Kind kind)
 {
     using enum Primary_Kind;
     switch (kind) {
-    case unit: return u8"unit";
-    case null: return u8"null";
-    case boolean: return u8"boolean literal";
-    case integer: return u8"integer literal";
-    case floating_point: return u8"floating-point literal";
+    case unit_literal: return u8"unit";
+    case null_literal: return u8"null";
+    case bool_literal: return u8"boolean literal";
+    case int_literal: return u8"integer literal";
+    case decimal_float_literal: return u8"floating-point literal";
+    case infinity: return u8"infinity";
     case unquoted_string: return u8"unquoted string";
     case text: return u8"text";
     case escape: return u8"escape";

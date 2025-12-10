@@ -374,6 +374,20 @@ Unary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
     const auto& first_value = group_matcher.get_values().front().value;
     const auto& first_type = first_value.get_type();
 
+    if (!first_type.analytically_convertible_to(numeric_type)) {
+        context.try_error(
+            diagnostic::type_mismatch, group_matcher.get_values().front().location,
+            joined_char_sequence({
+                u8"Expected a value of type "sv,
+                numeric_type.get_display_name(),
+                u8", but got "sv,
+                first_type.get_display_name(),
+                u8".",
+            })
+        );
+        return Processing_Status::error;
+    }
+
     switch (first_type.get_kind()) {
     case Type_Kind::integer: {
         return Value::integer(operate_unary(m_expression_kind, first_value.as_integer()));

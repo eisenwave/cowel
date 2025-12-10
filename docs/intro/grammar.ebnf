@@ -73,6 +73,9 @@ bool-literal
 int-literal
   = [ "-" ], digit, { digit };
 float-literal
+  = [ "-" ], "infinity"
+  | decimal-float-literal;
+decimal-float-literal
   = [ "-" ], digit, { digit }, ".", { digit }, [ exponent ]
   | [ "-" ], ".", digit, { digit }, [ exponent ]
   | [ "-" ], digit, { digit }, exponent;

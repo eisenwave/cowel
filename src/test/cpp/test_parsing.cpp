@@ -37,11 +37,12 @@ std::ostream& operator<<(std::ostream& out, std::u8string_view str)
 }
 
 enum struct Node_Kind : Default_Underlying {
-    unit,
-    null,
+    unit_literal,
+    null_literal,
     bool_literal,
     int_literal,
-    float_literal,
+    decimal_float_literal,
+    infinity,
     unquoted_string,
     text,
     escape,
@@ -63,13 +64,13 @@ struct Node {
     [[nodiscard]]
     static Node unit(std::u8string_view text)
     {
-        return { .kind = Node_Kind::unit, .name_or_text = text };
+        return { .kind = Node_Kind::unit_literal, .name_or_text = text };
     }
 
     [[nodiscard]]
     static Node null(std::u8string_view text)
     {
-        return { .kind = Node_Kind::null, .name_or_text = text };
+        return { .kind = Node_Kind::null_literal, .name_or_text = text };
     }
 
     [[nodiscard]]
@@ -93,7 +94,13 @@ struct Node {
     [[nodiscard]]
     static Node floating_point(std::u8string_view text)
     {
-        return { .kind = Node_Kind::float_literal, .name_or_text = text };
+        return { .kind = Node_Kind::decimal_float_literal, .name_or_text = text };
+    }
+
+    [[nodiscard]]
+    static Node infinity(std::u8string_view text)
+    {
+        return { .kind = Node_Kind::infinity, .name_or_text = text };
     }
 
     [[nodiscard]]
@@ -229,15 +236,15 @@ struct Node {
     {
         switch (const auto kind = actual.get_kind()) {
 
-        case ast::Primary_Kind::unit: {
+        case ast::Primary_Kind::unit_literal: {
             return unit(actual.get_source());
         }
 
-        case ast::Primary_Kind::null: {
+        case ast::Primary_Kind::null_literal: {
             return null(actual.get_source());
         }
 
-        case ast::Primary_Kind::boolean: {
+        case ast::Primary_Kind::bool_literal: {
             return boolean(actual.get_source());
         }
 
@@ -245,12 +252,16 @@ struct Node {
             return unquoted_string(actual.get_source());
         }
 
-        case ast::Primary_Kind::integer: {
+        case ast::Primary_Kind::int_literal: {
             return integer(actual.get_source());
         }
 
-        case ast::Primary_Kind::floating_point: {
+        case ast::Primary_Kind::decimal_float_literal: {
             return floating_point(actual.get_source());
+        }
+
+        case ast::Primary_Kind::infinity: {
+            return infinity(actual.get_source());
         }
 
         case ast::Primary_Kind::text: {
@@ -371,12 +382,12 @@ constexpr Static_String8<2> special_escaped(char8_t c)
 std::ostream& operator<<(std::ostream& out, const Node& node)
 {
     switch (node.kind) {
-    case Node_Kind::unit: {
-        return out << "Unit(" << node.name_or_text << ')';
+    case Node_Kind::unit_literal: {
+        return out << "UnitLiteral(" << node.name_or_text << ')';
     }
 
-    case Node_Kind::null: {
-        return out << "Null(" << node.name_or_text << ')';
+    case Node_Kind::null_literal: {
+        return out << "NullLiteral(" << node.name_or_text << ')';
     }
 
     case Node_Kind::bool_literal: {
@@ -387,8 +398,12 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
         return out << "IntLiteral(" << node.name_or_text << ')';
     }
 
-    case Node_Kind::float_literal: {
+    case Node_Kind::decimal_float_literal: {
         return out << "FloatLiteral(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::infinity: {
+        return out << "Infinity(" << node.name_or_text << ')';
     }
 
     case Node_Kind::unquoted_string: {

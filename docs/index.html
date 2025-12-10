@@ -2033,6 +2033,9 @@ a <g-term>document</g-term> is constructed as follows:
 <h- data-h=name_nt_decl>int-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>float-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>infinity</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>decimal-float-literal</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>decimal-float-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>exponent</h-> <h- data-h=sym_sqr>]</h->
   <h- data-h=sym_op>|</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>exponent</h-> <h- data-h=sym_sqr>]</h->
   <h- data-h=sym_op>|</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>exponent</h-><h- data-h=sym_punc>;</h->
@@ -2603,6 +2606,9 @@ The <g-term>int-literal</g-term> <code>-0123</code> represents the integer value
 <h4 id=float-literal><a class=para href=#float-literal></a>4.6.2. <g-term>float-literal</g-term> — Floating-point literal</h4>
 
 <code-block><h- data-h=name_nt_decl>float-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>infinity</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>decimal-float-literal</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>decimal-float-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>exponent</h-> <h- data-h=sym_sqr>]</h->
   <h- data-h=sym_op>|</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>exponent</h-> <h- data-h=sym_sqr>]</h->
   <h- data-h=sym_op>|</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>exponent</h-><h- data-h=sym_punc>;</h->
@@ -2612,7 +2618,10 @@ The <g-term>int-literal</g-term> <code>-0123</code> represents the integer value
 <p>A <g-term>float-literal</g-term> represents a value of type <tt-><h- data-h=kw_type>float</h-></tt->
 (<a href=#type-float>§6.2.7. <tt-><h- data-h=kw_type>float</h-></tt-> — 64-bit floating-point number</a>).
 </p>
-<p>A <g-term>float-literal</g-term> consists of several parts:
+<p>The value of '<tt->-infinity</tt->' is negative infinity, and
+the value of '<tt->infinity</tt->' is positive infinity.
+</p>
+<p>A <g-term>decimal-float-literal</g-term> consists of several parts:
 </p><ul>
   <li>
     An <dfn>integral part</dfn>, either matching a <g-term>int-literal</g-term>
@@ -2631,7 +2640,7 @@ The <g-term>int-literal</g-term> <code>-0123</code> represents the integer value
   </li>
 </ul>
 
-<p>The value of a <g-term>float-literal</g-term> is determined as follows:
+<p>The value of a <g-term>decimal-float-literal</g-term> is determined as follows:
 </p>
 <ol>
   <li>
@@ -2644,7 +2653,7 @@ The <g-term>int-literal</g-term> <code>-0123</code> represents the integer value
     let <math display=inline><mi>e</mi></math> be the integer value of the exponent.
   </li>
   <li>
-    Let the <dfn>scaled value</dfn> of the <g-term>float-literal</g-term> be
+    Let the <dfn>scaled value</dfn> of the <g-term>decimal-float-literal</g-term> be
     <math display=block><mrow>
       <mi>s</mi>
       <mo>×</mo>
@@ -2658,7 +2667,7 @@ The <g-term>int-literal</g-term> <code>-0123</code> represents the integer value
     </mrow></math>
   </li>
   <li>
-    The value of the <g-term>float-literal</g-term> is the scaled value,
+    The value of the <g-term>decimal-float-literal</g-term> is the scaled value,
     rounded using the roundTiesToEven rounding direction
     as specified in IEEE-754.
   </li>

@@ -8,8 +8,10 @@
   - `Csub` (use `cowel_sub` instead)
   - `Cmul` (use `cowel_mul` instead)
   - `Cdiv` (use `cowel_div_to_zero` instead)
-- change the syntax of directive arguments (#87)
-- add support for typed values in builtin directives (#88, #107)
+- change the syntax of directive arguments (#87, #107, #109, #111, #112)
+  - there are now values/literals of specific types
+  - only specific strings are allowed to be unquoted, rather than this being the default
+- add support for typed values in builtin directives (#88)
 - add the following basic arithmetic directives (#98):
   - `cowel_pos` (`+`)
   - `cowel_neg` (`-`)
