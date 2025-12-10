@@ -99,7 +99,7 @@ Basic_Characters<Char, 128> to_characters(T x, std::chars_format format)
 
         array_type chars {};
         auto* const buffer_start = chars.data();
-        const auto result = std::to_chars(buffer_start, buffer_start + chars.size(), x);
+        const auto result = std::to_chars(buffer_start, buffer_start + chars.size(), x, format);
         COWEL_ASSERT(result.ec == std::errc {});
         const auto result_length = std::size_t(result.ptr - buffer_start);
 
