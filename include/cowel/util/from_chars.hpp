@@ -14,21 +14,16 @@
 
 namespace cowel {
 
-template <typename T>
-concept character_extractible = requires(const char* p, T& out) { std::from_chars(p, p, out); };
-
 // INTEGRAL ====================================================================
 
-template <character_extractible T>
-    requires std::integral<T>
+template <std::integral T>
 [[nodiscard]]
 constexpr std::from_chars_result from_characters(std::string_view sv, T& out, int base = 10)
 {
     return std::from_chars(sv.data(), sv.data() + sv.size(), out, base);
 }
 
-template <character_extractible T>
-    requires std::default_initializable<T> && std::integral<T>
+template <std::integral T>
 [[nodiscard]]
 constexpr std::optional<T> from_characters(std::string_view sv, int base = 10)
 {
@@ -40,16 +35,14 @@ constexpr std::optional<T> from_characters(std::string_view sv, int base = 10)
     return result;
 }
 
-template <character_extractible T>
-    requires std::integral<T>
+template <std::integral T>
 [[nodiscard]]
 inline std::from_chars_result from_characters(std::u8string_view sv, T& out, int base = 10)
 {
     return from_characters(as_string_view(sv), out, base);
 }
 
-template <character_extractible T>
-    requires std::integral<T>
+template <std::integral T>
 [[nodiscard]]
 std::optional<T> from_characters(std::u8string_view sv, int base = 10)
 {
@@ -58,27 +51,68 @@ std::optional<T> from_characters(std::u8string_view sv, int base = 10)
 
 // FLOATING POINT ==============================================================
 
-template <character_extractible T>
-    requires std::floating_point<T>
+namespace detail {
+
+inline void str_to_float(const char* str, char** str_end, float& result)
+{
+    result = std::strtof(str, str_end);
+}
+inline void str_to_float(const char* str, char** str_end, double& result)
+{
+    result = std::strtod(str, str_end);
+}
+inline void str_to_float(const char* str, char** str_end, long double& result)
+{
+    result = std::strtold(str, str_end);
+}
+
+} // namespace detail
+
+template <std::floating_point T>
 [[nodiscard]]
 std::from_chars_result
 from_characters(std::string_view sv, T& out, std::chars_format fmt = std::chars_format::general)
 {
-    const std::from_chars_result result
-        = std::from_chars(sv.data(), sv.data() + sv.size(), out, fmt);
-#ifdef __GLIBCXX__
-    // This is a workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123078
-    // In the case of underflow, std::from_chars can produce a positive zero
-    // despite the leading minus.
-    if (result.ec == std::errc {} && sv.starts_with('-')) {
-        out = std::copysign(out, T { -1 });
+    // For a very long time, only libstdc++, not libc++ had floating-point support.
+    // If need be, we emulate std::from_chars using std::strtod et al.
+#ifdef _LIBCPP_VERSION
+    if constexpr (!requires { std::from_chars(sv.data(), sv.data() + sv.size(), out, fmt); }) {
+        std::string buffer(sv);
+        COWEL_ASSERT(fmt == std::chars_format::general);
+        char* end = nullptr;
+        char** str_end = &end;
+        detail::str_to_float(buffer.c_str(), str_end, out);
+        if (*str_end == buffer.c_str()) {
+            return { sv.data(), std::errc::invalid_argument };
+        }
+        if (std::isinf(out) && !buffer.starts_with("-I") && !buffer.starts_with("-i")
+            && !buffer.starts_with("+I") && !buffer.starts_with("+i") && !buffer.starts_with('I')
+            && !buffer.starts_with('i')) {
+            return { sv.data(), std::errc::result_out_of_range };
+        }
+        const std::ptrdiff_t matched_length = end - buffer.data();
+        return { sv.data() + matched_length, std::errc {} };
     }
+    else
 #endif
-    return result;
+    {
+#ifdef __GLIBCXX__
+        out = T { 0 };
+#endif
+        const std::from_chars_result result
+            = std::from_chars(sv.data(), sv.data() + sv.size(), out, fmt);
+#ifdef __GLIBCXX__
+        // This is a workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123078
+        // std::from_chars doesn't handle underflow properly.
+        if (result.ec == std::errc {} && sv.starts_with('-')) {
+            out = std::copysign(out, T { -1 });
+        }
+#endif
+        return result;
+    }
 }
 
-template <character_extractible T>
-    requires std::floating_point<T>
+template <std::floating_point T>
 [[nodiscard]]
 Result<T, std::errc>
 from_characters(std::string_view sv, std::chars_format fmt = std::chars_format::general)
@@ -90,8 +124,7 @@ from_characters(std::string_view sv, std::chars_format fmt = std::chars_format::
     return result;
 }
 
-template <character_extractible T>
-    requires std::floating_point<T>
+template <std::floating_point T>
 [[nodiscard]]
 inline std::from_chars_result
 from_characters(std::u8string_view sv, T& out, std::chars_format fmt = std::chars_format::general)
@@ -99,8 +132,7 @@ from_characters(std::u8string_view sv, T& out, std::chars_format fmt = std::char
     return from_characters(as_string_view(sv), out, fmt);
 }
 
-template <character_extractible T>
-    requires std::floating_point<T>
+template <std::floating_point T>
 [[nodiscard]]
 Result<T, std::errc>
 from_characters(std::u8string_view sv, std::chars_format fmt = std::chars_format::general)
@@ -110,8 +142,7 @@ from_characters(std::u8string_view sv, std::chars_format fmt = std::chars_format
 
 /// @brief Like `from_chars`,
 /// but silently accepts values which are out of range and treats them as infinity.
-template <character_extractible T>
-    requires std::floating_point<T>
+template <std::floating_point T>
 [[nodiscard]]
 std::optional<T>
 from_characters_or_inf(std::string_view sv, std::chars_format fmt = std::chars_format::general)
@@ -126,8 +157,7 @@ from_characters_or_inf(std::string_view sv, std::chars_format fmt = std::chars_f
 
 /// @brief Like `from_chars`,
 /// but silently accepts values which are out of range and treats them as infinity.
-template <character_extractible T>
-    requires std::floating_point<T>
+template <std::floating_point T>
 [[nodiscard]]
 std::optional<T>
 from_characters_or_inf(std::u8string_view sv, std::chars_format fmt = std::chars_format::general)
