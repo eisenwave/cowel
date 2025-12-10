@@ -120,6 +120,13 @@ public:
         return m_buffer.begin() + std::ptrdiff_t(m_length);
     }
 
+    constexpr void erase(std::size_t index)
+    {
+        COWEL_ASSERT(index < m_length);
+        std::shift_left(m_buffer.begin() + std::ptrdiff_t(index), m_buffer.end(), 1);
+        m_length -= 1;
+    }
+
     constexpr void remove_prefix(std::size_t n)
     {
         // TODO: Use std::ranges overload once available.
