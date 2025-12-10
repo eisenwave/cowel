@@ -544,3 +544,138 @@ Only one such block of content can be provided, unlike in TeX,
 which has a similar syntax,
 but permits multiple blocks. Each block is separated by a pair of braces.
 }
+
+\h3{Literals}
+
+Inside scripting contexts such as in directive arguments,
+a \gterm{primary-value} may appear.
+A \gterm{primary-value} represents a value of a basic type (\ref("#types-intro")).
+
+\codeblock(ebnf){
+primary-value
+  = unit-literal
+  | null-literal
+  | bool-literal
+  | int-literal
+  | float-literal
+  | unquoted-string
+  | quoted-string
+  | block
+  | group;
+}
+
+Some literals are simply keywords:
+
+\ul{
+  \li{
+    The literal \cowdoc_c{unit} represents the value of type \cowdoc_type{unit}
+    (\ref("#type-unit")).
+  }
+  \li{
+    The literal \cowdoc_c{null} represents the value of type \cowdoc_type{null}
+    (\ref("#type-null")).
+  }
+  \li{
+    The literals \cowdoc_c{true} and \cowdoc_c{false} represent values of type \cowdoc_type{bool}
+    (\ref("#type-bool")).
+  }
+}
+
+\h4(id=int-literal){\gterm{int-literal} \N{EM DASH} Integer literal}
+
+\codeblock(ebnf){
+int-literal
+  = [ "-" ], digit, { digit };
+}
+
+An \gterm{int-literal} represents a value of type \cowdoc_type{int}
+(\ref("#type-int")).
+
+The value is of a \gterm{int-literal} is determined by
+interpreting each \gterm{digit} from left to right
+as decimal digits of an integer,
+from most significant to least significant.
+Leading zeros are ignored.
+The value is negative if the leading \cowdoc_cp{002D} is present.
+
+\Bex{
+The \gterm{int-literal} \cowdoc_c{-0123} represents the integer value -123.
+}
+
+\h4(id=float-literal){\gterm{float-literal} \N{EM DASH} Floating-point literal}
+
+\codeblock(ebnf){
+float-literal
+  = [ "-" ], digit, { digit }, ".", { digit }, [ exponent ]
+  | [ "-" ], ".", digit, { digit }, [ exponent ]
+  | [ "-" ], digit, { digit }, exponent;
+exponent
+  = ("e" | "E"), [ "+" | "-" ], digit, { digit };
+}
+
+A \gterm{float-literal} represents a value of type \cowdoc_type{float}
+(\ref("#type-float")).
+
+A \gterm{float-literal} consists of several parts:
+\ul{
+  \li{
+    An \dfn{integral part}, either matching a \gterm{int-literal}
+    or consisting of only a leading \cowdoc_cp{002D},
+    which is equivalent to '\tt{-0}'.
+  }
+  \li{
+    The radix point \cowdoc_cp{002E}.
+  }
+  \li{
+    A \dfn{fractional part} consisting of \gterm{digit}s following the radix point.
+    An absent fractional part is equivalent to '\tt{0}'.
+  }
+  \li{
+    An \gterm{exponent}.
+  }
+}
+
+The value of a \gterm{float-literal} is determined as follows:
+
+\ol{
+  \li{
+    Let \math{\mi{s}} be -1 if the leading \cowdoc_cp{002D} is present,
+    otherwise 1;
+    let \math{\mi{k}} be the integer value of the integral part
+    (determined as for a \gterm{int-literal});
+    let \math{\mi{f}} be the the integer value of the fractional part;
+    let \math{\mi{p}} be the amount of digits including leading zeros of the fractional part;
+    let \math{\mi{e}} be the integer value of the exponent.
+  }
+  \li{
+    Let the \dfn{scaled value} of the \gterm{float-literal} be
+    \mathblock{\mrow{
+      \mi{s}
+      \mo{×}
+      \mo{\N{LEFT PARENTHESIS}}
+      \mi{k}
+      \mo{+}
+      \mfrac{\mi{f}\msup{\mn{10}\mi{p}}}
+      \mo{\N{RIGHT PARENTHESIS}}
+      \mo{×}
+      \msup{\mn{10}\mi{e}}
+    }}
+  }
+  \li{
+    The value of the \gterm{float-literal} is the scaled value,
+    rounded using the roundTiesToEven rounding direction
+    as specified in IEEE-754.
+  }
+}
+
+\Bex{
+\ul{
+  \li{\cowdoc_c{1.0} exactly represents the value 1.0.}
+  \li{\cowdoc_c{.1} is rounded to a value nearest to 0.1.}
+  \li{\cowdoc_c{1e1000000} is rounded to positive infinity.}
+  \li{\cowdoc_c{-1e1000000} is rounded to negative infinity.}
+  \li{\cowdoc_c{1e-1000000} is rounded to positive zero.}
+  \li{\cowdoc_c{-1e-1000000} is rounded to negative zero.}
+  \li{\cowdoc_c{-0.0} exactly represents a negative zero.}
+}
+}

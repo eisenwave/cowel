@@ -295,14 +295,15 @@ The effect of splicing depends on the type of value:
   }
   \li{
     Splicing a value of type \cowdoc_type{int} produces
-    a string representing the value in decimal form.
-    For example, both \cowdoc_c{15} and \cowdoc_c{0xf}
-    result in \cowdoc_c{"15"} when spliced.
+    a string representing the value in decimal form
+    without leading zeros.
+    For example, the \gterm{int-literal} \cowdoc_c{-015}
+    result in '\tt{-15}' when spliced.
   }
   \li{
     Splicing a value of type \cowdoc_type{float} produces
-    a string representing the value in decimal form.
-    For example, \cowdoc_c{0.5} results in \cowdoc_c{"0.5"} when spliced.
+    a string representing the value in decimal form
+    as specified below.
   }
   \li{
     Splicing a value of type \cowdoc_type{str} produces
@@ -315,6 +316,70 @@ The effect of splicing depends on the type of value:
     Splicing a value of type \cowdoc_type{group} raises an error.
   }
 }
+
+\h4(id=splicing-float){Splicing values of type \cowdoc_type{float}}
+
+Splicing a value \math{\mi{x}} of type \cowdoc_type{float}
+is done as follows:
+
+\ul{
+  \li{
+    If \math{\mi{x}} is a finite value,
+    the numeric value in decimal form is produced.
+    There are infinitely many such representations;
+    one is chosen as follows:
+    \ul{
+      \li{
+        The shortest representation is chosen so that
+        when a trailing '\tt{.}' is added (if need be),
+        when the representation is interpreted as a
+        \gterm{float-literal}, the same rounded value is recovered.
+        Representations with empty integral or fractional part
+        adjacent to '\tt{.}' are not eligible.
+        Only exponents starting with '\tt{e+}' or '\tt{e-}' are eligible.
+
+        \Bex{\tt{0.1} is chosen over \tt{0.100000000000000005551}
+        when splicing a \gterm{float-literal} spelled \tt{0.1},
+        despite the latter representation being a more accurate representation.
+        \tt{.1} is not chosen because it has an empty integral part.
+        
+        Both \tt{1000} and \tt{1e+3} are equally good candidates for representing the value 1000
+        because appending a '\tt{.}' would make it a valid \gterm{float-literal}
+        but this added '\tt{.}' is not counted towards the length.
+        }
+      }
+      \li{
+        Then, if there are several such representations,
+        the representation with the smallest difference from \math{\mi{x}} is chosen.
+      }
+      \li{
+        Then, if there are several such equidistant representations,
+        the differences are rounded using roundTiesToEven as specified in IEEE-754, and
+        the representation with the smallest rounded difference from \math{\mi{x}} is chosen.
+      }
+      \li{
+        Then, if there are several such equidistant representations,
+        the one without an \gterm{exponent} is chosen.
+        \Bex{\tt{1000} is chosen over \tt{1e+3} as a representation of 1000.}
+      }
+    }
+    All negative values are represented with a leading \cowdoc_cp{002D},
+    including negative zero.
+  }
+  \li{
+    Otherwise, if \math{\mi{x}} is positive infinity,
+    '\tt{infinity}' is produced.
+  }
+  \li{
+    Otherwise, if \math{\mi{x}} is negative infinity,
+    '\tt{-infinity}' is produced.
+  }
+  \li{
+    Otherwise, if \math{\mi{x}} is NaN,
+    '\tt{NaN}' is produced.
+  }
+}
+
 
 \comment{
 \h3{Type checking}

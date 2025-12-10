@@ -1513,6 +1513,12 @@ h1 {
 <a href=#groups><h5>Groups</h5></a>
 <div class=toc-num data-level=4>4.5.3</div>
 <a href=#directive-content><h4>Directive content</h4></a>
+<div class=toc-num data-level=3>4.6</div>
+<a href=#literals><h3>Literals</h3></a>
+<div class=toc-num data-level=4>4.6.1</div>
+<a href=#int-literal><h4><g-term>int-literal</g-term> — Integer literal</h4></a>
+<div class=toc-num data-level=4>4.6.2</div>
+<a href=#float-literal><h4><g-term>float-literal</g-term> — Floating-point literal</h4></a>
 <div class=toc-num data-level=2>5</div>
 <a href=#document-processing><h2>Document processing</h2></a>
 <div class=toc-num data-level=3>5.1</div>
@@ -1561,6 +1567,8 @@ h1 {
 <a href=#shorthand-notation-for-optional-types-><h5>Shorthand notation for optional types (<tt->?</tt->)</h5></a>
 <div class=toc-num data-level=3>6.4</div>
 <a href=#splicing><h3>Splicing</h3></a>
+<div class=toc-num data-level=4>6.4.1</div>
+<a href=#splicing-float><h4>Splicing values of type <tt-><h- data-h=kw_type>float</h-></tt-></h4></a>
 <div class=toc-num data-level=2>7</div>
 <a href=#themes><h2>Themes</h2></a>
 <div class=toc-num data-level=2>8</div>
@@ -2009,20 +2017,27 @@ a <g-term>document</g-term> is constructed as follows:
 <h- data-h=name_nt_decl>primary-value</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>unit-literal</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>null-literal</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>boolean-literal</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>integer-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>bool-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>int-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>float-literal</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>unquoted-string</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>quoted-string</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>group</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>block</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>block</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>unit-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>unit</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>null-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>null</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>boolean-literal</h->
+<h- data-h=name_nt_decl>bool-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>true</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>false</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>integer-literal</h->
-  <h- data-h=sym_punc>=</h->  <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>int-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>float-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>exponent</h-> <h- data-h=sym_sqr>]</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>exponent</h-> <h- data-h=sym_sqr>]</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>exponent</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>exponent</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>e</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>E</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>unquoted-string</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>unquoted-string-char</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>unquoted-string-char</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>unquoted-string-char</h->
@@ -2531,6 +2546,135 @@ Only one such block of content can be provided, unlike in TeX,
 which has a similar syntax,
 but permits multiple blocks. Each block is separated by a pair of braces.
 </p></note-block>
+
+<h3 id=literals><a class=para href=#literals></a>4.6. Literals</h3>
+
+<p>Inside scripting contexts such as in directive arguments,
+a <g-term>primary-value</g-term> may appear.
+A <g-term>primary-value</g-term> represents a value of a basic type (<a href=#types-intro>§6. Types</a>).
+</p>
+<code-block><h- data-h=name_nt_decl>primary-value</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>unit-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>null-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>bool-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>int-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>float-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>unquoted-string</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>quoted-string</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>block</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<p>Some literals are simply keywords:
+</p>
+<ul>
+  <li>
+    The literal <code>unit</code> represents the value of type <tt-><h- data-h=kw_type>unit</h-></tt->
+    (<a href=#type-unit>§6.2.3. <tt-><h- data-h=kw_type>unit</h-></tt-> — Unit type</a>).
+  </li>
+  <li>
+    The literal <code>null</code> represents the value of type <tt-><h- data-h=kw_type>null</h-></tt->
+    (<a href=#type-null>§6.2.4. <tt-><h- data-h=kw_type>null</h-></tt-> — Null type</a>).
+  </li>
+  <li>
+    The literals <code>true</code> and <code>false</code> represent values of type <tt-><h- data-h=kw_type>bool</h-></tt->
+    (<a href=#type-bool>§6.2.5. <tt-><h- data-h=kw_type>bool</h-></tt-> — Boolean type</a>).
+  </li>
+</ul>
+
+<h4 id=int-literal><a class=para href=#int-literal></a>4.6.1. <g-term>int-literal</g-term> — Integer literal</h4>
+
+<code-block><h- data-h=name_nt_decl>int-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<p>An <g-term>int-literal</g-term> represents a value of type <tt-><h- data-h=kw_type>int</h-></tt->
+(<a href=#type-int>§6.2.6. <tt-><h- data-h=kw_type>int</h-></tt-> — Integer</a>).
+</p>
+<p>The value is of a <g-term>int-literal</g-term> is determined by
+interpreting each <g-term>digit</g-term> from left to right
+as decimal digits of an integer,
+from most significant to least significant.
+Leading zeros are ignored.
+The value is negative if the leading U+002D (<tt->-</tt->) is present.
+</p>
+<example-block><p><intro-></intro-> 
+The <g-term>int-literal</g-term> <code>-0123</code> represents the integer value -123.
+</p></example-block>
+
+<h4 id=float-literal><a class=para href=#float-literal></a>4.6.2. <g-term>float-literal</g-term> — Floating-point literal</h4>
+
+<code-block><h- data-h=name_nt_decl>float-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>exponent</h-> <h- data-h=sym_sqr>]</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>exponent</h-> <h- data-h=sym_sqr>]</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>exponent</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>exponent</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>e</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>E</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<p>A <g-term>float-literal</g-term> represents a value of type <tt-><h- data-h=kw_type>float</h-></tt->
+(<a href=#type-float>§6.2.7. <tt-><h- data-h=kw_type>float</h-></tt-> — 64-bit floating-point number</a>).
+</p>
+<p>A <g-term>float-literal</g-term> consists of several parts:
+</p><ul>
+  <li>
+    An <dfn>integral part</dfn>, either matching a <g-term>int-literal</g-term>
+    or consisting of only a leading U+002D (<tt->-</tt->),
+    which is equivalent to '<tt->-0</tt->'.
+  </li>
+  <li>
+    The radix point U+002E (<tt->.</tt->).
+  </li>
+  <li>
+    A <dfn>fractional part</dfn> consisting of <g-term>digit</g-term>s following the radix point.
+    An absent fractional part is equivalent to '<tt->0</tt->'.
+  </li>
+  <li>
+    An <g-term>exponent</g-term>.
+  </li>
+</ul>
+
+<p>The value of a <g-term>float-literal</g-term> is determined as follows:
+</p>
+<ol>
+  <li>
+    Let <math display=inline><mi>s</mi></math> be -1 if the leading U+002D (<tt->-</tt->) is present,
+    otherwise 1;
+    let <math display=inline><mi>k</mi></math> be the integer value of the integral part
+    (determined as for a <g-term>int-literal</g-term>);
+    let <math display=inline><mi>f</mi></math> be the the integer value of the fractional part;
+    let <math display=inline><mi>p</mi></math> be the amount of digits including leading zeros of the fractional part;
+    let <math display=inline><mi>e</mi></math> be the integer value of the exponent.
+  </li>
+  <li>
+    Let the <dfn>scaled value</dfn> of the <g-term>float-literal</g-term> be
+    <math display=block><mrow>
+      <mi>s</mi>
+      <mo>×</mo>
+      <mo>(</mo>
+      <mi>k</mi>
+      <mo>+</mo>
+      <mfrac><mi>f</mi><msup><mn>10</mn><mi>p</mi></msup></mfrac>
+      <mo>)</mo>
+      <mo>×</mo>
+      <msup><mn>10</mn><mi>e</mi></msup>
+    </mrow></math>
+  </li>
+  <li>
+    The value of the <g-term>float-literal</g-term> is the scaled value,
+    rounded using the roundTiesToEven rounding direction
+    as specified in IEEE-754.
+  </li>
+</ol>
+
+<example-block><p><intro-></intro-> 
+</p><ul>
+  <li><code>1.0</code> exactly represents the value 1.0.</li>
+  <li><code>.1</code> is rounded to a value nearest to 0.1.</li>
+  <li><code>1e1000000</code> is rounded to positive infinity.</li>
+  <li><code>-1e1000000</code> is rounded to negative infinity.</li>
+  <li><code>1e-1000000</code> is rounded to positive zero.</li>
+  <li><code>-1e-1000000</code> is rounded to negative zero.</li>
+  <li><code>-0.0</code> exactly represents a negative zero.</li>
+</ul>
+</example-block>
 <h2 id=document-processing><a class=para href=#document-processing></a>5. Document processing</h2>
 
 <p>A COWEL document is processed from top to bottom,
@@ -3025,14 +3169,15 @@ is fed into the current content policy once the block itself is spliced.
   </li>
   <li>
     Splicing a value of type <tt-><h- data-h=kw_type>int</h-></tt-> produces
-    a string representing the value in decimal form.
-    For example, both <code>15</code> and <code>0xf</code>
-    result in <code>"15"</code> when spliced.
+    a string representing the value in decimal form
+    without leading zeros.
+    For example, the <g-term>int-literal</g-term> <code>-015</code>
+    result in '<tt->-15</tt->' when spliced.
   </li>
   <li>
     Splicing a value of type <tt-><h- data-h=kw_type>float</h-></tt-> produces
-    a string representing the value in decimal form.
-    For example, <code>0.5</code> results in <code>"0.5"</code> when spliced.
+    a string representing the value in decimal form
+    as specified below.
   </li>
   <li>
     Splicing a value of type <tt-><h- data-h=kw_type>str</h-></tt-> produces
@@ -3045,6 +3190,70 @@ is fed into the current content policy once the block itself is spliced.
     Splicing a value of type <tt-><h- data-h=kw_type>group</h-></tt-> raises an error.
   </li>
 </ul>
+
+<h4 id=splicing-float><a class=para href=#splicing-float></a>6.4.1. Splicing values of type <tt-><h- data-h=kw_type>float</h-></tt-></h4>
+
+<p>Splicing a value <math display=inline><mi>x</mi></math> of type <tt-><h- data-h=kw_type>float</h-></tt->
+is done as follows:
+</p>
+<ul>
+  <li>
+    If <math display=inline><mi>x</mi></math> is a finite value,
+    the numeric value in decimal form is produced.
+    There are infinitely many such representations;
+    one is chosen as follows:
+    <ul>
+      <li>
+        The shortest representation is chosen so that
+        when a trailing '<tt->.</tt->' is added (if need be),
+        when the representation is interpreted as a
+        <g-term>float-literal</g-term>, the same rounded value is recovered.
+        Representations with empty integral or fractional part
+        adjacent to '<tt->.</tt->' are not eligible.
+        Only exponents starting with '<tt->e+</tt->' or '<tt->e-</tt->' are eligible.
+
+        <example-block><p><intro-></intro-> <tt->0.1</tt-> is chosen over <tt->0.100000000000000005551</tt->
+        when splicing a <g-term>float-literal</g-term> spelled <tt->0.1</tt->,
+        despite the latter representation being a more accurate representation.
+        <tt->.1</tt-> is not chosen because it has an empty integral part.
+</p>        
+<p>        Both <tt->1000</tt-> and <tt->1e+3</tt-> are equally good candidates for representing the value 1000
+        because appending a '<tt->.</tt->' would make it a valid <g-term>float-literal</g-term>
+        but this added '<tt->.</tt->' is not counted towards the length.
+        </p></example-block>
+      </li>
+      <li>
+        Then, if there are several such representations,
+        the representation with the smallest difference from <math display=inline><mi>x</mi></math> is chosen.
+      </li>
+      <li>
+        Then, if there are several such equidistant representations,
+        the differences are rounded using roundTiesToEven as specified in IEEE-754, and
+        the representation with the smallest rounded difference from <math display=inline><mi>x</mi></math> is chosen.
+      </li>
+      <li>
+        Then, if there are several such equidistant representations,
+        the one without an <g-term>exponent</g-term> is chosen.
+        <example-block><p><intro-></intro-> <tt->1000</tt-> is chosen over <tt->1e+3</tt-> as a representation of 1000.</p></example-block>
+      </li>
+    </ul>
+    All negative values are represented with a leading U+002D (<tt->-</tt->),
+    including negative zero.
+  </li>
+  <li>
+    Otherwise, if <math display=inline><mi>x</mi></math> is positive infinity,
+    '<tt->infinity</tt->' is produced.
+  </li>
+  <li>
+    Otherwise, if <math display=inline><mi>x</mi></math> is negative infinity,
+    '<tt->-infinity</tt->' is produced.
+  </li>
+  <li>
+    Otherwise, if <math display=inline><mi>x</mi></math> is NaN,
+    '<tt->NaN</tt->' is produced.
+  </li>
+</ul>
+
 
 
 

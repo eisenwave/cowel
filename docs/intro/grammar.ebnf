@@ -57,20 +57,27 @@ directive-call
 primary-value
   = unit-literal
   | null-literal
-  | boolean-literal
-  | integer-literal
+  | bool-literal
+  | int-literal
+  | float-literal
   | unquoted-string
   | quoted-string
-  | group
-  | block;
+  | block
+  | group;
 unit-literal
   = "unit";
 null-literal
   = "null";
-boolean-literal
+bool-literal
   = "true" | "false";
-integer-literal
-  =  [ "-" ], digit, { digit };
+int-literal
+  = [ "-" ], digit, { digit };
+float-literal
+  = [ "-" ], digit, { digit }, ".", { digit }, [ exponent ]
+  | [ "-" ], ".", digit, { digit }, [ exponent ]
+  | [ "-" ], digit, { digit }, exponent;
+exponent
+  = ("e" | "E"), [ "+" | "-" ], digit, { digit };
 unquoted-string
   = unquoted-string-char, { unquoted-string-char };
 unquoted-string-char
