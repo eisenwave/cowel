@@ -1,8 +1,6 @@
 #ifndef COWEL_POLICY_LITERALLY_HPP
 #define COWEL_POLICY_LITERALLY_HPP
 
-#include "cowel/util/assert.hpp"
-
 #include "cowel/policy/plaintext.hpp"
 
 #include "cowel/content_status.hpp"
@@ -34,12 +32,6 @@ public:
     {
         write(directive.get_source(), Output_Language::text);
         return Processing_Status::ok;
-    }
-    [[nodiscard]]
-    Processing_Status consume(const ast::Generated&, Frame_Index, Context&) override
-    {
-        COWEL_ASSERT_UNREACHABLE(u8"Generated content within To_Source_Policy should be impossible."
-        );
     }
 };
 

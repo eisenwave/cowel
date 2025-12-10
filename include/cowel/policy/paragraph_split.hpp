@@ -167,15 +167,6 @@ public:
         return splice_directive_invocation(*this, directive, frame, context);
     }
 
-    [[nodiscard]]
-    Processing_Status consume(const ast::Generated& generated, Frame_Index, Context&) override
-    {
-        // We deliberately don't update m_line_state here
-        // because paragraph splitting generally operates on syntactical elements.
-        write(generated.as_string(), generated.get_type());
-        return Processing_Status::ok;
-    }
-
     /// @brief Enables paragraph splitting to take place inside a directive.
     ///
     /// By default, directives are treated as black boxes,

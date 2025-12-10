@@ -1,13 +1,11 @@
 #ifndef COWEL_AST_HPP
 #define COWEL_AST_HPP
 
-#include <concepts>
 #include <cstddef>
 #include <optional>
 #include <span>
 #include <string_view>
 #include <type_traits>
-#include <utility>
 #include <variant>
 #include <vector>
 
@@ -17,7 +15,6 @@
 
 #include "cowel/fwd.hpp"
 #include "cowel/memory_resources.hpp"
-#include "cowel/output_language.hpp"
 
 namespace cowel::ast {
 namespace detail {
@@ -37,12 +34,12 @@ enum struct Primary_Kind : Default_Underlying {
     decimal_float_literal,
     infinity,
     unquoted_string,
-    text,
-    escape,
-    comment,
     quoted_string,
     block,
     group,
+    text,
+    escape,
+    comment,
 };
 
 /// @brief Returns `true` iff `kind` is a value.
@@ -587,65 +584,12 @@ public:
     }
 };
 
-struct Generated final {
-private:
-    Pmr_Vector<char8_t> m_data;
-    Output_Language m_type;
-
-public:
-    [[nodiscard]]
-    explicit Generated(Pmr_Vector<char8_t>&& data, Output_Language type)
-        : m_data { std::move(data) }
-        , m_type { type }
-    {
-    }
-
-    [[nodiscard]]
-    constexpr Output_Language get_type() const
-    {
-        return m_type;
-    }
-
-    [[nodiscard]]
-    constexpr std::span<char8_t> as_span()
-    {
-        return m_data;
-    }
-
-    [[nodiscard]]
-    constexpr std::span<const char8_t> as_span() const
-    {
-        return m_data;
-    }
-
-    [[nodiscard]]
-    constexpr std::u8string_view as_string() const
-    {
-        return { m_data.data(), m_data.size() };
-    }
-
-    [[nodiscard]]
-    constexpr std::size_t size() const
-    {
-        return m_data.size();
-    }
-
-    [[nodiscard]]
-    constexpr bool emtpy() const
-    {
-        return m_data.empty();
-    }
-};
-
-using Markup_Element_Variant = std::variant<Directive, Primary, Generated>;
+using Markup_Element_Variant = std::variant<Directive, Primary>;
 
 template <typename T>
 concept content_variant_alternative = []<typename... Ts>(std::variant<Ts...>*) {
     return one_of<T, Ts...>;
 }(static_cast<Markup_Element_Variant*>(nullptr));
-
-template <typename T>
-concept user_written = content_variant_alternative<T> && !std::same_as<T, Generated>;
 
 struct Markup_Element : Markup_Element_Variant {
     using Markup_Element_Variant::variant;
@@ -673,29 +617,10 @@ struct Markup_Element : Markup_Element_Variant {
     }
 
     [[nodiscard]]
-    const ast::Generated& as_generated() const
-    {
-        return std::get<ast::Generated>(*this);
-    }
-    [[nodiscard]]
-    const ast::Generated* try_as_generated() const
-    {
-        return std::get_if<ast::Generated>(this);
-    }
-
-    [[nodiscard]]
     File_Source_Span get_source_span() const
     {
         return std::visit(
-            [&]<typename T>(const T& v) -> File_Source_Span {
-                if constexpr (user_written<T>) {
-                    return v.get_source_span();
-                }
-                else {
-                    return { {}, File_Id::main };
-                }
-            },
-            *this
+            [&]<typename T>(const T& v) -> File_Source_Span { return v.get_source_span(); }, *this
         );
     }
 
@@ -703,15 +628,7 @@ struct Markup_Element : Markup_Element_Variant {
     std::u8string_view get_source() const
     {
         return std::visit(
-            []<typename T>(const T& v) -> std::u8string_view {
-                if constexpr (user_written<T>) {
-                    return v.get_source();
-                }
-                else {
-                    return {};
-                }
-            },
-            *this
+            []<typename T>(const T& v) -> std::u8string_view { return v.get_source(); }, *this
         );
     }
 };

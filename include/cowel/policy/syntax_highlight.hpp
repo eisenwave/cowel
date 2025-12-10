@@ -102,12 +102,6 @@ public:
     {
         return splice_directive_invocation(*this, directive, frame, context);
     }
-    [[nodiscard]]
-    Processing_Status consume(const ast::Generated& generated, Frame_Index, Context&) override
-    {
-        write(generated.as_string(), generated.get_type());
-        return Processing_Status::ok;
-    }
 
     /// @brief Writes pure HTML content to `out`,
     /// consisting of the received HTML content,

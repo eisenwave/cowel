@@ -65,10 +65,6 @@ struct Content_Policy : virtual Text_Sink {
     virtual Processing_Status //
     consume(const ast::Directive& directive, Frame_Index frame, Context& context)
         = 0;
-    [[nodiscard]]
-    virtual Processing_Status //
-    consume(const ast::Generated& generated, Frame_Index frame, Context&)
-        = 0;
 
     [[nodiscard]]
     Processing_Status //

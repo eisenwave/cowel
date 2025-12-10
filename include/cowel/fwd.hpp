@@ -85,7 +85,6 @@ namespace ast {
 struct Markup_Element;
 struct Member_Value;
 struct Directive;
-struct Generated;
 struct Group_Member;
 struct Primary;
 

@@ -188,12 +188,6 @@ trim_blank_text_left(std::span<const ast::Markup_Element> content)
                 continue;
             }
         }
-        if (const auto* const text = content.front().try_as_generated()) {
-            if (is_ascii_blank(text->as_string())) {
-                content = content.subspan(1);
-                continue;
-            }
-        }
         break;
     }
     return content;
@@ -205,12 +199,6 @@ trim_blank_text_right(std::span<const ast::Markup_Element> content)
     while (!content.empty()) {
         if (const auto* const text = content.back().try_as_primary()) {
             if (text->get_kind() == ast::Primary_Kind::text && is_ascii_blank(text->get_source())) {
-                content = content.subspan(0, content.size() - 1);
-                continue;
-            }
-        }
-        if (const auto* const generated = content.back().try_as_generated()) {
-            if (is_ascii_blank(generated->as_string())) {
                 content = content.subspan(0, content.size() - 1);
                 continue;
             }
@@ -285,16 +273,6 @@ Processing_Status splice_all_trimmed(
             }
             write_trimmed(node.get_source());
             return Processing_Status::ok;
-        }
-
-        [[nodiscard]]
-        Processing_Status operator()(const ast::Generated& g) const
-        {
-            if (g.get_type() == Output_Language::text) {
-                write_trimmed(g.as_string());
-                return Processing_Status::ok;
-            }
-            return out.consume(g, frame, context);
         }
 
         [[nodiscard]]

@@ -72,13 +72,6 @@ struct HTML_Literal_Content_Policy : virtual HTML_Content_Policy {
     {
         return splice_directive_invocation(*this, directive, frame, context);
     }
-
-    [[nodiscard]]
-    Processing_Status consume(const ast::Generated& generated, Frame_Index, Context&) override
-    {
-        write(generated.as_string(), generated.get_type());
-        return Processing_Status::ok;
-    }
 };
 
 } // namespace cowel
