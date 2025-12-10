@@ -287,6 +287,19 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::error,
       { diagnostic::arithmetic_div_by_zero } },
 
+    { Source { u8"\\cowel_pos(1e10000)" },
+      Source { u8"infinity" },
+      Processing_Status::ok,
+      { diagnostic::literal_out_of_range } },
+
+    { Source { u8"\\cowel_pos(-1e10000)" },
+      Source { u8"-infinity" },
+      Processing_Status::ok,
+      { diagnostic::literal_out_of_range } },
+
+    { Path { u8"splice/floats.cow" },
+      Path { u8"splice/floats.cow.html" } },
+
     { Source { u8"" },
       Path { u8"document/empty.html" },
       Processing_Status::ok,
