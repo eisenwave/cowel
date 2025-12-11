@@ -300,9 +300,10 @@ Result<bool, Processing_Status>
 Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     static const auto equality_comparable
-        = Type::canonical_union_of({ Type::unit, Type::null, Type::integer, Type::floating });
+        = Type::canonical_union_of({ Type::unit, Type::null, Type::boolean, Type::integer,
+                                     Type::floating, Type::str });
     static const auto relation_comparable
-        = Type::canonical_union_of({ Type::integer, Type::floating });
+        = Type::canonical_union_of({ Type::integer, Type::floating, Type::str });
     const auto* parameter_type = m_expression_kind <= Comparison_Expression_Kind::ne
         ? &equality_comparable
         : &relation_comparable;
@@ -322,7 +323,7 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
     }
 
     const Value& x = x_value.get();
-    const Value& y = x_value.get();
+    const Value& y = y_value.get();
 
     if (x.get_type() != y.get_type()) {
         context.try_error(
