@@ -300,6 +300,24 @@ constexpr Basic_Test basic_tests_array[] {
     { Path { u8"splice/floats.cow" },
       Path { u8"splice/floats.cow.html" } },
 
+    { Path { u8"compare/eq.cow" },
+      Path { u8"compare/eq.cow.html" } },
+
+    { Path { u8"compare/ne.cow" },
+      Path { u8"compare/ne.cow.html" } },
+
+    { Path { u8"compare/lt.cow" },
+      Path { u8"compare/lt.cow.html" } },
+
+    { Path { u8"compare/gt.cow" },
+      Path { u8"compare/gt.cow.html" } },
+
+    { Path { u8"compare/le.cow" },
+      Path { u8"compare/le.cow.html" } },
+
+    { Path { u8"compare/ge.cow" },
+      Path { u8"compare/ge.cow.html" } },
+
     { Source { u8"" },
       Path { u8"document/empty.html" },
       Processing_Status::ok,

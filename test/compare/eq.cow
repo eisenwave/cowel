@@ -1,0 +1,25 @@
+\cowel_eq(unit, unit)
+
+\cowel_eq(null, null)
+
+\cowel_eq(false, false)
+\cowel_eq(true, false)
+\cowel_eq(false, true)
+\cowel_eq(true, true)
+
+\cowel_eq(0, 0)
+\cowel_eq(0, 1)
+\cowel_eq(1, 0)
+\cowel_eq(1, 1)
+
+\cowel_eq(0.0, 0.0)
+\cowel_eq(1.0, 0.0)
+\cowel_eq(0.0, 1.0)
+\cowel_eq(1.0, 1.0)
+\cowel_eq(-0.0, 0.0)
+\cowel_eq(-0.0, -0.0)
+
+\cowel_eq("", "")
+\cowel_eq("x", "")
+\cowel_eq("", "x")
+\cowel_eq("x", "x")

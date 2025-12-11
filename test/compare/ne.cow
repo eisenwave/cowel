@@ -1,0 +1,25 @@
+\cowel_ne(unit, unit)
+
+\cowel_ne(null, null)
+
+\cowel_ne(false, false)
+\cowel_ne(true, false)
+\cowel_ne(false, true)
+\cowel_ne(true, true)
+
+\cowel_ne(0, 0)
+\cowel_ne(0, 1)
+\cowel_ne(1, 0)
+\cowel_ne(1, 1)
+
+\cowel_ne(0.0, 0.0)
+\cowel_ne(1.0, 0.0)
+\cowel_ne(0.0, 1.0)
+\cowel_ne(1.0, 1.0)
+\cowel_ne(-0.0, 0.0)
+\cowel_ne(-0.0, -0.0)
+
+\cowel_ne("", "")
+\cowel_ne("x", "")
+\cowel_ne("", "x")
+\cowel_ne("x", "x")
