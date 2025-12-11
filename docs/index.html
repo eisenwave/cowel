@@ -2895,7 +2895,7 @@ but should be expanded greatly in the near future.
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>null</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>bool</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>int</h-><h- data-h=str_dlim>"</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>f64</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>float</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>str</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>block</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
 
@@ -2955,8 +2955,10 @@ also spelled <tt-><h- data-h=kw_type>unit</h-></tt->.
 <p><tt-><h- data-h=kw_type>null</h-></tt-> is a unit type with only one possible value
 also spelled <tt-><h- data-h=kw_type>null</h-></tt->.
 </p>
-<p>Unlike <tt-><h- data-h=kw_type>unit</h-></tt->, <tt-><h- data-h=kw_type>null</h-></tt-> is used to indicate errors.
-</p>
+<note-block><p><intro-></intro-> 
+Unlike <tt-><h- data-h=kw_type>unit</h-></tt->, <tt-><h- data-h=kw_type>null</h-></tt-> is used to indicate errors.
+</p></note-block>
+
 <h4 id=type-bool><a class=para href=#type-bool></a>6.2.5. <tt-><h- data-h=kw_type>bool</h-></tt-> — Boolean type</h4>
 
 <p><tt-><h- data-h=kw_type>bool</h-></tt-> is a boolean type.
@@ -2968,37 +2970,41 @@ It can represent two values: <tt-><h- data-h=kw_type>true</h-></tt-> and <tt-><h
 It can represent any integer value (although in practice, there is an implementation limit);
 this includes negative numbers.
 </p>
-<p>An <tt-><h- data-h=kw_type>int</h-></tt-> can be obtained using integer literals
+<note-block><p><intro-></intro-> 
+An <tt-><h- data-h=kw_type>int</h-></tt-> can be obtained using integer literals
 such as <code>123</code> or <code>0xff</code>.
-</p>
+</p></note-block>
+
 <h4 id=type-float><a class=para href=#type-float></a>6.2.7. <tt-><h- data-h=kw_type>float</h-></tt-> — 64-bit floating-point number</h4>
 
-<p><tt-><h- data-h=kw_type>float</h-></tt-> is a single-precision floating-point number.
+<p><tt-><h- data-h=kw_type>float</h-></tt-> is a double-precision floating-point number.
 That is, a number in <em>binary64</em> format, as specified in IEEE-754.
 </p>
 <note-block><p><intro-></intro-> 
-There is no way to obtain a value of type <tt-><h- data-h=kw_type>float</h-></tt-> yet,
-but in the future,
-one can be obtained using floating-point literals
-such as <code>0.0</code>.
+An <tt-><h- data-h=kw_type>float</h-></tt-> can be obtained using <g-term>float-literal</g-term>s
+such as <code>1.0</code> or <code>10e+5</code>.
 </p></note-block>
 
 <h4 id=type-str><a class=para href=#type-str></a>6.2.8. <tt-><h- data-h=kw_type>str</h-></tt-> — String</h4>
 
 <p><tt-><h- data-h=kw_type>str</h-></tt-> is a UTF-8 encoded string.
 </p>
-<p>A value of type <tt-><h- data-h=kw_type>str</h-></tt-> can be obtained using string literals
+<note-block><p><intro-></intro-> 
+A value of type <tt-><h- data-h=kw_type>str</h-></tt-> can be obtained using string literals
 such as <code>"abc"</code>.
-</p>
+</p></note-block>
+
 <h4 id=type-block><a class=para href=#type-block></a>6.2.9. <tt-><h- data-h=kw_type>block</h-></tt-> — Block</h4>
 
 <p><tt-><h- data-h=kw_type>block</h-></tt-> stores markup elements.
 It is very similar to <tt-><h- data-h=kw_type>str</h-></tt->,
 but is evaluated lazily, meaning that it has no effect until spliced.
 </p>
-<p>A value of type <tt-><h- data-h=kw_type>block</h-></tt-> can be obtained using block literals
+<note-block><p><intro-></intro-> 
+A value of type <tt-><h- data-h=kw_type>block</h-></tt-> can be obtained using block literals
 such as <code>{abc}</code>.
-</p>
+</p></note-block>
+
 <h3 id=compound-types><a class=para href=#compound-types></a>6.3. Compound types</h3>
 
 <p>Compound types are formed from other types, possibly from other compound types.
@@ -3221,29 +3227,45 @@ is done as follows:
         adjacent to '<tt->.</tt->' are not eligible.
         Only exponents starting with '<tt->e+</tt->' or '<tt->e-</tt->' are eligible.
 
-        <example-block><p><intro-></intro-> <tt->0.1</tt-> is chosen over <tt->0.100000000000000005551</tt->
-        when splicing a <g-term>float-literal</g-term> spelled <tt->0.1</tt->,
-        despite the latter representation being a more accurate representation.
+        <example-block><p><intro-></intro-> <tt->0.1</tt-> is chosen over <tt->0.100000000000000005</tt->
+        as a representation of the exact value
+        <math display=inline><mn>0.1000000000000000055511151231257827021181583404541015625</mn></math>,
+        despite the latter representation having a lower difference.
         <tt->.1</tt-> is not chosen because it has an empty integral part.
 </p>        
-<p>        Both <tt->1000</tt-> and <tt->1e+3</tt-> are equally good candidates for representing the value 1000
-        because appending a '<tt->.</tt->' would make it a valid <g-term>float-literal</g-term>
-        but this added '<tt->.</tt->' is not counted towards the length.
+<p>        Both '<tt->1000</tt->' and '<tt->1e+3</tt->' are equally good candidates
+        for representing the value <math display=inline><mn>1000</mn></math>
+        because appending a '<tt->.</tt->' would make the former a valid <g-term>float-literal</g-term>,
+        but this added '<tt->.</tt->' is not counted toward the length.
         </p></example-block>
       </li>
       <li>
-        Then, if there are several such representations,
+        Then, if there are several such equally long representations,
         the representation with the smallest difference from <math display=inline><mi>x</mi></math> is chosen.
+        <example-block><p><intro-></intro-> <tt->5.038814306823721<mark>5</mark>e+7</tt-> is chosen over <tt->5.038814306823721<mark>4</mark>e+7</tt->
+        as a representation of the exact value
+        <math display=inline><mrow><mn>5.03881430682372152805328369140625</mn><mo>×</mo><msup><mn>10</mn><mn>7</mn></msup></mrow></math>.</p></example-block>
       </li>
       <li>
-        Then, if there are several such equidistant representations,
-        the differences are rounded using roundTiesToEven as specified in IEEE-754, and
-        the representation with the smallest rounded difference from <math display=inline><mi>x</mi></math> is chosen.
+        Then, if there are several such equidistant representations
+        of which both or neither have an <g-term>exponent</g-term>,
+        ties are broken as if by roundTiesToEven as specified in IEEE-754.
+        <example-block><p><intro-></intro-> <tt->1125899906842624.2</tt-> is chosen over <tt->1125899906842624.3</tt->
+        as a representation of the exact value
+        <math display=inline><mn>1125899906842624.25</mn></math>.</p></example-block>
       </li>
       <li>
-        Then, if there are several such equidistant representations,
+        Then, if there are several such representations of zero distance,
         the one without an <g-term>exponent</g-term> is chosen.
-        <example-block><p><intro-></intro-> <tt->1000</tt-> is chosen over <tt->1e+3</tt-> as a representation of 1000.</p></example-block>
+        <example-block><p><intro-></intro-> <tt->1000</tt-> is chosen over <tt->1e+3</tt-> as a representation of <math display=inline><mn>1000</mn></math>.
+        The previous step does not yet favor '<tt->1000</tt->' due to having an even
+        least significant digit.</p></example-block>
+      </li>
+      <li>
+        Then, if both have an <g-term>exponent</g-term>,
+        the one with the greater exponent value is chosen.
+        <example-block><p><intro-></intro-> <tt->1e+10</tt-> is chosen over <tt->10e+9</tt->
+        as a representation of <math display=inline><msup><mn>10</mn><mn>9</mn></msup></math>.</p></example-block>
       </li>
     </ul>
     All negative values are represented with a leading U+002D (<tt->-</tt->),
@@ -3262,6 +3284,15 @@ is done as follows:
     '<tt->NaN</tt->' is produced.
   </li>
 </ul>
+
+<note-block><p><intro-></intro-> 
+The result has at most 17 significant decimal digits;
+this is sufficient to represent any double-precision floating-point number.
+The produced output is at most 24 characters long
+(including the radix point, exponent separator, and 4 exponent digits).
+</p>
+<p>See also <a href=https://www.exploringbinary.com/the-shortest-decimal-string-that-round-trips-examples/ class=sans>https://www.exploringbinary.com/the-shortest-decimal-string-that-round-trips-examples/</a>
+</p></note-block>
 
 
 
