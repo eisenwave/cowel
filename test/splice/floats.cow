@@ -1,9 +1,17 @@
 \cowel_pos(0.1)
+\cowel_pos(0.1000000000000000055511151231257827021181583404541015625)
+
+\cowel_pos(1125899906842624.2)
+\cowel_pos(1125899906842624.25)
+
 \cowel_pos(1e2)
 \cowel_pos(1e3)
 \cowel_pos(1e4)
 \cowel_pos(1e5)
+\cowel_pos(1e9)
+\cowel_pos(1e10)
 \cowel_pos(1e-10)
+\cowel_pos(10e99)
 \cowel_pos(1e100)
 
 \cowel_pos(infinity)
