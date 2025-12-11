@@ -555,6 +555,7 @@ private:
         const AST_Instruction instruction = peek();
         switch (instruction.type) {
         case AST_Instruction_Type::keyword_null:
+        case AST_Instruction_Type::keyword_unit:
         case AST_Instruction_Type::keyword_true:
         case AST_Instruction_Type::keyword_false:
         case AST_Instruction_Type::keyword_infinity:
