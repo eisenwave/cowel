@@ -94,11 +94,11 @@ template <typename T>
 [[nodiscard]]
 T operate_unary(Unary_Numeric_Expression_Kind type, T x)
 {
-    if constexpr (std::is_integral_v<T>) {
+    if constexpr (signed_or_unsigned<T>) {
         switch (type) {
         case Unary_Numeric_Expression_Kind::pos: return +x;
         case Unary_Numeric_Expression_Kind::neg: return -x;
-        case Unary_Numeric_Expression_Kind::abs: return std::abs(x);
+        case Unary_Numeric_Expression_Kind::abs: return x < 0 ? -x : x;
         default: COWEL_ASSERT_UNREACHABLE(u8"Invalid unary operation for integers.");
         }
     }

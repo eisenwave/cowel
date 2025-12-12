@@ -14,15 +14,18 @@
 #define COWEL_IF_NOT_DEBUG(...) __VA_ARGS__
 #endif
 
-#ifdef __EMSCRIPTEN__
+#ifdef ULIGHT_EMSCRIPTEN
 #define COWEL_EMSCRIPTEN 1
-#define COWEL_IF_EMSCRIPTEN(...) __VA_ARGS__
-#else
-#define COWEL_IF_EMSCRIPTEN(...)
 #endif
 
-#ifdef __clang__
+#define COWEL_IF_EMSCRIPTEN(...) ULIGHT_IF_EMSCRIPTEN(...)
+
+#ifdef ULIGHT_CLANG
 #define COWEL_CLANG 1
+#endif
+
+#ifdef ULIGHT_GCC
+#define COWEL_GCC 1
 #endif
 
 #define COWEL_UNREACHABLE() __builtin_unreachable()
@@ -35,6 +38,13 @@
 #endif
 
 namespace cowel {
+
+#if defined(COWEL_CLANG) || defined(COWEL_GCC)
+__extension__ typedef signed __int128 Int128; // NOLINT modernize-use-using
+__extension__ typedef unsigned __int128 Uint128; // NOLINT modernize-use-using
+#else
+#error "COWEL currently only supports Clang or GCC."
+#endif
 
 /// @brief If `true`, the current build is a debug build (not a release build).
 inline constexpr bool is_debug_build = COWEL_IF_DEBUG(true) COWEL_IF_NOT_DEBUG(false);

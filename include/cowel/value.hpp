@@ -25,6 +25,10 @@ struct Unit {
     friend bool operator==(Unit, Unit) = default;
 };
 
+struct Int_Storage {
+    alignas(std::size_t) unsigned char bytes[sizeof(Integer)];
+};
+
 using Short_String_Value = Static_String8<40>;
 
 struct Block_And_Frame {
@@ -41,7 +45,7 @@ using Value_Variant = std::variant<
     Unit, //
     Null,
     bool,
-    Integer,
+    Int_Storage,
     Float,
     std::u8string_view,
     Short_String_Value,
@@ -60,6 +64,8 @@ using Value_Variant = std::variant<
 /// stored in processing pass memory.
 /// At least, the value shouldn't outlive its type reference.
 struct Value {
+private:
+public:
     /// @brief The only possible value for a `unit` type.
     static const Value unit;
     /// @brief The only possible value for a `null` type.
@@ -84,7 +90,7 @@ struct Value {
     [[nodiscard]]
     static constexpr Value integer(Integer value) noexcept
     {
-        return Value { value, &Type::integer };
+        return Value { std::bit_cast<Int_Storage>(value), &Type::integer };
     }
     [[nodiscard]]
     static constexpr Value floating(Float value) noexcept
@@ -253,7 +259,7 @@ public:
     constexpr Integer as_integer() const
     {
         COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::integer);
-        return std::get<Integer>(m_value);
+        return std::bit_cast<Integer>(std::get<Int_Storage>(m_value));
     }
     [[nodiscard]]
     constexpr Float as_float() const

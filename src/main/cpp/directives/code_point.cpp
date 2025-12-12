@@ -72,14 +72,16 @@ Result<char32_t, Processing_Status> code_point_by_generated_digits(
 
     const auto code_point = char32_t(*value);
     if (!is_scalar_value(code_point)) {
-        const Characters8 chars = to_characters8(code_point);
-        const std::u8string_view message[] {
-            u8"The computed code point U+",
-            chars.as_string(),
-            u8" is not a Unicode scalar value. ",
-            u8"Therefore, it cannot be encoded as UTF-8.",
-        };
-        context.try_error(diagnostic::char_nonscalar, source_span, joined_char_sequence(message));
+        const Characters8 chars = to_characters8(std::uint32_t { code_point });
+        context.try_error(
+            diagnostic::char_nonscalar, source_span,
+            joined_char_sequence({
+                u8"The computed code point U+"sv,
+                chars.as_string(),
+                u8" is not a Unicode scalar value. "sv,
+                u8"Therefore, it cannot be encoded as UTF-8."sv,
+            })
+        );
         return Processing_Status::error;
     }
 
@@ -249,7 +251,7 @@ Char_Get_Num_Behavior::splice(Content_Policy& out, const Invocation& call, Conte
 
     const bool convert_to_upper = !lower_boolean.get_or_default(false);
     const Characters8 chars
-        = to_characters8(std::uint32_t(code_point), int(base), convert_to_upper);
+        = to_characters8(std::uint32_t { code_point }, int(base), convert_to_upper);
     if (const auto pad_length = std::min(std::size_t(zfill), chars.length())) {
         out.write(repeated_char_sequence(pad_length, u8'0'), Output_Language::text);
     }

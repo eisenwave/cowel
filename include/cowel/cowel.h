@@ -1,13 +1,6 @@
 #ifndef COWEL_H
 #define COWEL_H
 
-#ifdef __EMSCRIPTEN__
-#define COWEL_EMSCRIPTEN 1
-#define COWEL_IF_EMSCRIPTEN(...) __VA_ARGS__
-#else
-#define COWEL_IF_EMSCRIPTEN(...)
-#endif
-
 #ifdef __GNUC__
 #define COWEL_EXPORT [[gnu::used]]
 #else

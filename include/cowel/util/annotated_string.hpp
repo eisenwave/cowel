@@ -134,7 +134,7 @@ public:
         m_text.push_back(c);
     }
 
-    template <character_convertible Integer>
+    template <signed_or_unsigned Integer>
     constexpr void append_integer(Integer x, Sign_Policy signs = Sign_Policy::negative_only)
     {
         const bool plus
@@ -143,7 +143,7 @@ public:
         append_digits(chars.as_string(), plus);
     }
 
-    template <character_convertible Integer>
+    template <signed_or_unsigned Integer>
     constexpr void
     append_integer(Integer x, T value, Sign_Policy signs = Sign_Policy::negative_only)
     {
@@ -277,7 +277,7 @@ public:
         return *this;
     }
 
-    template <character_convertible Integer>
+    template <signed_or_unsigned Integer>
     constexpr Scoped_Builder&
     append_integer(Integer x, Sign_Policy signs = Sign_Policy::negative_only)
     {

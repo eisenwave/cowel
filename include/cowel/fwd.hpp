@@ -51,12 +51,17 @@ struct Document_Info;
 struct Document_Sections;
 struct Directive_Behavior;
 struct Error_Tag;
+/// @brief The floating-point type corresponding to COWEL's `float` type.
 using Float = double;
 struct Generation_Options;
 enum struct HLJS_Scope : Default_Underlying;
 struct Ignorant_Logger;
 enum struct IO_Error_Code : Default_Underlying;
-using Integer = long long;
+/// @brief The type corresponding to COWEL's `int` type.
+/// While the COWEL language has unbounded integers,
+/// this is not implemented yet.
+/// Using 128-bit integers at least provides support beyond 64-bit.
+using Integer = Int128;
 struct Invocation;
 struct Logger;
 struct Name_Resolver;
