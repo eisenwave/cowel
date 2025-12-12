@@ -138,13 +138,15 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
         if (!alias_name.is_str()) {
             context.try_error(
                 diagnostic::type_mismatch, location,
-                joined_char_sequence({
-                    u8"Macro names must be of type "sv,
-                    Type::str.get_display_name(),
-                    u8", but the argument is of type "sv,
-                    alias_name.get_type().get_display_name(),
-                    u8"."sv,
-                })
+                joined_char_sequence(
+                    {
+                        u8"Macro names must be of type "sv,
+                        Type::str.get_display_name(),
+                        u8", but the argument is of type "sv,
+                        alias_name.get_type().get_display_name(),
+                        u8"."sv,
+                    }
+                )
             );
             return Processing_Status::error;
         }
@@ -161,23 +163,27 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
         if (!is_directive_name(alias_name)) {
             context.try_fatal(
                 diagnostic::macro_name_invalid, location,
-                joined_char_sequence({
-                    u8"The alias name \""sv,
-                    alias_name,
-                    u8"\" is not a valid directive name."sv,
-                })
+                joined_char_sequence(
+                    {
+                        u8"The alias name \""sv,
+                        alias_name,
+                        u8"\" is not a valid directive name."sv,
+                    }
+                )
             );
             return Processing_Status::fatal;
         }
         if (context.find_macro(alias_name) || context.find_alias(alias_name)) {
             context.try_fatal(
                 diagnostic::macro_duplicate, location,
-                joined_char_sequence({
-                    u8"The alias name \""sv,
-                    alias_name,
-                    u8"\" is already defined as a macro or alias. "sv,
-                    u8"Redefinitions or duplicate definitions are not allowed."sv,
-                })
+                joined_char_sequence(
+                    {
+                        u8"The alias name \""sv,
+                        alias_name,
+                        u8"\" is already defined as a macro or alias. "sv,
+                        u8"Redefinitions or duplicate definitions are not allowed."sv,
+                    }
+                )
             );
             return Processing_Status::fatal;
         }
@@ -255,14 +261,16 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
                 const Characters8 limit_chars = to_characters8(expand_positional.index);
                 context.try_error(
                     diagnostic::put_out_of_range, call.directive.get_source_span(),
-                    joined_char_sequence({
-                        u8"This \\put directive is invalid "
-                        u8"because the positional argument at index ["sv,
-                        target_string,
-                        u8"] was requested, but only "sv,
-                        limit_chars.as_string(),
-                        u8" were provided. "sv,
-                    })
+                    joined_char_sequence(
+                        {
+                            u8"This \\put directive is invalid "
+                            u8"because the positional argument at index ["sv,
+                            target_string,
+                            u8"] was requested, but only "sv,
+                            limit_chars.as_string(),
+                            u8" were provided. "sv,
+                        }
+                    )
                 );
             }
             return maybe_result;
@@ -279,12 +287,14 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
             if (!maybe_result && !has_else) {
                 context.try_error(
                     diagnostic::put_invalid, call.get_arguments_source_span(),
-                    joined_char_sequence({
-                        u8"The target \""sv,
-                        target_string,
-                        u8"\" is neither an integer, "sv
-                        u8"nor does it refer to any named argument of the macro invocation."sv,
-                    })
+                    joined_char_sequence(
+                        {
+                            u8"The target \""sv,
+                            target_string,
+                            u8"\" is neither an integer, "sv
+                            u8"nor does it refer to any named argument of the macro invocation."sv,
+                        }
+                    )
                 );
             }
             return maybe_result;

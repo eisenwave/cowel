@@ -238,7 +238,9 @@ public:
     }
 };
 
-struct Value_Of_Type_Matcher : Value_Matcher, Value_Holder<Value> {
+struct Value_Of_Type_Matcher
+    : Value_Matcher
+    , Value_Holder<Value> {
 private:
     const Type* m_expected_type;
 
@@ -271,7 +273,9 @@ struct Value_Of_Constant_Type_Matcher final : Value_Of_Type_Matcher {
 };
 
 /// @brief Matches any spliceable value and splices it into a string.
-struct Spliceable_To_String_Matcher final : Value_Matcher, Value_Holder<std::u8string_view> {
+struct Spliceable_To_String_Matcher final
+    : Value_Matcher
+    , Value_Holder<std::u8string_view> {
 private:
     std::pmr::vector<char8_t> m_data;
 
@@ -291,7 +295,9 @@ public:
     ) override;
 };
 
-struct String_Matcher final : Value_Matcher, Value_Holder<std::u8string_view> {
+struct String_Matcher final
+    : Value_Matcher
+    , Value_Holder<std::u8string_view> {
 private:
     std::pmr::vector<char8_t> m_data;
 
@@ -311,7 +317,9 @@ public:
     ) override;
 };
 
-struct Boolean_Matcher final : Value_Matcher, Value_Holder<bool> {
+struct Boolean_Matcher final
+    : Value_Matcher
+    , Value_Holder<bool> {
 
     [[nodiscard]]
     explicit Boolean_Matcher()
@@ -326,7 +334,9 @@ struct Boolean_Matcher final : Value_Matcher, Value_Holder<bool> {
     ) override;
 };
 
-struct Integer_Matcher final : Value_Matcher, Value_Holder<Integer> {
+struct Integer_Matcher final
+    : Value_Matcher
+    , Value_Holder<Integer> {
 
     [[nodiscard]]
     explicit Integer_Matcher()
@@ -448,7 +458,7 @@ public:
 
     [[nodiscard]]
     virtual Processing_Status match_pack(
-        std::span<ast::Group_Member const> members,
+        std::span<const ast::Group_Member> members,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail
@@ -473,7 +483,7 @@ public:
 
     [[nodiscard]]
     Processing_Status match_pack(
-        std::span<ast::Group_Member const> members,
+        std::span<const ast::Group_Member> members,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail
@@ -499,7 +509,7 @@ public:
 
     [[nodiscard]]
     Processing_Status match_pack(
-        std::span<ast::Group_Member const> members,
+        std::span<const ast::Group_Member> members,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail

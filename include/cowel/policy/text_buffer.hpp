@@ -27,7 +27,9 @@ struct Text_Buffer_Sink {
 
 template <std::size_t cap>
     requires(cap != 0)
-struct Text_Buffer final : Text_Sink, Buffer<char8_t, cap, Text_Buffer_Sink> {
+struct Text_Buffer final
+    : Text_Sink
+    , Buffer<char8_t, cap, Text_Buffer_Sink> {
 
     [[nodiscard]]
     constexpr Text_Buffer(Text_Sink& parent, Output_Language language) noexcept

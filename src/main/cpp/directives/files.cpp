@@ -149,11 +149,13 @@ Include_Behavior::splice(Content_Policy& out, const Invocation& call, Context& c
     if (!parse_success) {
         context.try_fatal(
             diagnostic::parse, call.directive.get_source_span(),
-            joined_char_sequence({
-                u8"Abandoning processing because the included file \"",
-                path_string,
-                u8"\" could not be parsed, i.e. raised syntax errors.",
-            })
+            joined_char_sequence(
+                {
+                    u8"Abandoning processing because the included file \"",
+                    path_string,
+                    u8"\" could not be parsed, i.e. raised syntax errors.",
+                }
+            )
         );
         return Processing_Status::fatal;
     }

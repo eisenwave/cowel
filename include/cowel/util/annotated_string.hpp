@@ -250,9 +250,13 @@ public:
         COWEL_ASSERT(m_self.m_text.size() >= m_initial_size);
         const std::size_t length = m_self.m_text.size() - m_initial_size;
         if (length != 0) {
-            m_self.m_spans.push_back({ .begin = m_initial_size,
-                                       .length = m_self.m_text.size() - m_initial_size,
-                                       .value = m_value });
+            m_self.m_spans.push_back(
+                {
+                    .begin = m_initial_size,
+                    .length = m_self.m_text.size() - m_initial_size,
+                    .value = m_value,
+                }
+            );
         }
     }
 

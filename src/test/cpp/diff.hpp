@@ -57,11 +57,13 @@ inline std::pmr::vector<Edit_Type> shortest_edit_script(
             // we consider the cost to be infinite.
             // This way, the output is made of pure insertions and deletions;
             // substitutions don't exist.
-            F(i, j) = std::min({
-                from[i - 1] == to[j - 1] ? F(i - 1, j - 1) : std::size_t(-1), // common
-                F(i - 1, j) + 1, // deletion
-                F(i, j - 1) + 1, // insertion
-            });
+            F(i, j) = std::min(
+                {
+                    from[i - 1] == to[j - 1] ? F(i - 1, j - 1) : std::size_t(-1), // common
+                    F(i - 1, j) + 1, // deletion
+                    F(i, j - 1) + 1, // insertion
+                }
+            );
         }
     }
 

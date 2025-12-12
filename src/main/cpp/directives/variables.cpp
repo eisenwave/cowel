@@ -191,13 +191,15 @@ Logical_Not_Behavior::do_evaluate(const Invocation& call, Context& context) cons
     if (argument.value.get_type() != Type::boolean) {
         context.try_error(
             diagnostic::type_mismatch, argument.location,
-            joined_char_sequence({
-                u8"Expected a value of type "sv,
-                Type::boolean.get_display_name(),
-                u8", but got "sv,
-                argument.value.get_type().get_display_name(),
-                u8".",
-            })
+            joined_char_sequence(
+                {
+                    u8"Expected a value of type "sv,
+                    Type::boolean.get_display_name(),
+                    u8", but got "sv,
+                    argument.value.get_type().get_display_name(),
+                    u8".",
+                }
+            )
         );
     }
 
@@ -215,13 +217,15 @@ struct Logical_Expression_Evaluator {
     {
         context.try_error(
             diagnostic::type_mismatch, location,
-            joined_char_sequence({
-                u8"Expected a value of type "sv,
-                Type::boolean.get_display_name(),
-                u8", but got "sv,
-                type.get_display_name(),
-                u8".",
-            })
+            joined_char_sequence(
+                {
+                    u8"Expected a value of type "sv,
+                    Type::boolean.get_display_name(),
+                    u8", but got "sv,
+                    type.get_display_name(),
+                    u8".",
+                }
+            )
         );
         return Processing_Status::error;
     }
@@ -299,9 +303,9 @@ Logical_Expression_Behavior::do_evaluate(const Invocation& call, Context& contex
 Result<bool, Processing_Status>
 Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    static const auto equality_comparable
-        = Type::canonical_union_of({ Type::unit, Type::null, Type::boolean, Type::integer,
-                                     Type::floating, Type::str });
+    static const auto equality_comparable = Type::canonical_union_of(
+        { Type::unit, Type::null, Type::boolean, Type::integer, Type::floating, Type::str }
+    );
     static const auto relation_comparable
         = Type::canonical_union_of({ Type::integer, Type::floating, Type::str });
     const auto* parameter_type = m_expression_kind <= Comparison_Expression_Kind::ne
@@ -328,13 +332,15 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
     if (x.get_type() != y.get_type()) {
         context.try_error(
             diagnostic::type_mismatch, y_value.get_location(),
-            joined_char_sequence({
-                u8"Cannot compare values of different type; that is, cannot compare "sv,
-                y.get_type().get_display_name(),
-                u8" with left-hand-side type "sv,
-                x.get_type().get_display_name(),
-                u8".",
-            })
+            joined_char_sequence(
+                {
+                    u8"Cannot compare values of different type; that is, cannot compare "sv,
+                    y.get_type().get_display_name(),
+                    u8" with left-hand-side type "sv,
+                    x.get_type().get_display_name(),
+                    u8".",
+                }
+            )
         );
         return Processing_Status::error;
     }
@@ -378,13 +384,15 @@ Unary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
     if (!first_type.analytically_convertible_to(numeric_type)) {
         context.try_error(
             diagnostic::type_mismatch, group_matcher.get_values().front().location,
-            joined_char_sequence({
-                u8"Expected a value of type "sv,
-                numeric_type.get_display_name(),
-                u8", but got "sv,
-                first_type.get_display_name(),
-                u8".",
-            })
+            joined_char_sequence(
+                {
+                    u8"Expected a value of type "sv,
+                    numeric_type.get_display_name(),
+                    u8", but got "sv,
+                    first_type.get_display_name(),
+                    u8".",
+                }
+            )
         );
         return Processing_Status::error;
     }
@@ -425,13 +433,15 @@ Integer_Division_Expression_Behavior::do_evaluate(const Invocation& call, Contex
         if (value.get_type() != Type::integer) {
             context.try_error(
                 diagnostic::type_mismatch, location,
-                joined_char_sequence({
-                    u8"Expected a value of type "sv,
-                    Type::integer.get_display_name(),
-                    u8", but got "sv,
-                    value.get_type().get_display_name(),
-                    u8".",
-                })
+                joined_char_sequence(
+                    {
+                        u8"Expected a value of type "sv,
+                        Type::integer.get_display_name(),
+                        u8", but got "sv,
+                        value.get_type().get_display_name(),
+                        u8".",
+                    }
+                )
             );
             type_check_ok = false;
         }
@@ -480,13 +490,15 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
             if (value.get_type() != Type::floating) {
                 context.try_error(
                     diagnostic::type_mismatch, location,
-                    joined_char_sequence({
-                        u8"Expected a value of type "sv,
-                        Type::floating.get_display_name(),
-                        u8", but got "sv,
-                        value.get_type().get_display_name(),
-                        u8".",
-                    })
+                    joined_char_sequence(
+                        {
+                            u8"Expected a value of type "sv,
+                            Type::floating.get_display_name(),
+                            u8", but got "sv,
+                            value.get_type().get_display_name(),
+                            u8".",
+                        }
+                    )
                 );
                 type_check_ok = false;
             }
@@ -498,13 +510,15 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
             if (!value.get_type().analytically_convertible_to(numeric_type)) {
                 context.try_error(
                     diagnostic::type_mismatch, location,
-                    joined_char_sequence({
-                        u8"Expected a value of type "sv,
-                        numeric_type.get_display_name(),
-                        u8", but got "sv,
-                        value.get_type().get_display_name(),
-                        u8".",
-                    })
+                    joined_char_sequence(
+                        {
+                            u8"Expected a value of type "sv,
+                            numeric_type.get_display_name(),
+                            u8", but got "sv,
+                            value.get_type().get_display_name(),
+                            u8".",
+                        }
+                    )
                 );
                 type_check_ok = false;
             }
@@ -512,11 +526,13 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
         if (value.get_type() != first_type) {
             context.try_error(
                 diagnostic::type_mismatch, location,
-                joined_char_sequence({
-                    u8"All arguments have to be of the same type, i.e. "sv,
-                    first_type.get_display_name(),
-                    u8".",
-                })
+                joined_char_sequence(
+                    {
+                        u8"All arguments have to be of the same type, i.e. "sv,
+                        first_type.get_display_name(),
+                        u8".",
+                    }
+                )
             );
             type_check_ok = false;
         }

@@ -77,7 +77,7 @@ cowel_string_view_u8 char_sequence_to_sv(Char_Sequence8 chars, std::pmr::vector<
     chars.extract(std::span { buffer });
     COWEL_ASSERT(chars.empty());
     return as_cowel_string_view(as_u8string_view(buffer));
-};
+}
 
 struct File_Loader_Less {
     using is_transparent = void;
@@ -228,12 +228,14 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
               if (cowel_severity(severity) < options.min_log_severity) {
                   return;
               }
-              logger(Diagnostic {
-                  .severity = Severity::trace,
-                  .id = u8"trace"sv,
-                  .location = { {}, File_Id::main },
-                  .message = message,
-              });
+              logger(
+                  Diagnostic {
+                      .severity = Severity::trace,
+                      .id = u8"trace"sv,
+                      .location = { {}, File_Id::main },
+                      .message = message,
+                  }
+              );
           };
 
     try_log(u8"Trace logging enabled."sv, Severity::trace);
@@ -356,7 +358,7 @@ void do_handle_assertion(const Assertion_Error& error)
         .column = error.location.column(),
     };
     thread_local_assertion_handler(&cowel_error);
-};
+}
 
 void do_set_assertion_handler_u8(cowel_assertion_handler_fn_u8* handler) noexcept
 {

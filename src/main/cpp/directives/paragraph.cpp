@@ -42,23 +42,29 @@ Processing_Status control_paragraph(
 
 } // namespace
 
-Processing_Status
-Paragraph_Enter_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Processing_Status Paragraph_Enter_Behavior::splice(
+    Content_Policy& out,
+    const Invocation& call,
+    Context& context
+) const
 {
     return control_paragraph(&Paragraph_Split_Policy::enter_paragraph, out, call, context);
 }
 
-Processing_Status
-Paragraph_Leave_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Processing_Status Paragraph_Leave_Behavior::splice(
+    Content_Policy& out,
+    const Invocation& call,
+    Context& context
+) const
 {
     return control_paragraph(&Paragraph_Split_Policy::leave_paragraph, out, call, context);
 }
 
-Processing_Status
-Paragraph_Inherit_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Processing_Status Paragraph_Inherit_Behavior::splice(
+    Content_Policy& out,
+    const Invocation& call,
+    Context& context
+) const
 {
     return control_paragraph(&Paragraph_Split_Policy::inherit_paragraph, out, call, context);
 }

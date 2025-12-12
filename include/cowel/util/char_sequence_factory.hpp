@@ -229,8 +229,8 @@ constexpr Char_Sequence8 repeated_char_sequence(std::size_t n, char8_t c)
 
 /// @brief Creates a `Char_Sequence` containing the UTF-8 encoded contents of `str`.
 [[nodiscard]]
-constexpr Deferred_Char_Sequence<Code_Points_Char_Source> make_char_sequence(std::u32string_view str
-)
+constexpr Deferred_Char_Sequence<Code_Points_Char_Source>
+make_char_sequence(std::u32string_view str)
 {
     const std::size_t n = utf8::count_code_units_unchecked(str);
     return { n, Code_Points_Char_Source { str } };

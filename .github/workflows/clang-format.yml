@@ -15,9 +15,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install clang-format
-        run: sudo apt-get install -y clang-format-19
+        run: sudo apt-get install -y clang-format-20
 
       - name: Run clang-format check
         run: >
           find include src -name '*.cpp' -o -name '*.c' -o -name '*.hpp' -o -name '*.h' |
-          xargs clang-format-19 --color=1 --dry-run --Werror
+          xargs clang-format-20 --color=1 --dry-run --Werror

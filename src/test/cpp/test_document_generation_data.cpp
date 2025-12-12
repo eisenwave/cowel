@@ -391,6 +391,7 @@ constexpr Basic_Test basic_tests_array[] {
       .behavior = Test_Behavior::wg21 },
 };
 // clang-format on
+
 } // namespace
 
 constinit const std::span<const Basic_Test> basic_tests { basic_tests_array };

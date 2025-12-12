@@ -69,11 +69,13 @@ auto Relative_File_Loader::do_load(Char_Sequence8 path_chars, File_Id relative_t
     Result<std::pmr::vector<char8_t>, IO_Error_Code> result
         = load_utf8_file(resolved.generic_u8string(), memory);
 
-    auto& entry = m_entries.emplace_back(Owned_File_Entry {
-        .path = std::move(resolved),
-        .path_string = std::move(resolved_string),
-        .text = result ? std::move(*result) : std::pmr::vector<char8_t> {},
-    });
+    auto& entry = m_entries.emplace_back(
+        Owned_File_Entry {
+            .path = std::move(resolved),
+            .path_string = std::move(resolved_string),
+            .text = result ? std::move(*result) : std::pmr::vector<char8_t> {},
+        }
+    );
 
     const auto result_status = result ? COWEL_IO_OK : io_error_to_io_status(result.error());
     const auto result_data = result

@@ -182,11 +182,13 @@ Heading_Behavior::splice(Content_Policy& out, const Invocation& call, Context& c
         }
         context.try_warning(
             diagnostic::duplicate_id, call.directive.get_source_span(),
-            joined_char_sequence({
-                u8"Duplicate id \"",
-                id.string,
-                u8"\". Heading will be generated, but references may be broken.",
-            })
+            joined_char_sequence(
+                {
+                    u8"Duplicate id \"",
+                    id.string,
+                    u8"\". Heading will be generated, but references may be broken.",
+                }
+            )
         );
         return false;
     }();

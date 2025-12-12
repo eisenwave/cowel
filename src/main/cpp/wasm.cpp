@@ -40,12 +40,12 @@ cowel_file_result_u8
 load_file_callback(const void*, cowel_string_view_u8 path, cowel_file_id relative_to) noexcept
 {
     return cowel_import_load_file_u8(path.text, path.length, relative_to);
-};
+}
 
 void log_callback(const void*, const cowel_diagnostic_u8* diagnostic) noexcept
 {
     cowel_import_log_u8(diagnostic);
-};
+}
 
 } // namespace
 

@@ -87,11 +87,13 @@ HTML_Raw_Text_Behavior::splice(Content_Policy& out, const Invocation& call, Cont
         if (as_u8string_view(raw_text).contains(needle)) {
             context.try_error(
                 diagnostic::raw_text_closing, call.directive.get_source_span(),
-                joined_char_sequence({
-                    u8"The content within this directive unexpectedly contained a closing \"",
-                    needle,
-                    u8"\", which would result in producing malformed HTML.",
-                })
+                joined_char_sequence(
+                    {
+                        u8"The content within this directive unexpectedly contained a closing \"",
+                        needle,
+                        u8"\", which would result in producing malformed HTML.",
+                    }
+                )
             );
             status = status_concat(status, Processing_Status::error);
         }

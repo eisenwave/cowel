@@ -20,7 +20,9 @@
 namespace cowel {
 
 namespace detail {
+
 using Suppress_Unused_Include_Annotation_Span = Annotation_Span<void>;
+
 } // namespace detail
 
 using Highlight_Span = ulight::Token;

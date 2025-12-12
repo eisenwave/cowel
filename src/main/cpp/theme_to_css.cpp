@@ -35,8 +35,9 @@ struct Highlight_Lookup_Entry {
     { u8##long_string, ulight::Highlight_Type::id },
 
 constexpr auto highlight_type_lookup = []() {
-    Highlight_Lookup_Entry result[] { ULIGHT_HIGHLIGHT_TYPE_ENUM_DATA(COWEL_HIGHLIGHT_TYPE_LOOKUP
-    ) };
+    Highlight_Lookup_Entry result[] {
+        ULIGHT_HIGHLIGHT_TYPE_ENUM_DATA(COWEL_HIGHLIGHT_TYPE_LOOKUP)
+    };
     std::ranges::sort(result, {}, &Highlight_Lookup_Entry::long_string);
     return std::to_array(result);
 }();

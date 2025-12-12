@@ -75,12 +75,14 @@ Result<char32_t, Processing_Status> code_point_by_generated_digits(
         const Characters8 chars = to_characters8(std::uint32_t { code_point });
         context.try_error(
             diagnostic::char_nonscalar, source_span,
-            joined_char_sequence({
-                u8"The computed code point U+"sv,
-                chars.as_string(),
-                u8" is not a Unicode scalar value. "sv,
-                u8"Therefore, it cannot be encoded as UTF-8."sv,
-            })
+            joined_char_sequence(
+                {
+                    u8"The computed code point U+"sv,
+                    chars.as_string(),
+                    u8" is not a Unicode scalar value. "sv,
+                    u8"Therefore, it cannot be encoded as UTF-8."sv,
+                }
+            )
         );
         return Processing_Status::error;
     }

@@ -20,9 +20,10 @@ struct Ulight_Syntax_Highlighter final : Syntax_Highlighter {
     std::span<const std::u8string_view> get_supported_languages() const final;
 
     [[nodiscard]]
-    Distant<std::u8string_view>
-    match_supported_language(std::u8string_view language, std::pmr::memory_resource* memory)
-        const final;
+    Distant<std::u8string_view> match_supported_language(
+        std::u8string_view language,
+        std::pmr::memory_resource* memory
+    ) const final;
 
     [[nodiscard]]
     Result<void, Syntax_Highlight_Error> operator()( //

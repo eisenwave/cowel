@@ -25,16 +25,16 @@ jobs:
             stdlib_package: libstdc++-13-dev
           - toolchain: clang-libstdc++
             compiler: clang
-            c_compiler: clang-19
-            cpp_compiler: clang++-19
+            c_compiler: clang-20
+            cpp_compiler: clang++-20
             stdlib: libstdc++
             stdlib_package: libstdc++-13-dev
           - toolchain: clang-libc++
             compiler: clang
-            c_compiler: clang-19
-            cpp_compiler: clang++-19
+            c_compiler: clang-20
+            cpp_compiler: clang++-20
             stdlib: libc++
-            stdlib_package: libc++-19-dev
+            stdlib_package: libc++-20-dev
 
     steps:
     - uses: actions/checkout@v4

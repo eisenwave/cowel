@@ -61,9 +61,10 @@ Test_Highlighter final : Syntax_Highlighter {
     }
 
     [[nodiscard]]
-    Distant<std::u8string_view>
-    match_supported_language(std::u8string_view language, std::pmr::memory_resource* memory)
-        const final
+    Distant<std::u8string_view> match_supported_language(
+        std::u8string_view language,
+        std::pmr::memory_resource* memory
+    ) const final
     {
         const auto supported = get_supported_languages();
         const Distant<std::size_t> match = closest_match(supported, language, memory);

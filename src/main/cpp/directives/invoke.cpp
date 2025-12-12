@@ -36,11 +36,13 @@ Invoke_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
     if (!is_directive_name(name_string)) {
         context.try_error(
             diagnostic::invoke_name_invalid, directive_name_string.get_location(),
-            joined_char_sequence({
-                u8"The name \""sv,
-                name_string,
-                u8"\" is not a valid directive name."sv,
-            })
+            joined_char_sequence(
+                {
+                    u8"The name \""sv,
+                    name_string,
+                    u8"\" is not a valid directive name."sv,
+                }
+            )
         );
         return try_generate_error(out, call, context);
     }
@@ -49,11 +51,13 @@ Invoke_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
     if (!behavior) {
         context.try_error(
             diagnostic::invoke_lookup_failed, directive_name_string.get_location(),
-            joined_char_sequence({
-                u8"No directive with the name \""sv,
-                name_string,
-                u8"\" was found."sv,
-            })
+            joined_char_sequence(
+                {
+                    u8"No directive with the name \""sv,
+                    name_string,
+                    u8"\" was found."sv,
+                }
+            )
         );
         return try_generate_error(out, call, context);
     }

@@ -205,13 +205,17 @@ typedef void
 cowel_free_fn(const void* data, void* pointer, size_t size, size_t alignment) COWEL_NOEXCEPT;
 
 // NOLINTNEXTLINE(modernize-use-using)
-typedef cowel_file_result
-cowel_load_file_fn(const void* data, cowel_string_view path, cowel_file_id relative_to)
-    COWEL_NOEXCEPT;
+typedef cowel_file_result cowel_load_file_fn(
+    const void* data,
+    cowel_string_view path,
+    cowel_file_id relative_to
+) COWEL_NOEXCEPT;
 // NOLINTNEXTLINE(modernize-use-using)
-typedef cowel_file_result_u8
-cowel_load_file_fn_u8(const void* data, cowel_string_view_u8 path, cowel_file_id relative_to)
-    COWEL_NOEXCEPT;
+typedef cowel_file_result_u8 cowel_load_file_fn_u8(
+    const void* data,
+    cowel_string_view_u8 path,
+    cowel_file_id relative_to
+) COWEL_NOEXCEPT;
 
 // NOLINTNEXTLINE(modernize-use-using)
 typedef void cowel_log_fn(const void* data, const cowel_diagnostic* diagnostic) COWEL_NOEXCEPT;

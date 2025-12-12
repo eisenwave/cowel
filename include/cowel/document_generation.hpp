@@ -74,9 +74,11 @@ Processing_Status write_wg21_body_contents(
 inline Processing_Status
 write_wg21_document(Text_Sink& out, std::span<const ast::Markup_Element> content, Context& context)
 {
-    return write_head_body_document(out, content, context, //
+    return write_head_body_document(
+        out, content, context, //
         const_v<&write_wg21_head_contents>, //
-        const_v<&write_wg21_body_contents>);
+        const_v<&write_wg21_body_contents>
+    );
 }
 
 } // namespace cowel

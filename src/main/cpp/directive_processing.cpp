@@ -617,13 +617,15 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         if (std::isinf(*parsed)) {
             context.try_warning(
                 diagnostic::literal_out_of_range, value.get_source_span(),
-                joined_char_sequence({
-                    u8"The parsed value is too large to be represented as "sv,
-                    Type::floating.get_display_name(),
-                    u8" and is rounded to "sv,
-                    (*parsed < 0 ? u8"negative"sv : u8"positive"sv),
-                    u8" infinity instead."sv,
-                })
+                joined_char_sequence(
+                    {
+                        u8"The parsed value is too large to be represented as "sv,
+                        Type::floating.get_display_name(),
+                        u8" and is rounded to "sv,
+                        (*parsed < 0 ? u8"negative"sv : u8"positive"sv),
+                        u8" infinity instead."sv,
+                    }
+                )
             );
         }
         return Value::floating(*parsed);

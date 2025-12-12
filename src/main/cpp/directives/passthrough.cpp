@@ -29,11 +29,13 @@ void Deprecated_Behavior::warn(const Invocation& call, Context& context) const
 {
     context.try_warning(
         diagnostic::deprecated, call.directive.get_name_span(),
-        joined_char_sequence({
-            u8"This directive is deprecated; use \\",
-            m_replacement,
-            u8" instead.",
-        })
+        joined_char_sequence(
+            {
+                u8"This directive is deprecated; use \\",
+                m_replacement,
+                u8" instead.",
+            }
+        )
     );
 }
 
@@ -58,9 +60,11 @@ Error_Behavior::splice(Content_Policy& out, const Invocation& call, Context&) co
     }
 }
 
-Processing_Status
-Plaintext_Wrapper_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context)
-    const
+Processing_Status Plaintext_Wrapper_Behavior::splice(
+    Content_Policy& out,
+    const Invocation& call,
+    Context& context
+) const
 {
     // TODO: warn about unused arguments
     ensure_paragraph_matches_display(out, m_display);
@@ -141,11 +145,13 @@ HTML_Element_Behavior::splice(Content_Policy& out, const Invocation& call, Conte
     if (!name) {
         context.try_error(
             diagnostic::html_element_name_invalid, name_string_matcher.get_location(),
-            joined_char_sequence({
-                u8"The given tag name \""sv,
-                name_string,
-                u8"\" is not a valid HTML tag name."sv,
-            })
+            joined_char_sequence(
+                {
+                    u8"The given tag name \""sv,
+                    name_string,
+                    u8"\" is not a valid HTML tag name."sv,
+                }
+            )
         );
         return try_generate_error(out, call, context);
     }

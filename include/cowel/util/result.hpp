@@ -38,10 +38,9 @@ public:
     }
 
     [[nodiscard]]
-    constexpr Result(
-        Error_Tag,
-        const Error& error
-    ) noexcept(std::is_nothrow_copy_constructible_v<Error>)
+    constexpr Result(Error_Tag, const Error& error) noexcept(
+        std::is_nothrow_copy_constructible_v<Error>
+    )
         requires std::is_copy_constructible_v<Error>
         : m_error(error)
         , m_has_value(false)
@@ -89,8 +88,9 @@ public:
     }
 
     [[nodiscard]]
-    constexpr Result(const Result& other
-    ) noexcept(std::is_nothrow_copy_constructible_v<T> && std::is_nothrow_copy_constructible_v<Error>)
+    constexpr Result(const Result& other) noexcept(
+        std::is_nothrow_copy_constructible_v<T> && std::is_nothrow_copy_constructible_v<Error>
+    )
         requires(std::is_copy_constructible_v<T> && std::is_copy_constructible_v<Error>)
         : m_has_value(other.m_has_value)
     {
@@ -103,8 +103,9 @@ public:
     }
 
     [[nodiscard]]
-    constexpr Result(Result&& other
-    ) noexcept(std::is_nothrow_move_constructible_v<T> && std::is_nothrow_move_constructible_v<Error>)
+    constexpr Result(Result&& other) noexcept(
+        std::is_nothrow_move_constructible_v<T> && std::is_nothrow_move_constructible_v<Error>
+    )
         requires(std::is_move_constructible_v<T> && std::is_move_constructible_v<Error>)
         : m_has_value(other.m_has_value)
     {

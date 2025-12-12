@@ -22,6 +22,9 @@
 
 #ifdef ULIGHT_CLANG
 #define COWEL_CLANG 1
+#if __clang_major__ < 20
+#error "COWEL requires at least Clang 20 to compile"
+#endif
 #endif
 
 #ifdef ULIGHT_GCC

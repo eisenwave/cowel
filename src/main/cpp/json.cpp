@@ -14,6 +14,7 @@
 
 namespace cowel::json {
 namespace {
+
 struct Building_Visitor final : ulight::JSON_Visitor {
     using Pos = ulight::Source_Position;
 
@@ -109,13 +110,16 @@ struct Building_Visitor final : ulight::JSON_Visitor {
         }
     }
 };
+
 } // namespace
 
 std::optional<json::Value> load(std::u8string_view source, std::pmr::memory_resource* memory)
 {
-    constexpr ulight::JSON_Options options { .allow_comments = true,
-                                             .parse_numbers = true,
-                                             .escapes = ulight::Escape_Parsing::parse_encode };
+    constexpr ulight::JSON_Options options {
+        .allow_comments = true,
+        .parse_numbers = true,
+        .escapes = ulight::Escape_Parsing::parse_encode,
+    };
     Building_Visitor visitor { memory };
     if (!parse_json(visitor, source, options)) {
         return {};

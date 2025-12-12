@@ -20,13 +20,15 @@ Processing_Status Lazy_Value_Of_Type_Matcher::match_value(
     if (actual_type != Type::any && !actual_type.analytically_convertible_to(*m_expected_type)) {
         on_fail.emit(
             argument.get_source_span(),
-            joined_char_sequence({
-                u8"Expected a value of type "sv,
-                m_expected_type->get_display_name(),
-                u8", but got "sv,
-                actual_type.get_display_name(),
-                u8".",
-            }),
+            joined_char_sequence(
+                {
+                    u8"Expected a value of type "sv,
+                    m_expected_type->get_display_name(),
+                    u8", but got "sv,
+                    actual_type.get_display_name(),
+                    u8".",
+                }
+            ),
             context
         );
         return on_fail.status;
@@ -52,13 +54,15 @@ Processing_Status Value_Of_Type_Matcher::match_value(
     if (!val->get_type().analytically_convertible_to(*m_expected_type)) {
         on_fail.emit(
             argument.get_source_span(),
-            joined_char_sequence({
-                u8"Expected a value of type "sv,
-                m_expected_type->get_display_name(),
-                u8", but got "sv,
-                val->get_type().get_display_name(),
-                u8".",
-            }),
+            joined_char_sequence(
+                {
+                    u8"Expected a value of type "sv,
+                    m_expected_type->get_display_name(),
+                    u8", but got "sv,
+                    val->get_type().get_display_name(),
+                    u8".",
+                }
+            ),
             context
         );
         return on_fail.status;
@@ -80,11 +84,13 @@ Processing_Status Textual_Matcher::match_value(
     if (!argument.is_spliceable_value()) {
         on_fail.emit(
             argument.get_source_span(),
-            joined_char_sequence({
-                u8"Expected a spliceable value, but got "sv,
-                get_static_type(argument, context).get_display_name(),
-                u8"."sv,
-            }),
+            joined_char_sequence(
+                {
+                    u8"Expected a spliceable value, but got "sv,
+                    get_static_type(argument, context).get_display_name(),
+                    u8"."sv,
+                }
+            ),
             context
         );
         return on_fail.status;
@@ -113,11 +119,13 @@ Processing_Status Spliceable_To_String_Matcher::match_value(
     if (!argument.is_spliceable_value()) {
         on_fail.emit(
             argument.get_source_span(),
-            joined_char_sequence({
-                u8"Expected a spliceable value, but got "sv,
-                get_static_type(argument, context).get_display_name(),
-                u8"."sv,
-            }),
+            joined_char_sequence(
+                {
+                    u8"Expected a spliceable value, but got "sv,
+                    get_static_type(argument, context).get_display_name(),
+                    u8"."sv,
+                }
+            ),
             context
         );
         return on_fail.status;
@@ -260,7 +268,7 @@ Processing_Status Pack_Usual_Matcher::match_pack(
 }
 
 Processing_Status Empty_Pack_Matcher::match_pack(
-    std::span<ast::Group_Member const> members,
+    std::span<const ast::Group_Member> members,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
@@ -315,11 +323,13 @@ Processing_Status Group_Matcher::match_value(
     if (primary.get_kind() != ast::Primary_Kind::group) {
         on_fail.emit(
             argument.get_source_span(),
-            joined_char_sequence({
-                u8"Expected a group, but got "sv,
-                ast::primary_kind_display_name(primary.get_kind()),
-                u8"."sv,
-            }),
+            joined_char_sequence(
+                {
+                    u8"Expected a group, but got "sv,
+                    ast::primary_kind_display_name(primary.get_kind()),
+                    u8"."sv,
+                }
+            ),
             context
         );
         return on_fail.status;
@@ -389,11 +399,13 @@ Processing_Status Pack_Usual_Matcher::do_match(
                 if (argument_indices_by_parameter[i] != -1) {
                     on_fail.emit(
                         member.get_name_span(),
-                        joined_char_sequence({
-                            u8"The named argument \""sv,
-                            arg_name,
-                            u8"\" cannot be provided more than once.",
-                        }),
+                        joined_char_sequence(
+                            {
+                                u8"The named argument \""sv,
+                                arg_name,
+                                u8"\" cannot be provided more than once.",
+                            }
+                        ),
                         context
                     );
                     return on_fail.status;
@@ -409,11 +421,13 @@ Processing_Status Pack_Usual_Matcher::do_match(
             }
             on_fail.emit(
                 member.get_name_span(),
-                joined_char_sequence({
-                    u8"The named argument \""sv,
-                    arg_name,
-                    u8"\" does not correspond to any parameter"sv,
-                }),
+                joined_char_sequence(
+                    {
+                        u8"The named argument \""sv,
+                        arg_name,
+                        u8"\" does not correspond to any parameter"sv,
+                    }
+                ),
                 context
             );
             return on_fail.status;
@@ -428,11 +442,13 @@ Processing_Status Pack_Usual_Matcher::do_match(
         if (member_matcher->is_mandatory() && !member_matcher->get_value_matcher().was_matched()) {
             on_fail.emit(
                 on_fail.location,
-                joined_char_sequence({
-                    u8"No argument for parameter \"",
-                    member_matcher->get_name(),
-                    u8"\" was provided.",
-                }),
+                joined_char_sequence(
+                    {
+                        u8"No argument for parameter \"",
+                        member_matcher->get_name(),
+                        u8"\" was provided.",
+                    }
+                ),
                 context
             );
             return on_fail.status;

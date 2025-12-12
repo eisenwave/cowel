@@ -806,10 +806,12 @@ TEST(Parse_And_Build, arguments_comments_2)
         {
             Node::directive_with_arguments(
                 u8"b",
-                Node::group({
-                    Node::positional({ Node::unquoted_string(u8"text") }),
-                    Node::named(u8"named", { Node::unquoted_string(u8"arg") }),
-                })
+                Node::group(
+                    {
+                        Node::positional({ Node::unquoted_string(u8"text") }),
+                        Node::named(u8"named", { Node::unquoted_string(u8"arg") }),
+                    }
+                )
             ),
             Node::text(u8"\n"),
         },
@@ -890,12 +892,20 @@ TEST(Parse_And_Build, group_1)
         {
             Node::directive_with_arguments(
                 u8"d",
-                Node::group({
-                    Node::positional({ Node::group({ Node::positional({
-                        Node::unquoted_string(u8"x"),
-                    }) }) }),
-                    Node::positional({ Node::group({}) }),
-                })
+                Node::group(
+                    {
+                        Node::positional(
+                            { Node::group(
+                                { Node::positional(
+                                    {
+                                        Node::unquoted_string(u8"x"),
+                                    }
+                                ) }
+                            ) }
+                        ),
+                        Node::positional({ Node::group({}) }),
+                    }
+                )
             ),
             Node::text(u8"\n"),
         },
@@ -948,13 +958,17 @@ TEST(Parse_And_Build, group_2)
         {
             Node::directive_with_arguments(
                 u8"d",
-                Node::group({ Node::named(
-                    u8"n",
-                    { Node::group({
-                        Node::positional({ Node::unquoted_string(u8"x") }),
-                        Node::positional({ Node::unquoted_string(u8"y") }),
-                    }) }
-                ) })
+                Node::group(
+                    { Node::named(
+                        u8"n",
+                        { Node::group(
+                            {
+                                Node::positional({ Node::unquoted_string(u8"x") }),
+                                Node::positional({ Node::unquoted_string(u8"y") }),
+                            }
+                        ) }
+                    ) }
+                )
             ),
             Node::text(u8"\n"),
         },
@@ -999,17 +1013,15 @@ TEST(Parse_And_Build, group_3)
         {
             Node::directive_with_arguments(
                 u8"d",
-                Node::group({ Node::positional({
-                    Node::group({
-                        Node::positional({
-                            Node::group({
-                                Node::positional({
-                                    Node::group({}),
-                                }),
-                            }),
-                        }),
-                    }),
-                }) })
+                Node::group(
+                    { Node::positional(
+                        { Node::group(
+                            { Node::positional(
+                                { Node::group({ Node::positional({ Node::group({}) }) }) }
+                            ) }
+                        ) }
+                    ) }
+                )
             ),
             Node::text(u8"\n"),
         },
@@ -1422,23 +1434,25 @@ TEST(Parse_And_Build, floats)
         {
             Node::directive_with_arguments(
                 u8"d",
-                Node::group({
-                    Node::positional({ Node::floating_point(u8"0."sv) }),
-                    Node::positional({ Node::floating_point(u8".0"sv) }),
-                    Node::positional({ Node::floating_point(u8"0.0"sv) }),
-                    Node::positional({ Node::floating_point(u8"0e0"sv) }),
-                    Node::positional({ Node::floating_point(u8"0.e0"sv) }),
-                    Node::positional({ Node::floating_point(u8".0e0"sv) }),
-                    Node::positional({ Node::floating_point(u8"0.0e0"sv) }),
-                    Node::positional({ Node::floating_point(u8"0e0"sv) }),
-                    Node::positional({ Node::floating_point(u8"0e+0"sv) }),
-                    Node::positional({ Node::floating_point(u8"0e-0"sv) }),
-                    Node::positional({ Node::floating_point(u8"0E0"sv) }),
-                    Node::positional({ Node::floating_point(u8"0E+0"sv) }),
-                    Node::positional({ Node::floating_point(u8"0E-0"sv) }),
-                    Node::positional({ Node::floating_point(u8"123.456e789"sv) }),
-                    Node::positional({ Node::floating_point(u8"-123.456e789"sv) }),
-                })
+                Node::group(
+                    {
+                        Node::positional({ Node::floating_point(u8"0."sv) }),
+                        Node::positional({ Node::floating_point(u8".0"sv) }),
+                        Node::positional({ Node::floating_point(u8"0.0"sv) }),
+                        Node::positional({ Node::floating_point(u8"0e0"sv) }),
+                        Node::positional({ Node::floating_point(u8"0.e0"sv) }),
+                        Node::positional({ Node::floating_point(u8".0e0"sv) }),
+                        Node::positional({ Node::floating_point(u8"0.0e0"sv) }),
+                        Node::positional({ Node::floating_point(u8"0e0"sv) }),
+                        Node::positional({ Node::floating_point(u8"0e+0"sv) }),
+                        Node::positional({ Node::floating_point(u8"0e-0"sv) }),
+                        Node::positional({ Node::floating_point(u8"0E0"sv) }),
+                        Node::positional({ Node::floating_point(u8"0E+0"sv) }),
+                        Node::positional({ Node::floating_point(u8"0E-0"sv) }),
+                        Node::positional({ Node::floating_point(u8"123.456e789"sv) }),
+                        Node::positional({ Node::floating_point(u8"-123.456e789"sv) }),
+                    }
+                )
             ),
             Node::text(u8"\n"),
         },
@@ -1607,10 +1621,12 @@ TEST(Parse_And_Build, hello_directive)
         {
             Node::directive(
                 u8"b",
-                Node::group({
-                    Node::named(u8"hello", { Node::unquoted_string(u8"world") }),
-                    Node::named(u8"x", { Node::integer(u8"0") }),
-                }),
+                Node::group(
+                    {
+                        Node::named(u8"hello", { Node::unquoted_string(u8"world") }),
+                        Node::named(u8"x", { Node::integer(u8"0") }),
+                    }
+                ),
                 Node::block({ Node::text(u8"test") })
             ),
             Node::text(u8"\n"),
@@ -1694,33 +1710,33 @@ TEST(Parse_And_Build, directive_as_argument)
         {
             Node::directive_with_arguments(
                 u8"a"sv,
-                Node::group({
-                    Node::positional({ Node::directive_with_arguments(u8"x", Node::group()) }),
-                })
+                Node::group(
+                    { Node::positional({ Node::directive_with_arguments(u8"x", Node::group()) }) }
+                )
             ),
             Node::text(u8"\n"),
 
             Node::directive_with_arguments(
                 u8"b"sv,
-                Node::group({
-                    Node::positional({ Node::directive(u8"y", Node::group(), Node::block()) }),
-                })
+                Node::group(
+                    { Node::positional({ Node::directive(u8"y", Node::group(), Node::block()) }) }
+                )
             ),
             Node::text(u8"\n"),
 
             Node::directive_with_arguments(
                 u8"c"sv,
-                Node::group({
-                    Node::positional({ Node::directive(u8"z", Node::group(), Node::block()) }),
-                })
+                Node::group(
+                    { Node::positional({ Node::directive(u8"z", Node::group(), Node::block()) }) }
+                )
             ),
             Node::text(u8"\n"),
 
             Node::directive_with_arguments(
                 u8"d"sv,
-                Node::group({
-                    Node::positional({ Node::directive_with_content(u8"w", Node::block()) }),
-                })
+                Node::group(
+                    { Node::positional({ Node::directive_with_content(u8"w", Node::block()) }) }
+                )
             ),
             Node::text(u8"\n"),
         },
@@ -1737,10 +1753,12 @@ TEST(Parse_And_Build, arguments_balanced_braces)
         {
             Node::directive_with_arguments(
                 u8"d",
-                Node::group({
-                    Node::named(u8"x", { Node::block() }),
-                    Node::positional({ Node::block() }),
-                })
+                Node::group(
+                    {
+                        Node::named(u8"x", { Node::block() }),
+                        Node::positional({ Node::block() }),
+                    }
+                )
             ),
             Node::text(u8"\n"),
         },

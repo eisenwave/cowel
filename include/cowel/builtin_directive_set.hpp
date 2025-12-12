@@ -443,9 +443,12 @@ struct Get_Variable_Behavior final : Variable_Behavior {
         = default;
 
     [[nodiscard]]
-    Processing_Status
-    generate_var(Content_Policy& out, const Invocation&, std::u8string_view var, Context& context)
-        const final;
+    Processing_Status generate_var(
+        Content_Policy& out,
+        const Invocation&,
+        std::u8string_view var,
+        Context& context
+    ) const final;
 };
 
 enum struct Variable_Operation : Default_Underlying {
@@ -473,9 +476,12 @@ public:
     }
 
     [[nodiscard]]
-    Processing_Status
-    generate_var(Content_Policy&, const Invocation& call, std::u8string_view var, Context& context)
-        const final
+    Processing_Status generate_var(
+        Content_Policy&,
+        const Invocation& call,
+        std::u8string_view var,
+        Context& context
+    ) const final
     {
         return set_variable_to_op_result(m_op, call, var, context);
     }
