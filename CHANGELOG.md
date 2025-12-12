@@ -32,7 +32,7 @@
   - `cowel_rem_to_zero`
   - `cowel_div_to_pos_inf`
   - `cowel_rem_to_pos_inf`
-  - `cowel_rem_to_neg_inf`
+  - `cowel_div_to_neg_inf`
   - `cowel_rem_to_neg_inf`
 - add the following logical operation directives:
   - `cowel_not` (`!`)
