@@ -151,43 +151,19 @@ template <no_cv_floating T>
 std::from_chars_result
 from_characters(std::string_view sv, T& out, std::chars_format fmt = std::chars_format::general)
 {
-    // For a very long time, only libstdc++, not libc++ had floating-point support.
-    // If need be, we emulate std::from_chars using std::strtod et al.
-#ifdef _LIBCPP_VERSION
-    if constexpr (!requires { std::from_chars(sv.data(), sv.data() + sv.size(), out, fmt); }) {
-        std::string buffer(sv);
-        COWEL_ASSERT(fmt == std::chars_format::general);
-        char* end = nullptr;
-        char** str_end = &end;
-        detail::str_to_float(buffer.c_str(), str_end, out);
-        if (*str_end == buffer.c_str()) {
-            return { sv.data(), std::errc::invalid_argument };
-        }
-        if (std::isinf(out) && !buffer.starts_with("-I") && !buffer.starts_with("-i")
-            && !buffer.starts_with("+I") && !buffer.starts_with("+i") && !buffer.starts_with('I')
-            && !buffer.starts_with('i')) {
-            return { sv.data(), std::errc::result_out_of_range };
-        }
-        const std::ptrdiff_t matched_length = end - buffer.data();
-        return { sv.data() + matched_length, std::errc {} };
-    }
-    else
-#endif
-    {
 #ifdef __GLIBCXX__
-        out = T { 0 };
+    out = T { 0 };
 #endif
-        const std::from_chars_result result
-            = std::from_chars(sv.data(), sv.data() + sv.size(), out, fmt);
+    const std::from_chars_result result
+        = std::from_chars(sv.data(), sv.data() + sv.size(), out, fmt);
 #ifdef __GLIBCXX__
-        // This is a workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123078
-        // std::from_chars doesn't handle underflow properly.
-        if (result.ec == std::errc {} && sv.starts_with('-')) {
-            out = std::copysign(out, T { -1 });
-        }
-#endif
-        return result;
+    // This is a workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123078
+    // std::from_chars doesn't handle underflow properly.
+    if (result.ec == std::errc {} && sv.starts_with('-')) {
+        out = std::copysign(out, T { -1 });
     }
+#endif
+    return result;
 }
 
 template <no_cv_floating T>
