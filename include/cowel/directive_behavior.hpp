@@ -143,7 +143,7 @@ protected:
 struct Short_String_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
     constexpr Short_String_Directive_Behavior() noexcept
-        : Directive_Behavior { Type::block }
+        : Directive_Behavior { Type::str }
     {
     }
 
