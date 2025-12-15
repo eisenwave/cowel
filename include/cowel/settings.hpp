@@ -40,6 +40,14 @@
 #define COWEL_EXCEPTIONS ULIGHT_EXCEPTIONS
 #endif
 
+#ifdef _LIBCPP_VERSION
+#define COWEL_LIBCXX 1
+#endif
+
+#ifdef __GLIBCXX__
+#define COWEL_LIBSTDCXX 1
+#endif
+
 namespace cowel {
 
 #if defined(COWEL_CLANG) || defined(COWEL_GCC)
@@ -64,6 +72,31 @@ inline constexpr std::size_t default_char_sequence_buffer_size = 1024;
 
 /// @brief The buffer size for buffered `HTML_Writer`s.
 inline constexpr std::size_t html_writer_buffer_size = 512;
+
+// clang-format off
+enum struct Standard_Library : unsigned char {
+    /// @brief Unknown standard library.
+    unknown = 0,
+    /// @brief LLVM libc++.
+    libcxx = 1,
+    /// @brief GNU libstdc++.
+    libstdcxx = 2,
+    /// @brief The current standard library.
+    current =
+#ifdef COWEL_LIBCXX
+    libcxx
+#elifdef COWEL_LIBSTDCXX
+    libstdcxx
+#else
+    unknown
+#endif
+};
+// clang-format on
+
+static_assert(
+    Standard_Library::current != Standard_Library::unknown,
+    "Currently, only compiling with libstdc++ or libc++ is supported."
+);
 
 } // namespace cowel
 
