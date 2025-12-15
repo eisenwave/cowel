@@ -585,21 +585,61 @@ Some literals are simply keywords:
 
 \codeblock(ebnf){
 int-literal
+  = binary-int-literal
+  | octal-int-literal
+  | decimal-int-literal
+  | hexadecimal-int-literal;
+
+binary-int-literal
+  = [ "-" ], "0b", binary-digit, { binary-digit };
+octal-int-literal
+  = [ "-" ], "0o", octal-digit, { octal-digit };
+decimal-int-literal
   = [ "-" ], digit, { digit };
+hexadecimal-int-literal
+  = [ "-" ], "0x", hexadecimal-digit, { hexadecimal-digit };
+
+binary-digit
+  = "0" | "1";
+digit
+  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+octal-digit
+  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
+hexadecimal-digit
+  = digit
+  | "A" | "B" | "C" | "D" | "E" | "F"
+  | "a" | "b" | "c" | "d" | "e" | "f";
 }
 
 An \gterm{int-literal} represents a value of type \cowdoc_type{int}
 (\ref("#type-int")).
 
-The value is of a \gterm{int-literal} is determined by
-interpreting each \gterm{digit} from left to right
-as decimal digits of an integer,
+The \dfn{base} \math{\mi{B}} of a \gterm{int-literal} is
+\ul{
+  \li{\math{\mn{2}} for a \gterm{binary-int-literal},}
+  \li{\math{\mn{8}} for an \gterm{octal-int-literal},}
+  \li{\math{\mn{10}} for an \gterm{decimal-int-literal}, and}
+  \li{\math{\mn{16}} for an \gterm{hexadecimal-int-literal}.}
+}
+The value is of an \gterm{int-literal} in base \math{\mi{B}}
+is determined by interpreting each digit from left to right
+as decimal digits of a base-\math{\mi{B}} integer,
 from most significant to least significant.
+The \gterm{hexadecimal-digit}s \tt{a..f} and \tt{A..F} both represent
+digits of value \math{\mn{10}}..\math{\mn{15}}.
+
 Leading zeros are ignored.
 The value is negative if the leading \cowdoc_cp{002D} is present.
 
 \Bex{
-The \gterm{int-literal} \cowdoc_c{-0123} represents the integer value -123.
+The \gterm{int-literal} \cowdoc_c{-0123} represents the integer value
+\math{\mrow{\mo(form=prefix){−}\mn{123}}}.
+
+The \gterm{binary-int-literal} \cowdoc_c{0b11111111},
+the \gterm{octal-int-literal} \cowdoc_c{0o377},
+the \gterm{decimal-int-literal} \cowdoc_c{255}, and
+the \gterm{hexadecimal-int-literal} \cowdoc_c{0xff}
+all represent the value \math{\mn{255}}.
 }
 
 \h4(id=float-literal){\gterm{float-literal} \N{EM DASH} Floating-point literal}

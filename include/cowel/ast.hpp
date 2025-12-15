@@ -123,8 +123,49 @@ constexpr std::u8string_view primary_kind_display_name(Primary_Kind kind)
     COWEL_ASSERT_UNREACHABLE(u8"Invalid kind.");
 }
 
+struct Parsed_Int {
+    Integer value;
+    bool in_range;
+};
+
+enum struct Float_Literal_Status : Default_Underlying {
+    /// @brief `value` holds the (possibly rounded) value.
+    ok,
+    /// @brief Floating-point overflow.
+    /// `value` holds correctly signed infinity.
+    float_overflow,
+    /// @brief Floating-point underflow.
+    /// `value` holds correctly signed zero.
+    float_underflow,
+};
+
+struct Parsed_Float {
+    Float value;
+    Float_Literal_Status status;
+};
+
 struct Primary {
+private:
+    using Extra_Variant = std::variant<
+        std::monostate, // No extra.
+        std::size_t, // Length of escape sequence.
+        Parsed_Int, // Parsed int value.
+        Parsed_Float, // Parsed float value.
+        Pmr_Vector<Markup_Element>, // Markup elements of block or quoted string.
+        Pmr_Vector<Group_Member> // Members of a group.
+        >;
+
+    [[nodiscard]]
+    static Primary integer(File_Source_Span source_span, std::u8string_view source);
+
+    [[nodiscard]]
+    static Primary floating(File_Source_Span source_span, std::u8string_view source);
+
 public:
+    [[nodiscard]]
+    static Primary
+    basic(Primary_Kind kind, File_Source_Span source_span, std::u8string_view source);
+
     [[nodiscard]]
     static Primary quoted_string(
         File_Source_Span source_span,
@@ -150,28 +191,17 @@ private:
     Primary_Kind m_kind;
     File_Source_Span m_source_span;
     std::u8string_view m_source;
-    std::variant<std::size_t, Pmr_Vector<Markup_Element>, Pmr_Vector<Group_Member>> m_extra;
+    Extra_Variant m_extra;
 
     [[nodiscard]]
     Primary(
         Primary_Kind kind,
         File_Source_Span source_span,
         std::u8string_view source,
-        Pmr_Vector<Markup_Element>&& elements
-    );
-
-    [[nodiscard]]
-    Primary(
-        Primary_Kind kind,
-        File_Source_Span source_span,
-        std::u8string_view source,
-        Pmr_Vector<Group_Member>&& members
+        Extra_Variant&& extra
     );
 
 public:
-    [[nodiscard]]
-    Primary(Primary_Kind kind, File_Source_Span source_span, std::u8string_view source);
-
     [[nodiscard]]
     Primary(const Primary&);
     [[nodiscard]]
@@ -214,6 +244,26 @@ public:
     std::u8string_view get_source() const
     {
         return m_source;
+    }
+
+    [[nodiscard]]
+    bool get_bool_value() const
+    {
+        COWEL_ASSERT(m_kind == Primary_Kind::bool_literal);
+        return m_source == u8"true";
+    }
+
+    [[nodiscard]]
+    Parsed_Int get_int_value() const
+    {
+        COWEL_ASSERT(m_kind == Primary_Kind::int_literal);
+        return std::get<Parsed_Int>(m_extra);
+    }
+
+    [[nodiscard]]
+    Parsed_Float get_float_value() const
+    {
+        return std::get<Parsed_Float>(m_extra);
     }
 
     /// @brief Returns the source span covering the escaped characters.

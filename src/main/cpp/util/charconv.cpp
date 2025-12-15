@@ -31,7 +31,7 @@ constexpr int u64_max_output_digits(int base)
     COWEL_DEBUG_ASSERT(base >= 2);
     COWEL_DEBUG_ASSERT(base <= 36);
 
-    static constexpr auto table = [] {
+    static constexpr auto table = [] consteval {
         std::array<signed char, 36> result {};
         for (std::size_t i = 2; i < result.size(); ++i) {
             result[i] = static_cast<signed char>(u64_max_output_digits_naive(int(i)));
@@ -66,7 +66,7 @@ constexpr int u64_max_input_digits(int base)
     COWEL_DEBUG_ASSERT(base >= 2);
     COWEL_DEBUG_ASSERT(base <= 36);
 
-    static constexpr auto table = [] {
+    static constexpr auto table = [] consteval {
         std::array<signed char, 36> result {};
         for (std::size_t i = 2; i < result.size(); ++i) {
             result[i] = static_cast<signed char>(u64_max_input_digits_naive(int(i)));
@@ -97,7 +97,7 @@ constexpr std::uint64_t u64_max_power(int base)
     COWEL_DEBUG_ASSERT(base >= 2);
     COWEL_DEBUG_ASSERT(base <= 36);
 
-    static constexpr auto table = [] {
+    static constexpr auto table = [] consteval {
         std::array<std::uint64_t, 36> result {};
         for (std::size_t i = 2; i < result.size(); ++i) {
             const int max_exponent = u64_max_input_digits(int(i));

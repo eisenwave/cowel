@@ -1,13 +1,16 @@
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <memory_resource>
 #include <optional>
 #include <span>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/from_chars.hpp"
 #include "cowel/util/source_position.hpp"
 #include "cowel/util/strings.hpp"
 
@@ -20,7 +23,116 @@ using namespace std::string_view_literals;
 namespace cowel {
 namespace ast {
 
-[[nodiscard]]
+Primary Primary::basic(Primary_Kind kind, File_Source_Span source_span, std::u8string_view source)
+{
+    using enum ast::Primary_Kind;
+    switch (kind) {
+    case unit_literal:
+    case null_literal:
+    case bool_literal:
+    case unquoted_string:
+    case text: return Primary { kind, source_span, source, std::monostate {} };
+
+    case int_literal: return integer(source_span, source);
+    case decimal_float_literal: return floating(source_span, source);
+
+    case infinity: {
+        const Float value = source.starts_with(u8'-') ? -std::numeric_limits<Float>::infinity()
+                                                      : std::numeric_limits<Float>::infinity();
+        return Primary { kind, source_span, source,
+                         Parsed_Float { value, Float_Literal_Status::ok } };
+    }
+
+    case comment:
+    case escape: {
+        const std::size_t length = source.ends_with(u8"\r\n") ? 2uz
+            : source.ends_with(u8'\n')                        ? 1uz
+                                                              : 0uz;
+        return Primary { kind, source_span, source, length };
+    }
+
+    case quoted_string:
+    case block:
+    case group: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Kind is not basic basic.");
+}
+
+Primary Primary::integer(File_Source_Span source_span, std::u8string_view source)
+{
+    COWEL_ASSERT(!source.empty());
+    const bool is_negative = source.starts_with(u8'-');
+    const auto base_id_index = std::size_t(1 + is_negative);
+    const bool is_decimal
+        = source.length() < std::size_t(2 + is_negative) || is_ascii_digit(source[base_id_index]);
+    const int base = is_decimal          ? 10
+        : source[base_id_index] == u8'b' ? 2
+        : source[base_id_index] == u8'o' ? 8
+        : source[base_id_index] == u8'x' ? 16
+                                         : 0;
+    COWEL_ASSERT(base != 0);
+    COWEL_ASSERT(is_decimal || source.length() > 2);
+    COWEL_ASSERT(is_decimal || source[std::size_t(is_negative)] == u8'0');
+
+    Integer value = 0;
+    const auto result = [&] -> std::from_chars_result {
+        if (is_decimal) {
+            return from_characters(source, value, base);
+        }
+        const std::size_t digits_start = is_negative ? 3 : 2;
+        const std::u8string_view digits = source.substr(digits_start);
+        if (!is_negative) {
+            return from_characters(digits, value, base);
+        }
+        Uint128 v = 0;
+        const auto r = from_characters(digits, v, base);
+        if (r.ec != std::errc {}) {
+            return r;
+        }
+        constexpr auto max_u128 = Uint128 { 1 } << 127;
+        if (v > max_u128) {
+            return { r.ptr, std::errc::value_too_large };
+        }
+        value = Int128(-v);
+        return r;
+    }();
+    COWEL_ASSERT(result.ec != std::errc::invalid_argument);
+
+    const auto parsed_int = result.ec == std::errc {}
+        ? Parsed_Int { .value = value, .in_range = true }
+        : Parsed_Int { .value = 0, .in_range = false };
+    return Primary { Primary_Kind::int_literal, source_span, source, parsed_int };
+}
+
+Primary Primary::floating(File_Source_Span source_span, const std::u8string_view source)
+{
+    Float value = 0;
+    const std::from_chars_result result = from_characters(source, value);
+    COWEL_ASSERT(result.ec != std::errc::invalid_argument);
+    COWEL_DEBUG_ASSERT(!std::isnan(value));
+
+    const auto parsed_float = [&] -> Parsed_Float {
+        if constexpr (Standard_Library::current == Standard_Library::libcxx) {
+            const auto status = result.ec == std::errc {} ? Float_Literal_Status::ok
+                : std::isinf(value)                       ? Float_Literal_Status::float_overflow
+                                                          : Float_Literal_Status::float_underflow;
+            return { .value = value, .status = status };
+        }
+        else {
+            if (result.ec == std::errc {}) {
+                return { .value = value, .status = Float_Literal_Status::ok };
+            }
+            const auto str = std::u8string { source };
+            const double error_value
+                = std::strtod(reinterpret_cast<const char*>(str.c_str()), nullptr);
+            const auto status = std::isinf(value) ? Float_Literal_Status::float_overflow
+                                                  : Float_Literal_Status::float_underflow;
+            return { .value = error_value, .status = status };
+        }
+    }();
+    return Primary { Primary_Kind::decimal_float_literal, source_span, source, parsed_float };
+}
+
 Primary Primary::quoted_string(
     File_Source_Span source_span,
     std::u8string_view source,
@@ -30,7 +142,6 @@ Primary Primary::quoted_string(
     return Primary { Primary_Kind::quoted_string, source_span, source, std::move(elements) };
 }
 
-[[nodiscard]]
 Primary Primary::block(
     File_Source_Span source_span,
     std::u8string_view source,
@@ -40,7 +151,6 @@ Primary Primary::block(
     return Primary { Primary_Kind::block, source_span, source, std::move(elements) };
 }
 
-[[nodiscard]]
 Primary Primary::group(
     File_Source_Span source_span,
     std::u8string_view source,
@@ -205,45 +315,16 @@ void Primary::assert_validity() const
     }
 }
 
-[[nodiscard]]
-Primary::Primary(Primary_Kind kind, File_Source_Span source_span, std::u8string_view source)
-    : m_kind { kind }
-    , m_source_span { source_span }
-    , m_source { source }
-    , m_extra { kind != Primary_Kind::escape     ? 0uz
-                    : source.ends_with(u8"\r\n") ? 2uz
-                    : source.ends_with(u8'\n')   ? 1uz
-                                                 : 0uz }
-{
-    assert_validity();
-}
-
-[[nodiscard]]
 Primary::Primary(
     Primary_Kind kind,
     File_Source_Span source_span,
     std::u8string_view source,
-    Pmr_Vector<Markup_Element>&& elements
+    Extra_Variant&& extra
 )
     : m_kind { kind }
     , m_source_span { source_span }
     , m_source { source }
-    , m_extra { std::move(elements) }
-{
-    assert_validity();
-}
-
-[[nodiscard]]
-Primary::Primary(
-    Primary_Kind kind,
-    File_Source_Span source_span,
-    std::u8string_view source,
-    Pmr_Vector<Group_Member>&& members
-)
-    : m_kind { kind }
-    , m_source_span { source_span }
-    , m_source { source }
-    , m_extra { std::move(members) }
+    , m_extra { std::move(extra) }
 {
     assert_validity();
 }
@@ -260,7 +341,10 @@ constexpr std::optional<ast::Primary_Kind> instruction_type_primary_kind(AST_Ins
     case escape: return ast::Primary_Kind::escape;
     case text: return ast::Primary_Kind::text;
     case unquoted_string: return ast::Primary_Kind::unquoted_string;
-    case decimal_int_literal: return ast::Primary_Kind::int_literal;
+    case binary_int_literal:
+    case octal_int_literal:
+    case decimal_int_literal:
+    case hexadecimal_int_literal: return ast::Primary_Kind::int_literal;
     case float_literal: return ast::Primary_Kind::decimal_float_literal;
     case keyword_unit: return ast::Primary_Kind::unit_literal;
     case keyword_null: return ast::Primary_Kind::null_literal;
@@ -373,7 +457,7 @@ private:
         COWEL_ASSERT(kind);
 
         const File_Source_Span span { m_pos, instruction.n, m_file };
-        ast::Primary result { *kind, span, extract(span) };
+        auto result = ast::Primary::basic(*kind, span, extract(span));
         advance_by(instruction.n);
         return result;
     }
@@ -561,7 +645,10 @@ private:
         case AST_Instruction_Type::keyword_infinity:
         case AST_Instruction_Type::keyword_neg_infinity:
         case AST_Instruction_Type::unquoted_string:
+        case AST_Instruction_Type::binary_int_literal:
+        case AST_Instruction_Type::octal_int_literal:
         case AST_Instruction_Type::decimal_int_literal:
+        case AST_Instruction_Type::hexadecimal_int_literal:
         case AST_Instruction_Type::float_literal: {
             return build_simple_primary();
         }

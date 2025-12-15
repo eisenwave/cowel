@@ -70,8 +70,29 @@ null-literal
   = "null";
 bool-literal
   = "true" | "false";
+
 int-literal
+  = binary-int-literal
+  | octal-int-literal
+  | decimal-int-literal
+  | hexadecimal-int-literal;
+binary-int-literal
+  = [ "-" ], "0b", binary-digit, { binary-digit };
+octal-int-literal
+  = [ "-" ], "0o", octal-digit, { octal-digit };
+decimal-int-literal
   = [ "-" ], digit, { digit };
+hexadecimal-int-literal
+  = [ "-" ], "0x", hexadecimal-digit, { hexadecimal-digit };
+binary-digit
+  = "0" | "1";
+octal-digit
+  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
+hexadecimal-digit
+  = digit
+  | "A" | "B" | "C" | "D" | "E" | "F"
+  | "a" | "b" | "c" | "d" | "e" | "f";
+
 float-literal
   = [ "-" ], "infinity"
   | decimal-float-literal;

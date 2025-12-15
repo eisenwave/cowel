@@ -1245,7 +1245,7 @@ TEST(Parse, integers)
         { AST_Instruction_Type::skip, 1 },
 
         { AST_Instruction_Type::push_positional_member }, // 0xff
-        { AST_Instruction_Type::unquoted_string, 4 },
+        { AST_Instruction_Type::hexadecimal_int_literal, 4 },
         { AST_Instruction_Type::pop_positional_member },
         { AST_Instruction_Type::member_comma },
 

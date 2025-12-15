@@ -2030,8 +2030,29 @@ a <g-term>document</g-term> is constructed as follows:
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>null</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>bool-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>true</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>false</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
 <h- data-h=name_nt_decl>int-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>binary-int-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>octal-int-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>decimal-int-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>hexadecimal-int-literal</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>binary-int-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0b</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>binary-digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>binary-digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>octal-int-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0o</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>octal-digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>octal-digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>decimal-int-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>hexadecimal-int-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>hexadecimal-digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>hexadecimal-digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>binary-digit</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>octal-digit</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>2</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>3</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>4</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>5</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>6</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>7</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>hexadecimal-digit</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>digit</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>A</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>B</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>C</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>D</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>E</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>F</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>c</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>d</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>e</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>f</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
 <h- data-h=name_nt_decl>float-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>infinity</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>decimal-float-literal</h-><h- data-h=sym_punc>;</h->
@@ -2587,20 +2608,60 @@ A <g-term>primary-value</g-term> represents a value of a basic type (<a href=#ty
 <h4 id=int-literal><a class=para href=#int-literal></a>4.6.1. <g-term>int-literal</g-term> — Integer literal</h4>
 
 <code-block><h- data-h=name_nt_decl>int-literal</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>binary-int-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>octal-int-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>decimal-int-literal</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>hexadecimal-int-literal</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=name_nt_decl>binary-int-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0b</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>binary-digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>binary-digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>octal-int-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0o</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>octal-digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>octal-digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>decimal-int-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>hexadecimal-int-literal</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>hexadecimal-digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>hexadecimal-digit</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=name_nt_decl>binary-digit</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>digit</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>2</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>3</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>4</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>5</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>6</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>7</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>8</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>9</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>octal-digit</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>2</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>3</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>4</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>5</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>6</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>7</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>hexadecimal-digit</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>digit</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>A</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>B</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>C</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>D</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>E</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>F</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>c</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>d</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>e</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>f</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p>An <g-term>int-literal</g-term> represents a value of type <tt-><h- data-h=kw_type>int</h-></tt->
 (<a href=#type-int>§6.2.6. <tt-><h- data-h=kw_type>int</h-></tt-> — Integer</a>).
 </p>
-<p>The value is of a <g-term>int-literal</g-term> is determined by
-interpreting each <g-term>digit</g-term> from left to right
-as decimal digits of an integer,
+<p>The <dfn>base</dfn> <math display=inline><mi>B</mi></math> of a <g-term>int-literal</g-term> is
+</p><ul>
+  <li><math display=inline><mn>2</mn></math> for a <g-term>binary-int-literal</g-term>,</li>
+  <li><math display=inline><mn>8</mn></math> for an <g-term>octal-int-literal</g-term>,</li>
+  <li><math display=inline><mn>10</mn></math> for an <g-term>decimal-int-literal</g-term>, and</li>
+  <li><math display=inline><mn>16</mn></math> for an <g-term>hexadecimal-int-literal</g-term>.</li>
+</ul>
+<p>The value is of an <g-term>int-literal</g-term> in base <math display=inline><mi>B</mi></math>
+is determined by interpreting each digit from left to right
+as decimal digits of a base-<math display=inline><mi>B</mi></math> integer,
 from most significant to least significant.
-Leading zeros are ignored.
+The <g-term>hexadecimal-digit</g-term>s <tt->a..f</tt-> and <tt->A..F</tt-> both represent
+digits of value <math display=inline><mn>10</mn></math>..<math display=inline><mn>15</mn></math>.
+</p>
+<p>Leading zeros are ignored.
 The value is negative if the leading U+002D (<tt->-</tt->) is present.
 </p>
 <example-block><p><intro-></intro-> 
-The <g-term>int-literal</g-term> <code>-0123</code> represents the integer value -123.
+The <g-term>int-literal</g-term> <code>-0123</code> represents the integer value
+<math display=inline><mrow><mo form=prefix>−</mo><mn>123</mn></mrow></math>.
+</p>
+<p>The <g-term>binary-int-literal</g-term> <code>0b11111111</code>,
+the <g-term>octal-int-literal</g-term> <code>0o377</code>,
+the <g-term>decimal-int-literal</g-term> <code>255</code>, and
+the <g-term>hexadecimal-int-literal</g-term> <code>0xff</code>
+all represent the value <math display=inline><mn>255</mn></math>.
 </p></example-block>
 
 <h4 id=float-literal><a class=para href=#float-literal></a>4.6.2. <g-term>float-literal</g-term> — Floating-point literal</h4>

@@ -1,5 +1,4 @@
 #include <cstddef>
-#include <expected>
 #include <string_view>
 #include <vector>
 
@@ -570,8 +569,23 @@ private:
             return false;
         }
 
-        const auto type = result.is_integer() ? AST_Instruction_Type::decimal_int_literal
-                                              : AST_Instruction_Type::float_literal;
+        const auto type = [&] {
+            if (result.is_non_integer()) {
+                return AST_Instruction_Type::float_literal;
+            }
+            if (result.prefix == 0) {
+                return AST_Instruction_Type::decimal_int_literal;
+            }
+            COWEL_ASSERT(result.prefix == 2);
+            const char8_t prefix_char = remainder[result.sign + 1];
+            switch (prefix_char) {
+            case u8'b': return AST_Instruction_Type::binary_int_literal;
+            case u8'o': return AST_Instruction_Type::octal_int_literal;
+            case u8'x': return AST_Instruction_Type::hexadecimal_int_literal;
+            default: break;
+            }
+            COWEL_ASSERT_UNREACHABLE(u8"Invalid prefix.");
+        }();
         advance_by(result.length);
         m_out.push_back({ type, result.length });
         return true;
@@ -729,7 +743,10 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         COWEL_ENUM_STRING_CASE8(escape);
         COWEL_ENUM_STRING_CASE8(text);
         COWEL_ENUM_STRING_CASE8(unquoted_string);
+        COWEL_ENUM_STRING_CASE8(binary_int_literal);
+        COWEL_ENUM_STRING_CASE8(octal_int_literal);
         COWEL_ENUM_STRING_CASE8(decimal_int_literal);
+        COWEL_ENUM_STRING_CASE8(hexadecimal_int_literal);
         COWEL_ENUM_STRING_CASE8(float_literal);
         COWEL_ENUM_STRING_CASE8(keyword_true);
         COWEL_ENUM_STRING_CASE8(keyword_false);

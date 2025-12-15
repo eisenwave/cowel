@@ -297,8 +297,21 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::ok,
       { diagnostic::literal_out_of_range } },
 
+    { Source { u8"\\cowel_pos(1e-10000)" },
+      Source { u8"0" },
+      Processing_Status::ok,
+      { diagnostic::literal_out_of_range } },
+
+    { Source { u8"\\cowel_pos(-1e-10000)" },
+      Source { u8"-0" },
+      Processing_Status::ok,
+      { diagnostic::literal_out_of_range } },
+
     { Path { u8"splice/floats.cow" },
       Path { u8"splice/floats.cow.html" } },
+
+    { Path { u8"splice/ints.cow" },
+      Path { u8"splice/ints.cow.html" } },
 
     { Path { u8"compare/eq.cow" },
       Path { u8"compare/eq.cow.html" } },

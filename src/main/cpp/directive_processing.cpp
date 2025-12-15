@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstddef>
 #include <cstring>
 #include <span>
@@ -7,7 +8,6 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
-#include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
@@ -599,22 +599,31 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
     COWEL_ASSERT(value.is_value());
 
     switch (value.get_kind()) {
-    case ast::Primary_Kind::unit_literal: return Value::unit;
-    case ast::Primary_Kind::null_literal: return Value::null;
+    case ast::Primary_Kind::unit_literal: {
+        return Value::unit;
+    }
+    case ast::Primary_Kind::null_literal: {
+        return Value::null;
+    }
     case ast::Primary_Kind::bool_literal: {
-        const bool v = value.get_source() == u8"true"sv;
-        COWEL_DEBUG_ASSERT(v || value.get_source() == u8"false");
-        return Value::boolean(v);
+        return Value::boolean(value.get_bool_value());
     }
     case ast::Primary_Kind::int_literal: {
-        const std::optional<Integer> parsed = from_characters<Integer>(value.get_source());
-        return Value::integer(parsed.value());
+        const ast::Parsed_Int parsed = value.get_int_value();
+        if (!parsed.in_range) {
+            context.try_error(
+                diagnostic::literal_out_of_range, value.get_source_span(),
+                u8"The parsed value exceeds the implementation limit. "
+                u8"Currently, at most signed 128-bit integers are supported."sv
+            );
+            return Processing_Status::error;
+        }
+        return Value::integer(parsed.value);
     }
     case ast::Primary_Kind::decimal_float_literal: {
-        const std::optional<Float> parsed = from_characters_or_inf<Float>(value.get_source());
-        COWEL_ASSERT(parsed); // If parsing fails, the language parser has a bug.
-        COWEL_DEBUG_ASSERT(!std::isnan(*parsed));
-        if (std::isinf(*parsed)) {
+        const ast::Parsed_Float parsed = value.get_float_value();
+        switch (parsed.status) {
+        case ast::Float_Literal_Status::float_overflow: {
             context.try_warning(
                 diagnostic::literal_out_of_range, value.get_source_span(),
                 joined_char_sequence(
@@ -622,17 +631,36 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
                         u8"The parsed value is too large to be represented as "sv,
                         Type::floating.get_display_name(),
                         u8" and is rounded to "sv,
-                        (*parsed < 0 ? u8"negative"sv : u8"positive"sv),
+                        (parsed.value < 0 ? u8"negative"sv : u8"positive"sv),
                         u8" infinity instead."sv,
                     }
                 )
             );
+            break;
         }
-        return Value::floating(*parsed);
+        case ast::Float_Literal_Status::float_underflow: {
+            context.try_warning(
+                diagnostic::literal_out_of_range, value.get_source_span(),
+                joined_char_sequence(
+                    {
+                        u8"The parsed value is too small to be represented as "sv,
+                        Type::floating.get_display_name(),
+                        u8" and is rounded to "sv,
+                        (parsed.value < 0 ? u8"negative"sv : u8"positive"sv),
+                        u8" zero instead."sv,
+                    }
+                )
+            );
+            break;
+        }
+        case ast::Float_Literal_Status::ok: break;
+        }
+        return Value::floating(parsed.value);
     }
     case ast::Primary_Kind::infinity: {
-        const Float sign = value.get_source().starts_with(u8'-') ? -1 : 1;
-        return Value::floating(std::copysign(std::numeric_limits<Float>::infinity(), sign));
+        const ast::Parsed_Float parsed = value.get_float_value();
+        COWEL_ASSERT(parsed.status == ast::Float_Literal_Status::ok);
+        return Value::floating(parsed.value);
     }
     case ast::Primary_Kind::unquoted_string: {
         return Value::static_string(value.get_source());

@@ -41,6 +41,22 @@ constexpr Integer rem_to_neg_inf(Integer x, Integer y) noexcept
     return (x % y) + (Integer(adjust) * y);
 }
 
+/// @brief Computes `out = x + y` and returns `true`
+/// if the result could not be exactly represented .
+[[nodiscard]]
+constexpr bool add_overflow(Uint128& out, Uint128 x, Uint128 y) noexcept
+{
+    return __builtin_add_overflow(x, y, &out);
+}
+
+/// @brief Computes `out = x * y` and returns `true`
+/// if the result could not be exactly represented .
+[[nodiscard]]
+constexpr bool mul_overflow(Uint128& out, Uint128 x, unsigned long long y) noexcept
+{
+    return __builtin_mul_overflow(x, y, &out);
+}
+
 inline float roundeven(float x) noexcept
 {
 #if __has_builtin(__builtin_roundevenf)
