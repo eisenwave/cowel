@@ -176,6 +176,7 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/ulight_highlighter.hpp
     include/cowel/value.hpp
 
+    src/main/cpp/util/charconv.cpp
     src/main/cpp/util/code_point_names.cpp
     src/main/cpp/util/draft_uris.cpp
     src/main/cpp/util/html_entities.cpp

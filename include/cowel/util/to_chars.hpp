@@ -17,53 +17,10 @@
 namespace cowel {
 
 [[nodiscard]]
-constexpr std::to_chars_result to_chars128(char* const first, char* const last, const Uint128 x)
-{
-    if (x <= std::uint64_t(-1)) {
-        return std::to_chars(first, last, std::uint64_t(x));
-    }
-
-    /// The greatest power of 10 that fits into a 64-bit integer is 10^19.
-    constexpr std::uint64_t exp10_19 = 10000000000000000000ull;
-    constexpr int lower_max_digits = 19;
-
-    const std::to_chars_result upper_result = to_chars128(first, last, x / exp10_19);
-    if (upper_result.ec != std::errc {}) {
-        return upper_result;
-    }
-
-    const std::to_chars_result lower_result
-        = std::to_chars(upper_result.ptr, last, std::uint64_t(x % exp10_19));
-    if (lower_result.ec != std::errc {}) {
-        return lower_result;
-    }
-    const auto lower_length = lower_result.ptr - upper_result.ptr;
-
-    // The remainder (lower part) is mathematically exactly 19 digits long,
-    // and we have to zero-pad to the left if it is shorter
-    // (because std::to_chars wouldn't give us the leading zeros we need).
-    char* const result_end = upper_result.ptr + lower_max_digits;
-    std::ranges::copy(upper_result.ptr, upper_result.ptr + lower_length, result_end - lower_length);
-    std::ranges::fill_n(upper_result.ptr, lower_max_digits - lower_length, '0');
-
-    return { result_end, std::errc {} };
-}
+std::to_chars_result to_chars128(char* first, char* last, Uint128 x);
 
 [[nodiscard]]
-constexpr std::to_chars_result to_chars128(char* const first, char* const last, const Int128 x)
-{
-    if (x >= 0) {
-        return to_chars128(first, last, Uint128(x));
-    }
-    if (x >= std::numeric_limits<int64_t>::min()) {
-        return std::to_chars(first, last, int64_t(x));
-    }
-    if (last - first < 2) {
-        return { last, std::errc::value_too_large };
-    }
-    *first = '-';
-    return to_chars128(first + 1, last, Uint128(-x));
-}
+std::to_chars_result to_chars128(char* first, char* last, Int128 x);
 
 template <typename Char, std::size_t capacity>
 using Basic_Characters = Basic_Static_String<Char, capacity>;
