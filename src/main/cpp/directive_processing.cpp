@@ -62,7 +62,7 @@ Bool_Directive_Behavior::splice(Content_Policy& out, const Invocation& call, Con
     if (!result) {
         return try_generate_error(out, call, context, result.error());
     }
-    out.write(*result ? u8"true"sv : u8"false"sv, Output_Language::text);
+    splice_bool(out, *result);
     return Processing_Status::ok;
 }
 
@@ -83,7 +83,7 @@ Int_Directive_Behavior::splice(Content_Policy& out, const Invocation& call, Cont
     if (!result) {
         return try_generate_error(out, call, context, result.error());
     }
-    out.write(to_characters8(*result).as_string(), Output_Language::text);
+    splice_int(out, *result);
     return Processing_Status::ok;
 }
 
@@ -107,7 +107,7 @@ Processing_Status Float_Directive_Behavior::splice(
     if (!result) {
         return try_generate_error(out, call, context, result.error());
     }
-    out.write(to_characters8(*result).as_string(), Output_Language::text);
+    splice_float(out, *result);
     return Processing_Status::ok;
 }
 
