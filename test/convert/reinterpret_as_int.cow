@@ -1,0 +1,4 @@
+\cowel_reinterpret_as_int(0.0)
+\cowel_reinterpret_as_int(-0.0)
+\cowel_reinterpret_as_int(1.5)
+\cowel_reinterpret_as_int(cowel_mul(infinity, 0.0))

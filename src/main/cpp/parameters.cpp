@@ -217,6 +217,28 @@ Processing_Status Integer_Matcher::match_value(
     return Processing_Status::ok;
 }
 
+Processing_Status Float_Matcher::match_value(
+    const ast::Member_Value& argument,
+    Frame_Index frame,
+    Context& context,
+    const Match_Fail_Options& on_fail
+)
+{
+    COWEL_DEBUG_ASSERT(argument.is_spliceable_value());
+
+    const Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    if (!val) {
+        return status_max(val.error(), on_fail.status);
+    }
+    if (val->get_type() != Type::floating) {
+        // TODO: improve diagnostic
+        on_fail.emit(argument.get_source_span(), u8"Expected a float."sv, context);
+        return on_fail.status;
+    }
+    m_value = { val.value().as_float(), argument.get_source_span() };
+    return Processing_Status::ok;
+}
+
 bool Sorted_Options_Matcher::match_string(
     const ast::Member_Value& argument,
     std::u8string_view str,

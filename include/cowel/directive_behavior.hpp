@@ -133,6 +133,25 @@ protected:
     do_evaluate(const Invocation& call, Context& context) const = 0;
 };
 
+struct Float_Directive_Behavior : Directive_Behavior {
+    [[nodiscard]]
+    constexpr Float_Directive_Behavior() noexcept
+        : Directive_Behavior { Type::floating }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation& call, Context& context) const final;
+    [[nodiscard]]
+    Processing_Status
+    splice(Content_Policy& out, const Invocation& call, Context& context) const final;
+
+protected:
+    [[nodiscard]]
+    virtual Result<Float, Processing_Status>
+    do_evaluate(const Invocation& call, Context& context) const = 0;
+};
+
 /// @brief The behavior of a directive that returns a value of type `str`
 /// which is guaranteed to fit into a `Short_String_Value`.
 ///

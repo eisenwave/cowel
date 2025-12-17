@@ -451,6 +451,24 @@ struct Get_Variable_Behavior final : Variable_Behavior {
     ) const final;
 };
 
+struct Reinterpret_As_Int_Behavior final : Int_Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Reinterpret_As_Int_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Result<Integer, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+};
+
+struct Reinterpret_As_Float_Behavior final : Float_Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Reinterpret_As_Float_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Result<Float, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+};
+
 enum struct Variable_Operation : Default_Underlying {
     // TODO: add more operations
     set

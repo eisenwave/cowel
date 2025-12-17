@@ -9,6 +9,7 @@
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/math.hpp"
 #include "cowel/util/result.hpp"
+#include "cowel/util/to_chars.hpp"
 
 #include "cowel/policy/content_policy.hpp"
 
@@ -566,6 +567,79 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
     }
 
     COWEL_ASSERT_UNREACHABLE(u8"Unexpected type.");
+}
+
+Result<Float, Processing_Status>
+Reinterpret_As_Float_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    Integer_Matcher x_matcher {};
+    Group_Member_Matcher to_member { u8"x"sv, Optionality::mandatory, x_matcher };
+    Group_Member_Matcher* const parameters[] { &to_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
+
+    const Integer& x_int = x_matcher.get();
+    if (x_int < 0) {
+        context.try_error(
+            diagnostic::reinterpret_out_of_range, x_matcher.get_location(),
+            joined_char_sequence(
+                {
+                    u8"Only positive values can be reinterpreted as "sv,
+                    Type::floating.get_display_name(),
+                    u8", but "sv,
+                    to_characters8(x_int).as_string(),
+                    u8" was given."sv,
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+    constexpr Integer max { std::numeric_limits<std::uint64_t>::max() };
+    if (x_int > max) {
+        context.try_error(
+            diagnostic::reinterpret_out_of_range, x_matcher.get_location(),
+            joined_char_sequence(
+                {
+                    u8"The given value "sv,
+                    to_characters8(x_int).as_string(),
+                    u8" is too large to be reinterpreted as "sv,
+                    Type::floating.get_display_name(),
+                    u8". The maximum is ((1 << 64) - 1) = 0xffffffffffffffff."sv,
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+
+    const auto u64 = std::uint64_t(x_int);
+    COWEL_DEBUG_ASSERT(u64 == x_int);
+    return std::bit_cast<Float>(u64);
+}
+
+Result<Integer, Processing_Status>
+Reinterpret_As_Int_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    Float_Matcher x_matcher {};
+    Group_Member_Matcher to_member { u8"x"sv, Optionality::mandatory, x_matcher };
+    Group_Member_Matcher* const parameters[] { &to_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
+
+    const Float x_float = x_matcher.get();
+    const auto u64 = std::bit_cast<std::uint64_t>(x_float);
+    return Integer(u64);
 }
 
 Processing_Status

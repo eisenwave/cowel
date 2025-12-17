@@ -103,6 +103,9 @@ inline constexpr std::u8string_view arithmetic_parse = u8"arithmetic.parse";
 /// @brief Division by zero in arithmetic.
 inline constexpr std::u8string_view arithmetic_div_by_zero = u8"arithmetic.div-by-zero";
 
+/// @brief Attempting to reinterpret negative integer as float.
+inline constexpr std::u8string_view reinterpret_out_of_range = u8"reinterpret.out-of-range";
+
 /// @brief In a raw text directive (`\script` or `\style`),
 /// an unexpected closing tag was encountered.
 inline constexpr std::u8string_view raw_text_closing = u8"raw-text.closing";

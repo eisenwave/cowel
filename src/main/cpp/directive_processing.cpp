@@ -73,13 +73,37 @@ Int_Directive_Behavior::evaluate(const Invocation& call, Context& context) const
     if (!result) {
         return result.error();
     }
-    return Value::boolean(*result);
+    return Value::integer(*result);
 }
 
 Processing_Status
 Int_Directive_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     const Result<Integer, Processing_Status> result = do_evaluate(call, context);
+    if (!result) {
+        return try_generate_error(out, call, context, result.error());
+    }
+    out.write(to_characters8(*result).as_string(), Output_Language::text);
+    return Processing_Status::ok;
+}
+
+Result<Value, Processing_Status>
+Float_Directive_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    const Result<Float, Processing_Status> result = do_evaluate(call, context);
+    if (!result) {
+        return result.error();
+    }
+    return Value::floating(*result);
+}
+
+Processing_Status Float_Directive_Behavior::splice(
+    Content_Policy& out,
+    const Invocation& call,
+    Context& context
+) const
+{
+    const Result<Float, Processing_Status> result = do_evaluate(call, context);
     if (!result) {
         return try_generate_error(out, call, context, result.error());
     }

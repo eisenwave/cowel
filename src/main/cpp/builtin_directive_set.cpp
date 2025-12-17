@@ -108,6 +108,10 @@ constexpr Unary_Numeric_Expression_Behavior cowel_pos //
     { Unary_Numeric_Expression_Kind::pos };
 constexpr Put_Behavior cowel_put //
     {};
+constexpr Reinterpret_As_Float_Behavior cowel_reinterpret_as_float //
+    {};
+constexpr Reinterpret_As_Int_Behavior cowel_reinterpret_as_int //
+    {};
 constexpr Integer_Division_Expression_Behavior cowel_rem_to_neg_inf //
     { Integer_Division_Kind::rem_to_neg_inf };
 constexpr Integer_Division_Expression_Behavior cowel_rem_to_pos_inf //
@@ -418,6 +422,8 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraphs),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_pos),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_put),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_reinterpret_as_float),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_reinterpret_as_int),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_rem_to_neg_inf),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_rem_to_pos_inf),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_rem_to_zero),

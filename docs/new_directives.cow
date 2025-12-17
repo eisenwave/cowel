@@ -1421,6 +1421,81 @@ To avoid changing how \cowdoc_dir{cowel_invoke} works in the future,
 argument forwarding is not supported at all right now.
 }
 
+\h3(id=type-conversions){Type conversions}
+
+\h4(
+  id = dir-cowel_reinterpret_as_float
+){\cowdoc_dir{cowel_reinterpret_as_float} \c{mdash} Reinterpret as \cowdoc_type{float}}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_reinterpret_as_float}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){float}
+}
+
+Returns a value of type \cowdoc_type{float}
+whose bit pattern is the same as that of \cowdoc_attr{x}.
+That is, each bit in the base-2 representation of \cowdoc_attr{x}
+is interpreted as a bit in the
+binary64 representation of the \cowdoc_type{float}.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_reinterpret_as_float(0x3ff8000000000000)
+}}
+Generated HTML:
+\htmlblock{
+\: This should print 1.5
+\cowel_reinterpret_as_float(0x3ff8000000000000)
+}
+}
+
+Raises an error if \cowdoc_attr{x} is is not in the range
+\math{\mrow{
+  \mo{[}
+  \mn{0}\mo{,}\msup{\mn{2}\mn{64}}
+  \mo{)}
+}}.
+
+\Btip{
+This directive is intended for low-level manipulation of floating-point numbers.
+For example, it may be used to create a NaN value with a specific payload or sign.
+}
+
+\h4(
+  id = dir-cowel_reinterpret_as_int
+){\cowdoc_dir{cowel_reinterpret_as_int} \c{mdash} Reinterpret as \cowdoc_type{int}}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_reinterpret_as_int}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}): \cowel_highlight_as(keyword-type){int}
+}
+
+Returns a value of type \cowdoc_type{int}
+whose bit pattern is the same as that of \cowdoc_attr{x}.
+That is, each bit of the binary64 representation of \cowdoc_attr{x}
+is interpreted as a bit in the
+base-2 representation of the \cowdoc_type{int}.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_reinterpret_as_int(1.5)
+\cowel_eq(cowel_reinterpret_as_int(1.5), 0x3ff8000000000000)
+}}
+Generated HTML:
+\htmlblock{
+\cowel_reinterpret_as_int(1.5)
+\cowel_eq(cowel_reinterpret_as_int(1.5), 0x3ff8000000000000)
+}
+}
+
+\Bnote{
+The result is in the range \math{\mrow{
+  \mo{[}
+  \mn{0}\mo{,}\msup{\mn{2}\mn{64}}
+  \mo{)}
+}}.
+}
+
 \h3(id=basic-arithmetic-operations){Basic arithmetic operations}
 
 \cowel_macro(left_fold_math_func){\

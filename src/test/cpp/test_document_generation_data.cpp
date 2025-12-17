@@ -302,10 +302,15 @@ constexpr Basic_Test basic_tests_array[] {
       Processing_Status::ok,
       { diagnostic::literal_out_of_range } },
 
-    { Source { u8"\\cowel_pos(-1e-10000)" },
-      Source { u8"-0" },
-      Processing_Status::ok,
-      { diagnostic::literal_out_of_range } },
+    { Source { u8"\\cowel_reinterpret_as_float(-1)" },
+      Source { u8"<error->\\cowel_reinterpret_as_float(-1)</error->" },
+      Processing_Status::error,
+      { diagnostic::reinterpret_out_of_range } },
+
+    { Source { u8"\\cowel_reinterpret_as_float(0x10000000000000000)" },
+      Source { u8"<error->\\cowel_reinterpret_as_float(0x10000000000000000)</error->" },
+      Processing_Status::error,
+      { diagnostic::reinterpret_out_of_range } },
 
     { Path { u8"splice/floats.cow" },
       Path { u8"splice/floats.cow.html" } },
@@ -330,6 +335,12 @@ constexpr Basic_Test basic_tests_array[] {
 
     { Path { u8"compare/ge.cow" },
       Path { u8"compare/ge.cow.html" } },
+
+    { Path { u8"convert/reinterpret_as_float.cow" },
+      Path { u8"convert/reinterpret_as_float.cow.html" } },
+
+    { Path { u8"convert/reinterpret_as_int.cow" },
+      Path { u8"convert/reinterpret_as_int.cow.html" } },
 
     { Source { u8"" },
       Path { u8"document/empty.html" },

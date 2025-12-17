@@ -45,6 +45,9 @@
   - `cowel_gt` (`>`)
   - `cowel_le` (`<=`)
   - `cowel_ge` (`>=`)
+- add the following type conversion directives (#125):
+  - `cowel_reinterpret_as_float`
+  - `cowel_reinterpret_as_int`
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
 - fix typos in `link rel` (#93)
 - fix documentation of insertion block (#92)

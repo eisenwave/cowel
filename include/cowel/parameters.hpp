@@ -261,17 +261,6 @@ public:
     ) override;
 };
 
-template <const auto& type>
-    requires requires { Value_Of_Type_Matcher(&type); }
-struct Value_Of_Constant_Type_Matcher final : Value_Of_Type_Matcher {
-
-    [[nodiscard]]
-    explicit Value_Of_Constant_Type_Matcher()
-        : Value_Of_Type_Matcher(&type)
-    {
-    }
-};
-
 /// @brief Matches any spliceable value and splices it into a string.
 struct Spliceable_To_String_Matcher final
     : Value_Matcher
@@ -340,6 +329,23 @@ struct Integer_Matcher final
 
     [[nodiscard]]
     explicit Integer_Matcher()
+        = default;
+
+    [[nodiscard]]
+    Processing_Status match_value(
+        const ast::Member_Value& argument,
+        Frame_Index frame,
+        Context&,
+        const Match_Fail_Options& on_fail
+    ) override;
+};
+
+struct Float_Matcher final
+    : Value_Matcher
+    , Value_Holder<Float> {
+
+    [[nodiscard]]
+    explicit Float_Matcher()
         = default;
 
     [[nodiscard]]
