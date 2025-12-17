@@ -91,7 +91,7 @@ Primary Primary::integer(File_Source_Span source_span, std::u8string_view source
         }
         constexpr auto max_u128 = Uint128 { 1 } << 127;
         if (v > max_u128) {
-            return { r.ptr, std::errc::value_too_large };
+            return { r.ptr, std::errc::result_out_of_range };
         }
         value = Int128(-v);
         return r;

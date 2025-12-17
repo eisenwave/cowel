@@ -177,7 +177,7 @@ from_chars128(const char* const first, const char* const last, Uint128& out, int
 
             const int added_digits = 64 - std::countl_zero(digits);
             if (shift + added_digits > 128) {
-                return { last, std::errc::value_too_large };
+                return { last, std::errc::result_out_of_range };
             }
 
             result |= Uint128(digits) << shift;
@@ -204,10 +204,10 @@ from_chars128(const char* const first, const char* const last, Uint128& out, int
 
             Uint128 summand;
             if (mul_overflow(summand, factor, digits)) {
-                return { last, std::errc::value_too_large };
+                return { last, std::errc::result_out_of_range };
             }
             if (add_overflow(result, result, summand)) {
-                return { last, std::errc::value_too_large };
+                return { last, std::errc::result_out_of_range };
             }
 
             if (current_last - first <= max_lower_length || partial_result.ec != std::errc {}) {
@@ -232,27 +232,27 @@ from_chars128(const char* const first, const char* const last, Int128& out, int 
         return { last, std::errc::invalid_argument };
     }
 
-    const std::ptrdiff_t max_lower_length = u64_max_input_digits(base);
-    if (last - first <= max_lower_length) {
-        std::int64_t x {};
-        const std::from_chars_result result = std::from_chars(first, last, x, base);
-        out = x;
-        return result;
-    }
     if (*first != '-') {
         Uint128 x {};
         const std::from_chars_result result = from_chars128(first, last, x, base);
         if (x >> 127) {
-            return { result.ptr, std::errc::value_too_large };
+            return { result.ptr, std::errc::result_out_of_range };
         }
         out = Int128(x);
+        return result;
+    }
+    const std::ptrdiff_t max_lower_length = u64_max_input_digits(base);
+    if (last - first + 1 <= max_lower_length) {
+        std::int64_t x {};
+        const std::from_chars_result result = std::from_chars(first, last, x, base);
+        out = x;
         return result;
     }
     constexpr auto max_u128 = Uint128 { 1 } << 127;
     Uint128 x {};
     const std::from_chars_result result = from_chars128(first + 1, last, x, base);
     if (x > max_u128) {
-        return { result.ptr, std::errc::value_too_large };
+        return { result.ptr, std::errc::result_out_of_range };
     }
     out = Int128(-x);
     return result;
@@ -301,7 +301,7 @@ std::to_chars_result to_chars128(char* const first, char* const last, const Int1
         return std::to_chars(first, last, int64_t(x));
     }
     if (last - first < 2) {
-        return { last, std::errc::value_too_large };
+        return { last, std::errc::result_out_of_range };
     }
     *first = '-';
     return to_chars128(first + 1, last, Uint128(-x));

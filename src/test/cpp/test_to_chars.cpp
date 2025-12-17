@@ -137,6 +137,7 @@ TEST(From_Chars, from_chars128_hexadecimal)
     ASSERT_EQ(Int128(-1), from_characters<Int128>("-1"sv, 16));
     ASSERT_EQ(Int128(123), from_characters<Int128>("7b"sv, 16));
     ASSERT_EQ(Int128(-123), from_characters<Int128>("-7b"sv, 16));
+    ASSERT_EQ(Int128(1ull << 63), from_characters<Int128>("8000000000000000"sv, 16));
 
     ASSERT_EQ(Int128(1) << 64, from_characters<Int128>("10000000000000000"sv, 16));
     ASSERT_EQ(-(Int128(1) << 64), from_characters<Int128>("-10000000000000000"sv, 16));
@@ -164,15 +165,15 @@ TEST(From_Chars, from_chars128_too_large)
             u8"100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"sv,
             u128, 2
         );
-        EXPECT_EQ(bin.ec, std::errc::value_too_large);
+        EXPECT_EQ(bin.ec, std::errc::result_out_of_range);
 
         const std::from_chars_result dec
             = from_characters(u8"340282366920938463463374607431768211456"sv, u128, 10);
-        EXPECT_EQ(dec.ec, std::errc::value_too_large);
+        EXPECT_EQ(dec.ec, std::errc::result_out_of_range);
 
         const std::from_chars_result hex
             = from_characters(u8"100000000000000000000000000000000"sv, u128, 16);
-        EXPECT_EQ(hex.ec, std::errc::value_too_large);
+        EXPECT_EQ(hex.ec, std::errc::result_out_of_range);
     }
     {
         Int128 i128;
@@ -181,29 +182,29 @@ TEST(From_Chars, from_chars128_too_large)
             u8"10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"sv,
             i128, 2
         );
-        EXPECT_EQ(bin.ec, std::errc::value_too_large);
+        EXPECT_EQ(bin.ec, std::errc::result_out_of_range);
 
         const std::from_chars_result bin_minus = from_characters(
             u8"-10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"sv,
             i128, 2
         );
-        EXPECT_EQ(bin_minus.ec, std::errc::value_too_large);
+        EXPECT_EQ(bin_minus.ec, std::errc::result_out_of_range);
 
         const std::from_chars_result dec
             = from_characters(u8"170141183460469231731687303715884105728"sv, i128, 10);
-        EXPECT_EQ(dec.ec, std::errc::value_too_large);
+        EXPECT_EQ(dec.ec, std::errc::result_out_of_range);
 
         const std::from_chars_result dec_minus
             = from_characters(u8"-170141183460469231731687303715884105729"sv, i128, 10);
-        EXPECT_EQ(dec_minus.ec, std::errc::value_too_large);
+        EXPECT_EQ(dec_minus.ec, std::errc::result_out_of_range);
 
         const std::from_chars_result hex
             = from_characters(u8"80000000000000000000000000000000"sv, i128, 16);
-        EXPECT_EQ(hex.ec, std::errc::value_too_large);
+        EXPECT_EQ(hex.ec, std::errc::result_out_of_range);
 
         const std::from_chars_result hex_minus
             = from_characters(u8"-80000000000000000000000000000001"sv, i128, 16);
-        EXPECT_EQ(hex_minus.ec, std::errc::value_too_large);
+        EXPECT_EQ(hex_minus.ec, std::errc::result_out_of_range);
     }
 }
 
