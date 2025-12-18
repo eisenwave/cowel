@@ -1430,7 +1430,7 @@ argument forwarding is not supported at all right now.
 \pre{
 \cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){unit}): \cowel_highlight_as(keyword-type){str}
 \cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){bool}): \cowel_highlight_as(keyword-type){str}
-\cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){base}: \cowel_highlight_as(keyword-type){int} = 10): \cowel_highlight_as(keyword-type){str}
+\cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){base}: \cowel_highlight_as(keyword-type){int} = 10, \cowel_highlight_as(markup-attr){zpad}: \cowel_highlight_as(keyword-type){int} = 0): \cowel_highlight_as(keyword-type){str}
 \cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}, \cowel_highlight_as(markup-attr){format}: \cowel_highlight_as(keyword-type){str} = "splice"): \cowel_highlight_as(keyword-type){str}
 \cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){str}
 \cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){block}): \cowel_highlight_as(keyword-type){str}
@@ -1448,6 +1448,24 @@ The output resulting string depends on the input as follows:
     \math{\mrow{\mo{[}\mn{2}\mo{,}\mn{36}\mo{]}}}.
     Digits with value greater than \math{\mn{9}} are represented using
     U+0061..U+007A LATIN SMALL LETTER A..Z.
+    Zeros are prepended between the leading '\tt{-}' (if any)
+    and the significant digits as follows:\ul{
+      \li{If \cowdoc_attr{zpad} is negative, an error is raised.}
+      \li{
+        Otherwise, the \cowdoc_cp{0030} character is prepended
+        \math{\mrow{
+          \mi{max}
+          \mo(form=prefix, stretchy=false){(}
+          \mi{z}\mo{−}\mi{d}
+          \mo{,}
+          \mn{0}
+          \mo(form=prefix, stretchy=false){)}
+        }}
+        times, where
+        \math{\mi{z}} is \cowdoc_attr{zpad} and
+        \math{\mi{d}} is the amount of significant digits.
+      }
+    }
   }
   \li{
     If \cowdoc_attr{x} is of type \cowdoc_type{float},
@@ -1486,6 +1504,7 @@ COWEL markup:
 
 \cowel_to_str(255)
 \cowel_to_str(255, base=16)
+\cowel_to_str(-255, zpad=5)
 
 \cowel_to_str(1e10)
 \cowel_to_str(1e10, format=splice)
@@ -1505,6 +1524,7 @@ Generated HTML:
 
 \cowel_to_str(255)
 \cowel_to_str(255, base=16)
+\cowel_to_str(-255, zpad=5)
 
 \cowel_to_str(1e10)
 \cowel_to_str(1e10, format=splice)

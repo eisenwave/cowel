@@ -591,9 +591,16 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
     Group_Member_Matcher x_member { u8"x"sv, Optionality::mandatory, x_matcher };
     Integer_Matcher base_matcher;
     Group_Member_Matcher base_member { u8"base"sv, Optionality::optional, base_matcher };
+    Integer_Matcher zpad_matcher;
+    Group_Member_Matcher zpad_member { u8"zpad"sv, Optionality::optional, zpad_matcher };
     Sorted_Options_Matcher format_matcher { format_options };
     Group_Member_Matcher format_member { u8"format"sv, Optionality::optional, format_matcher };
-    Group_Member_Matcher* const parameters[] { &x_member, &base_member, &format_member };
+    Group_Member_Matcher* const parameters[] {
+        &x_member,
+        &base_member,
+        &zpad_member,
+        &format_member,
+    };
     Pack_Usual_Matcher args_matcher { parameters };
     Group_Pack_Matcher group_matcher { args_matcher };
     Call_Matcher call_matcher { group_matcher };
@@ -604,12 +611,18 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
     }
 
     static constexpr auto base_error = u8"A base can only be provided for arguments of type int."sv;
+    static constexpr auto zpad_error
+        = u8"A zpad (zero-padding) can only be provided for arguments of type int."sv;
     static constexpr auto format_error
         = u8"A format can only be provided for arguments of type float."sv;
 
     const auto check_no_extra_parameters = [&] -> Processing_Status {
         if (base_matcher.was_matched()) {
             context.try_error(diagnostic::type_mismatch, base_matcher.get_location(), base_error);
+            return Processing_Status::error;
+        }
+        if (zpad_matcher.was_matched()) {
+            context.try_error(diagnostic::type_mismatch, zpad_matcher.get_location(), zpad_error);
             return Processing_Status::error;
         }
         if (format_matcher.was_matched()) {
@@ -629,12 +642,14 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         }
         return Value::unit_string;
     }
+
     case Type_Kind::boolean: {
         if (const auto s = check_no_extra_parameters(); s != Processing_Status::ok) {
             return s;
         }
         return x_value.as_boolean() ? Value::true_string : Value::false_string;
     }
+
     case Type_Kind::integer: {
         if (format_matcher.was_matched()) {
             context.try_error(
@@ -645,7 +660,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         const Integer base = base_matcher.get_or_default(10);
         if (base < 2 || base > 36) {
             context.try_error(
-                diagnostic::to_str_base, format_matcher.get_location(),
+                diagnostic::to_str_base, base_matcher.get_location(),
                 joined_char_sequence(
                     {
                         u8"The given base "sv,
@@ -656,12 +671,48 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
             );
             return Processing_Status::error;
         }
-        const Basic_Characters chars = to_characters8(x_value.as_integer(), int(base));
-        return Value::dynamic_string(chars.as_string(), context.get_transient_memory());
+        const Integer zpad = zpad_matcher.get_or_default(0);
+        if (zpad < 0) {
+            context.try_error(
+                diagnostic::to_str_zpad, zpad_matcher.get_location(),
+                joined_char_sequence(
+                    {
+                        u8"The given zpad "sv,
+                        to_characters8(zpad).as_string(),
+                        u8" must not be negative."sv,
+                    }
+                )
+            );
+            return Processing_Status::error;
+        }
+        const Integer x_int = x_value.as_integer();
+        const Basic_Characters chars = to_characters8(x_int, int(base));
+        const auto sign_length = std::size_t(x_int < 0);
+        const auto significant_digits = chars.length() - sign_length;
+        if (zpad <= significant_digits) {
+            return Value::dynamic_string(chars.as_string(), context.get_transient_memory());
+        }
+        const auto zeros_to_prepend
+            = std::max(std::size_t(zpad), significant_digits) - significant_digits;
+        std::pmr::vector<char8_t> result { context.get_transient_memory() };
+        result.reserve(sign_length + zeros_to_prepend + significant_digits);
+        if (x_int < 0) {
+            result.push_back(u8'-');
+        }
+        for (std::size_t i = 0; i < zeros_to_prepend; ++i) {
+            result.push_back(u8'0');
+        }
+        result.insert(result.end(), chars.begin() + std::ptrdiff_t(sign_length), chars.end());
+        return Value::dynamic_string(std::move(result));
     }
+
     case Type_Kind::floating: {
         if (base_matcher.was_matched()) {
             context.try_error(diagnostic::type_mismatch, base_matcher.get_location(), base_error);
+            return Processing_Status::error;
+        }
+        if (zpad_matcher.was_matched()) {
+            context.try_error(diagnostic::type_mismatch, zpad_matcher.get_location(), zpad_error);
             return Processing_Status::error;
         }
         const auto f = x_matcher.get().as_float();
@@ -676,9 +727,14 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         splice_float(policy, f, format);
         return Value::dynamic_string(std::move(text));
     }
+
     case Type_Kind::str: {
+        if (const auto s = check_no_extra_parameters(); s != Processing_Status::ok) {
+            return s;
+        }
         return std::move(x_value);
     }
+
     case Type_Kind::block: {
         if (const auto s = check_no_extra_parameters(); s != Processing_Status::ok) {
             return s;

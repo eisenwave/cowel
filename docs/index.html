@@ -4669,7 +4669,7 @@ argument forwarding is not supported at all right now.
 <pre>
 <h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>unit</h->): <h- data-h=kw_type>str</h->
 <h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>bool</h->): <h- data-h=kw_type>str</h->
-<h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>base</h->: <h- data-h=kw_type>int</h-> = 10): <h- data-h=kw_type>str</h->
+<h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>base</h->: <h- data-h=kw_type>int</h-> = 10, <h- data-h=mk_attr>zpad</h->: <h- data-h=kw_type>int</h-> = 0): <h- data-h=kw_type>str</h->
 <h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->, <h- data-h=mk_attr>format</h->: <h- data-h=kw_type>str</h-> = "splice"): <h- data-h=kw_type>str</h->
 <h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
 <h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>str</h->
@@ -4687,6 +4687,24 @@ The output resulting string depends on the input as follows:
     <math display=inline><mrow><mo>[</mo><mn>2</mn><mo>,</mo><mn>36</mn><mo>]</mo></mrow></math>.
     Digits with value greater than <math display=inline><mn>9</mn></math> are represented using
     U+0061..U+007A LATIN SMALL LETTER A..Z.
+    Zeros are prepended between the leading '<tt->-</tt->' (if any)
+    and the significant digits as follows:<ul>
+      <li>If <tt-><h- data-h=mk_attr>zpad</h-></tt-> is negative, an error is raised.</li>
+      <li>
+        Otherwise, the U+0030 (<tt->0</tt->) character is prepended
+        <math display=inline><mrow>
+          <mi>max</mi>
+          <mo form=prefix stretchy=false>(</mo>
+          <mi>z</mi><mo>−</mo><mi>d</mi>
+          <mo>,</mo>
+          <mn>0</mn>
+          <mo form=prefix stretchy=false>)</mo>
+        </mrow></math>
+        times, where
+        <math display=inline><mi>z</mi></math> is <tt-><h- data-h=mk_attr>zpad</h-></tt-> and
+        <math display=inline><mi>d</mi></math> is the amount of significant digits.
+      </li>
+    </ul>
   </li>
   <li>
     If <tt-><h- data-h=mk_attr>x</h-></tt-> is of type <tt-><h- data-h=kw_type>float</h-></tt->,
@@ -4724,6 +4742,7 @@ COWEL markup:
 
 <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->255<h- data-h=sym_par>)</h->
 <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->255<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>base</h-><h- data-h=sym_punc>=</h->16<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->-255<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>zpad</h-><h- data-h=sym_punc>=</h->5<h- data-h=sym_par>)</h->
 
 <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->1e10<h- data-h=sym_par>)</h->
 <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->1e10<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h->splice<h- data-h=sym_par>)</h->
@@ -4741,6 +4760,7 @@ false
 
 255
 ff
+-00255
 
 1e+10
 1e+10

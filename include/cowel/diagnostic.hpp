@@ -208,6 +208,9 @@ inline constexpr std::u8string_view put_outside = u8"put.outside";
 /// the given base is outside the valid range.
 inline constexpr std::u8string_view to_str_base = u8"to_str.base";
 /// @brief In `\cowel_to_str`,
+/// the given zpad is negative.
+inline constexpr std::u8string_view to_str_zpad = u8"to_str.zpad";
+/// @brief In `\cowel_to_str`,
 /// the given format is invalid.
 inline constexpr std::u8string_view to_str_format = u8"to_str.format";
 
