@@ -375,11 +375,38 @@ constexpr Basic_Test basic_tests_array[] {
     { Path { u8"comments.cow" },
       Path { u8"comments.cow.html" } },
 
+    { Path { u8"arithmetic/abs.cow" },
+      Path { u8"arithmetic/abs.cow.html" } },
+
     { Path { u8"arithmetic/basic.cow" },
       Path { u8"arithmetic/basic.cow.html" } },
 
-    { Path { u8"arithmetic/min_max.cow" },
-      Path { u8"arithmetic/min_max.cow.html" } },
+    { Path { u8"arithmetic/ceil.cow" },
+      Path { u8"arithmetic/ceil.cow.html" } },
+
+    { Path { u8"arithmetic/floor.cow" },
+      Path { u8"arithmetic/floor.cow.html" } },
+
+    { Path { u8"arithmetic/max.cow" },
+      Path { u8"arithmetic/max.cow.html" } },
+
+    { Path { u8"arithmetic/min.cow" },
+      Path { u8"arithmetic/min.cow.html" } },
+
+    { Path { u8"arithmetic/nearest.cow" },
+      Path { u8"arithmetic/nearest.cow.html" } },
+
+    { Path { u8"arithmetic/nearest_away_zero.cow" },
+      Path { u8"arithmetic/nearest_away_zero.cow.html" } },
+
+    { Path { u8"arithmetic/neg.cow" },
+      Path { u8"arithmetic/neg.cow.html" } },
+
+    { Path { u8"arithmetic/sqrt.cow" },
+      Path { u8"arithmetic/sqrt.cow.html" } },
+
+    { Path { u8"arithmetic/trunc.cow" },
+      Path { u8"arithmetic/trunc.cow.html" } },
 
     { Path { u8"logical/ops.cow" },
       Path { u8"logical/ops.cow.html" } },
