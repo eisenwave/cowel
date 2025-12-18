@@ -1534,7 +1534,6 @@ Generated HTML:
 \cowel_to_str("awoo")
 \cowel_to_str({awoo})
 }
-\: FIXME: removing this brace segfaults
 }
 
 \Bnote{

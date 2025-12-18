@@ -132,7 +132,7 @@ Include_Behavior::splice(Content_Policy& out, const Invocation& call, Context& c
     }
     COWEL_ASSERT(context.get_file_loader().is_valid(entry->id));
 
-    const Parse_Error_Consumer on_parse_error
+    const std::convertible_to<Parse_Error_Consumer> auto on_parse_error
         = [&](std::u8string_view id, const Source_Span& location, const Char_Sequence8& message) {
               constexpr auto severity = Severity::error;
               if (!context.emits(severity)) {
