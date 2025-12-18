@@ -378,7 +378,7 @@ std::to_chars_result to_chars128(char* const first, char* const last, const Int1
         return { last, std::errc::value_too_large };
     }
     *first = '-';
-    return to_chars128(first + 1, last, Uint128(-x), base);
+    return to_chars128(first + 1, last, -Uint128(x), base);
 }
 
 template std::from_chars_result from_characters(std::string_view, float&, std::chars_format);
