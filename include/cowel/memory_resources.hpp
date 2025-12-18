@@ -109,7 +109,7 @@ struct Global_Memory_Resource final : std::pmr::memory_resource {
     [[nodiscard]]
     bool do_is_equal(const std::pmr::memory_resource& other) const noexcept final
     {
-        return dynamic_cast<const Pointer_Memory_Resource*>(&other) != nullptr;
+        return dynamic_cast<const Global_Memory_Resource*>(&other) != nullptr;
     }
 };
 
@@ -147,7 +147,7 @@ struct Propagated_Polymorphic_Allocator {
 
     void deallocate(T* p, std::size_t n)
     {
-        resource->deallocate(p, n, alignof(T));
+        resource->deallocate(p, n * sizeof(T), alignof(T));
     }
 
     friend bool
