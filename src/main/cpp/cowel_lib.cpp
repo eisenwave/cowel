@@ -283,13 +283,15 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         return { .status = static_cast<cowel_processing_status>(status), .output = {} };
     }
 
-    const cowel_mutable_string_view_u8 result
-        = cowel_alloc_text_u8({ html_sink->data(), html_sink->size() });
+    auto* const result_data
+        = static_cast<char8_t*>(memory->allocate(html_sink->size(), alignof(char8_t)));
+    const cowel_mutable_string_view_u8 result { result_data, html_sink->size() };
     if (result.text == nullptr) {
         try_log(u8"Failed to allocate memory for the generated HTML."sv, Severity::fatal);
         return { .status = COWEL_PROCESSING_FATAL, .output = result };
     }
 
+    std::memcpy(result_data, html_sink->data(), html_sink->size());
     return { .status = static_cast<cowel_processing_status>(status), .output = result };
 }
 

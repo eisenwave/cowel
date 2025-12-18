@@ -335,9 +335,12 @@ void* cowel_alloc(size_t size, size_t alignment) COWEL_NOEXCEPT;
 COWEL_EXPORT
 void cowel_free(void* pointer, size_t size, size_t alignment) COWEL_NOEXCEPT;
 
+/// @brief Uses `cowel_alloc` to allocate space for `text`,
+/// and copies `text` to the allocated memory.
 COWEL_EXPORT COWEL_NODISCARD
 cowel_mutable_string_view cowel_alloc_text(cowel_string_view text) COWEL_NOEXCEPT;
 
+/// @brief See `cowel_alloc_text`.
 COWEL_EXPORT COWEL_NODISCARD
 cowel_mutable_string_view_u8 cowel_alloc_text_u8(cowel_string_view_u8 text) COWEL_NOEXCEPT;
 
@@ -348,7 +351,7 @@ cowel_mutable_string_view_u8 cowel_alloc_text_u8(cowel_string_view_u8 text) COWE
 COWEL_EXPORT COWEL_NODISCARD
 cowel_gen_result cowel_generate_html(const cowel_options* options) COWEL_NOEXCEPT;
 
-/// @brief See `cowel_run`.
+/// @brief See `cowel_generate_html`.
 COWEL_EXPORT COWEL_NODISCARD
 cowel_gen_result_u8 cowel_generate_html_u8(const cowel_options_u8* options) COWEL_NOEXCEPT;
 

@@ -294,6 +294,9 @@ int main(int argc, const char* const* const argv)
 
     const auto out_file = fopen_unique(out_path.data(), "wb");
     if (!out_file) {
+        if (result.output.text != nullptr) {
+            memory.deallocate(result.output.text, result.output.length, alignof(char8_t));
+        }
         Diagnostic_String error { &memory };
         print_location_of_file(error, out_path_u8);
         error.append(u8" Failed to open file.");
