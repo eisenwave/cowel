@@ -17,10 +17,10 @@
 namespace cowel {
 
 [[nodiscard]]
-std::to_chars_result to_chars128(char* first, char* last, Uint128 x);
+std::to_chars_result to_chars128(char* first, char* last, Uint128 x, int base);
 
 [[nodiscard]]
-std::to_chars_result to_chars128(char* first, char* last, Int128 x);
+std::to_chars_result to_chars128(char* first, char* last, Int128 x, int base);
 
 template <typename Char, std::size_t capacity>
 using Basic_Characters = Basic_Static_String<Char, capacity>;
@@ -29,22 +29,29 @@ using Characters = Static_String<capacity>;
 template <std::size_t capacity>
 using Characters8 = Static_String8<capacity>;
 
+template <signed_or_unsigned T>
+inline constexpr std::size_t buffer_size_for_int
+    = std::numeric_limits<std::make_unsigned_t<T>>::digits + 1;
+template <>
+inline constexpr std::size_t buffer_size_for_int<Int128> = 129;
+template <>
+inline constexpr std::size_t buffer_size_for_int<Uint128> = 129;
+
 template <char_like Char = char, signed_or_unsigned T>
 [[nodiscard]]
-constexpr Basic_Characters<Char, std::numeric_limits<T>::digits + 1>
+constexpr Basic_Characters<Char, buffer_size_for_int<T>>
 to_characters(const T& x, int base = 10, bool to_upper = false)
 {
     COWEL_ASSERT(base >= 2 && base <= 36);
 
     if constexpr (std::is_same_v<Char, char>) {
-        using array_type = typename decltype(to_characters<char>(x, base))::array_type;
+        using array_type = typename decltype(to_characters<char>(x, base, to_upper))::array_type;
 
         array_type chars {};
         auto* const buffer_start = chars.data();
         std::to_chars_result result;
         if constexpr (std::is_same_v<T, Int128> || std::is_same_v<T, Uint128>) {
-            COWEL_ASSERT(base == 10); // Sorry, other bases not yet implemented :(
-            result = to_chars128(buffer_start, buffer_start + chars.size(), x);
+            result = to_chars128(buffer_start, buffer_start + chars.size(), x, base);
         }
         else {
             result = std::to_chars(buffer_start, buffer_start + chars.size(), x, base);
@@ -66,9 +73,23 @@ to_characters(const T& x, int base = 10, bool to_upper = false)
     }
 }
 
+// Source: these numbers were revealed to me in a dream.
+
+/// @brief A pessimistic buffer size necessary to hold a double-precision
+/// floating-point number in scientific notation.
+/// This includes 17 significant digits as well as some fluff,
+// such as the radix point and exponent.
+constexpr std::size_t buffer_size_for_double_scientific = 32;
+
+/// @brief A pessimistic buffer size necessary to hold a double-precision
+/// floating-point number in fixed notation.
+/// There can be extreme cases like one ulp,
+/// where there are hundreds of digits.
+constexpr std::size_t buffer_size_for_double_fixed = 512;
+
 template <char_like Char = char, std::floating_point T>
 [[nodiscard]]
-Basic_Characters<Char, 128> to_characters(T x)
+Basic_Characters<Char, buffer_size_for_double_scientific> to_characters(T x)
 {
     if constexpr (std::is_same_v<Char, char>) {
         using array_type = typename decltype(to_characters<char>(x))::array_type;
@@ -90,7 +111,7 @@ Basic_Characters<Char, 128> to_characters(T x)
 
 template <char_like Char = char, std::floating_point T>
 [[nodiscard]]
-Basic_Characters<Char, 128> to_characters(T x, std::chars_format format)
+Basic_Characters<Char, buffer_size_for_double_fixed> to_characters(T x, std::chars_format format)
 {
     if constexpr (std::is_same_v<Char, char>) {
         using array_type = typename decltype(to_characters<char>(x, format))::array_type;
@@ -112,8 +133,10 @@ Basic_Characters<Char, 128> to_characters(T x, std::chars_format format)
 
 template <char_like Char = char, std::floating_point T>
 [[nodiscard]]
-Basic_Characters<Char, 128> to_characters(T x, std::chars_format format, int precision)
+Basic_Characters<Char, buffer_size_for_double_fixed>
+to_characters(T x, std::chars_format format, int precision)
 {
+    COWEL_ASSERT(precision <= 400);
     if constexpr (std::is_same_v<Char, char>) {
         using array_type = typename decltype(to_characters<char>(x, format, precision))::array_type;
 

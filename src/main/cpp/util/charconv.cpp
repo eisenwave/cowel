@@ -259,52 +259,126 @@ from_chars128(const char* const first, const char* const last, Int128& out, int 
 }
 
 [[nodiscard]]
-std::to_chars_result to_chars128(char* const first, char* const last, const Uint128 x)
+std::to_chars_result to_chars128(char* const first, char* const last, const Uint128 x, int base)
 {
+    COWEL_DEBUG_ASSERT(first);
+    COWEL_DEBUG_ASSERT(last);
+    COWEL_DEBUG_ASSERT(base >= 2 && base <= 36);
+
     if (x <= std::uint64_t(-1)) {
-        return std::to_chars(first, last, std::uint64_t(x));
+        return std::to_chars(first, last, std::uint64_t(x), base);
+    }
+    if (first == last) {
+        return { last, std::errc::value_too_large };
     }
 
-    /// The greatest power of 10 that fits into a 64-bit integer is 10^19.
-    constexpr std::uint64_t exp10_19 = 10000000000000000000ull;
-    constexpr int lower_max_digits = 19;
+    const std::uint64_t max_pow = u64_max_power(base);
+    const bool is_pow_2 = (base & (base - 1)) == 0;
+    const int piece_max_digits = u64_max_input_digits(base);
 
-    const std::to_chars_result upper_result = to_chars128(first, last, x / exp10_19);
-    if (upper_result.ec != std::errc {}) {
-        return upper_result;
+    if (is_pow_2) {
+        const int bits_per_iteration = std::countr_zero(max_pow);
+        COWEL_DEBUG_ASSERT(bits_per_iteration != 0);
+        const int leading_bits = 128 % bits_per_iteration;
+
+        char* current_first = first;
+        bool first_digit = true;
+
+        // First, we need to take care of the leading "head" bits.
+        // For example, for octal, we operate on 63 bits at a time,
+        // and 2 leading bits are left over.
+        if (leading_bits != 0) {
+            const auto head_mask = (std::uint64_t(1) << leading_bits) - 1;
+            const auto head = std::uint64_t(x >> (128 - leading_bits)) & head_mask;
+            if (head != 0) {
+                first_digit = false;
+                const std::to_chars_result head_result = std::to_chars(first, last, head, base);
+                if (head_result.ec != std::errc {}) {
+                    return head_result;
+                }
+                current_first = head_result.ptr;
+            }
+        }
+
+        int shift = 128 - leading_bits - bits_per_iteration;
+        COWEL_DEBUG_ASSERT(bits_per_iteration <= 64);
+        const auto mask = //
+            (bits_per_iteration == 64 ? std::uint64_t(0) : (std::uint64_t(1) << bits_per_iteration))
+            - 1;
+
+        // Once the head digits are printed out, every subsequent block of bits
+        // has exactly the same amount of digits.
+        // For example, for octal, there are 126 bits left,
+        // handled exactly 63 bits at a time.
+        while (true) {
+            const auto piece = std::uint64_t(x >> shift) & mask;
+            const std::to_chars_result piece_result
+                = std::to_chars(current_first, last, piece, base);
+            if (piece_result.ec != std::errc {}) {
+                return piece_result;
+            }
+            const auto zero_pad = piece_max_digits - int(piece_result.ptr - current_first);
+            if (!first_digit && zero_pad != 0) {
+                std::ranges::copy(current_first, piece_result.ptr, current_first + zero_pad);
+                std::ranges::fill_n(current_first, zero_pad, '0');
+                current_first += piece_max_digits;
+            }
+            else {
+                current_first = piece_result.ptr;
+            }
+
+            if (shift <= 0) {
+                COWEL_ASSERT(shift == 0);
+                return { current_first, std::errc {} };
+            }
+            shift -= bits_per_iteration;
+            first_digit = false;
+        }
     }
+    // NOLINTNEXTLINE(readability-else-after-return)
+    else {
+        const std::to_chars_result upper_result = to_chars128(first, last, x / max_pow, base);
+        if (upper_result.ec != std::errc {}) {
+            return upper_result;
+        }
 
-    const std::to_chars_result lower_result
-        = std::to_chars(upper_result.ptr, last, std::uint64_t(x % exp10_19));
-    if (lower_result.ec != std::errc {}) {
-        return lower_result;
+        const std::to_chars_result lower_result
+            = std::to_chars(upper_result.ptr, last, std::uint64_t(x % max_pow));
+        if (lower_result.ec != std::errc {}) {
+            return lower_result;
+        }
+        const auto lower_length = lower_result.ptr - upper_result.ptr;
+
+        // The remainder (lower part) is mathematically exactly 19 digits long,
+        // and we have to zero-pad to the left if it is shorter
+        // (because std::to_chars wouldn't give us the leading zeros we need).
+        char* const result_end = upper_result.ptr + piece_max_digits;
+        std::ranges::copy(
+            upper_result.ptr, upper_result.ptr + lower_length, result_end - lower_length
+        );
+        std::ranges::fill_n(upper_result.ptr, piece_max_digits - lower_length, '0');
+
+        return { result_end, std::errc {} };
     }
-    const auto lower_length = lower_result.ptr - upper_result.ptr;
-
-    // The remainder (lower part) is mathematically exactly 19 digits long,
-    // and we have to zero-pad to the left if it is shorter
-    // (because std::to_chars wouldn't give us the leading zeros we need).
-    char* const result_end = upper_result.ptr + lower_max_digits;
-    std::ranges::copy(upper_result.ptr, upper_result.ptr + lower_length, result_end - lower_length);
-    std::ranges::fill_n(upper_result.ptr, lower_max_digits - lower_length, '0');
-
-    return { result_end, std::errc {} };
+    COWEL_ASSERT_UNREACHABLE(u8"Should have returned.");
 }
 
 [[nodiscard]]
-std::to_chars_result to_chars128(char* const first, char* const last, const Int128 x)
+std::to_chars_result to_chars128(char* const first, char* const last, const Int128 x, int base)
 {
+    COWEL_DEBUG_ASSERT(base >= 2 && base <= 36);
+
     if (x >= 0) {
-        return to_chars128(first, last, Uint128(x));
+        return to_chars128(first, last, Uint128(x), base);
     }
-    if (x >= std::numeric_limits<int64_t>::min()) {
-        return std::to_chars(first, last, int64_t(x));
+    if (x == std::int64_t(x)) {
+        return std::to_chars(first, last, std::int64_t(x), base);
     }
     if (last - first < 2) {
-        return { last, std::errc::result_out_of_range };
+        return { last, std::errc::value_too_large };
     }
     *first = '-';
-    return to_chars128(first + 1, last, Uint128(-x));
+    return to_chars128(first + 1, last, Uint128(-x), base);
 }
 
 template std::from_chars_result from_characters(std::string_view, float&, std::chars_format);
