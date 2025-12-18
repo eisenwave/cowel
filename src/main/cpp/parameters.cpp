@@ -251,7 +251,6 @@ bool Sorted_Options_Matcher::match_string(
     const auto it = std::ranges::lower_bound(m_options, str);
 
     if (it == m_options.end() || *it != str) {
-        m_index = -1;
         std::pmr::u8string error { context.get_transient_memory() };
         error += u8'"';
         error += str;
@@ -272,7 +271,10 @@ bool Sorted_Options_Matcher::match_string(
         return false;
     }
 
-    m_index = it - m_options.begin();
+    m_value = Value_And_Location<std::size_t> {
+        .value = std::size_t(it - m_options.begin()),
+        .location = argument.get_source_span(),
+    };
     return true;
 }
 

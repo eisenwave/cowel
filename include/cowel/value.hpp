@@ -81,6 +81,12 @@ public:
     static const Value zero_float;
     /// @brief the value of a `""` string literal.
     static const Value empty_string;
+    /// @brief the value of a `"unit"` string literal.
+    static const Value unit_string;
+    /// @brief the value of a `"true"` string literal.
+    static const Value true_string;
+    /// @brief the value of a `"false"` string literal.
+    static const Value false_string;
 
     [[nodiscard]]
     static constexpr Value boolean(bool value) noexcept
@@ -133,6 +139,17 @@ public:
             return result;
         }
         return Value { std::move(value), &Type::str };
+    }
+    [[nodiscard]]
+    static Value
+    dynamic_string(std::u8string_view value, std::pmr::memory_resource* memory) noexcept
+    {
+        if (value.size() <= Short_String_Value::max_size_v) {
+            return short_string({ value.data(), value.size() });
+        }
+        std::pmr::vector<char8_t> storage { memory };
+        storage.insert(storage.end(), value.data(), value.data() + value.size());
+        return Value { std::move(storage), &Type::str };
     }
 
     [[nodiscard]]
@@ -297,7 +314,10 @@ inline constexpr Value Value::true_ = Value::boolean(true);
 inline constexpr Value Value::false_ = Value::boolean(false);
 inline constexpr Value Value::zero_int = Value::integer(0);
 inline constexpr Value Value::zero_float = Value::floating(0);
-inline constexpr Value Value::empty_string = Value::static_string(std::u8string_view {});
+inline constexpr Value Value::empty_string = Value::static_string({});
+inline constexpr Value Value::unit_string = Value::static_string(u8"unit");
+inline constexpr Value Value::true_string = Value::static_string(u8"true");
+inline constexpr Value Value::false_string = Value::static_string(u8"false");
 
 static_assert(sizeof(Value) <= 64, "Value should not be too large to be passed by value");
 

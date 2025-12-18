@@ -358,10 +358,11 @@ struct Float_Matcher final
 };
 
 /// @brief Matches one of the given constant (sorted) string options.
-struct Sorted_Options_Matcher final : Textual_Matcher {
+struct Sorted_Options_Matcher final
+    : Textual_Matcher
+    , Value_Holder<std::size_t> {
 private:
     std::span<const std::u8string_view> m_options;
-    std::ptrdiff_t m_index = -1;
 
 public:
     [[nodiscard]]
@@ -380,26 +381,22 @@ public:
     ) override;
 
     [[nodiscard]]
-    bool was_matched() const override
+    std::u8string_view get_option() const
     {
-        return m_index >= 0;
-    }
-
-    void reset() noexcept override
-    {
-        m_index = -1;
+        COWEL_ASSERT(was_matched());
+        return m_options[m_value->value];
     }
 
     [[nodiscard]]
     std::u8string_view get_or_default(std::u8string_view fallback) const
     {
-        return m_index < 0 ? fallback : m_options[std::size_t(m_index)];
+        return was_matched() ? fallback : m_options[m_value->value];
     }
 
     [[nodiscard]]
     std::size_t get_index_or_default(std::size_t fallback) const
     {
-        return m_index < 0 ? fallback : std::size_t(m_index);
+        return was_matched() ? fallback : m_value->value;
     }
 };
 

@@ -336,6 +336,21 @@ constexpr Basic_Test basic_tests_array[] {
     { Path { u8"compare/ge.cow" },
       Path { u8"compare/ge.cow.html" } },
 
+    { Path { u8"convert/bool_to_str.cow" },
+      Path { u8"convert/bool_to_str.cow.html" } },
+
+    { Path { u8"convert/float_to_str.cow" },
+      Path { u8"convert/float_to_str.cow.html" } },
+
+    { Path { u8"convert/int_to_str.cow" },
+      Path { u8"convert/int_to_str.cow.html" } },
+
+    { Path { u8"convert/str_to_str.cow" },
+      Path { u8"convert/str_to_str.cow.html" } },
+
+    { Path { u8"convert/unit_to_str.cow" },
+      Path { u8"convert/unit_to_str.cow.html" } },
+
     { Path { u8"convert/reinterpret_as_float.cow" },
       Path { u8"convert/reinterpret_as_float.cow.html" } },
 

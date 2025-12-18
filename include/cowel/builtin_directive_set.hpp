@@ -451,6 +451,17 @@ struct Get_Variable_Behavior final : Variable_Behavior {
     ) const final;
 };
 
+struct To_Str_Behavior : Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit To_Str_Behavior() noexcept
+        : Directive_Behavior { Type::str }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation& call, Context& context) const final;
+};
+
 struct Reinterpret_As_Int_Behavior final : Int_Directive_Behavior {
     [[nodiscard]]
     constexpr explicit Reinterpret_As_Int_Behavior()

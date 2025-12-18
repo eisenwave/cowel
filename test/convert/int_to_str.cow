@@ -1,0 +1,25 @@
+\cowel_to_str(255)
+
+\cowel_to_str(255, base=2)
+\cowel_to_str(255, base=8)
+\cowel_to_str(255, base=10)
+\cowel_to_str(255, base=16)
+\cowel_to_str(255, base=32)
+
+\cowel_to_str(0x10000000000000000, base=2)
+\cowel_to_str(0x10000000000000000, base=8)
+\cowel_to_str(0x10000000000000000, base=10)
+\cowel_to_str(0x10000000000000000, base=16)
+\cowel_to_str(0x10000000000000000, base=32)
+
+\cowel_to_str(0x7fffffffffffffffffffffffffffffff, base=2)
+\cowel_to_str(0x7fffffffffffffffffffffffffffffff, base=8)
+\cowel_to_str(0x7fffffffffffffffffffffffffffffff, base=10)
+\cowel_to_str(0x7fffffffffffffffffffffffffffffff, base=16)
+\cowel_to_str(0x7fffffffffffffffffffffffffffffff, base=32)
+
+\cowel_to_str(-0x80000000000000000000000000000000, base=2)
+\cowel_to_str(-0x80000000000000000000000000000000, base=8)
+\cowel_to_str(-0x80000000000000000000000000000000, base=10)
+\cowel_to_str(-0x80000000000000000000000000000000, base=16)
+\cowel_to_str(-0x80000000000000000000000000000000, base=32)

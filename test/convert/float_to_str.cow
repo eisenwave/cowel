@@ -1,0 +1,4 @@
+\cowel_to_str(1e10)
+\cowel_to_str(1e10, format=splice)
+\cowel_to_str(1e10, format=fixed)
+\cowel_to_str(1e10, format=scientific)

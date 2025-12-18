@@ -1650,8 +1650,10 @@ h1 {
 <div class=toc-num data-level=3>8.10</div>
 <a href=#type-conversions><h3>Type conversions</h3></a>
 <div class=toc-num data-level=4>8.10.1</div>
-<a href=#dir-cowel_reinterpret_as_float><h4><code><h- data-h=mk_tag>\cowel_reinterpret_as_float</h-></code> — Reinterpret as <tt-><h- data-h=kw_type>float</h-></tt-></h4></a>
+<a href=#dir-cowel_to_str><h4><code><h- data-h=mk_tag>\cowel_to_str</h-></code> — Convert to <tt-><h- data-h=kw_type>str</h-></tt-></h4></a>
 <div class=toc-num data-level=4>8.10.2</div>
+<a href=#dir-cowel_reinterpret_as_float><h4><code><h- data-h=mk_tag>\cowel_reinterpret_as_float</h-></code> — Reinterpret as <tt-><h- data-h=kw_type>float</h-></tt-></h4></a>
+<div class=toc-num data-level=4>8.10.3</div>
 <a href=#dir-cowel_reinterpret_as_int><h4><code><h- data-h=mk_tag>\cowel_reinterpret_as_int</h-></code> — Reinterpret as <tt-><h- data-h=kw_type>int</h-></tt-></h4></a>
 <div class=toc-num data-level=3>8.11</div>
 <a href=#basic-arithmetic-operations><h3>Basic arithmetic operations</h3></a>
@@ -4662,7 +4664,102 @@ argument forwarding is not supported at all right now.
 
 <h3 id=type-conversions><a class=para href=#type-conversions></a>8.10. Type conversions</h3>
 
-<h4 id=dir-cowel_reinterpret_as_float><a class=para href=#dir-cowel_reinterpret_as_float></a>8.10.1. <code><h- data-h=mk_tag>\cowel_reinterpret_as_float</h-></code> — Reinterpret as <tt-><h- data-h=kw_type>float</h-></tt-></h4>
+<h4 id=dir-cowel_to_str><a class=para href=#dir-cowel_to_str></a>8.10.1. <code><h- data-h=mk_tag>\cowel_to_str</h-></code> — Convert to <tt-><h- data-h=kw_type>str</h-></tt-></h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>unit</h->): <h- data-h=kw_type>str</h->
+<h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>bool</h->): <h- data-h=kw_type>str</h->
+<h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->, <h- data-h=mk_attr>base</h->: <h- data-h=kw_type>int</h-> = 10): <h- data-h=kw_type>str</h->
+<h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->, <h- data-h=mk_attr>format</h->: <h- data-h=kw_type>str</h-> = "splice"): <h- data-h=kw_type>str</h->
+<h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
+<h- data-h=mk_tag>cowel_to_str</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>str</h->
+</pre>
+
+<p>The <code><h- data-h=mk_tag>\cowel_to_str</h-></code> directive produces similar output to splicing
+(<a href=#splicing>§6.4. Splicing</a>),
+but allows for additional parametrization.
+The output resulting string depends on the input as follows:
+</p><ul>
+  <li>
+    If <tt-><h- data-h=mk_attr>x</h-></tt-> is of type <tt-><h- data-h=kw_type>int</h-></tt->,
+    the digits of <tt-><h- data-h=mk_attr>x</h-></tt-> are printed in the given <tt-><h- data-h=mk_attr>base</h-></tt->.
+    An error is raised if <tt-><h- data-h=mk_attr>base</h-></tt-> is outside the range
+    <math display=inline><mrow><mo>[</mo><mn>2</mn><mo>,</mo><mn>36</mn><mo>]</mo></mrow></math>.
+    Digits with value greater than <math display=inline><mn>9</mn></math> are represented using
+    U+0061..U+007A LATIN SMALL LETTER A..Z.
+  </li>
+  <li>
+    If <tt-><h- data-h=mk_attr>x</h-></tt-> is of type <tt-><h- data-h=kw_type>float</h-></tt->,
+    <ul>
+      <li>
+        if <tt-><h- data-h=mk_attr>format</h-></tt-> equals <code>"splice"</code>,
+        the result is the same as splicing <tt-><h- data-h=mk_attr>x</h-></tt-> into a <g-term>quoted-string</g-term>;
+      </li>
+      <li>
+        otherwise, if <tt-><h- data-h=mk_attr>format</h-></tt-> equals <code>"fixed"</code>,
+        the result is the same as that for <code>"splice"</code>
+        except that the string representation has no exponent;
+      </li>
+      <li>
+        otherwise, if <tt-><h- data-h=mk_attr>format</h-></tt-> equals <code>"scientific"</code>,
+        the result is the same as that for <code>"splice"</code>
+        except that the string representation always has an exponent,
+      </li>
+      <li>
+        otherwise, an error is raised.
+      </li>
+    </ul>
+  </li>
+  <li>
+    Otherwise, the result is the same as splicing <tt-><h- data-h=mk_attr>x</h-></tt-> into a <g-term>quoted-string</g-term>.
+  </li>
+</ul>
+
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->unit<h- data-h=sym_par>)</h->
+
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->true<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->false<h- data-h=sym_par>)</h->
+
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->255<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->255<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>base</h-><h- data-h=sym_punc>=</h->16<h- data-h=sym_par>)</h->
+
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->1e10<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->1e10<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h->splice<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->1e10<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h->fixed<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->1e10<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h->scientific<h- data-h=sym_par>)</h->
+
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->"awoo"<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->{awoo}<h- data-h=sym_par>)</h-></code-block>
+
+<p>Generated HTML:
+</p><code-block>unit
+
+true
+false
+
+255
+ff
+
+1e+10
+1e+10
+10000000000
+1e+10
+
+awoo
+awoo</code-block>
+</example-block>
+
+<note-block><p><intro-></intro-> 
+When <tt-><h- data-h=mk_attr>x</h-></tt-> is of type <tt-><h- data-h=kw_type>float</h-></tt->,
+the round-tripping guarantee of splicing is retained regardless of <tt-><h- data-h=mk_attr>format</h-></tt->.
+</p>
+<p>Base prefixes such as '<tt->0x</tt->' for hexadecimal integers are not printed,
+but can easily be appended separately.
+</p></note-block>
+
+<h4 id=dir-cowel_reinterpret_as_float><a class=para href=#dir-cowel_reinterpret_as_float></a>8.10.2. <code><h- data-h=mk_tag>\cowel_reinterpret_as_float</h-></code> — Reinterpret as <tt-><h- data-h=kw_type>float</h-></tt-></h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_reinterpret_as_float</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>float</h->
@@ -4693,7 +4790,7 @@ This directive is intended for low-level manipulation of floating-point numbers.
 For example, it may be used to create a NaN value with a specific payload or sign.
 </p></tip-block>
 
-<h4 id=dir-cowel_reinterpret_as_int><a class=para href=#dir-cowel_reinterpret_as_int></a>8.10.2. <code><h- data-h=mk_tag>\cowel_reinterpret_as_int</h-></code> — Reinterpret as <tt-><h- data-h=kw_type>int</h-></tt-></h4>
+<h4 id=dir-cowel_reinterpret_as_int><a class=para href=#dir-cowel_reinterpret_as_int></a>8.10.3. <code><h- data-h=mk_tag>\cowel_reinterpret_as_int</h-></code> — Reinterpret as <tt-><h- data-h=kw_type>int</h-></tt-></h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_reinterpret_as_int</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>float</h->): <h- data-h=kw_type>int</h->

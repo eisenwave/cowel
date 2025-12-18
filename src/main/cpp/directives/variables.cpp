@@ -12,6 +12,7 @@
 #include "cowel/util/to_chars.hpp"
 
 #include "cowel/policy/content_policy.hpp"
+#include "cowel/policy/plaintext.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
@@ -567,6 +568,132 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
     }
 
     COWEL_ASSERT_UNREACHABLE(u8"Unexpected type.");
+}
+
+Result<Value, Processing_Status>
+To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    static const auto to_str_type = Type::canonical_union_of(
+        { Type::unit, Type::boolean, Type::integer, Type::floating, Type::str, Type::block }
+    );
+    static constexpr Float_Format float_formats[] {
+        Float_Format::fixed,
+        Float_Format::scientific,
+        Float_Format::splice,
+    };
+    static constexpr std::u8string_view format_options[] {
+        u8"fixed"sv,
+        u8"scientific"sv,
+        u8"splice"sv,
+    };
+
+    Value_Of_Type_Matcher x_matcher { &to_str_type };
+    Group_Member_Matcher x_member { u8"x"sv, Optionality::mandatory, x_matcher };
+    Integer_Matcher base_matcher;
+    Group_Member_Matcher base_member { u8"base"sv, Optionality::optional, base_matcher };
+    Sorted_Options_Matcher format_matcher { format_options };
+    Group_Member_Matcher format_member { u8"format"sv, Optionality::optional, format_matcher };
+    Group_Member_Matcher* const parameters[] { &x_member, &base_member, &format_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
+
+    static constexpr auto base_error = u8"A base can only be provided for arguments of type int."sv;
+    static constexpr auto format_error
+        = u8"A format can only be provided for arguments of type float."sv;
+
+    const auto check_no_extra_parameters = [&] -> Processing_Status {
+        if (base_matcher.was_matched()) {
+            context.try_error(diagnostic::type_mismatch, base_matcher.get_location(), base_error);
+            return Processing_Status::error;
+        }
+        if (format_matcher.was_matched()) {
+            context.try_error(
+                diagnostic::type_mismatch, format_matcher.get_location(), format_error
+            );
+            return Processing_Status::error;
+        }
+        return Processing_Status::ok;
+    };
+
+    Value& x_value = x_matcher.get();
+    switch (x_value.get_type_kind()) {
+    case Type_Kind::unit: {
+        if (const auto s = check_no_extra_parameters(); s != Processing_Status::ok) {
+            return s;
+        }
+        return Value::unit_string;
+    }
+    case Type_Kind::boolean: {
+        if (const auto s = check_no_extra_parameters(); s != Processing_Status::ok) {
+            return s;
+        }
+        return x_value.as_boolean() ? Value::true_string : Value::false_string;
+    }
+    case Type_Kind::integer: {
+        if (format_matcher.was_matched()) {
+            context.try_error(
+                diagnostic::type_mismatch, format_matcher.get_location(), format_error
+            );
+            return Processing_Status::error;
+        }
+        const Integer base = base_matcher.get_or_default(10);
+        if (base < 2 || base > 36) {
+            context.try_error(
+                diagnostic::to_str_base, format_matcher.get_location(),
+                joined_char_sequence(
+                    {
+                        u8"The given base "sv,
+                        to_characters8(base).as_string(),
+                        u8" is outside the valid range [2,36]."sv,
+                    }
+                )
+            );
+            return Processing_Status::error;
+        }
+        const Basic_Characters chars = to_characters8(x_value.as_integer(), int(base));
+        return Value::dynamic_string(chars.as_string(), context.get_transient_memory());
+    }
+    case Type_Kind::floating: {
+        if (base_matcher.was_matched()) {
+            context.try_error(diagnostic::type_mismatch, base_matcher.get_location(), base_error);
+            return Processing_Status::error;
+        }
+        const auto f = x_matcher.get().as_float();
+        const auto format = format_matcher.was_matched() ? float_formats[format_matcher.get()]
+                                                         : Float_Format::splice;
+
+        // TODO: This could be simplified if we simply had a function that converts Float
+        // to a spliced Static_String.
+        std::pmr::vector<char8_t> text { context.get_transient_memory() };
+        Capturing_Ref_Text_Sink sink { text, Output_Language::text };
+        Plaintext_Content_Policy policy { sink };
+        splice_float(policy, f, format);
+        return Value::dynamic_string(std::move(text));
+    }
+    case Type_Kind::str: {
+        return std::move(x_value);
+    }
+    case Type_Kind::block: {
+        if (const auto s = check_no_extra_parameters(); s != Processing_Status::ok) {
+            return s;
+        }
+        std::pmr::vector<char8_t> text { context.get_transient_memory() };
+        const Processing_Status splice_result
+            = splice_value_to_plaintext(text, x_matcher.get(), context);
+        if (splice_result != Processing_Status::ok) {
+            return splice_result;
+        }
+        return Value::dynamic_string(std::move(text));
+    }
+    default: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Type checking should have prevented this.");
 }
 
 Result<Float, Processing_Status>

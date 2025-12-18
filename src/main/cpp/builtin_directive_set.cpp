@@ -130,6 +130,8 @@ constexpr Policy_Behavior cowel_text_only //
     { Known_Content_Policy::text_only };
 constexpr Policy_Behavior cowel_to_html //
     { Known_Content_Policy::to_html };
+constexpr To_Str_Behavior cowel_to_str //
+    {};
 constexpr Unary_Numeric_Expression_Behavior cowel_trunc //
     { Unary_Numeric_Expression_Kind::trunc };
 
@@ -433,6 +435,7 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_text_as_html),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_text_only),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_to_html),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_to_str),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_trunc),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(dd),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(del),

@@ -1424,6 +1424,108 @@ argument forwarding is not supported at all right now.
 \h3(id=type-conversions){Type conversions}
 
 \h4(
+  id = dir-cowel_to_str
+){\cowdoc_dir{cowel_to_str} \c{mdash} Convert to \cowdoc_type{str}}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){unit}): \cowel_highlight_as(keyword-type){str}
+\cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){bool}): \cowel_highlight_as(keyword-type){str}
+\cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){int}, \cowel_highlight_as(markup-attr){base}: \cowel_highlight_as(keyword-type){int} = 10): \cowel_highlight_as(keyword-type){str}
+\cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){float}, \cowel_highlight_as(markup-attr){format}: \cowel_highlight_as(keyword-type){str} = "splice"): \cowel_highlight_as(keyword-type){str}
+\cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){str}
+\cowel_highlight_as(markup-tag){cowel_to_str}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){block}): \cowel_highlight_as(keyword-type){str}
+}
+
+The \cowdoc_dir{cowel_to_str} directive produces similar output to splicing
+(\ref("#splicing")),
+but allows for additional parametrization.
+The output resulting string depends on the input as follows:
+\ul{
+  \li{
+    If \cowdoc_attr{x} is of type \cowdoc_type{int},
+    the digits of \cowdoc_attr{x} are printed in the given \cowdoc_attr{base}.
+    An error is raised if \cowdoc_attr{base} is outside the range
+    \math{\mrow{\mo{[}\mn{2}\mo{,}\mn{36}\mo{]}}}.
+    Digits with value greater than \math{\mn{9}} are represented using
+    U+0061..U+007A LATIN SMALL LETTER A..Z.
+  }
+  \li{
+    If \cowdoc_attr{x} is of type \cowdoc_type{float},
+    \ul{
+      \li{
+        if \cowdoc_attr{format} equals \cowdoc_c{"splice"},
+        the result is the same as splicing \cowdoc_attr{x} into a \gterm{quoted-string};
+      }
+      \li{
+        otherwise, if \cowdoc_attr{format} equals \cowdoc_c{"fixed"},
+        the result is the same as that for \cowdoc_c{"splice"}
+        except that the string representation has no exponent;
+      }
+      \li{
+        otherwise, if \cowdoc_attr{format} equals \cowdoc_c{"scientific"},
+        the result is the same as that for \cowdoc_c{"splice"}
+        except that the string representation always has an exponent,
+      }
+      \li{
+        otherwise, an error is raised.
+      }
+    }
+  }
+  \li{
+    Otherwise, the result is the same as splicing \cowdoc_attr{x} into a \gterm{quoted-string}.
+  }
+}
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_to_str(unit)
+
+\cowel_to_str(true)
+\cowel_to_str(false)
+
+\cowel_to_str(255)
+\cowel_to_str(255, base=16)
+
+\cowel_to_str(1e10)
+\cowel_to_str(1e10, format=splice)
+\cowel_to_str(1e10, format=fixed)
+\cowel_to_str(1e10, format=scientific)
+
+\cowel_to_str("awoo")
+\cowel_to_str({awoo})
+}}
+
+Generated HTML:
+\htmlblock{
+\cowel_to_str(unit)
+
+\cowel_to_str(true)
+\cowel_to_str(false)
+
+\cowel_to_str(255)
+\cowel_to_str(255, base=16)
+
+\cowel_to_str(1e10)
+\cowel_to_str(1e10, format=splice)
+\cowel_to_str(1e10, format=fixed)
+\cowel_to_str(1e10, format=scientific)
+
+\cowel_to_str("awoo")
+\cowel_to_str({awoo})
+}
+\: FIXME: removing this brace segfaults
+}
+
+\Bnote{
+When \cowdoc_attr{x} is of type \cowdoc_type{float},
+the round-tripping guarantee of splicing is retained regardless of \cowdoc_attr{format}.
+
+Base prefixes such as '\tt{0x}' for hexadecimal integers are not printed,
+but can easily be appended separately.
+}
+
+\h4(
   id = dir-cowel_reinterpret_as_float
 ){\cowdoc_dir{cowel_reinterpret_as_float} \c{mdash} Reinterpret as \cowdoc_type{float}}
 
