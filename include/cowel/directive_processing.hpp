@@ -131,9 +131,15 @@ inline Processing_Status splice_all(
 [[nodiscard]]
 Processing_Status splice_value(Content_Policy& out, const Value& value, Context& context);
 
+enum struct Float_Format : Default_Underlying {
+    splice,
+    scientific,
+    fixed,
+};
+
 void splice_bool(Content_Policy& out, bool value);
 void splice_int(Content_Policy& out, Integer value);
-void splice_float(Content_Policy& out, Float value);
+void splice_float(Content_Policy& out, Float value, Float_Format format = Float_Format::splice);
 
 /// @brief Splices the given `value` into the given policy.
 /// That is, consumes all elements in a quoted string or block.
@@ -156,6 +162,9 @@ Processing_Status splice_primary(
     Frame_Index frame,
     Context& context
 );
+
+Processing_Status
+splice_value_to_plaintext(std::pmr::vector<char8_t>& out, const Value& value, Context& context);
 
 /// @brief Converts a spliceable value to plaintext.
 [[nodiscard]]

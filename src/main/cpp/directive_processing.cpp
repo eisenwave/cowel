@@ -432,7 +432,7 @@ void splice_int(Content_Policy& out, Integer value)
     out.write(chars.as_string(), Output_Language::text);
 }
 
-void splice_float(Content_Policy& out, Float value)
+void splice_float(Content_Policy& out, Float value, Float_Format format)
 {
     if (std::isnan(value)) {
         out.write(u8"NaN"sv, Output_Language::text);
@@ -441,6 +441,19 @@ void splice_float(Content_Policy& out, Float value)
     if (std::isinf(value)) {
         out.write(value < 0 ? u8"-infinity"sv : u8"infinity"sv, Output_Language::text);
         return;
+    }
+    switch (format) {
+    case Float_Format::fixed: {
+        const auto chars = to_characters8(value, std::chars_format::fixed);
+        out.write(chars.as_string(), Output_Language::text);
+        return;
+    }
+    case Float_Format::scientific: {
+        const auto chars = to_characters8(value, std::chars_format::scientific);
+        out.write(chars.as_string(), Output_Language::text);
+        return;
+    }
+    case Float_Format::splice: break;
     }
     const auto fixed = to_characters8(value, std::chars_format::fixed);
     auto scientific = to_characters8(value, std::chars_format::scientific);
@@ -487,6 +500,14 @@ Processing_Status Value::splice_block(Content_Policy& out, Context& context) con
         );
     }
     COWEL_ASSERT_UNREACHABLE(u8"Expected block.");
+}
+
+Processing_Status
+splice_value_to_plaintext(std::pmr::vector<char8_t>& out, const Value& value, Context& context)
+{
+    Capturing_Ref_Text_Sink sink { out, Output_Language::text };
+    Plaintext_Content_Policy policy { sink };
+    return splice_value(policy, value, context);
 }
 
 Processing_Status splice_value_to_plaintext(
