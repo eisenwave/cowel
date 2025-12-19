@@ -144,7 +144,7 @@ public:
     [[nodiscard]]
     bool load_document(const std::filesystem::path& path)
     {
-        file_path = "test" / path;
+        file_path = "test/semantics" / path;
         if (!load_utf8_file_or_error(source, file_path.generic_u8string(), &memory)) {
             return false;
         }
@@ -257,7 +257,7 @@ std::u8string_view load_basic_test_expectations(
 {
     if (const auto* const path = std::get_if<Path>(&test.expected_html)) {
         storage.clear();
-        std::pmr::u8string full_path { u8"test/", memory };
+        std::pmr::u8string full_path { u8"test/semantics/", memory };
         full_path += path->value;
         if (!load_utf8_file_or_error(storage, full_path, memory)) {
             return u8"";

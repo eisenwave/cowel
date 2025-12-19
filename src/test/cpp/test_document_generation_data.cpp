@@ -364,10 +364,10 @@ constexpr Basic_Test basic_tests_array[] {
       Test_Behavior::empty_head },
     
     { Path { u8"empty.cow" },
-      Source { u8"" } },
+      Path { u8"empty.cow.html" } },
     
     { Path { u8"text.cow" },
-      Source { u8"Hello, world!\n" } },
+      Path { u8"text.cow.html" } },
 
     { Path { u8"highlight.cow" },
       Path { u8"highlight.cow.html" } },
@@ -451,8 +451,8 @@ constexpr Basic_Test basic_tests_array[] {
       .expected_html = Path { u8"paragraph_control.cow.html" },
       .behavior = Test_Behavior::paragraphs },
 
-    { .document = Path { u8"../docs/index.cow" },
-      .expected_html = Path { u8"../docs/index.html" },
+    { .document = Path { u8"../../docs/index.cow" },
+      .expected_html = Path { u8"../../docs/index.html" },
       .expected_status = Processing_Status::ok,
       .behavior = Test_Behavior::wg21 },
 };

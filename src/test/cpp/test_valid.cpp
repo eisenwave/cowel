@@ -7,22 +7,22 @@ namespace {
 
 TEST(Valid, empty)
 {
-    EXPECT_TRUE(test_for_success(u8"empty.cow"));
+    EXPECT_TRUE(test_for_success(u8"syntax/empty.cow"));
 }
 
 TEST(Valid, hello_code)
 {
-    EXPECT_TRUE(test_for_success(u8"hello_code.cow"));
+    EXPECT_TRUE(test_for_success(u8"syntax/hello_code.cow"));
 }
 
 TEST(Valid, hello_directive)
 {
-    EXPECT_TRUE(test_for_success(u8"hello_directive.cow"));
+    EXPECT_TRUE(test_for_success(u8"syntax/hello_directive.cow"));
 }
 
 TEST(Valid, hello_world)
 {
-    EXPECT_TRUE(test_for_success(u8"hello_world.cow"));
+    EXPECT_TRUE(test_for_success(u8"syntax/hello_world.cow"));
 }
 
 } // namespace

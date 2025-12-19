@@ -498,7 +498,7 @@ struct Parsed_File {
 [[nodiscard]]
 std::optional<Parsed_File> parse_file(std::u8string_view file, std::pmr::memory_resource* memory)
 {
-    std::pmr::u8string full_file { u8"test/", memory };
+    std::pmr::u8string full_file { u8"test/syntax/", memory };
     full_file += file;
 
     Parsed_File result { .source = std::pmr::vector<char8_t> { memory },
@@ -512,7 +512,7 @@ std::optional<Parsed_File> parse_file(std::u8string_view file, std::pmr::memory_
         return {};
     }
 
-    const Parse_Error_Consumer consumer
+    const std::convertible_to<Parse_Error_Consumer> auto consumer
         = [&](std::u8string_view /* id */, const Source_Span& location, Char_Sequence8 message) {
               Diagnostic_String out { memory };
               print_file_position(out, file, location);
