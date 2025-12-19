@@ -3615,80 +3615,44 @@ they cannot easily tell what the purpose of the character is.
 <h4 id=dir-cowel_char_get_num><a class=para href=#dir-cowel_char_get_num></a>8.2.4. <code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> — Get digits of character</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_char_get_num</h->(
-  <h- data-h=mk_attr>zfill</h->: <h- data-h=kw_type>bool</h-> = 0,
-  <h- data-h=mk_attr>base</h->: <h- data-h=kw_type>int</h-> = 16,
-  <h- data-h=mk_attr>lower</h->: <h- data-h=kw_type>bool</h-> = false,
-){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_char_get_num</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>int</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> directive is essentially the
 inverse of the <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive.
-Its input is also plaintext content.
-Rather than producing a code point from a digit sequence,
-it produces a digit sequence from its input code point.
+It returns the numeric value of the first input code point in <tt-><h- data-h=mk_attr>x</h-></tt->.
 </p>
-<p>This can be fine-tuned with the following parameters:
-</p><dd>
-  <dt><tt-><h- data-h=mk_attr>zfill</h-></tt-></dt>
-  <dd>
-    The minimum amount of digits that should be produced.
-    This is an integer argument in range [0, 1024], and defaults to zero.
-    If the amount of digits is less than <tt-><h- data-h=mk_attr>zfill</h-></tt->,
-    it will be left-padded with additional '<tt->0</tt->' characters.
-  </dd>
-
-  <dt><tt-><h- data-h=mk_attr>base</h-></tt-></dt>
-  <dd>
-    The base of the output digit sequence, in range [2, 16].
-    This defaults to 16, meaning that the digits are printed in hexadecimal.
-  </dd>
-
-  <dt><tt-><h- data-h=mk_attr>lower</h-></tt-></dt>
-  <dd>
-    A yes/no plaintext argument, defaulting to <tt->no</tt->.
-    If <tt->yes</tt-> is specified, digits beyond '<tt->9</tt->' (i.e. '<tt->A</tt->' to '<tt->F</tt->')
-    will be output in lower case instead.
-</dd>
-</dd>
-
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block>U+<h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_par>(</h->4<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code-block>
-<p>This renders as:
-</p><div class=indent>
-U+0078
-</div>
+</p><code-block><h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_par>(</h->"x"<h- data-h=sym_par>)</h->
+U+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->cowel_char_get_num("x")<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>base</h-><h- data-h=sym_punc>=</h->16<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>zpad</h-><h- data-h=sym_punc>=</h->4<h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>120
+U+0078</code-block>
 <p>Note that U+0078 is the usual way in which Unicode code points are represented.
 That is, <tt->U+</tt->, followed by at least four hexadecimal digits.
 It is also possible to define a macro if we need this frequently:
-</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->code_point<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\code_point</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->code_point<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\code_point</h-><h- data-h=sym_par>(</h->x<h- data-h=sym_par>)</h-></code-block>
 </example-block>
 
-<tip-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> can also be combined with <code><h- data-h=mk_tag>\cowel_char_by_name</h-></code>
-to produce human-readable descriptions of code points,
-while also keeping our source code readable:
-</p><code-block><h- data-h=mk_tag>\macro</h-><h- data-h=sym_par>(</h->named_char<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_par>(</h->4<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-> <h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\named_char</h-><h- data-h=sym_brac>{</h->SECTION SIGN<h- data-h=sym_brac>}</h-></code-block>
-<p>This renders as:
-</p><div class=indent>
-U+00A7 SECTION SIGN
-</div>
-</tip-block>
+<todo-block><p><intro-></intro-> 
+The example above should use a future <code><h- data-h=mk_tag>\cowel_to_upper</h-></code>
+or <code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> directive
+because conventionally,
+code points are printed out using uppercase hexadecimal digits.
+</p></todo-block>
 
-<p><code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> uses only the first code point within the input text,
-even though the entire input text is processed into plaintext.
-</p>
 <bug-block><p><intro-></intro-> 
-If we provide more than a single code point, some input is discarded:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_get_num</h-><h- data-h=sym_brac>{</h->abc<h- data-h=sym_brac>}</h-></code-block>
+If more than one code point is provided,
+some input is discarded:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_get_num</h-><h- data-h=sym_par>(</h->abc<h- data-h=sym_par>)</h-></code-block>
 <p>This renders as
 </p><div class=indent>
-61
+97
 </div>
-<p>... which corresponds to <code>a</code>, whereas <code>b</code> and <code>c</code> are discarded.
+<p>... which corresponds to '<tt->a</tt->',
+whereas '<tt->b</tt->' and '<tt->c</tt->' are discarded.
 </p></bug-block>
 
 <h3 id=html-utilities><a class=para href=#html-utilities></a>8.3. HTML utilities</h3>

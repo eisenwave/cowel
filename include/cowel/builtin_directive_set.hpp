@@ -142,15 +142,14 @@ Char_By_Name_Behavior final : Code_Point_Behavior {
     get_code_point(const Invocation& call, Context& context) const final;
 };
 
-// TODO: This could return some `integer` value when evaluated rather than being block behavior.
 struct [[nodiscard]]
-Char_Get_Num_Behavior final : Block_Directive_Behavior {
+Char_Get_Num_Behavior final : Int_Directive_Behavior {
     [[nodiscard]]
     constexpr explicit Char_Get_Num_Behavior()
         = default;
 
     [[nodiscard]]
-    Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const final;
+    Result<Integer, Processing_Status> do_evaluate(const Invocation&, Context&) const final;
 };
 
 // clang-format off

@@ -55,11 +55,6 @@ U+\cowel_put\c{nbsp}(\tt{\U{\cowel_put}})\
 \cowel_char_by_num(...){\cowel_put}\
 }
 
-\cowel_macro(Udigits){\
-\cowel_paragraph_enter\
-\cowel_char_get_num(...){\cowel_put}\
-}
-
 \cowel_macro(cowdoc_og_property){\
 \cowel_html_element(
   meta,

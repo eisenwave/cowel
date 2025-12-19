@@ -240,88 +240,52 @@ they cannot easily tell what the purpose of the character is.
 ){\cowdoc_dir{cowel_char_get_num} \c{mdash} Get digits of character}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_char_get_num}(
-  \cowel_highlight_as(markup-attr){zfill}: \cowel_highlight_as(keyword-type){bool} = 0,
-  \cowel_highlight_as(markup-attr){base}: \cowel_highlight_as(keyword-type){int} = 16,
-  \cowel_highlight_as(markup-attr){lower}: \cowel_highlight_as(keyword-type){bool} = false,
-){...}: \cowel_highlight_as(keyword-type){block}
+\cowel_highlight_as(markup-tag){cowel_char_get_num}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){int}
 }
 
 The \cowdoc_dir{cowel_char_get_num} directive is essentially the
 inverse of the \cowdoc_dir{cowel_char_by_num} directive.
-Its input is also plaintext content.
-Rather than producing a code point from a digit sequence,
-it produces a digit sequence from its input code point.
-
-This can be fine-tuned with the following parameters:
-\dd{
-  \dt{\cowdoc_attr{zfill}}
-  \dd{
-    The minimum amount of digits that should be produced.
-    This is an integer argument in range [0, 1024], and defaults to zero.
-    If the amount of digits is less than \cowdoc_attr{zfill},
-    it will be left-padded with additional '\tt{0}' characters.
-  }
-
-  \dt{\cowdoc_attr{base}}
-  \dd{
-    The base of the output digit sequence, in range [2, 16].
-    This defaults to 16, meaning that the digits are printed in hexadecimal.
-  }
-
-  \dt{\cowdoc_attr{lower}}
-  \dd{
-    A yes/no plaintext argument, defaulting to \tt{no}.
-    If \tt{yes} is specified, digits beyond '\tt{9}' (i.e. '\tt{A}' to '\tt{F}')
-    will be output in lower case instead.
-}
-}
+It returns the numeric value of the first input code point in \cowdoc_attr{x}.
 
 \Bex{
 COWEL markup:
 \cowblock{\literally{
-U+\cowel_char_get_num(4){x}
+\cowel_char_get_num("x")
+U+\cowel_to_str(cowel_char_get_num("x"), base=16, zpad=4)
 }}
-This renders as:
-\Bindent{
-U+\cowel_char_get_num(4){x}
+Generated HTML:
+\htmlblock{
+\cowel_char_get_num("x")
+U+\cowel_to_str(cowel_char_get_num("x"), base=16, zpad=4)
 }
 Note that U+0078 is the usual way in which Unicode code points are represented.
 That is, \tt{U+}, followed by at least four hexadecimal digits.
 It is also possible to define a macro if we need this frequently:
 \cowblock{\literally{
-\cowel_macro(code_point){U+\cowel_char_get_num{\cowel_put}}
-\code_point{x}
+\cowel_macro(code_point){U+\cowel_char_get_num(...)}
+\code_point(x)
 }}
 }
 
-\Btip{
-\cowdoc_dir{cowel_char_get_num} can also be combined with \cowdoc_dir{cowel_char_by_name}
-to produce human-readable descriptions of code points,
-while also keeping our source code readable:
-\cowblock{\literally{
-\macro(named_char){U+\cowel_char_get_num(4){\N{\put}} \cowel_put}
-\named_char{SECTION SIGN}
-}}
-This renders as:
-\Bindent{
-U+\cowel_char_get_num(4){\N{SECTION SIGN}} SECTION SIGN
+\Btodo{
+The example above should use a future \cowdoc_dir{cowel_to_upper}
+or \cowdoc_dir{cowel_str_to_upper} directive
+because conventionally,
+code points are printed out using uppercase hexadecimal digits.
 }
-}
-
-\cowdoc_dir{cowel_char_get_num} uses only the first code point within the input text,
-even though the entire input text is processed into plaintext.
 
 \Bug{
-If we provide more than a single code point, some input is discarded:
+If more than one code point is provided,
+some input is discarded:
 \cowblock{
-\\cowel_char_get_num{abc}
+\\cowel_char_get_num(abc)
 }
 This renders as
 \Bindent{
-\cowel_char_get_num{a}
+\cowel_char_get_num(a)
 }
-... which corresponds to \cowdoc_c{a}, whereas \cowdoc_c{b} and \cowdoc_c{c} are discarded.
+... which corresponds to '\tt{a}',
+whereas '\tt{b}' and '\tt{c}' are discarded.
 }
 
 \h3{HTML utilities}

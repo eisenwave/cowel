@@ -11,6 +11,8 @@
 - change the syntax of directive arguments (#87, #107, #109, #111, #112, #121)
   - there are now values/literals of specific types
   - only specific strings are allowed to be unquoted, rather than this being the default
+- change `cowel_char_*` directives as follows:
+  - `cowel_char_get_num` takes a `str` and returns an `int`
 - add support for typed values in builtin directives (#88)
 - add the following basic arithmetic directives (#98):
   - `cowel_pos` (`+`)

@@ -150,14 +150,6 @@ inline constexpr std::u8string_view char_nonscalar = u8"char.nonscalar";
 /// @brief In a `\cowel_char` directive,
 /// the input is corrupted UTF-8 text.
 inline constexpr std::u8string_view char_corrupted = u8"char.corrupted";
-/// @brief The `zfill` argument could not be parsed as an integer.
-inline constexpr std::u8string_view char_zfill_not_an_integer = u8"char.zfill.parse";
-/// @brief The `zfill` argument could not be parsed as an integer.
-inline constexpr std::u8string_view char_zfill_range = u8"char.zfill.range";
-/// @brief The `base` argument could not be parsed as an integer.
-inline constexpr std::u8string_view char_base_not_an_integer = u8"char.base.parse";
-/// @brief The `base` argument could not be parsed as an integer.
-inline constexpr std::u8string_view char_base_range = u8"char.base.range";
 /// @brief The `lower` argument is neither `yes` nor `no`.
 inline constexpr std::u8string_view char_lower_invalid = u8"char.lower.invalid";
 

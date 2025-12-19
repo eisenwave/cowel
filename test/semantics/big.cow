@@ -210,8 +210,6 @@ Digit zero: \U{30}.
 
 \u{Underlined} text \u{underlined}.
 
-Digits of digit zero: \Udigits{0}.
-
 \url{https://cowel.org}
 
 \var{Variable} text \var{variable}.

@@ -52,6 +52,6 @@ You can insert these using
 \ul{
   \li{\cowdoc_c{Combined\\c{nbsp}Word},}
   \li{\cowdoc_c{Combined\\N{NO-BREAK SPACE}Word}, or}
-  \li{\cowdoc_c{Combined\\U{\Udigits{\N{NO-BREAK SPACE}}}Word}.}
+  \li{\cowdoc_c{Combined\\U{A0}Word}.}
 }
 }
