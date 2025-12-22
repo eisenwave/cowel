@@ -3563,9 +3563,9 @@ without the leading '<tt->&amp;</tt->' and trailing '<tt->;</tt->'.
 The '<tt->&amp;</tt->' character can be produced in a number of ways:
 </p><ul>
     <li>Literally '<tt->&amp;</tt->' in text</li>
-    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_brac>{</h->amp<h- data-h=sym_brac>}</h-></code> (like <code><h- data-h=str_esc>&amp;amp;</h-></code>, named character reference)</li>
-    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_brac>{</h->#38<h- data-h=sym_brac>}</h-></code> (like <code><h- data-h=str_esc>&amp;38;</h-></code>, decimal character reference)</li>
-    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_brac>{</h->#x26<h- data-h=sym_brac>}</h-></code> (like <code><h- data-h=str_esc>&amp;x26;</h-></code>, hexadecimal character reference)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_par>(</h->"amp"<h- data-h=sym_par>)</h-></code> (like <code><h- data-h=str_esc>&amp;amp;</h-></code>, named character reference)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_par>(</h->"#38"<h- data-h=sym_par>)</h-></code> (like <code><h- data-h=str_esc>&amp;38;</h-></code>, decimal character reference)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_par>(</h->"#x26"<h- data-h=sym_par>)</h-></code> (like <code><h- data-h=str_esc>&amp;x26;</h-></code>, hexadecimal character reference)</li>
 </ul>
 </example-block>
 
@@ -4296,14 +4296,13 @@ or CSS files may have better IDE support than writing these out directly inside 
 <h4 id=dir-cowel_include><a class=para href=#dir-cowel_include></a>8.7.1. <code><h- data-h=mk_tag>\cowel_include</h-></code> — Include a sub-document</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_include</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_include</h->(<h- data-h=mk_attr>path</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>block</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_include</h-></code> directive loads the content from another COWEL document,
 and processes it using the current content policy.
-The path to the document is provided as content to <code><h- data-h=mk_tag>\cowel_include</h-></code>,
-and is assumed to be relative to the current file.
-All arguments are ignored.
+The given <tt-><h- data-h=mk_attr>path</h-></tt-> is the path to the included document,
+relative to the current file.
 </p>
 <p>If the current content policy is a paragraphs policy (<a href=#contexts-and-output>§5.1. Content policies</a>),
 paragraph splitting of the included sub-document takes place
@@ -4340,13 +4339,15 @@ of <code><h- data-h=mk_tag>\cowel_include</h-></code>s.
 <h4 id=dir-cowel_include_text><a class=para href=#dir-cowel_include_text></a>8.7.2. <code><h- data-h=mk_tag>\cowel_include_text</h-></code> — Include text from a file</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_include_text</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_include_text</h->(<h- data-h=mk_attr>path</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
 </pre>
 
-<p>The <code><h- data-h=mk_tag>\cowel_include_text</h-></code> directive reads the UTF-8 text contents of another file
-and feeds that text into the current content policy.
-The path to the document is provided as content to <code><h- data-h=mk_tag>\cowel_include_text</h-></code>,
-and is assumed to be relative to the current file.
+<p>The <code><h- data-h=mk_tag>\cowel_include_text</h-></code> directive returns a <tt-><h- data-h=kw_type>str</h-></tt->
+containing the UTF-8 text contents of another file.
+The given <tt-><h- data-h=mk_attr>path</h-></tt-> is the path to the included document,
+relative to the current file.
+An error is raised if the contents of the designated file
+could not be read.
 </p>
 <example-block><p><intro-></intro-> 
 Say we have a JavaScript file <tt->example.js</tt-> which we want to keep separate from the document.
@@ -4364,27 +4365,6 @@ this renders as:
     <h- data-h=kw_ctrl>return</h-> <h- data-h=name>x</h-> <h- data-h=sym_op>*</h-> <h- data-h=name>x</h-><h- data-h=sym_punc>;</h->
 <h- data-h=sym_brac>}</h-></code-block>
 </example-block>
-
-<note-block><p><intro-></intro-> 
-While <code><h- data-h=mk_tag>\cowel_include</h-></code> and <code><h- data-h=mk_tag>\cowel_include_text</h-></code> are similar,
-there are some stark differences:
-</p><ul>
-  <li>
-    <code><h- data-h=mk_tag>\cowel_include</h-></code> is used for COWEL documents,
-    while <code><h- data-h=mk_tag>\cowel_include_text</h-></code> is used for anything else.
-  </li>
-  <li>
-    <code><h- data-h=mk_tag>\cowel_include</h-></code> doesn't just load the text from another file,
-    but parses it and ensures that the contents are a valid COWEL document.
-  </li>
-  <li>
-    <code><h- data-h=mk_tag>\cowel_include</h-></code> feeds content from another document
-    piece by pice into the current content policy.
-    <code><h- data-h=mk_tag>\cowel_include_text</h-></code> reads text
-    and feeds it all in a single block to the content policy.
-  </li>
-</ul>
-</note-block>
 
 <h3 id=new-aliases><a class=para href=#new-aliases></a>8.8. Aliases and macros</h3>
 
@@ -4416,15 +4396,15 @@ the target can also be invoked using the alias name.
 <example-block><p><intro-></intro-> 
 One or multiple aliases can be defined as follows:
 </p><code-block><h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->N<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_char_by_name<h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h->DIGIT ZERO<h- data-h=sym_brac>}</h->                 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_char_by_name{DIGIT ZERO}</h->
+<h- data-h=mk_tag>\N</h-><h- data-h=sym_par>(</h->"DIGIT ZERO"<h- data-h=sym_par>)</h->               <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_char_by_name("DIGIT ZERO")</h->
 
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->incl<h- data-h=sym_punc>,</h-> include<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_include<h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\incl</h-><h- data-h=sym_brac>{</h->file.cow<h- data-h=sym_brac>}</h->                <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_include{file.cow}</h->
-<h- data-h=mk_tag>\include</h-><h- data-h=sym_brac>{</h->file.cow<h- data-h=sym_brac>}</h->             <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, same</h->
+<h- data-h=mk_tag>\incl</h-><h- data-h=sym_par>(</h->"file.cow"<h- data-h=sym_par>)</h->              <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_include("file.cow")</h->
+<h- data-h=mk_tag>\include</h-><h- data-h=sym_par>(</h->"file.cow"<h- data-h=sym_par>)</h->           <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, same</h->
 
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->cowel_to_html<h- data-h=sym_brac>}</h->    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, but no effect</h->
 
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_brac>{</h->???<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->          <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: generation of target name failed</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_par>(</h->"???"<h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->        <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: generation of target name failed</h->
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->??<h- data-h=sym_brac>}</h->               <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid target name</h->
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->undefined<h- data-h=sym_brac>}</h->        <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: target not found</h->
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->"?"<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_alias<h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid alias name</h->

@@ -198,12 +198,12 @@ such as \code(sh){\cowel_highlight_phantom{c }--severity}
 and \code(sh){\cowel_highlight_phantom{c }--help}.
 Running \code(sh){./build/cowel-cli} without extra arguments also brings up the help menu.
 
-\cowel_include{intro/syntax.cow}\
-\cowel_include{intro/directives.cow}\
-\cowel_include{intro/semantics.cow}\
-\cowel_include{intro/themes.cow}\
+\cowel_include("intro/syntax.cow")\
+\cowel_include("intro/directives.cow")\
+\cowel_include("intro/semantics.cow")\
+\cowel_include("intro/themes.cow")\
 \
-\cowel_include{new_directives.cow}\
+\cowel_include("new_directives.cow")\
 
 \h2{Legacy directives}
 
@@ -217,15 +217,15 @@ with macro packages that provide additional functionality.
 The documentation for these directives is not actively maintained.
 }
 
-\cowel_include{directives/comments.cow}\
-\cowel_include{directives/formatting.cow}\
-\cowel_include{directives/code.cow}\
-\cowel_include{directives/math.cow}\
-\cowel_include{directives/separators.cow}\
-\cowel_include{directives/special.cow}\
-\cowel_include{directives/lists-tables-headings.cow}\
-\cowel_include{directives/references.cow}\
-\cowel_include{directives/foreign.cow}\
-\cowel_include{directives/sections.cow}\
-\cowel_include{directives/misc.cow}\
-\cowel_include{directives/calc.cow}\
+\cowel_include("directives/comments.cow")\
+\cowel_include("directives/formatting.cow")\
+\cowel_include("directives/code.cow")\
+\cowel_include("directives/math.cow")\
+\cowel_include("directives/separators.cow")\
+\cowel_include("directives/special.cow")\
+\cowel_include("directives/lists-tables-headings.cow")\
+\cowel_include("directives/references.cow")\
+\cowel_include("directives/foreign.cow")\
+\cowel_include("directives/sections.cow")\
+\cowel_include("directives/misc.cow")\
+\cowel_include("directives/calc.cow")\

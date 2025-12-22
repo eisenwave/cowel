@@ -180,9 +180,9 @@ without the leading '\tt{&}' and trailing '\tt{;}'.
 The '\tt{&}' character can be produced in a number of ways:
 \ul{
     \li{Literally '\tt{&}' in text}
-    \li{\cowdoc_c{\\cowel_char_by_entity{amp}} (like \cowdoc_html{&amp;}, named character reference)}
-    \li{\cowdoc_c{\\cowel_char_by_entity{#38}} (like \cowdoc_html{&38;}, decimal character reference)}
-    \li{\cowdoc_c{\\cowel_char_by_entity{#x26}} (like \cowdoc_html{&x26;}, hexadecimal character reference)}
+    \li{\cowdoc_c{\\cowel_char_by_entity("amp")} (like \cowdoc_html{&amp;}, named character reference)}
+    \li{\cowdoc_c{\\cowel_char_by_entity("#38")} (like \cowdoc_html{&38;}, decimal character reference)}
+    \li{\cowdoc_c{\\cowel_char_by_entity("#x26")} (like \cowdoc_html{&x26;}, hexadecimal character reference)}
 }
 }
 
@@ -1013,14 +1013,13 @@ COWEL provides directives to load content from other files.
 ){\cowdoc_dir{cowel_include} \c{mdash} Include a sub-document}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_include}(){...}: \cowel_highlight_as(keyword-type){block}
+\cowel_highlight_as(markup-tag){cowel_include}(\cowel_highlight_as(markup-attr){path}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){block}
 }
 
 The \cowdoc_dir{cowel_include} directive loads the content from another COWEL document,
 and processes it using the current content policy.
-The path to the document is provided as content to \cowdoc_dir{cowel_include},
-and is assumed to be relative to the current file.
-All arguments are ignored.
+The given \cowdoc_attr{path} is the path to the included document,
+relative to the current file.
 
 If the current content policy is a paragraphs policy (\ref("#contexts-and-output")),
 paragraph splitting of the included sub-document takes place
@@ -1065,13 +1064,15 @@ of \cowdoc_dir{cowel_include}s.
 ){\cowdoc_dir{cowel_include_text} \c{mdash} Include text from a file}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_include_text}(){...}: \cowel_highlight_as(keyword-type){block}
+\cowel_highlight_as(markup-tag){cowel_include_text}(\cowel_highlight_as(markup-attr){path}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){str}
 }
 
-The \cowdoc_dir{cowel_include_text} directive reads the UTF-8 text contents of another file
-and feeds that text into the current content policy.
-The path to the document is provided as content to \cowdoc_dir{cowel_include_text},
-and is assumed to be relative to the current file.
+The \cowdoc_dir{cowel_include_text} directive returns a \cowdoc_type{str}
+containing the UTF-8 text contents of another file.
+The given \cowdoc_attr{path} is the path to the included document,
+relative to the current file.
+An error is raised if the contents of the designated file
+could not be read.
 
 \Bex{
 Say we have a JavaScript file \tt{example.js} which we want to keep separate from the document.
@@ -1088,28 +1089,7 @@ and that loading the file succeeds,
 this renders as: 
 \codeblock(js){
 // code included from example.js:
-\cowel_include_text{example.js}
-}
-}
-
-\Bnote{
-While \cowdoc_dir{cowel_include} and \cowdoc_dir{cowel_include_text} are similar,
-there are some stark differences:
-\ul{
-  \li{
-    \cowdoc_dir{cowel_include} is used for COWEL documents,
-    while \cowdoc_dir{cowel_include_text} is used for anything else.
-  }
-  \li{
-    \cowdoc_dir{cowel_include} doesn't just load the text from another file,
-    but parses it and ensures that the contents are a valid COWEL document.
-  }
-  \li{
-    \cowdoc_dir{cowel_include} feeds content from another document
-    piece by pice into the current content policy.
-    \cowdoc_dir{cowel_include_text} reads text
-    and feeds it all in a single block to the content policy.
-  }
+\cowel_include_text("example.js")
 }
 }
 
@@ -1146,15 +1126,15 @@ A fatal error is raised if
 One or multiple aliases can be defined as follows:
 \cowblock{\literally{
 \cowel_alias(N){cowel_char_by_name}
-\N{DIGIT ZERO}                 \: OK, equivalent to \cowel_char_by_name{DIGIT ZERO}
+\N("DIGIT ZERO")               \: OK, equivalent to \cowel_char_by_name("DIGIT ZERO")
 
 \cowel_alias(incl, include){cowel_include}
-\incl{file.cow}                \: OK, equivalent to \cowel_include{file.cow}
-\include{file.cow}             \: OK, same
+\incl("file.cow")              \: OK, equivalent to \cowel_include("file.cow")
+\include("file.cow")           \: OK, same
 
 \cowel_alias{cowel_to_html}    \: OK, but no effect
 
-\cowel_alias{\N{???}}          \: error: generation of target name failed
+\cowel_alias{\N("???")}        \: error: generation of target name failed
 \cowel_alias{??}               \: error: invalid target name
 \cowel_alias{undefined}        \: error: target not found
 \cowel_alias("?"){cowel_alias} \: error: invalid alias name

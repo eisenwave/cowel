@@ -5,7 +5,6 @@
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/source_position.hpp"
-#include "cowel/util/strings.hpp"
 
 #include "cowel/policy/content_policy.hpp"
 
@@ -17,7 +16,7 @@
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
-#include "cowel/output_language.hpp"
+#include "cowel/parameters.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/services.hpp"
 
@@ -43,25 +42,24 @@ std::u8string_view file_load_error_explanation(File_Load_Error error)
 } // namespace
 
 Processing_Status
-Include_Text_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
+Include_Text_Behavior::do_evaluate(String_Sink& out, const Invocation& call, Context& context) const
 {
-    const auto match_status = match_empty_arguments(call, context);
+    String_Matcher path_matcher { context.get_transient_memory() };
+    Group_Member_Matcher path_member { u8"path", Optionality::mandatory, path_matcher };
+    Group_Member_Matcher* matchers[] { &path_member };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(
+        call, context, make_fail_callback<Severity::fatal>(), Processing_Status::fatal
+    );
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
 
-    std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
-    const auto path_status
-        = splice_to_plaintext(path_data, call.get_content_span(), call.content_frame, context);
-    switch (path_status) {
-    case Processing_Status::ok: break;
-    case Processing_Status::brk: return Processing_Status::brk;
-    case Processing_Status::error:
-    case Processing_Status::error_brk:
-    case Processing_Status::fatal: return Processing_Status::fatal;
-    }
-
-    if (path_data.empty()) {
+    const auto path_string = path_matcher.get();
+    if (path_string.empty()) {
         context.try_fatal(
             diagnostic::file_path_missing, call.directive.get_source_span(),
             u8"The given path to include text data from cannot empty."sv
@@ -69,7 +67,6 @@ Include_Text_Behavior::splice(Content_Policy& out, const Invocation& call, Conte
         return Processing_Status::fatal;
     }
 
-    const auto path_string = as_u8string_view(path_data);
     const File_Id relative_to = call.directive.get_source_span().file;
     const Result<File_Entry, File_Load_Error> entry
         = context.get_file_loader().load(path_string, relative_to);
@@ -84,30 +81,29 @@ Include_Text_Behavior::splice(Content_Policy& out, const Invocation& call, Conte
         );
         return Processing_Status::fatal;
     }
-    out.write(entry->source, Output_Language::text);
+    out.consume(entry->source);
     return Processing_Status::ok;
 }
 
 Processing_Status
 Include_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    const auto match_status = match_empty_arguments(call, context);
+    String_Matcher path_matcher { context.get_transient_memory() };
+    Group_Member_Matcher path_member { u8"path", Optionality::mandatory, path_matcher };
+    Group_Member_Matcher* matchers[] { &path_member };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(
+        call, context, make_fail_callback<Severity::fatal>(), Processing_Status::fatal
+    );
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
 
-    std::pmr::vector<char8_t> path_data { context.get_transient_memory() };
-    const auto path_status
-        = splice_to_plaintext(path_data, call.get_content_span(), call.content_frame, context);
-    switch (path_status) {
-    case Processing_Status::ok: break;
-    case Processing_Status::brk: return Processing_Status::brk;
-    case Processing_Status::error:
-    case Processing_Status::error_brk:
-    case Processing_Status::fatal: return Processing_Status::fatal;
-    }
-
-    if (path_data.empty()) {
+    const auto path_string = path_matcher.get();
+    if (path_string.empty()) {
         context.try_fatal(
             diagnostic::file_path_missing, call.directive.get_source_span(),
             u8"The given path to include text data from cannot empty."sv
@@ -115,7 +111,6 @@ Include_Behavior::splice(Content_Policy& out, const Invocation& call, Context& c
         return Processing_Status::fatal;
     }
 
-    const auto path_string = as_u8string_view(path_data);
     const File_Id relative_to = call.directive.get_source_span().file;
     const Result<File_Entry, File_Load_Error> entry
         = context.get_file_loader().load(path_string, relative_to);

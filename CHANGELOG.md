@@ -18,6 +18,9 @@
   - `cowel_char_by_name` takes an `str` and returns a `str`
   - `cowel_char_by_num` takes an `int` and returns a `str`
   - `cowel_char_get_num` takes a `str` and returns an `int`
+- change `cowel_include` and `cowel_include_text` as follows:
+  - accept a `path: str` parameter instead of a block as input
+  - make `cowel_include_text` return `str`
 - add support for typed values in builtin directives (#88)
 - add the following basic arithmetic directives (#98):
   - `cowel_pos` (`+`)

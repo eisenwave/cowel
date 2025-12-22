@@ -832,13 +832,13 @@ public:
     splice(Content_Policy& out, const Invocation& call, Context& context) const override;
 };
 
-struct Include_Text_Behavior final : Block_Directive_Behavior {
+struct Include_Text_Behavior final : String_Sink_Behavior {
     [[nodiscard]]
     constexpr explicit Include_Text_Behavior()
         = default;
 
     [[nodiscard]]
-    Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
+    Processing_Status do_evaluate(String_Sink& out, const Invocation&, Context&) const override;
 };
 
 struct Include_Behavior final : Block_Directive_Behavior {

@@ -14,7 +14,7 @@ The capabilities of the scripting context are currently extremely limited,
 but should be expanded greatly in the near future.
 }
 
-\codeblock(ebnf){\cowel_include_text{type_grammar.ebnf}}
+\codeblock(ebnf){\cowel_include_text("type_grammar.ebnf")}
 
 The commas in a *type-list* act as separators and have no impact on the type.
 
