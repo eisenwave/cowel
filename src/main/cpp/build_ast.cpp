@@ -294,7 +294,10 @@ void Primary::assert_validity() const
     }
     case Primary_Kind::comment: {
         COWEL_ASSERT(m_source.length() >= 2);
-        COWEL_ASSERT(m_source.starts_with(u8"\\:"));
+        COWEL_ASSERT(
+            m_source.starts_with(u8"\\:")
+            || (m_source.starts_with(u8"\\*") && m_source.ends_with(u8"*\\"))
+        );
         break;
     }
     case Primary_Kind::quoted_string: {
@@ -352,7 +355,8 @@ constexpr std::optional<ast::Primary_Kind> instruction_type_primary_kind(AST_Ins
     case keyword_false: return ast::Primary_Kind::bool_literal;
     case keyword_infinity:
     case keyword_neg_infinity: return ast::Primary_Kind::infinity;
-    case comment: return ast::Primary_Kind::comment;
+    case line_comment:
+    case block_comment: return ast::Primary_Kind::comment;
     default: return {};
     }
 }
@@ -436,7 +440,8 @@ private:
             using enum AST_Instruction_Type;
         case escape:
         case text:
-        case comment: {
+        case line_comment:
+        case block_comment: {
             out.push_back(build_simple_primary());
             break;
         }

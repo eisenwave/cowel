@@ -8,6 +8,7 @@
   - `Csub` (use `cowel_sub` instead)
   - `Cmul` (use `cowel_mul` instead)
   - `Cdiv` (use `cowel_div_to_zero` instead)
+  - `comment` (use `\* ... *\` block comments instead)
   - `literally` (use `cowel_source_as_text` instead)
   - `unprocessed` (use `cowel_no_invoke` instead)
 - change the syntax of directive arguments (#87, #107, #109, #111, #112, #121)
@@ -22,6 +23,7 @@
   - accept a `path: str` parameter instead of a block as input
   - make `cowel_include_text` return `str`
 - add support for typed values in builtin directives (#88)
+- add dedicated `\* ... *\` syntax for block comments (#116)
 - add the following basic arithmetic directives (#98):
   - `cowel_pos` (`+`)
   - `cowel_neg` (`-`)

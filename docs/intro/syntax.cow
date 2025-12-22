@@ -1,11 +1,12 @@
 \h2{Syntax}
 
 COWEL has a minimalistic but powerful syntax,
-built on top of only three syntactical constructs:
+built on top of only a few syntactical constructs:
 \ul{
   \li{\cowdoc_c{Text.}}
   \li{Escape sequences, such as \cowdoc_c{\\\U(0x7B)}, \cowdoc_c{\\\U(0x7D)}, \cowdoc_c{\\\\}, etc.}
-  \li{\cowdoc_c{\\:Comments}}
+  \li{\cowdoc_c{\\: line comments}}
+  \li{\cowdoc_c{\\* block comments *\\}}
   \li{\cowdoc_c{\\directive_splices(positional, args, named-args = 0){and content}}}
 }
 
@@ -35,7 +36,7 @@ excluding \cowdoc_cp(0x5C).
 document-text
   = document-text-char, { document-text-char };
 document-text-char
-  = ? Any character ? - "\\";
+  = ? any character ? - "\\";
 }
 
 \Bnote{
@@ -121,7 +122,6 @@ The meaning of the escape sequences is described in the table below.
       \cowdoc_esc{'},
       \cowdoc_esc{\N{LEFT PARENTHESIS}},
       \cowdoc_esc{\N{RIGHT PARENTHESIS}},
-      \cowdoc_esc{*},
       \cowdoc_esc{+},
       \cowdoc_esc{,},
       \cowdoc_esc{-},
@@ -168,9 +168,9 @@ escape
   = "\\", escapable-char
   | "\\", line-terminator;
 escapable-char
-  =  "{" |  "}" |  "[" |  "]" |  "(" |  ")" |  "," |  "." |  "=" |  "!"
-  |  '"' |  "#" |  "\N{DOLLAR SIGN}" |  "%" |  "&" |  "'" |  "*" |  "+" |  "/" |  ";"
-  |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
+  =  "{" |  "}" |  "[" |  "]" |  "(" |  ")" |  "," |  "." |  "="
+  |  "!" |  '"' |  "#" |  "\N{DOLLAR SIGN}" |  "\N{PERCENT SIGN}" |  "&" |  "'" |  "+" |  "/"
+  |  ";" |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
   |  " " |  TAB |   VT ;
 line-terminator
   = LF
@@ -183,8 +183,8 @@ this ambiguity is resolved in favor of a CRLF escape.
 
 \Bnote{
 The purpose of most escapes is to prevent a character from having special meaning.
-For example, the \cowdoc_esc{,} escape prevents a comma from being interpreted
-as a separator between directive arguments.
+For example, the \cowdoc_esc{"} escape prevents a quote
+from being interpreted as the end of a \gterm{quoted-string}.
 
 The purpose of the newline escapes is to remove unwanted newlines
 and to join long content that spans multiple lines,
@@ -193,42 +193,48 @@ but without introducing any whitespace in the markup.
 
 \h3(id=syntax-comments){Comments}
 
-Comments begin with \cowdoc_c{\\:} and extend until the end of the line.
+There are two types of comments:
+line comments and block comments.
+
+\h4{Line comments}
+
+Line comments begin with \cowdoc_c{\\:} and extend until the end of the line.
 In almost every context,
 comments are discarded instead of being emitted into the output HTML.
 
 This makes them useful for adding information to the COWEL markup.
 
 \Bnote{
-Comments, just like any other content,
-are actually part of the AST and don't simply get discarded during parsing.
-This means that a comment wrapped in \ref("#dir-cowel_source_as_text") will render as expected:
+A \gterm{line-comment}, just like any other content,
+is actually part of the AST and doesn't simply get discarded during parsing.
+This means that a \gterm{line-comment} wrapped in \ref("#dir-cowel_source_as_text")
+will render as expected:
 \cowblock{\cowel_source_as_text{
-\cowblock{\cowel_source_as_text{
-\: A comment ...
+\cowel_source_as_text{A\: A comment ...
+B}
 }}
-}}
-This renders as:
-\cowblock{\cowel_source_as_text{
-\: A comment ...
-}}
+Generated HTML:
+\htmlblock{
+\cowel_source_as_text{A\: A comment ...
+B}
+}
 }
 
-In EBNF grammar, a \gterm{comment} is constructed as follows:
+In EBNF grammar, a \gterm{line-comment} is constructed as follows:
 
 \codeblock(ebnf){
-comment
-  = "\\:", { comment-char }, line-terminator;
-comment-char
-  = ? Any character ? - line-terminator;
+line-comment
+  = "\\:", { line-comment-char }, line-terminator;
+line-comment-char
+  = ? any character ? - (LF | CR);
 }
 
 Comments include a \gterm{line-terminator},
-which means that a trailing comment won't add any lines (not even blank lines)
+which means that a trailing \gterm{line-comment} won't add any lines (not even blank lines)
 to the generated markup.
 
 \Bex{
-We can even join words by putting a comment between:
+We can even join words by putting a \gterm{line-comment} between:
 \cowblock{\literally{
 Hello\: this comment will absorb the newline
 World
@@ -243,6 +249,40 @@ HelloWorld
 
 Hello World
 }
+}
+
+\h4{Block comments}
+
+A block comment functions exactly the same as a line comment,
+but is terminated at a point of choice instead of at the end of the line.
+
+\Bex{
+COWEL markup:
+\cowblock{
+A\\* comment in the middle *\\B
+}
+Generated HTML:
+\htmlblock{
+AB
+}
+}
+
+In EBNF grammar, a \gterm{block-comment} is constructed as follows:
+
+\codeblock(ebnf){
+block-comment
+  = "\\*", { block-comment-char }, "*\\";
+block-comment-char
+  = ? any character ? - ("*" (* followed by "\\" *));
+}
+
+\Bnote{
+\gterm{block-comment}s do not allow nesting,
+meaning that '\cowdoc_c{\\:}' or '\cowdoc_c{\\*}'
+inside of a \gterm{block-comment} has no special meaning.
+
+Conversely, '\cowdoc_c{\\*}' has no special meaning
+inside of a \gterm{line-comment}.
 }
 
 \h3{Directives splices}

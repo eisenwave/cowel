@@ -48,9 +48,12 @@ enum struct AST_Instruction_Type : Default_Underlying {
     keyword_infinity,
     /// @brief The next `n` characters are `-infinity`.
     keyword_neg_infinity,
-    /// @brief The next `n` characters are a comment,
+    /// @brief The next `n` characters are a line comment,
     /// including the `\:` prefix and the terminating newline, if any.
-    comment,
+    line_comment,
+    /// @brief The next `n` characters are a block comment,
+    /// including the `\*` prefix and the `*\` suffix.
+    block_comment,
     /// @brief The next `n` characters are an argument name.
     member_name,
     /// @brief The next `n` characters are an ellipsis (currently always `3`).

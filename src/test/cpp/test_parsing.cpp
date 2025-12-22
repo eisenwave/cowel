@@ -715,17 +715,25 @@ TEST(Parse, comments)
 {
     // clang-format off
     static constexpr AST_Instruction expected[] {
-        { AST_Instruction_Type::push_document, 9 },
-        { AST_Instruction_Type::comment, 10 },
-        { AST_Instruction_Type::comment, 7 },
-        { AST_Instruction_Type::comment, 10 },
+        { AST_Instruction_Type::push_document, 17 },
+        { AST_Instruction_Type::line_comment, 10 },
+        { AST_Instruction_Type::line_comment, 7 },
+        { AST_Instruction_Type::line_comment, 10 },
         { AST_Instruction_Type::push_directive, 4 },
         { AST_Instruction_Type::pop_directive },
-        { AST_Instruction_Type::comment, 4 },
-        { AST_Instruction_Type::comment, 21 },
+        { AST_Instruction_Type::line_comment, 4 },
+        { AST_Instruction_Type::line_comment, 21 },
         { AST_Instruction_Type::text, 9 },
-        { AST_Instruction_Type::comment, 11 },
-        { AST_Instruction_Type::comment, 12 },
+        { AST_Instruction_Type::line_comment, 11 },
+        { AST_Instruction_Type::line_comment, 12 },
+        { AST_Instruction_Type::block_comment, 10 },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::block_comment, 10 },
+        { AST_Instruction_Type::text, 1 },
+        { AST_Instruction_Type::block_comment, 8 },
+        { AST_Instruction_Type::text, 6 },
+        { AST_Instruction_Type::block_comment, 8 },
+        { AST_Instruction_Type::text, 6 },
         { AST_Instruction_Type::pop_document },
     };
     // clang-format on

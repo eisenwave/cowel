@@ -217,7 +217,6 @@ with macro packages that provide additional functionality.
 The documentation for these directives is not actively maintained.
 }
 
-\cowel_include("directives/comments.cow")\
 \cowel_include("directives/formatting.cow")\
 \cowel_include("directives/code.cow")\
 \cowel_include("directives/math.cow")\

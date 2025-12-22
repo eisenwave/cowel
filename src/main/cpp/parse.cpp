@@ -250,8 +250,15 @@ private:
     [[nodiscard]]
     bool try_match_markup_element(Content_Context context, Bracket_Levels& levels)
     {
-        if (peek(u8'\\') && (try_match_escape() || try_match_comment() || try_match_directive())) {
-            return true;
+        if (peek(u8'\\')) {
+            const bool non_text_matched //
+                = try_match_escape() //
+                || try_match_line_comment() //
+                || try_match_block_comment() //
+                || try_match_directive();
+            if (non_text_matched) {
+                return true;
+            }
         }
 
         const std::size_t initial_pos = m_pos.begin;
@@ -324,19 +331,38 @@ private:
     }
 
     [[nodiscard]]
-    bool try_match_comment()
+    bool try_match_line_comment()
     {
         const std::u8string_view remainder = peek_all();
         if (const std::size_t length = ulight::cowel::match_line_comment(remainder)) {
-            COWEL_ASSERT(remainder.starts_with(u8"\\:"));
+            COWEL_ASSERT(remainder.starts_with(u8"\\:"sv));
             const std::u8string_view suffix = remainder.substr(length);
             const std::size_t suffix_length = //
-                suffix.starts_with(u8"\r\n") ? 2
-                : suffix.starts_with(u8'\n') ? 1
-                                             : 0;
+                suffix.starts_with(u8"\r\n"sv) ? 2
+                : suffix.starts_with(u8'\n')   ? 1
+                                               : 0;
 
             advance_by(length + suffix_length);
-            m_out.push_back({ AST_Instruction_Type::comment, length + suffix_length });
+            m_out.push_back({ AST_Instruction_Type::line_comment, length + suffix_length });
+            return true;
+        }
+        return false;
+    }
+
+    [[nodiscard]]
+    bool try_match_block_comment()
+    {
+        const std::u8string_view remainder = peek_all();
+        if (const ulight::cowel::Comment_Result c = ulight::cowel::match_block_comment(remainder)) {
+            COWEL_ASSERT(remainder.starts_with(u8"\\*"sv));
+            if (!c.is_terminated) {
+                COWEL_ASSERT(m_pos.begin + c.length == m_source.length());
+                error(Source_Span { m_pos, 2 }, u8"Unterminated block comment."sv);
+                advance_by(c.length);
+                return true;
+            }
+            advance_by(c.length);
+            m_out.push_back({ AST_Instruction_Type::block_comment, c.length });
             return true;
         }
         return false;
@@ -675,6 +701,19 @@ private:
                 advance_by(comment_length);
                 continue;
             }
+
+            const ulight::cowel::Comment_Result c = ulight::cowel::match_block_comment(peek_all());
+            if (c) {
+                if (!c.is_terminated) {
+                    COWEL_ASSERT(m_pos.begin + c.length == m_source.length());
+                    error(Source_Span { m_pos, 2 }, u8"Unterminated block comment."sv);
+                    advance_by(c.length);
+                }
+                else {
+                    advance_by(c.length);
+                    continue;
+                }
+            }
             break;
         }
 
@@ -718,15 +757,29 @@ private:
                   });
             advance_by(skip_length);
 
-            if (peek(u8'\\')) {
-                const std::size_t comment_length = ulight::cowel::match_line_comment(peek_all());
-                // It is possible that we have matched a backslash but did not encounter a
-                // comment, in which case we simply skip the backslash.
-                advance_by(comment_length ? comment_length : 1);
+            if (!peek(u8'\\')) {
+                break;
+            }
+
+            const std::size_t line_comment_length = ulight::cowel::match_line_comment(peek_all());
+            if (line_comment_length) {
+                advance_by(line_comment_length);
                 continue;
             }
 
-            break;
+            const ulight::cowel::Comment_Result block_comment
+                = ulight::cowel::match_block_comment(peek_all());
+            if (block_comment) {
+                if (!block_comment.is_terminated) {
+                    error(Source_Span { m_pos, 2 }, u8"Unterminated block comment."sv);
+                }
+                advance_by(block_comment.length);
+                continue;
+            }
+
+            // It is possible that we have matched a backslash but did not encounter a
+            // comment, in which case we simply skip the backslash.
+            advance_by(1);
         }
 
         return m_pos.begin - initial_begin;
@@ -754,7 +807,8 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         COWEL_ENUM_STRING_CASE8(keyword_unit);
         COWEL_ENUM_STRING_CASE8(keyword_infinity);
         COWEL_ENUM_STRING_CASE8(keyword_neg_infinity);
-        COWEL_ENUM_STRING_CASE8(comment);
+        COWEL_ENUM_STRING_CASE8(line_comment);
+        COWEL_ENUM_STRING_CASE8(block_comment);
         COWEL_ENUM_STRING_CASE8(member_name);
         COWEL_ENUM_STRING_CASE8(ellipsis);
         COWEL_ENUM_STRING_CASE8(member_equal);

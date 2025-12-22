@@ -6,24 +6,29 @@ document-markup-element
 document-text
   = document-text-char, { document-text-char };
 document-text-char
-  = ? Any character ? - "\";
+  = ? any character ? - "\";
 
 common-markup-element
   = escape
-  | comment
+  | line-comment
+  | block-comment
   | directive-splice;
 escape
   = "\", escapable-char
   | "\", line-terminator;
 escapable-char
-  =  "{" |  "}" |  "[" |  "]" |  "(" |  ")" |  "," |  "." |  "=" |  "!"
-  |  '"' |  "#" |  "$" |  "%" |  "&" |  "'" |  "*" |  "+" |  "/" |  ";"
-  |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
+  =  "{" |  "}" |  "[" |  "]" |  "(" |  ")" |  "," |  "." |  "="
+  |  "!" |  '"' |  "#" |  "$" |  "%" |  "&" |  "'" |  "+" |  "/"
+  |  ";" |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
   |  " " |  TAB |   VT ;
-comment
-  = "\:", { comment-char }, line-terminator;
-comment-char
-  = ? Any character ? - line-terminator;
+line-comment
+  = "\:", { line-comment-char }, line-terminator;
+line-comment-char
+  = ? any character ? - (LF | CR);
+block-comment
+  = "\*", { block-comment-char }, "*\";
+block-comment-char
+  = ? any character ? - ("*" (* followed by "\" *));
 
 directive-splice
   = "\", directive-name, [ group ], [ block ];
@@ -115,7 +120,7 @@ quoted-string-markup-element
 quoted-string-text
   = quoted-string-text-char, { quoted-string-text-char };
 quoted-string-text-char
-  = ? Any character ? - ("\" | '"');
+  = ? any character ? - ("\" | '"');
 
 block
   = "{", { block-markup-element }, "}";
@@ -125,10 +130,10 @@ block-markup-element
 block-text
   = block-text-char, { block-text-char } (* brace-balanced *);
 block-text-char
-  = ? Any character ? - "\";
+  = ? any character ? - "\";
 
 blank
-  = { comment | whitespace };
+  = { line-comment | block-comment | whitespace };
 whitespace
   = { " " | TAB | LF | CR | VT };
 line-terminator

@@ -1497,6 +1497,10 @@ h1 {
 <a href=#escape-sequences><h3>Escape sequences</h3></a>
 <div class=toc-num data-level=3>4.4</div>
 <a href=#syntax-comments><h3>Comments</h3></a>
+<div class=toc-num data-level=4>4.4.1</div>
+<a href=#line-comments><h4>Line comments</h4></a>
+<div class=toc-num data-level=4>4.4.2</div>
+<a href=#block-comments><h4>Block comments</h4></a>
 <div class=toc-num data-level=3>4.5</div>
 <a href=#directives-splices><h3>Directives splices</h3></a>
 <div class=toc-num data-level=4>4.5.1</div>
@@ -1730,138 +1734,134 @@ h1 {
 <div class=toc-num data-level=2>9</div>
 <a href=#legacy-directives><h2>Legacy directives</h2></a>
 <div class=toc-num data-level=3>9.1</div>
-<a href=#comments><h3>Comments</h3></a>
-<div class=toc-num data-level=4>9.1.1</div>
-<a href=#dir-comment><h4><code><h- data-h=mk_tag>\comment</h-></code> — Comments</h4></a>
-<div class=toc-num data-level=3>9.2</div>
 <a href=#text-formatting><h3>Text formatting</h3></a>
-<div class=toc-num data-level=3>9.3</div>
+<div class=toc-num data-level=3>9.2</div>
 <a href=#code><h3>Code and syntax highlighting</h3></a>
-<div class=toc-num data-level=4>9.3.1</div>
+<div class=toc-num data-level=4>9.2.1</div>
 <a href=#dir-code><h4><code><h- data-h=mk_tag>\code</h-></code> — Inline code</h4></a>
-<div class=toc-num data-level=5>9.3.1.1</div>
+<div class=toc-num data-level=5>9.2.1.1</div>
 <a href=#manual-nested-highlighting><h5>Manual nested highlighting</h5></a>
-<div class=toc-num data-level=5>9.3.1.2</div>
+<div class=toc-num data-level=5>9.2.1.2</div>
 <a href=#further-advice-on-highlighting><h5>Further advice on highlighting</h5></a>
-<div class=toc-num data-level=4>9.3.2</div>
+<div class=toc-num data-level=4>9.2.2</div>
 <a href=#dir-codeblock><h4><code><h- data-h=mk_tag>\codeblock</h-></code> — Code blocks</h4></a>
-<div class=toc-num data-level=4>9.3.3</div>
+<div class=toc-num data-level=4>9.2.3</div>
 <a href=#dir-hl><h4><code><h- data-h=mk_tag>\hl</h-></code> — Syntax highlight override</h4></a>
-<div class=toc-num data-level=4>9.3.4</div>
+<div class=toc-num data-level=4>9.2.4</div>
 <a href=#dir-pre><h4><code><h- data-h=mk_tag>\pre</h-></code> — Preformatted blocks</h4></a>
-<div class=toc-num data-level=3>9.4</div>
+<div class=toc-num data-level=3>9.3</div>
 <a href=#math><h3>Math</h3></a>
-<div class=toc-num data-level=4>9.4.1</div>
+<div class=toc-num data-level=4>9.3.1</div>
 <a href=#dir-math><h4><code><h- data-h=mk_tag>\math</h-></code> — Inline math</h4></a>
-<div class=toc-num data-level=4>9.4.2</div>
+<div class=toc-num data-level=4>9.3.2</div>
 <a href=#dir-mathblock><h4><code><h- data-h=mk_tag>\mathblock</h-></code> — Math blocks</h4></a>
-<div class=toc-num data-level=3>9.5</div>
+<div class=toc-num data-level=3>9.4</div>
 <a href=#separators-and-word-breaking><h3>Separators and word breaking</h3></a>
-<div class=toc-num data-level=4>9.5.1</div>
+<div class=toc-num data-level=4>9.4.1</div>
 <a href=#dir-br><h4><code><h- data-h=mk_tag>\br</h-></code> — Break line</h4></a>
-<div class=toc-num data-level=4>9.5.2</div>
+<div class=toc-num data-level=4>9.4.2</div>
 <a href=#dir-hr><h4><code><h- data-h=mk_tag>\hr</h-></code> — Horizontal rule</h4></a>
-<div class=toc-num data-level=4>9.5.3</div>
+<div class=toc-num data-level=4>9.4.3</div>
 <a href=#dir-wbr><h4><code><h- data-h=mk_tag>\wbr</h-></code> — Word break opportunity</h4></a>
-<div class=toc-num data-level=4>9.5.4</div>
+<div class=toc-num data-level=4>9.4.4</div>
 <a href=#dir-nobr><h4><code><h- data-h=mk_tag>\nobr</h-></code> — Unbroken words</h4></a>
-<div class=toc-num data-level=3>9.6</div>
+<div class=toc-num data-level=3>9.5</div>
 <a href=#special-blocks><h3>Special blocks</h3></a>
-<div class=toc-num data-level=4>9.6.1</div>
+<div class=toc-num data-level=4>9.5.1</div>
 <a href=#dir-Babstract><h4><code><h- data-h=mk_tag>\Babstract</h-></code> — Abstract blocks</h4></a>
-<div class=toc-num data-level=4>9.6.2</div>
+<div class=toc-num data-level=4>9.5.2</div>
 <a href=#dir-Bquote><h4><code><h- data-h=mk_tag>\Bquote</h-></code> — Quote blocks</h4></a>
-<div class=toc-num data-level=4>9.6.3</div>
+<div class=toc-num data-level=4>9.5.3</div>
 <a href=#dir-blockquote><h4><code><h- data-h=mk_tag>\blockquote</h-></code> — Alias for <code><h- data-h=mk_tag>\Bquote</h-></code></h4></a>
-<div class=toc-num data-level=4>9.6.4</div>
+<div class=toc-num data-level=4>9.5.4</div>
 <a href=#dir-Bug><h4><code><h- data-h=mk_tag>\Bug</h-></code> — Bug blocks</h4></a>
-<div class=toc-num data-level=4>9.6.5</div>
+<div class=toc-num data-level=4>9.5.5</div>
 <a href=#dir-Bdecision><h4><code><h- data-h=mk_tag>\Bdecision</h-></code> — Decision blocks</h4></a>
-<div class=toc-num data-level=4>9.6.6</div>
+<div class=toc-num data-level=4>9.5.6</div>
 <a href=#dir-Bdel><h4><code><h- data-h=mk_tag>\Bdel</h-></code> — Deletion blocks</h4></a>
-<div class=toc-num data-level=4>9.6.7</div>
+<div class=toc-num data-level=4>9.5.7</div>
 <a href=#dir-Bdetails><h4><code><h- data-h=mk_tag>\Bdetails</h-></code> — Details blocks aka spoilers</h4></a>
-<div class=toc-num data-level=4>9.6.8</div>
+<div class=toc-num data-level=4>9.5.8</div>
 <a href=#dir-details><h4><code><h- data-h=mk_tag>\details</h-></code> — Alias for <code><h- data-h=mk_tag>\Bdetails</h-></code></h4></a>
-<div class=toc-num data-level=4>9.6.9</div>
+<div class=toc-num data-level=4>9.5.9</div>
 <a href=#dir-Bdiff><h4><code><h- data-h=mk_tag>\Bdiff</h-></code> — Difference blocks</h4></a>
-<div class=toc-num data-level=4>9.6.10</div>
+<div class=toc-num data-level=4>9.5.10</div>
 <a href=#dir-Bex><h4><code><h- data-h=mk_tag>\Bex</h-></code> — Example blocks</h4></a>
-<div class=toc-num data-level=4>9.6.11</div>
+<div class=toc-num data-level=4>9.5.11</div>
 <a href=#dir-Bins><h4><code><h- data-h=mk_tag>\Bins</h-></code> — Insertion blocks</h4></a>
-<div class=toc-num data-level=4>9.6.12</div>
+<div class=toc-num data-level=4>9.5.12</div>
 <a href=#dir-Bimp><h4><code><h- data-h=mk_tag>\Bimp</h-></code> — Important blocks</h4></a>
-<div class=toc-num data-level=4>9.6.13</div>
+<div class=toc-num data-level=4>9.5.13</div>
 <a href=#dir-Bnote><h4><code><h- data-h=mk_tag>\Bnote</h-></code> — Note blocks</h4></a>
-<div class=toc-num data-level=4>9.6.14</div>
+<div class=toc-num data-level=4>9.5.14</div>
 <a href=#dir-Btip><h4><code><h- data-h=mk_tag>\Btip</h-></code> — Tip blocks</h4></a>
-<div class=toc-num data-level=4>9.6.15</div>
+<div class=toc-num data-level=4>9.5.15</div>
 <a href=#dir-Btodo><h4><code><h- data-h=mk_tag>\Btodo</h-></code> — TODO blocks</h4></a>
-<div class=toc-num data-level=4>9.6.16</div>
+<div class=toc-num data-level=4>9.5.16</div>
 <a href=#dir-Bwarn><h4><code><h- data-h=mk_tag>\Bwarn</h-></code> — Warning blocks</h4></a>
-<div class=toc-num data-level=3>9.7</div>
+<div class=toc-num data-level=3>9.6</div>
 <a href=#lists><h3>Lists</h3></a>
-<div class=toc-num data-level=4>9.7.1</div>
+<div class=toc-num data-level=4>9.6.1</div>
 <a href=#dir-ul><h4><code><h- data-h=mk_tag>\ul</h-></code> — Unordered lists</h4></a>
-<div class=toc-num data-level=4>9.7.2</div>
+<div class=toc-num data-level=4>9.6.2</div>
 <a href=#dir-ol><h4><code><h- data-h=mk_tag>\ol</h-></code> — Ordered lists</h4></a>
-<div class=toc-num data-level=4>9.7.3</div>
+<div class=toc-num data-level=4>9.6.3</div>
 <a href=#dir-li><h4><code><h- data-h=mk_tag>\li</h-></code> — List items</h4></a>
-<div class=toc-num data-level=4>9.7.4</div>
+<div class=toc-num data-level=4>9.6.4</div>
 <a href=#dir-item><h4><code><h- data-h=mk_tag>\item</h-></code> — List item pseudo-directive</h4></a>
-<div class=toc-num data-level=4>9.7.5</div>
+<div class=toc-num data-level=4>9.6.5</div>
 <a href=#dir-dl><h4><code><h- data-h=mk_tag>\dl</h-></code> — Definition lists</h4></a>
-<div class=toc-num data-level=3>9.8</div>
+<div class=toc-num data-level=3>9.7</div>
 <a href=#tables><h3>Tables</h3></a>
-<div class=toc-num data-level=3>9.9</div>
+<div class=toc-num data-level=3>9.8</div>
 <a href=#headings><h3>Headings</h3></a>
-<div class=toc-num data-level=4>9.9.1</div>
+<div class=toc-num data-level=4>9.8.1</div>
 <a href=#dir-make_contents><h4><code><h- data-h=mk_tag>\make_contents</h-></code> — Make table of contents</h4></a>
-<div class=toc-num data-level=3>9.10</div>
+<div class=toc-num data-level=3>9.9</div>
 <a href=#bibliography><h3>Bibliography</h3></a>
-<div class=toc-num data-level=4>9.10.1</div>
+<div class=toc-num data-level=4>9.9.1</div>
 <a href=#dir-bib><h4><code><h- data-h=mk_tag>\bib</h-></code> — Add bibliography entry</h4></a>
-<div class=toc-num data-level=4>9.10.2</div>
+<div class=toc-num data-level=4>9.9.2</div>
 <a href=#dir-make_bib><h4><code><h- data-h=mk_tag>\make_bib</h-></code> — Generate bibliography</h4></a>
-<div class=toc-num data-level=3>9.11</div>
+<div class=toc-num data-level=3>9.10</div>
 <a href=#references><h3>References</h3></a>
-<div class=toc-num data-level=4>9.11.1</div>
+<div class=toc-num data-level=4>9.10.1</div>
 <a href=#dir-ref><h4><code><h- data-h=mk_tag>\ref</h-></code> — References</h4></a>
-<div class=toc-num data-level=4>9.11.2</div>
+<div class=toc-num data-level=4>9.10.2</div>
 <a href=#dir-mail><h4><code><h- data-h=mk_tag>\mail</h-></code> — E-Mail addresses</h4></a>
-<div class=toc-num data-level=4>9.11.3</div>
+<div class=toc-num data-level=4>9.10.3</div>
 <a href=#dir-tel><h4><code><h- data-h=mk_tag>\tel</h-></code> — Telephone numbers</h4></a>
-<div class=toc-num data-level=3>9.12</div>
+<div class=toc-num data-level=3>9.11</div>
 <a href=#foreign-languages><h3>Foreign languages</h3></a>
-<div class=toc-num data-level=4>9.12.1</div>
+<div class=toc-num data-level=4>9.11.1</div>
 <a href=#dir-script><h4><code><h- data-h=mk_tag>\script</h-></code> — JavaScript blocks</h4></a>
-<div class=toc-num data-level=4>9.12.2</div>
+<div class=toc-num data-level=4>9.11.2</div>
 <a href=#dir-noscript><h4><code><h- data-h=mk_tag>\noscript</h-></code> — No-JavaScript content</h4></a>
-<div class=toc-num data-level=4>9.12.3</div>
+<div class=toc-num data-level=4>9.11.3</div>
 <a href=#dir-style><h4><code><h- data-h=mk_tag>\style</h-></code> — CSS blocks</h4></a>
-<div class=toc-num data-level=3>9.13</div>
+<div class=toc-num data-level=3>9.12</div>
 <a href=#sections><h3>Sections</h3></a>
-<div class=toc-num data-level=4>9.13.1</div>
+<div class=toc-num data-level=4>9.12.1</div>
 <a href=#dir-there><h4><code><h- data-h=mk_tag>\there</h-></code> — Append content to section</h4></a>
-<div class=toc-num data-level=4>9.13.2</div>
+<div class=toc-num data-level=4>9.12.2</div>
 <a href=#dir-here><h4><code><h- data-h=mk_tag>\here</h-></code> — Copy section content</h4></a>
-<div class=toc-num data-level=4>9.13.3</div>
+<div class=toc-num data-level=4>9.12.3</div>
 <a href=#dir-hereblock><h4><code><h- data-h=mk_tag>\hereblock</h-></code> — Copy section content in block</h4></a>
-<div class=toc-num data-level=3>9.14</div>
+<div class=toc-num data-level=3>9.13</div>
 <a href=#miscellaneous><h3>Miscellaneous</h3></a>
-<div class=toc-num data-level=4>9.14.1</div>
+<div class=toc-num data-level=4>9.13.1</div>
 <a href=#dir-div><h4><code><h- data-h=mk_tag>\div</h-></code> — Content division</h4></a>
-<div class=toc-num data-level=4>9.14.2</div>
+<div class=toc-num data-level=4>9.13.2</div>
 <a href=#dir-trim><h4><code><h- data-h=mk_tag>\trim</h-></code> — Trim input</h4></a>
-<div class=toc-num data-level=4>9.14.3</div>
+<div class=toc-num data-level=4>9.13.3</div>
 <a href=#dir-text><h4><code><h- data-h=mk_tag>\text</h-></code> — Plaintext context</h4></a>
-<div class=toc-num data-level=4>9.14.4</div>
+<div class=toc-num data-level=4>9.13.4</div>
 <a href=#dir-p><h4><code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4></a>
-<div class=toc-num data-level=3>9.15</div>
+<div class=toc-num data-level=3>9.14</div>
 <a href=#variables-and-calculations><h3>Variables and calculations</h3></a>
-<div class=toc-num data-level=4>9.15.1</div>
+<div class=toc-num data-level=4>9.14.1</div>
 <a href=#dir-Vset><h4><code><h- data-h=mk_tag>\Vset</h-></code> — Set a variable</h4></a>
-<div class=toc-num data-level=4>9.15.2</div>
+<div class=toc-num data-level=4>9.14.2</div>
 <a href=#dir-Vget><h4><code><h- data-h=mk_tag>\Vget</h-></code> — Get a variable</h4></a>
 </div>
 
@@ -1954,11 +1954,12 @@ Running <code><h- data-h=name_cmd>./build/cowel-cli</h-></code> without extra ar
 <h2 id=syntax><a class=para href=#syntax></a>4. Syntax</h2>
 
 <p>COWEL has a minimalistic but powerful syntax,
-built on top of only three syntactical constructs:
+built on top of only a few syntactical constructs:
 </p><ul>
   <li><code>Text.</code></li>
   <li>Escape sequences, such as <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>{</h-></code>, <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>}</h-></code>, <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>\</h-></code>, etc.</li>
-  <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt>Comments</h-></code></li>
+  <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> line comments</h-></code></li>
+  <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt> block comments </h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt_dlim>\</h-></code></li>
   <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_splices</h-><h- data-h=sym_par>(</h->positional<h- data-h=sym_punc>,</h-> args<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> 0<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
 </ul>
 
@@ -1976,24 +1977,29 @@ a <g-term>document</g-term> is constructed as follows:
 <h- data-h=name_nt_decl>document-text</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>document-text-char</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>document-text-char</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>document-text-char</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? Any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=name_nt_decl>common-markup-element</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>escape</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>comment</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>line-comment</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>block-comment</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>directive-splice</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>escape</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>escapable-char</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>line-terminator</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>escapable-char</h->
-  <h- data-h=sym_punc>=</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>[</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>]</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h->
-  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>#</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>$</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>%</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&amp;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>*</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>/</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>;</h-><h- data-h=str_dlim>"</h->
-  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&lt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&gt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>?</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>@</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>^</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>|</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>~</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_punc>=</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>[</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>]</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>#</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>$</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>%</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&amp;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>/</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&lt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&gt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>?</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>@</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>^</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>|</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>~</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str> </h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=name_nt>TAB</h-> <h- data-h=sym_op>|</h->   <h- data-h=name_nt>VT</h-> <h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>comment</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\:</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>comment-char</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>line-terminator</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>comment-char</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? Any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=name_nt>line-terminator</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>line-comment</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\:</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>line-comment-char</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>line-terminator</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>line-comment-char</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=name_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>CR</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>block-comment</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\*</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>block-comment-char</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>*\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>block-comment-char</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>*</h-><h- data-h=str_dlim>"</h-> <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> followed by "\" </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=name_nt_decl>directive-splice</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>directive-name</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
@@ -2085,7 +2091,7 @@ a <g-term>document</g-term> is constructed as follows:
 <h- data-h=name_nt_decl>quoted-string-text</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>quoted-string-text-char</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>quoted-string-text-char</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>quoted-string-text-char</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? Any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=name_nt_decl>block</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>block-markup-element</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
@@ -2095,10 +2101,10 @@ a <g-term>document</g-term> is constructed as follows:
 <h- data-h=name_nt_decl>block-text</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>block-text-char</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>block-text-char</h-> <h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> brace-balanced </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>block-text-char</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? Any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=name_nt_decl>blank</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>comment</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>whitespace</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>line-comment</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>block-comment</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>whitespace</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>whitespace</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=str_dlim>"</h-><h- data-h=str> </h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>TAB</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>CR</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>VT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>line-terminator</h->
@@ -2127,7 +2133,7 @@ excluding U+005C (<tt->\</tt->).
 <code-block><h- data-h=name_nt_decl>document-text</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>document-text-char</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>document-text-char</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>document-text-char</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? Any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <note-block><p><intro-></intro-> 
 In most situations, text is not processed specially.
@@ -2208,7 +2214,6 @@ The meaning of the escape sequences is described in the table below.
       <tt-><h- data-h=str_esc>\'</h-></tt->,
       <tt-><h- data-h=str_esc>\(</h-></tt->,
       <tt-><h- data-h=str_esc>\)</h-></tt->,
-      <tt-><h- data-h=str_esc>\*</h-></tt->,
       <tt-><h- data-h=str_esc>\+</h-></tt->,
       <tt-><h- data-h=str_esc>\,</h-></tt->,
       <tt-><h- data-h=str_esc>\-</h-></tt->,
@@ -2254,9 +2259,9 @@ The meaning of the escape sequences is described in the table below.
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>escapable-char</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>line-terminator</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>escapable-char</h->
-  <h- data-h=sym_punc>=</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>[</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>]</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h->
-  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>#</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>$</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>%</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&amp;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>*</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>/</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>;</h-><h- data-h=str_dlim>"</h->
-  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&lt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&gt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>?</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>@</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>^</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>|</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>~</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_punc>=</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>[</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>]</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>)</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>#</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>$</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>%</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&amp;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>/</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&lt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>&gt;</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>?</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>@</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>^</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>|</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>~</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str> </h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=name_nt>TAB</h-> <h- data-h=sym_op>|</h->   <h- data-h=name_nt>VT</h-> <h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>line-terminator</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>LF</h->
@@ -2268,8 +2273,8 @@ this ambiguity is resolved in favor of a CRLF escape.
 </p>
 <note-block><p><intro-></intro-> 
 The purpose of most escapes is to prevent a character from having special meaning.
-For example, the <tt-><h- data-h=str_esc>\,</h-></tt-> escape prevents a comma from being interpreted
-as a separator between directive arguments.
+For example, the <tt-><h- data-h=str_esc>\"</h-></tt-> escape prevents a quote
+from being interpreted as the end of a <g-term>quoted-string</g-term>.
 </p>
 <p>The purpose of the newline escapes is to remove unwanted newlines
 and to join long content that spans multiple lines,
@@ -2278,36 +2283,42 @@ but without introducing any whitespace in the markup.
 
 <h3 id=syntax-comments><a class=para href=#syntax-comments></a>4.4. Comments</h3>
 
-<p>Comments begin with <code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-></code> and extend until the end of the line.
+<p>There are two types of comments:
+line comments and block comments.
+</p>
+<h4 id=line-comments><a class=para href=#line-comments></a>4.4.1. Line comments</h4>
+
+<p>Line comments begin with <code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-></code> and extend until the end of the line.
 In almost every context,
 comments are discarded instead of being emitted into the output HTML.
 </p>
 <p>This makes them useful for adding information to the COWEL markup.
 </p>
 <note-block><p><intro-></intro-> 
-Comments, just like any other content,
-are actually part of the AST and don't simply get discarded during parsing.
-This means that a comment wrapped in <a href=#dir-cowel_source_as_text>§8.4.6. <code><h- data-h=mk_tag>\cowel_source_as_text</h-></code> — Process with source-as-text policy</a> will render as expected:
-</p><code-block><h- data-h=mk_tag>\cowblock</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_source_as_text</h-><h- data-h=sym_brac>{</h->
-<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> A comment ...</h->
-<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
-<p>This renders as:
-</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> A comment ...</h-></code-block>
+A <g-term>line-comment</g-term>, just like any other content,
+is actually part of the AST and doesn't simply get discarded during parsing.
+This means that a <g-term>line-comment</g-term> wrapped in <a href=#dir-cowel_source_as_text>§8.4.6. <code><h- data-h=mk_tag>\cowel_source_as_text</h-></code> — Process with source-as-text policy</a>
+will render as expected:
+</p><code-block><h- data-h=mk_tag>\cowel_source_as_text</h-><h- data-h=sym_brac>{</h->A<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> A comment ...</h->
+B<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block>A\: A comment ...
+B</code-block>
 </note-block>
 
-<p>In EBNF grammar, a <g-term>comment</g-term> is constructed as follows:
+<p>In EBNF grammar, a <g-term>line-comment</g-term> is constructed as follows:
 </p>
-<code-block><h- data-h=name_nt_decl>comment</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>:</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>comment-char</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>line-terminator</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>comment-char</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? Any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=name_nt>line-terminator</h-><h- data-h=sym_punc>;</h-></code-block>
+<code-block><h- data-h=name_nt_decl>line-comment</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>:</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>line-comment-char</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>line-terminator</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>line-comment-char</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=name_nt>LF</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>CR</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p>Comments include a <g-term>line-terminator</g-term>,
-which means that a trailing comment won't add any lines (not even blank lines)
+which means that a trailing <g-term>line-comment</g-term> won't add any lines (not even blank lines)
 to the generated markup.
 </p>
 <example-block><p><intro-></intro-> 
-We can even join words by putting a comment between:
+We can even join words by putting a <g-term>line-comment</g-term> between:
 </p><code-block>Hello<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> this comment will absorb the newline</h->
 World
 
@@ -2319,6 +2330,34 @@ World</code-block>
 
 Hello World</code-block>
 </example-block>
+
+<h4 id=block-comments><a class=para href=#block-comments></a>4.4.2. Block comments</h4>
+
+<p>A block comment functions exactly the same as a line comment,
+but is terminated at a point of choice instead of at the end of the line.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block>A<h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt> comment in the middle </h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt_dlim>\</h->B</code-block>
+<p>Generated HTML:
+</p><code-block>AB</code-block>
+</example-block>
+
+<p>In EBNF grammar, a <g-term>block-comment</g-term> is constructed as follows:
+</p>
+<code-block><h- data-h=name_nt_decl>block-comment</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>*</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>block-comment-char</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>*</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>block-comment-char</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_mac>? any character ?</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>*</h-><h- data-h=str_dlim>"</h-> <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> followed by "</h-><h- data-h=cmt>\</h-><h- data-h=cmt>" </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<note-block><p><intro-></intro-> 
+<g-term>block-comment</g-term>s do not allow nesting,
+meaning that '<code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-></code>' or '<code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>*</h-></code>'
+inside of a <g-term>block-comment</g-term> has no special meaning.
+</p>
+<p>Conversely, '<code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>*</h-></code>' has no special meaning
+inside of a <g-term>line-comment</g-term>.
+</p></note-block>
 
 <h3 id=directives-splices><a class=para href=#directives-splices></a>4.5. Directives splices</h3>
 
@@ -2910,7 +2949,7 @@ COWEL directives have <em>absolute</em> control over their inputs and how they a
 It only sees the value <code><h- data-h=num>4</h-></code> and prints it, "oblivious to the outside".
 </p>
 <p>COWEL follows a different model:
-</p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>\</h-><h- data-h=cmt>b{x}</h-><h- data-h=cmt_dlim>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>comment</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
 <p>No <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code> tag is ever generated because <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code> is never processed.
 <code><h- data-h=mk_tag>\comment</h-></code> is not magical feature;
 it simply has control over all of its contents and arguments,
@@ -5348,31 +5387,7 @@ with macro packages that provide additional functionality.
 <p>The documentation for these directives is not actively maintained.
 </p></warning-block>
 
-<h3 id=comments><a class=para href=#comments></a>9.1. Comments</h3>
-
-<p>In addition to the <code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-></code> syntax for single-line comments,
-there exists a <code><h- data-h=mk_tag>\comment</h-></code> directive which
-discards all of its contents.
-This can be used for multi-line comments.
-</p>
-<h4 id=dir-comment><a class=para href=#dir-comment></a>9.1.1. <code><h- data-h=mk_tag>\comment</h-></code> — Comments</h4>
-
-<p>The <code><h- data-h=mk_tag>\comment</h-></code> directive does not process its arguments or content.
-It outputs no plaintext or HTML.
-</p>
-<example-block><p><intro-></intro-> 
-While comments don't output anything,
-<a href=#paragraph-splitting>§8.6.1. Paragraph splitting</a> is based on blank lines in the source,
-so comments don't split paragraphs:
-</p><code-block>Text
-<h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>This is </h-><h- data-h=cmt>\</h-><h- data-h=cmt>directive{comment} content.</h-><h- data-h=cmt_dlim>}</h->
-Text</code-block>
-<p>Generated HTML:
-</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Text
-
-Text<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code-block>
-</example-block>
-<h3 id=text-formatting><a class=para href=#text-formatting></a>9.2. Text formatting</h3>
+<h3 id=text-formatting><a class=para href=#text-formatting></a>9.1. Text formatting</h3>
 
 <p>COWEL allows for basic text formatting using various directives.
 Many of the formatting directives are some direct equivalent of an HTML element.
@@ -5516,7 +5531,7 @@ For example, <code><h- data-h=mk_tag>\cite</h-></code>, <code><h- data-h=mk_tag>
 Both <code><h- data-h=mk_tag>\strong</h-></code> and <code><h- data-h=mk_tag>\b</h-></code> are bold.
 Both <code><h- data-h=mk_tag>\tt</h-></code> and <code><h- data-h=mk_tag>\samp</h-></code> use teletype font.
 </p>
-<p>However, you can customize the style; see <a href=#dir-style>§9.12.3. <code><h- data-h=mk_tag>\style</h-></code> — CSS blocks</a>.
+<p>However, you can customize the style; see <a href=#dir-style>§9.11.3. <code><h- data-h=mk_tag>\style</h-></code> — CSS blocks</a>.
 </p></note-block>
 
 <note-block><p><intro-></intro-> 
@@ -5524,7 +5539,7 @@ The difference between oblique (<code><h- data-h=mk_tag>\o</h-></code>) and ital
 is that oblique text is merely slanted,
 while italic text is fundamentally a different font with different characters.
 </p></note-block>
-<h3 id=code><a class=para href=#code></a>9.3. Code and syntax highlighting</h3>
+<h3 id=code><a class=para href=#code></a>9.2. Code and syntax highlighting</h3>
 
 <p>COWEL uses
 <a href=https://github.com/Eisenwave/ulight>µlight</a>
@@ -5533,7 +5548,7 @@ While the set of supported language is relatively small,
 the highlighter is ultra-light, extremely fast, and
 deals with modern C++ features correctly.
 </p>
-<h4 id=dir-code><a class=para href=#dir-code></a>9.3.1. <code><h- data-h=mk_tag>\code</h-></code> — Inline code</h4>
+<h4 id=dir-code><a class=para href=#dir-code></a>9.2.1. <code><h- data-h=mk_tag>\code</h-></code> — Inline code</h4>
 
 <p>The <code><h- data-h=mk_tag>\code</h-></code> directive produced syntax-highlighted text in code font.
 </p>
@@ -5581,7 +5596,7 @@ The <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_p
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>num</h-><h- data-h=sym_punc>&gt;</h->123<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
 
-<h5 id=manual-nested-highlighting><a class=para href=#manual-nested-highlighting></a>9.3.1.1. Manual nested highlighting</h5>
+<h5 id=manual-nested-highlighting><a class=para href=#manual-nested-highlighting></a>9.2.1.1. Manual nested highlighting</h5>
 
 <p>The <tt->nested</tt-> parameter is a plaintext context,
 which accepts either <tt->true</tt-> or <tt->false</tt->, where <tt->false</tt-> is the default.
@@ -5606,7 +5621,7 @@ to have borders, background color, padding, and other such styling features.
 <tt->nested=true</tt-> directly emits the highlighting HTML elements,
 which is more composable.
 </p>
-<h5 id=further-advice-on-highlighting><a class=para href=#further-advice-on-highlighting></a>9.3.1.2. Further advice on highlighting</h5>
+<h5 id=further-advice-on-highlighting><a class=para href=#further-advice-on-highlighting></a>9.2.1.2. Further advice on highlighting</h5>
 
 <tip-block><p><intro-></intro-> 
 Writing <code><h- data-h=mk_tag>\code</h-></code> directives directly is often too tedious,
@@ -5616,7 +5631,7 @@ so you'll likely want to define a macro to make this easier:
 Let's highlight <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>js</h-><h- data-h=sym_brac>{</h->var<h- data-h=sym_brac>}</h-> in JavaScript.</code-block>
 </tip-block>
 
-<h4 id=dir-codeblock><a class=para href=#dir-codeblock></a>9.3.2. <code><h- data-h=mk_tag>\codeblock</h-></code> — Code blocks</h4>
+<h4 id=dir-codeblock><a class=para href=#dir-codeblock></a>9.2.2. <code><h- data-h=mk_tag>\codeblock</h-></code> — Code blocks</h4>
 
 <p>The <code><h- data-h=mk_tag>\codeblock</h-></code> directive works exactly like <code><h- data-h=mk_tag>\code</h-></code>,
 but it is a block directive, not an inline directive.
@@ -5640,7 +5655,7 @@ let x = 0;
 <h- data-h=kw>let</h-> <h- data-h=name>x</h-> <h- data-h=sym_op>=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h-></code-block>
 </example-block>
 
-<h4 id=dir-hl><a class=para href=#dir-hl></a>9.3.3. <code><h- data-h=mk_tag>\hl</h-></code> — Syntax highlight override</h4>
+<h4 id=dir-hl><a class=para href=#dir-hl></a>9.2.3. <code><h- data-h=mk_tag>\hl</h-></code> — Syntax highlight override</h4>
 
 <p>The <code><h- data-h=mk_tag>\hl</h-></code> directive forces certain syntax highlighting to be applied to some text;
 it is a manual override for when automatic syntax highlighting is insufficient or broken.
@@ -5671,7 +5686,7 @@ the "short names" (<code>kw_type</code>) are not stable, i.e. they are more like
 Only µlight long names should be used directly.
 </p></note-block>
 
-<h4 id=dir-pre><a class=para href=#dir-pre></a>9.3.4. <code><h- data-h=mk_tag>\pre</h-></code> — Preformatted blocks</h4>
+<h4 id=dir-pre><a class=para href=#dir-pre></a>9.2.4. <code><h- data-h=mk_tag>\pre</h-></code> — Preformatted blocks</h4>
 
 <p>The <code><h- data-h=mk_tag>\pre</h-></code> directive contains pre-formatted content.
 It can be used to contain code, however, there is no syntax highlighting in a <code><h- data-h=mk_tag>\pre</h-></code> block.
@@ -5696,7 +5711,7 @@ Unlike <code><h- data-h=mk_tag>\codeblock</h-></code>, <code><h- data-h=mk_tag>\
 This will be added in the future.
 </p></todo-block>
 
-<h3 id=math><a class=para href=#math></a>9.4. Math</h3>
+<h3 id=math><a class=para href=#math></a>9.3. Math</h3>
 
 <p>In recent years, browser support for
 <a href=https://developer.mozilla.org/en-US/docs/Web/MathML>MathML</a>
@@ -5737,7 +5752,7 @@ and use <code><h- data-h=mk_tag>\cowel_include_text</h-></code>:
 <p>However, hand-writing MathML would be extremely tedious and verbose,
 so COWEL offers some convenience directives, listed below.
 </p>
-<h4 id=dir-math><a class=para href=#dir-math></a>9.4.1. <code><h- data-h=mk_tag>\math</h-></code> — Inline math</h4>
+<h4 id=dir-math><a class=para href=#dir-math></a>9.3.1. <code><h- data-h=mk_tag>\math</h-></code> — Inline math</h4>
 
 <p>A <code><h- data-h=mk_tag>\math</h-></code> directive surrounds its content with
 <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>math</h-> <h- data-h=mk_attr>display</h-><h- data-h=sym_punc>=</h-><h- data-h=str>inline</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>math</h-><h- data-h=sym_punc>&gt;</h-></code> tags,
@@ -5752,7 +5767,7 @@ Essentially, this allows you to build MathML using COWEL syntax.
 for a list of supported elements/directives.
 </p>
 <example-block><p><intro-></intro-> 
-The previous example in <a href=#math>§9.4. Math</a> could also be written like:
+The previous example in <a href=#math>§9.3. Math</a> could also be written like:
 </p><code-block>Math
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>math</h-><h- data-h=sym_brac>{</h-> <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mfrac</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mi</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mn</h-><h- data-h=sym_brac>{</h->2<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-> <h- data-h=sym_brac>}</h->
 in a sentence.</code-block>
@@ -5770,15 +5785,15 @@ The sum of <math display=inline><msup><mi>x</mi><mn>2</mn></msup></math> and <ma
 </div>
 </tip-block>
 
-<h4 id=dir-mathblock><a class=para href=#dir-mathblock></a>9.4.2. <code><h- data-h=mk_tag>\mathblock</h-></code> — Math blocks</h4>
+<h4 id=dir-mathblock><a class=para href=#dir-mathblock></a>9.3.2. <code><h- data-h=mk_tag>\mathblock</h-></code> — Math blocks</h4>
 
 <p>The <code><h- data-h=mk_tag>\mathblock</h-></code> directive functions almost exactly as the <code><h- data-h=mk_tag>\math</h-></code> directive,
 but it displays as block content instead of inline content,
 and it produces an opening
 <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>math</h-> <h- data-h=mk_attr>display</h-><h- data-h=sym_punc>=</h-><h- data-h=str>block</h-><h- data-h=sym_punc>&gt;</h-></code> tag.
-</p><h3 id=separators-and-word-breaking><a class=para href=#separators-and-word-breaking></a>9.5. Separators and word breaking</h3>
+</p><h3 id=separators-and-word-breaking><a class=para href=#separators-and-word-breaking></a>9.4. Separators and word breaking</h3>
 
-<h4 id=dir-br><a class=para href=#dir-br></a>9.5.1. <code><h- data-h=mk_tag>\br</h-></code> — Break line</h4>
+<h4 id=dir-br><a class=para href=#dir-br></a>9.4.1. <code><h- data-h=mk_tag>\br</h-></code> — Break line</h4>
 
 <p>The <code><h- data-h=mk_tag>\br</h-></code> directive produces a line break,
 and corresponds to the HTML element <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>br</h-><h- data-h=sym_punc>/&gt;</h-></code>.
@@ -5787,7 +5802,7 @@ It displays as inline content, and its input content is ignored.
 <p><code><h- data-h=mk_tag>\br</h-></code> is particularly useful when line breaks are treated same as spaces,
 which is the case in most HTML content.
 </p>
-<h4 id=dir-hr><a class=para href=#dir-hr></a>9.5.2. <code><h- data-h=mk_tag>\hr</h-></code> — Horizontal rule</h4>
+<h4 id=dir-hr><a class=para href=#dir-hr></a>9.4.2. <code><h- data-h=mk_tag>\hr</h-></code> — Horizontal rule</h4>
 
 <p>The <code><h- data-h=mk_tag>\hr</h-></code> directive produces a horizontal rule,
 and corresponds to the HTML element <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>hr</h-><h- data-h=sym_punc>/&gt;</h-></code>.
@@ -5796,7 +5811,7 @@ It displays as block content, and its input content is ignored.
 <p>Here is an example:
 </p><hr/>
 
-<h4 id=dir-wbr><a class=para href=#dir-wbr></a>9.5.3. <code><h- data-h=mk_tag>\wbr</h-></code> — Word break opportunity</h4>
+<h4 id=dir-wbr><a class=para href=#dir-wbr></a>9.4.3. <code><h- data-h=mk_tag>\wbr</h-></code> — Word break opportunity</h4>
 
 <p>The <code><h- data-h=mk_tag>\wbr</h-></code> directive produces a word break opportunity,
 and corresponds to the HTML element <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>wbr</h-><h- data-h=sym_punc>&gt;</h-></code>.
@@ -5815,7 +5830,7 @@ If you want to provide a word break hint but have a hyphen at the end of the lin
 use <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{</h->AD<h- data-h=sym_brac>}</h-></code> or <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>c</h-><h- data-h=sym_brac>{</h->shy<h- data-h=sym_brac>}</h-></code> to output a U+00AD SOFT HYPHEN.
 </p></tip-block>
 
-<h4 id=dir-nobr><a class=para href=#dir-nobr></a>9.5.4. <code><h- data-h=mk_tag>\nobr</h-></code> — Unbroken words</h4>
+<h4 id=dir-nobr><a class=para href=#dir-nobr></a>9.4.4. <code><h- data-h=mk_tag>\nobr</h-></code> — Unbroken words</h4>
 
 <p>The <code><h- data-h=mk_tag>\nobr</h-></code> directive is a formatting directive
 which prevents word breaks within its content.
@@ -5833,7 +5848,7 @@ You can insert these using
   <li><code>Combined<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{</h->A0<h- data-h=sym_brac>}</h->Word</code>.</li>
 </ul>
 </tip-block>
-<h3 id=special-blocks><a class=para href=#special-blocks></a>9.6. Special blocks</h3>
+<h3 id=special-blocks><a class=para href=#special-blocks></a>9.5. Special blocks</h3>
 
 <p>Often, the content we write falls into some special category like "example", "note", etc.
 COWEL supports a large number of <dfn>special block directives</dfn>,
@@ -5843,13 +5858,13 @@ which wrap their content in a block, with background color, borders, etc.
 they all convert their arguments to HTML attributes,
 and they all display as block content.
 </p>
-<h4 id=dir-Babstract><a class=para href=#dir-Babstract></a>9.6.1. <code><h- data-h=mk_tag>\Babstract</h-></code> — Abstract blocks</h4>
+<h4 id=dir-Babstract><a class=para href=#dir-Babstract></a>9.5.1. <code><h- data-h=mk_tag>\Babstract</h-></code> — Abstract blocks</h4>
 
 <abstract-block><p><intro-></intro-> 
 Abstracts provide a summary of the document.
 </p></abstract-block>
 
-<h4 id=dir-Bquote><a class=para href=#dir-Bquote></a>9.6.2. <code><h- data-h=mk_tag>\Bquote</h-></code> — Quote blocks</h4>
+<h4 id=dir-Bquote><a class=para href=#dir-Bquote></a>9.5.2. <code><h- data-h=mk_tag>\Bquote</h-></code> — Quote blocks</h4>
 
 <p>The <code><h- data-h=mk_tag>\blockquote</h-></code> directive directly corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>blockquote</h-><h- data-h=sym_punc>&gt;</h-></code> element.
 </p>
@@ -5857,31 +5872,31 @@ Abstracts provide a summary of the document.
 <p>Quotes blocks or "block quotes" display quoted text.
 </p></blockquote>
 
-<h4 id=dir-blockquote><a class=para href=#dir-blockquote></a>9.6.3. <code><h- data-h=mk_tag>\blockquote</h-></code> — Alias for <code><h- data-h=mk_tag>\Bquote</h-></code></h4>
+<h4 id=dir-blockquote><a class=para href=#dir-blockquote></a>9.5.3. <code><h- data-h=mk_tag>\blockquote</h-></code> — Alias for <code><h- data-h=mk_tag>\Bquote</h-></code></h4>
 
 <p>The <code><h- data-h=mk_tag>\blockquote</h-></code> directive is equivalent to the <code><h- data-h=mk_tag>\Bquote</h-></code> directive.
 </p>
-<h4 id=dir-Bug><a class=para href=#dir-Bug></a>9.6.4. <code><h- data-h=mk_tag>\Bug</h-></code> — Bug blocks</h4>
+<h4 id=dir-Bug><a class=para href=#dir-Bug></a>9.5.4. <code><h- data-h=mk_tag>\Bug</h-></code> — Bug blocks</h4>
 
 <bug-block><p><intro-></intro-> 
 A bug block contains the description of a bug.
 This often includes a code block which demonstrates how to reproduce the bug.
 </p></bug-block>
 
-<h4 id=dir-Bdecision><a class=para href=#dir-Bdecision></a>9.6.5. <code><h- data-h=mk_tag>\Bdecision</h-></code> — Decision blocks</h4>
+<h4 id=dir-Bdecision><a class=para href=#dir-Bdecision></a>9.5.5. <code><h- data-h=mk_tag>\Bdecision</h-></code> — Decision blocks</h4>
 
 <decision-block><p><intro-></intro-> 
 A decision block indicates that a decision needs to be made.
 </p></decision-block>
 
-<h4 id=dir-Bdel><a class=para href=#dir-Bdel></a>9.6.6. <code><h- data-h=mk_tag>\Bdel</h-></code> — Deletion blocks</h4>
+<h4 id=dir-Bdel><a class=para href=#dir-Bdel></a>9.5.6. <code><h- data-h=mk_tag>\Bdel</h-></code> — Deletion blocks</h4>
 
 <del-block>
 <p>A deletion block acts as a wrapper for a large amount of deleted content.
 It is typically used when individual <code><h- data-h=mk_tag>\del</h-></code> directives would be too tedious to use.
 </p></del-block>
 
-<h4 id=dir-Bdetails><a class=para href=#dir-Bdetails></a>9.6.7. <code><h- data-h=mk_tag>\Bdetails</h-></code> — Details blocks aka spoilers</h4>
+<h4 id=dir-Bdetails><a class=para href=#dir-Bdetails></a>9.5.7. <code><h- data-h=mk_tag>\Bdetails</h-></code> — Details blocks aka spoilers</h4>
 
 <p>The <code><h- data-h=mk_tag>\Bdetails</h-></code> directive directly corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>details</h-><h- data-h=sym_punc>&gt;</h-></code> element.
 Within <code><h- data-h=mk_tag>\Bdetails</h-></code>,
@@ -5893,74 +5908,74 @@ A details block contains details which need to be revealed by the user.
 This is also referred to as "spoiler".
 </details>
 
-<h4 id=dir-details><a class=para href=#dir-details></a>9.6.8. <code><h- data-h=mk_tag>\details</h-></code> — Alias for <code><h- data-h=mk_tag>\Bdetails</h-></code></h4>
+<h4 id=dir-details><a class=para href=#dir-details></a>9.5.8. <code><h- data-h=mk_tag>\details</h-></code> — Alias for <code><h- data-h=mk_tag>\Bdetails</h-></code></h4>
 
 <p>The <code><h- data-h=mk_tag>\details</h-></code> directive is equivalent to the <code><h- data-h=mk_tag>\Bdetails</h-></code> directive.
 </p>
-<h4 id=dir-Bdiff><a class=para href=#dir-Bdiff></a>9.6.9. <code><h- data-h=mk_tag>\Bdiff</h-></code> — Difference blocks</h4>
+<h4 id=dir-Bdiff><a class=para href=#dir-Bdiff></a>9.5.9. <code><h- data-h=mk_tag>\Bdiff</h-></code> — Difference blocks</h4>
 
 <diff-block>
 <p>A difference block contains changes,
 where some content within is typically <del>deleted</del> or <ins>inserted</ins>.
 </p></diff-block>
 
-<h4 id=dir-Bex><a class=para href=#dir-Bex></a>9.6.10. <code><h- data-h=mk_tag>\Bex</h-></code> — Example blocks</h4>
+<h4 id=dir-Bex><a class=para href=#dir-Bex></a>9.5.10. <code><h- data-h=mk_tag>\Bex</h-></code> — Example blocks</h4>
 
 <example-block><p><intro-></intro-> 
 An example block contains examples.
 </p></example-block>
 
-<h4 id=dir-Bins><a class=para href=#dir-Bins></a>9.6.11. <code><h- data-h=mk_tag>\Bins</h-></code> — Insertion blocks</h4>
+<h4 id=dir-Bins><a class=para href=#dir-Bins></a>9.5.11. <code><h- data-h=mk_tag>\Bins</h-></code> — Insertion blocks</h4>
 
 <ins-block>
 <p>An insertion block acts as a wrapper for a large amount of inserted content.
 It is typically used when individual <code><h- data-h=mk_tag>\ins</h-></code> directives would be too tedious to use.
 </p></ins-block>
 
-<h4 id=dir-Bimp><a class=para href=#dir-Bimp></a>9.6.12. <code><h- data-h=mk_tag>\Bimp</h-></code> — Important blocks</h4>
+<h4 id=dir-Bimp><a class=para href=#dir-Bimp></a>9.5.12. <code><h- data-h=mk_tag>\Bimp</h-></code> — Important blocks</h4>
 
 <important-block><p><intro-></intro-> 
 Important blocks contain especially important information.
 </p></important-block>
 
-<h4 id=dir-Bnote><a class=para href=#dir-Bnote></a>9.6.13. <code><h- data-h=mk_tag>\Bnote</h-></code> — Note blocks</h4>
+<h4 id=dir-Bnote><a class=para href=#dir-Bnote></a>9.5.13. <code><h- data-h=mk_tag>\Bnote</h-></code> — Note blocks</h4>
 
 <note-block><p><intro-></intro-> 
 Note blocks contain less important information,
 which can often be skipped over by readers.
 </p></note-block>
 
-<h4 id=dir-Btip><a class=para href=#dir-Btip></a>9.6.14. <code><h- data-h=mk_tag>\Btip</h-></code> — Tip blocks</h4>
+<h4 id=dir-Btip><a class=para href=#dir-Btip></a>9.5.14. <code><h- data-h=mk_tag>\Btip</h-></code> — Tip blocks</h4>
 
 <tip-block><p><intro-></intro-> 
 Tip blocks contain useful advice.
 </p></tip-block>
 
-<h4 id=dir-Btodo><a class=para href=#dir-Btodo></a>9.6.15. <code><h- data-h=mk_tag>\Btodo</h-></code> — TODO blocks</h4>
+<h4 id=dir-Btodo><a class=para href=#dir-Btodo></a>9.5.15. <code><h- data-h=mk_tag>\Btodo</h-></code> — TODO blocks</h4>
 
 <todo-block><p><intro-></intro-> 
 TODO blocks contain actions that remain to be done.
 They may indicate that a part of a project is incomplete.
 </p></todo-block>
 
-<h4 id=dir-Bwarn><a class=para href=#dir-Bwarn></a>9.6.16. <code><h- data-h=mk_tag>\Bwarn</h-></code> — Warning blocks</h4>
+<h4 id=dir-Bwarn><a class=para href=#dir-Bwarn></a>9.5.16. <code><h- data-h=mk_tag>\Bwarn</h-></code> — Warning blocks</h4>
 
 <warning-block><p><intro-></intro-> 
 Warning blocks warn the reader of some hazard or potential mistake.
 </p></warning-block>
-<h3 id=lists><a class=para href=#lists></a>9.7. Lists</h3>
+<h3 id=lists><a class=para href=#lists></a>9.6. Lists</h3>
 
-<h4 id=dir-ul><a class=para href=#dir-ul></a>9.7.1. <code><h- data-h=mk_tag>\ul</h-></code> — Unordered lists</h4>
+<h4 id=dir-ul><a class=para href=#dir-ul></a>9.6.1. <code><h- data-h=mk_tag>\ul</h-></code> — Unordered lists</h4>
 
 <p>The <code><h- data-h=mk_tag>\ul</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_punc>&gt;</h-></code> element,
 and produces an unordered list.
 </p>
-<h4 id=dir-ol><a class=para href=#dir-ol></a>9.7.2. <code><h- data-h=mk_tag>\ol</h-></code> — Ordered lists</h4>
+<h4 id=dir-ol><a class=para href=#dir-ol></a>9.6.2. <code><h- data-h=mk_tag>\ol</h-></code> — Ordered lists</h4>
 
 <p>The <code><h- data-h=mk_tag>\ol</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ol</h-><h- data-h=sym_punc>&gt;</h-></code> element,
 and produces an ordered list.
 </p>
-<h4 id=dir-li><a class=para href=#dir-li></a>9.7.3. <code><h- data-h=mk_tag>\li</h-></code> — List items</h4>
+<h4 id=dir-li><a class=para href=#dir-li></a>9.6.3. <code><h- data-h=mk_tag>\li</h-></code> — List items</h4>
 
 <p>The <code><h- data-h=mk_tag>\li</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>li</h-><h- data-h=sym_punc>&gt;</h-></code> element,
 and produces a list item with <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ul</h-><h- data-h=sym_punc>&gt;</h-></code> or <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>ol</h-><h- data-h=sym_punc>&gt;</h-></code>.
@@ -5988,7 +6003,7 @@ COWEL markup:
 </ol>
 </example-block>
 
-<h4 id=dir-item><a class=para href=#dir-item></a>9.7.4. <code><h- data-h=mk_tag>\item</h-></code> — List item pseudo-directive</h4>
+<h4 id=dir-item><a class=para href=#dir-item></a>9.6.4. <code><h- data-h=mk_tag>\item</h-></code> — List item pseudo-directive</h4>
 
 <warning-block><p><intro-></intro-> 
 This directive is deprecated and will be removed in a future version.
@@ -5997,7 +6012,7 @@ This directive is deprecated and will be removed in a future version.
 <p>Within <code><h- data-h=mk_tag>\ul</h-></code> and <code><h- data-h=mk_tag>\ol</h-></code>,
 the <code><h- data-h=mk_tag>\item</h-></code> pseudo-directive can also be used instead of <code><h- data-h=mk_tag>\li</h-></code>.
 </p>
-<h4 id=dir-dl><a class=para href=#dir-dl></a>9.7.5. <code><h- data-h=mk_tag>\dl</h-></code> — Definition lists</h4>
+<h4 id=dir-dl><a class=para href=#dir-dl></a>9.6.5. <code><h- data-h=mk_tag>\dl</h-></code> — Definition lists</h4>
 
 <p>The <code><h- data-h=mk_tag>\dl</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>dl</h-><h- data-h=sym_punc>&gt;</h-></code> element,
 and produces a definition list.
@@ -6007,7 +6022,7 @@ Within that list, you can use
 <li><code><h- data-h=mk_tag>\dd</h-></code> for <dfn>definition descriptions</dfn>.</li>
 </ul>
 
-<h3 id=tables><a class=para href=#tables></a>9.8. Tables</h3>
+<h3 id=tables><a class=para href=#tables></a>9.7. Tables</h3>
 
 <p>Tables are simply produced by using the
 <code><h- data-h=mk_tag>\table</h-></code>, <code><h- data-h=mk_tag>\thead</h-></code>, <code><h- data-h=mk_tag>\tbody</h-></code>, <code><h- data-h=mk_tag>\tfoot</h-></code>,
@@ -6022,7 +6037,7 @@ like controlling alignment within columns,
 use a <code><h- data-h=mk_tag>\style</h-></code> directive.
 </p></tip-block>
 
-<h3 id=headings><a class=para href=#headings></a>9.9. Headings</h3>
+<h3 id=headings><a class=para href=#headings></a>9.8. Headings</h3>
 
 <p>Headings can be produced using the
 <code><h- data-h=mk_tag>\h1</h-></code>, <code><h- data-h=mk_tag>\h2</h-></code>, <code><h- data-h=mk_tag>\h3</h-></code>,
@@ -6031,7 +6046,7 @@ to produce the corresponding HTML tags with the same name.
 </p>
 <p>Headings take a <tt-><h- data-h=mk_attr>listed</h-></tt-> argument, which is a yes/no plaintext argument.
 Unless its value is <tt->no</tt->, headings are numbered and added to the table of contents
-(<a href=#dir-make_contents>§9.9.1. <code><h- data-h=mk_tag>\make_contents</h-></code> — Make table of contents</a>) automatically.
+(<a href=#dir-make_contents>§9.8.1. <code><h- data-h=mk_tag>\make_contents</h-></code> — Make table of contents</a>) automatically.
 </p>
 <p>Headings also take a <tt-><h- data-h=mk_attr>show-number</h-></tt-> argument, which is a yes/no plaintext argument.
 Unless this is <tt->no</tt->,
@@ -6049,19 +6064,19 @@ An <tt-><h- data-h=mk_attr>id</h-></tt-> argument can be provided explicitly.
 Headings can be referenced using the <code><h- data-h=mk_tag>\ref</h-></code> directive:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>h2</h-><h- data-h=sym_brac>{</h->Heading with synthesized id<h- data-h=sym_brac>}</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>h2</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h->xyz<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Heading with manual id<h- data-h=sym_brac>}</h->
-<h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>comment{</h-><h- data-h=cmt>These can be referenced as follows</h-><h- data-h=cmt_dlim>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>comment</h-><h- data-h=sym_brac>{</h->These can be referenced as follows<h- data-h=sym_brac>}</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->#heading-with-synthesized-id<h- data-h=sym_par>)</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->#xzy<h- data-h=sym_par>)</h-></code-block>
 </tip-block>
 
-<h4 id=dir-make_contents><a class=para href=#dir-make_contents></a>9.9.1. <code><h- data-h=mk_tag>\make_contents</h-></code> — Make table of contents</h4>
+<h4 id=dir-make_contents><a class=para href=#dir-make_contents></a>9.8.1. <code><h- data-h=mk_tag>\make_contents</h-></code> — Make table of contents</h4>
 
 <p>The <code><h- data-h=mk_tag>\make_contents</h-></code> directive generates the table of contents,
 which is comprised of all the headings within the document.
 It takes no arguments and its content is ignored.
 It displays as a block.
 </p>
-<p>The table of contents is is populated by headings (<a href=#headings>§9.9. Headings</a>)
+<p>The table of contents is is populated by headings (<a href=#headings>§9.8. Headings</a>)
 as the document is processed.
 </p>
 <tip-block><p><intro-></intro-> 
@@ -6082,7 +6097,7 @@ The underlying contents can be obtained with <code><h- data-h=mk_tag>\</h-><h- d
 chang their visual appearance.
 </p></note-block>
 
-<h3 id=bibliography><a class=para href=#bibliography></a>9.10. Bibliography</h3>
+<h3 id=bibliography><a class=para href=#bibliography></a>9.9. Bibliography</h3>
 
 <p>In technical writing it is common for documents to reference other papers,
 and it is expected that references are properly cited.
@@ -6091,7 +6106,7 @@ To support this,
 <p>COWEL provides directives for adding bibliography entries,
 and for generating a bibliography automatically.
 </p>
-<h4 id=dir-bib><a class=para href=#dir-bib></a>9.10.1. <code><h- data-h=mk_tag>\bib</h-></code> — Add bibliography entry</h4>
+<h4 id=dir-bib><a class=para href=#dir-bib></a>9.9.1. <code><h- data-h=mk_tag>\bib</h-></code> — Add bibliography entry</h4>
 
 <p>The <code><h- data-h=mk_tag>\bib</h-></code> directive adds a single entry to the bibliography.
 Its content is ignored, and it displays as a meta directive.
@@ -6152,7 +6167,7 @@ For example, in WG21 circles, this may be a link to the GitHub issue where a pap
 although you will hardly get meaningful bibliography output if only the <tt-><h- data-h=mk_attr>id</h-></tt-> is specified.
 </p>
 
-<h4 id=dir-make_bib><a class=para href=#dir-make_bib></a>9.10.2. <code><h- data-h=mk_tag>\make_bib</h-></code> — Generate bibliography</h4>
+<h4 id=dir-make_bib><a class=para href=#dir-make_bib></a>9.9.2. <code><h- data-h=mk_tag>\make_bib</h-></code> — Generate bibliography</h4>
 
 <p>The <code><h- data-h=mk_tag>\make_bib</h-></code> directive generates a bibliography.
 This is typically done towards the bottom of the document, but can be done anywhere.
@@ -6169,9 +6184,9 @@ entries are generated.
 Similar to <code><h- data-h=mk_tag>\make_contents</h-></code>,
 it is a wrapper for the underlying <tt->std.bib</tt-> section.
 </p></note-block>
-<h3 id=references><a class=para href=#references></a>9.11. References</h3>
+<h3 id=references><a class=para href=#references></a>9.10. References</h3>
 
-<h4 id=dir-ref><a class=para href=#dir-ref></a>9.11.1. <code><h- data-h=mk_tag>\ref</h-></code> — References</h4>
+<h4 id=dir-ref><a class=para href=#dir-ref></a>9.10.1. <code><h- data-h=mk_tag>\ref</h-></code> — References</h4>
 
 <p>The <code><h- data-h=mk_tag>\ref</h-></code> directive takes a single <tt->to</tt-> argument,
 which can be a URL, anchor, or something else.
@@ -6204,7 +6219,7 @@ C++ standard draft links can be synthesized into human-readable descriptions.
 </div>
 </example-block>
 
-<h4 id=dir-mail><a class=para href=#dir-mail></a>9.11.2. <code><h- data-h=mk_tag>\mail</h-></code> — E-Mail addresses</h4>
+<h4 id=dir-mail><a class=para href=#dir-mail></a>9.10.2. <code><h- data-h=mk_tag>\mail</h-></code> — E-Mail addresses</h4>
 
 <p>A <code><h- data-h=mk_tag>\mail</h-></code> directive behaves the same <code><h- data-h=mk_tag>\ref</h-></code> directive that is given a <tt->mailto</tt-> URL.
 However, the input is provided as content instead of an argument,
@@ -6216,7 +6231,7 @@ The following two lines produce the same output:
 Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->mailto:john@us.gov<h- data-h=sym_par>)</h->.</code-block>
 </example-block>
 
-<h4 id=dir-tel><a class=para href=#dir-tel></a>9.11.3. <code><h- data-h=mk_tag>\tel</h-></code> — Telephone numbers</h4>
+<h4 id=dir-tel><a class=para href=#dir-tel></a>9.10.3. <code><h- data-h=mk_tag>\tel</h-></code> — Telephone numbers</h4>
 
 <p>A <code><h- data-h=mk_tag>\tel</h-></code> directive behaves the same <code><h- data-h=mk_tag>\ref</h-></code> directive that is given a <tt->tel</tt-> URL.
 However, the input is provided as content instead of an argument,
@@ -6227,9 +6242,9 @@ The following two lines produce the same output:
 </p><code-block>Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>tel</h-><h- data-h=sym_brac>{</h->+1234<h- data-h=sym_brac>}</h->.
 Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->tel:+1234<h- data-h=sym_par>)</h->.</code-block>
 </example-block>
-<h3 id=foreign-languages><a class=para href=#foreign-languages></a>9.12. Foreign languages</h3>
+<h3 id=foreign-languages><a class=para href=#foreign-languages></a>9.11. Foreign languages</h3>
 
-<h4 id=dir-script><a class=para href=#dir-script></a>9.12.1. <code><h- data-h=mk_tag>\script</h-></code> — JavaScript blocks</h4>
+<h4 id=dir-script><a class=para href=#dir-script></a>9.11.1. <code><h- data-h=mk_tag>\script</h-></code> — JavaScript blocks</h4>
 
 <p>The content of a <code><h- data-h=mk_tag>\script</h-></code> directive is a plaintext context,
 where the input is treated as JavaScript code
@@ -6248,13 +6263,13 @@ console.log("hello");
 <h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>script</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
 
-<h4 id=dir-noscript><a class=para href=#dir-noscript></a>9.12.2. <code><h- data-h=mk_tag>\noscript</h-></code> — No-JavaScript content</h4>
+<h4 id=dir-noscript><a class=para href=#dir-noscript></a>9.11.2. <code><h- data-h=mk_tag>\noscript</h-></code> — No-JavaScript content</h4>
 
 <p>The <code><h- data-h=mk_tag>\noscript</h-></code> directive corresponds to the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>noscript</h-><h- data-h=sym_punc>&gt;</h-></code> element.
 Its content is an HTML context,
 and will only be shown by the browser when JavaScript is disabled.
 </p>
-<h4 id=dir-style><a class=para href=#dir-style></a>9.12.3. <code><h- data-h=mk_tag>\style</h-></code> — CSS blocks</h4>
+<h4 id=dir-style><a class=para href=#dir-style></a>9.11.3. <code><h- data-h=mk_tag>\style</h-></code> — CSS blocks</h4>
 
 <p>The content of a <code><h- data-h=mk_tag>\style</h-></code> directive is a plaintext context,
 where the input is treated as JavaScript code and surrounded in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=cmt_dlim>/*</h-><h- data-h=cmt>...</h-><h- data-h=cmt_dlim>*/</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
@@ -6271,14 +6286,14 @@ body { color: red; }
 <h- data-h=mk_tag>body</h-> <h- data-h=sym_brac>{</h-> <h- data-h=mk_attr>color</h-><h- data-h=sym_punc>:</h-> <h- data-h=name>red</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
 <h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>style</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
-<h3 id=sections><a class=para href=#sections></a>9.13. Sections</h3>
+<h3 id=sections><a class=para href=#sections></a>9.12. Sections</h3>
 
 <p>Often, you want to produce content in one place,
 but have it display in another place within the document.
 A classic example is collecting headings automatically in a table of contents,
 or copying the content of a heading into a preview when referenced by <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->#id<h- data-h=sym_par>)</h-></code>.
 </p>
-<h4 id=dir-there><a class=para href=#dir-there></a>9.13.1. <code><h- data-h=mk_tag>\there</h-></code> — Append content to section</h4>
+<h4 id=dir-there><a class=para href=#dir-there></a>9.12.1. <code><h- data-h=mk_tag>\there</h-></code> — Append content to section</h4>
 
 <p>The <code><h- data-h=mk_tag>\there</h-></code> directive displays as meta content.
 Basically, it stashes away its input content (which is an HTML context) somewhere else.
@@ -6309,7 +6324,7 @@ You can change the title of the document as follows:
 <h- data-h=sym_brac>}</h-></code-block>
 </tip-block>
 
-<h4 id=dir-here><a class=para href=#dir-here></a>9.13.2. <code><h- data-h=mk_tag>\here</h-></code> — Copy section content</h4>
+<h4 id=dir-here><a class=para href=#dir-here></a>9.12.2. <code><h- data-h=mk_tag>\here</h-></code> — Copy section content</h4>
 
 <p>The <code><h- data-h=mk_tag>\here</h-></code> directive inserts the content from another section at its location.
 It displays as inline content.
@@ -6329,20 +6344,20 @@ COWEL markup:
 </p><code-block>(before//after)</code-block>
 </example-block>
 
-<h4 id=dir-hereblock><a class=para href=#dir-hereblock></a>9.13.3. <code><h- data-h=mk_tag>\hereblock</h-></code> — Copy section content in block</h4>
+<h4 id=dir-hereblock><a class=para href=#dir-hereblock></a>9.12.3. <code><h- data-h=mk_tag>\hereblock</h-></code> — Copy section content in block</h4>
 
 <p>The <code><h- data-h=mk_tag>\hereblock</h-></code> directive functions exactly like the <code><h- data-h=mk_tag>\here</h-></code> directive,
 but displays as block content instead of inline content.
-</p><h3 id=miscellaneous><a class=para href=#miscellaneous></a>9.14. Miscellaneous</h3>
+</p><h3 id=miscellaneous><a class=para href=#miscellaneous></a>9.13. Miscellaneous</h3>
 
-<h4 id=dir-div><a class=para href=#dir-div></a>9.14.1. <code><h- data-h=mk_tag>\div</h-></code> — Content division</h4>
+<h4 id=dir-div><a class=para href=#dir-div></a>9.13.1. <code><h- data-h=mk_tag>\div</h-></code> — Content division</h4>
 
 <p>The <code><h- data-h=mk_tag>\div</h-></code> directive surrounds its contents in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>div</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>div</h-><h- data-h=sym_punc>&gt;</h-></code>
 tags.
 It displays as a block, and its content is an HTML context.
 <code><h- data-h=mk_tag>\div</h-></code>'s named arguments are turned into HTML attributes.
 </p>
-<h4 id=dir-trim><a class=para href=#dir-trim></a>9.14.2. <code><h- data-h=mk_tag>\trim</h-></code> — Trim input</h4>
+<h4 id=dir-trim><a class=para href=#dir-trim></a>9.13.2. <code><h- data-h=mk_tag>\trim</h-></code> — Trim input</h4>
 
 <p>The content of a <code><h- data-h=mk_tag>\text</h-></code> directive is an HTML context
 (<a href=#contexts-and-output>§5.1. Content policies</a>).
@@ -6383,7 +6398,7 @@ If it wasn't eliminated, we would end up with
 but there should never be a space before the colon.
 </p></tip-block>
 
-<h4 id=dir-text><a class=para href=#dir-text></a>9.14.3. <code><h- data-h=mk_tag>\text</h-></code> — Plaintext context</h4>
+<h4 id=dir-text><a class=para href=#dir-text></a>9.13.3. <code><h- data-h=mk_tag>\text</h-></code> — Plaintext context</h4>
 
 <p>The content of a <code><h- data-h=mk_tag>\text</h-></code> directive is a plaintext context
 (<a href=#contexts-and-output>§5.1. Content policies</a>).
@@ -6394,16 +6409,16 @@ Therefore, it acts as a sort of wrapper for plaintext.
 Notably, this forces the generation of plaintext even when <code><h- data-h=mk_tag>\text</h-></code>
 is within an HTML context.
 </p>
-<h4 id=dir-p><a class=para href=#dir-p></a>9.14.4. <code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4>
+<h4 id=dir-p><a class=para href=#dir-p></a>9.13.4. <code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4>
 
 <p>The <code><h- data-h=mk_tag>\p</h-></code> directive surrounds its content in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
-</p><h3 id=variables-and-calculations><a class=para href=#variables-and-calculations></a>9.15. Variables and calculations</h3>
+</p><h3 id=variables-and-calculations><a class=para href=#variables-and-calculations></a>9.14. Variables and calculations</h3>
 
 <p>While COWEL is not intended to be general purpose programming language,
 and more advanced interactive features are better suited for JavaScript,
 it does provide a few ways to perform calculations.
 </p>
-<h4 id=dir-Vset><a class=para href=#dir-Vset></a>9.15.1. <code><h- data-h=mk_tag>\Vset</h-></code> — Set a variable</h4>
+<h4 id=dir-Vset><a class=para href=#dir-Vset></a>9.14.1. <code><h- data-h=mk_tag>\Vset</h-></code> — Set a variable</h4>
 
 <p><code><h- data-h=mk_tag>\Vset</h-></code> sets the value of a variable to some provided plaintext.
 It displays as a meta directive.
@@ -6428,7 +6443,7 @@ COWEL markup:
 </div>
 </example-block>
 
-<h4 id=dir-Vget><a class=para href=#dir-Vget></a>9.15.2. <code><h- data-h=mk_tag>\Vget</h-></code> — Get a variable</h4>
+<h4 id=dir-Vget><a class=para href=#dir-Vget></a>9.14.2. <code><h- data-h=mk_tag>\Vget</h-></code> — Get a variable</h4>
 
 <p><code><h- data-h=mk_tag>\Vget</h-></code> obtains the value of a variable,
 and displays as inline.
