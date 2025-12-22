@@ -410,7 +410,10 @@ Processing_Status splice_value(Content_Policy& out, const Value& value, Context&
         return Processing_Status::ok;
     }
     case Type_Kind::str: {
-        out.write(value.as_string(), Output_Language::text);
+        const std::u8string_view string = value.as_string();
+        if (!string.empty()) {
+            out.write(value.as_string(), Output_Language::text);
+        }
         return Processing_Status::ok;
     }
     case Type_Kind::block: {
