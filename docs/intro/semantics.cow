@@ -385,7 +385,7 @@ is done as follows:
         as a representation of \math{\msup{\mn{10}\mn{9}}}.}
       }
     }
-    All negative values are represented with a leading \cowdoc_cp{002D},
+    All negative values are represented with a leading \cowdoc_cp(0x2D),
     including negative zero.
   }
   \li{

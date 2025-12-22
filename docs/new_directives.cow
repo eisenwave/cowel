@@ -168,15 +168,13 @@ COWEL has builtin directives for generating and querying characters.
 ){\cowdoc_dir{cowel_char_by_entity} \c{mdash} Character by HTML character reference}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_char_by_entity}(){...}: \cowel_highlight_as(keyword-type){str}
+\cowel_highlight_as(markup-tag){cowel_char_by_entity}(\cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){str}
 }
 
 The \cowdoc_dir{cowel_char_by_entity} directive takes the name of a character
 and outputs the respective code points as text.
-The input to a \cowdoc_dir{c} directive is provided as content,
-which consists of an HTML entity
+\cowdoc_attr{name} consists of an HTML entity
 without the leading '\tt{&}' and trailing '\tt{;}'.
-All arguments are ignored.
 
 \Bex{
 The '\tt{&}' character can be produced in a number of ways:
@@ -193,17 +191,25 @@ The '\tt{&}' character can be produced in a number of ways:
 ){\cowdoc_dir{cowel_char_by_name} \c{mdash} Character by Unicode name}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_char_by_name}(){...}: \cowel_highlight_as(keyword-type){str}
+\cowel_highlight_as(markup-tag){cowel_char_by_name}(\cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){str}
 }
 
-The input to a \cowdoc_dir{cowel_char_by_num} directive is text content which should be a
+The input to a \cowdoc_dir{cowel_char_by_num} directive is a \cowdoc_type{str} which should be a
 \ref("https://www.unicode.org/reports/tr34/#Names"){Unicode name}
 for a code point.
 That is, the name of a code point,
 or one of its "control", "alternate", or "correction" aliases.
 
+An error is raised if the given name is not the name of a code point
+or an alias thereof.
+
 \Bex{
-\cowdoc_c{\\N{DIGIT ZERO}} generates '\tt{\N{DIGIT ZERO}}' U+0030 DIGIT ZERO.
+\cowdoc_c{\\cowel_char_by_name("DIGIT ZERO")} generates
+'\tt{\cowel_char_by_name("DIGIT ZERO")}', which is U+0030 DIGIT ZERO.
+Case matters, i.e. \cowdoc_c{\\cowel_char_by_name("digit zero")}
+raises an error,
+and so do any trailing spaces or duplicate spaces in the input.
+In other words, an exact character sequence is expected.
 }
 
 \h4(
@@ -211,17 +217,18 @@ or one of its "control", "alternate", or "correction" aliases.
 ){\cowdoc_dir{cowel_char_by_num} \c{mdash} Character by code point number}
 
 \pre{
-\cowel_highlight_as(markup-tag){cowel_char_by_num}(){...}: \cowel_highlight_as(keyword-type){str}
+\cowel_highlight_as(markup-tag){cowel_char_by_num}(\cowel_highlight_as(markup-attr){num}: \cowel_highlight_as(keyword-type){int}): \cowel_highlight_as(keyword-type){str}
 }
 
-The input to a \cowdoc_dir{cowel_char_by_num} directive is text content
+The input to a \cowdoc_dir{cowel_char_by_num} directive is a \cowdoc_type{str}
 which should be a sequence of hexadecimal numbers
 specifying a \ref("https://infra.spec.whatwg.org/#scalar-value"){Unicode scalar value};
 that is, a code point which UTF-8 permits to be encoded.
 All arguments are ignored.
 
 \Bex{
-\cowdoc_c{\\U{30}} generates '\tt{\U{30}}' U+0030 DIGIT ZERO.
+\cowdoc_c{\\cowel_char_by_num(0x30)} generates
+'\tt{\cowel_char_by_num(0x30)}', which is U+0030 DIGIT ZERO.
 }
 
 \Btip{
@@ -1416,7 +1423,7 @@ The output resulting string depends on the input as follows:
     and the significant digits as follows:\ul{
       \li{If \cowdoc_attr{zpad} is negative, an error is raised.}
       \li{
-        Otherwise, the \cowdoc_cp{0030} character is prepended
+        Otherwise, the \cowdoc_cp(0x30) character is prepended
         \math{\mrow{
           \mi{max}
           \mo(form=prefix, stretchy=false){(}

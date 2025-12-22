@@ -150,8 +150,6 @@ inline constexpr std::u8string_view char_nonscalar = u8"char.nonscalar";
 /// @brief In a `\cowel_char` directive,
 /// the input is corrupted UTF-8 text.
 inline constexpr std::u8string_view char_corrupted = u8"char.corrupted";
-/// @brief The `lower` argument is neither `yes` nor `no`.
-inline constexpr std::u8string_view char_lower_invalid = u8"char.lower.invalid";
 
 /// @brief In `\cowel_invoke`,
 /// the directive name is invalid.

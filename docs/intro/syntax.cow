@@ -4,7 +4,7 @@ COWEL has a minimalistic but powerful syntax,
 built on top of only three syntactical constructs:
 \ul{
   \li{\cowdoc_c{Text.}}
-  \li{Escape sequences, such as \cowdoc_c{\\\U{7B}}, \cowdoc_c{\\\U{7D}}, \cowdoc_c{\\\\}, etc.}
+  \li{Escape sequences, such as \cowdoc_c{\\\U(0x7B)}, \cowdoc_c{\\\U(0x7D)}, \cowdoc_c{\\\\}, etc.}
   \li{\cowdoc_c{\\:Comments}}
   \li{\cowdoc_c{\\directive_splices(positional, args, named-args = 0){and content}}}
 }
@@ -20,7 +20,7 @@ a \gterm{document} is constructed as follows:
 \Bnote{
 At the top-level in the \gterm{document},
 there are no other syntactical features,
-meaning that as long as some bit of code doesn't contain a \cowdoc_cp{005C},
+meaning that as long as some bit of code doesn't contain a \cowdoc_cp(0x5C),
 it's all interpreted as plaintext.
 This makes COWEL exceptionally suited to nest other languages inside of it in code blocks etc.
 }
@@ -29,7 +29,7 @@ This makes COWEL exceptionally suited to nest other languages inside of it in co
 
 \dfn{Text} (such as \gterm{document-text} in the grammar)
 is a markup element which consists of as many characters as possible,
-excluding \cowdoc_cp{005C}.
+excluding \cowdoc_cp(0x5C).
 
 \codeblock(ebnf){
 document-text
@@ -292,7 +292,7 @@ As explained, this markup is processed in three steps:
   \li{
     The resulting value \cowdoc_c{6} is fed as plaintext
     into the surrounding content policy,
-    which usually results in a single \cowdoc_cp{0036} character being output.
+    which usually results in a single \cowdoc_cp(0x36) character being output.
   }
 }
 }
@@ -327,9 +327,9 @@ directive-name-char
 \h4{Directive names}
 
 A \dfn{directive name} selects a specific directive to be processed.
-The name begins with a \cowdoc_cp{005C} character,
-followed by a sequence of ASCII alphanumeric characters or \cowdoc_cp{005F}.
-However, the first character after \cowdoc_cp{005C} cannot be an ASCII digit.
+The name begins with a \cowdoc_cp(0x5C) character,
+followed by a sequence of ASCII alphanumeric characters or \cowdoc_cp(0x5F).
+However, the first character after \cowdoc_cp(0x5C) cannot be an ASCII digit.
 
 \Btip{
 You can use an empty block of content to "cut a name short":
@@ -388,17 +388,17 @@ meaning that positional arguments fill the remaining unmatched arguments.
 Argument names can consist of any character, except
 ASCII control characters,
 U+0020\c{nbsp}SPACE,
-\cowdoc_cp{0022},
-\cowdoc_cp{0027},
-\cowdoc_cp{002C},
-\cowdoc_cp{002F},
-\cowdoc_cp{003D},
-\cowdoc_cp{003E},
-\cowdoc_cp{005B},
-\cowdoc_cp{005C},
-\cowdoc_cp{005D},
-\cowdoc_cp{007B},
-\cowdoc_cp{007D},
+\cowdoc_cp(0x22),
+\cowdoc_cp(0x27),
+\cowdoc_cp(0x2C),
+\cowdoc_cp(0x2F),
+\cowdoc_cp(0x3D),
+\cowdoc_cp(0x3E),
+\cowdoc_cp(0x5B),
+\cowdoc_cp(0x5C),
+\cowdoc_cp(0x5D),
+\cowdoc_cp(0x7B),
+\cowdoc_cp(0x7D),
 and noncharacters.
 
 \Btip{
@@ -429,7 +429,7 @@ A \dfn{positional argument} is a \gterm{group-member} of the form
 \gterm{member-value}.
 
 Positional arguments are content just like any other content,
-except that an unbalanced closing \cowdoc_cp{005D} or a \cowdoc_cp{002C}
+except that an unbalanced closing \cowdoc_cp(0x5D) or a \cowdoc_cp(0x2C)
 ends the content.
 
 \h5{Ellipses}
@@ -518,11 +518,11 @@ so they can be used to literally produce a brace character.
 \Bex{
 COWEL markup:
 \cowblock{
-\\b{Bold text \\\U{7B} with brace.}
+\\b{Bold text \\\U(0x7B) with brace.}
 }
 Generated HTML:
 \htmlblock{
-<b>Bold text \U{7B} with brace.</b>
+<b>Bold text \U(0x7B) with brace.</b>
 }
 }
 
@@ -629,7 +629,7 @@ The \gterm{hexadecimal-digit}s \tt{a..f} and \tt{A..F} both represent
 digits of value \math{\mn{10}}..\math{\mn{15}}.
 
 Leading zeros are ignored.
-The value is negative if the leading \cowdoc_cp{002D} is present.
+The value is negative if the leading \cowdoc_cp(0x2D) is present.
 
 \Bex{
 The \gterm{int-literal} \cowdoc_c{-0123} represents the integer value
@@ -666,11 +666,11 @@ A \gterm{decimal-float-literal} consists of several parts:
 \ul{
   \li{
     An \dfn{integral part}, either matching a \gterm{int-literal}
-    or consisting of only a leading \cowdoc_cp{002D},
+    or consisting of only a leading \cowdoc_cp(0x2D),
     which is equivalent to '\tt{-0}'.
   }
   \li{
-    The radix point \cowdoc_cp{002E}.
+    The radix point \cowdoc_cp(0x2E).
   }
   \li{
     A \dfn{fractional part} consisting of \gterm{digit}s following the radix point.
@@ -685,7 +685,7 @@ The value of a \gterm{decimal-float-literal} is determined as follows:
 
 \ol{
   \li{
-    Let \math{\mi{s}} be -1 if the leading \cowdoc_cp{002D} is present,
+    Let \math{\mi{s}} be -1 if the leading \cowdoc_cp(0x2D) is present,
     otherwise 1;
     let \math{\mi{k}} be the integer value of the integral part
     (determined as for a \gterm{int-literal});

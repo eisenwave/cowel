@@ -11,65 +11,55 @@ namespace {
 
 // clang-format off
 constexpr Basic_Test basic_tests_array[] {
-    { Source {u8"\\cowel_char_by_entity{#x41}\\cowel_char_by_entity{#x42}\\cowel_char_by_entity{#x43}\n"},
+    { Source {u8"\\cowel_char_by_entity(\"#x41\")\\cowel_char_by_entity(\"#x42\")\\cowel_char_by_entity(\"#x43\")\n"},
       Source{ u8"ABC\n" } },
 
-    { Source{ u8"\\cowel_char_by_entity{#x00B6}\n" },
+    { Source{ u8"\\cowel_char_by_entity(\"#x00B6\")\n" },
       Source { u8"\N{PILCROW SIGN}\n" } },
 
-    { Source{ u8"\\cowel_char_by_entity{}\n" },
-      Source { u8"<error->\\cowel_char_by_entity{}</error->\n" },
+    { Source{ u8"\\cowel_char_by_entity(\"\")\n" },
+      Source { u8"<error->\\cowel_char_by_entity(\"\")</error->\n" },
       Processing_Status::error,
       { diagnostic::char_blank } },
 
-    { Source{ u8"\\cowel_char_by_entity{ }\n" },
-      Source { u8"<error->\\cowel_char_by_entity{ }</error->\n" },
+    { Source{ u8"\\cowel_char_by_entity(\" \")\n" },
+      Source { u8"<error->\\cowel_char_by_entity(\" \")</error->\n" },
       Processing_Status::error,
       { diagnostic::char_blank } },
 
-    { Source{ u8"\\cowel_char_by_entity{#zzz}\n" },
-      Source { u8"<error->\\cowel_char_by_entity{#zzz}</error->\n" },
+    { Source{ u8"\\cowel_char_by_entity(\"#zzz\")\n" },
+      Source { u8"<error->\\cowel_char_by_entity(\"#zzz\")</error->\n" },
       Processing_Status::error,
       { diagnostic::char_digits } },
 
-    { Source{ u8"\\cowel_char_by_entity{#xD800}\n" },
-      Source { u8"<error->\\cowel_char_by_entity{#xD800}</error->\n" },
+    { Source{ u8"\\cowel_char_by_entity(\"#xD800\")\n" },
+      Source { u8"<error->\\cowel_char_by_entity(\"#xD800\")</error->\n" },
       Processing_Status::error,
       { diagnostic::char_nonscalar } },
     
     { Path { u8"U/ascii.cow" },
       Source { u8"ABC\n" } },
 
-    { Source { u8"\\cowel_char_by_num{00B6}\n" },
+    { Source { u8"\\cowel_char_by_num(0x00B6)\n" },
       Source { u8"¶\n" } },
 
-    { Source { u8"\\cowel_char_by_num{}\n" },
-      Source { u8"<error->\\cowel_char_by_num{}</error->\n" },
+    { Source { u8"\\cowel_char_by_num()\n" },
+      Source { u8"<error->\\cowel_char_by_num()</error->\n" },
       Processing_Status::error,
-      { diagnostic::char_blank } },
+      { diagnostic::type_mismatch } },
 
-    { Source { u8"\\cowel_char_by_num{ }\n" },
-      Source { u8"<error->\\cowel_char_by_num{ }</error->\n" },
+    { Source { u8"\\cowel_char_by_num(\"\")\n" },
+      Source { u8"<error->\\cowel_char_by_num(\"\")</error->\n" },
       Processing_Status::error,
-      { diagnostic::char_blank } },
+      { diagnostic::type_mismatch } },
 
-    { Source { u8"\\cowel_char_by_num{zzz}\n" },
-      Source { u8"<error->\\cowel_char_by_num{zzz}</error->\n" },
-      Processing_Status::error,
-      { diagnostic::char_digits } },
-
-    { Source { u8"\\cowel_char_by_num{D800}\n" },
-      Source { u8"<error->\\cowel_char_by_num{D800}</error->\n" },
+    { Source { u8"\\cowel_char_by_num(0xD800)\n" },
+      Source { u8"<error->\\cowel_char_by_num(0xD800)</error->\n" },
       Processing_Status::error,
       { diagnostic::char_nonscalar } },
 
-    { Source { u8"\\cowel_invoke(cowel_char_by_num){00B6}\n" },
-      Source { u8"¶\n" } },
-
-    { Source { u8"\\cowel_invoke(cowel_char_by_num){ }\n" },
-      Source { u8"<error->\\cowel_invoke(cowel_char_by_num){ }</error->\n" },
-      Processing_Status::error,
-      { diagnostic::char_blank } },
+    { Source { u8"\\cowel_invoke(cowel_to_html){abc&}\n" },
+      Source { u8"abc&amp;\n" } },
 
     { Source { u8"\\cowel_invoke\n" },
       Source { u8"<error->\\cowel_invoke</error->\n" },

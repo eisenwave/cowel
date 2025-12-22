@@ -3549,15 +3549,13 @@ COWEL has builtin directives for generating and querying characters.
 <h4 id=dir-cowel_char_by_entity><a class=para href=#dir-cowel_char_by_entity></a>8.2.1. <code><h- data-h=mk_tag>\cowel_char_by_entity</h-></code> — Character by HTML character reference</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_char_by_entity</h->(){...}: <h- data-h=kw_type>str</h->
+<h- data-h=mk_tag>cowel_char_by_entity</h->(<h- data-h=mk_attr>name</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_char_by_entity</h-></code> directive takes the name of a character
 and outputs the respective code points as text.
-The input to a <code><h- data-h=mk_tag>\c</h-></code> directive is provided as content,
-which consists of an HTML entity
+<tt-><h- data-h=mk_attr>name</h-></tt-> consists of an HTML entity
 without the leading '<tt->&amp;</tt->' and trailing '<tt->;</tt->'.
-All arguments are ignored.
 </p>
 <example-block><p><intro-></intro-> 
 The '<tt->&amp;</tt->' character can be produced in a number of ways:
@@ -3572,33 +3570,42 @@ The '<tt->&amp;</tt->' character can be produced in a number of ways:
 <h4 id=dir-cowel_char_by_name><a class=para href=#dir-cowel_char_by_name></a>8.2.2. <code><h- data-h=mk_tag>\cowel_char_by_name</h-></code> — Character by Unicode name</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_char_by_name</h->(){...}: <h- data-h=kw_type>str</h->
+<h- data-h=mk_tag>cowel_char_by_name</h->(<h- data-h=mk_attr>name</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
 </pre>
 
-<p>The input to a <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive is text content which should be a
+<p>The input to a <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive is a <tt-><h- data-h=kw_type>str</h-></tt-> which should be a
 <a href=https://www.unicode.org/reports/tr34/#Names>Unicode name</a>
 for a code point.
 That is, the name of a code point,
 or one of its "control", "alternate", or "correction" aliases.
 </p>
+<p>An error is raised if the given name is not the name of a code point
+or an alias thereof.
+</p>
 <example-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>N</h-><h- data-h=sym_brac>{</h->DIGIT ZERO<h- data-h=sym_brac>}</h-></code> generates '<tt->0</tt->' U+0030 DIGIT ZERO.
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_name</h-><h- data-h=sym_par>(</h->"DIGIT ZERO"<h- data-h=sym_par>)</h-></code> generates
+'<tt->0</tt->', which is U+0030 DIGIT ZERO.
+Case matters, i.e. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_name</h-><h- data-h=sym_par>(</h->"digit zero"<h- data-h=sym_par>)</h-></code>
+raises an error,
+and so do any trailing spaces or duplicate spaces in the input.
+In other words, an exact character sequence is expected.
 </p></example-block>
 
 <h4 id=dir-cowel_char_by_num><a class=para href=#dir-cowel_char_by_num></a>8.2.3. <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> — Character by code point number</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_char_by_num</h->(){...}: <h- data-h=kw_type>str</h->
+<h- data-h=mk_tag>cowel_char_by_num</h->(<h- data-h=mk_attr>num</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>str</h->
 </pre>
 
-<p>The input to a <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive is text content
+<p>The input to a <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive is a <tt-><h- data-h=kw_type>str</h-></tt->
 which should be a sequence of hexadecimal numbers
 specifying a <a href=https://infra.spec.whatwg.org/#scalar-value>Unicode scalar value</a>;
 that is, a code point which UTF-8 permits to be encoded.
 All arguments are ignored.
 </p>
 <example-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>U</h-><h- data-h=sym_brac>{</h->30<h- data-h=sym_brac>}</h-></code> generates '<tt->0</tt->' U+0030 DIGIT ZERO.
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_num</h-><h- data-h=sym_par>(</h->0x30<h- data-h=sym_par>)</h-></code> generates
+'<tt->0</tt->', which is U+0030 DIGIT ZERO.
 </p></example-block>
 
 <tip-block><p><intro-></intro-> 

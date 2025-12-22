@@ -17,7 +17,7 @@
 }
 
 \cowel_macro(cowdoc_cp){\
-U+\cowel_put\c{nbsp}(\tt{\U{\cowel_put}})\
+U+\cowel_str_to_upper(cowel_to_str(..., base=16, zpad=4))\c{nbsp}(\tt{\cowel_char_by_num(...)})\
 }
 
 \cowel_macro(cowdoc_attr){\
@@ -42,17 +42,17 @@ U+\cowel_put\c{nbsp}(\tt{\U{\cowel_put}})\
 
 \cowel_macro(c){\
 \cowel_paragraph_enter\
-\cowel_char_by_entity(...){\cowel_put}\
+\cowel_char_by_entity("\cowel_put")\
 }
 
 \cowel_macro(N){\
 \cowel_paragraph_enter\
-\cowel_char_by_name(...){\cowel_put}\
+\cowel_char_by_name("\cowel_put")\
 }
 
 \cowel_macro(U){\
 \cowel_paragraph_enter\
-\cowel_char_by_num(...){\cowel_put}\
+\cowel_char_by_num(...)\
 }
 
 \cowel_macro(cowdoc_og_property){\

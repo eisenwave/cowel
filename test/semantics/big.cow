@@ -206,8 +206,6 @@ function f(x, y) { return x > y; }
 
 \tt{Teletype} text \tt{teletype}.
 
-Digit zero: \U{30}.
-
 \u{Underlined} text \u{underlined}.
 
 \url{https://cowel.org}

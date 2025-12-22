@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <optional>
 #include <string_view>
-#include <vector>
 
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
@@ -11,16 +10,15 @@
 #include "cowel/util/chars.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_entities.hpp"
-#include "cowel/util/strings.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
+#include "cowel/parameters.hpp"
 #include "cowel/value.hpp"
 
 using namespace std::string_view_literals;
@@ -67,21 +65,20 @@ std::array<char32_t, 2> get_code_points_from_digits(
 
 [[nodiscard]]
 std::array<char32_t, 2>
-get_code_points(std::u8string_view trimmed_text, const Invocation& call, Context& context)
+get_code_points(const std::u8string_view text, const Invocation& call, Context& context)
 {
-    if (trimmed_text.empty()) {
+    if (trim_ascii_blank(text).empty()) {
         context.try_error(
             diagnostic::char_blank, call.directive.get_source_span(),
             u8"Expected an HTML character reference, but got a blank string."sv
         );
         return {};
     }
-    if (trimmed_text[0] == u8'#') {
-        const int base
-            = trimmed_text.starts_with(u8"#x") || trimmed_text.starts_with(u8"#X") ? 16 : 10;
-        return get_code_points_from_digits(trimmed_text.substr(2), base, call, context);
+    if (text[0] == u8'#') {
+        const int base = text.starts_with(u8"#x") || text.starts_with(u8"#X") ? 16 : 10;
+        return get_code_points_from_digits(text.substr(2), base, call, context);
     }
-    const std::array<char32_t, 2> result = code_points_by_character_reference_name(trimmed_text);
+    const std::array<char32_t, 2> result = code_points_by_character_reference_name(text);
     if (result[0] == 0) {
         context.try_error(
             diagnostic::char_name, call.directive.get_source_span(),
@@ -96,20 +93,20 @@ get_code_points(std::u8string_view trimmed_text, const Invocation& call, Context
 Result<Short_String_Value, Processing_Status>
 Char_By_Entity_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    const auto match_status = match_empty_arguments(call, context);
-    if (match_status != Processing_Status::ok) {
-        return match_status;
+    String_Matcher name_matcher { context.get_transient_memory() };
+    Group_Member_Matcher name_member { u8"name", Optionality::mandatory, name_matcher };
+    Group_Member_Matcher* matchers[] { &name_member };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (args_status != Processing_Status::ok) {
+        return args_status;
     }
 
-    std::pmr::vector<char8_t> data { context.get_transient_memory() };
-    const auto input_status
-        = splice_to_plaintext(data, call.get_content_span(), call.content_frame, context);
-    if (input_status != Processing_Status::ok) {
-        return input_status;
-    }
-
-    const std::u8string_view trimmed_text = trim_ascii_blank(as_u8string_view(data));
-    const std::array<char32_t, 2> code_points = get_code_points(trimmed_text, call, context);
+    const std::u8string_view name = name_matcher.get();
+    const std::array<char32_t, 2> code_points = get_code_points(name, call, context);
     if (code_points[0] == 0) {
         // We don't need to print an error here;
         // get_code_points should have done that.
