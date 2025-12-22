@@ -77,6 +77,9 @@ intended to generate HTML documents.\
 \cowdoc_og_property(type){website}
 }
 
+\cowel_alias(literally){cowel_source_as_text}
+\cowel_alias(unprocessed){cowel_no_invoke}
+
 }\: cowel_actions
 
 \h1(id=compact-web-language){Compact Web Language (COWEL)}

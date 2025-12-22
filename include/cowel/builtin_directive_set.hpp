@@ -263,24 +263,6 @@ public:
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
 };
 
-struct Literally_Behavior : Block_Directive_Behavior {
-    [[nodiscard]]
-    constexpr explicit Literally_Behavior()
-        = default;
-
-    [[nodiscard]]
-    Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
-};
-
-struct Unprocessed_Behavior : Block_Directive_Behavior {
-    [[nodiscard]]
-    constexpr explicit Unprocessed_Behavior()
-        = default;
-
-    [[nodiscard]]
-    Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
-};
-
 /// @brief Common behavior for generating `<script>` and `<style>` elements
 /// via `\script` and `\style`.
 ///

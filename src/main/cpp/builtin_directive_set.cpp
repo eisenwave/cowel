@@ -238,8 +238,6 @@ constexpr Fixed_Name_Passthrough_Behavior kbd //
     { HTML_Tag_Name(u8"kbd"), Policy_Usage::inherit, Directive_Display::in_line };
 constexpr Fixed_Name_Passthrough_Behavior li //
     { HTML_Tag_Name(u8"li"), Policy_Usage::html, Directive_Display::block };
-constexpr Literally_Behavior literally //
-    {};
 constexpr Lorem_Ipsum_Behavior lorem_ipsum //
     {};
 constexpr URL_Behavior mail //
@@ -322,8 +320,6 @@ constexpr Fixed_Name_Passthrough_Behavior u //
     { HTML_Tag_Name(u8"u"), Policy_Usage::inherit, Directive_Display::in_line };
 constexpr Fixed_Name_Passthrough_Behavior ul //
     { html_tag::ul, Policy_Usage::html, Directive_Display::block };
-constexpr Unprocessed_Behavior unprocessed //
-    {};
 constexpr URL_Behavior url //
     {};
 constexpr Fixed_Name_Passthrough_Behavior var //
@@ -466,7 +462,6 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(ins),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(kbd),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(li),
-    COWEL_NAME_AND_BEHAVIOR_ENTRY(literally),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(lorem_ipsum),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(mail),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(make_bib),
@@ -508,7 +503,6 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(tt),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(u),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(ul),
-    COWEL_NAME_AND_BEHAVIOR_ENTRY(unprocessed),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(url),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(var),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(wbr),

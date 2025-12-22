@@ -1,15 +1,12 @@
 #include <string_view>
 #include <vector>
 
-#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/strings.hpp"
 
 #include "cowel/policy/content_policy.hpp"
-#include "cowel/policy/literally.hpp"
-#include "cowel/policy/unprocessed.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
@@ -18,38 +15,11 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/invocation.hpp"
+#include "cowel/parameters.hpp"
 
 using namespace std::string_view_literals;
 
 namespace cowel {
-
-Processing_Status
-Literally_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
-{
-    const auto match_status = match_empty_arguments(call, context);
-    if (match_status != Processing_Status::ok) {
-        return match_status;
-    }
-
-    try_enter_paragraph(out);
-
-    To_Source_Content_Policy policy { out };
-    return splice_all(policy, call.get_content_span(), call.content_frame, context);
-}
-
-Processing_Status
-Unprocessed_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
-{
-    const auto match_status = match_empty_arguments(call, context);
-    if (match_status != Processing_Status::ok) {
-        return match_status;
-    }
-
-    try_enter_paragraph(out);
-
-    Unprocessed_Content_Policy policy { out };
-    return splice_all(policy, call.get_content_span(), call.content_frame, context);
-}
 
 Processing_Status
 HTML_Raw_Text_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const

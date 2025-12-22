@@ -1749,10 +1749,6 @@ h1 {
 <a href=#dir-hl><h4><code><h- data-h=mk_tag>\hl</h-></code> — Syntax highlight override</h4></a>
 <div class=toc-num data-level=4>9.3.4</div>
 <a href=#dir-pre><h4><code><h- data-h=mk_tag>\pre</h-></code> — Preformatted blocks</h4></a>
-<div class=toc-num data-level=4>9.3.5</div>
-<a href=#dir-literally><h4><code><h- data-h=mk_tag>\literally</h-></code> — Treat input literally as text</h4></a>
-<div class=toc-num data-level=4>9.3.6</div>
-<a href=#dir-unprocessed><h4><code><h- data-h=mk_tag>\unprocessed</h-></code> — Suppress directive processing</h4></a>
 <div class=toc-num data-level=3>9.4</div>
 <a href=#math><h3>Math</h3></a>
 <div class=toc-num data-level=4>9.4.1</div>
@@ -5720,75 +5716,6 @@ Unlike <code><h- data-h=mk_tag>\codeblock</h-></code>, <code><h- data-h=mk_tag>\
 This will be added in the future.
 </p></todo-block>
 
-<h4 id=dir-literally><a class=para href=#dir-literally></a>9.3.5. <code><h- data-h=mk_tag>\literally</h-></code> — Treat input literally as text</h4>
-
-<p>The <code><h- data-h=mk_tag>\literally</h-></code> directive treats its input source code as plain text,
-even if it contains directives or escape sequences.
-It outputs the given input source code as text.
-</p>
-<p>Its content is an unprocessed context,
-and it takes no arguments.
-</p>
-<example-block><p><intro-></intro-> 
-COWEL markup:
-</p><code-block><h- data-h=mk_tag>\pre</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\literally</h-><h- data-h=sym_brac>{</h->
-<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Even comments are preserved!</h->
-This <h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>comment</h-><h- data-h=cmt_dlim>}</h-> <h- data-h=str_esc>\{</h-> is taken literally <h- data-h=str_esc>\}</h->!
-<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
-<p>This renders as:
-</p><pre>
-\: Even comments are preserved!
-This \comment{comment} \{ is taken literally \}!
-</pre>
-</example-block>
-
-<note-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\put</h-></code> pseudo-directives in macros are still processed,
-even inside <code><h- data-h=mk_tag>\literally</h-></code> blocks
-because <code><h- data-h=mk_tag>\macro</h-></code> replaces any appearances of <code><h- data-h=mk_tag>\put</h-></code> with the given content,
-disregarding the semantics of any directives nested within.
-</p></note-block>
-
-<h4 id=dir-unprocessed><a class=para href=#dir-unprocessed></a>9.3.6. <code><h- data-h=mk_tag>\unprocessed</h-></code> — Suppress directive processing</h4>
-
-<p>The <code><h- data-h=mk_tag>\unprocessed</h-></code> directive works just like <code><h- data-h=mk_tag>\literally</h-></code>,
-except that escape sequences are processed into their escaped characters.
-</p>
-<example-block><p><intro-></intro-> 
-COWEL markup:
-</p><code-block><h- data-h=mk_tag>\pre</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\unprocessed</h-><h- data-h=sym_brac>{</h->
-<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Unlike in \literally, comments are ignored.</h->
-This <h- data-h=cmt_dlim>\comment{</h-><h- data-h=cmt>comment</h-><h- data-h=cmt_dlim>}</h-> <h- data-h=str_esc>\{</h-> is unprocessed <h- data-h=str_esc>\}</h->!
-<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
-<p>This renders as:
-</p><pre>
-This \comment{comment} { is unprocessed }!
-</pre>
-</example-block>
-
-<tip-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\unprocessed</h-></code> and (to a lesser extent) <code><h- data-h=mk_tag>\literally</h-></code> are very useful for nesting
-code inside COWEL that already contains underscores.
-For example, <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>n</h-></code> is an escape sequence for newline characters in many languages,
-and it may be annoying if it gets interpreted as an <code><h- data-h=mk_tag>\n</h-></code> directive:
-</p><code-block><h- data-h=mk_tag>\codeblock</h-><h- data-h=sym_par>(</h->cpp<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\unprocessed</h-><h- data-h=sym_brac>{</h->
-std::string_view s = "Several<h- data-h=mk_tag>\nLines</h-><h- data-h=mk_tag>\nof</h-><h- data-h=mk_tag>\nCode</h->.";
-<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
-<p>This renders as:
-</p><code-block><h- data-h=name>std</h-><h- data-h=sym_op>::</h-><h- data-h=name>string_view</h-> <h- data-h=name>s</h-> <h- data-h=sym_op>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Several</h-><h- data-h=str_esc>\n</h-><h- data-h=str>Lines</h-><h- data-h=str_esc>\n</h-><h- data-h=str>of</h-><h- data-h=str_esc>\n</h-><h- data-h=str>Code</h-><h- data-h=str>.</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
-<p>Notice that COWEL technically parses a <code><h- data-h=mk_tag>\nLines</h-></code> directive instead of just <code><h- data-h=mk_tag>\n</h-></code>,
-which is the part that turns into a newline escape sequence in the C++ code block.
-However, that is ultimately irrelevant for syntax highlighting
-because the source characters of <code><h- data-h=mk_tag>\nLines</h-></code> are taken as text,
-and then split up according to C++ syntax.
-</p></tip-block>
-
-<note-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\put</h-></code> pseudo-directives in macros are still processed,
-even inside <code><h- data-h=mk_tag>\unprocessed</h-></code> blocks
-because <code><h- data-h=mk_tag>\macro</h-></code> replaces any appearances of <code><h- data-h=mk_tag>\put</h-></code> with the given content,
-disregarding the semantics of any directives nested within.
-</p></note-block>
 <h3 id=math><a class=para href=#math></a>9.4. Math</h3>
 
 <p>In recent years, browser support for
