@@ -1731,6 +1731,18 @@ h1 {
 <a href=#dir-cowel_str_to_lower><h4><code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4></a>
 <div class=toc-num data-level=4>8.14.2</div>
 <a href=#dir-cowel_str_to_upper><h4><code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4></a>
+<div class=toc-num data-level=3>8.15</div>
+<a href=#variable-management><h3>Variable management</h3></a>
+<div class=toc-num data-level=4>8.15.1</div>
+<a href=#dir-cowel_var_let><h4><code><h- data-h=mk_tag>\cowel_var_let</h-></code> — Initialize a new variable</h4></a>
+<div class=toc-num data-level=4>8.15.2</div>
+<a href=#dir-cowel_var_set><h4><code><h- data-h=mk_tag>\cowel_var_set</h-></code> — Set an existing variable</h4></a>
+<div class=toc-num data-level=4>8.15.3</div>
+<a href=#dir-cowel_var_exists><h4><code><h- data-h=mk_tag>\cowel_var_exists</h-></code> — Check whether a variable exists</h4></a>
+<div class=toc-num data-level=4>8.15.4</div>
+<a href=#dir-cowel_var_get><h4><code><h- data-h=mk_tag>\cowel_var_get</h-></code> — Get the value of a variable</h4></a>
+<div class=toc-num data-level=4>8.15.5</div>
+<a href=#dir-cowel_var_delete><h4><code><h- data-h=mk_tag>\cowel_var_delete</h-></code> — Delete an existing variable</h4></a>
 <div class=toc-num data-level=2>9</div>
 <a href=#legacy-directives><h2>Legacy directives</h2></a>
 <div class=toc-num data-level=3>9.1</div>
@@ -1857,12 +1869,6 @@ h1 {
 <a href=#dir-text><h4><code><h- data-h=mk_tag>\text</h-></code> — Plaintext context</h4></a>
 <div class=toc-num data-level=4>9.13.4</div>
 <a href=#dir-p><h4><code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4></a>
-<div class=toc-num data-level=3>9.14</div>
-<a href=#variables-and-calculations><h3>Variables and calculations</h3></a>
-<div class=toc-num data-level=4>9.14.1</div>
-<a href=#dir-Vset><h4><code><h- data-h=mk_tag>\Vset</h-></code> — Set a variable</h4></a>
-<div class=toc-num data-level=4>9.14.2</div>
-<a href=#dir-Vget><h4><code><h- data-h=mk_tag>\Vget</h-></code> — Get a variable</h4></a>
 </div>
 
 <h2 id=introduction><a class=para href=#introduction></a>1. Introduction</h2>
@@ -5375,7 +5381,60 @@ COWEL markup:
 </p><code-block>AWOO ÄÖÜ STRASSE 123</code-block>
 </example-block>
 
-<h2 id=legacy-directives><a class=para href=#legacy-directives></a>9. Legacy directives</h2>
+<h3 id=variable-management><a class=para href=#variable-management></a>8.15. Variable management</h3>
+
+<h4 id=dir-cowel_var_let><a class=para href=#dir-cowel_var_let></a>8.15.1. <code><h- data-h=mk_tag>\cowel_var_let</h-></code> — Initialize a new variable</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_var_let</h->(
+  <h- data-h=mk_attr>name</h->: <h- data-h=kw_type>str</h->,
+  <h- data-h=mk_attr>value</h->: <h- data-h=kw_type>any</h-> = null,
+): <h- data-h=kw_type>unit</h->
+</pre>
+
+<p>Sets the value of a global variable named <tt-><h- data-h=mk_attr>name</h-></tt-> to <tt-><h- data-h=mk_attr>value</h-></tt->.
+An error is raised if such a variable already exists.
+</p>
+<h4 id=dir-cowel_var_set><a class=para href=#dir-cowel_var_set></a>8.15.2. <code><h- data-h=mk_tag>\cowel_var_set</h-></code> — Set an existing variable</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_var_set</h->(
+  <h- data-h=mk_attr>name</h->: <h- data-h=kw_type>str</h->,
+  <h- data-h=mk_attr>value</h->: <h- data-h=kw_type>any</h->,
+): <h- data-h=kw_type>unit</h->
+</pre>
+
+<p>Sets the value of a global variable named <tt-><h- data-h=mk_attr>name</h-></tt-> to <tt-><h- data-h=mk_attr>value</h-></tt->.
+An error is raised if no such variable exists.
+</p>
+<h4 id=dir-cowel_var_exists><a class=para href=#dir-cowel_var_exists></a>8.15.3. <code><h- data-h=mk_tag>\cowel_var_exists</h-></code> — Check whether a variable exists</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_var_exists</h->(<h- data-h=mk_attr>name</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
+</pre>
+
+<p>Returns <code>true</code> if a variable named <tt-><h- data-h=mk_attr>name</h-></tt-> exists,
+otherwise <code>false</code>.
+</p>
+<h4 id=dir-cowel_var_get><a class=para href=#dir-cowel_var_get></a>8.15.4. <code><h- data-h=mk_tag>\cowel_var_get</h-></code> — Get the value of a variable</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_var_get</h->(<h- data-h=mk_attr>name</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>any</h->
+</pre>
+
+<p>Returns the value of the global variable named <tt-><h- data-h=mk_attr>name</h-></tt->.
+An error is raised if there is no such variable.
+</p>
+<h4 id=dir-cowel_var_delete><a class=para href=#dir-cowel_var_delete></a>8.15.5. <code><h- data-h=mk_tag>\cowel_var_delete</h-></code> — Delete an existing variable</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_var_delete</h->(<h- data-h=mk_attr>name</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>unit</h->
+</pre>
+
+<p>Deletes the global variable named <tt-><h- data-h=mk_attr>name</h-></tt->.
+An error is raised if there is no such variable.
+
+</p><h2 id=legacy-directives><a class=para href=#legacy-directives></a>9. Legacy directives</h2>
 
 <warning-block><p><intro-></intro-> 
 The following builtin directives are all considered deprecated,
@@ -6412,48 +6471,5 @@ is within an HTML context.
 <h4 id=dir-p><a class=para href=#dir-p></a>9.13.4. <code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4>
 
 <p>The <code><h- data-h=mk_tag>\p</h-></code> directive surrounds its content in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
-</p><h3 id=variables-and-calculations><a class=para href=#variables-and-calculations></a>9.14. Variables and calculations</h3>
-
-<p>While COWEL is not intended to be general purpose programming language,
-and more advanced interactive features are better suited for JavaScript,
-it does provide a few ways to perform calculations.
-</p>
-<h4 id=dir-Vset><a class=para href=#dir-Vset></a>9.14.1. <code><h- data-h=mk_tag>\Vset</h-></code> — Set a variable</h4>
-
-<p><code><h- data-h=mk_tag>\Vset</h-></code> sets the value of a variable to some provided plaintext.
-It displays as a meta directive.
-</p>
-<p>It takes a single <tt-><h- data-h=mk_attr>var</h-></tt-> argument,
-which is a plaintext context for the name of the variable.
-The directive content is also a plaintext context,
-and provides the value of the variable.
-</p>
-<example-block><p><intro-></intro-> 
-COWEL markup:
-</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Sets x = 123.</h->
-<h- data-h=mk_tag>\Vset</h-><h- data-h=sym_par>(</h->x<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->123<h- data-h=sym_brac>}</h->
-
-<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Accesses the value of x, which is 123.</h->
-<h- data-h=mk_tag>\Vget</h-><h- data-h=sym_par>(</h->x<h- data-h=sym_par>)</h-></code-block>
-<p>This renders as:
-</p><div class=indent>
-
-
-123
-</div>
-</example-block>
-
-<h4 id=dir-Vget><a class=para href=#dir-Vget></a>9.14.2. <code><h- data-h=mk_tag>\Vget</h-></code> — Get a variable</h4>
-
-<p><code><h- data-h=mk_tag>\Vget</h-></code> obtains the value of a variable,
-and displays as inline.
-Its content is ignored.
-</p>
-<p>It takes a single <tt-><h- data-h=mk_attr>var</h-></tt-> argument,
-which is a plaintext context for the name of the variable.
-See above for an example.
-</p>
-<p>If the variable denoted by the <tt-><h- data-h=mk_attr>var</h-></tt-> argument does not exist,
-<code><h- data-h=mk_tag>\Vget</h-></code> expands to nothing.
 </p></main></body>
 </html>

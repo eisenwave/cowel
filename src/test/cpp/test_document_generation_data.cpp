@@ -430,6 +430,9 @@ constexpr Basic_Test basic_tests_array[] {
 
     { Path { u8"policy/to_html.cow" },
       Path { u8"policy/to_html.cow.html" } },
+
+    { Path { u8"variables.cow" },
+      Path { u8"variables.cow.html" } },
     
     { .document = Path { u8"paragraphs.cow" },
       .expected_html = Path { u8"paragraphs.cow.html" },

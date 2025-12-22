@@ -204,6 +204,19 @@ inline constexpr std::u8string_view to_str_zpad = u8"to_str.zpad";
 /// the given format is invalid.
 inline constexpr std::u8string_view to_str_format = u8"to_str.format";
 
+/// @brief In `\cowel_var_delete`,
+/// the variable was not found.
+inline constexpr std::u8string_view var_delete = u8"var.delete";
+/// @brief In `\cowel_var_get`,
+/// the variable was not found.
+inline constexpr std::u8string_view var_get = u8"var.get";
+/// @brief In `\cowel_var_let`,
+/// the variable already exists.
+inline constexpr std::u8string_view var_let = u8"var.let";
+/// @brief In `\cowel_var_set`,
+/// the variable was not found.
+inline constexpr std::u8string_view var_set = u8"var.set";
+
 // LEGACY DIRECTIVE DIAGNOSTICS ====================================================================
 
 namespace code {

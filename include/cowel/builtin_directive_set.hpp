@@ -311,28 +311,6 @@ public:
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
 };
 
-struct Variable_Behavior : Block_Directive_Behavior {
-    static constexpr std::u8string_view var_parameter = u8"var";
-    static constexpr std::u8string_view parameters[] { var_parameter };
-
-    [[nodiscard]]
-    constexpr explicit Variable_Behavior()
-        = default;
-
-    [[nodiscard]]
-    Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
-
-protected:
-    [[nodiscard]]
-    virtual Processing_Status generate_var(
-        Content_Policy& out,
-        const Invocation& call,
-        std::u8string_view var,
-        Context& context
-    ) const
-        = 0;
-};
-
 struct Logical_Not_Behavior final : Bool_Directive_Behavior {
     [[nodiscard]]
     explicit Logical_Not_Behavior()
@@ -463,20 +441,6 @@ public:
     Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const override;
 };
 
-struct Get_Variable_Behavior final : Variable_Behavior {
-    [[nodiscard]]
-    constexpr explicit Get_Variable_Behavior()
-        = default;
-
-    [[nodiscard]]
-    Processing_Status generate_var(
-        Content_Policy& out,
-        const Invocation&,
-        std::u8string_view var,
-        Context& context
-    ) const final;
-};
-
 struct To_Str_Behavior : Directive_Behavior {
     [[nodiscard]]
     constexpr explicit To_Str_Behavior() noexcept
@@ -506,40 +470,51 @@ struct Reinterpret_As_Float_Behavior final : Float_Directive_Behavior {
     Result<Float, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
 };
 
-enum struct Variable_Operation : Default_Underlying {
-    // TODO: add more operations
-    set
+struct Var_Get_Behavior final : Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Var_Get_Behavior()
+        : Directive_Behavior { Type::any }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context& context) const final;
 };
 
-[[nodiscard]]
-Processing_Status set_variable_to_op_result(
-    Variable_Operation op,
-    const Invocation& call,
-    std::u8string_view var,
-    Context& context
-);
-
-struct Modify_Variable_Behavior final : Variable_Behavior {
-private:
-    const Variable_Operation m_op;
-
-public:
+struct Var_Exists_Behavior final : Bool_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Modify_Variable_Behavior(Variable_Operation op)
-        : m_op { op }
-    {
-    }
+    constexpr explicit Var_Exists_Behavior()
+        = default;
 
     [[nodiscard]]
-    Processing_Status generate_var(
-        Content_Policy&,
-        const Invocation& call,
-        std::u8string_view var,
-        Context& context
-    ) const final
-    {
-        return set_variable_to_op_result(m_op, call, var, context);
-    }
+    Result<bool, Processing_Status> do_evaluate(const Invocation&, Context& context) const final;
+};
+
+struct Var_Let_Behavior final : Unit_Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Var_Let_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Processing_Status do_evaluate(const Invocation& call, Context& context) const final;
+};
+
+struct Var_Set_Behavior final : Unit_Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Var_Set_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Processing_Status do_evaluate(const Invocation& call, Context& context) const final;
+};
+
+struct Var_Delete_Behavior final : Unit_Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Var_Delete_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Processing_Status do_evaluate(const Invocation& call, Context& context) const final;
 };
 
 struct Plaintext_Wrapper_Behavior : Block_Directive_Behavior {

@@ -138,6 +138,16 @@ constexpr To_Str_Behavior cowel_to_str //
     {};
 constexpr Unary_Numeric_Expression_Behavior cowel_trunc //
     { Unary_Numeric_Expression_Kind::trunc };
+constexpr Var_Delete_Behavior cowel_var_delete //
+    {};
+constexpr Var_Exists_Behavior cowel_var_exists //
+    {};
+constexpr Var_Get_Behavior cowel_var_get //
+    {};
+constexpr Var_Let_Behavior cowel_var_let //
+    {};
+constexpr Var_Set_Behavior cowel_var_set //
+    {};
 
 // Legacy directives
 constexpr Fixed_Name_Passthrough_Behavior b //
@@ -324,10 +334,6 @@ constexpr URL_Behavior url //
     {};
 constexpr Fixed_Name_Passthrough_Behavior var //
     { HTML_Tag_Name(u8"var"), Policy_Usage::inherit, Directive_Display::in_line };
-constexpr Get_Variable_Behavior Vget //
-    {};
-constexpr Modify_Variable_Behavior Vset //
-    { Variable_Operation::set };
 constexpr Self_Closing_Behavior wbr //
     { HTML_Tag_Name(u8"wbr"), Directive_Display::in_line };
 constexpr In_Tag_Behavior wg21_grammar //
@@ -366,8 +372,6 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(Btodo),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(Bug),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(Bwarn),
-    COWEL_NAME_AND_BEHAVIOR_ENTRY(Vget),
-    COWEL_NAME_AND_BEHAVIOR_ENTRY(Vset),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(b),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(bib),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(blockquote),
@@ -439,6 +443,11 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_to_html),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_to_str),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_trunc),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_var_delete),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_var_exists),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_var_get),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_var_let),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_var_set),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(dd),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(del),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(details),

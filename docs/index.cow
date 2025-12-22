@@ -227,4 +227,3 @@ The documentation for these directives is not actively maintained.
 \cowel_include("directives/foreign.cow")\
 \cowel_include("directives/sections.cow")\
 \cowel_include("directives/misc.cow")\
-\cowel_include("directives/calc.cow")\

@@ -68,7 +68,7 @@ public:
 
     using Variable_Map = std::pmr::unordered_map<
         string_type,
-        string_type,
+        Value,
         Transparent_String_View_Hash8,
         Transparent_String_View_Equals8>;
     using Macro_Map = std::pmr::unordered_map<
@@ -204,13 +204,13 @@ public:
     }
 
     [[nodiscard]]
-    string_type* get_variable(string_view_type key)
+    Value* get_variable(string_view_type key)
     {
         const auto it = m_variables.find(key);
         return it == m_variables.end() ? nullptr : &it->second;
     }
     [[nodiscard]]
-    const string_type* get_variable(string_view_type key) const
+    const Value* get_variable(string_view_type key) const
     {
         const auto it = m_variables.find(key);
         return it == m_variables.end() ? nullptr : &it->second;

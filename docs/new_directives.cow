@@ -2209,3 +2209,66 @@ Generated HTML:
 \cowel_str_to_upper("Awoo äöü Straße 123")
 }
 }
+
+\h3{Variable management}
+
+\h4(
+  id = dir-cowel_var_let
+){\cowdoc_dir{cowel_var_let} \c{mdash} Initialize a new variable}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_var_let}(
+  \cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){str},
+  \cowel_highlight_as(markup-attr){value}: \cowel_highlight_as(keyword-type){any} = null,
+): \cowel_highlight_as(keyword-type){unit}
+}
+
+Sets the value of a global variable named \cowdoc_attr{name} to \cowdoc_attr{value}.
+An error is raised if such a variable already exists.
+
+\h4(
+  id = dir-cowel_var_set
+){\cowdoc_dir{cowel_var_set} \c{mdash} Set an existing variable}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_var_set}(
+  \cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){str},
+  \cowel_highlight_as(markup-attr){value}: \cowel_highlight_as(keyword-type){any},
+): \cowel_highlight_as(keyword-type){unit}
+}
+
+Sets the value of a global variable named \cowdoc_attr{name} to \cowdoc_attr{value}.
+An error is raised if no such variable exists.
+
+\h4(
+  id = dir-cowel_var_exists
+){\cowdoc_dir{cowel_var_exists} \c{mdash} Check whether a variable exists}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_var_exists}(\cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){bool}
+}
+
+Returns \cowdoc_c{true} if a variable named \cowdoc_attr{name} exists,
+otherwise \cowdoc_c{false}.
+
+\h4(
+  id = dir-cowel_var_get
+){\cowdoc_dir{cowel_var_get} \c{mdash} Get the value of a variable}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_var_get}(\cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){any}
+}
+
+Returns the value of the global variable named \cowdoc_attr{name}.
+An error is raised if there is no such variable.
+
+\h4(
+  id = dir-cowel_var_delete
+){\cowdoc_dir{cowel_var_delete} \c{mdash} Delete an existing variable}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_var_delete}(\cowel_highlight_as(markup-attr){name}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){unit}
+}
+
+Deletes the global variable named \cowdoc_attr{name}.
+An error is raised if there is no such variable.

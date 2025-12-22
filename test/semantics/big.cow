@@ -212,9 +212,6 @@ function f(x, y) { return x > y; }
 
 \var{Variable} text \var{variable}.
 
-\Vset(x){123}
-\Vget(x)
-
 Long\wbr{}word
 
 \wg21_example{For example.}

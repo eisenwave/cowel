@@ -8,6 +8,8 @@
   - `Csub` (use `cowel_sub` instead)
   - `Cmul` (use `cowel_mul` instead)
   - `Cdiv` (use `cowel_div_to_zero` instead)
+  - `Vget` (use `cowel_var_get` instead)
+  - `Vset` (use `cowel_var_let` or `cowel_var_set` instead)
   - `comment` (use `\* ... *\` block comments instead)
   - `literally` (use `cowel_source_as_text` instead)
   - `unprocessed` (use `cowel_no_invoke` instead)
@@ -64,6 +66,12 @@
 - add the following string manipulation directives:
   - `cowel_str_to_lower`
   - `cowel_str_to_upper`
+- add the following variable management directives (#73):
+  - `cowel_var_delete`
+  - `cowel_var_exists`
+  - `cowel_var_get`
+  - `cowel_var_let`
+  - `cowel_var_set`
 - fix various memory issues (#131)
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
 - fix typos in `link rel` (#93)

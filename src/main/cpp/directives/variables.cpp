@@ -11,7 +11,6 @@
 #include "cowel/util/result.hpp"
 #include "cowel/util/to_chars.hpp"
 
-#include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/plaintext.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
@@ -809,8 +808,8 @@ Result<Integer, Processing_Status>
 Reinterpret_As_Int_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     Float_Matcher x_matcher {};
-    Group_Member_Matcher to_member { u8"x"sv, Optionality::mandatory, x_matcher };
-    Group_Member_Matcher* const parameters[] { &to_member };
+    Group_Member_Matcher x_member { u8"x"sv, Optionality::mandatory, x_matcher };
+    Group_Member_Matcher* const parameters[] { &x_member };
     Pack_Usual_Matcher args_matcher { parameters };
     Group_Pack_Matcher group_matcher { args_matcher };
     Call_Matcher call_matcher { group_matcher };
@@ -825,71 +824,182 @@ Reinterpret_As_Int_Behavior::do_evaluate(const Invocation& call, Context& contex
     return Integer(u64);
 }
 
-Processing_Status
-Variable_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
+namespace {
+
+const Type& get_variable_type()
 {
-    Spliceable_To_String_Matcher name_matcher { context.get_transient_memory() };
-    Group_Member_Matcher to_member { u8"name"sv, Optionality::mandatory, name_matcher };
-    Group_Member_Matcher* const parameters[] { &to_member };
+    // This is a function in order to avoid dynamic initialization.
+    // Once Type stores a "small vector",
+    // this can likely just be a constexpr variable.
+    static const auto result = Type::canonical_union_of(
+        {
+            Type::unit,
+            Type::null,
+            Type::boolean,
+            Type::integer,
+            Type::floating,
+            Type::str,
+        }
+    );
+    return result;
+}
+
+} // namespace
+
+Processing_Status Var_Delete_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    String_Matcher name_matcher { context.get_transient_memory() };
+    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
+    Group_Member_Matcher* const parameters[] { &name_member };
     Pack_Usual_Matcher args_matcher { parameters };
     Group_Pack_Matcher group_matcher { args_matcher };
     Call_Matcher call_matcher { group_matcher };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
-    if (match_status != Processing_Status::ok) {
-        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
-                                             : match_status;
-    }
-
-    return generate_var(out, call, name_matcher.get(), context);
-}
-
-Processing_Status Get_Variable_Behavior::generate_var(
-    Content_Policy& out,
-    const Invocation&,
-    std::u8string_view var,
-    Context& context
-) const
-{
-    try_enter_paragraph(out);
-
-    const auto it = context.get_variables().find(var);
-    if (it != context.get_variables().end()) {
-        const std::u8string_view value_string { it->second };
-        if (!value_string.empty()) {
-            out.write(value_string, Output_Language::text);
-        }
-    }
-    return Processing_Status::ok;
-}
-
-Processing_Status set_variable_to_op_result(
-    Variable_Operation op,
-    const Invocation& call,
-    std::u8string_view var,
-    Context& context
-)
-{
-    std::pmr::vector<char8_t> body_string { context.get_transient_memory() };
-    const auto status
-        = splice_to_plaintext(body_string, call.get_content_span(), call.content_frame, context);
+    const auto status = call_matcher.match_call(call, context, make_fail_callback());
     if (status != Processing_Status::ok) {
         return status;
     }
 
-    const auto it = context.get_variables().find(var);
-    if (op == Variable_Operation::set) {
-        std::pmr::u8string value { body_string.data(), body_string.size(),
-                                   context.get_persistent_memory() };
-        if (it == context.get_variables().end()) {
-            std::pmr::u8string key // NOLINT(misc-const-correctness)
-                { var.data(), var.size(), context.get_persistent_memory() };
-            context.get_variables().emplace(std::move(key), std::move(value));
-        }
-        else {
-            it->second = std::move(value);
-        }
+    // This could be made more efficient using C++23 transparent erase,
+    // once available.
+    const auto it = context.get_variables().find(name_matcher.get());
+    if (it == context.get_variables().end()) {
+        context.try_error(
+            diagnostic::var_delete, name_matcher.get_location(),
+            joined_char_sequence(
+                {
+                    u8"Unable to get delete variable with the name \""sv,
+                    name_matcher.get(),
+                    u8"\"."sv,
+                }
+            )
+        );
+        return Processing_Status::error;
     }
+    context.get_variables().erase(it);
+    return Processing_Status::ok;
+}
+
+Result<bool, Processing_Status>
+Var_Exists_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    String_Matcher name_matcher { context.get_transient_memory() };
+    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
+    Group_Member_Matcher* const parameters[] { &name_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto status = call_matcher.match_call(call, context, make_fail_callback());
+    if (status != Processing_Status::ok) {
+        return status;
+    }
+
+    return context.get_variables().contains(name_matcher.get());
+}
+
+Result<Value, Processing_Status>
+Var_Get_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    String_Matcher name_matcher { context.get_transient_memory() };
+    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
+    Group_Member_Matcher* const parameters[] { &name_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto status = call_matcher.match_call(call, context, make_fail_callback());
+    if (status != Processing_Status::ok) {
+        return status;
+    }
+
+    const auto it = context.get_variables().find(name_matcher.get());
+    if (it == context.get_variables().end()) {
+        context.try_error(
+            diagnostic::var_get, name_matcher.get_location(),
+            joined_char_sequence(
+                {
+                    u8"Unable to get variable with the name \""sv,
+                    name_matcher.get(),
+                    u8"\"."sv,
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+    return it->second;
+}
+
+Processing_Status Var_Let_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    String_Matcher name_matcher { context.get_transient_memory() };
+    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
+    Value_Of_Type_Matcher value_matcher { &get_variable_type() };
+    Group_Member_Matcher value_member { u8"value"sv, Optionality::optional, value_matcher };
+    Group_Member_Matcher* const parameters[] { &name_member, &value_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto status = call_matcher.match_call(call, context, make_fail_callback());
+    if (status != Processing_Status::ok) {
+        return status;
+    }
+
+    std::pmr::u8string name { name_matcher.get(), context.get_transient_memory() };
+    const auto it = context.get_variables().find(name);
+    if (it != context.get_variables().end()) {
+        context.try_error(
+            diagnostic::var_let, name_matcher.get_location(),
+            joined_char_sequence(
+                {
+                    u8"Unable to declare new variable with the name \""sv,
+                    name_matcher.get(),
+                    u8"\"."sv,
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+    const auto [_, success] = context.get_variables().emplace(
+        std::move(name),
+        value_matcher.was_matched() ? std::move(value_matcher.get()) : auto(Value::null)
+    );
+    COWEL_DEBUG_ASSERT(success);
+    return Processing_Status::ok;
+}
+
+Processing_Status Var_Set_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    String_Matcher name_matcher { context.get_transient_memory() };
+    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
+    Value_Of_Type_Matcher value_matcher { &get_variable_type() };
+    Group_Member_Matcher value_member { u8"value"sv, Optionality::mandatory, value_matcher };
+    Group_Member_Matcher* const parameters[] { &name_member, &value_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto status = call_matcher.match_call(call, context, make_fail_callback());
+    if (status != Processing_Status::ok) {
+        return status;
+    }
+
+    const auto it = context.get_variables().find(name_matcher.get());
+    if (it == context.get_variables().end()) {
+        context.try_error(
+            diagnostic::var_set, name_matcher.get_location(),
+            joined_char_sequence(
+                {
+                    u8"Unable to set variable with the name \""sv,
+                    name_matcher.get(),
+                    u8"\"."sv,
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+    it->second = std::move(value_matcher.get());
     return Processing_Status::ok;
 }
 
