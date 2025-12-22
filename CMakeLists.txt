@@ -116,6 +116,7 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/util/assert.hpp
     include/cowel/util/bit_permutations.hpp
     include/cowel/util/buffer.hpp
+    include/cowel/util/case_transform.hpp
     include/cowel/util/char_sequence.hpp
     include/cowel/util/char_sequence_factory.hpp
     include/cowel/util/char_sequence_ops.hpp
@@ -176,6 +177,7 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/ulight_highlighter.hpp
     include/cowel/value.hpp
 
+    src/main/cpp/util/case_transform.cpp
     src/main/cpp/util/charconv.cpp
     src/main/cpp/util/code_point_names.cpp
     src/main/cpp/util/draft_uris.cpp
@@ -196,6 +198,7 @@ set(COMMON_LIBRARY_SOURCES
     src/main/cpp/directives/passthrough.cpp
     src/main/cpp/directives/policies.cpp
     src/main/cpp/directives/reference.cpp
+    src/main/cpp/directives/str.cpp
     src/main/cpp/directives/syntax_highlight.cpp
     src/main/cpp/directives/variables.cpp
     src/main/cpp/directives/wg21.cpp
