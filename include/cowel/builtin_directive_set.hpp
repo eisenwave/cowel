@@ -152,26 +152,49 @@ Char_Get_Num_Behavior final : Int_Directive_Behavior {
     Result<Integer, Processing_Status> do_evaluate(const Invocation&, Context&) const final;
 };
 
+struct String_Sink {
+    virtual void reserve([[maybe_unused]] std::size_t amount) { }
+    virtual void consume(std::pmr::vector<char8_t>&& text) = 0;
+    virtual void consume(Char_Sequence8 chars) = 0;
+};
+
+struct String_Sink_Behavior : Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit String_Sink_Behavior()
+        : Directive_Behavior { Type::str }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const final;
+    [[nodiscard]]
+    Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
+
+protected:
+    [[nodiscard]]
+    virtual Processing_Status do_evaluate(String_Sink& out, const Invocation&, Context&) const
+        = 0;
+};
+
 enum struct Text_Transformation : Default_Underlying {
     lowercase,
     uppercase,
 };
 
 struct [[nodiscard]]
-Str_Transform_Behavior final : Directive_Behavior {
+Str_Transform_Behavior final : String_Sink_Behavior {
 private:
     const Text_Transformation m_transform;
 
 public:
     [[nodiscard]]
     constexpr explicit Str_Transform_Behavior(Text_Transformation transform)
-        : Directive_Behavior { Type::str }
-        , m_transform { transform }
+        : m_transform { transform }
     {
     }
 
     [[nodiscard]]
-    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const final;
+    Processing_Status do_evaluate(String_Sink& out, const Invocation&, Context&) const override;
 };
 
 // clang-format off

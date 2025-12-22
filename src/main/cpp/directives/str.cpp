@@ -1,6 +1,8 @@
 #include <string_view>
 
 #include "cowel/util/case_transform.hpp"
+#include "cowel/util/char_sequence.hpp"
+#include "cowel/util/char_sequence_ops.hpp"
 #include "cowel/util/result.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
@@ -10,9 +12,72 @@
 #include "cowel/parameters.hpp"
 
 namespace cowel {
+namespace {
+
+struct Sink_For_Evaluation final : String_Sink {
+    std::pmr::vector<char8_t> m_text;
+
+    void reserve(std::size_t amount) override
+    {
+        m_text.reserve(amount);
+    }
+    void consume(std::pmr::vector<char8_t>&& text) override
+    {
+        if (m_text.empty()) {
+            m_text = std::move(text);
+        }
+        else {
+            m_text.insert(m_text.end(), text.begin(), text.end());
+        }
+    }
+    void consume(Char_Sequence8 chars) override
+    {
+        append(m_text, chars);
+    }
+};
+
+struct Sink_For_Splicing final : String_Sink {
+    Content_Policy& out;
+    explicit Sink_For_Splicing(Content_Policy& out)
+        : out { out }
+    {
+    }
+    // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
+    void consume(std::pmr::vector<char8_t>&& text) override
+    {
+        out.write(as_u8string_view(text), Output_Language::text);
+    }
+    void consume(Char_Sequence8 chars) override
+    {
+        out.write(chars, Output_Language::text);
+    }
+};
+
+} // namespace
 
 Result<Value, Processing_Status>
-Str_Transform_Behavior::evaluate(const Invocation& call, Context& context) const
+String_Sink_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    Sink_For_Evaluation sink;
+    const Processing_Status result = do_evaluate(sink, call, context);
+    if (result != Processing_Status::ok) {
+        return result;
+    }
+    return Value::dynamic_string(std::move(sink.m_text));
+}
+
+Processing_Status
+String_Sink_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
+{
+    Sink_For_Splicing sink { out };
+    return do_evaluate(sink, call, context);
+}
+
+Processing_Status Str_Transform_Behavior::do_evaluate(
+    String_Sink& out,
+    const Invocation& call,
+    Context& context
+) const
 {
     String_Matcher x_matcher { context.get_transient_memory() };
     Group_Member_Matcher x_member { u8"x", Optionality::mandatory, x_matcher };
@@ -51,7 +116,10 @@ Str_Transform_Behavior::evaluate(const Invocation& call, Context& context) const
         i += std::size_t(input_length);
     }
 
-    return Value::dynamic_string(std::move(result));
+    if (!result.empty()) {
+        out.consume(std::move(result));
+    }
+    return Processing_Status::ok;
 }
 
 } // namespace cowel
