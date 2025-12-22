@@ -1,0 +1,12 @@
+\cowel_str_to_upper("")
+\cowel_str_to_upper("awoo")
+\cowel_str_to_upper("AWOO")
+\cowel_str_to_upper("123#=")
+
+\cowel_str_to_upper("äöü")
+\cowel_str_to_upper("ÄÖÜ")
+
+\cowel_str_to_upper("straße")
+\cowel_str_to_upper(cowel_char_by_name("LATIN SMALL LIGATURE FFL"))
+
+\cowel_str_to_upper(cowel_char_by_name("GREEK CAPITAL LETTER ETA WITH DASIA AND PERISPOMENI AND PROSGEGRAMMENI"))

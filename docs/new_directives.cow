@@ -257,28 +257,22 @@ It returns the numeric value of the first input code point in \cowdoc_attr{x}.
 \Bex{
 COWEL markup:
 \cowblock{\literally{
-\cowel_char_get_num("x")
-U+\cowel_to_str(cowel_char_get_num("x"), base=16, zpad=4)
+\cowel_char_get_num("j")
+U+\cowel_str_to_upper(cowel_to_str(cowel_char_get_num("j"), base=16, zpad=4))
 }}
 Generated HTML:
 \htmlblock{
-\cowel_char_get_num("x")
-U+\cowel_to_str(cowel_char_get_num("x"), base=16, zpad=4)
+\cowel_char_get_num("j")
+U+\cowel_str_to_upper(cowel_to_str(cowel_char_get_num("j"), base=16, zpad=4))
 }
-Note that U+0078 is the usual way in which Unicode code points are represented.
-That is, \tt{U+}, followed by at least four hexadecimal digits.
+Note that U+006A is the usual way in which Unicode code points are represented.
+That is, \tt{U+}, followed by at least four uppercase hexadecimal digits.
 It is also possible to define a macro if we need this frequently:
 \cowblock{\literally{
-\cowel_macro(code_point){U+\cowel_char_get_num(...)}
-\code_point(x)
+\cowel_macro(code_point){\
+U+\cowel_str_to_upper(cowel_to_str(cowel_char_get_num(...), base=16, zpad=4))}
+\code_point(j)
 }}
-}
-
-\Btodo{
-The example above should use a future \cowdoc_dir{cowel_to_upper}
-or \cowdoc_dir{cowel_str_to_upper} directive
-because conventionally,
-code points are printed out using uppercase hexadecimal digits.
 }
 
 \Bug{
@@ -2183,3 +2177,55 @@ otherwise \cowdoc_c{false}.
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareSignalingGreaterEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\h3(id=string-manipulation){String manipulation}
+
+\h4(
+  id = dir-cowel_str_to_lower
+){\cowdoc_dir{cowel_str_to_lower} \c{mdash} Convert string to lowercase}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_str_to_lower}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){str}
+}
+
+Returns \cowdoc_attr{x} converted to lowercase.
+That is, applies the
+\ref("https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-3/#G34078"){toLowercase Default Case Conversion}
+as specified in Unicode,
+without any language-sensitive mappings.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_str_to_lower("Awoo ÄÖÜ 123")
+}}
+Generated HTML:
+\htmlblock{
+\cowel_str_to_lower("Awoo ÄÖÜ 123")
+}
+}
+
+\h4(
+  id = dir-cowel_str_to_upper
+){\cowdoc_dir{cowel_str_to_upper} \c{mdash} Convert string to uppercase}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_str_to_upper}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){str}
+}
+
+Returns \cowdoc_attr{x} converted to uppercase.
+That is, applies the
+\ref("https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-3/#G34078"){toUppercase Default Case Conversion}
+as specified in Unicode,
+without any language-sensitive mappings.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_str_to_upper("Awoo äöü Straße 123")
+}}
+Generated HTML:
+\htmlblock{
+\cowel_str_to_upper("Awoo äöü Straße 123")
+}
+}

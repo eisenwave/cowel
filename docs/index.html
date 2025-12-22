@@ -1721,6 +1721,12 @@ h1 {
 <a href=#dir-cowel_le><h4><code><h- data-h=mk_tag>\cowel_le</h-></code> — Less than or equal</h4></a>
 <div class=toc-num data-level=4>8.13.6</div>
 <a href=#dir-cowel_ge><h4><code><h- data-h=mk_tag>\cowel_ge</h-></code> — Greater than or equal</h4></a>
+<div class=toc-num data-level=3>8.14</div>
+<a href=#string-manipulation><h3>String manipulation</h3></a>
+<div class=toc-num data-level=4>8.14.1</div>
+<a href=#dir-cowel_str_to_lower><h4><code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4></a>
+<div class=toc-num data-level=4>8.14.2</div>
+<a href=#dir-cowel_str_to_upper><h4><code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4></a>
 <div class=toc-num data-level=2>9</div>
 <a href=#legacy-directives><h2>Legacy directives</h2></a>
 <div class=toc-num data-level=3>9.1</div>
@@ -3631,24 +3637,18 @@ It returns the numeric value of the first input code point in <tt-><h- data-h=mk
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_par>(</h->"x"<h- data-h=sym_par>)</h->
-U+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->cowel_char_get_num("x")<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>base</h-><h- data-h=sym_punc>=</h->16<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>zpad</h-><h- data-h=sym_punc>=</h->4<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_par>(</h->"j"<h- data-h=sym_par>)</h->
+U+<h- data-h=mk_tag>\cowel_str_to_upper</h-><h- data-h=sym_par>(</h->cowel_to_str(cowel_char_get_num("j"), base=16, zpad=4)<h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
-</p><code-block>120
-U+0078</code-block>
-<p>Note that U+0078 is the usual way in which Unicode code points are represented.
-That is, <tt->U+</tt->, followed by at least four hexadecimal digits.
+</p><code-block>106
+U+006A</code-block>
+<p>Note that U+006A is the usual way in which Unicode code points are represented.
+That is, <tt->U+</tt->, followed by at least four uppercase hexadecimal digits.
 It is also possible to define a macro if we need this frequently:
-</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->code_point<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->U+<h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\code_point</h-><h- data-h=sym_par>(</h->x<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->code_point<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=str_esc>\</h->
+U+<h- data-h=mk_tag>\cowel_str_to_upper</h-><h- data-h=sym_par>(</h->cowel_to_str(cowel_char_get_num(...), base=16, zpad=4)<h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\code_point</h-><h- data-h=sym_par>(</h->j<h- data-h=sym_par>)</h-></code-block>
 </example-block>
-
-<todo-block><p><intro-></intro-> 
-The example above should use a future <code><h- data-h=mk_tag>\cowel_to_upper</h-></code>
-or <code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> directive
-because conventionally,
-code points are printed out using uppercase hexadecimal digits.
-</p></todo-block>
 
 <bug-block><p><intro-></intro-> 
 If more than one code point is provided,
@@ -5319,8 +5319,48 @@ otherwise <code>false</code>.
 <p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareSignalingGreaterEqual</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
+</p>
+<h3 id=string-manipulation><a class=para href=#string-manipulation></a>8.14. String manipulation</h3>
 
-</p><h2 id=legacy-directives><a class=para href=#legacy-directives></a>9. Legacy directives</h2>
+<h4 id=dir-cowel_str_to_lower><a class=para href=#dir-cowel_str_to_lower></a>8.14.1. <code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_str_to_lower</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
+</pre>
+
+<p>Returns <tt-><h- data-h=mk_attr>x</h-></tt-> converted to lowercase.
+That is, applies the
+<a href=https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-3/#G34078>toLowercase Default Case Conversion</a>
+as specified in Unicode,
+without any language-sensitive mappings.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_str_to_lower</h-><h- data-h=sym_par>(</h->"Awoo ÄÖÜ 123"<h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>awoo äöü 123</code-block>
+</example-block>
+
+<h4 id=dir-cowel_str_to_upper><a class=para href=#dir-cowel_str_to_upper></a>8.14.2. <code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_str_to_upper</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
+</pre>
+
+<p>Returns <tt-><h- data-h=mk_attr>x</h-></tt-> converted to uppercase.
+That is, applies the
+<a href=https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-3/#G34078>toUppercase Default Case Conversion</a>
+as specified in Unicode,
+without any language-sensitive mappings.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_str_to_upper</h-><h- data-h=sym_par>(</h->"Awoo äöü Straße 123"<h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>AWOO ÄÖÜ STRASSE 123</code-block>
+</example-block>
+
+<h2 id=legacy-directives><a class=para href=#legacy-directives></a>9. Legacy directives</h2>
 
 <warning-block><p><intro-></intro-> 
 The following builtin directives are all considered deprecated,

@@ -347,6 +347,12 @@ constexpr Basic_Test basic_tests_array[] {
     { Path { u8"convert/reinterpret_as_int.cow" },
       Path { u8"convert/reinterpret_as_int.cow.html" } },
 
+    { Path { u8"str/to_lower.cow" },
+      Path { u8"str/to_lower.cow.html" } },
+
+    { Path { u8"str/to_upper.cow" },
+      Path { u8"str/to_upper.cow.html" } },
+
     { Source { u8"" },
       Path { u8"document/empty.html" },
       Processing_Status::ok,

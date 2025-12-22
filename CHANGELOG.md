@@ -54,6 +54,9 @@
   - `cowel_to_str`
   - `cowel_reinterpret_as_float`
   - `cowel_reinterpret_as_int`
+- add the following string manipulation directives:
+  - `cowel_str_to_lower`
+  - `cowel_str_to_upper`
 - fix various memory issues (#131)
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
 - fix typos in `link rel` (#93)

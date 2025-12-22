@@ -1,0 +1,10 @@
+\cowel_str_to_lower("")
+\cowel_str_to_lower("awoo")
+\cowel_str_to_lower("AWOO")
+\cowel_str_to_lower("123#=")
+
+\cowel_str_to_lower("äöü")
+\cowel_str_to_lower("ÄÖÜ")
+
+Note that the 'i' below is followed by a U+0307 COMBINING DOT ABOVE:
+\cowel_str_to_lower(cowel_char_by_name("LATIN CAPITAL LETTER I WITH DOT ABOVE"))
