@@ -95,8 +95,6 @@ set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
 include_directories(${INCLUDE_DIRS})
 
 set(COMMON_LIBRARY_SOURCES
-    include/cowel/cedilla/name_to_cp.hpp
-
     include/cowel/policy/content_policy.hpp
     include/cowel/policy/factory.hpp
     include/cowel/policy/html.hpp
@@ -179,7 +177,7 @@ set(COMMON_LIBRARY_SOURCES
 
     src/main/cpp/util/case_transform.cpp
     src/main/cpp/util/charconv.cpp
-    src/main/cpp/util/code_point_names.cpp
+    src/main/cpp/util/code_point_by_name.cpp
     src/main/cpp/util/draft_uris.cpp
     src/main/cpp/util/html_entities.cpp
     src/main/cpp/util/typo.cpp

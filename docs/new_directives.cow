@@ -196,9 +196,7 @@ The '\tt{&}' character can be produced in a number of ways:
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is a \cowdoc_type{str} which should be a
 \ref("https://www.unicode.org/reports/tr34/#Names"){Unicode name}
-for a code point.
-That is, the name of a code point,
-or one of its "control", "alternate", or "correction" aliases.
+for a code point or one of its name aliases (of any category).
 
 An error is raised if the given name is not the name of a code point
 or an alias thereof.

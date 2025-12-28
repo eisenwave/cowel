@@ -1,0 +1,38 @@
+\test_input{
+\: name
+\cowel_char_by_name("LATIN SMALL LETTER A")
+\: name (multi-byte)
+\cowel_char_by_name("PILCROW SIGN")
+\: correction
+\cowel_char_by_name("LATIN CAPITAL LETTER GHA")
+\: control
+\cowel_char_by_name("START OF TEXT")
+\: control (multi-byte)
+\cowel_char_by_name("PRIVACY MESSAGE")
+\: alternate
+\cowel_char_by_name("BYTE ORDER MARK")
+\: figment
+\cowel_char_by_name("PADDING CHARACTER")
+\: abbreviation
+\cowel_char_by_name("DC1")
+\: abbreviation (multi-byte)
+\cowel_char_by_name("NBSP")
+
+\test_expect_error("type.mismatch"){\cowel_char_by_name()}
+\test_expect_error("type.mismatch"){\cowel_char_by_name(0)}
+}
+
+\test_output{
+a
+¶
+Ƣ
+
+
+﻿
+
+
+ 
+
+<error->\cowel_char_by_name()</error->
+<error->\cowel_char_by_name(0)</error->
+}

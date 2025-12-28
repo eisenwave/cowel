@@ -72,6 +72,7 @@
   - `cowel_var_get`
   - `cowel_var_let`
   - `cowel_var_set`
+- add support for `abbreviation` and `figment` aliases to `cowel_char_by_name` (#11)
 - fix various memory issues (#131)
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
 - fix typos in `link rel` (#93)
