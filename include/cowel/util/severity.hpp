@@ -1,6 +1,8 @@
 #ifndef COWEL_SEVERITY_HPP
 #define COWEL_SEVERITY_HPP
 
+#include <string_view>
+
 #include "cowel/cowel.h"
 #include "cowel/fwd.hpp"
 
@@ -18,6 +20,24 @@ enum struct Severity : Default_Underlying {
     max = COWEL_SEVERITY_MAX,
     none = COWEL_SEVERITY_NONE,
 };
+
+[[nodiscard]]
+constexpr std::u8string_view severity_tag(Severity severity)
+{
+    using enum Severity;
+    switch (severity) {
+    case min: return u8"MIN";
+    case trace: return u8"TRACE";
+    case debug: return u8"DEBUG";
+    case info: return u8"INFO";
+    case soft_warning: return u8"SOFTWARN";
+    case warning: return u8"WARNING";
+    case error: return u8"ERROR";
+    case fatal: return u8"FATAL";
+    case none: break;
+    }
+    return u8"???";
+}
 
 } // namespace cowel
 

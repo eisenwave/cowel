@@ -57,24 +57,6 @@ std::u8string_view severity_highlight(Severity severity)
 }
 
 [[nodiscard]]
-std::u8string_view severity_tag(Severity severity)
-{
-    using enum Severity;
-    switch (severity) {
-    case min: return u8"MIN";
-    case trace: return u8"TRACE";
-    case debug: return u8"DEBUG";
-    case info: return u8"INFO";
-    case soft_warning: return u8"SOFTWARN";
-    case warning: return u8"WARNING";
-    case error: return u8"ERROR";
-    case fatal: return u8"FATAL";
-    case none: break;
-    }
-    return u8"???";
-}
-
-[[nodiscard]]
 constexpr File_Source_Span as_file_source_span(const cowel_diagnostic_u8& diagnostic)
 {
     return {
