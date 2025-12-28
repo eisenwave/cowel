@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
 #include <memory_resource>
 #include <span>
 #include <string_view>
@@ -21,6 +22,8 @@
 #include "cowel/util/result.hpp"
 
 namespace cowel {
+
+namespace fs = std::filesystem;
 
 enum struct IO_Error_Code : Default_Underlying {
     /// @brief The file couldn't be opened.
@@ -145,6 +148,25 @@ load_utf8_file(std::u8string_view path, std::pmr::memory_resource* memory);
 [[nodiscard]]
 Result<std::pmr::vector<char32_t>, IO_Error_Code>
 load_utf32le_file(std::u8string_view path, std::pmr::memory_resource* memory);
+
+/// @brief Appends all in `directory` to `out`, recursively.
+/// If `filter` is not null, any path `p` for which `filter(p)` is `false` is skipped.
+void find_files_recursively(
+    std::pmr::vector<fs::path>& out,
+    const fs::path& directory,
+    Function_Ref<bool(const fs::directory_entry&)> filter = {}
+);
+
+[[nodiscard, maybe_unused]]
+Result<void, IO_Error_Code>
+bytes_to_file(const void* data, std::size_t amount, std::u8string_view path);
+
+[[nodiscard, maybe_unused]]
+inline Result<void, IO_Error_Code>
+bytes_to_file(std::span<const char8_t> data, std::u8string_view path)
+{
+    return bytes_to_file(data.data(), data.size_bytes(), path);
+}
 
 } // namespace cowel
 #endif

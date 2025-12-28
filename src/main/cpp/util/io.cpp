@@ -94,4 +94,35 @@ load_utf32le_file(std::u8string_view path, std::pmr::memory_resource* memory)
     return result;
 }
 
+void find_files_recursively(
+    std::pmr::vector<fs::path>& out,
+    const fs::path& directory,
+    const Function_Ref<bool(const fs::directory_entry&)> filter
+)
+{
+    COWEL_ASSERT(fs::is_directory(directory));
+
+    for (const fs::directory_entry& entry : fs::recursive_directory_iterator(directory)) {
+        if (!filter || filter(entry)) {
+            out.push_back(entry.path());
+        }
+    }
+}
+
+Result<void, IO_Error_Code>
+bytes_to_file(const void* data, std::size_t amount, std::u8string_view path)
+{
+    const std::string c_path(reinterpret_cast<const char*>(path.data()), path.size());
+    Unique_File file = fopen_unique(c_path.c_str(), "wb");
+    if (!file) {
+        return IO_Error_Code::cannot_open;
+    }
+    const std::size_t bytes_written = std::fwrite(data, 1, amount, file.get());
+    if (bytes_written != amount) {
+        return IO_Error_Code::write_error;
+    }
+    std::fflush(file.get());
+    return {};
+}
+
 } // namespace cowel
