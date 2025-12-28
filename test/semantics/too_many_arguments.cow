@@ -1,0 +1,7 @@
+\test_input{
+\test_expect_error("type.mismatch"){\cowel_var_get(x, y, z)}
+}
+
+\test_output{
+<error->\cowel_var_get(x, y, z)</error->
+}

@@ -388,6 +388,10 @@ Processing_Status Pack_Usual_Matcher::do_match(
                 );
                 return on_fail.status;
             }
+            if (arg_index + cumulative_arg_index >= argument_indices_by_parameter.size()) {
+                on_fail.emit(member.get_source_span(), u8"Too many arguments."sv, context);
+                return on_fail.status;
+            }
             argument_indices_by_parameter[arg_index + cumulative_arg_index] = int(arg_index);
             const ast::Member_Value& value = member.get_value();
             const auto member_status = m_member_matchers[arg_index + cumulative_arg_index]

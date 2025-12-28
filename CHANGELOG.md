@@ -76,6 +76,7 @@
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
 - fix typos in `link rel` (#93)
 - fix documentation of insertion block (#92)
+- fix crash when too many positional arguments provided (#138)
 - also update µlight to a more recent version
   with highlighting support for Python and some other languages
 - also optimize/simplify directive name lookup (#102)
