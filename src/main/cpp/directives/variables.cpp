@@ -128,7 +128,7 @@ T operate_binary(N_Ary_Numeric_Expression_Kind type, T x, T y)
     case N_Ary_Numeric_Expression_Kind::sub: return x - y;
     case N_Ary_Numeric_Expression_Kind::mul: return x * y;
     case N_Ary_Numeric_Expression_Kind::div: {
-        COWEL_DEBUG_ASSERT(y != 0);
+        COWEL_DEBUG_ASSERT(std::is_floating_point_v<T>);
         return x / y;
     }
     case N_Ary_Numeric_Expression_Kind::min: {
