@@ -25,13 +25,17 @@ inline bool write_as_html(Text_Sink& out, Char_Sequence8 chars)
     if constexpr (enable_empty_string_assertions) {
         COWEL_ASSERT(!chars.empty());
     }
-    COWEL_ASSERT(out.get_language() == Output_Language::html);
+    switch (out.get_language()) {
+    case Output_Language::none: return true;
+    case Output_Language::html: break;
+    default: COWEL_ASSERT_UNREACHABLE(u8"Trying to write HTML to non-HTML Text_Sink.");
+    }
+
     const auto adapter = [&](auto x) {
         using T = decltype(x);
         static_assert(std::is_same_v<char8_t, T> || std::is_same_v<std::u8string_view, T>);
         out.write(x, Output_Language::html);
     };
-
     append_html_escaped(adapter, chars, is_html_escaped);
     return true;
 }
