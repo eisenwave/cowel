@@ -1,0 +1,13 @@
+\test_input{\cowel_paragraphs{
+This is
+a paragraph.
+
+This is another paragraph.
+}}
+
+\test_output{
+<p>This is
+a paragraph.
+</p>
+<p>This is another paragraph.
+</p>}

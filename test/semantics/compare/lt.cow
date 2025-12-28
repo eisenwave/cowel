@@ -1,3 +1,4 @@
+\test_input{
 \cowel_lt(0, 0)
 \cowel_lt(0, 1)
 \cowel_lt(1, 0)
@@ -17,3 +18,26 @@
 \cowel_lt("x", "x")
 \cowel_lt("x", "y")
 \cowel_lt("y", "x")
+}
+
+\test_output{
+false
+true
+false
+false
+
+false
+false
+true
+false
+false
+false
+false
+
+false
+false
+true
+false
+true
+false
+}

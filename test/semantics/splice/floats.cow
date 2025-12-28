@@ -1,3 +1,4 @@
+\test_input{
 \cowel_pos(0.1)
 \cowel_pos(0.1000000000000000055511151231257827021181583404541015625)
 
@@ -16,3 +17,35 @@
 
 \cowel_pos(infinity)
 \cowel_pos(-infinity)
+
+\test_expect_warning("literal.out-of-range"){\cowel_pos(1e10000)}
+\test_expect_warning("literal.out-of-range"){\cowel_pos(-1e10000)}
+\test_expect_warning("literal.out-of-range"){\cowel_pos(1e-10000)}
+\test_expect_warning("literal.out-of-range"){\cowel_pos(-1e-10000)}
+}
+
+\test_output{
+0.1
+0.1
+
+1125899906842624.2
+1125899906842624.2
+
+100
+1000
+1e+4
+1e+5
+1e+9
+1e+10
+1e-10
+1e+100
+1e+100
+
+infinity
+-infinity
+
+infinity
+-infinity
+0
+-0
+}

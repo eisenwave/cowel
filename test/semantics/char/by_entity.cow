@@ -1,0 +1,19 @@
+\test_input{
+\cowel_char_by_entity("#x41")\cowel_char_by_entity("#x42")\cowel_char_by_entity("#x43")
+\cowel_char_by_entity("#x00B6")
+
+\test_expect_error("char.blank"){\cowel_char_by_entity("")}
+\test_expect_error("char.blank"){\cowel_char_by_entity(" ")}
+\test_expect_error("char.digits"){\cowel_char_by_entity("#zzz")}
+\test_expect_error("char.nonscalar"){\cowel_char_by_entity("#xD800")}
+}
+
+\test_output{
+ABC
+¶
+
+<error->\cowel_char_by_entity("")</error->
+<error->\cowel_char_by_entity(" ")</error->
+<error->\cowel_char_by_entity("#zzz")</error->
+<error->\cowel_char_by_entity("#xD800")</error->
+}

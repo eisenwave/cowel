@@ -1,6 +1,12 @@
-\cowel_highlight(cpp){
+\test_input{\cowel_highlight(cpp){
 \: Comment
 Text
 \\
 \cowel_html_element(span){directive}
+}}
+
+\test_output{
+<h- data-h=name>Text</h->
+\
+<span><h- data-h=name>directive</h-></span>
 }

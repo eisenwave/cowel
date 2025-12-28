@@ -1,0 +1,11 @@
+\test_input{
+\script{let x = 3 < 5; let y = true && false;}
+
+\test_expect_error("raw-text.closing"){\script{</script>}}
+}
+
+\test_output{
+<script>let x = 3 < 5; let y = true && false;</script>
+
+<script></script>
+}

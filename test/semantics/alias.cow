@@ -1,3 +1,21 @@
+\test_input{
 \cowel_alias(ch, char){cowel_char_by_name}\
 \ch("DIGIT ZERO")
 \char("DIGIT ONE")
+
+\test_expect_fatal("alias.name.invalid"){a\cowel_alias{\undefined}}
+\test_expect_fatal("alias.name.invalid"){b\cowel_alias{??}}
+\test_expect_fatal("alias.name.invalid"){c\cowel_alias("?"){cowel_alias}}
+\test_expect_fatal("alias.duplicate"){d\cowel_alias(a, a){cowel_alias}}
+}
+
+\test_output{
+0
+1
+
+a
+b
+c
+d
+}
+

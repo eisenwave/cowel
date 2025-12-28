@@ -1,0 +1,13 @@
+\test_input{
+\cowel_char_by_num(0x00B6)
+\test_expect_error("type.mismatch"){\cowel_char_by_num()}
+\test_expect_error("type.mismatch"){\cowel_char_by_num("")}
+\test_expect_error("char.nonscalar"){\cowel_char_by_num(0xD800)}
+}
+
+\test_output{
+¶
+<error->\cowel_char_by_num()</error->
+<error->\cowel_char_by_num("")</error->
+<error->\cowel_char_by_num(0xD800)</error->
+}

@@ -1,1 +1,7 @@
+\test_input{
 \cowel_to_str(unit)
+}
+
+\test_output{
+unit
+}

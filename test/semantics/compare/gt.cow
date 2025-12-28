@@ -1,3 +1,4 @@
+\test_input{
 \cowel_gt(0, 0)
 \cowel_gt(0, 1)
 \cowel_gt(1, 0)
@@ -17,3 +18,26 @@
 \cowel_gt("x", "x")
 \cowel_gt("x", "y")
 \cowel_gt("y", "x")
+}
+
+\test_output{
+false
+false
+true
+false
+
+false
+true
+false
+false
+false
+false
+false
+
+false
+true
+false
+false
+false
+true
+}

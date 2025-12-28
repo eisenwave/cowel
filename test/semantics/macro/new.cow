@@ -1,3 +1,4 @@
+\test_input{
 \cowel_macro(identity){\cowel_put}\
 \cowel_macro(arg0){\cowel_put{0}}\
 \cowel_macro(arg0x){\cowel_put{0} \cowel_put \cowel_put{0}}\
@@ -7,3 +8,11 @@
 \arg0(baka)
 \arg0x(baka){content}
 \arg0_else
+}
+
+\test_output{
+awoo
+baka
+baka content baka
+otherwise
+}

@@ -1,0 +1,35 @@
+\test_input{\cowel_paragraphs{
+First paragraph.
+
+Second paragraph.
+
+\cowel_paragraph_enter third paragraph.
+
+\cowel_paragraph_leave fourth paragraph.
+
+Fifth \cowel_paragraph_leave paragraph.
+
+\cowel_paragraph_enter\cowel_paragraph_enter\cowel_paragraph_enter{}Sixth paragraph.
+
+\cowel_paragraph_leave\cowel_paragraph_leave\cowel_paragraph_leave{}Seventh paragraph.
+
+Eight paragraph.\cowel_paragraph_leave\cowel_paragraph_leave\cowel_paragraph_leave
+}}
+
+\test_output{
+<p>First paragraph.
+</p>
+<p>Second paragraph.
+</p>
+<p> third paragraph.
+</p>
+<p> fourth paragraph.
+</p>
+<p>Fifth </p><p> paragraph.
+</p>
+<p>Sixth paragraph.
+</p>
+<p>Seventh paragraph.
+</p>
+<p>Eight paragraph.</p>
+}

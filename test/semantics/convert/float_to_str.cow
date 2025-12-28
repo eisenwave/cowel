@@ -1,4 +1,13 @@
+\test_input{
 \cowel_to_str(1e10)
 \cowel_to_str(1e10, format=splice)
 \cowel_to_str(1e10, format=fixed)
 \cowel_to_str(1e10, format=scientific)
+}
+
+\test_output{
+1e+10
+1e+10
+10000000000
+1e+10
+}

@@ -1,0 +1,7 @@
+\test_input{
+\cowel_char_by_num(0x41)\cowel_char_by_num(0x0042)\cowel_char_by_num(0x0000000000043)
+}
+
+\test_output{
+ABC
+}

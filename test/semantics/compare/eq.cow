@@ -1,3 +1,4 @@
+\test_input{
 \cowel_eq(unit, unit)
 
 \cowel_eq(null, null)
@@ -23,3 +24,32 @@
 \cowel_eq("x", "")
 \cowel_eq("", "x")
 \cowel_eq("x", "x")
+}
+
+\test_output{
+true
+
+true
+
+true
+false
+false
+true
+
+true
+false
+false
+true
+
+true
+false
+false
+true
+true
+true
+
+true
+false
+false
+true
+}

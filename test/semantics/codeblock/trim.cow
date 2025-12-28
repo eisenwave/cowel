@@ -1,3 +1,4 @@
+\test_input{
 \codeblock(x){abc}
 \codeblock(x){
 abc
@@ -6,4 +7,13 @@ abc
 \codeblock(x){xxx}
 \codeblock(x){
 xxx
+}
+}
+
+\test_output{
+<code-block>abc</code-block>
+<code-block>abc</code-block>
+
+<code-block><h- data-h=kw>xxx</h-></code-block>
+<code-block><h- data-h=kw>xxx</h-></code-block>
 }

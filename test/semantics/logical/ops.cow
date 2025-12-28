@@ -1,3 +1,4 @@
+\test_input{
 \cowel_not(true)
 \cowel_not(false)
 
@@ -18,3 +19,27 @@
 \cowel_or(false, false)
 \cowel_or(true, true, true, true, true)
 \cowel_or(true, true, false, true, true)
+}
+
+\test_output{
+false
+true
+
+true
+false
+true
+false
+false
+false
+true
+false
+
+true
+false
+true
+true
+true
+false
+true
+true
+}

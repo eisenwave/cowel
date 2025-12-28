@@ -1,1 +1,7 @@
+\test_input{
 Hello, world!
+}
+
+\test_output{
+Hello, world!
+}

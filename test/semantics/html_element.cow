@@ -1,0 +1,17 @@
+\test_input{
+\cowel_html_element(div)
+\cowel_html_element(span, (id=abc)){span content}
+
+\test_expect_error("type.mismatch"){\cowel_html_element(span, (id=abc, x)){span content}}
+\test_expect_error("type.mismatch"){\cowel_html_element}
+\test_expect_error("html.element.name.invalid"){\cowel_html_element("<")}
+}
+
+\test_output{
+<div></div>
+<span id=abc>span content</span>
+
+<error->\cowel_html_element(span, (id=abc, x)){span content}</error->
+<error->\cowel_html_element</error->
+<error->\cowel_html_element("&lt;")</error->
+}

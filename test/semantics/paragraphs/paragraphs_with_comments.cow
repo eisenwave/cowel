@@ -1,0 +1,14 @@
+\test_input{\cowel_paragraphs{
+A
+\: comment
+
+B
+}
+}
+
+\test_output{
+<p>A
+</p>
+<p>B
+</p>
+}

@@ -1,0 +1,15 @@
+\test_input{
+\h1{Heading}
+\h1{\code(x){abcx}}
+\h2(listed=false){ }
+\h3(id="user id",listed=false){Heading}
+\h4(id=user-id, listed=false){Heading}
+}
+
+\test_output{
+<h1 id=heading><a class=para href=#heading></a>Heading</h1>
+<h1 id=abcx><a class=para href=#abcx></a><code>abc<h- data-h=kw>x</h-></code></h1>
+<h2> </h2>
+<h3 id="user id"><a class=para href="#user%20id"></a>Heading</h3>
+<h4 id=user-id><a class=para href=#user-id></a>Heading</h4>
+}

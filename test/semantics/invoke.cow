@@ -1,0 +1,13 @@
+\test_input{
+\cowel_invoke(cowel_to_html){abc&}
+
+\test_expect_error("type.mismatch"){\cowel_invoke}
+\test_expect_error("invoke.name.invalid"){\cowel_invoke("???")}
+}
+
+\test_output{
+abc&amp;
+
+<error->\cowel_invoke</error->
+<error->\cowel_invoke("???")</error->
+}

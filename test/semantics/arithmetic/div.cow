@@ -1,0 +1,21 @@
+\test_input{
+\cowel_div(1.0, 0.5)
+\cowel_div(1.0, 2.0)
+
+\cowel_div(0.0, 0.0)
+\cowel_div(1.0, 0.0)
+\cowel_div(-1.0, 0.0)
+
+\test_expect_error("type.mismatch"){\cowel_div(1, 0)}
+}
+
+\test_output{
+2
+0.5
+
+NaN
+infinity
+-infinity
+
+<error->\cowel_div(1, 0)</error->
+}

@@ -1,2 +1,9 @@
+\test_input{
 \cowel_to_str(awoo)
 \cowel_to_str("chan")
+}
+
+\test_output{
+awoo
+chan
+}

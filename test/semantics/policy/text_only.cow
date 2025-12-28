@@ -1,6 +1,12 @@
-\cowel_text_only{
+\test_input{\cowel_text_only{
 \: Comment
 Text
 \\
 \cowel_html_element(span){directive}
+}}
+
+\test_output{
+Text
+\
+directive
 }

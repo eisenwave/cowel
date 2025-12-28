@@ -1,3 +1,4 @@
+\test_input{
 \cowel_pos( 2)
 \cowel_pos(-2)
 
@@ -21,6 +22,30 @@
 \cowel_mul(8, 2)
 \cowel_mul(8, 2, 5)
 \cowel_mul(2, 8)
+}
 
-\cowel_div_to_zero(8, 2)
-\cowel_div_to_zero(2, 8)
+\test_output{
+2
+-2
+
+-2
+2
+
+2
+2
+
+8
+10
+15
+10
+
+8
+6
+4
+-6
+
+8
+16
+80
+16
+}

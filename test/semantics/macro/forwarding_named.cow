@@ -1,2 +1,8 @@
+\test_input{
 \cowel_macro(d){\cowel_html_element(div,(...)){\cowel_put}}\
 \d(id = awoo, hidden = hidden){inner text}
+}
+
+\test_output{
+<div id=awoo hidden=hidden>inner text</div>
+}

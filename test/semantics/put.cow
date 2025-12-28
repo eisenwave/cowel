@@ -1,0 +1,20 @@
+\test_input{
+\cowel_macro(content){\cowel_put}\content{Content}
+\cowel_macro(pos){\cowel_put{0}}\pos(Positional)
+\cowel_macro(named){\cowel_put{n}}\named(n = Named)
+
+\cowel_macro(nested){\cowel_put{\cowel_put}}\
+\nested(X){0}
+
+\test_expect_error("put.outside"){\cowel_put}
+}
+
+\test_output{
+Content
+Positional
+Named
+
+X
+
+<error->\cowel_put</error->
+}

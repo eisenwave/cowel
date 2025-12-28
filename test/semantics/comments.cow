@@ -1,3 +1,4 @@
+\test_input{
 \:Comment
 \: xyz
 \: { awoo
@@ -5,3 +6,7 @@
 \: nested \: comment
 trailing \: comment
 \: \dfn(){}
+}
+
+\test_output{
+<dfn></dfn>trailing }

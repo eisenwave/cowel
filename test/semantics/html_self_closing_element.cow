@@ -1,0 +1,17 @@
+\test_input{
+\cowel_html_self_closing_element(hr)
+\cowel_html_self_closing_element(hr, (id=abc))
+
+\test_expect_error("type.mismatch"){\cowel_html_self_closing_element(hr, (id=abc, x))}
+\test_expect_error("type.mismatch"){\cowel_html_self_closing_element}
+\test_expect_error("html.element.name.invalid"){\cowel_html_self_closing_element("<")}
+}
+
+\test_output{
+<hr/>
+<hr id=abc />
+
+<error->\cowel_html_self_closing_element(hr, (id=abc, x))</error->
+<error->\cowel_html_self_closing_element</error->
+<error->\cowel_html_self_closing_element("&lt;")</error->
+}

@@ -1,4 +1,13 @@
+\test_input{
 \cowel_reinterpret_as_int(0.0)
 \cowel_reinterpret_as_int(-0.0)
 \cowel_reinterpret_as_int(1.5)
 \cowel_reinterpret_as_int(cowel_mul(infinity, 0.0))
+}
+
+\test_output{
+0
+9223372036854775808
+4609434218613702656
+18444492273895866368
+}

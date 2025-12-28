@@ -1,3 +1,4 @@
+\test_input{
 \cowel_str_to_upper("")
 \cowel_str_to_upper("awoo")
 \cowel_str_to_upper("AWOO")
@@ -10,3 +11,19 @@
 \cowel_str_to_upper(cowel_char_by_name("LATIN SMALL LIGATURE FFL"))
 
 \cowel_str_to_upper(cowel_char_by_name("GREEK CAPITAL LETTER ETA WITH DASIA AND PERISPOMENI AND PROSGEGRAMMENI"))
+}
+
+\test_output{
+
+AWOO
+AWOO
+123#=
+
+ÄÖÜ
+ÄÖÜ
+
+STRASSE
+FFL
+
+ἯΙ
+}

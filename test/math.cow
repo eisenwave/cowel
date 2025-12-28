@@ -1,0 +1,7 @@
+\test_input{
+\math{\mi(id=Z){x}}
+}
+
+\test_output{
+<math display=inline><mi id=Z>x</mi></math>
+}

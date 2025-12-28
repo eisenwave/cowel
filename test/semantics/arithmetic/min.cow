@@ -1,3 +1,4 @@
+\test_input{
 \cowel_min(1)
 
 \cowel_min(1, 0, -5, 3)
@@ -15,3 +16,24 @@
 \cowel_min(0.0, cowel_reinterpret_as_float(0x7ff8000000000000))
 \cowel_min(cowel_reinterpret_as_float(0x7ff8000000000000), cowel_reinterpret_as_float(0x7ff8000000000000))
 \cowel_min(infinity, cowel_reinterpret_as_float(0x7ff8000000000000))
+}
+
+\test_output{
+1
+
+-5
+
+0
+-0
+-0
+-0
+
+0
+0
+-infinity
+0
+
+NaN
+NaN
+NaN
+}

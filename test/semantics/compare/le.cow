@@ -1,3 +1,4 @@
+\test_input{
 \cowel_le(0, 0)
 \cowel_le(0, 1)
 \cowel_le(1, 0)
@@ -17,3 +18,26 @@
 \cowel_le("x", "x")
 \cowel_le("x", "y")
 \cowel_le("y", "x")
+}
+
+\test_output{
+true
+true
+false
+true
+
+true
+false
+true
+true
+true
+true
+true
+
+true
+false
+true
+true
+true
+false
+}

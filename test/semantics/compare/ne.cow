@@ -1,3 +1,4 @@
+\test_input{
 \cowel_ne(unit, unit)
 
 \cowel_ne(null, null)
@@ -23,3 +24,32 @@
 \cowel_ne("x", "")
 \cowel_ne("", "x")
 \cowel_ne("x", "x")
+}
+
+\test_output{
+false
+
+false
+
+false
+true
+true
+false
+
+false
+true
+true
+false
+
+false
+true
+true
+false
+false
+false
+
+false
+true
+true
+false
+}

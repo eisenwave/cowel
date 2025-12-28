@@ -1,0 +1,11 @@
+\test_input{
+\cowel_div_to_zero(8, 2)
+\cowel_div_to_zero(2, 8)
+\test_expect_error("arithmetic.div-by-zero"){\cowel_div_to_zero(1, 0)}
+}
+
+\test_output{
+4
+0
+<error->\cowel_div_to_zero(1, 0)</error->
+}

@@ -1,0 +1,11 @@
+\test_input{
+\style{b { color: red; }}
+
+\test_expect_error("raw-text.closing"){\style{</style>}}
+}
+
+\test_output{
+<style>b { color: red; }</style>
+
+<style></style>
+}

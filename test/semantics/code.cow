@@ -1,0 +1,33 @@
+\test_input{
+\code(x){}
+\code(x){ }
+\code(x){xxx}
+\code(x){xxx123}
+\code(x){ 123 }
+
+\code(x){ \b{123} }
+\code(x){ \b{xxx} }
+\code(x){ \b{x}xx }
+
+\code(c){int \cowel_highlight_as(number){x}}
+\cowel_highlight_as(keyword){awoo}
+
+\test_expect_error("type.mismatch"){\code{}}
+}
+
+\test_output{
+<code></code>
+<code> </code>
+<code><h- data-h=kw>xxx</h-></code>
+<code><h- data-h=kw>xxx</h->123</code>
+<code> 123 </code>
+
+<code> <b>123</b> </code>
+<code> <b><h- data-h=kw>xxx</h-></b> </code>
+<code> <b><h- data-h=kw>x</h-></b><h- data-h=kw>xx</h-> </code>
+
+<code><h- data-h=kw_type>int</h-> <h- data-h=num>x</h-></code>
+<h- data-h=kw>awoo</h->
+
+<error->\code{}</error->
+}

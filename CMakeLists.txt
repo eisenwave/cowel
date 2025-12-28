@@ -324,7 +324,6 @@ else()
         src/test/cpp/test_char_sequence.cpp
         src/test/cpp/test_chars_strings.cpp
         src/test/cpp/test_document_generation.cpp
-        src/test/cpp/test_document_generation_data.cpp
         src/test/cpp/test_draft_uris.cpp
         src/test/cpp/test_html_writer.cpp
         src/test/cpp/test_levenshtein.cpp

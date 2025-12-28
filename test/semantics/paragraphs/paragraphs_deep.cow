@@ -1,0 +1,9 @@
+\test_input{\cowel_paragraphs{
+\i{\cowel_paragraph_leave{}awoo}
+\cowel_paragraph_leave{}\cowel_text_as_html{End.}
+}}
+
+\test_output{
+<p><i>awoo</i>
+</p>End.
+}

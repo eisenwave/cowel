@@ -1,4 +1,11 @@
-\cowel_source_as_text{
+\test_input{\cowel_source_as_text{
+\: Comment
+Text
+\\
+\cowel_html_element(span){directive}
+}}
+
+\test_output{
 \: Comment
 Text
 \\

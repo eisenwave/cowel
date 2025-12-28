@@ -1,0 +1,9 @@
+\test_input{
+\test_expect_error("directive-lookup.unresolved"){\awoo}
+\test_expect_error("directive-lookup.unresolved"){\code(x){\awoo}}
+}
+
+\test_output{
+<error->\awoo</error->
+<code><error->\awoo</error-></code>
+}

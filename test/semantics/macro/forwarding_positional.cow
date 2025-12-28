@@ -1,3 +1,4 @@
+\test_input{
 \cowel_macro(cat3){\cowel_put{0}\cowel_put{1}\cowel_put{2}}\
 \cowel_macro(a){\cat3(...)}\
 \cowel_macro(b){\cat3(cowel_put{0}, ...)}\
@@ -13,3 +14,14 @@
 \e(1)
 \f(1)
 \g
+}
+
+\test_output{
+123
+112
+c12
+12d
+e1E
+11f
+XYZ
+}
