@@ -1,23 +1,37 @@
 \test_input{
-\cowel_abs(0.0)
-\cowel_abs(-0.0)
-\cowel_abs(1.0)
-\cowel_abs(-1.0)
+\cowel_abs(-1)
+\cowel_abs( 0)
+\cowel_abs( 1)
 
 \cowel_abs(-infinity)
-\cowel_abs(infinity)
+\cowel_abs(-1.0)
+\cowel_abs(-0.5)
+\cowel_abs(-0.0)
+\cowel_abs( 0.0)
+\cowel_abs( 0.5)
+\cowel_abs( 1.0)
+\cowel_abs( infinity)
 
 \cowel_abs(cowel_reinterpret_as_float(0x7ff8000000000000))
+
+\test_expect_error("type.mismatch"){\cowel_abs(0, 0)}
 }
 
 \test_output{
-0
-0
 1
+0
 1
 
 infinity
+1
+0.5
+0
+0
+0.5
+1
 infinity
 
 NaN
+
+<error->\cowel_abs(0, 0)</error->
 }
