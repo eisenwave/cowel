@@ -1,6 +1,7 @@
 # Contributing Guidelines
 
-This document is W.I.P.
+> [!NOTE]
+> This document is W.I.P.
 
 ## Commit messages
 
@@ -57,3 +58,21 @@ For example, a changelog for a specific version could have the following content
 > - improve error message when `\chan` gets blank input (#7)
 > - fix segfault in `\desu` (#8)
 > - also add some debug logging in `\desu` (#9)
+
+## Use of generative artificial intelligence
+
+While generative artificial intelligence may be prone to mistakes
+and may be abused to create low-quality contributions,
+it is also a useful tool in specific situations, such as:
+
+- generating snippets of boilerplate code using auto-completion
+- generating bits of documentation or correcting spelling and grammar
+
+Therefore, COWEL permits contributions that are partially authored by AI.
+
+> [!CAUTION]
+> However, abuse of AI such as
+> - generating clearly non-functional contributions without proof-reading
+> - attempting to commit hallucinated dependencies and API calls
+> 
+> … is treated as gross negligence and will result in a permanent ban from the repository.
