@@ -102,7 +102,7 @@ private:
 
     const Name_Resolver& m_builtin_name_resolver;
     File_Loader& m_file_loader;
-    Logger& m_logger;
+    Logger* m_logger;
     Syntax_Highlighter& m_syntax_highlighter;
 
     Document_Sections m_sections { m_memory };
@@ -139,7 +139,7 @@ public:
         , m_error_behavior { error_behavior }
         , m_builtin_name_resolver { builtin_name_resolver }
         , m_file_loader { file_loader }
-        , m_logger { logger }
+        , m_logger { &logger }
         , m_syntax_highlighter { highlighter }
     {
     }
@@ -162,12 +162,16 @@ public:
     [[nodiscard]]
     Logger& get_logger()
     {
-        return m_logger;
+        return *m_logger;
     }
     [[nodiscard]]
     const Logger& get_logger() const
     {
-        return m_logger;
+        return *m_logger;
+    }
+    void set_logger(Logger& logger)
+    {
+        m_logger = &logger;
     }
 
     [[nodiscard]]
@@ -265,20 +269,20 @@ public:
     [[nodiscard]]
     Severity get_min_diagnostic_level() const
     {
-        return m_logger.get_min_severity();
+        return m_logger->get_min_severity();
     }
 
     /// @brief Equivalent to `get_min_diagnostic_level() >= severity`.
     [[nodiscard]]
     bool emits(Severity severity) const
     {
-        return m_logger.can_log(severity);
+        return m_logger->can_log(severity);
     }
 
     void emit(Diagnostic diagnostic)
     {
         COWEL_ASSERT(emits(diagnostic.severity));
-        m_logger(diagnostic);
+        (*m_logger)(diagnostic);
     }
 
     void emit(
