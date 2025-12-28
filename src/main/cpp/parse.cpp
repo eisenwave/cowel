@@ -679,7 +679,9 @@ private:
         const std::size_t elements = match_markup_sequence(Content_Context::string);
 
         if (!expect(u8'"')) {
-            error(Source_Span { initial_pos, 1 }, u8"No matching '}'. This block is unclosed."sv);
+            error(
+                Source_Span { initial_pos, 1 }, u8"No matching '\"'. This string is unterminated."sv
+            );
             return false;
         }
 
