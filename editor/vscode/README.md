@@ -8,7 +8,7 @@ Currently, the plugin supports:
 
 - syntax highlighting for COWEL markup files (`.cow`)
 - support for directives, literals, comments, and escape sequences
-- bnracket matching and auto-closing
+- bracket matching and auto-closing
 - folding support for structured content
 
 ## Language Features
