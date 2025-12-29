@@ -81,6 +81,7 @@
 - also update µlight to a more recent version
   with highlighting support for Python and some other languages
 - also optimize/simplify directive name lookup (#102)
+- also require at least NodeJS 20.0.0 (#141)
 
 **Full Changelog**:
 [`v0.6.0...master`](https://github.com/eisenwave/cowel/compare/v0.6.0...master)
