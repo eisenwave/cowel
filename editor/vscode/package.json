@@ -1,0 +1,55 @@
+{
+  "name": "cowel-language-support",
+  "version": "0.1.0",
+  "description": "Syntax highlighting and language support for Compact Web Language (COWEL)",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vsce package",
+    "clean": "rm -f *.vsix",
+    "rebuild": "npm run clean && npm run build",
+    "dev": "code --extensionDevelopmentPath=. test.cow"
+  },
+  "keywords": [
+    "cowel",
+    "markup"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "displayName": "COWEL Language Support",
+  "publisher": "cowel",
+  "devDependencies": {
+    "@vscode/vsce": "^3.7.1"
+  },
+  "engines": {
+    "vscode": "^1.80.0",
+    "node": "^20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eisenwave/cowel"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "cowel",
+        "aliases": [
+          "COWEL",
+          "cowel"
+        ],
+        "extensions": [
+          ".cow",
+          ".cowel"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "cowel",
+        "scopeName": "source.cowel",
+        "path": "./syntaxes/cowel.tmLanguage.json"
+      }
+    ]
+  }
+}

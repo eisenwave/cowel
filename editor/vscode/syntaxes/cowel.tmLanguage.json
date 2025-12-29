@@ -1,0 +1,208 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "COWEL",
+  "scopeName": "source.cowel",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#escapes" },
+    { "include": "#directives" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.cowel",
+          "match": "\\\\:.*$"
+        },
+        {
+          "name": "comment.block.cowel",
+          "begin": "\\\\\\*",
+          "end": "\\*\\\\"
+        }
+      ]
+    },
+    "directives": {
+      "patterns": [
+        {
+          "begin": "(?<!\\\\)\\\\([a-zA-Z_][a-zA-Z0-9_]*)",
+          "beginCaptures": {
+            "0": { "name": "support.function.directive.cowel" }
+          },
+          "end": "(?!\\G)(?!\\(|\\{)",
+          "patterns": [
+            { "include": "#directive-arguments" },
+            { "include": "#directive-content" }
+          ]
+        }
+      ]
+    },
+    "escapes": {
+      "patterns": [
+        {
+          "comment": "The order should be kept this way."
+        },
+        {
+          "name": "constant.character.escape.backslash.cowel",
+          "match": "\\\\\\\\"
+        },
+        {
+          "comment": "Other single-char escapes",
+          "name": "constant.character.escape.cowel",
+          "match": "\\\\[{}\\[\\](),.=!\"#$%&'+/;<>?@^|~\\-\\s]"
+        },
+        {
+          "name": "constant.character.escape.newline.cowel",
+          "match": "\\\\(?:\\n|\\r|\\r\\n)"
+        }
+      ]
+    },
+    "directive-arguments": {
+      "patterns": [
+        {
+          "name": "meta.arguments.cowel",
+          "begin": "\\G\\(",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.arguments.begin.cowel" }
+          },
+          "end": "\\)",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.arguments.end.cowel" }
+          },
+          "patterns": [
+            { "include": "#argument" },
+            { "include": "#comments" }
+          ]
+        },
+        {
+          "name": "meta.arguments.cowel",
+          "begin": "(?<=\\))\\(",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.arguments.begin.cowel" }
+          },
+          "end": "\\)",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.arguments.end.cowel" }
+          },
+          "patterns": [
+            { "include": "#argument" },
+            { "include": "#comments" }
+          ]
+        }
+      ]
+    },
+    "directive-content": {
+      "patterns": [
+        {
+          "name": "meta.content.cowel",
+          "begin": "\\G\\{",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.content.begin.cowel" }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.content.end.cowel" }
+          },
+          "patterns": [
+            { "include": "$self" }
+          ]
+        },
+        {
+          "name": "meta.content.cowel",
+          "begin": "(?<=\\))\\{",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.content.begin.cowel" }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.content.end.cowel" }
+          },
+          "patterns": [
+            { "include": "$self" }
+          ]
+        }
+      ]
+    },
+    "argument": {
+      "patterns": [
+        {
+          "name": "variable.parameter.named.cowel",
+          "match": "([a-zA-Z_][a-zA-Z0-9_-]*)\\s*(=)",
+          "captures": {
+            "1": { "name": "entity.name.tag.cowel" },
+            "2": { "name": "keyword.operator.assignment.cowel" }
+          }
+        },
+        {
+          "name": "constant.language.ellipsis.cowel",
+          "match": "\\.\\.\\."
+        },
+        { "include": "#literals" },
+        { "include": "#strings" },
+        {
+          "comment": "Nested groups",
+          "begin": "\\(",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.group.begin.cowel" }
+          },
+          "end": "\\)",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.group.end.cowel" }
+          },
+          "patterns": [
+            { "include": "#argument" }
+          ]
+        },
+        { "include": "#directives" },
+        { "include": "#comments" }
+      ]
+    },
+    "literals": {
+      "patterns": [
+        {
+          "name": "constant.numeric.integer.binary.cowel",
+          "match": "\\b-?0b[01]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.octal.cowel",
+          "match": "\\b-?0o[0-7]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.hex.cowel",
+          "match": "\\b-?0x[0-9a-fA-F]+\\b"
+        },
+        {
+          "name": "constant.numeric.float.cowel",
+          "match": "\\b-?(?:[0-9]+\\.[0-9]*|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?\\b|\\b-?infinity\\b"
+        },
+        {
+          "name": "constant.numeric.integer.decimal.cowel",
+          "match": "\\b-?[0-9]+\\b"
+        },
+        {
+          "name": "constant.language.cowel",
+          "match": "(?<![-a-zA-Z0-9_])(?:unit|null|true|false)(?![-a-zA-Z0-9_])"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.cowel",
+          "begin": "\"",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.cowel" }
+          },
+          "end": "\"",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.cowel" }
+          },
+          "patterns": [
+            { "include": "#escapes" },
+            { "include": "#directives" },
+            { "include": "#comments" }
+          ]
+        }
+      ]
+    }
+  }
+}
