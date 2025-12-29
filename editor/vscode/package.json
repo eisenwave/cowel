@@ -29,6 +29,7 @@
     "type": "git",
     "url": "https://github.com/eisenwave/cowel"
   },
+  "icon": "./icons/extension.png",
   "contributes": {
     "languages": [
       {
@@ -41,7 +42,11 @@
           ".cow",
           ".cowel"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/file.svg",
+          "dark": "./icons/file.svg"
+        }
       }
     ],
     "grammars": [
