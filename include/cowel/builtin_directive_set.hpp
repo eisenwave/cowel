@@ -176,6 +176,27 @@ protected:
         = 0;
 };
 
+enum struct Str_Length_Kind : bool {
+    code_point,
+    utf8,
+};
+
+struct [[nodiscard]]
+Str_Length_Behavior final : Int_Directive_Behavior {
+private:
+    const Str_Length_Kind m_kind;
+
+public:
+    [[nodiscard]]
+    constexpr explicit Str_Length_Behavior(Str_Length_Kind kind)
+        : m_kind { kind }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Integer, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+};
+
 enum struct Text_Transformation : Default_Underlying {
     lowercase,
     uppercase,

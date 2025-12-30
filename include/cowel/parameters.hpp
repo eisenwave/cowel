@@ -289,6 +289,7 @@ struct String_Matcher final
     , Value_Holder<std::u8string_view> {
 private:
     std::pmr::vector<char8_t> m_data;
+    String_Kind m_string_kind = String_Kind::unknown;
 
 public:
     [[nodiscard]]
@@ -304,6 +305,13 @@ public:
         Context& context,
         const Match_Fail_Options& on_fail
     ) override;
+
+    [[nodiscard]]
+    String_Kind get_string_kind() const
+    {
+        COWEL_ASSERT(was_matched());
+        return m_string_kind;
+    }
 };
 
 struct Boolean_Matcher final

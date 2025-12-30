@@ -122,10 +122,14 @@ constexpr Policy_Behavior cowel_source_as_text //
     { Known_Content_Policy::source_as_text };
 constexpr Unary_Numeric_Expression_Behavior cowel_sqrt //
     { Unary_Numeric_Expression_Kind::sqrt };
+constexpr Str_Length_Behavior cowel_str_length //
+    { Str_Length_Kind::code_point };
 constexpr Str_Transform_Behavior cowel_str_to_lower //
     { Text_Transformation::lowercase };
 constexpr Str_Transform_Behavior cowel_str_to_upper //
     { Text_Transformation::uppercase };
+constexpr Str_Length_Behavior cowel_str_utf8_length //
+    { Str_Length_Kind::utf8 };
 constexpr N_Ary_Numeric_Expression_Behavior cowel_sub //
     { N_Ary_Numeric_Expression_Kind::sub };
 constexpr Policy_Behavior cowel_text_as_html //
@@ -435,8 +439,10 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_rem_to_zero),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_source_as_text),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_sqrt),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_length),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_to_lower),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_to_upper),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_utf8_length),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_sub),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_text_as_html),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_text_only),

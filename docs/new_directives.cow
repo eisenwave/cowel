@@ -2156,7 +2156,75 @@ If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareSignalingGreaterEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
 
-\h3(id=string-manipulation){String manipulation}
+\h3(id=string-operations){String operations}
+
+\h4(
+  id = dir-cowel_str_length
+){\cowdoc_dir{cowel_str_length} \c{mdash} Length of string}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_str_length}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){int}
+}
+
+Returns the length of \cowdoc_attr{x}, in code points.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_str_length("")
+\: U+0061 LATIN SMALL LETTER A
+\cowel_str_length("a")
+\: U+0061 LATIN SMALL LETTER A WITH DIAERESIS
+\cowel_str_length("ä")
+\: U+1F1E9 Regional Indicator Symbol Letter D
+\: U+1F1EA Regional Indicator Symbol Letter E
+\cowel_str_length("🇩🇪")
+}}
+Generated HTML:
+\htmlblock{
+\cowel_str_length("")
+\cowel_str_length("a")
+\cowel_str_length("ä")
+\cowel_str_length("🇩🇪")
+}
+}
+
+\h4(
+  id = dir-cowel_str_utf8_length
+){\cowdoc_dir{cowel_str_utf8_length} \c{mdash} Length of string in UTF-8 code units}
+
+\pre{
+\cowel_highlight_as(markup-tag){cowel_str_utf8_length}(\cowel_highlight_as(markup-attr){x}: \cowel_highlight_as(keyword-type){str}): \cowel_highlight_as(keyword-type){int}
+}
+
+Returns the length of \cowdoc_attr{x}, in UTF-8 code units.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_str_utf8_length("")
+\: U+0061 LATIN SMALL LETTER A
+\cowel_str_utf8_length("a")
+\: U+0061 LATIN SMALL LETTER A WITH DIAERESIS
+\cowel_str_utf8_length("ä")
+\: U+1F1E9 Regional Indicator Symbol Letter D
+\: U+1F1EA Regional Indicator Symbol Letter E
+\cowel_str_utf8_length("🇩🇪")
+}}
+Generated HTML:
+\htmlblock{
+\cowel_str_utf8_length("")
+\cowel_str_utf8_length("a")
+\cowel_str_utf8_length("ä")
+\cowel_str_utf8_length("🇩🇪")
+}
+}
+
+\Bnote{
+COWEL strings should be internally stored as UTF-8,
+so this operation should not require encoding the string as UTF-8.
+Rather it accesses available information directly.
+}
 
 \h4(
   id = dir-cowel_str_to_lower

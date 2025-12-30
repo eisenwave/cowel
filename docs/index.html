@@ -1726,10 +1726,14 @@ h1 {
 <div class=toc-num data-level=4>8.13.6</div>
 <a href=#dir-cowel_ge><h4><code><h- data-h=mk_tag>\cowel_ge</h-></code> — Greater than or equal</h4></a>
 <div class=toc-num data-level=3>8.14</div>
-<a href=#string-manipulation><h3>String manipulation</h3></a>
+<a href=#string-operations><h3>String operations</h3></a>
 <div class=toc-num data-level=4>8.14.1</div>
-<a href=#dir-cowel_str_to_lower><h4><code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4></a>
+<a href=#dir-cowel_str_length><h4><code><h- data-h=mk_tag>\cowel_str_length</h-></code> — Length of string</h4></a>
 <div class=toc-num data-level=4>8.14.2</div>
+<a href=#dir-cowel_str_utf8_length><h4><code><h- data-h=mk_tag>\cowel_str_utf8_length</h-></code> — Length of string in UTF-8 code units</h4></a>
+<div class=toc-num data-level=4>8.14.3</div>
+<a href=#dir-cowel_str_to_lower><h4><code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4></a>
+<div class=toc-num data-level=4>8.14.4</div>
 <a href=#dir-cowel_str_to_upper><h4><code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4></a>
 <div class=toc-num data-level=3>8.15</div>
 <a href=#variable-management><h3>Variable management</h3></a>
@@ -5339,9 +5343,65 @@ otherwise <code>false</code>.
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareSignalingGreaterEqual</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
-<h3 id=string-manipulation><a class=para href=#string-manipulation></a>8.14. String manipulation</h3>
+<h3 id=string-operations><a class=para href=#string-operations></a>8.14. String operations</h3>
 
-<h4 id=dir-cowel_str_to_lower><a class=para href=#dir-cowel_str_to_lower></a>8.14.1. <code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4>
+<h4 id=dir-cowel_str_length><a class=para href=#dir-cowel_str_length></a>8.14.1. <code><h- data-h=mk_tag>\cowel_str_length</h-></code> — Length of string</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_str_length</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>int</h->
+</pre>
+
+<p>Returns the length of <tt-><h- data-h=mk_attr>x</h-></tt->, in code points.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h->""<h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+0061 LATIN SMALL LETTER A</h->
+<h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h->"a"<h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+0061 LATIN SMALL LETTER A WITH DIAERESIS</h->
+<h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h->"ä"<h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+1F1E9 Regional Indicator Symbol Letter D</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+1F1EA Regional Indicator Symbol Letter E</h->
+<h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h->"🇩🇪"<h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>0
+1
+1
+2</code-block>
+</example-block>
+
+<h4 id=dir-cowel_str_utf8_length><a class=para href=#dir-cowel_str_utf8_length></a>8.14.2. <code><h- data-h=mk_tag>\cowel_str_utf8_length</h-></code> — Length of string in UTF-8 code units</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_str_utf8_length</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>int</h->
+</pre>
+
+<p>Returns the length of <tt-><h- data-h=mk_attr>x</h-></tt->, in UTF-8 code units.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h->""<h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+0061 LATIN SMALL LETTER A</h->
+<h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h->"a"<h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+0061 LATIN SMALL LETTER A WITH DIAERESIS</h->
+<h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h->"ä"<h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+1F1E9 Regional Indicator Symbol Letter D</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+1F1EA Regional Indicator Symbol Letter E</h->
+<h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h->"🇩🇪"<h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>0
+1
+2
+8</code-block>
+</example-block>
+
+<note-block><p><intro-></intro-> 
+COWEL strings should be internally stored as UTF-8,
+so this operation should not require encoding the string as UTF-8.
+Rather it accesses available information directly.
+</p></note-block>
+
+<h4 id=dir-cowel_str_to_lower><a class=para href=#dir-cowel_str_to_lower></a>8.14.3. <code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_str_to_lower</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
@@ -5360,7 +5420,7 @@ COWEL markup:
 </p><code-block>awoo äöü 123</code-block>
 </example-block>
 
-<h4 id=dir-cowel_str_to_upper><a class=para href=#dir-cowel_str_to_upper></a>8.14.2. <code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4>
+<h4 id=dir-cowel_str_to_upper><a class=para href=#dir-cowel_str_to_upper></a>8.14.4. <code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_str_to_upper</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->

@@ -36,6 +36,21 @@ using ulight::utf8::sequence_length;
 using ulight::utf8::Unicode_Error;
 using ulight::utf8::Unicode_Error_Handling;
 
+/// @brief Returns the length of `str`, in code points.
+/// Any illegal code units are counted as one code point,
+/// which is consistent with treating them as a U+FFFD REPLACEMENT CHARACTER.
+[[nodiscard]]
+constexpr std::size_t count_code_points_or_replacement(std::u8string_view str) noexcept
+{
+    std::size_t result = 0;
+    while (!str.empty()) {
+        const auto [_, length] = decode_and_length_or_replacement(str);
+        str.remove_prefix(std::size_t(length));
+        ++result;
+    }
+    return result;
+}
+
 /// @brief Returns the length of `str`, in code units, when encoded.
 [[nodiscard]]
 constexpr std::size_t count_code_units_unchecked(std::u32string_view str)

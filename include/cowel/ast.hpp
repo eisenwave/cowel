@@ -15,6 +15,7 @@
 
 #include "cowel/fwd.hpp"
 #include "cowel/memory_resources.hpp"
+#include "cowel/string_kind.hpp"
 
 namespace cowel::ast {
 namespace detail {
@@ -189,6 +190,7 @@ public:
 
 private:
     Primary_Kind m_kind;
+    String_Kind m_string_kind;
     File_Source_Span m_source_span;
     std::u8string_view m_source;
     Extra_Variant m_extra;
@@ -198,7 +200,8 @@ private:
         Primary_Kind kind,
         File_Source_Span source_span,
         std::u8string_view source,
-        Extra_Variant&& extra
+        Extra_Variant&& extra,
+        String_Kind string_kind = String_Kind::unknown
     );
 
 public:
@@ -216,6 +219,12 @@ public:
     Primary_Kind get_kind() const
     {
         return m_kind;
+    }
+
+    [[nodiscard]]
+    String_Kind get_string_kind() const
+    {
+        return m_string_kind;
     }
 
     [[nodiscard]]

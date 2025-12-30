@@ -170,6 +170,7 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/relative_file_loader.hpp
     include/cowel/services.hpp
     include/cowel/settings.hpp
+    include/cowel/string_kind.hpp
     include/cowel/theme_to_css.hpp
     include/cowel/type.hpp
     include/cowel/ulight_highlighter.hpp

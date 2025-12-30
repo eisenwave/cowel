@@ -1,0 +1,31 @@
+\test_input{
+\: Empty or blank strings
+\cowel_str_length("")
+\cowel_str_length(" ")
+\cowel_str_length("   ")
+
+\: ASCII
+\cowel_str_length("a")
+\cowel_str_length("awoo")
+\cowel_str_length(" awoo ")
+
+\: Four code points, but six code units
+\cowel_str_length("awöö")
+\cowel_str_length("Äwoo")
+\: German flag is single glyph, but consists of two code points
+\cowel_str_length("🇩🇪")
+}
+
+\test_output{
+0
+1
+3
+
+1
+4
+6
+
+4
+4
+2
+}

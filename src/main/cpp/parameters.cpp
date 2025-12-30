@@ -168,6 +168,7 @@ Processing_Status String_Matcher::match_value(
     val->extract_string(m_data);
 
     m_value = { as_u8string_view(m_data), argument.get_source_span() };
+    m_string_kind = val->get_string_kind();
     return Processing_Status::ok;
 }
 
