@@ -192,29 +192,17 @@ public:
     [[nodiscard]]
     static constexpr Value boolean(bool value) noexcept
     {
-        return Value {
-            Union { .boolean = value },
-            boolean_index,
-            &Type::boolean,
-        };
+        return Value { Union { .boolean = value }, boolean_index };
     }
     [[nodiscard]]
     static constexpr Value integer(Integer value) noexcept
     {
-        return Value {
-            Union { .integer = std::bit_cast<Int_Storage>(value) },
-            integer_index,
-            &Type::integer,
-        };
+        return Value { Union { .integer = std::bit_cast<Int_Storage>(value) }, integer_index };
     }
     [[nodiscard]]
     static constexpr Value floating(Float value) noexcept
     {
-        return Value {
-            Union { .floating = value },
-            floating_index,
-            &Type::floating,
-        };
+        return Value { Union { .floating = value }, floating_index };
     }
 
     /// @brief Creates a value of type `str` from a string with static storage duration.
@@ -224,34 +212,19 @@ public:
     [[nodiscard]]
     static constexpr Value static_string(std::u8string_view value, String_Kind kind) noexcept
     {
-        return Value {
-            Union { .static_string = value },
-            static_string_index,
-            &Type::str,
-            kind,
-        };
+        return Value { Union { .static_string = value }, static_string_index, kind };
     }
     /// @brief Creates a value of type `str` from a string that fits into `Short_String_Value`.
     [[nodiscard]]
     static constexpr Value short_string(Short_String_Value value, String_Kind kind) noexcept
     {
-        return Value {
-            Union { .short_string = value },
-            short_string_index,
-            &Type::str,
-            kind,
-        };
+        return Value { Union { .short_string = value }, short_string_index, kind };
     }
     /// @brief Creates a value of type `str` with dynamically sized contents.
     [[nodiscard]]
     static Value dynamic_string_forced(std::pmr::vector<char8_t>&& value, String_Kind kind) noexcept
     {
-        return Value {
-            Union { .dynamic_string = std::move(value) },
-            dynamic_string_index,
-            &Type::str,
-            kind,
-        };
+        return Value { Union { .dynamic_string = std::move(value) }, dynamic_string_index, kind };
     }
     /// @brief Creates a value of type `str` with dynamically sized contents.
     /// If `value` can be represented as `Short_String_Value`,
@@ -267,12 +240,7 @@ public:
             return result;
         }
 
-        return Value {
-            Union { .dynamic_string = std::move(value) },
-            dynamic_string_index,
-            &Type::str,
-            kind,
-        };
+        return Value { Union { .dynamic_string = std::move(value) }, dynamic_string_index, kind };
     }
     [[nodiscard]]
     static Value dynamic_string(
@@ -286,11 +254,7 @@ public:
         }
         std::pmr::vector<char8_t> storage { memory };
         storage.insert(storage.end(), value.data(), value.data() + value.size());
-        return Value {
-            Union { .dynamic_string = std::move(storage) },
-            dynamic_string_index,
-            &Type::str,
-        };
+        return Value { Union { .dynamic_string = std::move(storage) }, dynamic_string_index };
     }
 
     [[nodiscard]]
@@ -302,34 +266,26 @@ private:
     Index m_index;
     String_Kind m_string_kind;
     Union m_value;
-    const Type* m_type;
 
     template <class T>
     [[nodiscard]]
-    constexpr Value(
-        T&& value,
-        Index index,
-        const Type* type,
-        String_Kind string_kind = String_Kind::unknown
-    ) noexcept
+    constexpr Value(T&& value, Index index, String_Kind string_kind = String_Kind::unknown) noexcept
         : m_index { index }
         , m_string_kind { string_kind }
         , m_value { Union::make(std::forward<T>(value), index) }
-        , m_type { type }
     {
-        COWEL_ASSERT(type);
     }
 
 public:
     [[nodiscard]]
     constexpr Value(const Value& other) noexcept
-        : Value { other.m_value, other.m_index, other.m_type }
+        : Value { other.m_value, other.m_index }
     {
     }
 
     [[nodiscard]]
     constexpr Value(Value&& other) noexcept
-        : Value { std::move(other.m_value), other.m_index, other.m_type }
+        : Value { std::move(other.m_value), other.m_index }
     {
     }
 
@@ -338,7 +294,6 @@ public:
         if (this != &other) {
             m_value.assign(m_index, other.m_value, other.m_index);
             m_index = other.m_index;
-            m_type = other.m_type;
         }
         return *this;
     }
@@ -347,7 +302,6 @@ public:
     {
         m_value.assign(m_index, std::move(other).m_value, other.m_index);
         m_index = other.m_index;
-        m_type = other.m_type;
         return *this;
     }
 
@@ -360,14 +314,42 @@ public:
     [[nodiscard]]
     constexpr const Type& get_type() const noexcept
     {
-        return *m_type;
+        static constexpr auto types = [] {
+            std::array<const Type*, 10> result;
+            result[unit_index] = &Type::unit;
+            result[null_index] = &Type::null;
+            result[boolean_index] = &Type::boolean;
+            result[integer_index] = &Type::integer;
+            result[floating_index] = &Type::floating;
+            result[static_string_index] = &Type::str;
+            result[short_string_index] = &Type::str;
+            result[dynamic_string_index] = &Type::str;
+            result[block_index] = &Type::block;
+            result[directive_index] = &Type::block;
+            return result;
+        }();
+        return *types[m_index];
     }
 
     /// @brief Equivalent to `get_type().get_kind()`.
     [[nodiscard]]
     constexpr Type_Kind get_type_kind() const noexcept
     {
-        return m_type->get_kind();
+        static constexpr auto kinds = [] {
+            std::array<Type_Kind, 10> result;
+            result[unit_index] = Type_Kind::unit;
+            result[null_index] = Type_Kind::null;
+            result[boolean_index] = Type_Kind::boolean;
+            result[integer_index] = Type_Kind::integer;
+            result[floating_index] = Type_Kind::floating;
+            result[static_string_index] = Type_Kind::str;
+            result[short_string_index] = Type_Kind::str;
+            result[dynamic_string_index] = Type_Kind::str;
+            result[block_index] = Type_Kind::block;
+            result[directive_index] = Type_Kind::block;
+            return result;
+        }();
+        return kinds[m_index];
     }
 
     [[nodiscard]]
@@ -495,8 +477,8 @@ public:
     Processing_Status splice_block(Content_Policy& out, Context& context) const;
 };
 
-inline constexpr Value Value::unit = { Union { .unit = Unit {} }, unit_index, &Type::unit };
-inline constexpr Value Value::null = { Union { .null = Null {} }, null_index, &Type::null };
+inline constexpr Value Value::unit = { Union { .unit = Unit {} }, unit_index };
+inline constexpr Value Value::null = { Union { .null = Null {} }, null_index };
 inline constexpr Value Value::true_ = Value::boolean(true);
 inline constexpr Value Value::false_ = Value::boolean(false);
 inline constexpr Value Value::zero_int = Value::integer(0);
