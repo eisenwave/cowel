@@ -46,6 +46,13 @@ struct Directive_And_Frame {
     Frame_Index frame;
 };
 
+template <typename T>
+[[nodiscard]]
+constexpr T copy_for_no_reason(T x)
+{
+    return x;
+}
+
 /// @brief A value in the COWEL language.
 /// This is a tagged union (similar to `std::variant`),
 /// although it does not simply wrap `std::variant` for a variety of reasons:
@@ -93,9 +100,11 @@ private:
         [[nodiscard]]
         static constexpr Union make(T&& other, Index other_index) noexcept
         {
+            // Note that accessing other.unit or other.null results in a GCC ICE;
+            // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123346
             switch (other_index) {
-            case unit_index: return { .unit = other.unit };
-            case null_index: return { .null = other.null };
+            case unit_index: return { .unit = Unit {} };
+            case null_index: return { .null = Null {} };
             case boolean_index: return { .boolean = other.boolean };
             case integer_index: return { .integer = other.integer };
             case floating_index: return { .floating = other.floating };
@@ -106,6 +115,7 @@ private:
             case block_index: return { .block = other.block };
             case directive_index: return { .directive = other.directive };
             }
+            COWEL_ASSERT_UNREACHABLE(u8"Invalid index.");
         }
 
         template <typename T>
@@ -132,6 +142,7 @@ private:
             case block_index: block = other.block; break;
             case directive_index: directive = other.directive; break;
             }
+            COWEL_ASSERT_UNREACHABLE(u8"Invalid index.");
         }
 
         constexpr void destroy(Index index) noexcept
@@ -485,10 +496,8 @@ public:
     Processing_Status splice_block(Content_Policy& out, Context& context) const;
 };
 
-inline constexpr Value Value::unit
-    = { Value::Union { .unit = Unit {} }, Value::unit_index, &Type::unit };
-inline constexpr Value Value::null
-    = { Value::Union { .null = Null {} }, Value::null_index, &Type::null };
+inline constexpr Value Value::unit = { Union { .unit = Unit {} }, unit_index, &Type::unit };
+inline constexpr Value Value::null = { Union { .null = Null {} }, null_index, &Type::null };
 inline constexpr Value Value::true_ = Value::boolean(true);
 inline constexpr Value Value::false_ = Value::boolean(false);
 inline constexpr Value Value::zero_int = Value::integer(0);
