@@ -142,7 +142,6 @@ private:
             case block_index: block = other.block; break;
             case directive_index: directive = other.directive; break;
             }
-            COWEL_ASSERT_UNREACHABLE(u8"Invalid index.");
         }
 
         constexpr void destroy(Index index) noexcept
