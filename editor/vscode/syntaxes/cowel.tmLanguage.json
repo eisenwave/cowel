@@ -46,9 +46,14 @@
           "match": "\\\\\\\\"
         },
         {
+          "comment": "Escaped brackets need to be marked with a specific scope so they can be excluded from bracket matching",
+          "name": "constant.character.escape.bracket.cowel",
+          "match": "\\\\[{}\\[\\]()]"
+        },
+        {
           "comment": "Other single-char escapes",
           "name": "constant.character.escape.cowel",
-          "match": "\\\\[{}\\[\\](),.=!\"#$%&'+/;<>?@^|~\\-\\s]"
+          "match": "\\\\[,.=!\"#$%&'+/;<>?@^|~\\-\\s]"
         },
         {
           "name": "constant.character.escape.newline.cowel",
