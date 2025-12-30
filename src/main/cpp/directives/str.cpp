@@ -55,6 +55,31 @@ struct Sink_For_Splicing final : String_Sink {
 
 } // namespace
 
+[[nodiscard]]
+Result<Integer, Processing_Status>
+Str_Length_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    String_Matcher x_matcher { context.get_transient_memory() };
+    Group_Member_Matcher x_member { u8"x", Optionality::mandatory, x_matcher };
+    Group_Member_Matcher* matchers[] { &x_member };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (args_status != Processing_Status::ok) {
+        return args_status;
+    }
+
+    const std::u8string_view x = x_matcher.get();
+    if (m_kind == Str_Length_Kind::utf8 || x_matcher.get_string_kind() == String_Kind::ascii) {
+        return x.length();
+    }
+
+    COWEL_DEBUG_ASSERT(m_kind == Str_Length_Kind::code_point);
+    return Integer { utf8::count_code_points_or_replacement(x) };
+}
+
 Result<Value, Processing_Status>
 String_Sink_Behavior::evaluate(const Invocation& call, Context& context) const
 {
@@ -63,7 +88,9 @@ String_Sink_Behavior::evaluate(const Invocation& call, Context& context) const
     if (result != Processing_Status::ok) {
         return result;
     }
-    return Value::dynamic_string(std::move(sink.m_text));
+    // TODO: String_Kind::unicode is needlessly pessimistic here.
+    //       We could alter String_Sink so it receives the String_Kind and keeps track of it.
+    return Value::dynamic_string(std::move(sink.m_text), String_Kind::unknown);
 }
 
 Processing_Status

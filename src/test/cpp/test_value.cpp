@@ -97,17 +97,18 @@ TEST(Value, integer)
 
 TEST(Value, string)
 {
-    constexpr auto static_string = Value::static_string(u8"awoo"sv);
+    constexpr auto static_string = Value::static_string(u8"awoo"sv, String_Kind::ascii);
     EXPECT_EQ(static_string.as_string(), u8"awoo"sv);
     EXPECT_EQ(static_string.get_type(), Type::str);
     EXPECT_TRUE(static_string.is_static_string());
 
-    constexpr auto short_string = Value::short_string(u8"awoo"sv);
+    constexpr auto short_string = Value::short_string(u8"awoo"sv, String_Kind::ascii);
     EXPECT_EQ(short_string.as_string(), u8"awoo"sv);
     EXPECT_EQ(short_string.get_type(), Type::str);
     EXPECT_FALSE(short_string.is_static_string());
 
-    const auto dynamic_string = Value::dynamic_string_forced({ u8'a', u8'w', u8'o', u8'o' });
+    const auto dynamic_string
+        = Value::dynamic_string_forced({ u8'a', u8'w', u8'o', u8'o' }, String_Kind::ascii);
     EXPECT_EQ(dynamic_string.as_string(), u8"awoo"sv);
     EXPECT_EQ(dynamic_string.get_type(), Type::str);
     EXPECT_FALSE(dynamic_string.is_static_string());

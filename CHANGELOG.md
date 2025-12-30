@@ -63,7 +63,9 @@
   - `cowel_to_str`
   - `cowel_reinterpret_as_float`
   - `cowel_reinterpret_as_int`
-- add the following string manipulation directives:
+- add the following string operation directives (#134, #155):
+  - `cowel_str_length`
+  - `cowel_str_utf8_length`
   - `cowel_str_to_lower`
   - `cowel_str_to_upper`
 - add the following variable management directives (#73):

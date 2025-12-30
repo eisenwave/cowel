@@ -61,13 +61,21 @@ std::u8string Type::get_display_name() const
 Value Value::block(const ast::Primary& block, Frame_Index frame)
 {
     COWEL_ASSERT(block.get_kind() == ast::Primary_Kind::block);
-    return Value { Block_And_Frame { &block, frame }, &Type::block };
+    return Value {
+        Union { .block = Block_And_Frame { &block, frame } },
+        block_index,
+        &Type::block,
+    };
 }
 
 Value Value::block(const ast::Directive& block, Frame_Index frame)
 {
     // TODO: assertions
-    return Value { Directive_And_Frame { &block, frame }, &Type::block };
+    return Value {
+        Union { .directive = Directive_And_Frame { &block, frame } },
+        directive_index,
+        &Type::block,
+    };
 }
 
 } // namespace cowel

@@ -17,6 +17,7 @@
 #include "cowel/ast.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/parse.hpp"
+#include "cowel/string_kind.hpp"
 
 using namespace std::string_view_literals;
 
@@ -30,8 +31,11 @@ Primary Primary::basic(Primary_Kind kind, File_Source_Span source_span, std::u8s
     case unit_literal:
     case null_literal:
     case bool_literal:
-    case unquoted_string:
     case text: return Primary { kind, source_span, source, std::monostate {} };
+
+    case unquoted_string: {
+        return Primary { kind, source_span, source, std::monostate {}, String_Kind::ascii };
+    }
 
     case int_literal: return integer(source_span, source);
     case decimal_float_literal: return floating(source_span, source);
@@ -322,9 +326,11 @@ Primary::Primary(
     Primary_Kind kind,
     File_Source_Span source_span,
     std::u8string_view source,
-    Extra_Variant&& extra
+    Extra_Variant&& extra,
+    String_Kind string_kind
 )
     : m_kind { kind }
+    , m_string_kind { string_kind }
     , m_source_span { source_span }
     , m_source { source }
     , m_extra { std::move(extra) }

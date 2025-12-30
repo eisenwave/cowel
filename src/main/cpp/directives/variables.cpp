@@ -689,7 +689,9 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         const auto sign_length = std::size_t(x_int < 0);
         const auto significant_digits = chars.length() - sign_length;
         if (zpad <= significant_digits) {
-            return Value::dynamic_string(chars.as_string(), context.get_transient_memory());
+            return Value::dynamic_string(
+                chars.as_string(), context.get_transient_memory(), String_Kind::ascii
+            );
         }
         const auto zeros_to_prepend
             = std::max(std::size_t(zpad), significant_digits) - significant_digits;
@@ -702,7 +704,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
             result.push_back(u8'0');
         }
         result.insert(result.end(), chars.begin() + std::ptrdiff_t(sign_length), chars.end());
-        return Value::dynamic_string(std::move(result));
+        return Value::dynamic_string(std::move(result), String_Kind::ascii);
     }
 
     case Type_Kind::floating: {
@@ -724,7 +726,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         Capturing_Ref_Text_Sink sink { text, Output_Language::text };
         Plaintext_Content_Policy policy { sink };
         splice_float(policy, f, format);
-        return Value::dynamic_string(std::move(text));
+        return Value::dynamic_string(std::move(text), String_Kind::ascii);
     }
 
     case Type_Kind::str: {
@@ -744,7 +746,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         if (splice_result != Processing_Status::ok) {
             return splice_result;
         }
-        return Value::dynamic_string(std::move(text));
+        return Value::dynamic_string(std::move(text), String_Kind::unknown);
     }
     default: break;
     }

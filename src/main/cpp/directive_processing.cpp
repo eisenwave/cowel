@@ -118,7 +118,7 @@ Short_String_Directive_Behavior::evaluate(const Invocation& call, Context& conte
     if (!result) {
         return result.error();
     }
-    return Value::short_string(*result);
+    return Value::short_string(*result, String_Kind::unknown);
 }
 
 Processing_Status Short_String_Directive_Behavior::splice(
@@ -492,15 +492,16 @@ void splice_float(Content_Policy& out, Float value, Float_Format format)
 Processing_Status Value::splice_block(Content_Policy& out, Context& context) const
 {
     COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::block);
-    if (const auto* const block_and_frame = std::get_if<Block_And_Frame>(&m_value)) {
-        return splice_all(
-            out, block_and_frame->block->get_elements(), block_and_frame->frame, context
+    switch (m_index) {
+    case block_index: {
+        return splice_all(out, m_value.block.block->get_elements(), m_value.block.frame, context);
+    }
+    case directive_index: {
+        return splice_directive_invocation(
+            out, *m_value.directive.directive, m_value.directive.frame, context
         );
     }
-    if (const auto* const dir_and_frame = std::get_if<Directive_And_Frame>(&m_value)) {
-        return splice_directive_invocation(
-            out, *dir_and_frame->directive, dir_and_frame->frame, context
-        );
+    default: break;
     }
     COWEL_ASSERT_UNREACHABLE(u8"Expected block.");
 }
@@ -711,7 +712,7 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         return Value::floating(parsed.value);
     }
     case ast::Primary_Kind::unquoted_string: {
-        return Value::static_string(value.get_source());
+        return Value::static_string(value.get_source(), value.get_string_kind());
     }
     case ast::Primary_Kind::quoted_string: {
         std::pmr::vector<char8_t> text { context.get_transient_memory() };
@@ -719,8 +720,8 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         if (result.status != Processing_Status::ok) {
             return result.status;
         }
-        return text.empty() ? Value::static_string(result.string)
-                            : Value::dynamic_string(std::move(text));
+        return text.empty() ? Value::static_string(result.string, value.get_string_kind())
+                            : Value::dynamic_string(std::move(text), value.get_string_kind());
     }
     case ast::Primary_Kind::block: {
         return Value::block(value, frame);
