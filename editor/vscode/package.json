@@ -53,7 +53,13 @@
       {
         "language": "cowel",
         "scopeName": "source.cowel",
-        "path": "./syntaxes/cowel.tmLanguage.json"
+        "path": "./syntaxes/cowel.tmLanguage.json",
+        "balancedBracketScopes": [
+          "*"
+        ],
+        "unbalancedBracketScopes": [
+          "constant.character.escape.bracket.cowel"
+        ]
       }
     ]
   }
