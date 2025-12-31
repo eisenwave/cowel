@@ -7,10 +7,10 @@
 #include <vector>
 
 #include "ulight/impl/lang/cowel.hpp"
+#include "ulight/impl/strings.hpp"
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
-#include "cowel/util/unicode.hpp"
 
 namespace cowel {
 
@@ -91,13 +91,7 @@ constexpr bool all_of(R&& r, Predicate predicate) // NOLINT(cppcoreguidelines-mi
 
 } // namespace detail
 
-/// @brief Returns `true` if `str` is a possibly empty ASCII string.
-[[nodiscard]]
-constexpr bool is_ascii(std::u8string_view str)
-{
-    constexpr auto predicate = [](char8_t x) { return is_ascii(x); };
-    return detail::all_of(str, predicate);
-}
+using ulight::is_ascii;
 
 /// @brief Returns `true` if `str` is a possibly empty ASCII string comprised
 /// entirely of blank ASCII characters (`is_ascii_blank`).
@@ -170,43 +164,6 @@ void trim(std::vector<char8_t, Alloc>& text)
 {
     trim_left(text);
     trim_right(text);
-}
-
-/// @brief Returns `true` if `str` is a valid HTML tag identifier.
-/// This includes both builtin tag names (which are purely alphabetic)
-/// and custom tag names.
-[[nodiscard]]
-constexpr bool is_html_tag_name(std::u8string_view str)
-{
-    constexpr auto predicate = [](char32_t x) { return is_html_tag_name_character(x); };
-
-    // https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name
-    return !str.empty() && is_ascii_alpha(str[0]) && utf8::all_of(str.substr(1), predicate);
-}
-
-/// @brief Returns `true` if `str` is a valid HTML attribute name.
-[[nodiscard]]
-constexpr bool is_html_attribute_name(std::u8string_view str)
-{
-    constexpr auto predicate = [](char32_t x) { return is_html_attribute_name_character(x); };
-
-    // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
-    return !str.empty() && utf8::all_of(str, predicate);
-}
-
-/// @brief Returns `true` if the given string requires no wrapping in quotes when it
-/// appears as the value in an attribute.
-/// For example, `id=123` is a valid HTML attribute with a value and requires
-/// no wrapping, but `id="<x>"` requires `<x>` to be surrounded by quotes.
-[[nodiscard]]
-constexpr bool is_html_unquoted_attribute_value(std::u8string_view str)
-{
-    constexpr auto predicate = [](char8_t code_unit) {
-        return !is_ascii(code_unit) || is_html_ascii_unquoted_attribute_value_character(code_unit);
-    };
-
-    // https://html.spec.whatwg.org/dev/syntax.html#unquoted
-    return detail::all_of(str, predicate);
 }
 
 /// @brief Returns `true` if `str` is a valid COWEL directive name.

@@ -3,6 +3,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/ascii_algorithm.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/code_point_names.hpp"
@@ -78,27 +79,9 @@ inline std::string utohexstr(uint64_t X, bool LowerCase = false, unsigned Width 
 constexpr bool contains_insensitive(StringRef Self, StringRef Other)
 {
     // https://github.com/llvm/llvm-project/blob/5f5560f62bfbaf3b38c90ae926fd07463ab74b8e/llvm/include/llvm/ADT/StringRef.h#L438
-    constexpr auto equals_insensitive = [](StringRef x, StringRef y) {
-        if (x.length() != y.length()) {
-            return false;
-        }
-        for (std::size_t i = 0; i < x.length(); ++i) {
-            if (toUpper(x[i]) != toUpper(y[i])) {
-                return false;
-            }
-        }
-        return true;
-    };
-
-    if (Other.empty()) {
-        return true;
-    }
-    for (std::size_t i = 0; i + Other.length() <= Self.length(); ++i) {
-        if (equals_insensitive(Self.substr(i, Other.length()), Other)) {
-            return true;
-        }
-    }
-    return false;
+    return cowel::ascii::contains_ignore_case(
+        cowel::as_u8string_view(Self), cowel::as_u8string_view(Other)
+    );
 }
 
 } // namespace

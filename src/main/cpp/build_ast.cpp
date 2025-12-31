@@ -11,8 +11,8 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/from_chars.hpp"
+#include "cowel/util/html_names.hpp"
 #include "cowel/util/source_position.hpp"
-#include "cowel/util/strings.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/fwd.hpp"

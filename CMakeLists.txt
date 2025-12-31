@@ -111,6 +111,7 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/util/annotated_string.hpp
     include/cowel/util/annotation_span.hpp
     include/cowel/util/ansi.hpp
+    include/cowel/util/ascii_algorithm.hpp
     include/cowel/util/assert.hpp
     include/cowel/util/bit_permutations.hpp
     include/cowel/util/buffer.hpp

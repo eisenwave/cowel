@@ -5,10 +5,37 @@
 #include <string_view>
 #include <type_traits>
 
+#include "ulight/impl/lang/html.hpp"
+
 #include "cowel/util/assert.hpp"
-#include "cowel/util/strings.hpp"
 
 namespace cowel {
+
+/// @brief Returns `true` if `str` is a valid HTML tag identifier.
+/// This includes both builtin tag names (which are purely alphabetic)
+/// and custom tag names.
+[[nodiscard]]
+constexpr bool is_html_tag_name(std::u8string_view str)
+{
+    return ulight::html::is_tag_name(str);
+}
+
+/// @brief Returns `true` if `str` is a valid HTML attribute name.
+[[nodiscard]]
+constexpr bool is_html_attribute_name(std::u8string_view str)
+{
+    return ulight::html::is_attribute_name(str);
+}
+
+/// @brief Returns `true` if the given string requires no wrapping in quotes when it
+/// appears as the value in an attribute.
+/// For example, `id=123` is a valid HTML attribute with a value and requires
+/// no wrapping, but `id="<x>"` requires `<x>` to be surrounded by quotes.
+[[nodiscard]]
+constexpr bool is_html_unquoted_attribute_value(std::u8string_view str)
+{
+    return ulight::html::is_unquoted_attribute_value(str);
+}
 
 struct Unchecked { };
 
@@ -33,6 +60,7 @@ private:
 
 public:
     [[nodiscard]]
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     constexpr explicit Predicated_String_View8(std::u8string_view str) noexcept(nothrow)
         : m_string { str }
     {

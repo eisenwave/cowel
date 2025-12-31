@@ -5,9 +5,11 @@
 
 #include "ulight/impl/platform.h"
 
-#include "cowel/parse_utils.hpp"
 #include "cowel/util/chars.hpp"
+#include "cowel/util/html_names.hpp"
 #include "cowel/util/strings.hpp"
+
+#include "cowel/parse_utils.hpp"
 
 namespace cowel {
 
