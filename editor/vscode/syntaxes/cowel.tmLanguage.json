@@ -28,7 +28,7 @@
           "beginCaptures": {
             "0": { "name": "support.function.directive.cowel" }
           },
-          "end": "(?!\\G)(?!\\(|\\{)",
+          "end": "(?=[^(\\{a-zA-Z0-9_])|(?!\\G)(?!\\(|\\{)",
           "patterns": [
             { "include": "#directive-arguments" },
             { "include": "#directive-content" }
