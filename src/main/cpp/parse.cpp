@@ -2,9 +2,9 @@
 #include <string_view>
 #include <vector>
 
-#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/lang/cowel.hpp"
 
+#include "cowel/util/ascii_algorithm.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
 
@@ -16,6 +16,18 @@ using namespace std::string_view_literals;
 
 namespace cowel {
 namespace {
+
+using ulight::Common_Number_Result;
+using ulight::is_cowel_unquoted_string;
+using ulight::cowel::Comment_Result;
+using ulight::cowel::match_block_comment;
+using ulight::cowel::match_directive_name;
+using ulight::cowel::match_ellipsis;
+using ulight::cowel::match_escape;
+using ulight::cowel::match_line_comment;
+using ulight::cowel::match_member_name;
+using ulight::cowel::match_number;
+using ulight::cowel::match_whitespace;
 
 enum struct Content_Context : Default_Underlying {
     document,
@@ -322,7 +334,7 @@ private:
     bool try_match_escape()
     {
         const std::u8string_view remainder = peek_all();
-        if (const std::size_t length = ulight::cowel::match_escape(remainder)) {
+        if (const std::size_t length = match_escape(remainder)) {
             advance_by(length);
             m_out.push_back({ AST_Instruction_Type::escape, length });
             return true;
@@ -334,7 +346,7 @@ private:
     bool try_match_line_comment()
     {
         const std::u8string_view remainder = peek_all();
-        if (const std::size_t length = ulight::cowel::match_line_comment(remainder)) {
+        if (const std::size_t length = match_line_comment(remainder)) {
             COWEL_ASSERT(remainder.starts_with(u8"\\:"sv));
             const std::u8string_view suffix = remainder.substr(length);
             const std::size_t suffix_length = //
@@ -353,7 +365,7 @@ private:
     bool try_match_block_comment()
     {
         const std::u8string_view remainder = peek_all();
-        if (const ulight::cowel::Comment_Result c = ulight::cowel::match_block_comment(remainder)) {
+        if (const Comment_Result c = match_block_comment(remainder)) {
             COWEL_ASSERT(remainder.starts_with(u8"\\*"sv));
             if (!c.is_terminated) {
                 COWEL_ASSERT(m_pos.begin + c.length == m_source.length());
@@ -376,7 +388,7 @@ private:
         if (!expect('\\')) {
             return {};
         }
-        const std::size_t name_length = ulight::cowel::match_directive_name(peek_all());
+        const std::size_t name_length = match_directive_name(peek_all());
         if (name_length == 0) {
             return false;
         }
@@ -442,7 +454,7 @@ private:
             // TODO: This seems to be a historical artifact.
             //       This could probably just be skip_blank().
             //       If not, comment why this skips only whitespace and no comments.
-            const std::size_t leading_whitespace = ulight::cowel::match_whitespace(peek_all());
+            const std::size_t leading_whitespace = match_whitespace(peek_all());
             if (leading_whitespace != 0) {
                 m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
                 advance_by(leading_whitespace);
@@ -484,7 +496,7 @@ private:
     [[nodiscard]]
     bool try_match_ellipsis()
     {
-        if (const std::size_t ellipsis = ulight::cowel::match_ellipsis(peek_all())) {
+        if (const std::size_t ellipsis = match_ellipsis(peek_all())) {
             advance_by(ellipsis);
             m_out.push_back({ AST_Instruction_Type::ellipsis, ellipsis });
             return true;
@@ -504,14 +516,14 @@ private:
             return false;
         }
 
-        const std::size_t name_length = ulight::cowel::match_argument_name(peek_all());
+        const std::size_t name_length = match_member_name(peek_all());
         m_out.push_back({ AST_Instruction_Type::member_name, name_length });
         if (name_length == 0) {
             return false;
         }
         advance_by(name_length);
 
-        const std::size_t trailing_whitespace = ulight::cowel::match_whitespace(peek_all());
+        const std::size_t trailing_whitespace = match_whitespace(peek_all());
         if (trailing_whitespace != 0) {
             m_out.push_back({ AST_Instruction_Type::skip, trailing_whitespace });
             advance_by(trailing_whitespace);
@@ -556,7 +568,7 @@ private:
     bool try_match_directive_call()
     {
         const std::u8string_view remainder = peek_all();
-        const std::size_t name_length = ulight::cowel::match_directive_name(remainder);
+        const std::size_t name_length = match_directive_name(remainder);
         if (name_length == 0) {
             return false;
         }
@@ -588,10 +600,10 @@ private:
             return false;
         }
 
-        const ulight::Common_Number_Result result = ulight::cowel::match_number(remainder);
+        const Common_Number_Result result = match_number(remainder);
         if (!result || result.erroneous
             || (result.length < remainder.length()
-                && ulight::is_cowel_unquoted_string(remainder[result.length]))) {
+                && is_cowel_unquoted_string(remainder[result.length]))) {
             return false;
         }
 
@@ -620,9 +632,8 @@ private:
     bool consume_unquoted_value()
     {
         const std::u8string_view remainder = peek_all();
-        const std::size_t length = ulight::ascii::length_if(remainder, [](char8_t c) {
-            return ulight::is_cowel_unquoted_string(c);
-        });
+        const std::size_t length
+            = ascii::length_if(remainder, [](char8_t c) { return is_cowel_unquoted_string(c); });
 
         if (length == 0) {
             const auto initial_pos = m_pos;
@@ -695,16 +706,16 @@ private:
         const std::size_t start = m_pos.begin;
 
         while (true) {
-            const std::size_t white_length = ulight::cowel::match_whitespace(peek_all());
+            const std::size_t white_length = match_whitespace(peek_all());
             advance_by(white_length);
 
-            const std::size_t comment_length = ulight::cowel::match_line_comment(peek_all());
+            const std::size_t comment_length = match_line_comment(peek_all());
             if (comment_length) {
                 advance_by(comment_length);
                 continue;
             }
 
-            const ulight::cowel::Comment_Result c = ulight::cowel::match_block_comment(peek_all());
+            const Comment_Result c = match_block_comment(peek_all());
             if (c) {
                 if (!c.is_terminated) {
                     COWEL_ASSERT(m_pos.begin + c.length == m_source.length());
@@ -753,24 +764,22 @@ private:
 
         const std::size_t initial_begin = m_pos.begin;
         while (!eof()) {
-            const std::size_t skip_length
-                = ulight::ascii::length_if_not(peek_all(), [&](char8_t c) {
-                      return c == u8'\\' || set.contains(c);
-                  });
+            const std::size_t skip_length = ascii::length_if_not(peek_all(), [&](char8_t c) {
+                return c == u8'\\' || set.contains(c);
+            });
             advance_by(skip_length);
 
             if (!peek(u8'\\')) {
                 break;
             }
 
-            const std::size_t line_comment_length = ulight::cowel::match_line_comment(peek_all());
+            const std::size_t line_comment_length = match_line_comment(peek_all());
             if (line_comment_length) {
                 advance_by(line_comment_length);
                 continue;
             }
 
-            const ulight::cowel::Comment_Result block_comment
-                = ulight::cowel::match_block_comment(peek_all());
+            const Comment_Result block_comment = match_block_comment(peek_all());
             if (block_comment) {
                 if (!block_comment.is_terminated) {
                     error(Source_Span { m_pos, 2 }, u8"Unterminated block comment."sv);

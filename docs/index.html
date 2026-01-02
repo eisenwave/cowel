@@ -1970,7 +1970,7 @@ built on top of only a few syntactical constructs:
   <li>Escape sequences, such as <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>{</h-></code>, <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>}</h-></code>, <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>\</h-></code>, etc.</li>
   <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> line comments</h-></code></li>
   <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt> block comments </h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt_dlim>\</h-></code></li>
-  <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_splices</h-><h- data-h=sym_par>(</h->positional<h- data-h=sym_punc>,</h-> args<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> 0<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
+  <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_splices</h-><h- data-h=sym_par>(</h-><h- data-h=str>positional</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>args</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-args</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
 </ul>
 
 <h3 id=ebnf-grammar><a class=para href=#ebnf-grammar></a>4.1. EBNF grammar</h3>
@@ -2394,7 +2394,7 @@ Splicing consists of three steps:
 
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block>1 + 2 + 3 = <h- data-h=mk_tag>\cowel_add</h-><h- data-h=sym_par>(</h->1<h- data-h=sym_punc>,</h-> 2<h- data-h=sym_punc>,</h-> 3<h- data-h=sym_par>)</h-></code-block>
+</p><code-block>1 + 2 + 3 = <h- data-h=mk_tag>\cowel_add</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>1 + 2 + 3 = 6</code-block>
 <p>As explained, this markup is processed in three steps:
@@ -2423,7 +2423,7 @@ COWEL markup:
     The <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_name</h-></code> selects a specific directive to be processed.
   </li>
   <li>
-    An optional <code><h- data-h=sym_par>(</h->comma-separated<h- data-h=sym_punc>,</h-> positional<h- data-h=sym_punc>,</h-> arguments<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-arguments</h-> <h- data-h=sym_punc>=</h-> ...<h- data-h=sym_par>)</h-></code>
+    An optional <code><h- data-h=sym_par>(</h-><h- data-h=str>comma-separated</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>positional</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>arguments</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-arguments</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_attr>...</h-><h- data-h=sym_par>)</h-></code>
     group provides additional inputs to the directive.
   </li>
   <li>
@@ -2481,7 +2481,7 @@ whitespace and comments surrounding directive arguments (i.e. <g-term>blank</g-t
 </p>
 <example-block><p><intro-></intro-> 
 Often, arguments are converted to HTML attributes.
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Bold text.<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>abc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Bold text.<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-><h- data-h=sym_punc>&gt;</h->Bold text.<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
@@ -2489,7 +2489,7 @@ Often, arguments are converted to HTML attributes.
 <h5 id=named-arguments><a class=para href=#named-arguments></a>4.5.2.1. Named arguments</h5>
 
 <p>A <dfn>named argument</dfn> is a <g-term>group-member</g-term> of the form
-<code><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> value</code>,
+<code><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>value</h-></code>,
 where spaces anywhere around <tt-><h- data-h=mk_attr>name</h-></tt-> and <code>value</code> are ignored.
 Named arguments are matched to directive parameters before any positional arguments,
 meaning that positional arguments fill the remaining unmatched arguments.
@@ -2514,9 +2514,9 @@ and noncharacters.
 If you want to provide a positional argument that is <code>name = value</code> instead,
 you can do so by writing:
 </p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> "name = value" as a positional argument</h->
-<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h->"name = value"<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>name = value</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> named argument with name "name" and value "value"</h->
-<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> value<h- data-h=sym_par>)</h-></code-block>
+<h- data-h=mk_tag>\xyz</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>value</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Only the literal <code>=</code> character can be used for named arguments,
 not its escaped variant <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>=</h-></code>.
 </p></tip-block>
@@ -2547,9 +2547,9 @@ See also <a href=#dir-cowel_macro>§8.8.2. <code><h- data-h=mk_tag>\cowel_macro<
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Define a macro for generating &lt;div&gt; elements</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->div<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h->div<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>attr</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>div</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>div</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>attr</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
 
-<h- data-h=mk_tag>\div</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->inner text<h- data-h=sym_brac>}</h-></code-block>
+<h- data-h=mk_tag>\div</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>abc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->inner text<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>div</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-><h- data-h=sym_punc>&gt;</h->inner text<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>div</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
@@ -2563,7 +2563,7 @@ or has preceding content within an argument.
 <p>An error is raised if an ellipsis is used as an argument outside of a macro expansion.
 </p>
 <example-block><p><intro-></intro-> 
-</p><code-block><h- data-h=mk_tag>\m</h-><h- data-h=sym_par>(</h->"..."<h- data-h=sym_par>)</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, providing string "...", not an ellipsis</h->
+</p><code-block><h- data-h=mk_tag>\m</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>...</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, providing string "...", not an ellipsis</h->
 <h- data-h=mk_tag>\m</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=sym_par>)</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: ellipsis is not expanded from a macro</h-></code-block>
 </example-block>
 
@@ -2575,8 +2575,8 @@ and end with <code><h- data-h=sym_par>)</h-></code>.
 They can appear both in positional and in named arguments.
 </p>
 <example-block><p><intro-></intro-> 
-</p><code-block><h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h->x<h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h->y<h- data-h=sym_punc>,</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> groups as positional arguments</h->
-<h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>n</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h->x<h- data-h=sym_punc>,</h-> y<h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->       <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> group as named argument</h->
+</p><code-block><h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=str>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=str>y</h-><h- data-h=sym_punc>,</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> groups as positional arguments</h->
+<h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>n</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=str>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->       <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> group as named argument</h->
 <h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->           <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> nested empty groups</h-></code-block>
 </example-block>
 
@@ -2967,7 +2967,7 @@ and it can choose not to process them.
 </p>
 <p>You can even make a <code><h- data-h=mk_tag>\comment2</h-></code> directive that works
 just like <code><h- data-h=mk_tag>\comment</h-></code> yourself:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_macro</h-><h- data-h=sym_par>(</h->comment2<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>comment2</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code-block>
 
 <h2 id=types-intro><a class=para href=#types-intro></a>6. Types</h2>
 
@@ -3518,12 +3518,12 @@ The description of <code><h- data-h=mk_tag>\cowel_html_element</h-></code> looks
 
 <p>This describes that <code><h- data-h=mk_tag>\cowel_html_element</h-></code> can be invoked as follows,
 among various options:
-</p><code-block><h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> div<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>attr</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>div</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>attr</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>abc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code-block>
 
 <p><tt->div</tt-> matches the <tt-><h- data-h=mk_attr>name</h-></tt-> parameter,
 and the content <tt->div</tt-> is treated as a <tt->string</tt-> value.
 </p>
-<p><code><h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_par>)</h-></code>
+<p><code><h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>abc</h-><h- data-h=sym_par>)</h-></code>
 matches the <tt-><h- data-h=mk_attr>attr</h-></tt-> parameter,
 and within that group,
 there is a single-element <tt->pack</tt-> of <tt->named</tt-> arguments
@@ -3542,13 +3542,13 @@ unless all positional arguments appear contiguously at the start of the argument
 </p>
 <example-block><p><intro-></intro-> 
 </p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, two positional arguments</h->
-<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h->div<h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>div</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>abc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, two named arguments</h->
-<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> div<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>attr</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>div</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>attr</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>abc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, all positional arguments appear at the start</h->
-<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> div<h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>div</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>abc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: positional argument following named arguments</h->
-<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> div<h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code-block>
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>div</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>abc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code-block>
 </example-block>
 
 <p>The usual argument matching is performed as follows:
@@ -3576,9 +3576,9 @@ Let <code><h- data-h=mk_tag>\d</h-></code> be a directive with parameters
 </p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> In each of these calls,</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> a, b, and c match x, y, and z, respectively:</h->
 
-<h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>z</h-> <h- data-h=sym_punc>=</h-> c<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>y</h-> <h- data-h=sym_punc>=</h-> b<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>x</h-> <h- data-h=sym_punc>=</h-> a<h- data-h=sym_par>)</h->  <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, all named arguments</h->
-<h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h->a<h- data-h=sym_punc>,</h-> b<h- data-h=sym_punc>,</h-> c<h- data-h=sym_par>)</h->              <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, all positional arguments</h->
-<h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h->a<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>z</h-> <h- data-h=sym_punc>=</h-> c<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>y</h-> <h- data-h=sym_punc>=</h-> b<h- data-h=sym_par>)</h->      <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, positional arguments followed by named arguments</h-></code-block>
+<h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>z</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>c</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>y</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>b</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>a</h-><h- data-h=sym_par>)</h->  <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, all named arguments</h->
+<h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=str>a</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>b</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>c</h-><h- data-h=sym_par>)</h->              <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, all positional arguments</h->
+<h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=str>a</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>z</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>c</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>y</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>b</h-><h- data-h=sym_par>)</h->      <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, positional arguments followed by named arguments</h-></code-block>
 </example-block>
 
 <note-block><p><intro-></intro-> 
@@ -3612,9 +3612,9 @@ without the leading '<tt->&amp;</tt->' and trailing '<tt->;</tt->'.
 The '<tt->&amp;</tt->' character can be produced in a number of ways:
 </p><ul>
     <li>Literally '<tt->&amp;</tt->' in text</li>
-    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_par>(</h->"amp"<h- data-h=sym_par>)</h-></code> (like <code><h- data-h=str_esc>&amp;amp;</h-></code>, named character reference)</li>
-    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_par>(</h->"#38"<h- data-h=sym_par>)</h-></code> (like <code><h- data-h=str_esc>&amp;38;</h-></code>, decimal character reference)</li>
-    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_par>(</h->"#x26"<h- data-h=sym_par>)</h-></code> (like <code><h- data-h=str_esc>&amp;x26;</h-></code>, hexadecimal character reference)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>amp</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code> (like <code><h- data-h=str_esc>&amp;amp;</h-></code>, named character reference)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>#38</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code> (like <code><h- data-h=str_esc>&amp;38;</h-></code>, decimal character reference)</li>
+    <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_entity</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>#x26</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code> (like <code><h- data-h=str_esc>&amp;x26;</h-></code>, hexadecimal character reference)</li>
 </ul>
 </example-block>
 
@@ -3632,9 +3632,9 @@ for a code point or one of its name aliases (of any category).
 or an alias thereof.
 </p>
 <example-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_name</h-><h- data-h=sym_par>(</h->"DIGIT ZERO"<h- data-h=sym_par>)</h-></code> generates
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_name</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>DIGIT ZERO</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code> generates
 '<tt->0</tt->', which is U+0030 DIGIT ZERO.
-Case matters, i.e. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_name</h-><h- data-h=sym_par>(</h->"digit zero"<h- data-h=sym_par>)</h-></code>
+Case matters, i.e. <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_name</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>digit zero</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code>
 raises an error,
 and so do any trailing spaces or duplicate spaces in the input.
 In other words, an exact character sequence is expected.
@@ -3653,7 +3653,7 @@ that is, a code point which UTF-8 permits to be encoded.
 All arguments are ignored.
 </p>
 <example-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_num</h-><h- data-h=sym_par>(</h->0x30<h- data-h=sym_par>)</h-></code> generates
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_num</h-><h- data-h=sym_par>(</h-><h- data-h=str>0x30</h-><h- data-h=sym_par>)</h-></code> generates
 '<tt->0</tt->', which is U+0030 DIGIT ZERO.
 </p></example-block>
 
@@ -3680,23 +3680,23 @@ It returns the numeric value of the first input code point in <tt-><h- data-h=mk
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_par>(</h->"j"<h- data-h=sym_par>)</h->
-U+<h- data-h=mk_tag>\cowel_str_to_upper</h-><h- data-h=sym_par>(</h->cowel_to_str(cowel_char_get_num("j"), base=16, zpad=4)<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_char_get_num</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>j</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+U+<h- data-h=mk_tag>\cowel_str_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>cowel_char_get_num</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>j</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>base</h-><h- data-h=sym_punc>=</h-><h- data-h=num>16</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>zpad</h-><h- data-h=sym_punc>=</h-><h- data-h=num>4</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>106
 U+006A</code-block>
 <p>Note that U+006A is the usual way in which Unicode code points are represented.
 That is, <tt->U+</tt->, followed by at least four uppercase hexadecimal digits.
 It is also possible to define a macro if we need this frequently:
-</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->code_point<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=str_esc>\</h->
-U+<h- data-h=mk_tag>\cowel_str_to_upper</h-><h- data-h=sym_par>(</h->cowel_to_str(cowel_char_get_num(...), base=16, zpad=4)<h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\code_point</h-><h- data-h=sym_par>(</h->j<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>code_point</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=str_esc>\</h->
+U+<h- data-h=mk_tag>\cowel_str_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>cowel_char_get_num</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>base</h-><h- data-h=sym_punc>=</h-><h- data-h=num>16</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>zpad</h-><h- data-h=sym_punc>=</h-><h- data-h=num>4</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\code_point</h-><h- data-h=sym_par>(</h-><h- data-h=str>j</h-><h- data-h=sym_par>)</h-></code-block>
 </example-block>
 
 <bug-block><p><intro-></intro-> 
 If more than one code point is provided,
 some input is discarded:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_get_num</h-><h- data-h=sym_par>(</h->abc<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_get_num</h-><h- data-h=sym_par>(</h-><h- data-h=str>abc</h-><h- data-h=sym_par>)</h-></code-block>
 <p>This renders as
 </p><div class=indent>
 97
@@ -3739,7 +3739,7 @@ are contained within the <tt-><h- data-h=mk_attr>attr</h-></tt-> parameter.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block>This is <h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h->span<h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->a span<h- data-h=sym_brac>}</h->.</code-block>
+</p><code-block>This is <h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>span</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>abc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->a span<h- data-h=sym_brac>}</h->.</code-block>
 <p>Generated HTML:
 </p><code-block>This is <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>span</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-><h- data-h=sym_punc>&gt;</h->a span<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>span</h-><h- data-h=sym_punc>&gt;</h->.</code-block>
 </example-block>
@@ -3769,7 +3769,7 @@ are contained within the <tt-><h- data-h=mk_attr>attr</h-></tt-> parameter.
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block>Horizontal rule:
-<h- data-h=mk_tag>\cowel_html_self_closing_element</h-><h- data-h=sym_par>(</h->hr<h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> abc<h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->ignored<h- data-h=sym_brac>}</h-></code-block>
+<h- data-h=mk_tag>\cowel_html_self_closing_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>hr</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>abc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->ignored<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block>Horizontal rule:
 <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>hr</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-> <h- data-h=sym_punc>/&gt;</h-></code-block>
@@ -3850,8 +3850,8 @@ Since HTML is not syntax-highlighted,
 we can insert special characters like U+00AD SOFT HYPHEN
 into code snippets, without interfering with syntax highlighting:
 </p><code-block>Use of
-<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h->code<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
-<h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_par>(</h->cpp<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->reinterpret_<h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>code</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
+<h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_par>(</h-><h- data-h=str>cpp</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->reinterpret_<h- data-h=str_esc>\</h->
 <h- data-h=mk_tag>\cowel_to_html</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_char_by_name</h-><h- data-h=sym_brac>{</h->SOFT HYPHEN<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
 cast<h- data-h=sym_brac>}</h->
 <h- data-h=sym_brac>}</h->
@@ -3915,28 +3915,28 @@ unless explicitly eliminated (e.g. with newline escapes or commas).
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block>no escapes:
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->a<h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->b<h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->c<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>a</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>b</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>c</h-><h- data-h=sym_par>)</h->
 end.
 newline escapes:
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->h<h- data-h=sym_par>)</h-><h- data-h=str_esc>\</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->j<h- data-h=sym_par>)</h-><h- data-h=str_esc>\</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->k<h- data-h=sym_par>)</h-><h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>h</h-><h- data-h=sym_par>)</h-><h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>j</h-><h- data-h=sym_par>)</h-><h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>k</h-><h- data-h=sym_par>)</h-><h- data-h=str_esc>\</h->
 end.
 actions:
 <h- data-h=mk_tag>\cowel_actions</h-><h- data-h=sym_brac>{</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Documentation for x:</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->x<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>x</h-><h- data-h=sym_par>)</h->
 
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> In here, we can add as much whitespace as we want.</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> It won't add anything to the generated HTML 😃</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->y<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>y</h-><h- data-h=sym_par>)</h->
 
 Text is also ignored, just like whitespace,
 but it is recommended to use comments even in actions
 because it expresses intent more clearly.
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->z<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>z</h-><h- data-h=sym_par>)</h->
 <h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
 end.</code-block>
 <p>Generated HTML:
@@ -3964,8 +3964,8 @@ using the text-only policy.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block>Hello, <h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h->strong<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->strong<h- data-h=sym_brac>}</h-> world!
-<h- data-h=mk_tag>\cowel_text_only</h-><h- data-h=sym_brac>{</h->Hello, <h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h->strong<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->strong<h- data-h=sym_brac>}</h-> world!<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block>Hello, <h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>strong</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->strong<h- data-h=sym_brac>}</h-> world!
+<h- data-h=mk_tag>\cowel_text_only</h-><h- data-h=sym_brac>{</h->Hello, <h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>strong</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->strong<h- data-h=sym_brac>}</h-> world!<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block>Hello, <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h->strong<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>strong</h-><h- data-h=sym_punc>&gt;</h-> world!
 Hello, strong world!</code-block>
@@ -4089,8 +4089,8 @@ all lowercase, and with hyphens instead of underscores.
 It is possible to mix automatic syntax highlighting with manual overrides:
 </p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> _Int128 is manually highlighted as a type keyword,</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> and x is automatically highlighted as an identifier.</h->
-<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h->code<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=str_esc>\</h->
-<h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_par>(</h->c<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_highlight_as</h-><h- data-h=sym_par>(</h->keyword-type<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-> x<h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>code</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_par>(</h-><h- data-h=str>c</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_highlight_as</h-><h- data-h=sym_par>(</h-><h- data-h=str>keyword-type</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-> x<h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
 <h- data-h=sym_brac>}</h-></code-block>
 <p>This generates the HTML (subject to change):
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_punc>&gt;</h->_Int128<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-> <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>id</h-><h- data-h=sym_punc>&gt;</h->x<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code-block>
@@ -4099,7 +4099,7 @@ It is possible to mix automatic syntax highlighting with manual overrides:
 
 <note-block><p><intro-></intro-> 
 While it is also possible to produce the highlighting tags using
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_html_element</h-><h- data-h=sym_par>(</h->h-<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h->kw_type<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-></code>,
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>h-</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-></code>,
 the "short names" (e.g. <code>kw_type</code>) are not stable,
 i.e. they are more likely to change.
 Only µlight long names should be used directly.
@@ -4127,9 +4127,9 @@ Using <code><h- data-h=mk_tag>\cowel_highlight_phantom</h-></code>,
 we can control whether a JSON string is interpreted as a markup key,
 or as a string value:
 </p><code-block>In JSON, there are
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_html_element</h-><h- data-h=sym_par>(</h->code<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_highlight</h-><h- data-h=sym_par>(</h->json<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_highlight_phantom</h-><h- data-h=sym_brac>{</h-><h- data-h=str_esc>\</h-><h- data-h=str_esc>{</h-><h- data-h=sym_brac>}</h->"keys"<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>code</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_highlight</h-><h- data-h=sym_par>(</h-><h- data-h=str>json</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_highlight_phantom</h-><h- data-h=sym_brac>{</h-><h- data-h=str_esc>\</h-><h- data-h=str_esc>{</h-><h- data-h=sym_brac>}</h->"keys"<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
 and
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_html_element</h-><h- data-h=sym_par>(</h->code<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_highlight</h-><h- data-h=sym_par>(</h->json<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->"values"<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->.</code-block>
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>code</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_highlight</h-><h- data-h=sym_par>(</h-><h- data-h=str>json</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->"values"<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->.</code-block>
 <p>Using the highlight theme of this document, this renders as:
 </p><div class=indent>
 In JSON, there are
@@ -4281,10 +4281,10 @@ Otherwise, has no effect.
 <example-block><p><intro-></intro-> 
 COWEL markup, assuming a surrounding paragraphs policy:
 </p><code-block>Paragraph 1:
-<h- data-h=mk_tag>\cowel_html_self_closing_element</h-><h- data-h=sym_par>(</h->hr<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_html_self_closing_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>hr</h-><h- data-h=sym_par>)</h->
 
 Paragraph 2:
-<h- data-h=mk_tag>\cowel_paragraph_leave</h-><h- data-h=mk_tag>\cowel_html_self_closing_element</h-><h- data-h=sym_par>(</h->hr<h- data-h=sym_par>)</h-></code-block>
+<h- data-h=mk_tag>\cowel_paragraph_leave</h-><h- data-h=mk_tag>\cowel_html_self_closing_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>hr</h-><h- data-h=sym_par>)</h-></code-block>
 
 <p>Generated HTML:
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->Paragraph 1:
@@ -4400,7 +4400,7 @@ could not be read.
 Say we have a JavaScript file <tt->example.js</tt-> which we want to keep separate from the document.
 We can then include it into a <code><h- data-h=mk_tag>\script</h-></code> block to use it as a script,
 or we can include it into a <code><h- data-h=mk_tag>\codeblock</h-></code> to display its contents.
-</p><code-block><h- data-h=mk_tag>\codeblock</h-><h- data-h=sym_par>(</h->js<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
+</p><code-block><h- data-h=mk_tag>\codeblock</h-><h- data-h=sym_par>(</h-><h- data-h=str>js</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
 // code included from example.js:
 <h- data-h=mk_tag>\cowel_include_text</h-><h- data-h=sym_brac>{</h->example.js<h- data-h=sym_brac>}</h->
 <h- data-h=sym_brac>}</h-></code-block>
@@ -4442,20 +4442,20 @@ the target can also be invoked using the alias name.
 
 <example-block><p><intro-></intro-> 
 One or multiple aliases can be defined as follows:
-</p><code-block><h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->N<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_char_by_name<h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\N</h-><h- data-h=sym_par>(</h->"DIGIT ZERO"<h- data-h=sym_par>)</h->               <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_char_by_name("DIGIT ZERO")</h->
+</p><code-block><h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h-><h- data-h=str>N</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_char_by_name<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\N</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>DIGIT ZERO</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->               <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_char_by_name("DIGIT ZERO")</h->
 
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->incl<h- data-h=sym_punc>,</h-> include<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_include<h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\incl</h-><h- data-h=sym_par>(</h->"file.cow"<h- data-h=sym_par>)</h->              <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_include("file.cow")</h->
-<h- data-h=mk_tag>\include</h-><h- data-h=sym_par>(</h->"file.cow"<h- data-h=sym_par>)</h->           <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, same</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h-><h- data-h=str>incl</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>include</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_include<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\incl</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>file.cow</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->              <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_include("file.cow")</h->
+<h- data-h=mk_tag>\include</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>file.cow</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->           <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, same</h->
 
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->cowel_to_html<h- data-h=sym_brac>}</h->    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, but no effect</h->
 
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_par>(</h->"???"<h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->        <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: generation of target name failed</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\N</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>???</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->        <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: generation of target name failed</h->
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->??<h- data-h=sym_brac>}</h->               <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid target name</h->
 <h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_brac>{</h->undefined<h- data-h=sym_brac>}</h->        <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: target not found</h->
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->"?"<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_alias<h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid alias name</h->
-<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->N<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->N<h- data-h=sym_brac>}</h->             <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: redefinition of N</h-></code-block>
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>?</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_alias<h- data-h=sym_brac>}</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: invalid alias name</h->
+<h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h-><h- data-h=str>N</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->N<h- data-h=sym_brac>}</h->             <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: redefinition of N</h-></code-block>
 </example-block>
 
 <h4 id=dir-cowel_macro><a class=para href=#dir-cowel_macro></a>8.8.2. <code><h- data-h=mk_tag>\cowel_macro</h-></code> — Define a macro</h4>
@@ -4484,7 +4484,7 @@ Named arguments are ignored.
 
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->m<h- data-h=sym_punc>,</h->x<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Hello, macros!<h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>m</h-><h- data-h=sym_punc>,</h-><h- data-h=str>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Hello, macros!<h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
 <h- data-h=mk_tag>\m</h->
 <h- data-h=mk_tag>\x</h-></code-block>
 <p>Generated HTML:
@@ -4547,26 +4547,26 @@ and <dfn>designates</dfn>
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> \cowel_put designates content</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->content<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>content</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
 <h- data-h=mk_tag>\content</h-><h- data-h=sym_brac>{</h->Content<h- data-h=sym_brac>}</h->
 
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> \cowel_put designates first positional argument</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->pos<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
-<h- data-h=mk_tag>\pos</h-><h- data-h=sym_par>(</h->Positional<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>pos</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\pos</h-><h- data-h=sym_par>(</h-><h- data-h=str>Positional</h-><h- data-h=sym_par>)</h->
 
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> \cowel_put designates named argument with name "n"</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->named<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->n<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
-<h- data-h=mk_tag>\named</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>n</h-> <h- data-h=sym_punc>=</h-> Named<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>named</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->n<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\named</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>n</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str>Named</h-><h- data-h=sym_par>)</h->
 
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> \cowel_put designates the first positional argument and has a fallback</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Note that equivalently, we could use \cowel_put(Failure){0}.</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->try<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>else</h-><h- data-h=sym_punc>=</h->Failure<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
-<h- data-h=mk_tag>\try</h-><h- data-h=sym_par>(</h->Success<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>try</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>else</h-><h- data-h=sym_punc>=</h-><h- data-h=str>Failure</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\try</h-><h- data-h=sym_par>(</h-><h- data-h=str>Success</h-><h- data-h=sym_par>)</h->
 <h- data-h=mk_tag>\try</h->
 
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> All together:</h->
-<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->m<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->greeting<h- data-h=sym_brac>}</h->, <h- data-h=mk_tag>\cowel_put</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
-<h- data-h=mk_tag>\m</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>greeting</h-> <h- data-h=sym_punc>=</h-> "Hello<h- data-h=sym_punc>,</h-> !"<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->macros<h- data-h=sym_brac>}</h-></code-block>
+<h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>m</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->greeting<h- data-h=sym_brac>}</h->, <h- data-h=mk_tag>\cowel_put</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+<h- data-h=mk_tag>\m</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>greeting</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Hello, !</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->macros<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block>Content
 
@@ -4586,13 +4586,13 @@ such as when <code><h- data-h=mk_tag>\cowel_put</h-></code> appears at a top-lev
 <note-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_macro</h-></code> is not processed in any special way,
 meaning that it cannot be used for "macro substitution" directly:
-</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->m<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_source_as_text</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>m</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_source_as_text</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
 <h- data-h=mk_tag>\m</h-></code-block>
 <p>Generated HTML:
 </p><code-block>\cowel_put</code-block>
 <p>However, <code><h- data-h=mk_tag>\cowel_put</h-></code> accesses the inputs to the macro invocation
 which expands <code><h- data-h=mk_tag>\cowel_put</h-></code>:
-</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->m<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>m</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
 <h- data-h=mk_tag>\m</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-></code-block>
 <p>This results in a fatal error because when <code><h- data-h=mk_tag>\m</h-></code> is processed,
 the <code><h- data-h=mk_tag>\cowel_put</h-></code> in the macro definition
@@ -4603,7 +4603,7 @@ This functionality is implemented by tracking the "stack frame"
 where content was expanded from (or none, in the case of the document top level).
 This also makes it possible to deeply nest <code><h- data-h=mk_tag>\cowel_put</h-></code>
 within other directives while still referring to parameters of the macro invocation:
-</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->m<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_to_html</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>m</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_to_html</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, equivalent to \cowel_to_html{...}</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Notably, the expanded \cowel_put refers to the content provided to \m,</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> not to the content provided to \cowel_to_html (which would be \cowel_put).</h->
@@ -4615,9 +4615,9 @@ Expanding <code><h- data-h=mk_tag>\cowel_put</h-></code> with the same input mul
 results in multiple processing of the same provided content.
 Sometimes this is useful,
 but it can have unintended side effects:
-</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h->twice<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str>twice</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>}</h-><h- data-h=str_esc>\</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: multiple definitions of alias "\N" for "\cowel_char_by_name"</h->
-<h- data-h=mk_tag>\twice</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h->N<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_char_by_name<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
+<h- data-h=mk_tag>\twice</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_alias</h-><h- data-h=sym_par>(</h-><h- data-h=str>N</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->cowel_char_by_name<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-></code-block>
 </warning-block>
 
 <h3 id=new-invocations><a class=para href=#new-invocations></a>8.9. Invocations</h3>
@@ -4645,7 +4645,7 @@ Any directive <code><h- data-h=mk_tag>\abc</h-></code> can be invoked statically
 <h- data-h=mk_tag>\abc</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Static invocation of directive named "cowel_invoke",</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> which performs an equivalent dynamic invocation of "abc".</h->
-<h- data-h=mk_tag>\cowel_invoke</h-><h- data-h=sym_par>(</h->abc<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code-block>
+<h- data-h=mk_tag>\cowel_invoke</h-><h- data-h=sym_par>(</h-><h- data-h=str>abc</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-></code-block>
 </example-block>
 
 <todo-block><p><intro-></intro-> 
@@ -4729,22 +4729,22 @@ The output resulting string depends on the input as follows:
 
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->unit<h- data-h=sym_par>)</h->
+</p><code-block><h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=kw>unit</h-><h- data-h=sym_par>)</h->
 
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->true<h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->false<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=bool>true</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=bool>false</h-><h- data-h=sym_par>)</h->
 
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->255<h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->255<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>base</h-><h- data-h=sym_punc>=</h->16<h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->-255<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>zpad</h-><h- data-h=sym_punc>=</h->5<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num>255</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num>255</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>base</h-><h- data-h=sym_punc>=</h-><h- data-h=num>16</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str>-255</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>zpad</h-><h- data-h=sym_punc>=</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h->
 
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->1e10<h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->1e10<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h->splice<h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->1e10<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h->fixed<h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->1e10<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h->scientific<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str>1e10</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str>1e10</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h-><h- data-h=str>splice</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str>1e10</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h-><h- data-h=str>fixed</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str>1e10</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h-><h- data-h=str>scientific</h-><h- data-h=sym_par>)</h->
 
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->"awoo"<h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->{awoo}<h- data-h=sym_par>)</h-></code-block>
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=sym_brac>{</h->awoo<h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-></code-block>
 
 <p>Generated HTML:
 </p><code-block>unit
@@ -4787,7 +4787,7 @@ binary64 representation of the <tt-><h- data-h=kw_type>float</h-></tt->.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_reinterpret_as_float</h-><h- data-h=sym_par>(</h->0x3ff8000000000000<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_reinterpret_as_float</h-><h- data-h=sym_par>(</h-><h- data-h=str>0x3ff8000000000000</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>1.5</code-block>
 </example-block>
@@ -4818,8 +4818,8 @@ base-2 representation of the <tt-><h- data-h=kw_type>int</h-></tt->.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_reinterpret_as_int</h-><h- data-h=sym_par>(</h->1.5<h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_eq</h-><h- data-h=sym_par>(</h->cowel_reinterpret_as_int(1.5)<h- data-h=sym_punc>,</h-> 0x3ff8000000000000<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_reinterpret_as_int</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_eq</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>cowel_reinterpret_as_int</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>0x3ff8000000000000</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>4609434218613702656
 true</code-block>
@@ -5201,7 +5201,7 @@ and any remaining elements are ignored once the result is known.
 <example-block><p><intro-></intro-> 
 In the following example,
 no error is raised despite the second argument containing a division by zero.
-</p><code-block><h- data-h=mk_tag>\cowel_and</h-><h- data-h=sym_par>(</h->false<h- data-h=sym_punc>,</h-> cowel_eq(0, cowel_div_to_zero(0, 0))<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_and</h-><h- data-h=sym_par>(</h-><h- data-h=bool>false</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_tag>cowel_eq</h-><h- data-h=sym_par>(</h-><h- data-h=num>0</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_tag>cowel_div_to_zero</h-><h- data-h=sym_par>(</h-><h- data-h=num>0</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code-block>
 <p>That is because the result of <code><h- data-h=mk_tag>\cowel_and</h-></code> is already known
 after the first <code>false</code>.
 </p></example-block>
@@ -5355,14 +5355,14 @@ the result is that of the IEEE-754 operation
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h->""<h- data-h=sym_par>)</h->
+</p><code-block><h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+0061 LATIN SMALL LETTER A</h->
-<h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h->"a"<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+0061 LATIN SMALL LETTER A WITH DIAERESIS</h->
-<h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h->"ä"<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>ä</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+1F1E9 Regional Indicator Symbol Letter D</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+1F1EA Regional Indicator Symbol Letter E</h->
-<h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h->"🇩🇪"<h- data-h=sym_par>)</h-></code-block>
+<h- data-h=mk_tag>\cowel_str_length</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>🇩🇪</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>0
 1
@@ -5380,14 +5380,14 @@ COWEL markup:
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h->""<h- data-h=sym_par>)</h->
+</p><code-block><h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+0061 LATIN SMALL LETTER A</h->
-<h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h->"a"<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+0061 LATIN SMALL LETTER A WITH DIAERESIS</h->
-<h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h->"ä"<h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>ä</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+1F1E9 Regional Indicator Symbol Letter D</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+1F1EA Regional Indicator Symbol Letter E</h->
-<h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h->"🇩🇪"<h- data-h=sym_par>)</h-></code-block>
+<h- data-h=mk_tag>\cowel_str_utf8_length</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>🇩🇪</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>0
 1
@@ -5415,7 +5415,7 @@ without any language-sensitive mappings.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_str_to_lower</h-><h- data-h=sym_par>(</h->"Awoo ÄÖÜ 123"<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_str_to_lower</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Awoo ÄÖÜ 123</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>awoo äöü 123</code-block>
 </example-block>
@@ -5434,7 +5434,7 @@ without any language-sensitive mappings.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_str_to_upper</h-><h- data-h=sym_par>(</h->"Awoo äöü Straße 123"<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_str_to_upper</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Awoo äöü Straße 123</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>AWOO ÄÖÜ STRASSE 123</code-block>
 </example-block>
@@ -5707,7 +5707,7 @@ deals with modern C++ features correctly.
 
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_par>(</h->cpp<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->123<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_par>(</h-><h- data-h=str>cpp</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->123<h- data-h=sym_brac>}</h-></code-block>
 <p>This applies C++ syntax highlighting, and generates HTML.
 The <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-></code> tags are an implementation detail and may be subject to change.
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>num</h-><h- data-h=sym_punc>&gt;</h->123<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code-block>
@@ -5723,7 +5723,7 @@ within other <code><h- data-h=mk_tag>\code</h-></code> or <code><h- data-h=mk_ta
 </p>
 <example-block><p><intro-></intro-> 
 You can nest JSON inside of a C++ string literal as follows:
-</p><code-block>Call: <h- data-h=mk_tag>\code</h-><h- data-h=sym_par>(</h->cpp<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->out.write_json("<h- data-h=mk_tag>\code</h-><h- data-h=sym_par>(</h->json<h- data-h=sym_punc>,</h-><h- data-h=mk_attr>nested</h-><h- data-h=sym_punc>=</h->true<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->{"x":123,"y":true,"z":null}<h- data-h=sym_brac>}</h->")<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block>Call: <h- data-h=mk_tag>\code</h-><h- data-h=sym_par>(</h-><h- data-h=str>cpp</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->out.write_json("<h- data-h=mk_tag>\code</h-><h- data-h=sym_par>(</h-><h- data-h=str>json</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>nested</h-><h- data-h=sym_punc>=</h-><h- data-h=bool>true</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->{"x":123,"y":true,"z":null}<h- data-h=sym_brac>}</h->")<h- data-h=sym_brac>}</h-></code-block>
 <p>This renders as follows:
 </p><div class=indent>
 Call: <code><h- data-h=name>out</h-><h- data-h=sym_op>.</h-><h- data-h=name>write_json</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_attr>"x"</h-><h- data-h=sym_punc>:</h-><h- data-h=num>123</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>"y"</h-><h- data-h=sym_punc>:</h-><h- data-h=bool>true</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>"z"</h-><h- data-h=sym_punc>:</h-><h- data-h=null>null</h-><h- data-h=sym_brac>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code>
@@ -5744,7 +5744,7 @@ which is more composable.
 Writing <code><h- data-h=mk_tag>\code</h-></code> directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:
 </p><code-block><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> Defines a </h-><h- data-h=cmt>\</h-><h- data-h=cmt>js directive that can be used in place of </h-><h- data-h=cmt>\</h-><h- data-h=cmt>code(js) from now on:</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>js</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_par>(</h->js<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_par>(</h->\js<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_par>(</h-><h- data-h=str>js</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
 Let's highlight <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>js</h-><h- data-h=sym_brac>{</h->var<h- data-h=sym_brac>}</h-> in JavaScript.</code-block>
 </tip-block>
 
@@ -5757,11 +5757,11 @@ but it is a block directive, not an inline directive.
 This can be controlled using the <tt->borders</tt->.
 </p>
 <example-block><p><intro-></intro-> 
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>codeblock</h-><h- data-h=sym_par>(</h->js<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>codeblock</h-><h- data-h=sym_par>(</h-><h- data-h=str>js</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
 // Borders enabled
 let x = 0;
 <h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>codeblock</h-><h- data-h=sym_par>(</h->js<h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>borders</h-> <h- data-h=sym_punc>=</h-> false<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>codeblock</h-><h- data-h=sym_par>(</h-><h- data-h=str>js</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>borders</h-> <h- data-h=sym_punc>=</h-> <h- data-h=bool>false</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
 // Borders disabled
 let x = 0;
 <h- data-h=sym_brac>}</h-></code-block>
@@ -5790,7 +5790,7 @@ all lowercase, and with hyphens instead of underscores.
 It is possible to mix automatic syntax highlighting with manual overrides:
 </p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> _Int128 is manually highlighted as a type keyword,</h->
 <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> and x is automatically highlighted as an identifier.</h->
-<h- data-h=mk_tag>\code</h-><h- data-h=sym_par>(</h->c<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\hl</h-><h- data-h=sym_par>(</h->keyword-type<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-> x<h- data-h=sym_brac>}</h-></code-block>
+<h- data-h=mk_tag>\code</h-><h- data-h=sym_par>(</h-><h- data-h=str>c</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\hl</h-><h- data-h=sym_par>(</h-><h- data-h=str>keyword-type</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-> x<h- data-h=sym_brac>}</h-></code-block>
 <p>This generates the HTML (subject to change):
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data</h-><h- data-h=sym_punc>=</h-><h- data-h=str>h</h->=kw_type&gt;_Int128<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-> <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>id</h-><h- data-h=sym_punc>&gt;</h->x<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>code</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 <p>It renders as <code><h- data-h=kw_type>_Int128</h-> <h- data-h=name>x</h-></code>.
@@ -5893,7 +5893,7 @@ in a sentence.</code-block>
 <tip-block><p><intro-></intro-> 
 If you frequently use math inside plain sentences,
 you can define a convenience macro:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mathsqr</h-><h- data-h=sym_brac>{</h->...<h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>math</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>msup</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mi</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mn</h-><h- data-h=sym_brac>{</h->2<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_par>(</h->\mathsqr{...<h- data-h=sym_brac>}</h->){<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>math</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>msup</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mi</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mn</h-><h- data-h=sym_brac>{</h->2<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->}
 
 The sum of <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mathsqr</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-> and <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mathsqr</h-><h- data-h=sym_brac>{</h->y<h- data-h=sym_brac>}</h-> …</code-block>
 <p>This renders as:
@@ -6180,7 +6180,7 @@ An <tt-><h- data-h=mk_attr>id</h-></tt-> argument can be provided explicitly.
 <tip-block><p><intro-></intro-> 
 Headings can be referenced using the <code><h- data-h=mk_tag>\ref</h-></code> directive:
 </p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>h2</h-><h- data-h=sym_brac>{</h->Heading with synthesized id<h- data-h=sym_brac>}</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>h2</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h->xyz<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Heading with manual id<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>h2</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>xyz</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Heading with manual id<h- data-h=sym_brac>}</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>comment</h-><h- data-h=sym_brac>{</h->These can be referenced as follows<h- data-h=sym_brac>}</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->#heading-with-synthesized-id<h- data-h=sym_par>)</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->#xzy<h- data-h=sym_par>)</h-></code-block>
@@ -6199,7 +6199,7 @@ as the document is processed.
 <tip-block><p><intro-></intro-> 
 Since the table of contents should usually not be listed within itself,
 an unlisted heading may be used:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>h2</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>listed</h-><h- data-h=sym_punc>=</h->no<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Contents<h- data-h=sym_brac>}</h->
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>h2</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>listed</h-><h- data-h=sym_punc>=</h-><h- data-h=str>no</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Contents<h- data-h=sym_brac>}</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>make_contents</h-></code-block>
 <p>A similar effect can be achieved using
 <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_html_element</h->[h2]</code> (<a href=#dir-cowel_html_element>§8.3.1. <code><h- data-h=mk_tag>\cowel_html_element</h-></code> — HTML element</a>).
@@ -6209,7 +6209,7 @@ and it will not synthesize an <tt-><h- data-h=mk_attr>id</h-></tt-> for that hea
 </p></tip-block>
 
 <note-block><p><intro-></intro-> 
-The underlying contents can be obtained with <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>here</h-><h- data-h=sym_par>(</h->std.contents<h- data-h=sym_par>)</h-></code>.
+The underlying contents can be obtained with <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>here</h-><h- data-h=sym_par>(</h-><h- data-h=str>std</h->.contents<h- data-h=sym_par>)</h-></code>.
 <code><h- data-h=mk_tag>\make_contents</h-></code> additionally wraps those contents in HTML elements to
 chang their visual appearance.
 </p></note-block>
@@ -6235,7 +6235,7 @@ each of which is a plaintext context:
 <dt><tt-><h- data-h=mk_attr>id</h-></tt-></dt>
 <dd>
 The identifier of the bibliography entry.
-This can later be referenced using <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->id<h- data-h=sym_par>)</h-></code>.
+This can later be referenced using <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h-><h- data-h=str>id</h-><h- data-h=sym_par>)</h-></code>.
 </dd>
 
 <dt><tt-><h- data-h=mk_attr>author</h-></tt-></dt>
@@ -6322,14 +6322,14 @@ If no content is provided, it can be synthesized from the following types of ref
 
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->mail:john@us.gov<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h-><h- data-h=str>mail</h->:john@us.gov<h- data-h=sym_par>)</h-></code-block>
 <p>HTML output (<code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>a</h-><h- data-h=sym_punc>&gt;</h-></code> tag may have additional attributes):
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>a</h-> <h- data-h=mk_attr>href</h-><h- data-h=sym_punc>=</h-><h- data-h=str>mail:john@us.gov</h-><h- data-h=sym_punc>&gt;</h->john@us.gov<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>a</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
 
 <example-block><p><intro-></intro-> 
 C++ standard draft links can be synthesized into human-readable descriptions.
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->https://eel.is/c++draft/expr#1<h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h-><h- data-h=str>https</h->://eel.is/c++draft/expr#1<h- data-h=sym_par>)</h-></code-block>
 <p>This renders as:
 </p><div class=indent>
 <a href=https://eel.is/c++draft/expr#1>[expr] paragraph 1</a>
@@ -6345,7 +6345,7 @@ and the displayed text cannot be customized.
 <example-block><p><intro-></intro-> 
 The following two lines produce the same output:
 </p><code-block>Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>mail</h-><h- data-h=sym_brac>{</h->john@us.gov<h- data-h=sym_brac>}</h->.
-Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->mailto:john@us.gov<h- data-h=sym_par>)</h->.</code-block>
+Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h-><h- data-h=str>mailto</h->:john@us.gov<h- data-h=sym_par>)</h->.</code-block>
 </example-block>
 
 <h4 id=dir-tel><a class=para href=#dir-tel></a>9.10.3. <code><h- data-h=mk_tag>\tel</h-></code> — Telephone numbers</h4>
@@ -6357,7 +6357,7 @@ and the displayed text cannot be customized.
 <example-block><p><intro-></intro-> 
 The following two lines produce the same output:
 </p><code-block>Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>tel</h-><h- data-h=sym_brac>{</h->+1234<h- data-h=sym_brac>}</h->.
-Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h->tel:+1234<h- data-h=sym_par>)</h->.</code-block>
+Please contact <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>ref</h-><h- data-h=sym_par>(</h-><h- data-h=str>tel</h->:+1234<h- data-h=sym_par>)</h->.</code-block>
 </example-block>
 <h3 id=foreign-languages><a class=para href=#foreign-languages></a>9.11. Foreign languages</h3>
 
@@ -6424,11 +6424,11 @@ inside <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>body</h-><h- data-h=
 </p>
 <ul>
 <li>
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h->std.head<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->text<h- data-h=sym_brac>}</h-></code> will write <code>text</code>
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str>std</h->.head<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->text<h- data-h=sym_brac>}</h-></code> will write <code>text</code>
 inside of the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>head</h-><h- data-h=sym_punc>&gt;</h-></code> element (following auto-generated content).
 </li>
 <li>
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h->std.body<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->text<h- data-h=sym_brac>}</h-></code> will write <code>text</code>
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str>std</h->.body<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->text<h- data-h=sym_brac>}</h-></code> will write <code>text</code>
 inside of the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>body</h-><h- data-h=sym_punc>&gt;</h-></code> element (following <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>main</h-><h- data-h=sym_punc>&gt;</h-></code>
 and other automatically inserted elements).
 </li>
@@ -6436,7 +6436,7 @@ and other automatically inserted elements).
 
 <tip-block><p><intro-></intro-> 
 You can change the title of the document as follows:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h->std.head<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str>std</h->.head<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>html</h->-title{This is the document title!}
 <h- data-h=sym_brac>}</h-></code-block>
 </tip-block>
@@ -6454,9 +6454,9 @@ which allows forward-references.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h->sec<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->before/<h- data-h=sym_brac>}</h->
-(<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>here</h-><h- data-h=sym_par>(</h->sec<h- data-h=sym_par>)</h->)
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h->sec<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->/after<h- data-h=sym_brac>}</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str>sec</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->before/<h- data-h=sym_brac>}</h->
+(<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>here</h-><h- data-h=sym_par>(</h-><h- data-h=str>sec</h-><h- data-h=sym_par>)</h->)
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str>sec</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->/after<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block>(before//after)</code-block>
 </example-block>
@@ -6497,7 +6497,7 @@ Everyday
 We might not want to space-separate content if some of it is empty.
 For example, we could define a <code><h- data-h=mk_tag>\Note</h-></code> macro
 where the user can <em>optionally</em> provide a number for that note:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Note</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>trim</h-><h- data-h=sym_brac>{</h->Note <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h->:<h- data-h=sym_brac>}</h->
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_par>(</h->\Note<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>trim</h-><h- data-h=sym_brac>{</h->Note <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h->:<h- data-h=sym_brac>}</h->
 
 <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Note</h-> Something something.
 
