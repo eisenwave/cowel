@@ -30,6 +30,7 @@
           },
           "end": "(?!\\G)(?!\\(|\\{)",
           "patterns": [
+            { "include": "#comments" },
             { "include": "#directive-arguments" },
             { "include": "#directive-content" }
           ]
