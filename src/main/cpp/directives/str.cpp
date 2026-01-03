@@ -90,7 +90,7 @@ String_Sink_Behavior::evaluate(const Invocation& call, Context& context) const
     }
     // TODO: String_Kind::unicode is needlessly pessimistic here.
     //       We could alter String_Sink so it receives the String_Kind and keeps track of it.
-    return Value::dynamic_string(std::move(sink.m_text), String_Kind::unknown);
+    return Value::string(as_u8string_view(sink.m_text), String_Kind::unknown);
 }
 
 Processing_Status

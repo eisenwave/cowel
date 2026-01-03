@@ -2,7 +2,6 @@
 #define COWEL_VALUE_HPP
 
 #include <string_view>
-#include <vector>
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/static_string.hpp"
@@ -10,6 +9,7 @@
 
 #include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/gc.hpp"
 #include "cowel/string_kind.hpp"
 #include "cowel/type.hpp"
 
@@ -25,11 +25,15 @@ struct Unit {
     friend bool operator==(Unit, Unit) = default;
 };
 
+/// @brief A type with sufficient size (but possibly not alignment)
+/// to provide storage for `Integer`.
+/// This is mainly useful to prevent `Int128` from causing 16-byte alignment
+/// for the entire `Value`, which leads to excessive internal padding.
 struct Int_Storage {
     alignas(std::size_t) unsigned char bytes[sizeof(Integer)];
 };
 
-using Short_String_Value = Static_String8<40>;
+using Short_String_Value = Static_String8<56>;
 
 struct String_With_Meta {
     std::u8string_view data;
@@ -46,12 +50,11 @@ struct Directive_And_Frame {
     Frame_Index frame;
 };
 
-template <typename T>
-[[nodiscard]]
-constexpr T copy_for_no_reason(T x)
-{
-    return x;
-}
+using Dynamic_String_Value = GC_Ref<char8_t>;
+
+struct Group_Member_Value;
+
+using Group_Value = GC_Ref<Group_Member_Value>;
 
 /// @brief A value in the COWEL language.
 /// This is a tagged union (similar to `std::variant`),
@@ -82,6 +85,7 @@ private:
         dynamic_string_index,
         block_index,
         directive_index,
+        group_index,
     };
 
     union Union { // NOLINT(cppcoreguidelines-special-member-functions)
@@ -91,77 +95,20 @@ private:
         Int_Storage integer;
         Float floating;
         std::u8string_view static_string;
-        Short_String_Value short_string;
-        std::pmr::vector<char8_t> dynamic_string;
+        Short_String_Value::array_type short_string;
+        Dynamic_String_Value dynamic_string;
         Block_And_Frame block;
         Directive_And_Frame directive;
+        Group_Value group;
 
         template <typename T>
         [[nodiscard]]
-        static constexpr Union make(T&& other, Index other_index) noexcept
-        {
-            // Note that accessing other.unit or other.null results in a GCC ICE;
-            // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123346
-            switch (other_index) {
-            case unit_index: return { .unit = Unit {} };
-            case null_index: return { .null = Null {} };
-            case boolean_index: return { .boolean = other.boolean };
-            case integer_index: return { .integer = other.integer };
-            case floating_index: return { .floating = other.floating };
-            case static_string_index: return { .static_string = other.static_string };
-            case short_string_index: return { .short_string = other.short_string };
-            case dynamic_string_index:
-                return { .dynamic_string = std::forward<T>(other).dynamic_string };
-            case block_index: return { .block = other.block };
-            case directive_index: return { .directive = other.directive };
-            }
-            COWEL_ASSERT_UNREACHABLE(u8"Invalid index.");
-        }
+        static constexpr Union make(T&& other, Index other_index) noexcept;
 
         template <typename T>
-        constexpr void assign(Index self_index, T&& other, Index other_index) noexcept
-        {
-            switch (other_index) {
-            case unit_index: unit = other.unit; break;
-            case null_index: null = other.null; break;
-            case boolean_index: boolean = other.boolean; break;
-            case integer_index: integer = other.integer; break;
-            case floating_index: floating = other.floating; break;
-            case static_string_index: static_string = other.static_string; break;
-            case short_string_index: short_string = other.short_string; break;
-            case dynamic_string_index: {
-                if (self_index == dynamic_string_index) {
-                    dynamic_string = std::forward<T>(other).dynamic_string;
-                }
-                else {
-                    destroy(self_index);
-                    new (&dynamic_string) auto(std::forward<T>(other).dynamic_string);
-                }
-                break;
-            }
-            case block_index: block = other.block; break;
-            case directive_index: directive = other.directive; break;
-            }
-        }
+        constexpr void assign(Index self_index, T&& other, Index other_index) noexcept;
 
-        constexpr void destroy(Index index) noexcept
-        {
-            static_assert(std::is_trivially_destructible_v<Integer>);
-            static_assert(std::is_trivially_destructible_v<Block_And_Frame>);
-            static_assert(std::is_trivially_destructible_v<Directive_And_Frame>);
-            switch (index) {
-            case unit_index:
-            case null_index:
-            case boolean_index:
-            case integer_index:
-            case floating_index:
-            case static_string_index:
-            case short_string_index:
-            case block_index:
-            case directive_index: break;
-            case dynamic_string_index: dynamic_string.~vector();
-            }
-        }
+        constexpr void destroy(Index index) noexcept;
 
         constexpr ~Union() { }
     };
@@ -190,118 +137,105 @@ public:
     static const Value false_string;
 
     [[nodiscard]]
-    static constexpr Value boolean(bool value) noexcept
-    {
-        return Value { Union { .boolean = value }, boolean_index };
-    }
+    static constexpr Value boolean(bool value) noexcept;
     [[nodiscard]]
-    static constexpr Value integer(Integer value) noexcept
-    {
-        return Value { Union { .integer = std::bit_cast<Int_Storage>(value) }, integer_index };
-    }
+    static constexpr Value integer(Integer value) noexcept;
     [[nodiscard]]
-    static constexpr Value floating(Float value) noexcept
-    {
-        return Value { Union { .floating = value }, floating_index };
-    }
+    static constexpr Value floating(Float value) noexcept;
 
+    /// @brief Dispatches to `short_string` or `dynamic_string_forced`
+    /// depending on the length of the string.
+    [[nodiscard]]
+    static Value string(std::u8string_view value, String_Kind kind);
     /// @brief Creates a value of type `str` from a string with static storage duration.
     /// This performs no allocation and is very cheap,
     /// but should be used with great caution
     /// because it gives this string reference semantics.
     [[nodiscard]]
-    static constexpr Value static_string(std::u8string_view value, String_Kind kind) noexcept
-    {
-        return Value { Union { .static_string = value }, static_string_index, kind };
-    }
+    static constexpr Value static_string(std::u8string_view value, String_Kind kind) noexcept;
     /// @brief Creates a value of type `str` from a string that fits into `Short_String_Value`.
     [[nodiscard]]
-    static constexpr Value short_string(Short_String_Value value, String_Kind kind) noexcept
-    {
-        return Value { Union { .short_string = value }, short_string_index, kind };
-    }
-    /// @brief Creates a value of type `str` with dynamically sized contents.
+    static constexpr Value short_string(const Short_String_Value& value, String_Kind kind) noexcept;
+    /// @brief Creates a value of type `str` with dynamic storage duration.
+    /// Unlike for `static_string`, the contents of `value` are copied
+    /// and kept alive using garbage collection.
     [[nodiscard]]
-    static Value dynamic_string_forced(std::pmr::vector<char8_t>&& value, String_Kind kind) noexcept
-    {
-        return Value { Union { .dynamic_string = std::move(value) }, dynamic_string_index, kind };
-    }
-    /// @brief Creates a value of type `str` with dynamically sized contents.
-    /// If `value` can be represented as `Short_String_Value`,
-    /// creates a short string instead.
-    [[nodiscard]]
-    static Value dynamic_string(std::pmr::vector<char8_t>&& value, String_Kind kind) noexcept
-    {
-        if (value.size() <= Short_String_Value::max_size_v) {
-            Value result = short_string({ value.data(), value.size() }, kind);
-            // Clearing the original prevents inconsistent behavior
-            // where the vector sometimes stays filled.
-            value.clear();
-            return result;
-        }
-
-        return Value { Union { .dynamic_string = std::move(value) }, dynamic_string_index, kind };
-    }
-    [[nodiscard]]
-    static Value dynamic_string(
-        std::u8string_view value,
-        std::pmr::memory_resource* memory,
-        String_Kind kind
-    ) noexcept
-    {
-        if (value.size() <= Short_String_Value::max_size_v) {
-            return short_string({ value.data(), value.size() }, kind);
-        }
-        std::pmr::vector<char8_t> storage { memory };
-        storage.insert(storage.end(), value.data(), value.data() + value.size());
-        return Value { Union { .dynamic_string = std::move(storage) }, dynamic_string_index };
-    }
+    static Value dynamic_string_forced(std::u8string_view value, String_Kind kind);
 
     [[nodiscard]]
     static Value block(const ast::Primary& block, Frame_Index frame);
     [[nodiscard]]
     static Value block(const ast::Directive& block, Frame_Index frame);
 
+    static Value group(std::span<const Group_Member_Value> values);
+    static Value group_move(std::span<Group_Member_Value> values);
+
+    /// @brief Creates a value by copying each element of `values`,
+    /// effectively treating it as a positional group member.
+    static Value group_pack(std::span<const Value> values);
+    /// @brief Creates a value by moving each element of `values`,
+    /// effectively treating it as a positional group member.
+    static Value group_pack_move(std::span<Value> values);
+
 private:
     Index m_index;
     String_Kind m_string_kind;
+    unsigned char m_short_string_length = 0;
     Union m_value;
 
     template <class T>
     [[nodiscard]]
-    constexpr Value(T&& value, Index index, String_Kind string_kind = String_Kind::unknown) noexcept
-        : m_index { index }
-        , m_string_kind { string_kind }
-        , m_value { Union::make(std::forward<T>(value), index) }
-    {
-    }
+    constexpr Value(
+        T&& value,
+        Index index,
+        String_Kind string_kind = String_Kind::unknown,
+        std::size_t short_string_length = 0
+    ) noexcept;
 
 public:
     [[nodiscard]]
     constexpr Value(const Value& other) noexcept
-        : Value { other.m_value, other.m_index }
+        : Value {
+            other.m_value,
+            other.m_index,
+            other.m_string_kind,
+            other.m_short_string_length,
+        }
     {
     }
 
     [[nodiscard]]
     constexpr Value(Value&& other) noexcept
-        : Value { std::move(other.m_value), other.m_index }
+        : Value {
+            std::move(other.m_value),
+            other.m_index,
+            other.m_string_kind,
+            other.m_short_string_length,
+        }
     {
     }
 
-    constexpr Value& operator=(const Value& other)
+    constexpr Value& operator=(const Value& other) noexcept
     {
+        static_assert(std::is_nothrow_copy_assignable_v<Dynamic_String_Value>);
+        static_assert(std::is_nothrow_copy_assignable_v<Group_Value>);
         if (this != &other) {
             m_value.assign(m_index, other.m_value, other.m_index);
             m_index = other.m_index;
+            m_string_kind = other.m_string_kind;
+            m_short_string_length = other.m_short_string_length;
         }
         return *this;
     }
 
     constexpr Value& operator=(Value&& other) noexcept
     {
+        static_assert(std::is_nothrow_move_assignable_v<Dynamic_String_Value>);
+        static_assert(std::is_nothrow_move_assignable_v<Group_Value>);
         m_value.assign(m_index, std::move(other).m_value, other.m_index);
         m_index = other.m_index;
+        m_string_kind = other.m_string_kind;
+        m_short_string_length = other.m_short_string_length;
         return *this;
     }
 
@@ -315,7 +249,7 @@ public:
     constexpr const Type& get_type() const noexcept
     {
         static constexpr auto types = [] {
-            std::array<const Type*, 10> result;
+            std::array<const Type*, 11> result;
             result[unit_index] = &Type::unit;
             result[null_index] = &Type::null;
             result[boolean_index] = &Type::boolean;
@@ -326,6 +260,7 @@ public:
             result[dynamic_string_index] = &Type::str;
             result[block_index] = &Type::block;
             result[directive_index] = &Type::block;
+            result[group_index] = &Type::group;
             return result;
         }();
         return *types[m_index];
@@ -336,7 +271,7 @@ public:
     constexpr Type_Kind get_type_kind() const noexcept
     {
         static constexpr auto kinds = [] {
-            std::array<Type_Kind, 10> result;
+            std::array<Type_Kind, 11> result;
             result[unit_index] = Type_Kind::unit;
             result[null_index] = Type_Kind::null;
             result[boolean_index] = Type_Kind::boolean;
@@ -347,6 +282,7 @@ public:
             result[dynamic_string_index] = Type_Kind::str;
             result[block_index] = Type_Kind::block;
             result[directive_index] = Type_Kind::block;
+            result[group_index] = Type_Kind::group;
             return result;
         }();
         return kinds[m_index];
@@ -430,6 +366,16 @@ public:
     {
         return m_index == static_string_index;
     }
+    [[nodiscard]]
+    constexpr bool is_block() const noexcept
+    {
+        return get_type_kind() == Type_Kind::block;
+    }
+    [[nodiscard]]
+    constexpr bool is_group() const noexcept
+    {
+        return get_type_kind() == Type_Kind::group;
+    }
 
     [[nodiscard]]
     constexpr bool as_boolean() const
@@ -454,8 +400,9 @@ public:
     {
         switch (m_index) {
         case static_string_index: return m_value.static_string;
-        case short_string_index: return m_value.short_string;
-        case dynamic_string_index: return as_u8string_view(m_value.dynamic_string);
+        case short_string_index:
+            return std::u8string_view { m_value.short_string.data(), m_short_string_length };
+        case dynamic_string_index: return as_u8string_view(m_value.dynamic_string.as_span());
         default: break;
         }
         COWEL_ASSERT_UNREACHABLE(u8"Value is not a string.");
@@ -465,17 +412,163 @@ public:
     {
         return { as_string(), m_string_kind };
     }
-    constexpr void extract_string(std::pmr::vector<char8_t>& out) const
+
+    [[nodiscard]]
+    // NOLINTNEXTLINE(readability-make-member-function-const)
+    std::span<Group_Member_Value> get_group_members()
     {
-        const std::u8string_view str = as_string();
-        out.insert(out.end(), str.begin(), str.end());
+        // The linter suppression is necessary because of a clang-tidy bug:
+        // https://github.com/llvm/llvm-project/issues/174269
+        COWEL_ASSERT(get_type_kind() == Type_Kind::group);
+        return m_value.group.as_span();
     }
+    [[nodiscard]]
+    std::span<const Group_Member_Value> get_group_members() const
+    {
+        COWEL_ASSERT(get_type_kind() == Type_Kind::group);
+        return m_value.group.as_span();
+    }
+
     // TODO: There is currently no efficient way to move strings out of a Value.
     //       Maybe an rvalue reference overload for the functions above would make sense.
 
     [[nodiscard]]
     Processing_Status splice_block(Content_Policy& out, Context& context) const;
 };
+
+struct Group_Member_Value {
+    /// @brief The name of the group member,
+    /// or `Value::null` for positional members.
+    Value name;
+    /// @brief The value of the group member.
+    Value value;
+};
+
+template <class T>
+constexpr Value::Value(
+    T&& value,
+    Index index,
+    String_Kind string_kind,
+    std::size_t short_string_length
+) noexcept
+    : m_index { index }
+    , m_string_kind { string_kind }
+    , m_short_string_length { static_cast<unsigned char>(short_string_length) }
+    , m_value { Union::make(std::forward<T>(value), index) }
+{
+    COWEL_ASSERT(short_string_length <= Short_String_Value::max_size_v);
+}
+
+template <typename T>
+[[nodiscard]]
+constexpr Value::Union Value::Union::make(T&& other, Index other_index) noexcept
+{
+    // Note that accessing other.unit or other.null results in a GCC ICE;
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123346
+    switch (other_index) {
+    case unit_index: return { .unit = Unit {} };
+    case null_index: return { .null = Null {} };
+    case boolean_index: return { .boolean = other.boolean };
+    case integer_index: return { .integer = other.integer };
+    case floating_index: return { .floating = other.floating };
+    case static_string_index: return { .static_string = other.static_string };
+    case short_string_index: return { .short_string = other.short_string };
+    case dynamic_string_index: return { .dynamic_string = std::forward<T>(other).dynamic_string };
+    case block_index: return { .block = other.block };
+    case directive_index: return { .directive = other.directive };
+    case group_index: return { .group = std::forward<T>(other).group };
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid index.");
+}
+
+template <typename T>
+constexpr void Value::Union::assign(Index self_index, T&& other, Index other_index) noexcept
+{
+    switch (other_index) {
+    case unit_index: unit = other.unit; break;
+    case null_index: null = other.null; break;
+    case boolean_index: boolean = other.boolean; break;
+    case integer_index: integer = other.integer; break;
+    case floating_index: floating = other.floating; break;
+    case static_string_index: static_string = other.static_string; break;
+    case short_string_index: short_string = other.short_string; break;
+    case dynamic_string_index: {
+        if (self_index == dynamic_string_index) {
+            dynamic_string = std::forward<T>(other).dynamic_string;
+        }
+        else {
+            destroy(self_index);
+            new (&dynamic_string) auto(std::forward<T>(other).dynamic_string);
+        }
+        break;
+    }
+    case block_index: block = other.block; break;
+    case directive_index: directive = other.directive; break;
+    case group_index: {
+        if (self_index == other_index) {
+            group = std::forward<T>(other).group;
+        }
+        else {
+            destroy(self_index);
+            new (&group) auto(std::forward<T>(other).group);
+        }
+        break;
+    };
+    }
+}
+
+constexpr void Value::Union::destroy(Index index) noexcept
+{
+    static_assert(std::is_trivially_destructible_v<Integer>);
+    static_assert(std::is_trivially_destructible_v<Block_And_Frame>);
+    static_assert(std::is_trivially_destructible_v<Directive_And_Frame>);
+    switch (index) {
+    case unit_index:
+    case null_index:
+    case boolean_index:
+    case integer_index:
+    case floating_index:
+    case static_string_index:
+    case short_string_index:
+    case block_index:
+    case directive_index: break;
+    case dynamic_string_index: {
+        dynamic_string.~Dynamic_String_Value();
+        break;
+    }
+    case group_index: {
+        group.~Group_Value();
+        break;
+    }
+    }
+}
+
+constexpr Value Value::boolean(bool value) noexcept
+{
+    return Value { Union { .boolean = value }, boolean_index };
+}
+constexpr Value Value::integer(Integer value) noexcept
+{
+    return Value { Union { .integer = std::bit_cast<Int_Storage>(value) }, integer_index };
+}
+constexpr Value Value::floating(Float value) noexcept
+{
+    return Value { Union { .floating = value }, floating_index };
+}
+
+constexpr Value Value::static_string(std::u8string_view value, String_Kind kind) noexcept
+{
+    return Value { Union { .static_string = value }, static_string_index, kind };
+}
+constexpr Value Value::short_string(const Short_String_Value& value, String_Kind kind) noexcept
+{
+    return Value {
+        Union { .short_string = value.as_array() },
+        short_string_index,
+        kind,
+        value.size(),
+    };
+}
 
 inline constexpr Value Value::unit = { Union { .unit = Unit {} }, unit_index };
 inline constexpr Value Value::null = { Union { .null = Null {} }, null_index };
@@ -487,8 +580,6 @@ inline constexpr Value Value::empty_string = Value::static_string({}, String_Kin
 inline constexpr Value Value::unit_string = Value::static_string(u8"unit", String_Kind::ascii);
 inline constexpr Value Value::true_string = Value::static_string(u8"true", String_Kind::ascii);
 inline constexpr Value Value::false_string = Value::static_string(u8"false", String_Kind::ascii);
-
-static_assert(sizeof(Value) <= 64, "Value should not be too large to be passed by value");
 
 } // namespace cowel
 

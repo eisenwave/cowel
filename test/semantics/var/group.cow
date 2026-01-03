@@ -1,0 +1,10 @@
+\test_input{
+\cowel_var_let(x, (1, 2, 3))\
+\__eq(cowel_var_get(x), (1, 2, 3))
+\__eq(cowel_var_get(x), (1, 2))
+}
+
+\test_output{
+true
+false
+}

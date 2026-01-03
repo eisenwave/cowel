@@ -165,7 +165,7 @@ Processing_Status String_Matcher::match_value(
         on_fail.emit(argument.get_source_span(), u8"Expected a string."sv, context);
         return on_fail.status;
     }
-    val->extract_string(m_data);
+    append(m_data, val->as_string());
 
     m_value = { as_u8string_view(m_data), argument.get_source_span() };
     m_string_kind = val->get_string_kind();

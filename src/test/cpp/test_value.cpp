@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 
-#include "cowel/util/assert.hpp"
 #include "cowel/util/strings.hpp"
 
 #include "cowel/type.hpp"
@@ -20,36 +19,7 @@ std::ostream& operator<<(std::ostream& out, const Type& type);
 
 std::ostream& operator<<(std::ostream& out, const Type& type)
 {
-    if (type.get_kind() == Type_Kind::union_) {
-        out << '(';
-        bool first = true;
-        for (const Type& m : type.get_members()) {
-            if (!first) {
-                out << " | ";
-            }
-            first = false;
-            out << m;
-        }
-        return out << ')';
-    }
-    out << as_string_view(type_kind_display_name(type.get_kind()));
-    switch (type.get_members().size()) {
-    case 0: return out;
-    case 1: return out << " " << type.get_members().front();
-    default: {
-        out << '(';
-        bool first = true;
-        for (const Type& m : type.get_members()) {
-            if (!first) {
-                out << ", ";
-            }
-            first = false;
-            out << m;
-        }
-        return out << ')';
-    }
-    }
-    COWEL_ASSERT_UNREACHABLE(u8"?!");
+    return out << as_string_view(type.get_display_name());
 }
 
 namespace {
@@ -107,8 +77,7 @@ TEST(Value, string)
     EXPECT_EQ(short_string.get_type(), Type::str);
     EXPECT_FALSE(short_string.is_static_string());
 
-    const auto dynamic_string
-        = Value::dynamic_string_forced({ u8'a', u8'w', u8'o', u8'o' }, String_Kind::ascii);
+    const auto dynamic_string = Value::dynamic_string_forced(u8"awoo"sv, String_Kind::ascii);
     EXPECT_EQ(dynamic_string.as_string(), u8"awoo"sv);
     EXPECT_EQ(dynamic_string.get_type(), Type::str);
     EXPECT_FALSE(dynamic_string.is_static_string());
@@ -138,6 +107,7 @@ TEST(Type, canonical_union_of)
 TEST(Type, analytically_convertible_to)
 {
     const auto int_or_float = Type::canonical_union_of({ Type::integer, Type::floating });
+    const auto int_and_float = Type::group_of({ Type::integer, Type::floating });
     const auto lazy_int = Type::lazy(Type::integer);
 
     EXPECT_TRUE(Type::any.analytically_convertible_to(Type::any));
@@ -157,6 +127,23 @@ TEST(Type, analytically_convertible_to)
 
     EXPECT_TRUE(Type::integer.analytically_convertible_to(lazy_int));
     EXPECT_FALSE(lazy_int.analytically_convertible_to(Type::integer));
+
+    EXPECT_TRUE(Type::group.analytically_convertible_to(Type::group));
+
+    EXPECT_TRUE(Type::empty_group.analytically_convertible_to(Type::group));
+    EXPECT_TRUE(Type::empty_group.analytically_convertible_to(Type::empty_group));
+    EXPECT_FALSE(Type::empty_group.analytically_convertible_to(int_and_float));
+
+    EXPECT_TRUE(int_and_float.analytically_convertible_to(int_and_float));
+    EXPECT_TRUE(int_and_float.analytically_convertible_to(Type::group));
+    EXPECT_FALSE(int_and_float.analytically_convertible_to(Type::empty_group));
+
+    EXPECT_TRUE(int_and_float.analytically_convertible_to(
+        Type::canonical_union_of({ Type::integer, int_and_float })
+    ));
+    EXPECT_FALSE(int_and_float.analytically_convertible_to(int_or_float));
+    EXPECT_FALSE(Type::integer.analytically_convertible_to(int_and_float));
+    EXPECT_FALSE(Type::floating.analytically_convertible_to(int_and_float));
 }
 
 } // namespace
