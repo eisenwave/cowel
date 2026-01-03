@@ -18,6 +18,9 @@
 namespace cowel {
 namespace {
 
+constexpr Internal_Eq_Behavior internal_eq //
+    {};
+
 constexpr Unary_Numeric_Expression_Behavior cowel_abs //
     { Unary_Numeric_Expression_Kind::abs };
 constexpr Policy_Behavior cowel_actions //
@@ -376,6 +379,7 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(Btodo),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(Bug),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(Bwarn),
+    { u8"__eq"sv, &internal_eq },
     COWEL_NAME_AND_BEHAVIOR_ENTRY(b),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(bib),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(blockquote),

@@ -32,6 +32,9 @@ std::pmr::string vec_to_string(const std::pmr::vector<char>& v)
     return { v.data(), v.size(), v.get_allocator() };
 }
 
+[[nodiscard]]
+bool members_equal(std::span<const Group_Member_Value>, std::span<const Group_Member_Value>);
+
 template <Comparison_Expression_Kind kind, typename T>
 bool do_compare(T x, T y)
 {
@@ -86,9 +89,36 @@ bool compare(const Value& x, const Value& y)
     case Type_Kind::str: {
         return do_compare<kind>(x.as_string(), y.as_string());
     }
+    case Type_Kind::group: {
+        if constexpr (kind == Comparison_Expression_Kind::eq) {
+            return members_equal(x.get_group_members(), y.get_group_members());
+        }
+        else if constexpr (kind == Comparison_Expression_Kind::ne) {
+            return !members_equal(x.get_group_members(), y.get_group_members());
+        }
+        else {
+            COWEL_ASSERT_UNREACHABLE(u8"Relational comparison of unit types?!");
+        }
+    }
     default: break;
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid type in comparison.");
+}
+
+bool members_equal(std::span<const Group_Member_Value> xs, std::span<const Group_Member_Value> ys)
+{
+    if (xs.size() != ys.size()) {
+        return false;
+    }
+    for (std::size_t i = 0; i < xs.size(); ++i) {
+        if (!compare<Comparison_Expression_Kind::eq>(xs[i].name, ys[i].name)) {
+            return false;
+        }
+        if (!compare<Comparison_Expression_Kind::eq>(xs[i].value, ys[i].value)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 template <typename T>
@@ -356,6 +386,59 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
     }
 
     COWEL_ASSERT_UNREACHABLE(u8"Invalid expression kind.");
+}
+
+Result<bool, Processing_Status>
+Internal_Eq_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    static const auto equality_comparable = Type::canonical_union_of(
+        {
+            Type::unit,
+            Type::null,
+            Type::boolean,
+            Type::integer,
+            Type::floating,
+            Type::str,
+            Type::group,
+        }
+    );
+
+    Value_Of_Type_Matcher x_value { &equality_comparable };
+    Group_Member_Matcher x_member { u8"x"sv, Optionality::mandatory, x_value };
+    Value_Of_Type_Matcher y_value { &equality_comparable };
+    Group_Member_Matcher y_member { u8"y"sv, Optionality::mandatory, y_value };
+    Group_Member_Matcher* const matchers[] { &x_member, &y_member };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
+
+    const Value& x = x_value.get();
+    const Value& y = y_value.get();
+
+    if (x.get_type_kind() != y.get_type_kind()
+        || (!x.get_type().is_dynamic() && !y.get_type().is_dynamic() && x.get_type() != y.get_type()
+        )) {
+        context.try_error(
+            diagnostic::type_mismatch, y_value.get_location(),
+            joined_char_sequence(
+                {
+                    u8"Cannot compare values of different type; that is, cannot compare "sv,
+                    y.get_type().get_display_name(),
+                    u8" with left-hand-side type "sv,
+                    x.get_type().get_display_name(),
+                    u8".",
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+
+    return compare<Comparison_Expression_Kind::eq>(x, y);
 }
 
 Result<Value, Processing_Status>
@@ -689,9 +772,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         const auto sign_length = std::size_t(x_int < 0);
         const auto significant_digits = chars.length() - sign_length;
         if (zpad <= significant_digits) {
-            return Value::dynamic_string(
-                chars.as_string(), context.get_transient_memory(), String_Kind::ascii
-            );
+            return Value::string(chars.as_string(), String_Kind::ascii);
         }
         const auto zeros_to_prepend
             = std::max(std::size_t(zpad), significant_digits) - significant_digits;
@@ -704,7 +785,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
             result.push_back(u8'0');
         }
         result.insert(result.end(), chars.begin() + std::ptrdiff_t(sign_length), chars.end());
-        return Value::dynamic_string(std::move(result), String_Kind::ascii);
+        return Value::string(as_u8string_view(result), String_Kind::ascii);
     }
 
     case Type_Kind::floating: {
@@ -726,7 +807,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         Capturing_Ref_Text_Sink sink { text, Output_Language::text };
         Plaintext_Content_Policy policy { sink };
         splice_float(policy, f, format);
-        return Value::dynamic_string(std::move(text), String_Kind::ascii);
+        return Value::string(as_u8string_view(text), String_Kind::ascii);
     }
 
     case Type_Kind::str: {
@@ -746,7 +827,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         if (splice_result != Processing_Status::ok) {
             return splice_result;
         }
-        return Value::dynamic_string(std::move(text), String_Kind::unknown);
+        return Value::string(as_u8string_view(text), String_Kind::unknown);
     }
     default: break;
     }
@@ -841,6 +922,7 @@ const Type& get_variable_type()
             Type::integer,
             Type::floating,
             Type::str,
+            Type::group,
         }
     );
     return result;

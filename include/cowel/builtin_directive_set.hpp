@@ -385,6 +385,15 @@ public:
     Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
 };
 
+struct Internal_Eq_Behavior final : Bool_Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Internal_Eq_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+};
+
 enum struct Unary_Numeric_Expression_Kind : Default_Underlying {
     pos,
     neg,
