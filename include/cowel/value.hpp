@@ -4,7 +4,7 @@
 #include <string_view>
 
 #include "cowel/util/assert.hpp"
-#include "cowel/util/static_string.hpp"
+#include "cowel/util/fixed_string.hpp"
 #include "cowel/util/strings.hpp"
 
 #include "cowel/content_status.hpp"
@@ -33,7 +33,7 @@ struct Int_Storage {
     alignas(std::size_t) unsigned char bytes[sizeof(Integer)];
 };
 
-using Short_String_Value = Static_String8<56>;
+using Short_String_Value = Fixed_String8<56>;
 
 struct String_With_Meta {
     std::u8string_view data;

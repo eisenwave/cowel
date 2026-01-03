@@ -1,5 +1,5 @@
-#ifndef COWEL_STATIC_STRING_HPP
-#define COWEL_STATIC_STRING_HPP
+#ifndef COWEL_FIXED_STRING_HPP
+#define COWEL_FIXED_STRING_HPP
 
 #include <algorithm>
 #include <array>
@@ -13,7 +13,7 @@
 namespace cowel {
 
 template <char_like Char, std::size_t capacity>
-struct Basic_Static_String {
+struct Basic_Fixed_String {
     using array_type = std::array<Char, capacity>;
     using iterator = array_type::iterator;
     using const_iterator = array_type::const_iterator;
@@ -25,7 +25,7 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr Basic_Static_String(const Char* str, std::size_t length)
+    constexpr Basic_Fixed_String(const Char* str, std::size_t length)
         : m_length { length }
     {
         COWEL_ASSERT(length <= capacity);
@@ -33,7 +33,7 @@ public:
     }
 
     [[nodiscard]]
-    constexpr Basic_Static_String(array_type array, std::size_t length)
+    constexpr Basic_Fixed_String(array_type array, std::size_t length)
         : m_buffer { array }
         , m_length { length }
     {
@@ -41,13 +41,13 @@ public:
     }
 
     [[nodiscard]]
-    constexpr Basic_Static_String(std::basic_string_view<Char> str)
-        : Basic_Static_String { str.data(), str.size() }
+    constexpr Basic_Fixed_String(std::basic_string_view<Char> str)
+        : Basic_Fixed_String { str.data(), str.size() }
     {
     }
 
     [[nodiscard]]
-    constexpr Basic_Static_String(Char c) noexcept
+    constexpr Basic_Fixed_String(Char c) noexcept
         requires(capacity != 0)
         : m_buffer { c }
         , m_length { 1 }
@@ -55,7 +55,7 @@ public:
     }
 
     [[nodiscard]]
-    constexpr Basic_Static_String() noexcept
+    constexpr Basic_Fixed_String() noexcept
         = default;
 
     [[nodiscard]]
@@ -173,37 +173,37 @@ public:
 
     [[nodiscard]]
     friend constexpr bool
-    operator==(const Basic_Static_String& x, const Basic_Static_String& y) noexcept
+    operator==(const Basic_Fixed_String& x, const Basic_Fixed_String& y) noexcept
     {
         return x.as_string() == y.as_string();
     }
 
     [[nodiscard]]
     friend constexpr bool
-    operator==(const Basic_Static_String& x, std::basic_string_view<Char> y) noexcept
+    operator==(const Basic_Fixed_String& x, std::basic_string_view<Char> y) noexcept
     {
         return x.as_string() == y;
     }
 
     [[nodiscard]]
     friend constexpr bool
-    operator<=>(const Basic_Static_String& x, const Basic_Static_String& y) noexcept
+    operator<=>(const Basic_Fixed_String& x, const Basic_Fixed_String& y) noexcept
     {
         return x.as_string() <=> y.as_string();
     }
 
     [[nodiscard]]
     friend constexpr bool
-    operator<=>(const Basic_Static_String& x, std::basic_string_view<Char> y) noexcept
+    operator<=>(const Basic_Fixed_String& x, std::basic_string_view<Char> y) noexcept
     {
         return x.as_string() <=> y;
     }
 };
 
 template <std::size_t capacity>
-using Static_String = Basic_Static_String<char, capacity>;
+using Fixed_String = Basic_Fixed_String<char, capacity>;
 template <std::size_t capacity>
-using Static_String8 = Basic_Static_String<char8_t, capacity>;
+using Fixed_String8 = Basic_Fixed_String<char8_t, capacity>;
 
 } // namespace cowel
 

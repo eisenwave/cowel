@@ -368,7 +368,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T, Alloc>& vec)
 }
 
 [[nodiscard]]
-constexpr Static_String8<2> special_escaped(char8_t c)
+constexpr Fixed_String8<2> special_escaped(char8_t c)
 {
     switch (c) {
     case u8'\n': return u8"\\n"sv;
