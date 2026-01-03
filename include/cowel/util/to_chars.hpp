@@ -11,8 +11,8 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
+#include "cowel/util/fixed_string.hpp"
 #include "cowel/util/meta.hpp"
-#include "cowel/util/static_string.hpp"
 
 namespace cowel {
 
@@ -23,11 +23,11 @@ std::to_chars_result to_chars128(char* first, char* last, Uint128 x, int base);
 std::to_chars_result to_chars128(char* first, char* last, Int128 x, int base);
 
 template <typename Char, std::size_t capacity>
-using Basic_Characters = Basic_Static_String<Char, capacity>;
+using Basic_Characters = Basic_Fixed_String<Char, capacity>;
 template <std::size_t capacity>
-using Characters = Static_String<capacity>;
+using Characters = Fixed_String<capacity>;
 template <std::size_t capacity>
-using Characters8 = Static_String8<capacity>;
+using Characters8 = Fixed_String8<capacity>;
 
 template <signed_or_unsigned T>
 inline constexpr std::size_t buffer_size_for_int

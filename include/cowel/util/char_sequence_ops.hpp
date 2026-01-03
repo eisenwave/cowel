@@ -61,10 +61,10 @@ inline std::u8string to_string(Char_Sequence8 chars)
 
 template <std::size_t capacity>
 [[nodiscard]]
-constexpr Static_String8<capacity> to_static_string(Char_Sequence8 chars)
+constexpr Fixed_String8<capacity> to_static_string(Char_Sequence8 chars)
 {
     COWEL_ASSERT(chars.size() <= capacity);
-    typename Static_String8<capacity>::array_type result;
+    typename Fixed_String8<capacity>::array_type result;
     const std::size_t n = chars.extract(result);
     COWEL_DEBUG_ASSERT(chars.empty());
     return { result, n };

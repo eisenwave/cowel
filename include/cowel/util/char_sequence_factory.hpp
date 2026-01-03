@@ -10,7 +10,7 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
-#include "cowel/util/static_string.hpp"
+#include "cowel/util/fixed_string.hpp"
 #include "cowel/util/unicode.hpp"
 
 namespace cowel {
@@ -27,7 +27,7 @@ template <typename T>
 concept u8string_like = basic_string_like<T, char8_t>;
 
 static_assert(u8string_like<std::u8string_view>);
-static_assert(u8string_like<Static_String8<4>>);
+static_assert(u8string_like<Fixed_String8<4>>);
 
 /// @brief A char source which obtains characters repeatedly from the same string.
 template <u8string_like String>
@@ -81,7 +81,7 @@ public:
 
 using Repeated_String_View_Char_Source = Repeated_String_Like_Char_Source<std::u8string_view>;
 template <std::size_t n>
-using Repeated_Static_String_Char_Source = Repeated_String_Like_Char_Source<Static_String8<n>>;
+using Repeated_Static_String_Char_Source = Repeated_String_Like_Char_Source<Fixed_String8<n>>;
 
 static_assert(char_source8<Repeated_String_View_Char_Source>);
 static_assert(char_source8<Repeated_Static_String_Char_Source<4>>);
@@ -241,7 +241,7 @@ make_char_sequence(std::u32string_view str)
 constexpr Char_Sequence8 make_char_sequence(char32_t c)
 {
     const utf8::Code_Units_And_Length encoded = utf8::encode8_unchecked(c);
-    const auto string = Static_String8<4> { encoded.code_units, std::size_t(encoded.length) };
+    const auto string = Fixed_String8<4> { encoded.code_units, std::size_t(encoded.length) };
     COWEL_ASSERT(!string.empty());
     return Char_Sequence8 { string };
 }
@@ -252,7 +252,7 @@ constexpr Deferred_Char_Sequence<Repeated_Static_String_Char_Source<4>>
 repeated_char_sequence(std::size_t n, char32_t c)
 {
     const utf8::Code_Units_And_Length encoded = utf8::encode8_unchecked(c);
-    const auto string = Static_String8<4> { encoded.code_units, std::size_t(encoded.length) };
+    const auto string = Fixed_String8<4> { encoded.code_units, std::size_t(encoded.length) };
     COWEL_ASSERT(!string.empty());
     return { string.length() * n, string };
 }

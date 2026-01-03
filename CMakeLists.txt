@@ -122,6 +122,7 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/util/chars.hpp
     include/cowel/util/code_point_names.hpp
     include/cowel/util/draft_uris.hpp
+    include/cowel/util/fixed_string.hpp
     include/cowel/util/from_chars.hpp
     include/cowel/util/function_ref.hpp
     include/cowel/util/html.hpp
@@ -135,7 +136,6 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/util/result.hpp
     include/cowel/util/severity.hpp
     include/cowel/util/source_position.hpp
-    include/cowel/util/static_string.hpp
     include/cowel/util/strings.hpp
     include/cowel/util/to_chars.hpp
     include/cowel/util/transparent_comparison.hpp

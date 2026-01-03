@@ -13,7 +13,7 @@
 #include <type_traits>
 
 #include "cowel/util/assert.hpp"
-#include "cowel/util/static_string.hpp"
+#include "cowel/util/fixed_string.hpp"
 
 namespace cowel {
 
@@ -38,7 +38,7 @@ private:
 
     template <std::size_t capacity>
     [[nodiscard]]
-    static constexpr Storage to_storage(Static_String8<capacity> str)
+    static constexpr Storage to_storage(Fixed_String8<capacity> str)
     {
         static_assert(capacity <= sizeof(const void*)); // NOLINT(bugprone-sizeof-expression)
         decltype(Storage::code_units) result_array {};
@@ -47,10 +47,10 @@ private:
     }
 
     [[nodiscard]]
-    static constexpr Static_String8<sizeof(void*)>
+    static constexpr Fixed_String8<sizeof(void*)>
     to_static_string(Storage storage, std::size_t size)
     {
-        return Static_String8<sizeof(void*)> { storage.code_units, size };
+        return Fixed_String8<sizeof(void*)> { storage.code_units, size };
     }
 
     [[nodiscard]]
@@ -58,7 +58,7 @@ private:
     extract_from_static_string(Storage entity, std::span<char8_t> buffer, std::size_t n)
     {
         COWEL_ASSERT(n <= buffer.size());
-        Static_String8<sizeof(void*)> entity_as_string { entity.code_units, n };
+        Fixed_String8<sizeof(void*)> entity_as_string { entity.code_units, n };
         std::ranges::copy(entity_as_string, buffer.data());
         entity_as_string.remove_prefix(n);
         return to_storage(entity_as_string);
@@ -125,7 +125,7 @@ public:
 
     /// @brief Constructs an empty sequence.
     [[nodiscard]]
-    constexpr Char_Sequence8(Static_String8<0>) noexcept
+    constexpr Char_Sequence8(Fixed_String8<0>) noexcept
         : Char_Sequence8()
     {
     }
@@ -135,7 +135,7 @@ public:
     template <std::size_t capacity>
         requires(capacity != 0 && capacity <= sizeof(void*))
     [[nodiscard]]
-    constexpr Char_Sequence8(Static_String8<capacity> str) noexcept
+    constexpr Char_Sequence8(Fixed_String8<capacity> str) noexcept
         : m_size { str.size() }
         , m_extract { &extract_from_static_string }
         , m_entity { to_storage(str) }
