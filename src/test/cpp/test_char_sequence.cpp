@@ -29,7 +29,7 @@ TEST(Char_Sequence, empty)
 
 TEST(Char_Sequence, zero_capacity_static)
 {
-    const Char_Sequence8 chars = Static_String8<0> {};
+    const Char_Sequence8 chars = Fixed_String8<0> {};
     ASSERT_TRUE(chars.empty());
 }
 
@@ -78,13 +78,13 @@ TEST(Char_Sequence, repeated_code_unit)
     ASSERT_EQ(chars.length(), 2);
 }
 
-TEST(Char_Sequence, static_string)
+TEST(Char_Sequence, fixed_string)
 {
     constexpr std::u8string_view str = u8"awoo"sv;
-    constexpr Static_String8<4> static_str = str;
-    static_assert(static_str == str);
+    constexpr Fixed_String8<4> fixed_str = str;
+    static_assert(fixed_str == str);
 
-    Char_Sequence8 chars { static_str };
+    Char_Sequence8 chars { fixed_str };
     ASSERT_EQ(chars.length(), str.length());
     ASSERT_EQ(chars.as_string_view(), str);
 
