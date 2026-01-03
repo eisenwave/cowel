@@ -11,7 +11,6 @@
 #include "cowel/policy/factory.hpp"
 #include "cowel/policy/html.hpp"
 #include "cowel/policy/paragraph_split.hpp"
-#include "cowel/policy/plaintext.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
@@ -58,19 +57,6 @@ Error_Behavior::splice(Content_Policy& out, const Invocation& call, Context&) co
         return Processing_Status::ok;
     }
     }
-}
-
-Processing_Status Plaintext_Wrapper_Behavior::splice(
-    Content_Policy& out,
-    const Invocation& call,
-    Context& context
-) const
-{
-    // TODO: warn about unused arguments
-    ensure_paragraph_matches_display(out, m_display);
-
-    Plaintext_Content_Policy policy { out };
-    return splice_all(policy, call.get_content_span(), call.content_frame, context);
 }
 
 Processing_Status

@@ -1870,8 +1870,6 @@ h1 {
 <div class=toc-num data-level=4>9.13.2</div>
 <a href=#dir-trim><h4><code><h- data-h=mk_tag>\trim</h-></code> — Trim input</h4></a>
 <div class=toc-num data-level=4>9.13.3</div>
-<a href=#dir-text><h4><code><h- data-h=mk_tag>\text</h-></code> — Plaintext context</h4></a>
-<div class=toc-num data-level=4>9.13.4</div>
 <a href=#dir-p><h4><code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4></a>
 </div>
 
@@ -6515,18 +6513,7 @@ If it wasn't eliminated, we would end up with
 but there should never be a space before the colon.
 </p></tip-block>
 
-<h4 id=dir-text><a class=para href=#dir-text></a>9.13.3. <code><h- data-h=mk_tag>\text</h-></code> — Plaintext context</h4>
-
-<p>The content of a <code><h- data-h=mk_tag>\text</h-></code> directive is a plaintext context
-(<a href=#contexts-and-output>§5.1. Content policies</a>).
-Its arguments are ignored.
-</p>
-<p>It simply outputs the input that it was given as text.
-Therefore, it acts as a sort of wrapper for plaintext.
-Notably, this forces the generation of plaintext even when <code><h- data-h=mk_tag>\text</h-></code>
-is within an HTML context.
-</p>
-<h4 id=dir-p><a class=para href=#dir-p></a>9.13.4. <code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4>
+<h4 id=dir-p><a class=para href=#dir-p></a>9.13.3. <code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4>
 
 <p>The <code><h- data-h=mk_tag>\p</h-></code> directive surrounds its content in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
 </p></main></body>

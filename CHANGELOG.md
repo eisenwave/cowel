@@ -13,6 +13,7 @@
   - `comment` (use `\* ... *\` block comments instead)
   - `literally` (use `cowel_source_as_text` instead)
   - `unprocessed` (use `cowel_no_invoke` instead)
+  - `text` (use `cowel_text_only` instead)
 - change the syntax of directive arguments (#87, #107, #109, #111, #112, #121)
   - there are now values/literals of specific types
   - only specific strings are allowed to be unquoted, rather than this being the default

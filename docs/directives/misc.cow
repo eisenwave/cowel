@@ -52,17 +52,6 @@ If it wasn't eliminated, we would end up with
 but there should never be a space before the colon.
 }
 
-\h4(id=dir-text){\cowdoc_dir{text} \c{mdash} Plaintext context}
-
-The content of a \cowdoc_dir{text} directive is a plaintext context
-(\ref("#contexts-and-output")).
-Its arguments are ignored.
-
-It simply outputs the input that it was given as text.
-Therefore, it acts as a sort of wrapper for plaintext.
-Notably, this forces the generation of plaintext even when \cowdoc_dir{text}
-is within an HTML context.
-
 \h4(id=dir-p){\cowdoc_dir{p} \c{mdash} Paragraphs}
 
 The \cowdoc_dir{p} directive surrounds its content in \cowdoc_html{<p>...</p>} tags.

@@ -313,8 +313,6 @@ constexpr Fixed_Name_Passthrough_Behavior table //
     { HTML_Tag_Name(u8"table"), Policy_Usage::html, Directive_Display::block };
 constexpr URL_Behavior tel //
     { u8"tel:" };
-constexpr Plaintext_Wrapper_Behavior text //
-    { Directive_Display::in_line };
 constexpr Fixed_Name_Passthrough_Behavior tbody //
     { HTML_Tag_Name(u8"tbody"), Policy_Usage::html, Directive_Display::block };
 constexpr Fixed_Name_Passthrough_Behavior td //
@@ -512,7 +510,6 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(tbody),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(td),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(tel),
-    COWEL_NAME_AND_BEHAVIOR_ENTRY(text),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(tfoot),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(th),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(thead),

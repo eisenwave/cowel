@@ -547,22 +547,6 @@ struct Var_Delete_Behavior final : Unit_Directive_Behavior {
     Processing_Status do_evaluate(const Invocation& call, Context& context) const final;
 };
 
-struct Plaintext_Wrapper_Behavior : Block_Directive_Behavior {
-protected:
-    const Directive_Display m_display;
-
-public:
-    [[nodiscard]]
-    constexpr explicit Plaintext_Wrapper_Behavior(Directive_Display display)
-        : m_display { display }
-    {
-    }
-
-    [[nodiscard]]
-    Processing_Status
-    splice(Content_Policy& out, const Invocation& call, Context& context) const override;
-};
-
 struct Trim_Behavior : Block_Directive_Behavior {
 protected:
     const Directive_Display m_display;
