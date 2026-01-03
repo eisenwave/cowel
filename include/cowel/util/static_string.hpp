@@ -142,6 +142,12 @@ public:
     }
 
     [[nodiscard]]
+    constexpr const array_type& as_array() const
+    {
+        return m_buffer;
+    }
+
+    [[nodiscard]]
     constexpr std::span<Char> as_span()
     {
         return { m_buffer.data(), m_length };
