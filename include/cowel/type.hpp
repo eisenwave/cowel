@@ -147,20 +147,36 @@ constexpr auto vector_of(Head&& head, Tail&&... tail) noexcept
 
 /// @brief A type in the COWEL type system.
 struct Type {
+    /// @brief The `any` type, i.e. the top type.
+    /// Dynamic.
     static const Type any;
+    /// @brief The `nothing` type, i.e. the bottom type.
     static const Type nothing;
+    /// @brief The `unit` type.
     static const Type unit;
+    /// @brief The `null` type.
     static const Type null;
+    /// @brief The `bool` type.
     static const Type boolean;
+    /// @brief The `int` type.
     static const Type integer;
+    /// @brief The `float` type.
     static const Type floating;
+    /// @brief The `str` type.
     static const Type str;
+    /// @brief The `block` type.
     static const Type block;
+    static const Type empty_group;
+    /// @brief The dynamic group type, i.e. a group of anything.
+    /// No value with this dynamic type can be created,
+    /// but values of group type are considered to have this type for the purpose of analysis.
+    static const Type group;
 
     static constexpr Type basic(Type_Kind kind)
     {
         COWEL_ASSERT(type_kind_is_basic(kind));
-        return { kind, {}, Flags::canonical | Flags::legal };
+        const auto dynamic_flag = kind == Type_Kind::any ? Flags::dynamic : Flags {};
+        return { kind, {}, Flags::canonical | Flags::legal | dynamic_flag };
     }
 
     static constexpr Type nullable(const Type& type)
@@ -307,6 +323,7 @@ struct Type {
         non_canonical = 1 << 1,
         legal = 1 << 2,
         illegal = 1 << 3,
+        dynamic = 1 << 4,
     };
 
     friend constexpr Flags operator&(Flags x, Flags y)
@@ -381,7 +398,7 @@ public:
         COWEL_ASSERT(is_canonical());
         COWEL_ASSERT(other.is_canonical());
 
-        if (*this == other) {
+        if (other.m_kind == Type_Kind::any || *this == other) {
             return true;
         }
 
@@ -401,6 +418,29 @@ public:
             return std::ranges::all_of(m_members, [&](const Type& type) {
                 return type.analytically_convertible_to(other);
             });
+        }
+        case Type_Kind::group: {
+            if (other.m_kind != Type_Kind::group) {
+                break;
+            }
+            if (is_dynamic() || other.is_dynamic()) {
+                return true;
+            }
+            if (m_members.size() != other.m_members.size()) {
+                break;
+            }
+            const bool all_members_convertible = [&] {
+                for (std::size_t i = 0; i < m_members.size(); ++i) {
+                    if (!m_members[i].analytically_convertible_to(other.m_members[i])) {
+                        return false;
+                    }
+                }
+                return true;
+            }();
+            if (all_members_convertible) {
+                return true;
+            }
+            break;
         }
         default: break;
         }
@@ -426,6 +466,12 @@ public:
 
     [[nodiscard]]
     std::u8string get_display_name() const;
+
+    [[nodiscard]]
+    constexpr bool is_dynamic() const
+    {
+        return (m_flags & Flags::dynamic) != Flags {};
+    }
 
     [[nodiscard]]
     constexpr bool is_basic() const
@@ -564,6 +610,9 @@ inline constexpr Type Type::integer = Type::basic(Type_Kind::integer);
 inline constexpr Type Type::floating = Type::basic(Type_Kind::floating);
 inline constexpr Type Type::str = Type::basic(Type_Kind::str);
 inline constexpr Type Type::block = Type::basic(Type_Kind::block);
+inline constexpr Type Type::group
+    = { Type_Kind::group, {}, Flags::canonical | Flags::legal | Flags::dynamic };
+inline constexpr Type Type::empty_group = Type::group_of({});
 
 } // namespace cowel
 

@@ -641,6 +641,51 @@ evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
     return behavior->evaluate(call, context);
 }
 
+namespace {
+
+struct Evaluate_Member_Values {
+    std::pmr::vector<Group_Member_Value>& out;
+    Frame_Index frame;
+    Context& context;
+
+    [[nodiscard]]
+    Processing_Status operator()(std::span<const ast::Group_Member> members)
+    {
+        for (const auto& m : members) {
+            switch (const auto kind = m.get_kind()) {
+            case ast::Member_Kind::ellipsis: {
+                const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
+                const auto status = Evaluate_Member_Values {
+                    out, ellipsis_frame.invocation.content_frame, context
+                }(ellipsis_frame.invocation.get_arguments_span());
+                if (status != Processing_Status::ok) {
+                    return status;
+                }
+                break;
+            }
+
+            case ast::Member_Kind::positional:
+            case ast::Member_Kind::named: {
+                Result<Value, Processing_Status> value
+                    = evaluate_member_value(m.get_value(), frame, context);
+                if (!value) {
+                    COWEL_DEBUG_ASSERT(value.error() != Processing_Status::ok);
+                    return value.error();
+                }
+                auto name = kind == ast::Member_Kind::positional
+                    ? Value::null
+                    : Value::string(m.get_name(), String_Kind::unknown);
+                out.push_back({ .name = std::move(name), .value = std::move(*value) });
+                break;
+            }
+            }
+        }
+        return Processing_Status::ok;
+    }
+};
+
+} // namespace
+
 [[nodiscard]]
 Result<Value, Processing_Status>
 evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
@@ -721,13 +766,19 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
             return result.status;
         }
         return text.empty() ? Value::static_string(result.string, value.get_string_kind())
-                            : Value::dynamic_string(std::move(text), value.get_string_kind());
+                            : Value::string(as_u8string_view(text), value.get_string_kind());
     }
     case ast::Primary_Kind::block: {
         return Value::block(value, frame);
     }
     case ast::Primary_Kind::group: {
-        COWEL_ASSERT_UNREACHABLE(u8"Sorry, values of group type not yet supported :(");
+        std::pmr::vector<Group_Member_Value> members;
+        members.reserve(value.get_members_size());
+        const auto status = Evaluate_Member_Values { members, frame, context }(value.get_members());
+        if (status != Processing_Status::ok) {
+            return status;
+        }
+        return Value::group_move(members);
     }
     case ast::Primary_Kind::text:
     case ast::Primary_Kind::comment:

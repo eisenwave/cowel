@@ -1,4 +1,6 @@
 #include <limits>
+#include <ranges>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -69,5 +71,63 @@ Value Value::block(const ast::Directive& block, Frame_Index frame)
     // TODO: assertions
     return Value { Union { .directive = Directive_And_Frame { &block, frame } }, directive_index };
 }
+
+Value Value::dynamic_string_forced(const std::u8string_view value, const String_Kind kind)
+{
+    GC_Ref<char8_t> gc = gc_ref_from_range<char8_t>(value);
+    return Value { Union { .dynamic_string = std::move(gc) }, dynamic_string_index, kind };
+}
+
+Value Value::string(const std::u8string_view value, const String_Kind kind)
+{
+    if (value.size() <= Short_String_Value::max_size_v) {
+        return short_string({ value.data(), value.size() }, kind);
+    }
+    return dynamic_string_forced(value, kind);
+}
+
+Value Value::group(std::span<const Group_Member_Value> values)
+{
+    Group_Value gc = gc_ref_from_range<Group_Member_Value>(values);
+    return Value { Union { .group = std::move(gc) }, group_index };
+}
+
+Value Value::group_move(std::span<Group_Member_Value> values)
+{
+    constexpr auto move_value
+        = [](Group_Member_Value& v) -> Group_Member_Value&& { return std::move(v); };
+    Group_Value gc
+        = gc_ref_from_range<Group_Member_Value>(values | std::views::transform(move_value));
+    return Value { Union { .group = std::move(gc) }, group_index };
+}
+
+Value Value::group_pack(std::span<const Value> values)
+{
+    constexpr auto copy_value = [](const Value& v) -> Group_Member_Value {
+        return {
+            .name = Value::null,
+            .value = v,
+        };
+    };
+    Group_Value gc
+        = gc_ref_from_range<Group_Member_Value>(values | std::views::transform(copy_value));
+    return Value { Union { .group = std::move(gc) }, group_index };
+}
+
+Value Value::group_pack_move(std::span<Value> values)
+{
+    constexpr auto move_value = [](Value& v) -> Group_Member_Value {
+        return {
+            .name = Value::null,
+            .value = std::move(v),
+        };
+    };
+    Group_Value gc
+        = gc_ref_from_range<Group_Member_Value>(values | std::views::transform(move_value));
+    return Value { Union { .group = std::move(gc) }, group_index };
+}
+
+static_assert(alignof(Value) <= 8, "Value should not be excessively aligned.");
+static_assert(sizeof(Value) <= 64, "Value should not be too large to be passed by value.");
 
 } // namespace cowel

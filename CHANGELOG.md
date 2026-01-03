@@ -74,6 +74,7 @@
   - `cowel_var_get`
   - `cowel_var_let`
   - `cowel_var_set`
+- add the ability to store groups (and generally not just strings) in variables (#73, #166)
 - add support for `abbreviation` and `figment` aliases to `cowel_char_by_name` (#11)
 - add language extension for VSCode (#140)
 - fix various memory issues (#131)
