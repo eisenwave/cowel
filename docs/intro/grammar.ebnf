@@ -29,15 +29,24 @@ block-comment
   = "\*", { block-comment-char }, "*\";
 block-comment-char
   = ? any character ? - ("*" (* followed by "\" *));
-
 directive-splice
-  = "\", directive-name, [ group ], [ block ];
-directive-name
-  = directive-name-char - digit, { directive-name-char };
-directive-name-char
-  = "_" | digit | ? ASCII alphabetic character ?;
+  = "\", unquoted-identifier, [ group ], [ block ];
+
+identifier
+  = unquoted-identifier
+  | quoted-identifier;
+unquoted-identifier
+  = unquoted-identifier-char - digit, { unquoted-identifier-char };
+unquoted-identifier-char
+  = "_" | digit | letter;
 digit
   = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+letter
+  = ? ASCII alphabetic character ?;
+quoted-identifier
+  = "`", { quoted-identifier-char }, "`";
+quoted-identifier-char
+  = ? any character ? - ("`" | CR | LF);
 
 group
   = "(", blank, [ group-member-list ], blank, ")";
@@ -46,19 +55,15 @@ group-member-list
     { blank, ",", blank, group-member },
     blank, [ "," ];
 group-member
-  = member-name, blank, "=", blank, member-value
+  = identifier, blank, "=", blank, member-value
   | member-value
   | "...";
-member-name
-  = member-name-char, { member-name-char };
-member-name-char
-  = ? HTML attribute name ? - ("\" | "(" | ")" | "{", "}" | ",");
 member-value
   = directive-call
   | primary-value;
 directive-call
-  = directive-name, blank, group, [ blank, block ]
-  | directive-name, blank, block;
+  = unquoted-identifier, blank, group, [ blank, block ]
+  | unquoted-identifier, blank, block;
 primary-value
   = unit-literal
   | null-literal
@@ -108,9 +113,7 @@ decimal-float-literal
 exponent
   = ("e" | "E"), [ "+" | "-" ], digit, { digit };
 unquoted-string
-  = unquoted-string-char, { unquoted-string-char };
-unquoted-string-char
-  = directive-name-char | "-";
+  = unquoted-identifier;
 
 quoted-string
   = '"', { quoted-string-markup-element }, '"';

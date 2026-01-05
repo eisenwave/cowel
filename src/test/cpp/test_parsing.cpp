@@ -498,7 +498,7 @@ struct Parsed_File {
 [[nodiscard]]
 std::optional<Parsed_File> parse_file(std::u8string_view file, std::pmr::memory_resource* memory)
 {
-    std::pmr::u8string full_file { u8"test/syntax/", memory };
+    std::pmr::u8string full_file { u8"test/parse/", memory };
     full_file += file;
 
     Parsed_File result { .source = std::pmr::vector<char8_t> { memory },
