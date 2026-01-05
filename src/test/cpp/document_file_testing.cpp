@@ -50,7 +50,7 @@ bool test_validity(std::u8string_view file, Printing_Diagnostic_Policy& policy)
     policy.source = source;
 
     ast::Pmr_Vector<ast::Markup_Element> doc { &memory };
-    if (!parse_and_build(doc, source, File_Id::main, &memory)) {
+    if (!lex_and_parse_and_build(doc, source, File_Id::main, &memory)) {
         // TODO: this does not permit making parse errors count as success
         return false;
     }

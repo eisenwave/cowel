@@ -242,14 +242,14 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 
     const auto source = as_u8string_view(options.source);
 
-    const Parse_Error_Consumer on_parse_error
+    const std::convertible_to<Parse_Error_Consumer> auto on_parse_error
         = [&](std::u8string_view id, const Source_Span& pos, Char_Sequence8 message) {
               const File_Source_Span file_pos { pos, File_Id::main };
               logger(Diagnostic { Severity::error, id, file_pos, message });
           };
     ast::Pmr_Vector<ast::Markup_Element> root_content;
     const bool parse_success
-        = parse_and_build(root_content, source, File_Id::main, memory, on_parse_error);
+        = lex_and_parse_and_build(root_content, source, File_Id::main, memory, on_parse_error);
     if (!parse_success) {
         return { .status = COWEL_PROCESSING_ERROR, .output = {} };
     }

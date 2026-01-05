@@ -1,0 +1,20 @@
+LINE-COMMENT "\\:Comment\u000a"
+LINE-COMMENT "\\: xyz\u000a"
+LINE-COMMENT "\\: { awoo\u000a"
+DIRECTIVE-SPLICE-NAME "\\dfn"
+LINE-COMMENT "\\:}\u000a"
+LINE-COMMENT "\\: nested \\: comment\u000a"
+DOCUMENT-TEXT "trailing "
+LINE-COMMENT "\\: comment\u000a"
+LINE-COMMENT "\\: \\dfn(){}\u000a"
+
+BLOCK-COMMENT "\\* awoo *\\"
+DOCUMENT-TEXT " "
+BLOCK-COMMENT "\\* chan *\\"
+DOCUMENT-TEXT "\u000a"
+
+BLOCK-COMMENT "\\* \\* *\\"
+DOCUMENT-TEXT " text\u000a"
+
+BLOCK-COMMENT "\\* \\: *\\"
+DOCUMENT-TEXT " text\u000a"

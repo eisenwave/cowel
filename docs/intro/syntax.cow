@@ -1,42 +1,96 @@
 \h2{Syntax}
 
+At the document level,
 COWEL has a minimalistic but powerful syntax,
-built on top of only a few syntactical constructs:
+built on top of only a few \dfn{markup elements}:
 \ul{
   \li{\cowdoc_c{Text.}}
   \li{Escape sequences, such as \cowdoc_c{\\\U(0x7B)}, \cowdoc_c{\\\U(0x7D)}, \cowdoc_c{\\\\}, etc.}
   \li{\cowdoc_c{\\: line comments}}
   \li{\cowdoc_c{\\* block comments *\\}}
-  \li{\cowdoc_c{\\directive_splices(positional, args, named-args = 0){and content}}}
+  \li{\cowdoc_c{\\directive_splices(positional, args, named_args = 0){and content}}}
 }
 
-\h3{EBNF grammar}
+These are what a user writes most of the time.
 
-Formally, in \ref("https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form"){EBNF}
-grammar format,
-a \gterm{document} is constructed as follows:
-
-\codeblock(ebnf){\cowel_include_text("grammar.ebnf")}
+Formally, COWEL documents is processed in several phases:
+\ol{
+  \li{
+    The UTF-8-encoded source code is decoded into a sequence of code points.
+  }
+  \li{
+    The code points are partitioned into \dfn{tokens}.
+    See \ref("#lexical-analysis").
+  }
+  \li{
+    A syntax tree is formed from the tokens.
+    See \ref("#parsing").
+  }
+}
 
 \Bnote{
-At the top-level in the \gterm{document},
+At the top-level in the \gterm{DOCUMENT},
 there are no other syntactical features,
 meaning that as long as some bit of code doesn't contain a \cowdoc_cp(0x5C),
 it's all interpreted as plaintext.
 This makes COWEL exceptionally suited to nest other languages inside of it in code blocks etc.
 }
 
-\h3{Text}
+\h3{Lexical analysis}
 
-\dfn{Text} (such as \gterm{document-text} in the grammar)
+The code points of the COWEL source code are partitioned into tokens.
+This occurs as specified by a
+\ref("https://en.wikipedia.org/wiki/Nested_word"){Visibly Pushdown Language}.
+
+\Bnote{
+A Visibly Pushdown Language is a superset of Regular Language;
+it additionally contains constructs like matching pairs of braces and parentheses.
+}
+
+Formally, in \ref("https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form"){EBNF}
+grammar format,
+a \gterm{DOCUMENT} is matched as follows:
+
+\codeblock(ebnf){\cowel_include_text("lex_grammar.ebnf")}
+
+Let the \dfn{tokens} of the document be any matched nonterminals
+whose name ends with \gterm{TOKEN}.
+
+After matching the input source code according to the grammar above,
+the following post-processing steps take place:
+
+\ol{
+  \li{
+    If any token was matched whose names starts with \gterm{RESERVED},
+    an error is raised,
+    and processing is abandoned.
+  }
+  \li{
+    Any
+    \gterm{LINE-COMMENT-TOKEN},
+    \gterm{BLOCK-COMMENT-TOKEN}, or
+    \gterm{WHITESPACE-TOKEN}
+    that is \gterm{GROUP-CONTENT} is discarded.
+  }
+}
+
+\Bnote{
+The purpose of \gterm{RESERVED} tokens is to specify error handling.
+These tokens are matched when no other valid token may be formed,
+and any software processing COWEL should attempt to form these tokens.
+}
+
+\h4{Text}
+
+\dfn{Text} (such as \gterm{DOCUMENT-TEXT-TOKEN} in the grammar)
 is a markup element which consists of as many characters as possible,
 excluding \cowdoc_cp(0x5C).
 
 \codeblock(ebnf){
-document-text
-  = document-text-char, { document-text-char };
-document-text-char
-  = ? any character ? - "\\";
+DOCUMENT-TEXT-TOKEN
+  = DOCUMENT-TEXT-CHAR, { DOCUMENT-TEXT-CHAR };
+DOCUMENT-TEXT-CHAR
+  = CHAR - "\\";
 }
 
 \Bnote{
@@ -74,7 +128,7 @@ Rendered output:
 \Bindent{This displays on one line because line breaks render like spaces.}
 }
 
-\h3{Escape sequences}
+\h4{Escape sequences}
 
 COWEL supports multiple escape sequences,
 all of which begin with a \cowdoc_c{\\} (like directives),
@@ -95,7 +149,7 @@ The meaning of the escape sequences is described in the table below.
   }
 }
 
-\table(id=escapes-table){
+\table(id="escapes-table"){
   \tr{
     \th{Escape sequence}
     \th{Meaning}
@@ -109,94 +163,50 @@ The meaning of the escape sequences is described in the table below.
     }
     \td{
       Expands to the second character in the escape sequence.
-      These sequences are stable.
-    }
-  }
-  \tr{
-    \td{
-      \cowdoc_esc{!},
-      \cowdoc_esc{#},
-      \cowdoc_esc{\N{DOLLAR SIGN}},
-      \cowdoc_esc{\N{PERCENT SIGN}},
-      \cowdoc_esc{&},
-      \cowdoc_esc{'},
-      \cowdoc_esc{\N{LEFT PARENTHESIS}},
-      \cowdoc_esc{\N{RIGHT PARENTHESIS}},
-      \cowdoc_esc{+},
-      \cowdoc_esc{,},
-      \cowdoc_esc{-},
-      \cowdoc_esc{.},
-      \cowdoc_esc{/},
-      \cowdoc_esc{;},
-      \cowdoc_esc{<},
-      \cowdoc_esc{=}
-      \cowdoc_esc{>},
-      \cowdoc_esc{?},
-      \cowdoc_esc{@},
-      \cowdoc_esc{\N{LEFT SQUARE BRACKET}},
-      \cowdoc_esc{\N{RIGHT SQUARE BRACKET}},
-      \cowdoc_esc{^},
-      \cowdoc_esc{|},
-      \cowdoc_esc{~},
-      \nobr{\cowdoc_esc U+0009 CHARACTER TABULATION},
-      \nobr{\cowdoc_esc U+0020 SPACE}
-    }
-    \td{
-      Expands to the second character in the escape sequence.
-      \strong{These sequences are unstable},
-      meaning that they could be given a different meaning in the future.
-      \strong{Use with caution!}
     }
   }
   \tr{
     \td{
       \nobr{\cowdoc_esc U+000A LINE FEED},
-      \nobr{\cowdoc_esc U+000B VERTICAL TABULATION},
       \nobr{\cowdoc_esc U+000D CARRIAGE RETURN},
       \nobr{\cowdoc_esc U+000A U+000D (CRLF escape)}
     }
     \td{
-      Expands to nothing; feature is stable
+      Expands to nothing.
     }
   }
 }
 
-In EBNF grammar, an \gterm{escape} is constructed like:
+In EBNF grammar, an \gterm{ESCAPE-TOKEN} is constructed like:
 
 \codeblock(ebnf){
-escape
-  = "\\", escapable-char
-  | "\\", line-terminator;
-escapable-char
-  =  "{" |  "}" |  "[" |  "]" |  "(" |  ")" |  "," |  "." |  "="
-  |  "!" |  '"' |  "#" |  "\N{DOLLAR SIGN}" |  "\N{PERCENT SIGN}" |  "&" |  "'" |  "+" |  "/"
-  |  ";" |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
-  |  " " |  TAB |   VT ;
-line-terminator
+ESCAPE-TOKEN
+  = "\", ESCAPABLE-CHAR
+  | "\", LINE-TERMINATOR;
+ESCAPABLE-CHAR
+  = "{" |  "}" | '"' | "\";
+LINE-TERMINATOR
   = LF
   | CR, LF
-  | CR (* unless the next character is LF *);
+  | CR ? not followed by LF ?;
 }
-
-If there is an ambiguity between a CRLF escape and a simple U+000D CARRIAGE RETURN escape,
-this ambiguity is resolved in favor of a CRLF escape.
 
 \Bnote{
 The purpose of most escapes is to prevent a character from having special meaning.
 For example, the \cowdoc_esc{"} escape prevents a quote
-from being interpreted as the end of a \gterm{quoted-string}.
+from being interpreted as the end of a \gterm{QUOTED-STRING}.
 
 The purpose of the newline escapes is to remove unwanted newlines
 and to join long content that spans multiple lines,
 but without introducing any whitespace in the markup.
 }
 
-\h3(id=syntax-comments){Comments}
+\h4(id="syntax-comments"){Comments}
 
 There are two types of comments:
 line comments and block comments.
 
-\h4{Line comments}
+\h5{Line comments}
 
 Line comments begin with \cowdoc_c{\\:} and extend until the end of the line.
 In almost every context,
@@ -205,9 +215,9 @@ comments are discarded instead of being emitted into the output HTML.
 This makes them useful for adding information to the COWEL markup.
 
 \Bnote{
-A \gterm{line-comment}, just like any other content,
+A \gterm{LINE-COMMENT-TOKEN}, just like any other content,
 is actually part of the AST and doesn't simply get discarded during parsing.
-This means that a \gterm{line-comment} wrapped in \ref("#dir-cowel_source_as_text")
+This means that a \gterm{LINE-COMMENT-TOKEN} wrapped in \ref("#dir-cowel_source_as_text")
 will render as expected:
 \cowblock{\cowel_source_as_text{
 \cowel_source_as_text{A\: A comment ...
@@ -220,17 +230,17 @@ B}
 }
 }
 
-In EBNF grammar, a \gterm{line-comment} is constructed as follows:
+In EBNF grammar, a \gterm{LINE-COMMENT-TOKEN} is constructed as follows:
 
 \codeblock(ebnf){
-line-comment
-  = "\\:", { line-comment-char }, line-terminator;
-line-comment-char
-  = ? any character ? - (LF | CR);
+LINE-COMMENT-TOKEN
+  = "\\:", { LINE-COMMENT-CHAR }, LINE-TERMINATOR;
+LINE-COMMENT-CHAR
+  = CHAR - (LF | CR);
 }
 
-Comments include a \gterm{line-terminator},
-which means that a trailing \gterm{line-comment} won't add any lines (not even blank lines)
+Comments include a \gterm{LINE-TERMINATOR},
+which means that a trailing \gterm{LINE-COMMENT-TOKEN} won't add any lines (not even blank lines)
 to the generated markup.
 
 \Bex{
@@ -251,7 +261,7 @@ Hello World
 }
 }
 
-\h4{Block comments}
+\h5{Block comments}
 
 A block comment functions exactly the same as a line comment,
 but is terminated at a point of choice instead of at the end of the line.
@@ -267,23 +277,232 @@ AB
 }
 }
 
-In EBNF grammar, a \gterm{block-comment} is constructed as follows:
+In EBNF grammar, a \gterm{BLOCK-COMMENT-TOKEN} is constructed as follows:
 
 \codeblock(ebnf){
-block-comment
-  = "\\*", { block-comment-char }, "*\\";
-block-comment-char
-  = ? any character ? - ("*" (* followed by "\\" *));
+BLOCK-COMMENT-TOKEN
+  = "\\*", { BLOCK-COMMENT-CHAR }, "*\\";
+BLOCK-COMMENT-CHAR
+  = CHAR - ("*" ? followed by "\\" ?);
 }
 
 \Bnote{
-\gterm{block-comment}s do not allow nesting,
+\gterm{BLOCK-COMMENT-TOKEN}s do not allow nesting,
 meaning that '\cowdoc_c{\\:}' or '\cowdoc_c{\\*}'
-inside of a \gterm{block-comment} has no special meaning.
+inside of a \gterm{BLOCK-COMMENT-TOKEN} has no special meaning.
 
-Conversely, '\cowdoc_c{\\*}' has no special meaning
-inside of a \gterm{line-comment}.
+Similarly, '\cowdoc_c{\\*}' has no special meaning
+inside of a \gterm{LINE-COMMENT-TOKEN}.
 }
+
+\h4{Literals}
+
+Inside scripting contexts such as in directive arguments,
+\gterm{GROUP-CONTENT} may appear,
+some of which represents a value of a basic type (\ref("#types-intro")).
+
+\codeblock(ebnf){
+GROUP-CONTENT
+  = GROUP
+  | BLOCK
+  | IDENTIFIER
+  | QUOTED-STRING
+  | BINARY-INT-TOKEN
+  | OCTAL-INT-TOKEN
+  | DECIMAL-INT-TOKEN
+  | HEXADECIMAL-INT-TOKEN
+  | DECIMAL-FLOAT-TOKEN
+  | INFINITY-TOKEN
+  | NEGATIVE-INFINITY-TOKEN
+  | EQUALS-TOKEN
+  | COMMA-TOKEN
+  | ELLIPSIS-TOKEN
+  | UNIT-TOKEN
+  | NULL-TOKEN
+  | TRUE-TOKEN
+  | FALSE-TOKEN
+  | LINE-COMMENT-TOKEN
+  | BLOCK-COMMENT-TOKEN
+  | WHITESPACE-TOKEN
+  | RESERVED-NUMBER-TOKEN;
+}
+
+Some literals are simply keywords:
+
+\ul{
+  \li{
+    The literal \cowdoc_c{unit} represents the value of type \cowdoc_type{unit}
+    (\ref("#type-unit")).
+  }
+  \li{
+    The literal \cowdoc_c{null} represents the value of type \cowdoc_type{null}
+    (\ref("#type-null")).
+  }
+  \li{
+    The literals \cowdoc_c{true} and \cowdoc_c{false} represent values of type \cowdoc_type{bool}
+    (\ref("#type-bool")).
+  }
+}
+
+\h4(id="int-literal"){\gterm{int-literal} \N{EM DASH} Integer literal}
+
+\codeblock(ebnf){
+int-literal
+  = BINARY-INT-TOKEN
+  | OCTAL-INT-TOKEN
+  | DECIMAL-INT-TOKEN
+  | HEXADECIMAL-INT-TOKEN;
+BINARY-INT-TOKEN
+  = [ "-" ], "0B", BINARY-DIGIT, { BINARY-DIGIT };
+OCTAL-INT-TOKEN
+  = [ "-" ], "0O", OCTAL-DIGIT, { OCTAL-DIGIT };
+DECIMAL-INT-TOKEN
+  = [ "-" ], DIGIT, { DIGIT };
+HEXADECIMAL-INT-TOKEN
+  = [ "-" ], "0X", HEXADECIMAL-DIGIT, { HEXADECIMAL-DIGIT };
+BINARY-DIGIT
+  = "0" | "1";
+OCTAL-DIGIT
+  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
+HEXADECIMAL-DIGIT
+  = DIGIT
+  | "A" | "B" | "C" | "D" | "E" | "F"
+  | "a" | "b" | "c" | "d" | "e" | "f";
+}
+
+The tokens listed above are later matched by an \gterm{int-literal},
+and represent a value of type \cowdoc_type{int}
+(\ref("#type-int")).
+
+The \dfn{base} \math{\mi{B}} of a \gterm{int-literal} is
+\ul{
+  \li{\math{\mn{2}} for a \gterm{BINARY-INT-TOKEN},}
+  \li{\math{\mn{8}} for an \gterm{OCTAL-INT-TOKEN},}
+  \li{\math{\mn{10}} for an \gterm{DECIMAL-INT-TOKEN}, and}
+  \li{\math{\mn{16}} for an \gterm{HEXADECIMAL-INT-TOKEN}.}
+}
+The value is of an \gterm{int-literal} in base \math{\mi{B}}
+is determined by interpreting each digit from left to right
+as decimal digits of a base-\math{\mi{B}} integer,
+from most significant to least significant.
+The \gterm{HEXADECIMAL-DIGIT}s \tt{a..f} and \tt{A..F} both represent
+digits of value \math{\mn{10}}..\math{\mn{15}}.
+
+Leading zeros are ignored.
+The value is negative if the leading \cowdoc_cp(0x2D) is present.
+
+\Bex{
+The \gterm{int-literal} \cowdoc_c{-0123} represents the integer value
+\math{\mrow{\mo(form=prefix){−}\mn{123}}}.
+
+The \gterm{BINARY-INT-TOKEN} \cowdoc_c{0b11111111},
+the \gterm{OCTAL-INT-TOKEN} \cowdoc_c{0o377},
+the \gterm{DECIMAL-INT-TOKEN} \cowdoc_c{255}, and
+the \gterm{HEXADECIMAL-INT-TOKEN} \cowdoc_c{0xff}
+all represent the value \math{\mn{255}}.
+}
+
+\h4(id="float-literal"){\gterm{float-literal} \N{EM DASH} Floating-point literal}
+
+\codeblock(ebnf){
+float-literal
+  = INFINITY-TOKEN
+  | NEGATIVE-INFINITY-TOKEN
+  | DECIMAL-FLOAT-TOKEN;
+INFINITY-TOKEN
+  = "infinity" ? not followed by UNQUOTED-IDENTIFIER-CHAR ?;
+NEGATIVE-INFINITY-TOKEN
+  = "-infinity;" ? not followed by UNQUOTED-IDENTIFIER-CHAR ?;
+DECIMAL-FLOAT-TOKEN
+  = DECIMAL-FLOAT ? not followed by UNQUOTED-IDENTIFIER-CHAR ?;
+DECIMAL-FLOAT
+  = [ "-" ], DIGIT, { DIGIT }, ".", { DIGIT }, [ EXPONENT ]
+  | [ "-" ], ".", DIGIT, { DIGIT }, [ EXPONENT ]
+  | [ "-" ], DIGIT, { DIGIT }, EXPONENT;
+EXPONENT
+  = ("e" | "E"), [ "+" | "-" ], DIGIT, { DIGIT };
+}
+
+A \gterm{float-literal} represents a value of type \cowdoc_type{float}
+(\ref("#type-float")).
+
+The value of '\tt{-infinity}' is negative infinity, and
+the value of '\tt{infinity}' is positive infinity.
+
+A \gterm{DECIMAL-FLOAT-TOKEN} consists of several parts:
+\ul{
+  \li{
+    An \dfn{integral part}, either matching a \gterm{int-literal}
+    or consisting of only a leading \cowdoc_cp(0x2D),
+    which is equivalent to '\tt{-0}'.
+  }
+  \li{
+    The radix point \cowdoc_cp(0x2E).
+  }
+  \li{
+    A \dfn{fractional part} consisting of \gterm{digit}s following the radix point.
+    An absent fractional part is equivalent to '\tt{0}'.
+  }
+  \li{
+    An \gterm{exponent}.
+  }
+}
+
+The value of a \gterm{DECIMAL-FLOAT-TOKEN} is determined as follows:
+
+\ol{
+  \li{
+    Let \math{\mi{s}} be -1 if the leading \cowdoc_cp(0x2D) is present,
+    otherwise 1;
+    let \math{\mi{k}} be the integer value of the integral part
+    (determined as for a \gterm{int-literal});
+    let \math{\mi{f}} be the the integer value of the fractional part;
+    let \math{\mi{p}} be the amount of digits including leading zeros of the fractional part;
+    let \math{\mi{e}} be the integer value of the exponent.
+  }
+  \li{
+    Let the \dfn{scaled value} of the \gterm{DECIMAL-FLOAT-TOKEN} be
+    \mathblock{\mrow{
+      \mi{s}
+      \mo{×}
+      \mo{\N{LEFT PARENTHESIS}}
+      \mi{k}
+      \mo{+}
+      \mfrac{\mi{f}\msup{\mn{10}\mi{p}}}
+      \mo{\N{RIGHT PARENTHESIS}}
+      \mo{×}
+      \msup{\mn{10}\mi{e}}
+    }}
+  }
+  \li{
+    The value of the \gterm{DECIMAL-FLOAT-TOKEN} is the scaled value,
+    rounded using the roundTiesToEven rounding direction
+    as specified in IEEE-754,
+    except that subnormal inexact values are never "flushed" to zero.
+  }
+}
+
+\Bex{
+\ul{
+  \li{\cowdoc_c{1.0} exactly represents the value 1.0.}
+  \li{\cowdoc_c{.1} is rounded to a value nearest to 0.1.}
+  \li{\cowdoc_c{1e1000000} is rounded to positive infinity.}
+  \li{\cowdoc_c{-1e1000000} is rounded to negative infinity.}
+  \li{\cowdoc_c{1e-1000000} is rounded to positive zero.}
+  \li{\cowdoc_c{-1e-1000000} is rounded to negative zero.}
+  \li{\cowdoc_c{-0.0} exactly represents a negative zero.}
+}
+}
+
+\:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+\h3{Parsing}
+
+After lexical analysis,
+the produced tokens are used as the input to the parsing stage.
+The tokens from lexical analysis are matched by a context-free grammar as follows:
+
+\codeblock(ebnf){\cowel_include_text("grammar.ebnf")}
 
 \h3{Directives splices}
 
@@ -357,11 +576,9 @@ In EBNF grammar, a \gterm{directive-splice} is constructed as follows:
 
 \codeblock(ebnf){
 directive-splice
-  = "\\", directive-name, [ group ], [ block ];
-directive-name
-  = directive-name-char - digit, { directive-name-char };
-directive-name-char
-  = "_" | digit | ? ASCII alphabetic character ?;
+  = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], [ block ];
+DIRECTIVE-SPLICE-NAME-TOKEN
+  = "\", UNQUOTED-IDENTIFIER-TOKEN;
 }
 
 \h4{Directive names}
@@ -387,15 +604,16 @@ which is constructed as follows:
 
 \codeblock(ebnf){
 group
-  = "(", blank, [ group-member-list ], blank, ")";
+  = PARENTHESIS-LEFT-TOKEN, [ group-member-list ], PARENTHESIS-RIGHT-TOKEN;
 group-member-list
-  = group-member,
-    { blank, ",", blank, group-member },
-    blank, [ "," ];
+  = group-member, { COMMA-TOKEN, group-member }, [ COMMA-TOKEN ];
 group-member
-  = member-name, blank, "=", blank, member-value
+  = identifier, EQUALS-TOKEN, member-value
   | member-value
-  | "...";
+  | ELLIPSIS-TOKEN;
+identifier
+  = unquoted-identifier
+  | quoted-identifier;
 }
 
 \dfn{Directive arguments} can be
@@ -403,8 +621,6 @@ group-member
 \dfn{named arguments}, or
 \dfn{ellipses}.
 Arguments are separated by commas.
-Unlike in the surrounding markup,
-whitespace and comments surrounding directive arguments (i.e. \gterm{blank}) are ignored.
 
 \Bex{
 Often, arguments are converted to HTML attributes.
@@ -452,15 +668,6 @@ you can do so by writing:
 }}
 Only the literal \cowdoc_c{=} character can be used for named arguments,
 not its escaped variant \cowdoc_c{\\=}.
-}
-
-Grammatically, a \gterm{member-name} is constructed as follows:
-
-\codeblock(ebnf){
-member-name
-  = member-name-char, { member-name-char };
-member-name-char
-  = ? HTML attribute name ? - ("\" | "(" | ")" | "{", "}" | ",");
 }
 
 \h5{Positional arguments}
@@ -585,183 +792,3 @@ which has a similar syntax,
 but permits multiple blocks. Each block is separated by a pair of braces.
 }
 
-\h3{Literals}
-
-Inside scripting contexts such as in directive arguments,
-a \gterm{primary-value} may appear.
-A \gterm{primary-value} represents a value of a basic type (\ref("#types-intro")).
-
-\codeblock(ebnf){
-primary-value
-  = unit-literal
-  | null-literal
-  | bool-literal
-  | int-literal
-  | float-literal
-  | unquoted-string
-  | quoted-string
-  | block
-  | group;
-}
-
-Some literals are simply keywords:
-
-\ul{
-  \li{
-    The literal \cowdoc_c{unit} represents the value of type \cowdoc_type{unit}
-    (\ref("#type-unit")).
-  }
-  \li{
-    The literal \cowdoc_c{null} represents the value of type \cowdoc_type{null}
-    (\ref("#type-null")).
-  }
-  \li{
-    The literals \cowdoc_c{true} and \cowdoc_c{false} represent values of type \cowdoc_type{bool}
-    (\ref("#type-bool")).
-  }
-}
-
-\h4(id=int-literal){\gterm{int-literal} \N{EM DASH} Integer literal}
-
-\codeblock(ebnf){
-int-literal
-  = binary-int-literal
-  | octal-int-literal
-  | decimal-int-literal
-  | hexadecimal-int-literal;
-
-binary-int-literal
-  = [ "-" ], "0b", binary-digit, { binary-digit };
-octal-int-literal
-  = [ "-" ], "0o", octal-digit, { octal-digit };
-decimal-int-literal
-  = [ "-" ], digit, { digit };
-hexadecimal-int-literal
-  = [ "-" ], "0x", hexadecimal-digit, { hexadecimal-digit };
-
-binary-digit
-  = "0" | "1";
-digit
-  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
-octal-digit
-  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
-hexadecimal-digit
-  = digit
-  | "A" | "B" | "C" | "D" | "E" | "F"
-  | "a" | "b" | "c" | "d" | "e" | "f";
-}
-
-An \gterm{int-literal} represents a value of type \cowdoc_type{int}
-(\ref("#type-int")).
-
-The \dfn{base} \math{\mi{B}} of a \gterm{int-literal} is
-\ul{
-  \li{\math{\mn{2}} for a \gterm{binary-int-literal},}
-  \li{\math{\mn{8}} for an \gterm{octal-int-literal},}
-  \li{\math{\mn{10}} for an \gterm{decimal-int-literal}, and}
-  \li{\math{\mn{16}} for an \gterm{hexadecimal-int-literal}.}
-}
-The value is of an \gterm{int-literal} in base \math{\mi{B}}
-is determined by interpreting each digit from left to right
-as decimal digits of a base-\math{\mi{B}} integer,
-from most significant to least significant.
-The \gterm{hexadecimal-digit}s \tt{a..f} and \tt{A..F} both represent
-digits of value \math{\mn{10}}..\math{\mn{15}}.
-
-Leading zeros are ignored.
-The value is negative if the leading \cowdoc_cp(0x2D) is present.
-
-\Bex{
-The \gterm{int-literal} \cowdoc_c{-0123} represents the integer value
-\math{\mrow{\mo(form=prefix){−}\mn{123}}}.
-
-The \gterm{binary-int-literal} \cowdoc_c{0b11111111},
-the \gterm{octal-int-literal} \cowdoc_c{0o377},
-the \gterm{decimal-int-literal} \cowdoc_c{255}, and
-the \gterm{hexadecimal-int-literal} \cowdoc_c{0xff}
-all represent the value \math{\mn{255}}.
-}
-
-\h4(id=float-literal){\gterm{float-literal} \N{EM DASH} Floating-point literal}
-
-\codeblock(ebnf){
-float-literal
-  = [ "-" ], "infinity"
-  | decimal-float-literal;
-decimal-float-literal
-  = [ "-" ], digit, { digit }, ".", { digit }, [ exponent ]
-  | [ "-" ], ".", digit, { digit }, [ exponent ]
-  | [ "-" ], digit, { digit }, exponent;
-exponent
-  = ("e" | "E"), [ "+" | "-" ], digit, { digit };
-}
-
-A \gterm{float-literal} represents a value of type \cowdoc_type{float}
-(\ref("#type-float")).
-
-The value of '\tt{-infinity}' is negative infinity, and
-the value of '\tt{infinity}' is positive infinity.
-
-A \gterm{decimal-float-literal} consists of several parts:
-\ul{
-  \li{
-    An \dfn{integral part}, either matching a \gterm{int-literal}
-    or consisting of only a leading \cowdoc_cp(0x2D),
-    which is equivalent to '\tt{-0}'.
-  }
-  \li{
-    The radix point \cowdoc_cp(0x2E).
-  }
-  \li{
-    A \dfn{fractional part} consisting of \gterm{digit}s following the radix point.
-    An absent fractional part is equivalent to '\tt{0}'.
-  }
-  \li{
-    An \gterm{exponent}.
-  }
-}
-
-The value of a \gterm{decimal-float-literal} is determined as follows:
-
-\ol{
-  \li{
-    Let \math{\mi{s}} be -1 if the leading \cowdoc_cp(0x2D) is present,
-    otherwise 1;
-    let \math{\mi{k}} be the integer value of the integral part
-    (determined as for a \gterm{int-literal});
-    let \math{\mi{f}} be the the integer value of the fractional part;
-    let \math{\mi{p}} be the amount of digits including leading zeros of the fractional part;
-    let \math{\mi{e}} be the integer value of the exponent.
-  }
-  \li{
-    Let the \dfn{scaled value} of the \gterm{decimal-float-literal} be
-    \mathblock{\mrow{
-      \mi{s}
-      \mo{×}
-      \mo{\N{LEFT PARENTHESIS}}
-      \mi{k}
-      \mo{+}
-      \mfrac{\mi{f}\msup{\mn{10}\mi{p}}}
-      \mo{\N{RIGHT PARENTHESIS}}
-      \mo{×}
-      \msup{\mn{10}\mi{e}}
-    }}
-  }
-  \li{
-    The value of the \gterm{decimal-float-literal} is the scaled value,
-    rounded using the roundTiesToEven rounding direction
-    as specified in IEEE-754.
-  }
-}
-
-\Bex{
-\ul{
-  \li{\cowdoc_c{1.0} exactly represents the value 1.0.}
-  \li{\cowdoc_c{.1} is rounded to a value nearest to 0.1.}
-  \li{\cowdoc_c{1e1000000} is rounded to positive infinity.}
-  \li{\cowdoc_c{-1e1000000} is rounded to negative infinity.}
-  \li{\cowdoc_c{1e-1000000} is rounded to positive zero.}
-  \li{\cowdoc_c{-1e-1000000} is rounded to negative zero.}
-  \li{\cowdoc_c{-0.0} exactly represents a negative zero.}
-}
-}

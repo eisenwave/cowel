@@ -7,7 +7,7 @@ where each piece of content is fed into the current content policy.
 There exists a \dfn{top-level content policy} which takes its input
 and writes it to the output HTML file.
 
-\h3(id=contexts-and-output){Content policies}
+\h3(id="contexts-and-output"){Content policies}
 
 A \dfn{content policy} dictates how each pice of content
 (text, comments, escapes, directives)

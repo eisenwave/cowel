@@ -1,13 +1,13 @@
 \h3{Miscellaneous}
 
-\h4(id=dir-div){\cowdoc_dir{div} \c{mdash} Content division}
+\h4(id="dir-div"){\cowdoc_dir{div} \c{mdash} Content division}
 
 The \cowdoc_dir{div} directive surrounds its contents in \cowdoc_html{<div>...</div>}
 tags.
 It displays as a block, and its content is an HTML context.
 \cowdoc_dir{div}'s named arguments are turned into HTML attributes.
 
-\h4(id=dir-trim){\cowdoc_dir{trim} \c{mdash} Trim input}
+\h4(id="dir-trim"){\cowdoc_dir{trim} \c{mdash} Trim input}
 
 The content of a \cowdoc_dir{text} directive is an HTML context
 (\ref("#contexts-and-output")).
@@ -52,6 +52,6 @@ If it wasn't eliminated, we would end up with
 but there should never be a space before the colon.
 }
 
-\h4(id=dir-p){\cowdoc_dir{p} \c{mdash} Paragraphs}
+\h4(id="dir-p"){\cowdoc_dir{p} \c{mdash} Paragraphs}
 
 The \cowdoc_dir{p} directive surrounds its content in \cowdoc_html{<p>...</p>} tags.

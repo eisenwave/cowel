@@ -1,16 +1,16 @@
 \h3{Lists}
 
-\h4(id=dir-ul){\cowdoc_dir{ul} \c{mdash} Unordered lists}
+\h4(id="dir-ul"){\cowdoc_dir{ul} \c{mdash} Unordered lists}
 
 The \cowdoc_dir{ul} directive corresponds to the \cowdoc_html{<ul>} element,
 and produces an unordered list.
 
-\h4(id=dir-ol){\cowdoc_dir{ol} \c{mdash} Ordered lists}
+\h4(id="dir-ol"){\cowdoc_dir{ol} \c{mdash} Ordered lists}
 
 The \cowdoc_dir{ol} directive corresponds to the \cowdoc_html{<ol>} element,
 and produces an ordered list.
 
-\h4(id=dir-li){\cowdoc_dir{li} \c{mdash} List items}
+\h4(id="dir-li"){\cowdoc_dir{li} \c{mdash} List items}
 
 The \cowdoc_dir{li} directive corresponds to the \cowdoc_html{<li>} element,
 and produces a list item with \cowdoc_html{<ul>} or \cowdoc_html{<ol>}.
@@ -40,7 +40,7 @@ This renders as:
 }
 }
 
-\h4(id=dir-item){\cowdoc_dir{item} \c{mdash} List item pseudo-directive}
+\h4(id="dir-item"){\cowdoc_dir{item} \c{mdash} List item pseudo-directive}
 
 \Bwarn{
 This directive is deprecated and will be removed in a future version.
@@ -49,7 +49,7 @@ This directive is deprecated and will be removed in a future version.
 Within \cowdoc_dir{ul} and \cowdoc_dir{ol},
 the \cowdoc_dir{item} pseudo-directive can also be used instead of \cowdoc_dir{li}.
 
-\h4(id=dir-dl){\cowdoc_dir{dl} \c{mdash} Definition lists}
+\h4(id="dir-dl"){\cowdoc_dir{dl} \c{mdash} Definition lists}
 
 The \cowdoc_dir{dl} directive corresponds to the \cowdoc_html{<dl>} element,
 and produces a definition list.
@@ -108,7 +108,7 @@ Headings can be referenced using the \cowdoc_dir{ref} directive:
 }
 }
 
-\h4(id=dir-make_contents){\cowdoc_dir{make_contents} \c{mdash} Make table of contents}
+\h4(id="dir-make_contents"){\cowdoc_dir{make_contents} \c{mdash} Make table of contents}
 
 The \cowdoc_dir{make_contents} directive generates the table of contents,
 which is comprised of all the headings within the document.
@@ -147,7 +147,7 @@ To support this,
 COWEL provides directives for adding bibliography entries,
 and for generating a bibliography automatically.
 
-\h4(id=dir-bib){\cowdoc_dir{bib} \c{mdash} Add bibliography entry}
+\h4(id="dir-bib"){\cowdoc_dir{bib} \c{mdash} Add bibliography entry}
 
 The \cowdoc_dir{bib} directive adds a single entry to the bibliography.
 Its content is ignored, and it displays as a meta directive.
@@ -208,7 +208,7 @@ Every argument except the \cowdoc_attr{id} is optional,
 although you will hardly get meaningful bibliography output if only the \cowdoc_attr{id} is specified.
 
 
-\h4(id=dir-make_bib){\cowdoc_dir{make_bib} \c{mdash} Generate bibliography}
+\h4(id="dir-make_bib"){\cowdoc_dir{make_bib} \c{mdash} Generate bibliography}
 
 The \cowdoc_dir{make_bib} directive generates a bibliography.
 This is typically done towards the bottom of the document, but can be done anywhere.

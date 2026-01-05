@@ -43,7 +43,7 @@ Math \cowel_text_as_html{\cowel_include_text{math.mml}} in a sentence.
 However, hand-writing MathML would be extremely tedious and verbose,
 so COWEL offers some convenience directives, listed below.
 
-\h4(id=dir-math){\cowdoc_dir{math} \c{mdash} Inline math}
+\h4(id="dir-math"){\cowdoc_dir{math} \c{mdash} Inline math}
 
 A \cowdoc_dir{math} directive surrounds its content with
 \cowdoc_html{<math display=inline>...</math>} tags,
@@ -80,7 +80,7 @@ The sum of \math{\msup{\mi{x}\mn{2}}} and \math{\msup{\mi{y}\mn{2}}} \c{mldr}
 }
 }
 
-\h4(id=dir-mathblock){\cowdoc_dir{mathblock} \c{mdash} Math blocks}
+\h4(id="dir-mathblock"){\cowdoc_dir{mathblock} \c{mdash} Math blocks}
 
 The \cowdoc_dir{mathblock} directive functions almost exactly as the \cowdoc_dir{math} directive,
 but it displays as block content instead of inline content,

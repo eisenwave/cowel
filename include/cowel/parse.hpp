@@ -15,169 +15,119 @@
 
 namespace cowel {
 
-enum struct AST_Instruction_Type : Default_Underlying {
-    /// @brief Ignore the next `n` characters.
-    /// This is used only within directive arguments,
-    /// where leading and trailing whitespace generally doesn't matter.
+enum struct CST_Instruction_Kind : Default_Underlying {
     skip,
-    /// @brief The next `n` characters are an escape sequence (e.g. `\{`).
     escape,
-    /// @brief The next `n` characters are literal text.
     text,
-    /// @brief The next `n` characters are an unquoted string.
     unquoted_string,
-    /// @brief The next `n` characters are a binary integer literal.
-    binary_int_literal,
-    /// @brief The next `n` characters are an octal integer literal.
-    octal_int_literal,
-    /// @brief The next `n` characters are a decimal integer literal.
-    decimal_int_literal,
-    /// @brief The next `n` characters are a hexadecimal integer literal.
-    hexadecimal_int_literal,
-    /// @brief The next `n` characters are a decimal floating-point literal.
-    float_literal,
-    /// @brief The next `n` characters are `true`.
+    binary_int,
+    octal_int,
+    decimal_int,
+    hexadecimal_int,
+    decimal_float,
     keyword_true,
-    /// @brief The next `n` characters are `false`.
     keyword_false,
-    /// @brief The next `n` characters are `null`.
     keyword_null,
-    /// @brief The next `n` characters are `unit`.
     keyword_unit,
-    /// @brief The next `n` characters are `infinity`.
     keyword_infinity,
-    /// @brief The next `n` characters are `-infinity`.
     keyword_neg_infinity,
-    /// @brief The next `n` characters are a line comment,
-    /// including the `\:` prefix and the terminating newline, if any.
     line_comment,
-    /// @brief The next `n` characters are a block comment,
-    /// including the `\*` prefix and the `*\` suffix.
     block_comment,
-    /// @brief The next `n` characters are an argument name.
     member_name,
-    /// @brief The next `n` characters are an ellipsis (currently always `3`).
     ellipsis,
-    /// @brief Advance past `=` following an argument name.
-    member_equal,
-    /// @brief Advance past `,` between arguments.
-    member_comma,
-    /// @brief Begins the document.
-    /// Always the first instruction.
-    /// The operand is the amount of pieces that comprise the argument content,
-    /// where a piece is an escape sequence, text, or a directive.
+    equals,
+    comma,
+    /// @brief `n` is the amount of markup elements in the document.
     push_document,
     pop_document,
-    /// @brief Begin directive.
-    /// The operand is the amount of characters to advance until the end the directive name.
-    /// Note that this includes the leading `\\`.
-    push_directive,
-    pop_directive,
-    /// @brief Begin directive arguments.
-    /// The operand is the amount of arguments.
-    ///
-    /// Advance past `(`.
+    push_directive_splice,
+    pop_directive_splice,
+    push_directive_call,
+    pop_directive_call,
+    /// @brief `n` is the amount of group members.
     push_group,
-    /// @brief Advance past `)`.
     pop_group,
-    /// @brief Begin argument.
-    /// The operand is the amount of elements in the content sequence,
-    /// or zero if the argument is a group.
     push_named_member,
     pop_named_member,
-    /// @brief Begin argument.
-    /// The operand is the amount of elements in the content sequence,
-    /// or zero if the argument is a group.
     push_positional_member,
     pop_positional_member,
-    /// @brief Begin argument.
-    /// The operand is the amount of elements in the content sequence.
     push_ellipsis_argument,
     pop_ellipsis_argument,
-    /// @brief Begin directive content.
-    /// The operand is the amount of pieces that comprise the argument content,
-    /// where a piece is an escape sequence, text, or a directive.
-    ///
-    /// Advance past `{`.
+    /// @brief `n` is the amount of markup elements in the block.
     push_block,
-    /// @brief Advance past `}`.
     pop_block,
-    /// @brief Begin quoted string.
-    /// The operand is the amount of pieces that comprise the string.
-    ///
-    /// Advance past `"`.
+    /// @brief `n` is the amount of markup elements in the string.
     push_quoted_string,
-    /// Advance past `"`.
     pop_quoted_string,
 };
 
 [[nodiscard]]
-constexpr bool ast_instruction_type_has_operand(AST_Instruction_Type type)
+constexpr bool cst_instruction_kind_has_operand(CST_Instruction_Kind type)
 {
-    using enum AST_Instruction_Type;
+    using enum CST_Instruction_Kind;
     switch (type) {
-    case pop_document:
-    case pop_directive:
-    case pop_group:
-    case pop_quoted_string:
-    case pop_block:
+    case push_document:
+    case push_group:
+    case push_quoted_string:
+    case push_block: return true;
 
-    case push_named_member:
-    case pop_named_member:
-
-    case push_positional_member:
-    case pop_positional_member:
-
-    case push_ellipsis_argument:
-    case pop_ellipsis_argument:
-
-    case member_comma:
-    case member_equal: return false;
-    default: return true;
+    default: return false;
     }
 }
 
 [[nodiscard]]
-constexpr bool ast_instruction_type_is_push_argument(AST_Instruction_Type type)
+constexpr bool cst_instruction_kind_is_push_argument(CST_Instruction_Kind type)
 {
-    return type == AST_Instruction_Type::push_named_member
-        || type == AST_Instruction_Type::push_positional_member
-        || type == AST_Instruction_Type::push_ellipsis_argument;
+    return type == CST_Instruction_Kind::push_named_member
+        || type == CST_Instruction_Kind::push_positional_member
+        || type == CST_Instruction_Kind::push_ellipsis_argument;
 }
 
 [[nodiscard]]
-constexpr bool ast_instruction_type_is_pop_argument(AST_Instruction_Type type)
+constexpr bool cst_instruction_kind_is_pop_argument(CST_Instruction_Kind type)
 {
-    return type == AST_Instruction_Type::pop_named_member
-        || type == AST_Instruction_Type::pop_positional_member
-        || type == AST_Instruction_Type::pop_ellipsis_argument;
+    return type == CST_Instruction_Kind::pop_named_member
+        || type == CST_Instruction_Kind::pop_positional_member
+        || type == CST_Instruction_Kind::pop_ellipsis_argument;
 }
 
 [[nodiscard]]
-std::u8string_view ast_instruction_type_name(AST_Instruction_Type type);
+std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type);
 
-struct AST_Instruction {
-    AST_Instruction_Type type;
+struct CST_Instruction {
+    CST_Instruction_Kind kind;
     std::size_t n = 0;
 
-    friend std::strong_ordering operator<=>(const AST_Instruction&, const AST_Instruction&)
+    friend std::strong_ordering operator<=>(const CST_Instruction&, const CST_Instruction&)
         = default;
 };
+
+/// @brief Returns the fixed kind of token corresponding to this instruction kind.
+/// For example, given `ellipsis`, returns `Token_Kind::ellipsis`.
+/// If there is no such fixed token, returns `Token_Kind::error`.
+[[nodiscard]]
+Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind);
+
+/// @brief Returns `true` iff the given kind results in advancing by a token.
+[[nodiscard]]
+bool cst_instruction_kind_advances(CST_Instruction_Kind);
 
 using Parse_Error_Consumer = Function_Ref<
     void(std::u8string_view id, const Source_Span& location, Char_Sequence8 message)>;
 
 /// @brief Parses the COWEL document.
-/// This process does not result in an AST, but a vector of instructions that can be used to
-/// construct an AST.
+/// This process does not result in an AST,
+/// but a vector of instructions that can be used to construct an CST.
+/// In essence, this is a serialized and/or linearized CST.
 /// @param out A vector where instructions for constructing a syntax tree are emitted.
-/// @param source The source code to parse.
+/// @param tokens The input tokens.
+/// These shall be obtained from a successful call to `lex`.
 /// @param on_error If not empty, invoked whenever a parse error is encountered.
 /// @returns `true` iff parsing succeeded without any errors.
 [[nodiscard]]
 bool parse(
-    std::pmr::vector<AST_Instruction>& out,
-    std::u8string_view source,
+    std::pmr::vector<CST_Instruction>& out,
+    std::span<const Token> tokens,
     Parse_Error_Consumer on_error = {}
 );
 
@@ -187,7 +137,8 @@ void build_ast(
     ast::Pmr_Vector<ast::Markup_Element>& out,
     std::u8string_view source,
     File_Id file,
-    std::span<const AST_Instruction> instructions,
+    std::span<const Token> tokens,
+    std::span<const CST_Instruction> instructions,
     std::pmr::memory_resource* memory
 );
 
@@ -197,15 +148,26 @@ void build_ast(
 ast::Pmr_Vector<ast::Markup_Element> build_ast(
     std::u8string_view source,
     File_Id file,
-    std::span<const AST_Instruction> instructions,
+    std::span<const Token> tokens,
+    std::span<const CST_Instruction> instructions,
     std::pmr::memory_resource* memory
 );
 
-/// @brief Parses a document via `parse(out, source, on_error)`.
+/// @brief Parses a document via `parse(out, tokens, on_error)`.
 /// If `parse` returns `true`, runs `build_ast` on the resulting parse instructions.
 /// Otherwise, returns `false`.
 [[nodiscard]]
 bool parse_and_build(
+    ast::Pmr_Vector<ast::Markup_Element>& out,
+    std::u8string_view source,
+    std::span<const Token> tokens,
+    File_Id file,
+    std::pmr::memory_resource* memory,
+    Parse_Error_Consumer on_error = {}
+);
+
+[[nodiscard]]
+bool lex_and_parse_and_build(
     ast::Pmr_Vector<ast::Markup_Element>& out,
     std::u8string_view source,
     File_Id file,

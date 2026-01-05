@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "cowel/lex.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_names.hpp"
@@ -26,6 +27,7 @@ namespace ast {
 
 Primary Primary::basic(Primary_Kind kind, File_Source_Span source_span, std::u8string_view source)
 {
+    COWEL_DEBUG_ASSERT(!source.empty());
     using enum ast::Primary_Kind;
     switch (kind) {
     case unit_literal:
@@ -64,6 +66,7 @@ Primary Primary::basic(Primary_Kind kind, File_Source_Span source_span, std::u8s
 
 Primary Primary::integer(File_Source_Span source_span, std::u8string_view source)
 {
+    COWEL_DEBUG_ASSERT(!source.empty() && (source[0] == u8'-' || is_ascii_digit(source[0])));
     COWEL_ASSERT(!source.empty());
     const bool is_negative = source.starts_with(u8'-');
     const auto base_id_index = std::size_t(1 + is_negative);
@@ -143,6 +146,8 @@ Primary Primary::quoted_string(
     Pmr_Vector<Markup_Element>&& elements
 )
 {
+    COWEL_DEBUG_ASSERT(source.starts_with(u8'"'));
+    COWEL_DEBUG_ASSERT(source.ends_with(u8'"'));
     return Primary { Primary_Kind::quoted_string, source_span, source, std::move(elements) };
 }
 
@@ -152,6 +157,8 @@ Primary Primary::block(
     Pmr_Vector<Markup_Element>&& elements
 )
 {
+    COWEL_DEBUG_ASSERT(source.starts_with(u8'{'));
+    COWEL_DEBUG_ASSERT(source.ends_with(u8'}'));
     return Primary { Primary_Kind::block, source_span, source, std::move(elements) };
 }
 
@@ -161,11 +168,14 @@ Primary Primary::group(
     Pmr_Vector<Group_Member>&& members
 )
 {
+    COWEL_DEBUG_ASSERT(source.starts_with(u8'('));
+    COWEL_DEBUG_ASSERT(source.ends_with(u8')'));
     return Primary { Primary_Kind::group, source_span, source, std::move(members) };
 }
 
 Group_Member Group_Member::ellipsis(File_Source_Span source_span, std::u8string_view source)
 {
+    COWEL_DEBUG_ASSERT(source == u8"...");
     // clang-format off
     return {
         source_span,
@@ -343,18 +353,18 @@ Primary::Primary(
 namespace {
 
 [[nodiscard]]
-constexpr std::optional<ast::Primary_Kind> instruction_type_primary_kind(AST_Instruction_Type type)
+constexpr std::optional<ast::Primary_Kind> instruction_type_primary_kind(CST_Instruction_Kind type)
 {
-    using enum AST_Instruction_Type;
+    using enum CST_Instruction_Kind;
     switch (type) {
     case escape: return ast::Primary_Kind::escape;
     case text: return ast::Primary_Kind::text;
     case unquoted_string: return ast::Primary_Kind::unquoted_string;
-    case binary_int_literal:
-    case octal_int_literal:
-    case decimal_int_literal:
-    case hexadecimal_int_literal: return ast::Primary_Kind::int_literal;
-    case float_literal: return ast::Primary_Kind::decimal_float_literal;
+    case binary_int:
+    case octal_int:
+    case decimal_int:
+    case hexadecimal_int: return ast::Primary_Kind::int_literal;
+    case decimal_float: return ast::Primary_Kind::decimal_float_literal;
     case keyword_unit: return ast::Primary_Kind::unit_literal;
     case keyword_null: return ast::Primary_Kind::null_literal;
     case keyword_true:
@@ -374,21 +384,24 @@ private:
 
     const string_view_type m_source;
     const File_Id m_file;
-    const std::span<const AST_Instruction> m_instructions;
+    const std::span<const Token> m_tokens;
+    const std::span<const CST_Instruction> m_instructions;
     std::pmr::memory_resource* const m_memory;
 
-    std::size_t m_index = 0;
-    Source_Position m_pos {};
+    std::size_t m_token_index = 0;
+    std::size_t m_instruction_index = 0;
 
 public:
     AST_Builder(
         string_view_type source,
         File_Id file,
-        std::span<const AST_Instruction> instructions,
+        std::span<const Token> tokens,
+        std::span<const CST_Instruction> instructions,
         std::pmr::memory_resource* memory
     )
         : m_source { source }
         , m_file { file }
+        , m_tokens { tokens }
         , m_instructions { instructions }
         , m_memory { memory }
     {
@@ -397,8 +410,8 @@ public:
 
     void build_document(ast::Pmr_Vector<ast::Markup_Element>& out)
     {
-        const AST_Instruction push_doc = pop();
-        COWEL_ASSERT(push_doc.type == AST_Instruction_Type::push_document);
+        const CST_Instruction push_doc = pop_instruction();
+        COWEL_ASSERT(push_doc.kind == CST_Instruction_Kind::push_document);
         out.clear();
         out.reserve(push_doc.n);
 
@@ -414,36 +427,51 @@ private:
         return m_source.substr(span.begin, span.length);
     }
 
-    void advance_by(std::size_t n)
+    void advance_by_tokens(std::size_t n)
     {
-        COWEL_DEBUG_ASSERT(m_pos.begin + n <= m_source.size());
-        advance(m_pos, m_source.substr(m_pos.begin, n));
+        COWEL_ASSERT(m_token_index + n <= m_tokens.size());
+        m_token_index += n;
     }
 
     [[nodiscard]]
     bool eof() const
     {
-        return m_index == m_instructions.size();
+        return m_instruction_index == m_instructions.size();
     }
 
     [[nodiscard]]
-    AST_Instruction peek()
+    Token peek_token() const
     {
-        COWEL_ASSERT(m_index < m_instructions.size());
-        return m_instructions[m_index];
+        COWEL_ASSERT(m_token_index < m_tokens.size());
+        return m_tokens[m_token_index];
     }
 
-    AST_Instruction pop()
+    [[nodiscard]]
+    CST_Instruction peek_instruction() const
     {
-        COWEL_ASSERT(m_index < m_instructions.size());
-        return m_instructions[m_index++];
+        COWEL_ASSERT(m_instruction_index < m_instructions.size());
+        const auto result = m_instructions[m_instruction_index];
+        if constexpr (is_debug_build) {
+            const Token_Kind expected_token = cst_instruction_kind_fixed_token(result.kind);
+            COWEL_ASSERT(
+                expected_token == Token_Kind::error || expected_token == peek_token().kind
+            );
+        }
+        return result;
+    }
+
+    CST_Instruction pop_instruction()
+    {
+        const auto result = peek_instruction();
+        m_instruction_index++;
+        return result;
     }
 
     void append_markup_element(ast::Pmr_Vector<ast::Markup_Element>& out)
     {
-        const AST_Instruction instruction = peek();
-        switch (instruction.type) {
-            using enum AST_Instruction_Type;
+        const CST_Instruction instruction = peek_instruction();
+        switch (instruction.kind) {
+            using enum CST_Instruction_Kind;
         case escape:
         case text:
         case line_comment:
@@ -451,8 +479,8 @@ private:
             out.push_back(build_simple_primary());
             break;
         }
-        case push_directive: {
-            out.push_back(build_directive(Directive_Context::markup));
+        case push_directive_splice: {
+            out.push_back(build_directive(Directive_Kind::splice));
             break;
         }
         default: COWEL_ASSERT_UNREACHABLE(u8"Invalid markup element instruction.");
@@ -462,54 +490,72 @@ private:
     [[nodiscard]]
     ast::Primary build_simple_primary()
     {
-        const AST_Instruction instruction = pop();
+        const CST_Instruction instruction = pop_instruction();
         const std::optional<ast::Primary_Kind> kind
-            = instruction_type_primary_kind(instruction.type);
+            = instruction_type_primary_kind(instruction.kind);
         COWEL_ASSERT(kind);
 
-        const File_Source_Span span { m_pos, instruction.n, m_file };
+        const File_Source_Span span { peek_token().location, m_file };
         auto result = ast::Primary::basic(*kind, span, extract(span));
-        advance_by(instruction.n);
+        COWEL_DEBUG_ASSERT(cst_instruction_kind_advances(instruction.kind));
+        advance_by_tokens(1);
         return result;
     }
 
-    enum struct Directive_Context : bool {
-        markup,
-        member_value,
+    enum struct Directive_Kind : bool {
+        splice,
+        call,
     };
 
     [[nodiscard]]
-    ast::Directive build_directive(Directive_Context context)
+    ast::Directive build_directive(const Directive_Kind kind)
     {
-        const std::size_t name_advancement = context == Directive_Context::markup ? 1 : 0;
+        const CST_Instruction instruction = pop_instruction();
+        COWEL_ASSERT(
+            (kind == Directive_Kind::splice
+             && instruction.kind == CST_Instruction_Kind::push_directive_splice)
+            || (kind == Directive_Kind::call
+                && instruction.kind == CST_Instruction_Kind::push_directive_call)
+        );
 
-        const AST_Instruction instruction = pop();
-        COWEL_ASSERT(instruction.type == AST_Instruction_Type::push_directive);
-        COWEL_ASSERT(instruction.n >= name_advancement + 1);
+        const auto initial_pos = peek_token().location;
+        advance_by_tokens(1);
 
-        const Source_Position initial_pos = m_pos;
-        const std::size_t name_length = instruction.n - name_advancement;
-        advance_by(instruction.n);
-
-        if (context == Directive_Context::member_value) {
+        if (kind == Directive_Kind::call) {
             ignore_skips();
         }
         std::optional<ast::Primary> arguments = try_build_group();
 
-        if (context == Directive_Context::member_value) {
+        if (kind == Directive_Kind::call) {
             ignore_skips();
         }
         std::optional<ast::Primary> block = try_build_block();
 
-        const AST_Instruction pop_instruction = pop();
-        COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_directive);
+        const CST_Instruction pop_instruction = this->pop_instruction();
+        COWEL_ASSERT(
+            (kind == Directive_Kind::splice
+             && pop_instruction.kind == CST_Instruction_Kind::pop_directive_splice)
+            || (kind == Directive_Kind::call
+                && pop_instruction.kind == CST_Instruction_Kind::pop_directive_call)
+        );
 
-        const File_Source_Span source_span { initial_pos, m_pos.begin - initial_pos.begin, m_file };
-        const File_Source_Span name_span
-            = source_span.to_right(name_advancement).with_length(name_length);
+        const File_Source_Span raw_name_span = { initial_pos, m_file };
+        const auto name_span = [&] {
+            auto result = raw_name_span;
+            if (kind == Directive_Kind::splice) {
+                // The leading backslash of a directive splice should not be part of the nam.e
+                result.begin += 1;
+                result.column += 1;
+                result.length -= 1;
+            }
+            return result;
+        }();
         const std::u8string_view name = extract(name_span);
+        const std::size_t source_length = peek_token().location.begin - initial_pos.begin;
+        const auto source_span = raw_name_span.with_length(source_length);
+        const std::u8string_view source = extract(source_span);
 
-        return { source_span, extract(source_span), name, std::move(arguments), std::move(block) };
+        return { source_span, source, name, std::move(arguments), std::move(block) };
     }
 
     [[nodiscard]]
@@ -518,41 +564,37 @@ private:
         if (eof()) {
             {};
         }
-        const AST_Instruction instruction = peek();
-        if (instruction.type != AST_Instruction_Type::push_group) {
+        const CST_Instruction instruction = peek_instruction();
+        if (instruction.kind != CST_Instruction_Kind::push_group) {
             return {};
         }
-        COWEL_DEBUG_ASSERT(m_source[m_pos.begin] == u8'(');
 
-        const Source_Position initial_pos = m_pos;
-        pop();
-        advance_by(1);
+        const auto initial_pos = peek_token().location;
+        pop_instruction();
+        advance_by_tokens(1);
 
         ast::Pmr_Vector<ast::Group_Member> members { m_memory };
 
         while (!eof()) {
-            const AST_Instruction next = peek();
-            if (next.type == AST_Instruction_Type::skip) {
-                advance_by(next.n);
-                pop();
+            const CST_Instruction next = peek_instruction();
+            if (next.kind == CST_Instruction_Kind::skip) {
+                pop_instruction();
+                advance_by_tokens(1);
                 continue;
             }
-            if (next.type == AST_Instruction_Type::member_comma) {
-                COWEL_DEBUG_ASSERT(m_source[m_pos.begin] == u8',');
-                advance_by(1);
-                pop();
+            if (next.kind == CST_Instruction_Kind::comma) {
+                pop_instruction();
+                advance_by_tokens(1);
                 continue;
             }
-            if (next.type == AST_Instruction_Type::member_equal) {
-                COWEL_DEBUG_ASSERT(m_source[m_pos.begin] == u8'=');
-                advance_by(1);
-                pop();
+            if (next.kind == CST_Instruction_Kind::equals) {
+                pop_instruction();
+                advance_by_tokens(1);
                 continue;
             }
-            if (next.type == AST_Instruction_Type::pop_group) {
-                COWEL_DEBUG_ASSERT(m_source[m_pos.begin] == u8')');
-                advance_by(1);
-                pop();
+            if (next.kind == CST_Instruction_Kind::pop_group) {
+                pop_instruction();
+                advance_by_tokens(1);
                 break;
             }
             members.push_back(build_group_member());
@@ -560,7 +602,7 @@ private:
 
         const File_Source_Span source_span {
             initial_pos,
-            m_pos.begin - initial_pos.begin,
+            peek_token().location.begin - initial_pos.begin,
             m_file,
         };
         return ast::Primary::group(source_span, extract(source_span), std::move(members));
@@ -569,54 +611,54 @@ private:
     [[nodiscard]]
     ast::Group_Member build_group_member()
     {
-        const AST_Instruction instruction = pop();
+        const CST_Instruction instruction = pop_instruction();
         ignore_skips();
 
-        const Source_Position initial_pos = m_pos;
+        const auto initial_pos = peek_token().location;
 
-        switch (instruction.type) {
-        case AST_Instruction_Type::push_named_member: {
-            const AST_Instruction name = pop();
-            COWEL_ASSERT(name.type == AST_Instruction_Type::member_name);
-            advance_by(name.n);
-            const File_Source_Span name_span { initial_pos, name.n, m_file };
+        switch (instruction.kind) {
+        case CST_Instruction_Kind::push_named_member: {
+            const CST_Instruction name = pop_instruction();
+            COWEL_ASSERT(name.kind == CST_Instruction_Kind::member_name);
+            advance_by_tokens(1);
+            const File_Source_Span name_span { initial_pos, m_file };
             ignore_skips();
 
-            const AST_Instruction equal = pop();
-            COWEL_ASSERT(equal.type == AST_Instruction_Type::member_equal);
-            advance_by(1);
+            const CST_Instruction equal = pop_instruction();
+            COWEL_ASSERT(equal.kind == CST_Instruction_Kind::equals);
+            advance_by_tokens(1);
             ignore_skips();
 
             ast::Member_Value value = build_member_value();
             ignore_skips();
-            const auto pop_instruction = pop();
-            COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_named_member);
+            const auto pop_instruction = this->pop_instruction();
+            COWEL_ASSERT(pop_instruction.kind == CST_Instruction_Kind::pop_named_member);
             return ast::Group_Member::named(name_span, extract(name_span), std::move(value));
         }
 
-        case AST_Instruction_Type::push_positional_member: {
+        case CST_Instruction_Kind::push_positional_member: {
             ast::Member_Value value = build_member_value();
             ignore_skips();
-            const auto pop_instruction = pop();
-            COWEL_ASSERT(pop_instruction.type == AST_Instruction_Type::pop_positional_member);
+            const auto pop_instruction = this->pop_instruction();
+            COWEL_ASSERT(pop_instruction.kind == CST_Instruction_Kind::pop_positional_member);
             return ast::Group_Member::positional(std::move(value));
         }
 
-        case AST_Instruction_Type::push_ellipsis_argument: {
+        case CST_Instruction_Kind::push_ellipsis_argument: {
             std::optional<File_Source_Span> source_span;
             while (true) {
-                const AST_Instruction instruction = pop();
-                switch (instruction.type) {
-                case AST_Instruction_Type::pop_ellipsis_argument: {
+                const CST_Instruction instruction = pop_instruction();
+                switch (instruction.kind) {
+                case CST_Instruction_Kind::pop_ellipsis_argument: {
                     goto done;
                 }
-                case AST_Instruction_Type::ellipsis: {
-                    source_span = File_Source_Span { m_pos, instruction.n, m_file };
-                    advance_by(instruction.n);
+                case CST_Instruction_Kind::ellipsis: {
+                    source_span = File_Source_Span { peek_token().location, m_file };
+                    advance_by_tokens(1);
                     break;
                 }
-                case AST_Instruction_Type::skip: {
-                    advance_by(instruction.n);
+                case CST_Instruction_Kind::skip: {
+                    advance_by_tokens(1);
                     break;
                 }
                 default: {
@@ -638,42 +680,42 @@ private:
 
     void ignore_skips()
     {
-        while (!eof() && peek().type == AST_Instruction_Type::skip) {
-            const AST_Instruction skip = pop();
-            advance_by(skip.n);
+        while (!eof() && peek_instruction().kind == CST_Instruction_Kind::skip) {
+            pop_instruction();
+            advance_by_tokens(1);
         }
     }
 
     [[nodiscard]]
     ast::Member_Value build_member_value()
     {
-        const AST_Instruction instruction = peek();
-        switch (instruction.type) {
-        case AST_Instruction_Type::keyword_null:
-        case AST_Instruction_Type::keyword_unit:
-        case AST_Instruction_Type::keyword_true:
-        case AST_Instruction_Type::keyword_false:
-        case AST_Instruction_Type::keyword_infinity:
-        case AST_Instruction_Type::keyword_neg_infinity:
-        case AST_Instruction_Type::unquoted_string:
-        case AST_Instruction_Type::binary_int_literal:
-        case AST_Instruction_Type::octal_int_literal:
-        case AST_Instruction_Type::decimal_int_literal:
-        case AST_Instruction_Type::hexadecimal_int_literal:
-        case AST_Instruction_Type::float_literal: {
+        const CST_Instruction instruction = peek_instruction();
+        switch (instruction.kind) {
+        case CST_Instruction_Kind::keyword_null:
+        case CST_Instruction_Kind::keyword_unit:
+        case CST_Instruction_Kind::keyword_true:
+        case CST_Instruction_Kind::keyword_false:
+        case CST_Instruction_Kind::keyword_infinity:
+        case CST_Instruction_Kind::keyword_neg_infinity:
+        case CST_Instruction_Kind::unquoted_string:
+        case CST_Instruction_Kind::binary_int:
+        case CST_Instruction_Kind::octal_int:
+        case CST_Instruction_Kind::decimal_int:
+        case CST_Instruction_Kind::hexadecimal_int:
+        case CST_Instruction_Kind::decimal_float: {
             return build_simple_primary();
         }
-        case AST_Instruction_Type::push_group: {
+        case CST_Instruction_Kind::push_group: {
             return try_build_group().value();
         }
-        case AST_Instruction_Type::push_block: {
+        case CST_Instruction_Kind::push_block: {
             return try_build_block().value();
         }
-        case AST_Instruction_Type::push_quoted_string: {
+        case CST_Instruction_Kind::push_quoted_string: {
             return try_build_quoted_string().value();
         }
-        case AST_Instruction_Type::push_directive: {
-            return build_directive(Directive_Context::member_value);
+        case CST_Instruction_Kind::push_directive_call: {
+            return build_directive(Directive_Kind::call);
         }
         default: break;
         }
@@ -684,7 +726,7 @@ private:
     std::optional<ast::Primary> try_build_block()
     {
         return try_build_block_or_string(
-            AST_Instruction_Type::push_block, AST_Instruction_Type::pop_block
+            CST_Instruction_Kind::push_block, CST_Instruction_Kind::pop_block
         );
     }
 
@@ -692,53 +734,55 @@ private:
     std::optional<ast::Primary> try_build_quoted_string()
     {
         return try_build_block_or_string(
-            AST_Instruction_Type::push_quoted_string, AST_Instruction_Type::pop_quoted_string
+            CST_Instruction_Kind::push_quoted_string, CST_Instruction_Kind::pop_quoted_string
         );
     }
 
     [[nodiscard]]
-    std::optional<ast::Primary>
-    try_build_block_or_string(AST_Instruction_Type push_type, AST_Instruction_Type pop_type)
+    std::optional<ast::Primary> try_build_block_or_string(
+        CST_Instruction_Kind push_kind, //
+        CST_Instruction_Kind pop_kind
+    )
     {
-        COWEL_ASSERT(
-            push_type == AST_Instruction_Type::push_block
-            || push_type == AST_Instruction_Type::push_quoted_string
+        COWEL_DEBUG_ASSERT(
+            push_kind == CST_Instruction_Kind::push_block
+            || push_kind == CST_Instruction_Kind::push_quoted_string
         );
-        COWEL_ASSERT(
-            pop_type == AST_Instruction_Type::pop_block
-            || pop_type == AST_Instruction_Type::pop_quoted_string
+        COWEL_DEBUG_ASSERT(
+            pop_kind == CST_Instruction_Kind::pop_block
+            || pop_kind == CST_Instruction_Kind::pop_quoted_string
         );
 
         if (eof()) {
             return {};
         }
-        const AST_Instruction instruction = peek();
-        if (instruction.type != push_type) {
+        const CST_Instruction instruction = peek_instruction();
+        if (instruction.kind != push_kind) {
             return {};
         }
 
-        const Source_Position initial_pos = m_pos;
-        pop();
-        advance_by(1);
+        const auto initial_pos = peek_token().location;
+        pop_instruction();
+        advance_by_tokens(1);
 
         ast::Pmr_Vector<ast::Markup_Element> content { m_memory };
 
         while (!eof()) {
-            const AST_Instruction next = peek();
-            if (next.type == pop_type) {
-                pop();
+            const CST_Instruction next = peek_instruction();
+            if (next.kind == pop_kind) {
+                pop_instruction();
                 break;
             }
             append_markup_element(content);
         }
-        advance_by(1);
+        advance_by_tokens(1);
 
         const File_Source_Span source_span {
             initial_pos,
-            m_pos.begin - initial_pos.begin,
+            peek_token().location.begin - initial_pos.begin,
             m_file,
         };
-        return push_type == AST_Instruction_Type::push_block
+        return push_kind == CST_Instruction_Kind::push_block
             ? ast::Primary::block(source_span, extract(source_span), std::move(content))
             : ast::Primary::quoted_string(source_span, extract(source_span), std::move(content));
     }
@@ -748,41 +792,59 @@ private:
 
 void build_ast(
     ast::Pmr_Vector<ast::Markup_Element>& out,
-    std::u8string_view source,
-    File_Id file,
-    std::span<const AST_Instruction> instructions,
-    std::pmr::memory_resource* memory
+    const std::u8string_view source,
+    const File_Id file,
+    const std::span<const Token> tokens,
+    const std::span<const CST_Instruction> instructions,
+    std::pmr::memory_resource* const memory
 )
 {
-    AST_Builder { source, file, instructions, memory }.build_document(out);
+    AST_Builder { source, file, tokens, instructions, memory }.build_document(out);
 }
 
 ast::Pmr_Vector<ast::Markup_Element> build_ast(
-    std::u8string_view source,
-    File_Id file,
-    std::span<const AST_Instruction> instructions,
-    std::pmr::memory_resource* memory
+    const std::u8string_view source,
+    const File_Id file,
+    const std::span<const Token> tokens,
+    const std::span<const CST_Instruction> instructions,
+    std::pmr::memory_resource* const memory
 )
 {
     ast::Pmr_Vector<ast::Markup_Element> result { memory };
-    build_ast(result, source, file, instructions, memory);
+    build_ast(result, source, file, tokens, instructions, memory);
     return result;
 }
 
 bool parse_and_build(
     ast::Pmr_Vector<ast::Markup_Element>& out,
-    std::u8string_view source,
-    File_Id file,
-    std::pmr::memory_resource* memory,
-    Parse_Error_Consumer on_error
+    const std::u8string_view source,
+    const std::span<const Token> tokens,
+    const File_Id file,
+    std::pmr::memory_resource* const memory,
+    const Parse_Error_Consumer on_error
 )
 {
-    std::pmr::vector<AST_Instruction> instructions { memory };
-    if (parse(instructions, source, on_error)) {
-        build_ast(out, source, file, instructions, memory);
+    std::pmr::vector<CST_Instruction> instructions { memory };
+    if (parse(instructions, tokens, on_error)) {
+        build_ast(out, source, file, tokens, instructions, memory);
         return true;
     }
     return false;
+}
+
+bool lex_and_parse_and_build(
+    ast::Pmr_Vector<ast::Markup_Element>& out,
+    const std::u8string_view source,
+    const File_Id file,
+    std::pmr::memory_resource* const memory,
+    const Parse_Error_Consumer on_error
+)
+{
+    std::pmr::vector<Token> tokens { memory };
+    if (!lex(tokens, source, on_error)) {
+        return false;
+    }
+    return parse_and_build(out, source, tokens, file, memory, on_error);
 }
 
 } // namespace cowel

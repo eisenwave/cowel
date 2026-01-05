@@ -14,6 +14,7 @@
   - `literally` (use `cowel_source_as_text` instead)
   - `unprocessed` (use `cowel_no_invoke` instead)
   - `text` (use `cowel_text_only` instead)
+- remove most escape sequences, keeping only absolutely necessary ones (#175)
 - change the syntax of directive arguments (#87, #107, #109, #111, #112, #121)
   - there are now values/literals of specific types
   - only specific strings are allowed to be unquoted, rather than this being the default
@@ -25,6 +26,7 @@
 - change `cowel_include` and `cowel_include_text` as follows:
   - accept a `path: str` parameter instead of a block as input
   - make `cowel_include_text` return `str`
+- change the syntax to be parsed in two phases (#175)
 - add support for typed values in builtin directives (#88)
 - add dedicated `\* ... *\` syntax for block comments (#116)
 - add the following basic arithmetic directives (#98):

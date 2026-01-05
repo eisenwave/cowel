@@ -144,6 +144,20 @@ void print_file_position(
     }
 }
 
+void print_file_position(
+    Diagnostic_String& out,
+    std::u8string_view file,
+    std::size_t line_index,
+    bool colon_suffix
+)
+{
+    auto builder = out.build(Diagnostic_Highlight::code_position);
+    builder.append(file).append(':').append_integer(line_index + 1);
+    if (colon_suffix) {
+        builder.append(':');
+    }
+}
+
 void print_affected_line(
     Diagnostic_String& out,
     std::u8string_view source,

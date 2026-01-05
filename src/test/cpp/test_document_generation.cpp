@@ -384,7 +384,7 @@ TEST(Document_Generation, file_tests)
 
         ASSERT_TRUE(load_utf8_file_or_error(source, test_path_string, &memory));
 
-        const bool parse_success = parse_and_build(
+        const bool parse_success = lex_and_parse_and_build(
             content, as_u8string_view(source), File_Id::main, &memory, Parse_Error_Logger { logger }
         );
         if (!parse_success) {
@@ -526,7 +526,7 @@ TEST(Document_Generation, documentation)
     Relative_File_Loader file_loader { "docs/", &memory };
     Collecting_Logger logger { &memory };
 
-    const bool parse_success = parse_and_build(
+    const bool parse_success = lex_and_parse_and_build(
         content, as_u8string_view(source), File_Id::main, &memory, Parse_Error_Logger { logger }
     );
     ASSERT_TRUE(parse_success);

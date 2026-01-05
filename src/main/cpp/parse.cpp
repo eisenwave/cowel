@@ -2,14 +2,11 @@
 #include <string_view>
 #include <vector>
 
-#include "ulight/impl/lang/cowel.hpp"
-
-#include "cowel/util/ascii_algorithm.hpp"
 #include "cowel/util/assert.hpp"
-#include "cowel/util/chars.hpp"
 
 #include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/lex.hpp"
 #include "cowel/parse.hpp"
 
 using namespace std::string_view_literals;
@@ -17,22 +14,10 @@ using namespace std::string_view_literals;
 namespace cowel {
 namespace {
 
-using ulight::Common_Number_Result;
-using ulight::is_cowel_unquoted_string;
-using ulight::cowel::Comment_Result;
-using ulight::cowel::match_block_comment;
-using ulight::cowel::match_directive_name;
-using ulight::cowel::match_ellipsis;
-using ulight::cowel::match_escape;
-using ulight::cowel::match_line_comment;
-using ulight::cowel::match_member_name;
-using ulight::cowel::match_number;
-using ulight::cowel::match_whitespace;
-
 enum struct Content_Context : Default_Underlying {
     document,
     block,
-    string,
+    quoted_string,
 };
 
 struct [[nodiscard]] Parser {
@@ -40,7 +25,7 @@ private:
     struct [[nodiscard]] Scoped_Attempt {
     private:
         Parser* m_self;
-        const Source_Position m_initial_pos;
+        std::size_t m_initial_pos;
         const std::size_t m_initial_size;
 
     public:
@@ -79,22 +64,22 @@ private:
         }
     };
 
-    std::pmr::vector<AST_Instruction>& m_out;
-    const std::u8string_view m_source;
+    std::pmr::vector<CST_Instruction>& m_out;
+    std::span<const Token> m_tokens;
     const Parse_Error_Consumer m_on_error;
 
-    Source_Position m_pos {};
+    std::size_t m_pos = 0;
     bool m_success = true;
 
 public:
     [[nodiscard]]
     Parser(
-        std::pmr::vector<AST_Instruction>& out,
-        std::u8string_view source,
+        std::pmr::vector<CST_Instruction>& out,
+        std::span<const Token> tokens,
         Parse_Error_Consumer on_error
     )
         : m_out { out }
-        , m_source { source }
+        , m_tokens { tokens }
         , m_on_error { on_error }
     {
     }
@@ -116,8 +101,8 @@ private:
 
     void advance_by(std::size_t n)
     {
-        COWEL_DEBUG_ASSERT(m_pos.begin + n <= m_source.size());
-        advance(m_pos, m_source.substr(m_pos.begin, n));
+        COWEL_DEBUG_ASSERT(m_pos + n <= m_tokens.size());
+        m_pos += n;
     }
 
     Scoped_Attempt attempt()
@@ -125,48 +110,20 @@ private:
         return Scoped_Attempt { *this };
     }
 
-    /// @brief Returns all remaining text as a `std::string_view_type`, from the current parsing
-    /// position to the end of the file.
-    /// @return All remaining text.
-    [[nodiscard]]
-    std::u8string_view peek_all() const
-    {
-        COWEL_DEBUG_ASSERT(m_pos.begin <= m_source.size());
-        return m_source.substr(m_pos.begin);
-    }
-
-    /// @brief Returns the next character and advances the parser position.
-    /// @return The popped character.
-    /// @throws Throws if `eof()`.
-    char8_t pop()
-    {
-        const char8_t c = peek();
-        advance_by(1);
-        return c;
-    }
-
-    /// @brief Returns the next character.
-    /// @return The next character.
-    /// @throws Throws if `eof()`.
-    [[nodiscard]]
-    char8_t peek() const
-    {
-        COWEL_ASSERT(!eof());
-        return m_source[m_pos.begin];
-    }
-
     /// @return `true` if the parser is at the end of the file, `false` otherwise.
     [[nodiscard]]
     bool eof() const
     {
-        return m_pos.begin == m_source.length();
+        return m_pos >= m_tokens.size();
     }
 
-    /// @return `peek_all().starts_with(text)`.
     [[nodiscard]]
-    bool peek(std::u8string_view text) const
+    const Token* peek() const
     {
-        return peek_all().starts_with(text);
+        if (eof()) {
+            return {};
+        }
+        return &m_tokens[m_pos];
     }
 
     /// @brief Checks whether the next character matches an expected value without advancing
@@ -174,644 +131,450 @@ private:
     /// @param c the character to test
     /// @return `true` if the next character equals `c`, `false` otherwise.
     [[nodiscard]]
-    bool peek(char8_t c) const
+    const Token* peek(Token_Kind kind) const
     {
-        return !eof() && m_source[m_pos.begin] == c;
-    }
-
-    /// @brief Checks whether the next character satisfies a predicate without advancing
-    /// the parser.
-    /// @param predicate the predicate to test
-    /// @return `true` if the next character satisfies `predicate`, `false` otherwise.
-    bool peek(bool predicate(char8_t)) const
-    {
-        return !eof() && predicate(m_source[m_pos.begin]);
+        if (const Token* const next = peek()) {
+            if (next->kind == kind) {
+                return next;
+            }
+        }
+        return nullptr;
     }
 
     [[nodiscard]]
-    bool expect(char8_t c)
+    const Token* expect(Token_Kind kind)
     {
-        if (!peek(c)) {
-            return false;
+        if (const Token* const next = peek(kind)) {
+            advance_by(1);
+            return next;
         }
+        return nullptr;
+    }
+
+    void emit_and_advance_by_one(const CST_Instruction_Kind kind)
+    {
+        if constexpr (is_debug_build) {
+            const auto expected_token = cst_instruction_kind_fixed_token(kind);
+            COWEL_ASSERT(
+                expected_token == Token_Kind::error || expected_token == m_tokens[m_pos].kind
+            );
+        }
+        m_out.push_back({ kind });
         advance_by(1);
-        return true;
-    }
-
-    [[nodiscard]]
-    bool expect(std::u8string_view text)
-    {
-        if (!peek(text)) {
-            return false;
-        }
-        advance_by(text.size());
-        return true;
-    }
-
-    [[nodiscard]]
-    bool expect(bool predicate(char8_t))
-    {
-        if (eof()) {
-            return false;
-        }
-        const char8_t c = m_source[m_pos.begin];
-        if (!predicate(c)) {
-            return false;
-        }
-        // This function is only safe to call when we have expectations towards ASCII characters.
-        // Any non-ASCII character should have already been rejected.
-        COWEL_ASSERT(is_ascii(c));
-        advance_by(1);
-        return true;
     }
 
     void consume_document()
     {
         const std::size_t document_instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type::push_document, 0 });
-        const std::size_t content_amount = match_markup_sequence(Content_Context::document);
+        m_out.push_back({ CST_Instruction_Kind::push_document, 0 });
+        const std::size_t content_amount = consume_markup_sequence(Content_Context::document);
         m_out[document_instruction_index].n = content_amount;
-        m_out.push_back({ AST_Instruction_Type::pop_document, 0 });
+        m_out.push_back({ CST_Instruction_Kind::pop_document });
     }
 
     [[nodiscard]]
-    std::size_t match_markup_sequence(Content_Context context)
+    std::size_t consume_markup_sequence(Content_Context context)
     {
-        Bracket_Levels levels {};
         std::size_t elements = 0;
-
-        while (try_match_markup_element(context, levels)) {
+        while (expect_markup_element(context)) {
             ++elements;
         }
-
         return elements;
     }
 
-    struct Bracket_Levels {
-        std::size_t argument = 0;
-        std::size_t brace = 0;
-    };
-
-    /// @brief Attempts to match the next piece of content,
-    /// which is an escape sequence, directive, or plaintext.
-    ///
-    /// Returns `false` if none of these could be matched.
-    /// This may happen because the parser is located at e.g. a `}` and the given `context`
-    /// is terminated by `}`.
-    /// It may also happen if the parser has already reached the EOF.
     [[nodiscard]]
-    bool try_match_markup_element(Content_Context context, Bracket_Levels& levels)
+    bool expect_markup_element(const Content_Context context)
     {
-        if (peek(u8'\\')) {
-            const bool non_text_matched //
-                = try_match_escape() //
-                || try_match_line_comment() //
-                || try_match_block_comment() //
-                || try_match_directive();
-            if (non_text_matched) {
-                return true;
-            }
-        }
-
-        const std::size_t initial_pos = m_pos.begin;
-
-        for (; !eof(); advance_by(1)) {
-            const char8_t c = peek();
-            if (c == u8'\\') {
-                const std::u8string_view remainder { m_source.substr(m_pos.begin + 1) };
-
-                // Trailing \ at the end of the file.
-                // No need to break, we'll just run into it next iteration.
-                if (remainder.empty()) {
-                    continue;
-                }
-                if (is_cowel_allowed_after_backslash(remainder.front())) {
-                    break;
-                }
-                continue;
-            }
-            switch (context) {
-            case Content_Context::document: {
-                // At the document level, we don't care about brace mismatches,
-                // commas, etc.
-                continue;
-            }
-            case Content_Context::string: {
-                // Within strings, braces have no special meaning,
-                // but an unescaped quote ends the string.
-                if (c == u8'"') {
-                    goto done;
-                }
-                continue;
-            }
-            case Content_Context::block: {
-                if (c == u8'{') {
-                    ++levels.brace;
-                    break;
-                }
-                if (c == u8'}') {
-                    if (levels.brace == 0) {
-                        goto done;
-                    }
-                    --levels.brace;
-                    continue;
-                }
-            }
-            }
-        }
-
-    done:
-        COWEL_ASSERT(m_pos.begin >= initial_pos);
-        if (m_pos.begin == initial_pos) {
+        const Token* const next = peek();
+        if (!next) {
             return false;
         }
-
-        m_out.push_back({ AST_Instruction_Type::text, m_pos.begin - initial_pos });
-        return true;
-    }
-
-    [[nodiscard]]
-    bool try_match_escape()
-    {
-        const std::u8string_view remainder = peek_all();
-        if (const std::size_t length = match_escape(remainder)) {
-            advance_by(length);
-            m_out.push_back({ AST_Instruction_Type::escape, length });
+        switch (next->kind) {
+        case Token_Kind::document_text: {
+            COWEL_DEBUG_ASSERT(context == Content_Context::document);
+            emit_and_advance_by_one(CST_Instruction_Kind::text);
             return true;
         }
-        return false;
-    }
-
-    [[nodiscard]]
-    bool try_match_line_comment()
-    {
-        const std::u8string_view remainder = peek_all();
-        if (const std::size_t length = match_line_comment(remainder)) {
-            COWEL_ASSERT(remainder.starts_with(u8"\\:"sv));
-            const std::u8string_view suffix = remainder.substr(length);
-            const std::size_t suffix_length = //
-                suffix.starts_with(u8"\r\n"sv) ? 2
-                : suffix.starts_with(u8'\n')   ? 1
-                                               : 0;
-
-            advance_by(length + suffix_length);
-            m_out.push_back({ AST_Instruction_Type::line_comment, length + suffix_length });
+        case Token_Kind::block_text: {
+            COWEL_DEBUG_ASSERT(context == Content_Context::block);
+            emit_and_advance_by_one(CST_Instruction_Kind::text);
             return true;
         }
-        return false;
-    }
-
-    [[nodiscard]]
-    bool try_match_block_comment()
-    {
-        const std::u8string_view remainder = peek_all();
-        if (const Comment_Result c = match_block_comment(remainder)) {
-            COWEL_ASSERT(remainder.starts_with(u8"\\*"sv));
-            if (!c.is_terminated) {
-                COWEL_ASSERT(m_pos.begin + c.length == m_source.length());
-                error(Source_Span { m_pos, 2 }, u8"Unterminated block comment."sv);
-                advance_by(c.length);
-                return true;
-            }
-            advance_by(c.length);
-            m_out.push_back({ AST_Instruction_Type::block_comment, c.length });
+        case Token_Kind::quoted_string_text: {
+            COWEL_DEBUG_ASSERT(context == Content_Context::quoted_string);
+            emit_and_advance_by_one(CST_Instruction_Kind::text);
             return true;
         }
-        return false;
-    }
-
-    [[nodiscard]]
-    bool try_match_directive()
-    {
-        Scoped_Attempt a = attempt();
-
-        if (!expect('\\')) {
-            return {};
+        case Token_Kind::escape: {
+            emit_and_advance_by_one(CST_Instruction_Kind::escape);
+            return true;
         }
-        const std::size_t name_length = match_directive_name(peek_all());
-        if (name_length == 0) {
+        case Token_Kind::line_comment: {
+            emit_and_advance_by_one(CST_Instruction_Kind::line_comment);
+            return true;
+        }
+        case Token_Kind::block_comment: {
+            emit_and_advance_by_one(CST_Instruction_Kind::block_comment);
+            return true;
+        }
+        case Token_Kind::directive_splice_name: {
+            consume_directive_splice();
+            return true;
+        }
+        case Token_Kind::brace_right: {
+            COWEL_DEBUG_ASSERT(context == Content_Context::block);
             return false;
         }
-        advance_by(name_length);
+        case Token_Kind::string_quote: {
+            COWEL_DEBUG_ASSERT(context == Content_Context::quoted_string);
+            return false;
+        }
+        default: break;
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Unexpected token in markup sequence.");
+    }
 
-        m_out.push_back({ AST_Instruction_Type::push_directive, name_length + 1 });
+    void consume_directive_splice()
+    {
+        const Token* const splice_name = expect(Token_Kind::directive_splice_name);
+        COWEL_ASSERT(splice_name);
 
-        if (peek(u8'(')) {
+        m_out.push_back({ CST_Instruction_Kind::push_directive_splice });
+
+        if (peek(Token_Kind::parenthesis_left)) {
             consume_group();
         }
-        if (peek(u8'{')) {
+        if (peek(Token_Kind::brace_left)) {
             consume_block();
         }
-
-        m_out.push_back({ AST_Instruction_Type::pop_directive });
-
-        a.commit();
-        return true;
+        m_out.push_back({ CST_Instruction_Kind::pop_directive_splice });
     }
 
-    bool consume_group()
+    void consume_group()
     {
-        COWEL_ASSERT(expect(u8'('));
+        COWEL_ASSERT(expect(Token_Kind::parenthesis_left));
 
         const std::size_t instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type::push_group, 0 });
+        m_out.push_back({ CST_Instruction_Kind::push_group, 0 });
 
         std::size_t member_count = 0;
         while (!eof()) {
-            skip_blank();
-            if (expect(u8')')) {
+            consume_blank_sequence();
+            if (expect(Token_Kind::parenthesis_right)) {
+                m_out.push_back({ CST_Instruction_Kind::pop_group });
                 m_out[instruction_index].n = member_count;
-                m_out.push_back({ AST_Instruction_Type::pop_group });
-                return true;
+                return;
             }
-            if (expect(u8',')) {
-                m_out.push_back({ AST_Instruction_Type::member_comma });
+            if (expect(Token_Kind::comma)) {
+                m_out.push_back({ CST_Instruction_Kind::comma });
                 continue;
             }
             consume_group_member();
             ++member_count;
         }
-
-        return false;
+        COWEL_ASSERT_UNREACHABLE(u8"Unterminated group should have been dealt with by lexer.");
     }
 
-    bool consume_group_member()
+    void consume_group_member()
     {
-        if (eof()) {
-            return false;
-        }
+        COWEL_ASSERT(!eof());
 
         const std::size_t argument_instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type {}, 0 });
+        m_out.push_back({ CST_Instruction_Kind {}, 0 });
 
-        skip_blank();
+        consume_blank_sequence();
 
-        AST_Instruction_Type push_type;
-        AST_Instruction_Type pop_type;
+        CST_Instruction_Kind push_type;
+        CST_Instruction_Kind pop_type;
 
-        const bool is_named = try_match_member_name();
+        const bool is_named = expect_member_name();
         if (is_named) {
-            // TODO: This seems to be a historical artifact.
-            //       This could probably just be skip_blank().
-            //       If not, comment why this skips only whitespace and no comments.
-            const std::size_t leading_whitespace = match_whitespace(peek_all());
-            if (leading_whitespace != 0) {
-                m_out.push_back({ AST_Instruction_Type::skip, leading_whitespace });
-                advance_by(leading_whitespace);
-            }
-            push_type = AST_Instruction_Type::push_named_member;
-            pop_type = AST_Instruction_Type::pop_named_member;
+            consume_blank_sequence();
+            push_type = CST_Instruction_Kind::push_named_member;
+            pop_type = CST_Instruction_Kind::pop_named_member;
         }
-        else if (try_match_ellipsis()) {
-            push_type = AST_Instruction_Type::push_ellipsis_argument;
-            pop_type = AST_Instruction_Type::pop_ellipsis_argument;
+        else if (expect(Token_Kind::ellipsis)) {
+            m_out.push_back({ CST_Instruction_Kind::ellipsis });
+            push_type = CST_Instruction_Kind::push_ellipsis_argument;
+            pop_type = CST_Instruction_Kind::pop_ellipsis_argument;
         }
         else {
-            push_type = AST_Instruction_Type::push_positional_member;
-            pop_type = AST_Instruction_Type::pop_positional_member;
+            push_type = CST_Instruction_Kind::push_positional_member;
+            pop_type = CST_Instruction_Kind::pop_positional_member;
         }
 
-        skip_blank();
+        consume_blank_sequence();
 
-        if (push_type != AST_Instruction_Type::push_ellipsis_argument) {
-            if (!consume_member_value()) {
-                return false;
+        if (push_type != CST_Instruction_Kind::push_ellipsis_argument) {
+            if (!expect_member_value()) {
+                error(m_tokens[m_pos].location, u8"Invalid group member value."sv);
+                skip_to_next_group_member();
+                return;
             }
-            skip_blank();
+            consume_blank_sequence();
         }
 
-        if (!peek(u8',') && !peek(')')) {
-            const auto initial_pos = m_pos;
-            const std::size_t error_length = consume_error_until_one_of(u8",)");
-            error(Source_Span { initial_pos, error_length }, u8"Invalid group member."sv);
-            return false;
+        if (!peek(Token_Kind::comma) && !peek(Token_Kind::parenthesis_right)) {
+            error(m_tokens[m_pos].location, u8"Invalid group member."sv);
+            skip_to_next_group_member();
+            return;
         }
 
-        m_out[argument_instruction_index].type = push_type;
+        m_out[argument_instruction_index].kind = push_type;
         m_out.push_back({ pop_type });
-
-        return true;
     }
 
-    [[nodiscard]]
-    bool try_match_ellipsis()
+    void skip_to_next_group_member()
     {
-        if (const std::size_t ellipsis = match_ellipsis(peek_all())) {
-            advance_by(ellipsis);
-            m_out.push_back({ AST_Instruction_Type::ellipsis, ellipsis });
-            return true;
+        const std::size_t initial_pos = m_pos;
+        while (true) {
+            const Token* const next = peek();
+            if (!next) {
+                break;
+            }
+            switch (next->kind) {
+            case Token_Kind::comma:
+            case Token_Kind::parenthesis_right: {
+                goto done;
+            }
+            case Token_Kind::parenthesis_left: {
+                consume_group();
+                continue;
+            }
+            case Token_Kind::brace_left: {
+                consume_block();
+                continue;
+            }
+            default: {
+                continue;
+            }
+            }
         }
-        return false;
+    done:
+        // If we haven't made any progress,
+        // this gets us stuck in an infinite loop of failing to parse.
+        COWEL_ASSERT(m_pos != initial_pos);
     }
 
     /// @brief Matches the name of an argument, including any surrounding whitespace and the `=`
     /// character following it.
     /// If the argument couldn't be matched, returns `false` and keeps the parser state unchanged.
     [[nodiscard]]
-    bool try_match_member_name()
+    bool expect_member_name()
+    {
+        const Token* const next = peek();
+        if (!next) {
+            return false;
+        }
+        if (next->kind != Token_Kind::unquoted_identifier
+            && next->kind != Token_Kind::quoted_identifier) {
+            return false;
+        }
+        Scoped_Attempt a = attempt();
+        emit_and_advance_by_one(CST_Instruction_Kind::member_name);
+        consume_blank_sequence();
+
+        if (expect(Token_Kind::equals)) {
+            m_out.push_back({ CST_Instruction_Kind::equals });
+            consume_blank_sequence();
+            a.commit();
+            return true;
+        }
+        return false;
+    }
+
+    bool expect_member_value()
+    {
+        const Token* const next = peek();
+        if (!next) {
+            return false;
+        }
+
+        switch (next->kind) {
+        case Token_Kind::string_quote: {
+            consume_quoted_string();
+            return true;
+        }
+        case Token_Kind::parenthesis_left: {
+            consume_group();
+            return true;
+        }
+        case Token_Kind::brace_left: {
+            consume_block();
+            return true;
+        }
+        case Token_Kind::unit: {
+            emit_and_advance_by_one(CST_Instruction_Kind::keyword_unit);
+            return true;
+        }
+        case Token_Kind::null: {
+            emit_and_advance_by_one(CST_Instruction_Kind::keyword_null);
+            return true;
+        }
+        case Token_Kind::true_: {
+            emit_and_advance_by_one(CST_Instruction_Kind::keyword_true);
+            return true;
+        }
+        case Token_Kind::false_: {
+            emit_and_advance_by_one(CST_Instruction_Kind::keyword_false);
+            return true;
+        }
+        case Token_Kind::infinity: {
+            emit_and_advance_by_one(CST_Instruction_Kind::keyword_infinity);
+            return true;
+        }
+        case Token_Kind::negative_infinity: {
+            emit_and_advance_by_one(CST_Instruction_Kind::keyword_neg_infinity);
+            return true;
+        }
+        case Token_Kind::binary_int: {
+            emit_and_advance_by_one(CST_Instruction_Kind::binary_int);
+            return true;
+        }
+        case Token_Kind::octal_int: {
+            emit_and_advance_by_one(CST_Instruction_Kind::octal_int);
+            return true;
+        }
+        case Token_Kind::decimal_int: {
+            emit_and_advance_by_one(CST_Instruction_Kind::decimal_int);
+            return true;
+        }
+        case Token_Kind::hexadecimal_int_literal: {
+            emit_and_advance_by_one(CST_Instruction_Kind::hexadecimal_int);
+            return true;
+        }
+        case Token_Kind::decimal_float: {
+            emit_and_advance_by_one(CST_Instruction_Kind::decimal_float);
+            return true;
+        }
+        case Token_Kind::unquoted_identifier: {
+            if (expect_directive_call()) {
+                return true;
+            }
+            emit_and_advance_by_one(CST_Instruction_Kind::unquoted_string);
+            return true;
+        }
+        case Token_Kind::comma:
+        case Token_Kind::ellipsis:
+        case Token_Kind::equals:
+        case Token_Kind::parenthesis_right:
+        case Token_Kind::brace_right: return false;
+
+        case Token_Kind::directive_splice_name:
+        case Token_Kind::document_text:
+        case Token_Kind::quoted_identifier:
+        case Token_Kind::quoted_string_text:
+        case Token_Kind::block_text:
+        case Token_Kind::error:
+        case Token_Kind::escape:
+        case Token_Kind::reserved_escape:
+        case Token_Kind::reserved_number:
+        case Token_Kind::whitespace:
+        case Token_Kind::block_comment:
+        case Token_Kind::line_comment: break;
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Unexpected token in group.");
+    }
+
+    bool expect_directive_call()
     {
         Scoped_Attempt a = attempt();
 
-        if (eof()) {
+        const Token* const next = expect(Token_Kind::unquoted_identifier);
+        if (!next) {
             return false;
         }
 
-        const std::size_t name_length = match_member_name(peek_all());
-        m_out.push_back({ AST_Instruction_Type::member_name, name_length });
-        if (name_length == 0) {
-            return false;
-        }
-        advance_by(name_length);
+        m_out.push_back({ CST_Instruction_Kind::push_directive_call });
 
-        const std::size_t trailing_whitespace = match_whitespace(peek_all());
-        if (trailing_whitespace != 0) {
-            m_out.push_back({ AST_Instruction_Type::skip, trailing_whitespace });
-            advance_by(trailing_whitespace);
-        }
-        if (eof()) {
-            return false;
+        consume_blank_sequence();
+        bool has_group = false;
+        if (peek(Token_Kind::parenthesis_left)) {
+            has_group = true;
+            consume_group();
         }
 
-        if (!expect(u8'=')) {
-            return false;
+        consume_blank_sequence();
+        bool has_block = false;
+        if (peek(Token_Kind::brace_left)) {
+            has_block = true;
+            consume_block();
         }
-
-        m_out.push_back({ AST_Instruction_Type::member_equal });
-        a.commit();
-        return true;
-    }
-
-    bool consume_member_value()
-    {
-        COWEL_ASSERT(!eof());
-
-        const std::u8string_view remainder = peek_all();
-
-        switch (remainder[0]) {
-        case u8'"': {
-            return consume_quoted_string();
-        }
-        case u8'(': {
-            return consume_group();
-        }
-        case u8'{': {
-            return consume_block();
-        }
-        default: {
-            return try_match_directive_call() //
-                || try_match_numeric_literal() //
-                || consume_unquoted_value();
-        }
-        }
-    }
-
-    bool try_match_directive_call()
-    {
-        const std::u8string_view remainder = peek_all();
-        const std::size_t name_length = match_directive_name(remainder);
-        if (name_length == 0) {
-            return false;
-        }
-
-        Scoped_Attempt a = attempt();
-        advance_by(name_length);
-        m_out.push_back({ AST_Instruction_Type::push_directive, name_length });
-
-        skip_blank();
-        const bool has_group = peek(u8'(') && consume_group();
-
-        skip_blank();
-        const bool has_block = peek(u8'{') && consume_block();
 
         if (!has_group && !has_block) {
             return false;
         }
 
-        m_out.push_back({ AST_Instruction_Type::pop_directive });
+        m_out.push_back({ CST_Instruction_Kind::pop_directive_call });
 
         a.commit();
         return true;
     }
 
-    bool try_match_numeric_literal()
+    void consume_quoted_string()
     {
-        const std::u8string_view remainder = peek_all();
-        if (remainder.empty()) {
-            return false;
-        }
-
-        const Common_Number_Result result = match_number(remainder);
-        if (!result || result.erroneous
-            || (result.length < remainder.length()
-                && is_cowel_unquoted_string(remainder[result.length]))) {
-            return false;
-        }
-
-        const auto type = [&] {
-            if (result.is_non_integer()) {
-                return AST_Instruction_Type::float_literal;
-            }
-            if (result.prefix == 0) {
-                return AST_Instruction_Type::decimal_int_literal;
-            }
-            COWEL_ASSERT(result.prefix == 2);
-            const char8_t prefix_char = remainder[result.sign + 1];
-            switch (prefix_char) {
-            case u8'b': return AST_Instruction_Type::binary_int_literal;
-            case u8'o': return AST_Instruction_Type::octal_int_literal;
-            case u8'x': return AST_Instruction_Type::hexadecimal_int_literal;
-            default: break;
-            }
-            COWEL_ASSERT_UNREACHABLE(u8"Invalid prefix.");
-        }();
-        advance_by(result.length);
-        m_out.push_back({ type, result.length });
-        return true;
-    }
-
-    bool consume_unquoted_value()
-    {
-        const std::u8string_view remainder = peek_all();
-        const std::size_t length
-            = ascii::length_if(remainder, [](char8_t c) { return is_cowel_unquoted_string(c); });
-
-        if (length == 0) {
-            const auto initial_pos = m_pos;
-            const std::size_t error_length = consume_error_until_one_of(u8",)"sv);
-            error(Source_Span { initial_pos, error_length }, u8"Invalid member value."sv);
-            return false;
-        }
-        const std::u8string_view match = m_source.substr(m_pos.begin, length);
-
-        if (match == u8"unit"sv) {
-            advance_by(length);
-            m_out.push_back({ AST_Instruction_Type::keyword_unit, length });
-            return true;
-        }
-        if (match == u8"null"sv) {
-            advance_by(length);
-            m_out.push_back({ AST_Instruction_Type::keyword_null, length });
-            return true;
-        }
-        if (match == u8"true"sv) {
-            advance_by(length);
-            m_out.push_back({ AST_Instruction_Type::keyword_true, length });
-            return true;
-        }
-        if (match == u8"false"sv) {
-            advance_by(length);
-            m_out.push_back({ AST_Instruction_Type::keyword_false, length });
-            return true;
-        }
-        if (match == u8"infinity"sv) {
-            advance_by(length);
-            m_out.push_back({ AST_Instruction_Type::keyword_infinity, length });
-            return true;
-        }
-        if (match == u8"-infinity"sv) {
-            advance_by(length);
-            m_out.push_back({ AST_Instruction_Type::keyword_neg_infinity, length });
-            return true;
-        }
-
-        advance_by(length);
-        m_out.push_back({ AST_Instruction_Type::unquoted_string, length });
-        return true;
-    }
-
-    bool consume_quoted_string()
-    {
-        const auto initial_pos = m_pos;
-        COWEL_ASSERT(expect(u8'"'));
+        COWEL_ASSERT(expect(Token_Kind::string_quote));
 
         const std::size_t instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type::push_quoted_string });
+        m_out.push_back({ CST_Instruction_Kind::push_quoted_string });
 
-        const std::size_t elements = match_markup_sequence(Content_Context::string);
+        const std::size_t elements = consume_markup_sequence(Content_Context::quoted_string);
+        const bool is_closed = expect(Token_Kind::string_quote);
+        COWEL_ASSERT(is_closed);
 
-        if (!expect(u8'"')) {
-            error(
-                Source_Span { initial_pos, 1 }, u8"No matching '\"'. This string is unterminated."sv
-            );
-            return false;
-        }
-
-        m_out.push_back({ AST_Instruction_Type::pop_quoted_string });
+        m_out.push_back({ CST_Instruction_Kind::pop_quoted_string });
         m_out[instruction_index].n = elements;
-        return true;
     }
 
-    std::size_t skip_blank()
+    void consume_block()
     {
-        const std::size_t start = m_pos.begin;
+        COWEL_ASSERT(expect(Token_Kind::brace_left));
+
+        const std::size_t instruction_index = m_out.size();
+        m_out.push_back({ CST_Instruction_Kind::push_block });
+
+        const std::size_t elements = consume_markup_sequence(Content_Context::block);
+
+        const bool is_closed = expect(Token_Kind::brace_right);
+        COWEL_ASSERT(is_closed);
+
+        m_out[instruction_index].n = elements;
+        m_out.push_back({ CST_Instruction_Kind::pop_block });
+    }
+
+    void consume_blank_sequence()
+    {
+        constexpr auto is_blank = [](Token_Kind kind) {
+            return kind == Token_Kind::whitespace //
+                || kind == Token_Kind::line_comment //
+                || kind == Token_Kind::block_comment;
+        };
 
         while (true) {
-            const std::size_t white_length = match_whitespace(peek_all());
-            advance_by(white_length);
-
-            const std::size_t comment_length = match_line_comment(peek_all());
-            if (comment_length) {
-                advance_by(comment_length);
-                continue;
-            }
-
-            const Comment_Result c = match_block_comment(peek_all());
-            if (c) {
-                if (!c.is_terminated) {
-                    COWEL_ASSERT(m_pos.begin + c.length == m_source.length());
-                    error(Source_Span { m_pos, 2 }, u8"Unterminated block comment."sv);
-                    advance_by(c.length);
-                }
-                else {
-                    advance_by(c.length);
-                    continue;
-                }
-            }
-            break;
-        }
-
-        const std::size_t skip_length = m_pos.begin - start;
-        if (skip_length) {
-            m_out.push_back({ AST_Instruction_Type::skip, skip_length });
-        }
-
-        return skip_length;
-    }
-
-    bool consume_block()
-    {
-        const auto initial_pos = m_pos;
-        COWEL_ASSERT(expect(u8'{'));
-
-        const std::size_t instruction_index = m_out.size();
-        m_out.push_back({ AST_Instruction_Type::push_block });
-
-        const std::size_t elements = match_markup_sequence(Content_Context::block);
-
-        if (!expect(u8'}')) {
-            error(Source_Span { initial_pos, 1 }, u8"No matching '}'. This block is unclosed."sv);
-            return false;
-        }
-        m_out[instruction_index].n = elements;
-        m_out.push_back({ AST_Instruction_Type::pop_block });
-        return true;
-    }
-
-    [[nodiscard]]
-    std::size_t consume_error_until_one_of(std::u8string_view set)
-    {
-        COWEL_ASSERT(!set.contains(u8'\\'));
-
-        const std::size_t initial_begin = m_pos.begin;
-        while (!eof()) {
-            const std::size_t skip_length = ascii::length_if_not(peek_all(), [&](char8_t c) {
-                return c == u8'\\' || set.contains(c);
-            });
-            advance_by(skip_length);
-
-            if (!peek(u8'\\')) {
+            const Token* const next = peek();
+            if (!next || !is_blank(next->kind)) {
                 break;
             }
-
-            const std::size_t line_comment_length = match_line_comment(peek_all());
-            if (line_comment_length) {
-                advance_by(line_comment_length);
-                continue;
-            }
-
-            const Comment_Result block_comment = match_block_comment(peek_all());
-            if (block_comment) {
-                if (!block_comment.is_terminated) {
-                    error(Source_Span { m_pos, 2 }, u8"Unterminated block comment."sv);
-                }
-                advance_by(block_comment.length);
-                continue;
-            }
-
-            // It is possible that we have matched a backslash but did not encounter a
-            // comment, in which case we simply skip the backslash.
-            advance_by(1);
+            emit_and_advance_by_one(CST_Instruction_Kind::skip);
         }
-
-        return m_pos.begin - initial_begin;
     }
 };
 
 } // namespace
 
-std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
+std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
 {
-    using enum AST_Instruction_Type;
+    using enum CST_Instruction_Kind;
     switch (type) {
         COWEL_ENUM_STRING_CASE8(skip);
         COWEL_ENUM_STRING_CASE8(escape);
         COWEL_ENUM_STRING_CASE8(text);
         COWEL_ENUM_STRING_CASE8(unquoted_string);
-        COWEL_ENUM_STRING_CASE8(binary_int_literal);
-        COWEL_ENUM_STRING_CASE8(octal_int_literal);
-        COWEL_ENUM_STRING_CASE8(decimal_int_literal);
-        COWEL_ENUM_STRING_CASE8(hexadecimal_int_literal);
-        COWEL_ENUM_STRING_CASE8(float_literal);
+        COWEL_ENUM_STRING_CASE8(binary_int);
+        COWEL_ENUM_STRING_CASE8(octal_int);
+        COWEL_ENUM_STRING_CASE8(decimal_int);
+        COWEL_ENUM_STRING_CASE8(hexadecimal_int);
+        COWEL_ENUM_STRING_CASE8(decimal_float);
         COWEL_ENUM_STRING_CASE8(keyword_true);
         COWEL_ENUM_STRING_CASE8(keyword_false);
         COWEL_ENUM_STRING_CASE8(keyword_null);
@@ -822,12 +585,14 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
         COWEL_ENUM_STRING_CASE8(block_comment);
         COWEL_ENUM_STRING_CASE8(member_name);
         COWEL_ENUM_STRING_CASE8(ellipsis);
-        COWEL_ENUM_STRING_CASE8(member_equal);
-        COWEL_ENUM_STRING_CASE8(member_comma);
+        COWEL_ENUM_STRING_CASE8(equals);
+        COWEL_ENUM_STRING_CASE8(comma);
         COWEL_ENUM_STRING_CASE8(push_document);
         COWEL_ENUM_STRING_CASE8(pop_document);
-        COWEL_ENUM_STRING_CASE8(push_directive);
-        COWEL_ENUM_STRING_CASE8(pop_directive);
+        COWEL_ENUM_STRING_CASE8(push_directive_splice);
+        COWEL_ENUM_STRING_CASE8(pop_directive_splice);
+        COWEL_ENUM_STRING_CASE8(push_directive_call);
+        COWEL_ENUM_STRING_CASE8(pop_directive_call);
         COWEL_ENUM_STRING_CASE8(push_group);
         COWEL_ENUM_STRING_CASE8(pop_group);
         COWEL_ENUM_STRING_CASE8(push_named_member);
@@ -844,13 +609,111 @@ std::u8string_view ast_instruction_type_name(AST_Instruction_Type type)
     COWEL_ASSERT_UNREACHABLE(u8"Invalid type.");
 }
 
+Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
+{
+    using enum CST_Instruction_Kind;
+    switch (type) {
+    case escape: return Token_Kind::escape;
+    case unquoted_string: return Token_Kind::unquoted_identifier;
+    case binary_int: return Token_Kind::binary_int;
+    case octal_int: return Token_Kind::octal_int;
+    case decimal_int: return Token_Kind::decimal_int;
+    case hexadecimal_int: return Token_Kind::hexadecimal_int_literal;
+    case decimal_float: return Token_Kind::decimal_float;
+    case keyword_true: return Token_Kind::true_;
+    case keyword_false: return Token_Kind::false_;
+    case keyword_null: return Token_Kind::null;
+    case keyword_unit: return Token_Kind::unit;
+    case keyword_infinity: return Token_Kind::infinity;
+    case keyword_neg_infinity: return Token_Kind::negative_infinity;
+    case line_comment: return Token_Kind::line_comment;
+    case block_comment: return Token_Kind::block_comment;
+    case member_name: return Token_Kind::unquoted_identifier;
+    case ellipsis: return Token_Kind::ellipsis;
+    case equals: return Token_Kind::equals;
+    case comma: return Token_Kind::comma;
+    case push_directive_splice: return Token_Kind::directive_splice_name;
+    case push_directive_call: return Token_Kind::unquoted_identifier;
+    case push_group: return Token_Kind::parenthesis_left;
+    case pop_group: return Token_Kind::parenthesis_right;
+    case push_block: return Token_Kind::brace_left;
+    case pop_block: return Token_Kind::brace_right;
+    case push_quoted_string:
+    case pop_quoted_string: return Token_Kind::string_quote;
+
+    case skip:
+    case text:
+    case push_document:
+    case pop_document:
+    case push_named_member:
+    case pop_named_member:
+    case push_positional_member:
+    case pop_positional_member:
+    case push_ellipsis_argument:
+    case pop_ellipsis_argument:
+    case pop_directive_splice:
+    case pop_directive_call:
+        //
+        return Token_Kind::error;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid instruction.");
+}
+
+bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
+{
+    using enum CST_Instruction_Kind;
+    switch (kind) {
+    case skip:
+    case escape:
+    case unquoted_string:
+    case binary_int:
+    case octal_int:
+    case decimal_int:
+    case hexadecimal_int:
+    case decimal_float:
+    case keyword_true:
+    case keyword_false:
+    case keyword_null:
+    case keyword_unit:
+    case keyword_infinity:
+    case keyword_neg_infinity:
+    case line_comment:
+    case block_comment:
+    case member_name:
+    case ellipsis:
+    case equals:
+    case comma:
+    case push_directive_splice:
+    case push_directive_call:
+    case push_group:
+    case pop_group:
+    case push_block:
+    case pop_block:
+    case push_quoted_string:
+    case pop_quoted_string:
+    case text: return true;
+
+    case push_document:
+    case pop_document:
+    case push_named_member:
+    case pop_named_member:
+    case push_positional_member:
+    case pop_positional_member:
+    case push_ellipsis_argument:
+    case pop_ellipsis_argument:
+    case pop_directive_splice:
+    case pop_directive_call: return false;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid instruction.");
+}
+
 bool parse(
-    std::pmr::vector<AST_Instruction>& out,
-    std::u8string_view source,
+    std::pmr::vector<CST_Instruction>& out,
+    std::span<const Token> tokens,
     Parse_Error_Consumer on_error
 )
 {
-    return Parser { out, source, on_error }();
+    return Parser { out, tokens, on_error }();
 }
 
 } // namespace cowel

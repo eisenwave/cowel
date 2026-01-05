@@ -138,7 +138,7 @@ Include_Behavior::splice(Content_Policy& out, const Invocation& call, Context& c
           };
 
     ast::Pmr_Vector<ast::Markup_Element> imported_content { context.get_transient_memory() };
-    const bool parse_success = parse_and_build(
+    const bool parse_success = lex_and_parse_and_build(
         imported_content, entry->source, entry->id, context.get_transient_memory(), on_parse_error
     );
     if (!parse_success) {
