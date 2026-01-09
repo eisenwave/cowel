@@ -162,6 +162,7 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/fwd.hpp
     include/cowel/invocation.hpp
     include/cowel/json.hpp
+    include/cowel/lex.hpp
     include/cowel/memory_resources.hpp
     include/cowel/output_language.hpp
     include/cowel/parameters.hpp
@@ -210,6 +211,7 @@ set(COMMON_LIBRARY_SOURCES
     src/main/cpp/builtin_directive_set.cpp
     src/main/cpp/document_generation.cpp
     src/main/cpp/json.cpp
+    src/main/cpp/lex.cpp
     src/main/cpp/parameters.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/parse.cpp
@@ -327,6 +329,7 @@ else()
         src/test/cpp/test_draft_uris.cpp
         src/test/cpp/test_html_writer.cpp
         src/test/cpp/test_levenshtein.cpp
+        src/test/cpp/test_lexing.cpp
         src/test/cpp/test_parsing.cpp
         src/test/cpp/test_to_chars.cpp
         src/test/cpp/test_typo.cpp

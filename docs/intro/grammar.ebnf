@@ -1,67 +1,39 @@
 document
   = { document-markup-element };
 document-markup-element
-  = document-text
+  = DOCUMENT-TEXT-TOKEN
   | common-markup-element;
-document-text
-  = document-text-char, { document-text-char };
-document-text-char
-  = ? any character ? - "\";
-
 common-markup-element
-  = escape
-  | line-comment
-  | block-comment
+  = ESCAPE-TOKEN
+  | LINE-COMMENT-TOKEN
+  | BLOCK-COMMENT-TOKEN
   | directive-splice;
-escape
-  = "\", escapable-char
-  | "\", line-terminator;
-escapable-char
-  =  "{" |  "}" |  "[" |  "]" |  "(" |  ")" |  "," |  "." |  "="
-  |  "!" |  '"' |  "#" |  "$" |  "%" |  "&" |  "'" |  "+" |  "/"
-  |  ";" |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
-  |  " " |  TAB |   VT ;
-line-comment
-  = "\:", { line-comment-char }, line-terminator;
-line-comment-char
-  = ? any character ? - (LF | CR);
-block-comment
-  = "\*", { block-comment-char }, "*\";
-block-comment-char
-  = ? any character ? - ("*" (* followed by "\" *));
-
 directive-splice
-  = "\", directive-name, [ group ], [ block ];
-directive-name
-  = directive-name-char - digit, { directive-name-char };
-directive-name-char
-  = "_" | digit | ? ASCII alphabetic character ?;
-digit
-  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
-
+  = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], [ block ];
+identifier
+  = unquoted-identifier
+  | quoted-identifier;
+unquoted-identifier
+  = UNQUOTED-IDENTIFIER-TOKEN;
+quoted-identifier
+  = QUOTED-IDENTIFIER-TOKEN;
 group
-  = "(", blank, [ group-member-list ], blank, ")";
+  = PARENTHESIS-LEFT-TOKEN, [ group-member-list ], PARENTHESIS-RIGHT-TOKEN;
 group-member-list
-  = group-member,
-    { blank, ",", blank, group-member },
-    blank, [ "," ];
+  = group-member, { COMMA-TOKEN, group-member }, [ COMMA-TOKEN ];
 group-member
-  = member-name, blank, "=", blank, member-value
+  = identifier, EQUALS-TOKEN, member-value
   | member-value
-  | "...";
-member-name
-  = member-name-char, { member-name-char };
-member-name-char
-  = ? HTML attribute name ? - ("\" | "(" | ")" | "{", "}" | ",");
+  | ELLIPSIS-TOKEN;
 member-value
   = directive-call
   | primary-value;
 directive-call
-  = directive-name, blank, group, [ blank, block ]
-  | directive-name, blank, block;
+  = unquoted-identifier, group, [ block ]
+  | unquoted-identifier, block;
 primary-value
-  = unit-literal
-  | null-literal
+  = UNIT-TOKEN
+  | NULL-TOKEN
   | bool-literal
   | int-literal
   | float-literal
@@ -69,78 +41,26 @@ primary-value
   | quoted-string
   | block
   | group;
-unit-literal
-  = "unit";
-null-literal
-  = "null";
 bool-literal
-  = "true" | "false";
-
+  = TRUE-TOKEN | FALSE-TOKEN;
 int-literal
-  = binary-int-literal
-  | octal-int-literal
-  | decimal-int-literal
-  | hexadecimal-int-literal;
-binary-int-literal
-  = [ "-" ], "0b", binary-digit, { binary-digit };
-octal-int-literal
-  = [ "-" ], "0o", octal-digit, { octal-digit };
-decimal-int-literal
-  = [ "-" ], digit, { digit };
-hexadecimal-int-literal
-  = [ "-" ], "0x", hexadecimal-digit, { hexadecimal-digit };
-binary-digit
-  = "0" | "1";
-octal-digit
-  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
-hexadecimal-digit
-  = digit
-  | "A" | "B" | "C" | "D" | "E" | "F"
-  | "a" | "b" | "c" | "d" | "e" | "f";
-
+  = BINARY-INT-TOKEN
+  | OCTAL-INT-TOKEN
+  | DECIMAL-INT-TOKEN
+  | HEXADECIMAL-INT-TOKEN;
 float-literal
-  = [ "-" ], "infinity"
-  | decimal-float-literal;
-decimal-float-literal
-  = [ "-" ], digit, { digit }, ".", { digit }, [ exponent ]
-  | [ "-" ], ".", digit, { digit }, [ exponent ]
-  | [ "-" ], digit, { digit }, exponent;
-exponent
-  = ("e" | "E"), [ "+" | "-" ], digit, { digit };
+  = INFINITY-TOKEN
+  | NEGATIVE-INFINITY-TOKEN
+  | DECIMAL-FLOAT-TOKEN;
 unquoted-string
-  = unquoted-string-char, { unquoted-string-char };
-unquoted-string-char
-  = directive-name-char | "-";
-
+  = UNQUOTED-IDENTIFIER-TOKEN;
 quoted-string
-  = '"', { quoted-string-markup-element }, '"';
+  = STRING-QUOTE-TOKEN, { quoted-string-markup-element }, STRING-QUOTE-TOKEN;
 quoted-string-markup-element
-  = quoted-string-text
+  = QUOTED-STRING-TEXT-TOKEN
   | common-markup-element;
-quoted-string-text
-  = quoted-string-text-char, { quoted-string-text-char };
-quoted-string-text-char
-  = ? any character ? - ("\" | '"');
-
 block
-  = "{", { block-markup-element }, "}";
+  = BRACE-LEFT-TOKEN, { block-markup-element }, BRACE-RIGHT-TOKEN;
 block-markup-element
-  = block-text
+  = BLOCK-TEXT-TOKEN
   | common-markup-element;
-block-text
-  = block-text-char, { block-text-char } (* brace-balanced *);
-block-text-char
-  = ? any character ? - "\";
-
-blank
-  = { line-comment | block-comment | whitespace };
-whitespace
-  = { " " | TAB | LF | CR | VT };
-line-terminator
-  = LF
-  | CR, LF
-  | CR (* unless the next character is LF *);
-TAB = ? U+0009 CHARACTER TABULATION ? (* \t in C *);
-LF =  ? U+000A END OF LINE ?          (* \n in C *);
-CR =  ? U+000D CARRIAGE RETURN ?      (* \r in C *);
-VT =  ? U+000B LINE TABULATION ?      (* \v in C *);

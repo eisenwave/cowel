@@ -10,6 +10,7 @@
 
 #include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/lex.hpp"
 #include "cowel/parse.hpp"
 
 using namespace std::string_view_literals;
@@ -20,6 +21,7 @@ namespace {
 using ulight::Common_Number_Result;
 using ulight::is_cowel_unquoted_string;
 using ulight::cowel::Comment_Result;
+using ulight::cowel::Escape_Result;
 using ulight::cowel::match_block_comment;
 using ulight::cowel::match_directive_name;
 using ulight::cowel::match_ellipsis;
@@ -334,10 +336,12 @@ private:
     bool try_match_escape()
     {
         const std::u8string_view remainder = peek_all();
-        if (const std::size_t length = match_escape(remainder)) {
-            advance_by(length);
-            m_out.push_back({ AST_Instruction_Type::escape, length });
-            return true;
+        if (const Escape_Result escape = match_escape(remainder)) {
+            if (!escape.is_reserved) {
+                advance_by(escape.length);
+                m_out.push_back({ AST_Instruction_Type::escape, escape.length });
+                return true;
+            }
         }
         return false;
     }
@@ -850,6 +854,11 @@ bool parse(
     Parse_Error_Consumer on_error
 )
 {
+    static_assert(std::is_same_v<Parse_Error_Consumer, Lex_Error_Consumer>);
+    std::pmr::vector<Token> tokens { out.get_allocator().resource() };
+    if (!lex(tokens, source, on_error)) {
+        return false;
+    }
     return Parser { out, source, on_error }();
 }
 

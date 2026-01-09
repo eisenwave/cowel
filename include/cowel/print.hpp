@@ -43,6 +43,13 @@ void print_file_position(
     bool colon_suffix = true
 );
 
+void print_file_position(
+    Diagnostic_String& out,
+    std::u8string_view file,
+    std::size_t line_index,
+    bool colon_suffix = true
+);
+
 /// @brief Prints the contents of the affected line within `source` as well as position indicators
 /// which show the span which is affected by some diagnostic.
 /// @param out the string to write to
