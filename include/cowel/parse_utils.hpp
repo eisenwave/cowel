@@ -2,7 +2,6 @@
 #define BIT_MANIPULATION_PARSE_HPP
 
 #include <cstddef>
-#include <optional>
 #include <string_view>
 
 namespace cowel {
@@ -54,25 +53,6 @@ Blank_Line find_blank_line_sequence(
 /// @return The number of digits that belong to a numeric literal of the given base.
 [[nodiscard]]
 std::size_t match_digits(std::u8string_view str, int base);
-
-/// @brief Like `parse_integer_literal`, but does not permit negative numbers and results
-/// in an unsigned integer.
-/// @param str the string containing the prefix and literal digits
-/// @return The parsed number.
-[[nodiscard]]
-std::optional<unsigned long long> parse_uinteger_literal(std::u8string_view str) noexcept;
-
-/// @brief Converts a literal string to an signed integer.
-/// The sign of the integer is based on a leading `-` character.
-/// The base of the literal is automatically detected based on prefix:
-/// - `0b` for binary
-/// - `0` for octal
-/// - `0x` for hexadecimal
-/// - otherwise decimal
-/// @param str the string containing the prefix and literal digits
-/// @return The parsed number.
-[[nodiscard]]
-std::optional<long long> parse_integer_literal(std::u8string_view str) noexcept;
 
 } // namespace cowel
 
