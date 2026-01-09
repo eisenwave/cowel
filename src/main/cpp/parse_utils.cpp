@@ -1,14 +1,10 @@
 #include <algorithm>
-#include <charconv>
 #include <cstddef>
-#include <optional>
 #include <string_view>
-#include <system_error>
 
 #include "cowel/fwd.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
-#include "cowel/util/strings.hpp"
 
 #include "cowel/parse_utils.hpp"
 
@@ -72,22 +68,6 @@ find_blank_line_sequence(std::u8string_view str, Blank_Line_Initial_State initia
     return {};
 }
 
-namespace {
-
-std::optional<unsigned long long> parse_uinteger_digits(std::u8string_view text, int base)
-{
-    const auto sv = as_string_view(text);
-    unsigned long long value;
-    const std::from_chars_result result
-        = std::from_chars(sv.data(), sv.data() + sv.size(), value, base);
-    if (result.ec != std::errc {}) {
-        return {};
-    }
-    return value;
-}
-
-} // namespace
-
 std::size_t match_digits(std::u8string_view str, int base)
 {
     COWEL_ASSERT((base >= 2 && base <= 10) || base == 16);
@@ -98,41 +78,6 @@ std::size_t match_digits(std::u8string_view str, int base)
 
     // std::min covers the case of std::u8string_view::npos
     return std::min(str.find_first_not_of(digits), str.size());
-}
-
-std::optional<unsigned long long> parse_uinteger_literal(std::u8string_view str) noexcept
-{
-    if (str.empty()) {
-        return {};
-    }
-    if (str.starts_with(u8"0b")) {
-        return parse_uinteger_digits(str.substr(2), 2);
-    }
-    if (str.starts_with(u8"0x")) {
-        return parse_uinteger_digits(str.substr(2), 16);
-    }
-    if (str.starts_with(u8'0')) {
-        return parse_uinteger_digits(str, 8);
-    }
-    return parse_uinteger_digits(str, 10);
-}
-
-std::optional<long long> parse_integer_literal(std::u8string_view str) noexcept
-{
-    if (str.empty()) {
-        return std::nullopt;
-    }
-    if (str.starts_with(u8'-')) {
-        if (auto positive = parse_uinteger_literal(str.substr(1))) {
-            // Negating as Uint is intentional and prevents overflow.
-            return static_cast<long long>(-*positive);
-        }
-        return std::nullopt;
-    }
-    if (auto result = parse_uinteger_literal(str)) {
-        return static_cast<long long>(*result);
-    }
-    return std::nullopt;
 }
 
 } // namespace cowel
