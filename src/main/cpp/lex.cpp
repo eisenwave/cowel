@@ -19,8 +19,8 @@ namespace cowel {
 namespace {
 
 using ulight::Common_Number_Result;
-using ulight::is_cowel_unquoted_string;
 using ulight::cowel::Comment_Result;
+using ulight::cowel::Escape_Result;
 using ulight::cowel::match_block_comment;
 using ulight::cowel::match_directive_name;
 using ulight::cowel::match_ellipsis;
@@ -35,6 +35,38 @@ std::size_t match_unquoted_identifier(const std::u8string_view str)
     constexpr auto head = [](char8_t c) { return is_cowel_directive_name_start(c); };
     constexpr auto tail = [](char8_t c) { return is_cowel_directive_name(c); };
     return ascii::length_if_head_tail(str, head, tail);
+}
+
+[[nodiscard]]
+std::size_t match_reserved_number(const std::u8string_view str)
+{
+    if (str.empty() || str.length() < 3) {
+        return 0;
+    }
+    std::size_t length = 0;
+    if (str[0] == u8'-') {
+        if (!is_ascii_digit(str[1])) {
+            return 0;
+        }
+        length += 2;
+    }
+    else if (str[0] == u8'.') {
+        length += 1;
+    }
+    while (length < str.length()) {
+        const std::u8string_view remainder = str.substr(length);
+        if (remainder.starts_with(u8"e+") || remainder.starts_with(u8"E+")
+            || remainder.starts_with(u8"e-") || remainder.starts_with(u8"E-")) {
+            length += 2;
+        }
+        else if (is_ascii_alphanumeric(remainder[0]) || remainder[0] == u8'.') {
+            length += 1;
+        }
+        else {
+            break;
+        }
+    }
+    return length;
 }
 
 struct Quoted_Identifier_Result {
@@ -96,7 +128,7 @@ private:
     void emit(Token_Kind kind, std::size_t length)
     {
         COWEL_DEBUG_ASSERT(length == std::uint32_t(length));
-        m_out.push_back({ kind, std::uint32_t(length) });
+        m_out.push_back({ kind, Source_Span { m_pos, length } });
     }
 
     void error(const Source_Span& pos, Char_Sequence8 message)
@@ -179,17 +211,7 @@ private:
         for (; !eof(); advance_by(1)) {
             const char8_t c = peek();
             if (c == u8'\\') {
-                const std::u8string_view remainder { m_source.substr(m_pos.begin + 1) };
-
-                // Trailing \ at the end of the file.
-                // No need to break, we'll just run into it next iteration.
-                if (remainder.empty()) {
-                    continue;
-                }
-                if (is_cowel_allowed_after_backslash(remainder.front())) {
-                    break;
-                }
-                continue;
+                break;
             }
             switch (context) {
             case Content_Context::document: {
@@ -240,30 +262,29 @@ private:
         const std::u8string_view remainder = peek_all();
         COWEL_ASSERT(remainder.starts_with(u8'\\'));
 
-        if (const std::size_t length = match_escape(remainder)) {
-            advance_by(length);
-            emit(Token_Kind::escape, length);
-            return;
-        }
+        const Escape_Result escape = match_escape(remainder);
+        COWEL_ASSERT(escape);
 
-        const auto after_backslash = remainder.substr(1);
-        if (after_backslash.empty()) {
+        if (escape.length == 1) {
             error(Source_Span { m_pos, 1 }, u8"Backslash at the end of the file is not valid."sv);
-            return;
         }
 
-        const auto [_, length] = utf8::decode_and_length_or_replacement(after_backslash);
-        error(
-            Source_Span { m_pos, 1 },
-            joined_char_sequence(
-                {
-                    u8"Expected comment or escape sequence, but got '"sv,
-                    m_source.substr(m_pos.begin, std::size_t(length)),
-                    u8"' following a backslash."sv,
-                }
-            )
-        );
-        advance_by(1 + std::size_t(length));
+        if (escape.is_reserved) {
+            error(
+                Source_Span { m_pos, escape.length },
+                joined_char_sequence(
+                    {
+                        u8"Expected comment or escape sequence, but got '"sv,
+                        m_source.substr(m_pos.begin, escape.length),
+                        u8"' following a backslash."sv,
+                    }
+                )
+            );
+        }
+
+        advance_by(escape.length);
+        const auto kind = escape.is_reserved ? Token_Kind::reserved_escape : Token_Kind::escape;
+        emit(kind, escape.length);
     }
 
     [[nodiscard]]
@@ -397,8 +418,11 @@ private:
                     emit(Token_Kind::negative_infinity, length);
                     continue;
                 }
-                consume_numeric_literal();
-                continue;
+                if (remainder.length() >= 2 && is_ascii_digit(remainder[1])) {
+                    consume_numeric_literal();
+                    continue;
+                }
+                break;
             }
             case u8'0':
             case u8'1':
@@ -450,23 +474,20 @@ private:
         COWEL_DEBUG_ASSERT(peek(u8'-') || peek(u8'.') || is_ascii_digit(peek()));
         const std::u8string_view remainder = peek_all();
 
-        const Common_Number_Result result = match_number(remainder);
-        if (!result) {
-            error(Source_Span { m_pos, 1 }, u8"Unable to match numeric literal."sv);
-            advance_by(1);
-            return;
-        }
-        if (result.erroneous) {
-            error(Source_Span { m_pos, result.length }, u8"Invalid numeric literal."sv);
-            advance_by(result.length);
-            return;
-        }
-        if ((result.length < remainder.length()
-             && is_cowel_unquoted_string(remainder[result.length]))) {
-            error(
-                Source_Span { m_pos, result.length }, u8"Numeric literals cannot have a suffix."sv
-            );
-            advance_by(result.length);
+        // Numeric limits are a subset of RESERVED-NUMBER-TOKEN.
+        // Therefore, we first match the RESERVED-NUMBER-TOKEN,
+        // then a more restrictive form of literal from that token.
+        //
+        // This is similar to the C++ preprocessor matching a pp-number first,
+        // with that pp-number being turned into one or multiple tokens by the parser.
+        const std::size_t reserved_length = match_reserved_number(remainder);
+        COWEL_ASSERT(reserved_length);
+
+        const Common_Number_Result result = match_number(remainder.substr(0, reserved_length));
+        if (!result || result.erroneous || result.length != reserved_length) {
+            error(Source_Span { m_pos, reserved_length }, u8"Invalid numeric literal."sv);
+            emit(Token_Kind::reserved_number, reserved_length);
+            advance_by(reserved_length);
             return;
         }
 

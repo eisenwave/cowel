@@ -2,4 +2,4 @@
 \d(true)
 \d(false)
 \d(awoo)
-\d(awoo-_)
+\d(awoo_)

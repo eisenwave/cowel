@@ -1,0 +1,3 @@
+ESCAPE "\\\u000d\u000a"
+DOCUMENT-TEXT "Hello"
+ESCAPE "\\\u000d\u000a"

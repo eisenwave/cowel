@@ -1084,7 +1084,7 @@ TEST(Parse, unquoted)
         { AST_Instruction_Type::push_directive, 2 },
         { AST_Instruction_Type::push_group, 1 },
         { AST_Instruction_Type::push_positional_member },
-        { AST_Instruction_Type::unquoted_string, 6 },
+        { AST_Instruction_Type::unquoted_string, 5 },
         { AST_Instruction_Type::pop_positional_member },
         { AST_Instruction_Type::pop_group },
         { AST_Instruction_Type::pop_directive },
@@ -1212,18 +1212,6 @@ TEST(Parse, block)
     };
     // clang-format on
     ASSERT_TRUE(run_parse_test(u8"arguments/block.cow", expected));
-}
-
-TEST(Parse, illegal_backslash)
-{
-    // clang-format off
-    static constexpr AST_Instruction expected[] {
-        { AST_Instruction_Type::push_document, 1 },
-        { AST_Instruction_Type::text, 3 },
-        { AST_Instruction_Type::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"illegal_backslash.cow", expected));
 }
 
 TEST(Parse, integers)
@@ -1475,50 +1463,6 @@ TEST(Parse_And_Build, floats)
     }
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"floats.cow");
-}
-
-TEST(Parse, directive_names)
-{
-    // clang-format off
-    static constexpr AST_Instruction expected[] {
-        { AST_Instruction_Type::push_document, 16 },
-
-        { AST_Instruction_Type::push_directive, 2 }, // \x
-        { AST_Instruction_Type::pop_directive },
-        { AST_Instruction_Type::text, 1 },
-
-        { AST_Instruction_Type::push_directive, 4 }, // \x_y
-        { AST_Instruction_Type::pop_directive },
-        { AST_Instruction_Type::text, 1 },
-
-        { AST_Instruction_Type::escape, 2 }, // \-x
-        { AST_Instruction_Type::text, 2 },
-
-        { AST_Instruction_Type::push_directive, 2 }, // \x-
-        { AST_Instruction_Type::pop_directive },
-        { AST_Instruction_Type::text, 2 },
-
-        { AST_Instruction_Type::push_directive, 3 }, // \_x
-        { AST_Instruction_Type::pop_directive },
-        { AST_Instruction_Type::text, 1 },
-
-        { AST_Instruction_Type::push_directive, 2 }, // \x.y
-        { AST_Instruction_Type::pop_directive },
-        { AST_Instruction_Type::text, 3 },
-
-        { AST_Instruction_Type::push_directive, 3 }, // \xy
-        { AST_Instruction_Type::pop_directive },
-        { AST_Instruction_Type::text, 1 },
-
-        { AST_Instruction_Type::push_directive, 4 }, // \xy0
-        { AST_Instruction_Type::pop_directive },
-
-        { AST_Instruction_Type::text, 6 }, // \0xy
-        
-        { AST_Instruction_Type::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"directive_names.cow", expected));
 }
 
 TEST(Parse, escape_lf)

@@ -1,6 +1,6 @@
 \h3{Separators and word breaking}
 
-\h4(id=dir-br){\cowdoc_dir{br} \c{mdash} Break line}
+\h4(id="dir-br"){\cowdoc_dir{br} \c{mdash} Break line}
 
 The \cowdoc_dir{br} directive produces a line break,
 and corresponds to the HTML element \cowdoc_html{<br/>}.
@@ -9,7 +9,7 @@ It displays as inline content, and its input content is ignored.
 \cowdoc_dir{br} is particularly useful when line breaks are treated same as spaces,
 which is the case in most HTML content.
 
-\h4(id=dir-hr){\cowdoc_dir{hr} \c{mdash} Horizontal rule}
+\h4(id="dir-hr"){\cowdoc_dir{hr} \c{mdash} Horizontal rule}
 
 The \cowdoc_dir{hr} directive produces a horizontal rule,
 and corresponds to the HTML element \cowdoc_html{<hr/>}.
@@ -18,7 +18,7 @@ It displays as block content, and its input content is ignored.
 Here is an example:
 \hr
 
-\h4(id=dir-wbr){\cowdoc_dir{wbr} \c{mdash} Word break opportunity}
+\h4(id="dir-wbr"){\cowdoc_dir{wbr} \c{mdash} Word break opportunity}
 
 The \cowdoc_dir{wbr} directive produces a word break opportunity,
 and corresponds to the HTML element \cowdoc_html{<wbr>}.
@@ -37,7 +37,7 @@ If you want to provide a word break hint but have a hyphen at the end of the lin
 use \cowdoc_c{\\U{AD}} or \cowdoc_c{\\c{shy}} to output a U+00AD SOFT HYPHEN.
 }
 
-\h4(id=dir-nobr){\cowdoc_dir{nobr} \c{mdash} Unbroken words}
+\h4(id="dir-nobr"){\cowdoc_dir{nobr} \c{mdash} Unbroken words}
 
 The \cowdoc_dir{nobr} directive is a formatting directive
 which prevents word breaks within its content.

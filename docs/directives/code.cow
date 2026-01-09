@@ -1,4 +1,4 @@
-\h3(id=code){Code and syntax highlighting}
+\h3(id="code"){Code and syntax highlighting}
 
 COWEL uses
 \ref("https://github.com/Eisenwave/ulight"){µlight}
@@ -7,7 +7,7 @@ While the set of supported language is relatively small,
 the highlighter is ultra-light, extremely fast, and
 deals with modern C++ features correctly.
 
-\h4(id=dir-code){\cowdoc_dir{code} \c{mdash} Inline code}
+\h4(id="dir-code"){\cowdoc_dir{code} \c{mdash} Inline code}
 
 The \cowdoc_dir{code} directive produced syntax-highlighted text in code font.
 
@@ -98,7 +98,7 @@ Let's highlight \\js{var} in JavaScript.
 }
 }
 
-\h4(id=dir-codeblock){\cowdoc_dir{codeblock} \c{mdash} Code blocks}
+\h4(id="dir-codeblock"){\cowdoc_dir{codeblock} \c{mdash} Code blocks}
 
 The \cowdoc_dir{codeblock} directive works exactly like \cowdoc_dir{code},
 but it is a block directive, not an inline directive.
@@ -128,7 +128,7 @@ let x = 0;
 }
 }
 
-\h4(id=dir-hl){\cowdoc_dir{hl} \c{mdash} Syntax highlight override}
+\h4(id="dir-hl"){\cowdoc_dir{hl} \c{mdash} Syntax highlight override}
 
 The \cowdoc_dir{hl} directive forces certain syntax highlighting to be applied to some text;
 it is a manual override for when automatic syntax highlighting is insufficient or broken.
@@ -147,13 +147,13 @@ It is possible to mix automatic syntax highlighting with manual overrides:
 \cowblock{\literally{
 \: _Int128 is manually highlighted as a type keyword,
 \: and x is automatically highlighted as an identifier.
-\code(c){\hl(keyword-type){_Int128} x}
+\code(c){\hl("keyword-type"){_Int128} x}
 }}
 This generates the HTML (subject to change):
 \htmlblock{
 <code><h- data=h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>
 }
-It renders as \code(c){\cowel_highlight_as(keyword-type){_Int128} x}.
+It renders as \code(c){\cowel_highlight_as("keyword-type"){_Int128} x}.
 }
 
 \Bnote{
@@ -163,7 +163,7 @@ the "short names" (\cowdoc_c{kw_type}) are not stable, i.e. they are more likely
 Only µlight long names should be used directly.
 }
 
-\h4(id=dir-pre){\cowdoc_dir{pre} \c{mdash} Preformatted blocks}
+\h4(id="dir-pre"){\cowdoc_dir{pre} \c{mdash} Preformatted blocks}
 
 The \cowdoc_dir{pre} directive contains pre-formatted content.
 It can be used to contain code, however, there is no syntax highlighting in a \cowdoc_dir{pre} block.

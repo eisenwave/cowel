@@ -1,6 +1,6 @@
 \h3{Foreign languages}
 
-\h4(id=dir-script){\cowdoc_dir{script} \c{mdash} JavaScript blocks}
+\h4(id="dir-script"){\cowdoc_dir{script} \c{mdash} JavaScript blocks}
 
 The content of a \cowdoc_dir{script} directive is a plaintext context,
 where the input is treated as JavaScript code
@@ -23,13 +23,13 @@ console.log("hello");
 }
 }
 
-\h4(id=dir-noscript){\cowdoc_dir{noscript} \c{mdash} No-JavaScript content}
+\h4(id="dir-noscript"){\cowdoc_dir{noscript} \c{mdash} No-JavaScript content}
 
 The \cowdoc_dir{noscript} directive corresponds to the \cowdoc_html{<noscript>} element.
 Its content is an HTML context,
 and will only be shown by the browser when JavaScript is disabled.
 
-\h4(id=dir-style){\cowdoc_dir{style} \c{mdash} CSS blocks}
+\h4(id="dir-style"){\cowdoc_dir{style} \c{mdash} CSS blocks}
 
 The content of a \cowdoc_dir{style} directive is a plaintext context,
 where the input is treated as JavaScript code and surrounded in \cowdoc_html{<style>/*...*/</style>} tags.

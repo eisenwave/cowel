@@ -1,12 +1,12 @@
 #ifndef COWEL_LEX_HPP
 #define COWEL_LEX_HPP
 
-#include <cstdint>
 #include <string_view>
 #include <vector>
 
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/function_ref.hpp"
+#include "cowel/util/source_position.hpp"
 
 #include "cowel/fwd.hpp"
 
@@ -38,6 +38,8 @@ namespace cowel {
     F(parenthesis_right, "PARENTHESIS-RIGHT")                                                      \
     F(quoted_identifier, "QUOTED-IDENTIFIER")                                                      \
     F(quoted_string_text, "QUOTED-STRING-TEXT")                                                    \
+    F(reserved_escape, "RESERVED-ESCAPE")                                                          \
+    F(reserved_number, "RESERVED-NUMBER")                                                          \
     F(string_quote, "STRING-QUOTE")                                                                \
     F(true_, "TRUE")                                                                               \
     F(unit, "UNIT")                                                                                \
@@ -52,7 +54,7 @@ enum struct Token_Kind : Default_Underlying {
 
 struct Token {
     Token_Kind kind;
-    std::uint32_t length;
+    Source_Span location;
 };
 
 using Lex_Error_Consumer = Function_Ref<

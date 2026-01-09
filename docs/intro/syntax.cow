@@ -95,7 +95,7 @@ The meaning of the escape sequences is described in the table below.
   }
 }
 
-\table(id=escapes-table){
+\table(id="escapes-table"){
   \tr{
     \th{Escape sequence}
     \th{Meaning}
@@ -191,7 +191,7 @@ and to join long content that spans multiple lines,
 but without introducing any whitespace in the markup.
 }
 
-\h3(id=syntax-comments){Comments}
+\h3(id="syntax-comments"){Comments}
 
 There are two types of comments:
 line comments and block comments.
@@ -621,7 +621,7 @@ Some literals are simply keywords:
   }
 }
 
-\h4(id=int-literal){\gterm{int-literal} \N{EM DASH} Integer literal}
+\h4(id="int-literal"){\gterm{int-literal} \N{EM DASH} Integer literal}
 
 \codeblock(ebnf){
 int-literal
@@ -682,7 +682,7 @@ the \gterm{hexadecimal-int-literal} \cowdoc_c{0xff}
 all represent the value \math{\mn{255}}.
 }
 
-\h4(id=float-literal){\gterm{float-literal} \N{EM DASH} Floating-point literal}
+\h4(id="float-literal"){\gterm{float-literal} \N{EM DASH} Floating-point literal}
 
 \codeblock(ebnf){
 float-literal

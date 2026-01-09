@@ -6,29 +6,35 @@ DOCUMENT-MARKUP-ELEMENT
 DOCUMENT-TEXT-TOKEN
   = DOCUMENT-TEXT-CHAR, { DOCUMENT-TEXT-CHAR };
 DOCUMENT-TEXT-CHAR
-  = ? any character ? - "\";
+  = CHAR - "\";
 
 COMMON-MARKUP-ELEMENT
   = ESCAPE-TOKEN
   | LINE-COMMENT-TOKEN
   | BLOCK-COMMENT-TOKEN
-  | DIRECTIVE-SPLICE;
+  | DIRECTIVE-SPLICE
+  | RESERVED-ESCAPE-TOKEN;
 ESCAPE-TOKEN
   = "\", ESCAPABLE-CHAR
   | "\", LINE-TERMINATOR;
 ESCAPABLE-CHAR
-  =  "{" |  "}" |  "[" |  "]" |  "(" |  ")" |  "," |  "." |  "="
-  |  "!" |  '"' |  "#" |  "$" |  "%" |  "&" |  "'" |  "+" |  "/"
-  |  ";" |  "<" |  ">" |  "?" |  "@" |  "^" |  "|" |  "~" |  "-"
-  |   HT |   VT |   SP ;
+  = "{" |  "}" | '"' | "\";
+RESERVED-ESCAPE-TOKEN
+  = "\", RESERVED-ESCAPE-CHAR
+  | "\", ? end of file ?;
+RESERVED-ESCAPE-CHAR
+  = CHAR
+  - ESCAPABLE-CHAR
+  - (UNQUOTED-IDENTIFIER-CHAR - DIGIT)
+  - "*" - ":" - LF - CR;
 LINE-COMMENT-TOKEN
   = "\:", { LINE-COMMENT-CHAR }, LINE-TERMINATOR;
 LINE-COMMENT-CHAR
-  = ? any character ? - (LF | CR);
+  = CHAR - (LF | CR);
 BLOCK-COMMENT-TOKEN
   = "\*", { BLOCK-COMMENT-CHAR }, "*\";
 BLOCK-COMMENT-CHAR
-  = ? any character ? - ("*" ? followed by "\" ?);
+  = CHAR - ("*" ? followed by "\" ?);
 DIRECTIVE-SPLICE
   = DIRECTIVE-SPLICE-NAME-TOKEN, [ GROUP ], [ BLOCK ];
 DIRECTIVE-SPLICE-NAME-TOKEN
@@ -49,7 +55,7 @@ LETTER
 QUOTED-IDENTIFIER-TOKEN
   = "`", { QUOTED-IDENTIFIER-CHAR }, "`";
 QUOTED-IDENTIFIER-CHAR
-  = ? any character ? - ("`" | CR | LF);
+  = CHAR - ("`" | CR | LF);
 
 GROUP
   = PARENTHESIS-LEFT-TOKEN, { GROUP-CONTENT }, PARENTHESIS-RIGHT-TOKEN;
@@ -62,8 +68,13 @@ GROUP-CONTENT
   | BLOCK
   | IDENTIFIER
   | QUOTED-STRING
-  | FLOAT-LITERAL
-  | INT-LITERAL
+  | BINARY-INT-TOKEN
+  | OCTAL-INT-TOKEN
+  | DECIMAL-INT-TOKEN
+  | HEXADECIMAL-INT-TOKEN
+  | DECIMAL-FLOAT-TOKEN
+  | INFINITY-TOKEN
+  | NEGATIVE-INFINITY-TOKEN
   | EQUALS-TOKEN
   | COMMA-TOKEN
   | ELLIPSIS-TOKEN
@@ -71,7 +82,8 @@ GROUP-CONTENT
   | NULL-TOKEN
   | TRUE-TOKEN
   | FALSE-TOKEN
-  | BLANK;
+  | BLANK
+  | RESERVED-NUMBER-TOKEN;
 EQUALS-TOKEN
   = "=";
 COMMA-TOKEN
@@ -86,11 +98,7 @@ TRUE-TOKEN
   = "true" ? not followed by UNQUOTED-IDENTIFIER-CHAR ?;
 FALSE-TOKEN
   = "false" ? not followed by UNQUOTED-IDENTIFIER-CHAR ?;
-INT-LITERAL
-  = BINARY-INT-TOKEN
-  | OCTAL-INT-TOKEN
-  | DECIMAL-INT-TOKEN
-  | HEXADECIMAL-INT-TOKEN;
+
 BINARY-INT-TOKEN
   = [ "-" ], "0B", BINARY-DIGIT, { BINARY-DIGIT };
 OCTAL-INT-TOKEN
@@ -108,10 +116,6 @@ HEXADECIMAL-DIGIT
   | "A" | "B" | "C" | "D" | "E" | "F"
   | "a" | "b" | "c" | "d" | "e" | "f";
 
-FLOAT-LITERAL
-  = INFINITY-TOKEN
-  | NEGATIVE-INFINITY-TOKEN
-  | DECIMAL-FLOAT-TOKEN;
 INFINITY-TOKEN
   = "infinity" ? not followed by UNQUOTED-IDENTIFIER-CHAR ?;
 NEGATIVE-INFINITY-TOKEN
@@ -125,6 +129,11 @@ DECIMAL-FLOAT
 EXPONENT
   = ("e" | "E"), [ "+" | "-" ], DIGIT, { DIGIT };
 
+RESERVED-NUMBER-TOKEN
+  = ( [ "-" ], DIGIT | "." ),
+  ? maximal sequence ([0-9a-zA-Z.]|e+|E+|e-|E-)+ that does not result in the
+    RESERVED-NUMBER-TOKEN matching INT-LITERAL or FLOAT-LITERAL ?;
+
 QUOTED-STRING
   = STRING-QUOTE-TOKEN, { QUOTED-STRING-MARKUP-ELEMENT }, STRING-QUOTE-TOKEN;
 STRING-QUOTE-TOKEN
@@ -135,7 +144,7 @@ QUOTED-STRING-MARKUP-ELEMENT
 QUOTED-STRING-TEXT-TOKEN
   = QUOTED-STRING-TEXT-CHAR, { QUOTED-STRING-TEXT-CHAR };
 QUOTED-STRING-TEXT-CHAR
-  = ? any character ? - ("\" | '"');
+  = CHAR - ("\" | '"');
 
 BLOCK
   = BRACE-LEFT-TOKEN, { BLOCK-MARKUP-ELEMENT }, BRACE-RIGHT-TOKEN;
@@ -152,7 +161,7 @@ BLOCK-TEXT-ELEMENT
   = BLOCK-TEXT-CHAR
   | "{", { BLOCK-TEXT-ELEMENT }, "}";
 BLOCK-TEXT-CHAR
-  = ? any character ? - ("\" | "}");
+  = CHAR - ("\" | "}");
 
 BLANK
   = { LINE-COMMENT-TOKEN | BLOCK-COMMENT-TOKEN | WHITESPACE-TOKEN };
@@ -167,3 +176,4 @@ LF = ? U+000A END OF LINE ?;
 CR = ? U+000D CARRIAGE RETURN ?;
 VT = ? U+000B LINE TABULATION ?;
 SP = ? U+0020 SPACE ?;
+CHAR = ? any Unicode code point ?;

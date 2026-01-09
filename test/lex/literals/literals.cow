@@ -3,7 +3,10 @@
   null,
   true,
   false,
-  0,
+  infinity,
+  -infinity,
   "",
   awoo,
+  _awoo,
+  awoo_,
 )

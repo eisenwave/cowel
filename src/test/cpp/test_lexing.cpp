@@ -126,9 +126,9 @@ std::optional<Lex_Actual> lex_file(
 
     for (std::size_t pos = 0; const auto& token : lex_tokens) {
         const auto* const token_start = result.source.data() + pos;
-        std::pmr::u8string current_text { token_start, token.length, memory };
+        std::pmr::u8string current_text { token_start, token.location.length, memory };
         result.tokens.push_back({ token.kind, std::move(current_text) });
-        pos += token.length;
+        pos += token.location.length;
     }
     return result;
 }
@@ -217,6 +217,8 @@ std::u8string_view token_kind_source(const Token_Kind kind)
     case octal_int:
     case quoted_identifier:
     case quoted_string_text:
+    case reserved_escape:
+    case reserved_number:
     case unquoted_identifier:
     case whitespace: return {};
 
@@ -237,6 +239,18 @@ std::u8string_view token_kind_source(const Token_Kind kind)
     }
 
     COWEL_ASSERT_UNREACHABLE(u8"Invalid token kind.");
+}
+
+[[nodiscard]]
+constexpr bool token_kind_is_reserved(const Token_Kind kind)
+{
+    using enum Token_Kind;
+    switch (kind) {
+    case reserved_escape:
+    case reserved_number: return true;
+    default: break;
+    }
+    return false;
 }
 
 [[nodiscard]]
@@ -261,7 +275,7 @@ std::optional<Lex_Expectations> load_expectations(
     }
 
     std::u8string_view remainder = result.source_string();
-    while (!remainder.empty()) {
+    for (std::size_t line_index = 0; !remainder.empty(); ++line_index) {
         const std::size_t line_length = ascii::length_before(remainder, '\n');
         if (line_length == 0) {
             remainder.remove_prefix(1);
@@ -272,7 +286,7 @@ std::optional<Lex_Expectations> load_expectations(
             = ascii::length_if(line, [](char8_t c) { return is_ascii_alpha(c) || c == u8'-'; });
         if (instruction_length == 0) {
             Diagnostic_String out { memory };
-            print_location_of_file(out, file);
+            print_file_position(out, file, line_index);
             out.append(u8' ');
             out.build(Diagnostic_Highlight::error_text)
                 .append(u8"Malformed line \"")
@@ -286,7 +300,7 @@ std::optional<Lex_Expectations> load_expectations(
         const std::optional<Token_Kind> kind = token_by_name(instruction_str);
         if (!kind) {
             Diagnostic_String out { memory };
-            print_location_of_file(out, file);
+            print_file_position(out, file, line_index);
             out.append(u8' ');
             out.build(Diagnostic_Highlight::error_text)
                 .append(u8"Invalid token \"")
@@ -295,6 +309,9 @@ std::optional<Lex_Expectations> load_expectations(
             print_code_string_stdout(out);
             return {};
         }
+        if (token_kind_is_reserved(*kind)) {
+            result.success = false;
+        }
 
         const std::u8string_view argument = trim_ascii_blank(line.substr(instruction_length));
         auto token_text = [&] -> std::optional<std::pmr::u8string> {
@@ -302,7 +319,7 @@ std::optional<Lex_Expectations> load_expectations(
                 const std::u8string_view result = token_kind_source(*kind);
                 if (result.empty()) {
                     Diagnostic_String out { memory };
-                    print_location_of_file(out, file);
+                    print_file_position(out, file, line_index);
                     out.append(u8' ');
                     out.build(Diagnostic_Highlight::error_text)
                         .append(u8"Token of kind \"")
@@ -318,7 +335,7 @@ std::optional<Lex_Expectations> load_expectations(
             if (argument.length() < 2 || !argument.starts_with(u8'"')
                 || !argument.ends_with(u8'"')) {
                 Diagnostic_String out { memory };
-                print_location_of_file(out, file);
+                print_file_position(out, file, line_index);
                 out.append(u8' ');
                 out.append(u8"Malformed token specification:"sv, Diagnostic_Highlight::error_text);
                 out.append(u8' ');
