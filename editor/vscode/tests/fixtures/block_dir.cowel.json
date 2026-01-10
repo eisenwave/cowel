@@ -1,0 +1,33 @@
+{
+  "description": "Test directive with a block containing another directive",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Outer directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 3,
+      "expected": "support.function.directive.cowel",
+      "description": "Inner directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 10,
+      "expected": "entity.name.tag.cowel",
+      "description": "Inner directive argument name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 16,
+      "expected": "string.quoted.double.cowel",
+      "description": "Inner directive argument value has correct scope"
+    }
+  ]
+}

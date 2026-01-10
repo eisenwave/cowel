@@ -1,0 +1,40 @@
+{
+  "description": "Test directive with a mix of argument types",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 8,
+      "expected": "entity.name.tag.cowel",
+      "description": "Named argument 'arg1' has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 23,
+      "expected": "string.quoted.double.cowel",
+      "description": "Unnamed argument 'value2' has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 33,
+      "expected": "entity.name.tag.cowel",
+      "description": "Argument 'arg3' has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 39,
+      "expected": "string.quoted.double.cowel",
+      "description": "Argument 'value3' has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 49,
+      "expected": "string.quoted.double.cowel",
+      "description": "Unnamed argument 'value4' has correct scope"
+    }
+  ]
+}
