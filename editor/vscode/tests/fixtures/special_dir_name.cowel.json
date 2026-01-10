@@ -1,0 +1,12 @@
+{
+  "description": "Test directive with hyphens and numbers in its name",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name with hyphens and numbers has correct scope"
+    }
+  ]
+}

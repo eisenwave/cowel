@@ -1,0 +1,47 @@
+{
+  "description": "Test directive syntax with arguments and content blocks",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 0,
+      "col": 3,
+      "scope": "punctuation.section.content.begin.cowel",
+      "description": "Opening brace is punctuation"
+    },
+    {
+      "type": "parent-scope",
+      "line": 0,
+      "col": 3,
+      "expected": "meta.content.cowel",
+      "description": "Content brace parent scope is meta.content"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 2,
+      "expected": "punctuation.section.arguments.begin.cowel",
+      "description": "Argument parenthesis has correct scope"
+    },
+    {
+      "type": "scope-chain",
+      "line": 1,
+      "col": 4,
+      "expected": ["source.cowel", "meta.arguments.cowel", "variable.parameter.named.cowel", "entity.name.tag.cowel"],
+      "description": "Named parameter has full scope chain"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 2,
+      "col": 13,
+      "scope": "entity.name.tag.cowel",
+      "description": "Named argument identifier has entity.name.tag scope"
+    }
+  ]
+}

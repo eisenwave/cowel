@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Syntax highlighting and language support for Compact Web Language (COWEL)",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ts-node tests/test-runner.ts",
     "build": "vsce package",
     "clean": "rm -f *.vsix",
     "rebuild": "npm run clean && npm run build",
@@ -19,7 +19,12 @@
   "displayName": "COWEL Language Support",
   "publisher": "cowel",
   "devDependencies": {
-    "@vscode/vsce": "^3.7.1"
+    "@types/node": "^25.0.3",
+    "@vscode/vsce": "^3.7.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.1"
   },
   "engines": {
     "vscode": "^1.80.0",

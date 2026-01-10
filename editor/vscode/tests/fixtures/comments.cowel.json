@@ -1,0 +1,33 @@
+{
+  "description": "Test line and block comments",
+  "assertions": [
+    {
+      "type": "scope-at",
+      "line": 0,
+      "col": 5,
+      "expectedScopes": ["source.cowel", "comment.line.cowel"],
+      "description": "Inside line comment"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 10,
+      "expected": "comment.line.cowel",
+      "description": "Most specific scope is comment.line"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 2,
+      "col": 0,
+      "scope": "comment.block.cowel",
+      "description": "Block comment opener has block comment scope"
+    },
+    {
+      "type": "scope-chain",
+      "line": 2,
+      "col": 5,
+      "expected": ["source.cowel", "comment.block.cowel"],
+      "description": "Inside block comment has proper scope chain"
+    }
+  ]
+}
