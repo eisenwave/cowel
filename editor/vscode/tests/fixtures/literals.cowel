@@ -1,0 +1,6 @@
+\set(value=42)
+\set(value=3.14)
+\set(value=0x1A)
+\set(flag=true)
+\set(flag=false)
+\set(data=null)
