@@ -366,14 +366,20 @@ private:
         if (!next) {
             return false;
         }
-        if (next->kind != Token_Kind::unquoted_identifier
-            && next->kind != Token_Kind::quoted_identifier) {
+        if (next->kind != Token_Kind::identifier && next->kind != Token_Kind::string_quote) {
             return false;
         }
         Scoped_Attempt a = attempt();
-        emit_and_advance_by_one(CST_Instruction_Kind::member_name);
+        if (next->kind == Token_Kind::identifier) {
+            emit_and_advance_by_one(CST_Instruction_Kind::unquoted_member_name);
+        }
+        else {
+            consume_quoted(
+                CST_Instruction_Kind::push_quoted_member_name,
+                CST_Instruction_Kind::pop_quoted_member_name
+            );
+        }
         consume_blank_sequence();
-
         if (expect(Token_Kind::equals)) {
             m_out.push_back({ CST_Instruction_Kind::equals });
             consume_blank_sequence();
@@ -392,7 +398,9 @@ private:
 
         switch (next->kind) {
         case Token_Kind::string_quote: {
-            consume_quoted_string();
+            consume_quoted(
+                CST_Instruction_Kind::push_quoted_string, CST_Instruction_Kind::pop_quoted_string
+            );
             return true;
         }
         case Token_Kind::parenthesis_left: {
@@ -447,7 +455,7 @@ private:
             emit_and_advance_by_one(CST_Instruction_Kind::decimal_float);
             return true;
         }
-        case Token_Kind::unquoted_identifier: {
+        case Token_Kind::identifier: {
             if (expect_directive_call()) {
                 return true;
             }
@@ -462,7 +470,6 @@ private:
 
         case Token_Kind::directive_splice_name:
         case Token_Kind::document_text:
-        case Token_Kind::quoted_identifier:
         case Token_Kind::quoted_string_text:
         case Token_Kind::block_text:
         case Token_Kind::error:
@@ -480,7 +487,7 @@ private:
     {
         Scoped_Attempt a = attempt();
 
-        const Token* const next = expect(Token_Kind::unquoted_identifier);
+        const Token* const next = expect(Token_Kind::identifier);
         if (!next) {
             return false;
         }
@@ -511,18 +518,26 @@ private:
         return true;
     }
 
-    void consume_quoted_string()
+    void consume_quoted(CST_Instruction_Kind push, CST_Instruction_Kind pop)
     {
+        COWEL_DEBUG_ASSERT(
+            push == CST_Instruction_Kind::push_quoted_member_name
+            || push == CST_Instruction_Kind::push_quoted_string
+        );
+        COWEL_DEBUG_ASSERT(
+            pop == CST_Instruction_Kind::pop_quoted_member_name
+            || pop == CST_Instruction_Kind::pop_quoted_string
+        );
         COWEL_ASSERT(expect(Token_Kind::string_quote));
 
         const std::size_t instruction_index = m_out.size();
-        m_out.push_back({ CST_Instruction_Kind::push_quoted_string });
+        m_out.push_back({ push });
 
         const std::size_t elements = consume_markup_sequence(Content_Context::quoted_string);
         const bool is_closed = expect(Token_Kind::string_quote);
         COWEL_ASSERT(is_closed);
 
-        m_out.push_back({ CST_Instruction_Kind::pop_quoted_string });
+        m_out.push_back({ pop });
         m_out[instruction_index].n = elements;
     }
 
@@ -569,6 +584,7 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(skip);
         COWEL_ENUM_STRING_CASE8(escape);
         COWEL_ENUM_STRING_CASE8(text);
+        COWEL_ENUM_STRING_CASE8(unquoted_member_name);
         COWEL_ENUM_STRING_CASE8(unquoted_string);
         COWEL_ENUM_STRING_CASE8(binary_int);
         COWEL_ENUM_STRING_CASE8(octal_int);
@@ -583,7 +599,6 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(keyword_neg_infinity);
         COWEL_ENUM_STRING_CASE8(line_comment);
         COWEL_ENUM_STRING_CASE8(block_comment);
-        COWEL_ENUM_STRING_CASE8(member_name);
         COWEL_ENUM_STRING_CASE8(ellipsis);
         COWEL_ENUM_STRING_CASE8(equals);
         COWEL_ENUM_STRING_CASE8(comma);
@@ -603,6 +618,8 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_ellipsis_argument);
         COWEL_ENUM_STRING_CASE8(push_block);
         COWEL_ENUM_STRING_CASE8(pop_block);
+        COWEL_ENUM_STRING_CASE8(push_quoted_member_name);
+        COWEL_ENUM_STRING_CASE8(pop_quoted_member_name);
         COWEL_ENUM_STRING_CASE8(push_quoted_string);
         COWEL_ENUM_STRING_CASE8(pop_quoted_string);
     }
@@ -614,7 +631,8 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     using enum CST_Instruction_Kind;
     switch (type) {
     case escape: return Token_Kind::escape;
-    case unquoted_string: return Token_Kind::unquoted_identifier;
+    case unquoted_member_name:
+    case unquoted_string: return Token_Kind::identifier;
     case binary_int: return Token_Kind::binary_int;
     case octal_int: return Token_Kind::octal_int;
     case decimal_int: return Token_Kind::decimal_int;
@@ -628,16 +646,17 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case keyword_neg_infinity: return Token_Kind::negative_infinity;
     case line_comment: return Token_Kind::line_comment;
     case block_comment: return Token_Kind::block_comment;
-    case member_name: return Token_Kind::unquoted_identifier;
     case ellipsis: return Token_Kind::ellipsis;
     case equals: return Token_Kind::equals;
     case comma: return Token_Kind::comma;
     case push_directive_splice: return Token_Kind::directive_splice_name;
-    case push_directive_call: return Token_Kind::unquoted_identifier;
+    case push_directive_call: return Token_Kind::identifier;
     case push_group: return Token_Kind::parenthesis_left;
     case pop_group: return Token_Kind::parenthesis_right;
     case push_block: return Token_Kind::brace_left;
     case pop_block: return Token_Kind::brace_right;
+    case push_quoted_member_name:
+    case pop_quoted_member_name:
     case push_quoted_string:
     case pop_quoted_string: return Token_Kind::string_quote;
 
@@ -665,6 +684,7 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     switch (kind) {
     case skip:
     case escape:
+    case unquoted_member_name:
     case unquoted_string:
     case binary_int:
     case octal_int:
@@ -679,7 +699,6 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case keyword_neg_infinity:
     case line_comment:
     case block_comment:
-    case member_name:
     case ellipsis:
     case equals:
     case comma:
@@ -689,6 +708,8 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case pop_group:
     case push_block:
     case pop_block:
+    case push_quoted_member_name:
+    case pop_quoted_member_name:
     case push_quoted_string:
     case pop_quoted_string:
     case text: return true;

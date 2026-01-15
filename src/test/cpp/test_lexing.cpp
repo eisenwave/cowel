@@ -212,14 +212,13 @@ std::u8string_view token_kind_source(const Token_Kind kind)
     case document_text:
     case error:
     case escape:
+    case identifier:
     case hexadecimal_int_literal:
     case line_comment:
     case octal_int:
-    case quoted_identifier:
     case quoted_string_text:
     case reserved_escape:
     case reserved_number:
-    case unquoted_identifier:
     case whitespace: return {};
 
     case brace_left: return u8"{"sv;

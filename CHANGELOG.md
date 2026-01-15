@@ -29,6 +29,7 @@
 - change the syntax to be parsed in two phases (#175)
 - add support for typed values in builtin directives (#88)
 - add dedicated `\* ... *\` syntax for block comments (#116)
+- add `\d("x" = y)` syntax for "computed" argument/member names (#179)
 - add the following basic arithmetic directives (#98):
   - `cowel_pos` (`+`)
   - `cowel_neg` (`-`)

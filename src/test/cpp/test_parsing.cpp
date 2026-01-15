@@ -44,12 +44,14 @@ enum struct Node_Kind : Default_Underlying {
     int_literal,
     decimal_float_literal,
     infinity,
+    unquoted_member_name,
     unquoted_string,
     text,
     escape,
-    comment,
+    line_comment,
     directive,
-    string,
+    quoted_member_name,
+    quoted_string,
     block,
     group,
     named_argument,
@@ -78,6 +80,12 @@ struct Node {
     static Node boolean(std::u8string_view text)
     {
         return { .kind = Node_Kind::bool_literal, .name_or_text = text };
+    }
+
+    [[nodiscard]]
+    static Node unquoted_member_name(std::u8string_view name)
+    {
+        return { .kind = Node_Kind::unquoted_member_name, .name_or_text = name };
     }
 
     [[nodiscard]]
@@ -118,10 +126,10 @@ struct Node {
     }
 
     [[nodiscard]]
-    static Node comment(std::u8string_view text)
+    static Node line_comment(std::u8string_view text)
     {
         COWEL_ASSERT(text.starts_with(u8"\\:"));
-        return { .kind = Node_Kind::comment, .name_or_text = text };
+        return { .kind = Node_Kind::line_comment, .name_or_text = text };
     }
 
     [[nodiscard]]
@@ -162,10 +170,19 @@ struct Node {
     }
 
     [[nodiscard]]
-    static Node string(std::vector<Node>&& elements)
+    static Node quoted_member_name(std::vector<Node>&& elements)
     {
         return {
-            .kind = Node_Kind::string,
+            .kind = Node_Kind::quoted_member_name,
+            .children = std::move(elements),
+        };
+    }
+
+    [[nodiscard]]
+    static Node quoted_string(std::vector<Node>&& elements)
+    {
+        return {
+            .kind = Node_Kind::quoted_string,
             .children = std::move(elements),
         };
     }
@@ -199,21 +216,29 @@ struct Node {
     }
 
     [[nodiscard]]
-    static Node named(std::u8string_view name, std::vector<Node>&& children)
+    static Node named(Node&& name, Node&& value)
     {
+        COWEL_ASSERT(
+            name.kind == Node_Kind::unquoted_member_name
+            || name.kind == Node_Kind::quoted_member_name
+        );
         return {
             .kind = Node_Kind::named_argument,
-            .name_or_text = name,
-            .children = std::move(children),
+            .children = { std::move(name), std::move(value) },
         };
+    }
+    [[nodiscard]]
+    static Node named(std::u8string_view name, Node&& value)
+    {
+        return named(Node::unquoted_member_name(name), std::move(value));
     }
 
     [[nodiscard]]
-    static Node positional(std::vector<Node>&& children)
+    static Node positional(Node&& value)
     {
         return {
             .kind = Node_Kind::positional_argument,
-            .children = std::move(children),
+            .children = { std::move(value) },
         };
     }
 
@@ -274,7 +299,7 @@ struct Node {
         }
 
         case ast::Primary_Kind::comment: {
-            return comment(actual.get_source());
+            return line_comment(actual.get_source());
         }
 
         case ast::Primary_Kind::quoted_string:
@@ -284,7 +309,7 @@ struct Node {
             for (const ast::Markup_Element& c : actual.get_elements()) {
                 children.push_back(from(c));
             }
-            return kind == ast::Primary_Kind::quoted_string ? string(std::move(children))
+            return kind == ast::Primary_Kind::quoted_string ? quoted_string(std::move(children))
                                                             : block(std::move(children));
         }
 
@@ -324,21 +349,15 @@ struct Node {
     [[nodiscard]]
     static Node from(const ast::Group_Member& arg)
     {
-        std::vector<Node> children;
-        if (arg.has_value()) {
-            children.push_back(from(arg.get_value()));
-        }
-
         switch (arg.get_kind()) {
         case ast::Member_Kind::ellipsis: {
-            COWEL_ASSERT(children.empty());
             return ellipsis();
         }
         case ast::Member_Kind::named: {
-            return Node::named(arg.get_name(), std::move(children));
+            return Node::named(from_member_name(arg.get_name()), from(arg.get_value()));
         }
         case ast::Member_Kind::positional: {
-            return positional(std::move(children));
+            return positional(from(arg.get_value()));
         }
         }
         COWEL_ASSERT_UNREACHABLE(u8"Invalid argument type.");
@@ -349,6 +368,21 @@ struct Node {
     {
         const auto visitor = [&](const auto& v) -> Node { return from(v); };
         return std::visit(visitor, arg);
+    }
+
+    [[nodiscard]]
+    static Node from_member_name(const ast::Primary& arg)
+    {
+        if (arg.get_kind() == ast::Primary_Kind::unquoted_string) {
+            return unquoted_member_name(arg.get_source());
+        }
+        COWEL_ASSERT(arg.get_kind() == ast::Primary_Kind::quoted_string);
+        std::vector<Node> children;
+        children.reserve(arg.get_elements_size());
+        for (const ast::Markup_Element& c : arg.get_elements()) {
+            children.push_back(from(c));
+        }
+        return quoted_member_name(std::move(children));
     }
 
     [[maybe_unused]]
@@ -407,6 +441,10 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
         return out << "Infinity(" << node.name_or_text << ')';
     }
 
+    case Node_Kind::unquoted_member_name: {
+        return out << "UnqMemberName(" << node.name_or_text << ')';
+    }
+
     case Node_Kind::unquoted_string: {
         return out << "UnqString(" << node.name_or_text << ')';
     }
@@ -420,7 +458,7 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
         break;
     }
 
-    case Node_Kind::comment: {
+    case Node_Kind::line_comment: {
         return out << "Comment(" << node.name_or_text << ')';
     }
 
@@ -436,8 +474,12 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
         return out << "Escape(" << node.name_or_text << ')';
     }
 
-    case Node_Kind::string: {
-        return out << "String(" << node.children << ')';
+    case Node_Kind::quoted_member_name: {
+        return out << "QuotedMemberName(" << node.children << ')';
+    }
+
+    case Node_Kind::quoted_string: {
+        return out << "QuotedString(" << node.children << ')';
     }
 
     case Node_Kind::group: {
@@ -677,7 +719,7 @@ TEST(Parse, directive_multiline)
         { CST_Instruction_Kind::push_group, 1 },
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::push_named_member },
-        { CST_Instruction_Kind::member_name },
+        { CST_Instruction_Kind::unquoted_member_name },
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::equals },
         { CST_Instruction_Kind::skip },
@@ -702,7 +744,7 @@ TEST(Parse, directive_multiline_trailing_comma)
         { CST_Instruction_Kind::push_group, 1 },
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::push_named_member },
-        { CST_Instruction_Kind::member_name },
+        { CST_Instruction_Kind::unquoted_member_name },
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::equals },
         { CST_Instruction_Kind::skip },
@@ -803,7 +845,7 @@ TEST(Parse, arguments_comments_2)
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::push_named_member },
-        { CST_Instruction_Kind::member_name },
+        { CST_Instruction_Kind::unquoted_member_name },
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::equals },
         { CST_Instruction_Kind::skip },
@@ -832,7 +874,7 @@ TEST(Parse_And_Build, arguments_comments_2)
                 Node::group(
                     {
                         Node::positional({ Node::unquoted_string(u8"text") }),
-                        Node::named(u8"named", { Node::unquoted_string(u8"arg") }),
+                        Node::named(u8"named", Node::unquoted_string(u8"arg")),
                     }
                 )
             ),
@@ -947,7 +989,7 @@ TEST(Parse, group_2)
         { CST_Instruction_Kind::push_group, 1 },
 
         { CST_Instruction_Kind::push_named_member }, // n =  (x, y)
-        { CST_Instruction_Kind::member_name },
+        { CST_Instruction_Kind::unquoted_member_name },
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::equals },
         { CST_Instruction_Kind::skip },
@@ -984,12 +1026,12 @@ TEST(Parse_And_Build, group_2)
                 Node::group(
                     { Node::named(
                         u8"n",
-                        { Node::group(
+                        Node::group(
                             {
                                 Node::positional({ Node::unquoted_string(u8"x") }),
                                 Node::positional({ Node::unquoted_string(u8"y") }),
                             }
-                        ) }
+                        )
                     ) }
                 )
             ),
@@ -1551,7 +1593,7 @@ TEST(Parse, hello_directive)
         { CST_Instruction_Kind::push_group, 2 },
 
         { CST_Instruction_Kind::push_named_member },
-        { CST_Instruction_Kind::member_name }, // "hello"
+        { CST_Instruction_Kind::unquoted_member_name }, // "hello"
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::equals },
         { CST_Instruction_Kind::skip },
@@ -1562,7 +1604,7 @@ TEST(Parse, hello_directive)
 
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::push_named_member },
-        { CST_Instruction_Kind::member_name }, // "x"
+        { CST_Instruction_Kind::unquoted_member_name }, // "x"
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::equals },
         { CST_Instruction_Kind::skip },

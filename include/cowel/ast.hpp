@@ -560,8 +560,7 @@ public:
     );
     [[nodiscard]]
     static Group_Member named( //
-        const File_Source_Span& name_span,
-        std::u8string_view name,
+        Primary&& name,
         Member_Value&& value
     );
     [[nodiscard]]
@@ -572,17 +571,15 @@ public:
 private:
     File_Source_Span m_source_span;
     std::u8string_view m_source;
+    std::optional<Primary> m_name;
     std::optional<Member_Value> m_value;
-    File_Source_Span m_name_span;
-    std::u8string_view m_name;
     Member_Kind m_kind;
 
     [[nodiscard]]
     Group_Member(
         const File_Source_Span& source_span,
         std::u8string_view source,
-        const File_Source_Span& name_span,
-        std::u8string_view name,
+        std::optional<Primary>&& name,
         std::optional<Member_Value>&& value,
         Member_Kind type
     );
@@ -617,17 +614,22 @@ public:
     }
 
     [[nodiscard]]
-    File_Source_Span get_name_span() const
+    bool has_name() const
     {
-        COWEL_ASSERT(m_kind == Member_Kind::named);
-        return m_name_span;
+        return m_name.has_value();
     }
 
     [[nodiscard]]
-    std::u8string_view get_name() const
+    const Primary& get_name() const
     {
         COWEL_ASSERT(m_kind == Member_Kind::named);
-        return m_name;
+        return m_name.value();
+    }
+
+    [[nodiscard]]
+    File_Source_Span get_name_span() const
+    {
+        return get_name().get_source_span();
     }
 
     [[nodiscard]]
@@ -640,6 +642,12 @@ public:
     const Member_Value& get_value() const
     {
         return m_value.value();
+    }
+
+    [[nodiscard]]
+    File_Source_Span get_value_span() const
+    {
+        return get_value().get_source_span();
     }
 };
 

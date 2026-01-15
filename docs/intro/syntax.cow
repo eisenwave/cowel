@@ -305,7 +305,7 @@ some of which represents a value of a basic type (\ref("#types-intro")).
 GROUP-CONTENT
   = GROUP
   | BLOCK
-  | IDENTIFIER
+  | IDENTIFIER-TOKEN
   | QUOTED-STRING
   | BINARY-INT-TOKEN
   | OCTAL-INT-TOKEN
@@ -410,11 +410,11 @@ float-literal
   | NEGATIVE-INFINITY-TOKEN
   | DECIMAL-FLOAT-TOKEN;
 INFINITY-TOKEN
-  = "infinity" ? not followed by UNQUOTED-IDENTIFIER-CHAR ?;
+  = "infinity" ? not followed by IDENTIFIER-CHAR ?;
 NEGATIVE-INFINITY-TOKEN
-  = "-infinity;" ? not followed by UNQUOTED-IDENTIFIER-CHAR ?;
+  = "-infinity;" ? not followed by IDENTIFIER-CHAR ?;
 DECIMAL-FLOAT-TOKEN
-  = DECIMAL-FLOAT ? not followed by UNQUOTED-IDENTIFIER-CHAR ?;
+  = DECIMAL-FLOAT ? not followed by IDENTIFIER-CHAR ?;
 DECIMAL-FLOAT
   = [ "-" ], DIGIT, { DIGIT }, ".", { DIGIT }, [ EXPONENT ]
   | [ "-" ], ".", DIGIT, { DIGIT }, [ EXPONENT ]
@@ -578,7 +578,7 @@ In EBNF grammar, a \gterm{directive-splice} is constructed as follows:
 directive-splice
   = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], [ block ];
 DIRECTIVE-SPLICE-NAME-TOKEN
-  = "\", UNQUOTED-IDENTIFIER-TOKEN;
+  = "\", IDENTIFIER-TOKEN;
 }
 
 \h4{Directive names}
@@ -608,12 +608,12 @@ group
 group-member-list
   = group-member, { COMMA-TOKEN, group-member }, [ COMMA-TOKEN ];
 group-member
-  = identifier, EQUALS-TOKEN, member-value
+  = member-name, EQUALS-TOKEN, member-value
   | member-value
   | ELLIPSIS-TOKEN;
-identifier
-  = unquoted-identifier
-  | quoted-identifier;
+member-name
+  = identifier
+  | quoted-string;
 }
 
 \dfn{Directive arguments} can be

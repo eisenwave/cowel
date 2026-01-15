@@ -419,7 +419,12 @@ Processing_Status Pack_Usual_Matcher::do_match(
 
         case ast::Member_Kind::named: {
             encountered_named = true;
-            const std::u8string_view arg_name = member.get_name();
+            Result<Value, Processing_Status> arg_name_value
+                = evaluate(member.get_name(), frame, context);
+            if (!arg_name_value) {
+                return arg_name_value.error();
+            }
+            const std::u8string_view arg_name = arg_name_value->as_string();
             for (std::size_t i = 0; i < m_member_matchers.size(); ++i) {
                 auto* const member_matcher = m_member_matchers[i];
                 if (arg_name != member_matcher->get_name()) {

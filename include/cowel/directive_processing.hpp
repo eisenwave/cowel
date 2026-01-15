@@ -141,6 +141,9 @@ void splice_bool(Content_Policy& out, bool value);
 void splice_int(Content_Policy& out, Integer value);
 void splice_float(Content_Policy& out, Float value, Float_Format format = Float_Format::splice);
 
+[[nodiscard]]
+Result<Value, Processing_Status> splice_value_to_string(const Value& value, Context& context);
+
 /// @brief Splices the given `value` into the given policy.
 /// That is, consumes all elements in a quoted string or block.
 /// For primitive spliceable values such as unquoted strings, booleans, etc.,
