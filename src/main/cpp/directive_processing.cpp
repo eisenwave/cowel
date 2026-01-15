@@ -509,9 +509,27 @@ Processing_Status Value::splice_block(Content_Policy& out, Context& context) con
 Processing_Status
 splice_value_to_plaintext(std::pmr::vector<char8_t>& out, const Value& value, Context& context)
 {
+    if (value.is_str()) {
+        append(out, value.as_string());
+        return Processing_Status::ok;
+    }
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
     Plaintext_Content_Policy policy { sink };
     return splice_value(policy, value, context);
+}
+
+Result<Value, Processing_Status> splice_value_to_string(const Value& value, Context& context)
+{
+    if (value.is_str()) {
+        return value;
+    }
+    Vector_Text_Sink text { Output_Language::text, context.get_transient_memory() };
+    Plaintext_Content_Policy policy { text };
+    const Processing_Status status = splice_value(policy, value, context);
+    if (status != Processing_Status::ok) {
+        return status;
+    }
+    return Value::string(as_u8string_view(*text), String_Kind::unknown);
 }
 
 Processing_Status splice_value_to_plaintext(
@@ -666,16 +684,22 @@ struct Evaluate_Member_Values {
 
             case ast::Member_Kind::positional:
             case ast::Member_Kind::named: {
+                auto name = [&] -> Result<Value, Processing_Status> {
+                    if (kind == ast::Member_Kind::positional) {
+                        return Value::null;
+                    }
+                    return evaluate(m.get_name(), frame, context);
+                }();
+                if (!name) {
+                    return name.error();
+                }
                 Result<Value, Processing_Status> value
                     = evaluate_member_value(m.get_value(), frame, context);
                 if (!value) {
                     COWEL_DEBUG_ASSERT(value.error() != Processing_Status::ok);
                     return value.error();
                 }
-                auto name = kind == ast::Member_Kind::positional
-                    ? Value::null
-                    : Value::string(m.get_name(), String_Kind::unknown);
-                out.push_back({ .name = std::move(name), .value = std::move(*value) });
+                out.push_back({ .name = std::move(*name), .value = std::move(*value) });
                 break;
             }
             }
@@ -935,16 +959,24 @@ Processing_Status named_argument_to_attribute(
 {
     COWEL_ASSERT(a.get_kind() == ast::Member_Kind::named);
 
-    std::pmr::vector<char8_t> value { context.get_transient_memory() };
-    // TODO: error handling
-    value.clear();
-    const auto status = splice_value_to_plaintext(value, a.get_value(), frame, context);
-    const std::u8string_view value_string { value.data(), value.size() };
-    const std::u8string_view name = a.get_name();
+    const Result<Value, Processing_Status> name = evaluate(a.get_name(), frame, context);
+    if (!name) {
+        return name.error();
+    }
+    const Result<Value, Processing_Status> value
+        = evaluate_member_value(a.get_value(), frame, context);
+    if (!value) {
+        return name.error();
+    }
+    const Result<Value, Processing_Status> value_string = splice_value_to_string(*value, context);
+    if (!value_string) {
+        return value_string.error();
+    }
+
     // TODO: this is simply going to crash if the attribute name is not valid;
     // investigate whether this needs work, and possibly leave a comment here if it's okay
-    out.write_attribute(HTML_Attribute_Name(name), value_string, style);
-    return status;
+    out.write_attribute(HTML_Attribute_Name(name->as_string()), value_string->as_string(), style);
+    return Processing_Status::ok;
 }
 
 Processing_Status try_generate_error(

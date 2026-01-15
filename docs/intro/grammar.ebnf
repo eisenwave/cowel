@@ -11,26 +11,24 @@ common-markup-element
 directive-splice
   = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], [ block ];
 identifier
-  = unquoted-identifier
-  | quoted-identifier;
-unquoted-identifier
-  = UNQUOTED-IDENTIFIER-TOKEN;
-quoted-identifier
-  = QUOTED-IDENTIFIER-TOKEN;
+  = IDENTIFIER-TOKEN;
 group
   = PARENTHESIS-LEFT-TOKEN, [ group-member-list ], PARENTHESIS-RIGHT-TOKEN;
 group-member-list
   = group-member, { COMMA-TOKEN, group-member }, [ COMMA-TOKEN ];
 group-member
-  = identifier, EQUALS-TOKEN, member-value
+  = member-name, EQUALS-TOKEN, member-value
   | member-value
   | ELLIPSIS-TOKEN;
+member-name
+  = identifier
+  | quoted-string;
 member-value
   = directive-call
   | primary-value;
 directive-call
   = unquoted-identifier, group, [ block ]
-  | unquoted-identifier, block;
+  | identifier, block;
 primary-value
   = UNIT-TOKEN
   | NULL-TOKEN
@@ -53,7 +51,7 @@ float-literal
   | NEGATIVE-INFINITY-TOKEN
   | DECIMAL-FLOAT-TOKEN;
 unquoted-string
-  = UNQUOTED-IDENTIFIER-TOKEN;
+  = IDENTIFIER-TOKEN;
 quoted-string
   = STRING-QUOTE-TOKEN, { quoted-string-markup-element }, STRING-QUOTE-TOKEN;
 quoted-string-markup-element

@@ -1,0 +1,7 @@
+\test_input{
+\cowel_to_str(255, "bas\cowel_char_by_name("LATIN SMALL LETTER E")" = 16)
+}
+
+\test_output{
+ff
+}

@@ -12,7 +12,6 @@
 #include "cowel/lex.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/from_chars.hpp"
-#include "cowel/util/html_names.hpp"
 #include "cowel/util/source_position.hpp"
 
 #include "cowel/ast.hpp"
@@ -180,7 +179,6 @@ Group_Member Group_Member::ellipsis(File_Source_Span source_span, std::u8string_
     return {
         source_span,
         source,
-        source_span.with_length(0),
         {},
         {},
         Member_Kind::ellipsis,
@@ -188,19 +186,17 @@ Group_Member Group_Member::ellipsis(File_Source_Span source_span, std::u8string_
     // clang-format on
 }
 
-Group_Member Group_Member::named(
-    const File_Source_Span& name_span,
-    std::u8string_view name,
-    Member_Value&& value
-)
+Group_Member Group_Member::named(Primary&& name, Member_Value&& value)
 {
-    COWEL_DEBUG_ASSERT(is_html_attribute_name(name));
+    COWEL_DEBUG_ASSERT(
+        name.get_kind() == ast::Primary_Kind::unquoted_string
+        || name.get_kind() == ast::Primary_Kind::quoted_string
+    );
     // clang-format off
     return {
         value.get_source_span(),
         value.get_source(),
-        name_span,
-        name,
+        std::move(name),
         std::move(value),
         Member_Kind::named,
     };
@@ -215,7 +211,6 @@ Group_Member Group_Member::positional(Member_Value&& value)
     return {
         source_span,
         value.get_source(),
-        source_span.with_length(0),
         {},
         std::move(value),
         Member_Kind::positional,
@@ -226,20 +221,17 @@ Group_Member Group_Member::positional(Member_Value&& value)
 Group_Member::Group_Member(
     const File_Source_Span& source_span,
     std::u8string_view source,
-    const File_Source_Span& name_span,
-    std::u8string_view name,
+    std::optional<Primary>&& name,
     std::optional<Member_Value>&& value,
     Member_Kind type
 )
     : m_source_span { source_span }
     , m_source { source }
+    , m_name { std::move(name) }
     , m_value { std::move(value) }
-    , m_name_span { name_span }
-    , m_name { name }
     , m_kind { type }
 {
     COWEL_ASSERT(m_source_span.length == m_source.length());
-    COWEL_ASSERT(m_name_span.length == m_name.length());
 }
 
 Directive::Directive(
@@ -529,7 +521,12 @@ private:
         if (kind == Directive_Kind::call) {
             ignore_skips();
         }
-        std::optional<ast::Primary> block = try_build_block();
+        auto block = [&] -> std::optional<ast::Primary> {
+            if (!eof() && peek_instruction().kind == CST_Instruction_Kind::push_block) {
+                return try_build_block();
+            }
+            return {};
+        }();
 
         const CST_Instruction pop_instruction = this->pop_instruction();
         COWEL_ASSERT(
@@ -611,17 +608,33 @@ private:
     [[nodiscard]]
     ast::Group_Member build_group_member()
     {
-        const CST_Instruction instruction = pop_instruction();
+        const CST_Instruction member_instruction = pop_instruction();
         ignore_skips();
 
         const auto initial_pos = peek_token().location;
 
-        switch (instruction.kind) {
+        switch (member_instruction.kind) {
         case CST_Instruction_Kind::push_named_member: {
-            const CST_Instruction name = pop_instruction();
-            COWEL_ASSERT(name.kind == CST_Instruction_Kind::member_name);
-            advance_by_tokens(1);
-            const File_Source_Span name_span { initial_pos, m_file };
+            const CST_Instruction name_instruction = peek_instruction();
+
+            auto name = [&] -> ast::Primary {
+                if (name_instruction.kind == CST_Instruction_Kind::unquoted_member_name) {
+                    pop_instruction();
+                    advance_by_tokens(1);
+                    const File_Source_Span span { initial_pos, m_file };
+                    return ast::Primary::basic(
+                        ast::Primary_Kind::unquoted_string, span, extract(span)
+                    );
+                }
+                if (name_instruction.kind == CST_Instruction_Kind::push_quoted_member_name) {
+                    return try_build_block_or_string(
+                               CST_Instruction_Kind::push_quoted_member_name,
+                               CST_Instruction_Kind::pop_quoted_member_name
+                    )
+                        .value();
+                }
+                COWEL_ASSERT_UNREACHABLE(u8"Unexpected member name instruction.");
+            }();
             ignore_skips();
 
             const CST_Instruction equal = pop_instruction();
@@ -633,7 +646,7 @@ private:
             ignore_skips();
             const auto pop_instruction = this->pop_instruction();
             COWEL_ASSERT(pop_instruction.kind == CST_Instruction_Kind::pop_named_member);
-            return ast::Group_Member::named(name_span, extract(name_span), std::move(value));
+            return ast::Group_Member::named(std::move(name), std::move(value));
         }
 
         case CST_Instruction_Kind::push_positional_member: {
@@ -747,10 +760,12 @@ private:
         COWEL_DEBUG_ASSERT(
             push_kind == CST_Instruction_Kind::push_block
             || push_kind == CST_Instruction_Kind::push_quoted_string
+            || push_kind == CST_Instruction_Kind::push_quoted_member_name
         );
         COWEL_DEBUG_ASSERT(
             pop_kind == CST_Instruction_Kind::pop_block
             || pop_kind == CST_Instruction_Kind::pop_quoted_string
+            || pop_kind == CST_Instruction_Kind::pop_quoted_member_name
         );
 
         if (eof()) {

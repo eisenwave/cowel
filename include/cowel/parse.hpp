@@ -19,6 +19,7 @@ enum struct CST_Instruction_Kind : Default_Underlying {
     skip,
     escape,
     text,
+    unquoted_member_name,
     unquoted_string,
     binary_int,
     octal_int,
@@ -33,7 +34,6 @@ enum struct CST_Instruction_Kind : Default_Underlying {
     keyword_neg_infinity,
     line_comment,
     block_comment,
-    member_name,
     ellipsis,
     equals,
     comma,
@@ -56,6 +56,9 @@ enum struct CST_Instruction_Kind : Default_Underlying {
     /// @brief `n` is the amount of markup elements in the block.
     push_block,
     pop_block,
+    /// @brief `n` is the amount of markup elements in the member name.
+    push_quoted_member_name,
+    pop_quoted_member_name,
     /// @brief `n` is the amount of markup elements in the string.
     push_quoted_string,
     pop_quoted_string,

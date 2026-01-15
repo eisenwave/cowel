@@ -38,7 +38,7 @@ struct Put_Named {
     /// @param members The group members, usually call arguments.
     /// @param frame The content frame of the call.
     [[nodiscard]]
-    const ast::Group_Member*
+    Result<const ast::Group_Member*, Processing_Status>
     find(std::span<const ast::Group_Member> members, Frame_Index frame) const
     {
         for (const ast::Group_Member& arg : members) {
@@ -48,7 +48,7 @@ struct Put_Named {
             }
             case ast::Member_Kind::ellipsis: {
                 const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
-                const auto* maybe_result = find(
+                const auto maybe_result = find(
                     ellipsis_frame.invocation.get_arguments_span(),
                     ellipsis_frame.invocation.content_frame
                 );
@@ -58,14 +58,23 @@ struct Put_Named {
                 continue;
             }
             case ast::Member_Kind::named: {
-                if (arg.get_name() == needle_name) {
+                // TODO: This implies that each use of cowel_put evaluates every member name,
+                //       which is probably not desirable.
+                //       However, cowel_macro and cowel_put are kinda on the chopping block,
+                //       so it's not worth solving this right now.
+                const Result<Value, Processing_Status> name_value
+                    = evaluate(arg.get_name(), frame, context);
+                if (!name_value) {
+                    return name_value.error();
+                }
+                if (name_value->as_string() == needle_name) {
                     return &arg;
                 }
                 continue;
             }
             }
         }
-        return {};
+        return nullptr;
     }
 };
 
@@ -248,7 +257,7 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
     }
 
     const std::optional<std::size_t> needle_index = from_characters<std::size_t>(target_string);
-    const ast::Group_Member* const arg = [&] -> const ast::Group_Member* {
+    const auto arg_result = [&] -> Result<const ast::Group_Member*, Processing_Status> {
         if (needle_index) {
             Put_Positional expand_positional {
                 .context = context,
@@ -281,10 +290,13 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
                 .context = context,
                 .needle_name = target_string,
             };
-            const ast::Group_Member* const maybe_result = expand_named.find(
+            Result<const ast::Group_Member*, Processing_Status> maybe_result = expand_named.find(
                 target_invocation.get_arguments_span(), target_invocation.content_frame
             );
-            if (!maybe_result && !has_else) {
+            if (!maybe_result) {
+                return maybe_result.error();
+            }
+            if (!*maybe_result && !has_else) {
                 context.try_error(
                     diagnostic::put_invalid, call.get_arguments_source_span(),
                     joined_char_sequence(
@@ -300,6 +312,10 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
             return maybe_result;
         }
     }();
+    if (!arg_result) {
+        return arg_result.error();
+    }
+    const auto* const arg = *arg_result;
     if (!arg) {
         if (!has_else) {
             // Error has already been printed above.

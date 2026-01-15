@@ -2,11 +2,11 @@
 #include <string_view>
 #include <vector>
 
-#include "cowel/util/char_sequence_factory.hpp"
 #include "ulight/impl/lang/cowel.hpp"
 
 #include "cowel/util/ascii_algorithm.hpp"
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/chars.hpp"
 
 #include "cowel/diagnostic.hpp"
@@ -43,7 +43,7 @@ char8_t token_kind_first_char(const Token_Kind kind)
 }
 
 [[nodiscard]]
-std::size_t match_unquoted_identifier(const std::u8string_view str)
+std::size_t match_identifier(const std::u8string_view str)
 {
     constexpr auto head = [](char8_t c) { return is_cowel_directive_name_start(c); };
     constexpr auto tail = [](char8_t c) { return is_cowel_directive_name(c); };
@@ -80,31 +80,6 @@ std::size_t match_reserved_number(const std::u8string_view str)
         }
     }
     return length;
-}
-
-struct Quoted_Identifier_Result {
-    std::size_t length;
-    bool improperly_terminated = false;
-
-    [[nodiscard]]
-    constexpr operator bool() const
-    {
-        return length != 0;
-    }
-};
-
-[[nodiscard]]
-Quoted_Identifier_Result match_quoted_identifier(const std::u8string_view str)
-{
-    if (!str.starts_with(u8'`')) {
-        return { 0 };
-    }
-    constexpr auto predicate = [](char8_t c) { return c != u8'`' && c != u8'\r' && c != u8'\n'; };
-    const std::size_t length = ascii::length_if(str, predicate, 1);
-    if (length < str.length() && str[length] == u8'`') {
-        return { .length = length + 1 };
-    }
-    return { .length = length, .improperly_terminated = true };
 }
 
 enum struct Content_Context : Default_Underlying {
@@ -440,7 +415,7 @@ private:
             }
             case u8'-': {
                 const std::u8string_view remainder = peek_all();
-                const std::size_t length = 1 + match_unquoted_identifier(remainder.substr(1));
+                const std::size_t length = 1 + match_identifier(remainder.substr(1));
                 const std::u8string_view token = remainder.substr(0, length);
                 if (token == u8"-infinity"sv) {
                     emit(Token_Kind::negative_infinity, length);
@@ -473,10 +448,6 @@ private:
                 }
                 continue;
             }
-            case u8'`': {
-                consume_quoted_identifier();
-                continue;
-            }
             case u8' ':
             case u8'\t':
             case u8'\r':
@@ -488,7 +459,7 @@ private:
             }
             default: break;
             }
-            const bool any_matched = expect_unquoted_value();
+            const bool any_matched = expect_identifier_or_literal();
             if (!any_matched) {
                 error(Source_Span { m_pos, 1 }, u8"Unable to form a token."sv);
                 // FIXME: this should do a Unicode decode to avoid slicing code points
@@ -541,10 +512,10 @@ private:
         advance_by(result.length);
     }
 
-    bool expect_unquoted_value()
+    bool expect_identifier_or_literal()
     {
         const std::u8string_view remainder = peek_all();
-        const std::size_t length = match_unquoted_identifier(remainder);
+        const std::size_t length = match_identifier(remainder);
         if (length == 0) {
             return false;
         }
@@ -576,34 +547,9 @@ private:
             return true;
         }
 
-        emit(Token_Kind::unquoted_identifier, length);
+        emit(Token_Kind::identifier, length);
         advance_by(length);
         return true;
-    }
-
-    void consume_quoted_identifier()
-    {
-        const Quoted_Identifier_Result result = match_quoted_identifier(peek_all());
-        COWEL_ASSERT(result);
-
-        if (result.improperly_terminated) {
-            error(
-                Source_Span { m_pos, result.length },
-                u8"A quoted identifier must be terminated by a '`' "
-                u8"on the same line as the opening '`'."sv
-            );
-            advance_by(result.length);
-            return;
-        }
-        if (result.length == 2) {
-            error(Source_Span { m_pos, result.length }, u8"A quoted identifier cannot be empty."sv);
-            advance_by(result.length);
-            return;
-        }
-
-        COWEL_ASSERT(m_source[m_pos.begin + result.length - 1] == u8'`');
-        emit(Token_Kind::quoted_identifier, result.length);
-        advance_by(result.length);
     }
 
     void consume_quoted_string()

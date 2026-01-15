@@ -29,6 +29,7 @@ namespace cowel {
     F(escape, "ESCAPE", '\\')                                                                      \
     F(false_, "FALSE", 'f')                                                                        \
     F(hexadecimal_int_literal, "HEXADECIMAL-INT", '\0')                                            \
+    F(identifier, "IDENTIFIER", '\0')                                                              \
     F(infinity, "INFINITY", 'i')                                                                   \
     F(line_comment, "LINE-COMMENT", '\\')                                                          \
     F(negative_infinity, "NEGATIVE-INFINITY", '-')                                                 \
@@ -36,14 +37,12 @@ namespace cowel {
     F(octal_int, "OCTAL-INT", '\0')                                                                \
     F(parenthesis_left, "PARENTHESIS-LEFT", '(')                                                   \
     F(parenthesis_right, "PARENTHESIS-RIGHT", ')')                                                 \
-    F(quoted_identifier, "QUOTED-IDENTIFIER", '\0')                                                \
     F(quoted_string_text, "QUOTED-STRING-TEXT", '\0')                                              \
     F(reserved_escape, "RESERVED-ESCAPE", '\\')                                                    \
     F(reserved_number, "RESERVED-NUMBER", '\0')                                                    \
     F(string_quote, "STRING-QUOTE", '"')                                                           \
     F(true_, "TRUE", 't')                                                                          \
     F(unit, "UNIT", 'u')                                                                           \
-    F(unquoted_identifier, "UNQUOTED-IDENTIFIER", '\0')                                            \
     F(whitespace, "WHITESPACE", '\0')
 
 #define COWEL_TOKEN_KIND_ENUMERATOR(id, name, first) id,
