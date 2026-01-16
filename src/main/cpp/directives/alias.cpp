@@ -73,7 +73,7 @@ Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& c
         return Processing_Status::fatal;
     }
     COWEL_ASSERT(call.content);
-    if (!is_directive_name(target_name)) {
+    if (!is_identifier(target_name)) {
         context.try_fatal(
             diagnostic::alias_name_invalid, call.content->get_source_span(),
             joined_char_sequence(
@@ -111,7 +111,7 @@ Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& c
             );
             return Processing_Status::fatal;
         }
-        if (!is_directive_name(alias_name)) {
+        if (!is_identifier(alias_name)) {
             context.try_fatal(
                 diagnostic::alias_name_invalid, location,
                 joined_char_sequence(

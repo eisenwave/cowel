@@ -169,7 +169,7 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
             );
             return Processing_Status::fatal;
         }
-        if (!is_directive_name(alias_name)) {
+        if (!is_identifier(alias_name)) {
             context.try_fatal(
                 diagnostic::macro_name_invalid, location,
                 joined_char_sequence(

@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/chars.hpp"
 #include "cowel/util/levenshtein.hpp"
 #include "cowel/util/levenshtein_utf8.hpp"
 #include "cowel/util/strings.hpp"

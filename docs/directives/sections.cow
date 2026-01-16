@@ -32,8 +32,8 @@ and other automatically inserted elements).
 \Btip{
 You can change the title of the document as follows:
 \cowblock{
-\\there(std.head){
-\\html-title{This is the document title!}
+\\there("std.head"){
+\\html_title{This is the document title!}
 }
 }
 }

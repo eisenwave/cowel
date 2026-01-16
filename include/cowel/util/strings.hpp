@@ -14,6 +14,9 @@
 
 namespace cowel {
 
+using ulight::is_ascii;
+using ulight::cowel::match_identifier;
+
 // see is_ascii_digit
 inline constexpr std::u32string_view all_ascii_digit = U"0123456789";
 inline constexpr std::u8string_view all_ascii_digit8 = u8"0123456789";
@@ -91,8 +94,6 @@ constexpr bool all_of(R&& r, Predicate predicate) // NOLINT(cppcoreguidelines-mi
 
 } // namespace detail
 
-using ulight::is_ascii;
-
 /// @brief Returns `true` if `str` is a possibly empty ASCII string comprised
 /// entirely of blank ASCII characters (`is_ascii_blank`).
 [[nodiscard]]
@@ -166,11 +167,11 @@ void trim(std::vector<char8_t, Alloc>& text)
     trim_right(text);
 }
 
-/// @brief Returns `true` if `str` is a valid COWEL directive name.
+/// @brief Returns `true` if `str` is a valid COWEL identifier.
 [[nodiscard]]
-constexpr bool is_directive_name(std::u8string_view str) noexcept
+constexpr bool is_identifier(std::u8string_view str) noexcept
 {
-    const std::size_t length = ulight::cowel::match_directive_name(str);
+    const std::size_t length = match_identifier(str);
     return length != 0 && str.length() == length;
 }
 

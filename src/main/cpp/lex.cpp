@@ -4,7 +4,6 @@
 
 #include "ulight/impl/lang/cowel.hpp"
 
-#include "cowel/util/ascii_algorithm.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/chars.hpp"
@@ -22,9 +21,9 @@ using ulight::Common_Number_Result;
 using ulight::cowel::Comment_Result;
 using ulight::cowel::Escape_Result;
 using ulight::cowel::match_block_comment;
-using ulight::cowel::match_directive_name;
 using ulight::cowel::match_ellipsis;
 using ulight::cowel::match_escape;
+using ulight::cowel::match_identifier;
 using ulight::cowel::match_line_comment;
 using ulight::cowel::match_number;
 using ulight::cowel::match_whitespace;
@@ -40,14 +39,6 @@ char8_t token_kind_first_char(const Token_Kind kind)
         COWEL_TOKEN_KIND_ENUM_DATA(COWEL_TOKEN_KIND_FIRST_CHAR) // NOLINT(bugprone-branch-clone)
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid token kind.");
-}
-
-[[nodiscard]]
-std::size_t match_identifier(const std::u8string_view str)
-{
-    constexpr auto head = [](char8_t c) { return is_cowel_directive_name_start(c); };
-    constexpr auto tail = [](char8_t c) { return is_cowel_directive_name(c); };
-    return ascii::length_if_head_tail(str, head, tail);
 }
 
 [[nodiscard]]
@@ -348,7 +339,7 @@ private:
         if (!peek('\\')) {
             return {};
         }
-        const std::size_t name_length = match_directive_name(peek_all().substr(1));
+        const std::size_t name_length = match_identifier(peek_all().substr(1));
         if (name_length == 0) {
             return false;
         }

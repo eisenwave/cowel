@@ -33,7 +33,7 @@ Invoke_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
     }
 
     const std::u8string_view name_string = directive_name_string.get();
-    if (!is_directive_name(name_string)) {
+    if (!is_identifier(name_string)) {
         context.try_error(
             diagnostic::invoke_name_invalid, directive_name_string.get_location(),
             joined_char_sequence(

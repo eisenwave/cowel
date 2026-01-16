@@ -735,7 +735,7 @@ It renders as \code(c){\cowel_highlight_as("keyword-type"){_Int128} x}.
 
 \Bnote{
 While it is also possible to produce the highlighting tags using
-\cowdoc_c{\\cowel_html_element(h-,data-h=kw_type){_Int128}},
+\cowdoc_c{\\cowel_html_element("h-","data-h"=kw_type){_Int128}},
 the "short names" (e.g. \cowdoc_c{kw_type}) are not stable,
 i.e. they are more likely to change.
 Only µlight long names should be used directly.

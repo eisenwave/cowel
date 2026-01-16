@@ -100,19 +100,6 @@ TEST(Chars, is_ascii_alpha)
     }
 }
 
-TEST(Chars, is_cowel_directive_name_character)
-{
-    for (const char32_t c : all_cowel_special) {
-        EXPECT_FALSE(is_cowel_directive_name(c));
-    }
-    for (const char32_t c : all_ascii_alpha) {
-        EXPECT_TRUE(is_cowel_directive_name(c));
-    }
-    for (const char32_t c : all_ascii_digit) {
-        EXPECT_TRUE(is_cowel_directive_name(c));
-    }
-}
-
 TEST(Charsets, all_ascii_digit8)
 {
     for (char8_t c = 0; c < 128; ++c) {

@@ -563,7 +563,7 @@ Every directive has three parts:
   }
   \li{
     An optional \cowdoc_c{\cowel_highlight_phantom{\\d}\
-(comma-separated, positional, arguments, named-arguments = ...)}
+(comma_separated, positional, arguments, named-arguments = ...)}
     group provides additional inputs to the directive.
   }
   \li{

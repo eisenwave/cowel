@@ -2734,7 +2734,7 @@ COWEL markup:
     The <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_name</h-></code> selects a specific directive to be processed.
   </li>
   <li>
-    An optional <code><h- data-h=sym_par>(</h-><h- data-h=str>comma-separated</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>positional</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>arguments</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named-arguments</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_attr>...</h-><h- data-h=sym_par>)</h-></code>
+    An optional <code><h- data-h=sym_par>(</h-><h- data-h=str>comma_separated</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>positional</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>arguments</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>named</h->-arguments = ...<h- data-h=sym_par>)</h-></code>
     group provides additional inputs to the directive.
   </li>
   <li>
@@ -3780,7 +3780,7 @@ that is, a code point which UTF-8 permits to be encoded.
 All arguments are ignored.
 </p>
 <example-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_num</h-><h- data-h=sym_par>(</h-><h- data-h=str>0x30</h-><h- data-h=sym_par>)</h-></code> generates
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_by_num</h-><h- data-h=sym_par>(</h-><h- data-h=num_deco>0x</h-><h- data-h=num>30</h-><h- data-h=sym_par>)</h-></code> generates
 '<tt->0</tt->', which is U+0030 DIGIT ZERO.
 </p></example-block>
 
@@ -4226,7 +4226,7 @@ It is possible to mix automatic syntax highlighting with manual overrides:
 
 <note-block><p><intro-></intro-> 
 While it is also possible to produce the highlighting tags using
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str>h-</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-></code>,
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>h-</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr_dlim>"</h-><h- data-h=mk_attr>data-h</h-><h- data-h=mk_attr_dlim>"</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->_Int128<h- data-h=sym_brac>}</h-></code>,
 the "short names" (e.g. <code>kw_type</code>) are not stable,
 i.e. they are more likely to change.
 Only µlight long names should be used directly.
@@ -4863,12 +4863,12 @@ COWEL markup:
 
 <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num>255</h-><h- data-h=sym_par>)</h->
 <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num>255</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>base</h-><h- data-h=sym_punc>=</h-><h- data-h=num>16</h-><h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str>-255</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>zpad</h-><h- data-h=sym_punc>=</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num_deco>-</h-><h- data-h=num>255</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>zpad</h-><h- data-h=sym_punc>=</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h->
 
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str>1e10</h-><h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str>1e10</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h-><h- data-h=str>splice</h-><h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str>1e10</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h-><h- data-h=str>fixed</h-><h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str>1e10</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h-><h- data-h=str>scientific</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num_dlim>e</h-><h- data-h=num>10</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num_dlim>e</h-><h- data-h=num>10</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h-><h- data-h=str>splice</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num_dlim>e</h-><h- data-h=num>10</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h-><h- data-h=str>fixed</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num_dlim>e</h-><h- data-h=num>10</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>format</h-><h- data-h=sym_punc>=</h-><h- data-h=str>scientific</h-><h- data-h=sym_par>)</h->
 
 <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
 <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=sym_brac>{</h->awoo<h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-></code-block>
@@ -4914,7 +4914,7 @@ binary64 representation of the <tt-><h- data-h=kw_type>float</h-></tt->.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_reinterpret_as_float</h-><h- data-h=sym_par>(</h-><h- data-h=str>0x3ff8000000000000</h-><h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=mk_tag>\cowel_reinterpret_as_float</h-><h- data-h=sym_par>(</h-><h- data-h=num_deco>0x</h-><h- data-h=num>3ff8000000000000</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>1.5</code-block>
 </example-block>
@@ -4946,7 +4946,7 @@ base-2 representation of the <tt-><h- data-h=kw_type>int</h-></tt->.
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block><h- data-h=mk_tag>\cowel_reinterpret_as_int</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_eq</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>cowel_reinterpret_as_int</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>0x3ff8000000000000</h-><h- data-h=sym_par>)</h-></code-block>
+<h- data-h=mk_tag>\cowel_eq</h-><h- data-h=sym_par>(</h-><h- data-h=mk_tag>cowel_reinterpret_as_int</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>3ff8000000000000</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>4609434218613702656
 true</code-block>
@@ -6336,7 +6336,7 @@ and it will not synthesize an <tt-><h- data-h=mk_attr>id</h-></tt-> for that hea
 </p></tip-block>
 
 <note-block><p><intro-></intro-> 
-The underlying contents can be obtained with <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>here</h-><h- data-h=sym_par>(</h-><h- data-h=str>std</h->.contents<h- data-h=sym_par>)</h-></code>.
+The underlying contents can be obtained with <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>here</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>std.contents</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code>.
 <code><h- data-h=mk_tag>\make_contents</h-></code> additionally wraps those contents in HTML elements to
 chang their visual appearance.
 </p></note-block>
@@ -6551,11 +6551,11 @@ inside <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>body</h-><h- data-h=
 </p>
 <ul>
 <li>
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str>std</h->.head<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->text<h- data-h=sym_brac>}</h-></code> will write <code>text</code>
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str>std</h-><h- data-h=err>.head</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->text<h- data-h=sym_brac>}</h-></code> will write <code>text</code>
 inside of the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>head</h-><h- data-h=sym_punc>&gt;</h-></code> element (following auto-generated content).
 </li>
 <li>
-<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str>std</h->.body<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->text<h- data-h=sym_brac>}</h-></code> will write <code>text</code>
+<code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str>std</h-><h- data-h=err>.body</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->text<h- data-h=sym_brac>}</h-></code> will write <code>text</code>
 inside of the <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>body</h-><h- data-h=sym_punc>&gt;</h-></code> element (following <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>main</h-><h- data-h=sym_punc>&gt;</h-></code>
 and other automatically inserted elements).
 </li>
@@ -6563,8 +6563,8 @@ and other automatically inserted elements).
 
 <tip-block><p><intro-></intro-> 
 You can change the title of the document as follows:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str>std</h->.head<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>html</h->-title{This is the document title!}
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>there</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>std.head</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
+<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>html_title</h-><h- data-h=sym_brac>{</h->This is the document title!<h- data-h=sym_brac>}</h->
 <h- data-h=sym_brac>}</h-></code-block>
 </tip-block>
 

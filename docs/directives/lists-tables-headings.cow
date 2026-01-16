@@ -133,7 +133,7 @@ and it will not synthesize an \cowdoc_attr{id} for that heading.
 }
 
 \Bnote{
-The underlying contents can be obtained with \cowdoc_c{\\here(std.contents)}.
+The underlying contents can be obtained with \cowdoc_c{\\here("std.contents")}.
 \cowdoc_dir{make_contents} additionally wraps those contents in HTML elements to
 chang their visual appearance.
 }
