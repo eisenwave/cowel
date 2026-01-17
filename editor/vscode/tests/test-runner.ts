@@ -281,6 +281,20 @@ function printAssertionFailures(testFile: string, sourceLines: string[], results
   }
 }
 
+function findTestFiles(dir: string, baseDir: string): string[] {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const files: string[] = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...findTestFiles(fullPath, baseDir));
+    } else if (entry.name.endsWith('.cowel')) {
+      files.push(path.relative(baseDir, fullPath));
+    }
+  }
+  return files;
+}
+
 async function runTests(): Promise<void> {
   const registry = await createRegistry();
   const grammar = await registry.loadGrammar('source.cowel');
@@ -296,10 +310,7 @@ async function runTests(): Promise<void> {
     process.exit(1);
   }
 
-  const testFiles = fs.readdirSync(fixturesDir)
-    .filter(file => file.endsWith('.cowel'))
-    .sort();
-
+  const testFiles = findTestFiles(fixturesDir, fixturesDir).sort();
   let passCount = 0;
   let failCount = 0;
   let noExpectationsCount = 0;
