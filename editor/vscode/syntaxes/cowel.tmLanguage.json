@@ -28,7 +28,7 @@
           "beginCaptures": {
             "0": { "name": "support.function.directive.cowel" }
           },
-          "end": "(?!\\G)(?!\\(|\\{)",
+          "end": "(?!\\(|\\{)",
           "patterns": [
             { "include": "#directive-arguments" },
             { "include": "#directive-content" }
