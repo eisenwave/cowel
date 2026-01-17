@@ -11,6 +11,7 @@
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/function_ref.hpp"
 #include "cowel/util/source_position.hpp"
+#include "cowel/util/strings.hpp"
 
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
@@ -427,6 +428,7 @@ public:
         , m_optionality { optionality }
         , m_value_matcher { value_matcher }
     {
+        COWEL_DEBUG_ASSERT(is_identifier(name));
     }
 
     [[nodiscard]]

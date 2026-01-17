@@ -237,8 +237,8 @@ namespace h {
 
 /// @brief In `\hN` headings, the given `listed` parameter is not `yes` or `no`.
 inline constexpr std::u8string_view listed_invalid = u8"h:listed.invalid";
-/// @brief In `\hN` headings, the given `show-number` parameter is not `yes` or `no`.
-inline constexpr std::u8string_view show_number_invalid = u8"h:show-number.invalid";
+/// @brief In `\hN` headings, the given `show_number` parameter is not `yes` or `no`.
+inline constexpr std::u8string_view show_number_invalid = u8"h:show_number.invalid";
 
 } // namespace h
 

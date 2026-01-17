@@ -85,10 +85,10 @@ Headings take a \cowdoc_attr{listed} argument, which is a yes/no plaintext argum
 Unless its value is \tt{no}, headings are numbered and added to the table of contents
 (\ref("#dir-make_contents")) automatically.
 
-Headings also take a \cowdoc_attr{show-number} argument, which is a yes/no plaintext argument.
+Headings also take a \cowdoc_attr{show_number} argument, which is a yes/no plaintext argument.
 Unless this is \tt{no},
 the heading number will be included in the title, in the format \tt{1.2.3. Title}.
-However, even if \cowdoc_attr{show-number} is \tt{no},
+However, even if \cowdoc_attr{show_number} is \tt{no},
 the number heading is internally numbered as usual,
 and its number can be seen in the table of contents.
 

@@ -67,7 +67,7 @@ Heading_Behavior::splice(Content_Policy& out, const Invocation& call, Context& c
     Boolean_Matcher listed_boolean;
     Group_Member_Matcher listed_member { u8"listed"sv, Optionality::optional, listed_boolean };
     Boolean_Matcher show_number_boolean;
-    Group_Member_Matcher show_number_member { u8"show-number"sv, Optionality::optional,
+    Group_Member_Matcher show_number_member { u8"show_number"sv, Optionality::optional,
                                               show_number_boolean };
     Group_Pack_Named_Lazy_Spliceable_Matcher attr_group;
     Group_Member_Matcher attr_member { u8"attr"sv, Optionality::optional, attr_group };
