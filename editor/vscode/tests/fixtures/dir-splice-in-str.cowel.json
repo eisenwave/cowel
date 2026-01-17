@@ -1,0 +1,47 @@
+{
+  "description": "Test directive splices inside quoted strings",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Outer directive has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 7,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive splice inside string has correct scope"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 0,
+      "col": 7,
+      "scope": "string.quoted.double.cowel",
+      "description": "Directive splice inside string still has string parent scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Second outer directive has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 7,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive splice inside string (with trailing text) has correct scope"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 1,
+      "col": 14,
+      "scope": "string.quoted.double.cowel",
+      "description": "Text after directive splice still has string scope"
+    }
+  ]
+}
