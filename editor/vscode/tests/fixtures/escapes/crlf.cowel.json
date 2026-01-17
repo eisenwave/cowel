@@ -1,0 +1,19 @@
+{
+  "description": "Test escaped carriage return + line feed (CRLF) newlines",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "constant.character.escape.newline.cowel",
+      "description": "Escaped CRLF newline at start has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 5,
+      "expected": "constant.character.escape.newline.cowel",
+      "description": "Escaped CRLF newline after text has correct scope"
+    }
+  ]
+}

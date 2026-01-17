@@ -1,0 +1,68 @@
+{
+  "description": "Test nested groups as argument values",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 3,
+      "expected": "punctuation.section.group.begin.cowel",
+      "description": "Nested group open paren has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 5,
+      "expected": "punctuation.section.group.end.cowel",
+      "description": "Nested group close paren has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 3,
+      "expected": "entity.name.tag.cowel",
+      "description": "Named argument 'n' has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 5,
+      "expected": "keyword.operator.assignment.cowel",
+      "description": "Assignment operator has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 7,
+      "expected": "punctuation.section.group.begin.cowel",
+      "description": "Nested group after = has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 3,
+      "expected": "punctuation.section.group.begin.cowel",
+      "description": "Deeply nested group open has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive with block comments in args has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 4,
+      "expected": "comment.block.cowel",
+      "description": "Block comment in arguments has correct scope"
+    }
+  ]
+}

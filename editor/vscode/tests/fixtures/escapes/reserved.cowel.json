@@ -1,0 +1,152 @@
+{
+  "description": "Test various escape sequences for reserved and special characters",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped ! has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped # has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped $ has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped % has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped & has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped ' has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 0,
+      "expected": "constant.character.escape.bracket.cowel",
+      "description": "Escaped ( has bracket escape scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 0,
+      "expected": "constant.character.escape.bracket.cowel",
+      "description": "Escaped ) has bracket escape scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 8,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped + has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 9,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped , has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 10,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped - has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 11,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped . has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 12,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped / has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 23,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped ; has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 24,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped ? has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 25,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped @ has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 26,
+      "col": 0,
+      "expected": "constant.character.escape.bracket.cowel",
+      "description": "Escaped [ has bracket escape scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 27,
+      "col": 0,
+      "expected": "constant.character.escape.bracket.cowel",
+      "description": "Escaped ] has bracket escape scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 29,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped ^ has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 31,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped ` has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 32,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped ~ has correct scope"
+    }
+  ]
+}

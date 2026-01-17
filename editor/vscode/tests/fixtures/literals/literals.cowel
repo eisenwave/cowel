@@ -1,0 +1,12 @@
+\d(
+  unit,
+  null,
+  true,
+  false,
+  infinity,
+  -infinity,
+  "",
+  awoo,
+  _awoo,
+  awoo_,
+)

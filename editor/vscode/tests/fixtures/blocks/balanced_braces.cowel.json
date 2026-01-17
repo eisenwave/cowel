@@ -1,0 +1,54 @@
+{
+  "description": "Test balanced braces with directive arguments and content blocks",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 3,
+      "expected": "entity.name.tag.cowel",
+      "description": "Named argument 'x' has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 4,
+      "expected": "keyword.operator.assignment.cowel",
+      "description": "Assignment operator has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 5,
+      "expected": "punctuation.section.content.begin.cowel",
+      "description": "Opening brace of block value has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 6,
+      "expected": "punctuation.section.content.end.cowel",
+      "description": "Closing brace of block value has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 9,
+      "expected": "punctuation.section.content.begin.cowel",
+      "description": "Opening brace of content block has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 10,
+      "expected": "punctuation.section.content.end.cowel",
+      "description": "Closing brace of content block has correct scope"
+    }
+  ]
+}

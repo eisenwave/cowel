@@ -1,0 +1,68 @@
+{
+  "description": "Test float literal syntax highlighting",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "constant.numeric.float.cowel",
+      "description": ".0 float has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 0,
+      "expected": "constant.numeric.float.cowel",
+      "description": "0.0 float has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "constant.numeric.float.cowel",
+      "description": "0e0 float with exponent has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 0,
+      "expected": "constant.numeric.float.cowel",
+      "description": "0.0e0 float has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 9,
+      "col": 0,
+      "expected": "constant.numeric.float.cowel",
+      "description": "0e+0 float with positive exponent has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 10,
+      "col": 0,
+      "expected": "constant.numeric.float.cowel",
+      "description": "0e-0 float with negative exponent has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 14,
+      "col": 0,
+      "expected": "constant.numeric.float.cowel",
+      "description": "123.456e789 complex float has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 15,
+      "col": 0,
+      "expected": "constant.numeric.float.cowel",
+      "description": "-123.456e789 negative float has correct scope"
+    }
+  ]
+}

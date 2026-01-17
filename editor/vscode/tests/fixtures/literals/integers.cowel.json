@@ -1,0 +1,75 @@
+{
+  "description": "Test integer literal syntax highlighting",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "0 decimal integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "123 decimal integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 0,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "-123 negative decimal integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "constant.numeric.integer.binary.cowel",
+      "description": "0b1010 binary integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 0,
+      "expected": "constant.numeric.integer.binary.cowel",
+      "description": "-0b0101 negative binary integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 0,
+      "expected": "constant.numeric.integer.octal.cowel",
+      "description": "0o0123457 octal integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 0,
+      "expected": "constant.numeric.integer.octal.cowel",
+      "description": "-0o7543210 negative octal integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 8,
+      "col": 0,
+      "expected": "constant.numeric.integer.hex.cowel",
+      "description": "0xff hex integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 9,
+      "col": 0,
+      "expected": "constant.numeric.integer.hex.cowel",
+      "description": "-0x... negative hex integer has correct scope"
+    }
+  ]
+}

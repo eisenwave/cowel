@@ -1,0 +1,40 @@
+{
+  "description": "Test directive calls used as argument values",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Outer directive \\a has correct scope"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 0,
+      "col": 3,
+      "scope": "meta.arguments.cowel",
+      "description": "Inner directive call x() is inside arguments"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Outer directive \\b has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Outer directive \\c has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Outer directive \\d has correct scope"
+    }
+  ]
+}
