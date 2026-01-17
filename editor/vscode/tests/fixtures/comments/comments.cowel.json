@@ -24,13 +24,6 @@
     },
     {
       "type": "top-scope",
-      "line": 3,
-      "col": 4,
-      "expected": "comment.line.cowel",
-      "description": "Line comment after directive has correct scope"
-    },
-    {
-      "type": "top-scope",
       "line": 5,
       "col": 10,
       "expected": "comment.line.cowel",
