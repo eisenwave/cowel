@@ -24,7 +24,7 @@
     },
     {
       "type": "top-scope",
-      "line": 4,
+      "line": 3,
       "col": 5,
       "expected": "comment.line.cowel"
     },
