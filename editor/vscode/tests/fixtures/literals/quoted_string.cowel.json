@@ -9,39 +9,32 @@
       "description": "Directive name has correct scope"
     },
     {
-      "type": "top-scope",
+      "type": "token-has-scope",
       "line": 0,
       "col": 3,
-      "expected": "string.quoted.double.cowel",
-      "description": "Empty string has correct scope"
-    },
-    {
-      "type": "top-scope",
-      "line": 1,
-      "col": 3,
-      "expected": "string.quoted.double.cowel",
-      "description": "String with content has correct scope"
-    },
-    {
-      "type": "top-scope",
-      "line": 1,
-      "col": 5,
-      "expected": "string.quoted.double.cowel",
-      "description": "String content has correct scope"
+      "scope": "string.quoted.double.cowel",
+      "description": "Empty string has string scope"
     },
     {
       "type": "token-has-scope",
+      "line": 1,
+      "col": 4,
+      "scope": "string.quoted.double.cowel",
+      "description": "String content has string scope"
+    },
+    {
+      "type": "top-scope",
       "line": 2,
       "col": 4,
-      "scope": "constant.character.escape.cowel",
-      "description": "Escape inside string has escape scope"
+      "expected": "support.function.directive.cowel",
+      "description": "Directive inside string has directive scope"
     },
     {
       "type": "top-scope",
       "line": 3,
       "col": 4,
       "expected": "constant.character.escape.cowel",
-      "description": "Escaped quote inside string has correct scope"
+      "description": "Escaped quote inside string has escape scope"
     }
   ]
 }

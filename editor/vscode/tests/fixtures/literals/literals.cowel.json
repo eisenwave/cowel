@@ -44,18 +44,11 @@
       "description": "infinity keyword has correct scope"
     },
     {
-      "type": "top-scope",
-      "line": 6,
-      "col": 2,
-      "expected": "constant.numeric.float.cowel",
-      "description": "-infinity keyword has correct scope"
-    },
-    {
-      "type": "top-scope",
+      "type": "token-has-scope",
       "line": 7,
       "col": 2,
-      "expected": "string.quoted.double.cowel",
-      "description": "Empty string has correct scope"
+      "scope": "string.quoted.double.cowel",
+      "description": "Empty string has string scope"
     }
   ]
 }

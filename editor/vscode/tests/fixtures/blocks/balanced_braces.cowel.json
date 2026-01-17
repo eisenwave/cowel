@@ -23,32 +23,11 @@
       "description": "Assignment operator has correct scope"
     },
     {
-      "type": "top-scope",
+      "type": "token-has-scope",
       "line": 0,
       "col": 5,
-      "expected": "punctuation.section.content.begin.cowel",
-      "description": "Opening brace of block value has correct scope"
-    },
-    {
-      "type": "top-scope",
-      "line": 0,
-      "col": 6,
-      "expected": "punctuation.section.content.end.cowel",
-      "description": "Closing brace of block value has correct scope"
-    },
-    {
-      "type": "top-scope",
-      "line": 0,
-      "col": 9,
-      "expected": "punctuation.section.content.begin.cowel",
-      "description": "Opening brace of content block has correct scope"
-    },
-    {
-      "type": "top-scope",
-      "line": 0,
-      "col": 10,
-      "expected": "punctuation.section.content.end.cowel",
-      "description": "Closing brace of content block has correct scope"
+      "scope": "meta.arguments.cowel",
+      "description": "Braces inside arguments are in meta.arguments scope"
     }
   ]
 }

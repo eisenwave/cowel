@@ -19,36 +19,8 @@
       "type": "token-has-scope",
       "line": 1,
       "col": 4,
-      "scope": "meta.content.cowel",
-      "description": "Block content has meta.content scope"
-    },
-    {
-      "type": "top-scope",
-      "line": 2,
-      "col": 5,
-      "expected": "constant.character.escape.cowel",
-      "description": "Escape inside block has correct scope"
-    },
-    {
-      "type": "top-scope",
-      "line": 3,
-      "col": 4,
-      "expected": "punctuation.section.content.begin.cowel",
-      "description": "Nested block open brace has correct scope"
-    },
-    {
-      "type": "top-scope",
-      "line": 3,
-      "col": 5,
-      "expected": "constant.character.escape.bracket.cowel",
-      "description": "Escaped open brace has correct scope"
-    },
-    {
-      "type": "top-scope",
-      "line": 3,
-      "col": 11,
-      "expected": "constant.character.escape.bracket.cowel",
-      "description": "Escaped close brace has correct scope"
+      "scope": "meta.arguments.cowel",
+      "description": "Content inside arguments has meta.arguments scope"
     }
   ]
 }

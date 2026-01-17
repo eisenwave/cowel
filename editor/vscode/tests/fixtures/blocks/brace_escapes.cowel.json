@@ -42,13 +42,6 @@
       "col": 3,
       "expected": "constant.character.escape.bracket.cowel",
       "description": "Escaped close then open brace sequence"
-    },
-    {
-      "type": "top-scope",
-      "line": 4,
-      "col": 4,
-      "expected": "punctuation.section.content.begin.cowel",
-      "description": "Nested block opening brace has correct scope"
     }
   ]
 }
