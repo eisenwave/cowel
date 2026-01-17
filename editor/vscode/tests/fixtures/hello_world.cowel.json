@@ -1,0 +1,12 @@
+{
+  "description": "Test plain document text without any markup",
+  "assertions": [
+    {
+      "type": "scope-at",
+      "line": 0,
+      "col": 0,
+      "expectedScopes": ["source.cowel"],
+      "description": "Plain text has only source.cowel scope"
+    }
+  ]
+}

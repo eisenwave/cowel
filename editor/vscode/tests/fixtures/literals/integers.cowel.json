@@ -1,0 +1,47 @@
+{
+  "description": "Test integer literal syntax highlighting",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "0 decimal integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "123 decimal integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "constant.numeric.integer.binary.cowel",
+      "description": "0b1010 binary integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 0,
+      "expected": "constant.numeric.integer.octal.cowel",
+      "description": "0o0123457 octal integer has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 8,
+      "col": 0,
+      "expected": "constant.numeric.integer.hex.cowel",
+      "description": "0xff hex integer has correct scope"
+    }
+  ]
+}

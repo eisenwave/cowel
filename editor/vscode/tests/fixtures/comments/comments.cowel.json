@@ -1,0 +1,61 @@
+{
+  "description": "Test line and block comments in various contexts",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "comment.line.cowel",
+      "description": "Line comment has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 5,
+      "expected": "comment.line.cowel",
+      "description": "Line comment content has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive before line comment has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 10,
+      "expected": "comment.line.cowel",
+      "description": "Trailing line comment has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 0,
+      "expected": "comment.block.cowel",
+      "description": "Block comment has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 5,
+      "expected": "comment.block.cowel",
+      "description": "Block comment content has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 12,
+      "expected": "comment.block.cowel",
+      "description": "Second block comment has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 8,
+      "col": 3,
+      "expected": "comment.block.cowel",
+      "description": "Block comment with nested delimiters has correct scope"
+    }
+  ]
+}

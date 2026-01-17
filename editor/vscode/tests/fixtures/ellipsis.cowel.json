@@ -1,0 +1,19 @@
+{
+  "description": "Test ellipsis token in directive arguments",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 3,
+      "expected": "constant.language.ellipsis.cowel",
+      "description": "Ellipsis has correct scope"
+    }
+  ]
+}

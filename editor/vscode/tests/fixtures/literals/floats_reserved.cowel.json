@@ -1,0 +1,12 @@
+{
+  "description": "Test reserved/invalid float literal patterns",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    }
+  ]
+}

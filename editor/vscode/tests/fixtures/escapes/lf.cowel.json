@@ -1,0 +1,19 @@
+{
+  "description": "Test escaped line feed (LF) newlines",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped newline at start has escape scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 5,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped newline after text has escape scope"
+    }
+  ]
+}

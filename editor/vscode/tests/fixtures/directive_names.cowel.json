@@ -1,0 +1,47 @@
+{
+  "description": "Test various directive name patterns",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Single letter directive \\x has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive with underscore \\x_y has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\- is an escape, not a directive"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive starting with underscore \\_x has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Multi-letter directive \\xy has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive with number \\xy0 has correct scope"
+    }
+  ]
+}

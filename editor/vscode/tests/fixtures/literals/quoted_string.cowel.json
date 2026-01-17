@@ -1,0 +1,40 @@
+{
+  "description": "Test quoted string syntax highlighting",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 0,
+      "col": 3,
+      "scope": "string.quoted.double.cowel",
+      "description": "Empty string has string scope"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 1,
+      "col": 4,
+      "scope": "string.quoted.double.cowel",
+      "description": "String content has string scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 4,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive inside string has directive scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 4,
+      "expected": "constant.character.escape.cowel",
+      "description": "Escaped quote inside string has escape scope"
+    }
+  ]
+}

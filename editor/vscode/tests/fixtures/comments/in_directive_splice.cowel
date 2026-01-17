@@ -1,0 +1,11 @@
+\a(
+  \: awoo
+  \: chan
+)
+\: baka
+\b(
+  \: awoo
+  text,
+  \: awoo
+  named = arg,
+)

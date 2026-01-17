@@ -1,0 +1,54 @@
+{
+  "description": "Test various literal types including keywords, strings, and identifiers",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 2,
+      "expected": "constant.language.cowel",
+      "description": "unit keyword has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 2,
+      "expected": "constant.language.cowel",
+      "description": "null keyword has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 2,
+      "expected": "constant.language.cowel",
+      "description": "true keyword has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 2,
+      "expected": "constant.language.cowel",
+      "description": "false keyword has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 2,
+      "expected": "constant.numeric.float.cowel",
+      "description": "infinity keyword has correct scope"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 7,
+      "col": 2,
+      "scope": "string.quoted.double.cowel",
+      "description": "Empty string has string scope"
+    }
+  ]
+}

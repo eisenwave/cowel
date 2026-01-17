@@ -1,0 +1,26 @@
+{
+  "description": "Test blocks as directive arguments with various content",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 2,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Second directive name has correct scope"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 1,
+      "col": 4,
+      "scope": "meta.arguments.cowel",
+      "description": "Content inside arguments has meta.arguments scope"
+    }
+  ]
+}
