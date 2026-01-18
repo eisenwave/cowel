@@ -165,23 +165,23 @@
       "patterns": [
         {
           "name": "constant.numeric.integer.binary.cowel",
-          "match": "\\b-?0b[01]+\\b"
+          "match": "(?<![0-9a-zA-Z_])-?0B[01]+(?![0-9a-zA-Z_])"
         },
         {
           "name": "constant.numeric.integer.octal.cowel",
-          "match": "\\b-?0o[0-7]+\\b"
+          "match": "(?<![0-9a-zA-Z_])-?0O[0-7]+(?![0-9a-zA-Z_])"
         },
         {
           "name": "constant.numeric.integer.hex.cowel",
-          "match": "\\b-?0x[0-9a-fA-F]+\\b"
+          "match": "(?<![0-9a-zA-Z_])-?0X[0-9a-fA-F]+(?![0-9a-zA-Z_])"
         },
         {
           "name": "constant.numeric.float.cowel",
-          "match": "\\b-?(?:[0-9]+\\.[0-9]*|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?\\b|\\b-?infinity\\b"
+          "match": "(?<![0-9a-zA-Z_])(?:-?(?:[0-9]+\\.[0-9]*|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?|-?[0-9]+[eE][+-]?[0-9]+|-?infinity)(?![0-9a-zA-Z_])"
         },
         {
           "name": "constant.numeric.integer.decimal.cowel",
-          "match": "\\b-?[0-9]+\\b"
+          "match": "(?<![0-9a-zA-Z_])-?[0-9]+(?![0-9a-zA-Z_])"
         },
         {
           "name": "constant.language.cowel",
