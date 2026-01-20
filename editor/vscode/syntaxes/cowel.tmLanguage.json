@@ -165,23 +165,35 @@
       "patterns": [
         {
           "name": "constant.numeric.integer.binary.cowel",
-          "match": "(?<![0-9a-zA-Z_])-?0B[01]+(?![0-9a-zA-Z_])"
+          "match": "-?0b[01]+(?![-0-9a-zA-Z.])"
         },
         {
           "name": "constant.numeric.integer.octal.cowel",
-          "match": "(?<![0-9a-zA-Z_])-?0O[0-7]+(?![0-9a-zA-Z_])"
+          "match": "-?0o[0-7]+(?![-0-9a-zA-Z.])"
         },
         {
           "name": "constant.numeric.integer.hex.cowel",
-          "match": "(?<![0-9a-zA-Z_])-?0X[0-9a-fA-F]+(?![0-9a-zA-Z_])"
+          "match": "-?0x[0-9a-fA-F]+(?![-+0-9a-zA-Z.])"
         },
         {
           "name": "constant.numeric.float.cowel",
-          "match": "(?<![0-9a-zA-Z_])(?:-?(?:[0-9]+\\.[0-9]*|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?|-?[0-9]+[eE][+-]?[0-9]+|-?infinity)(?![0-9a-zA-Z_])"
+          "match": "-?(?:[0-9]+\\.[0-9]*|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?(?![-0-9a-zA-Z.])"
+        },
+        {
+          "name": "constant.numeric.float.cowel",
+          "match": "-?[0-9]+[eE][+-]?[0-9]+(?![-0-9a-zA-Z.])"
+        },
+        {
+          "name": "constant.numeric.float.cowel",
+          "match": "\\b-?infinity\\b"
         },
         {
           "name": "constant.numeric.integer.decimal.cowel",
-          "match": "(?<![0-9a-zA-Z_])-?[0-9]+(?![0-9a-zA-Z_])"
+          "match": "-?[0-9]+(?![-0-9a-zA-Z.])"
+        },
+        {
+          "name": "invalid.illegal.number.cowel",
+          "match": "(?:-?(?=[0-9])|\\.)(?:e\\+|E\\+|e-|E-|[0-9a-zA-Z.])+"
         },
         {
           "name": "constant.language.cowel",
