@@ -12,35 +12,35 @@
       "type": "top-scope",
       "line": 0,
       "col": 3,
-      "expected": "constant.character.escape.bracket.cowel",
+      "expected": "constant.character.escape.cowel",
       "description": "Escaped closing brace has correct scope"
     },
     {
       "type": "top-scope",
       "line": 1,
       "col": 3,
-      "expected": "constant.character.escape.bracket.cowel",
+      "expected": "constant.character.escape.cowel",
       "description": "Escaped opening brace has correct scope"
     },
     {
       "type": "top-scope",
       "line": 2,
       "col": 3,
-      "expected": "constant.character.escape.bracket.cowel",
+      "expected": "constant.character.escape.cowel",
       "description": "First escaped brace in sequence has correct scope"
     },
     {
       "type": "top-scope",
       "line": 2,
       "col": 5,
-      "expected": "constant.character.escape.bracket.cowel",
+      "expected": "constant.character.escape.cowel",
       "description": "Second escaped brace in sequence has correct scope"
     },
     {
       "type": "top-scope",
       "line": 3,
       "col": 3,
-      "expected": "constant.character.escape.bracket.cowel",
+      "expected": "constant.character.escape.cowel",
       "description": "Escaped close then open brace sequence"
     }
   ]

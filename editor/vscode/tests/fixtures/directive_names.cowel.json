@@ -19,8 +19,8 @@
       "type": "top-scope",
       "line": 2,
       "col": 0,
-      "expected": "constant.character.escape.cowel",
-      "description": "\\- is an escape, not a directive"
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\- is a reserved escape, not a directive"
     },
     {
       "type": "top-scope",

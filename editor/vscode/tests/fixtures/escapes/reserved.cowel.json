@@ -1,0 +1,26 @@
+{
+  "description": "Test reserved (invalid) escape sequences",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\! is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\0 (digit) is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\[ is a reserved escape"
+    }
+  ]
+}

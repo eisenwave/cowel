@@ -1,0 +1,33 @@
+{
+  "description": "Test valid escape sequences",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\\\ is a valid escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\{ is a valid escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\} is a valid escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\\" is a valid escape"
+    }
+  ]
+}
