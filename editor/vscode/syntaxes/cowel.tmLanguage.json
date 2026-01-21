@@ -39,9 +39,6 @@
     "escapes": {
       "patterns": [
         {
-          "comment": "Valid escapes: \\\\, \\{, \\}, \\\""
-        },
-        {
           "name": "constant.character.escape.cowel",
           "match": "\\\\[{}\"\\\\]"
         },
@@ -50,7 +47,6 @@
           "match": "\\\\(?:\\r\\n|\\r|\\n)"
         },
         {
-          "comment": "Reserved escapes: \\ followed by anything except escapable chars, identifier start, *, :, or newline",
           "name": "invalid.illegal.escape.cowel",
           "match": "\\\\[^{}\"\\\\a-zA-Z_*:\\r\\n]"
         }
