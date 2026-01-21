@@ -39,25 +39,16 @@
     "escapes": {
       "patterns": [
         {
-          "comment": "The order should be kept this way."
-        },
-        {
-          "name": "constant.character.escape.backslash.cowel",
-          "match": "\\\\\\\\"
-        },
-        {
-          "comment": "Escaped brackets need to be marked with a specific scope so they can be excluded from bracket matching",
-          "name": "constant.character.escape.bracket.cowel",
-          "match": "\\\\[{}\\[\\]()]"
-        },
-        {
-          "comment": "Other single-char escapes",
           "name": "constant.character.escape.cowel",
-          "match": "\\\\[,.=!\"#$%&'+/;<>?@^|~\\-\\s]"
+          "match": "\\\\[{}\"\\\\]"
         },
         {
           "name": "constant.character.escape.newline.cowel",
-          "match": "\\\\(?:\\n|\\r|\\r\\n)"
+          "match": "\\\\(?:\\r\\n|\\r|\\n)"
+        },
+        {
+          "name": "invalid.illegal.escape.cowel",
+          "match": "\\\\[^{}\"\\\\a-zA-Z_*:\\r\\n]"
         }
       ]
     },

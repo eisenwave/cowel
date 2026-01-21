@@ -5,14 +5,14 @@
       "type": "top-scope",
       "line": 1,
       "col": 25,
-      "expected": "constant.character.escape.bracket.cowel",
+      "expected": "constant.character.escape.cowel",
       "description": "Escaped opening brace has correct scope"
     },
     {
       "type": "top-scope",
       "line": 1,
       "col": 34,
-      "expected": "constant.character.escape.bracket.cowel",
+      "expected": "constant.character.escape.cowel",
       "description": "Escaped closing brace has correct scope"
     }
   ]
