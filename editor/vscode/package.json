@@ -63,7 +63,8 @@
           "*"
         ],
         "unbalancedBracketScopes": [
-          "constant.character.escape.bracket.cowel"
+          "constant.character.escape.bracket.cowel",
+          "invalid.illegal.escape.cowel"
         ]
       }
     ]
