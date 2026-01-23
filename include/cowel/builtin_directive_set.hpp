@@ -4,6 +4,7 @@
 #include <memory>
 #include <string_view>
 
+#include "cowel/expression_kind.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/html_names.hpp"
 #include "cowel/util/result.hpp"
@@ -149,7 +150,7 @@ Char_Get_Num_Behavior final : Int_Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Result<Integer, Processing_Status> do_evaluate(const Invocation&, Context&) const final;
+    Result<Big_Int, Processing_Status> do_evaluate(const Invocation&, Context&) const final;
 };
 
 struct String_Sink {
@@ -194,7 +195,7 @@ public:
     }
 
     [[nodiscard]]
-    Result<Integer, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+    Result<Big_Int, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
 };
 
 enum struct Text_Transformation : Default_Underlying {
@@ -361,15 +362,6 @@ public:
     Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
 };
 
-enum struct Comparison_Expression_Kind : Default_Underlying {
-    eq,
-    ne,
-    lt,
-    gt,
-    le,
-    ge,
-};
-
 struct Comparison_Expression_Behavior final : Bool_Directive_Behavior {
 private:
     const Comparison_Expression_Kind m_expression_kind;
@@ -443,7 +435,7 @@ public:
     }
 
     [[nodiscard]]
-    Result<Integer, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+    Result<Big_Int, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
 };
 
 enum struct N_Ary_Numeric_Expression_Kind : Default_Underlying {
@@ -488,7 +480,7 @@ struct Reinterpret_As_Int_Behavior final : Int_Directive_Behavior {
         = default;
 
     [[nodiscard]]
-    Result<Integer, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+    Result<Big_Int, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
 };
 
 struct Reinterpret_As_Float_Behavior final : Float_Directive_Behavior {

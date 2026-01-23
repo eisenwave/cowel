@@ -56,7 +56,7 @@ struct Sink_For_Splicing final : String_Sink {
 } // namespace
 
 [[nodiscard]]
-Result<Integer, Processing_Status>
+Result<Big_Int, Processing_Status>
 Str_Length_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher x_matcher { context.get_transient_memory() };
@@ -73,11 +73,11 @@ Str_Length_Behavior::do_evaluate(const Invocation& call, Context& context) const
 
     const std::u8string_view x = x_matcher.get();
     if (m_kind == Str_Length_Kind::utf8 || x_matcher.get_string_kind() == String_Kind::ascii) {
-        return x.length();
+        return Big_Int { Int128 { x.length() } };
     }
 
     COWEL_DEBUG_ASSERT(m_kind == Str_Length_Kind::code_point);
-    return Integer { utf8::count_code_points_or_replacement(x) };
+    return Big_Int { Int128 { utf8::count_code_points_or_replacement(x) } };
 }
 
 Result<Value, Processing_Status>

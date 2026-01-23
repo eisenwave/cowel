@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 project(cowel)
 
+add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/boost/libs/config")
+add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/boost/libs/multiprecision")
+
 add_subdirectory(ulight)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -147,6 +150,8 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/assets.hpp
     include/cowel/ast.hpp
     include/cowel/ast_fwd.hpp
+    include/cowel/big_int.hpp
+    include/cowel/big_int_ops.hpp
     include/cowel/builtin_directive_set.hpp
     include/cowel/call_stack.hpp
     include/cowel/content_status.hpp
@@ -232,6 +237,7 @@ set(NATIVE_LIBRARY_SOURCES
     ${COMMON_LIBRARY_SOURCES}
     src/main/cpp/util/io.cpp
     src/main/cpp/util/tty.cpp
+    src/main/cpp/big_int_boost.cpp
     src/main/cpp/relative_file_loader.cpp
 )
 
@@ -261,6 +267,7 @@ if(DEFINED EMSCRIPTEN)
 
     add_executable(cowel-wasm
         ${COMMON_LIBRARY_SOURCES}
+        src/main/cpp/big_int_wasm.cpp
         src/main/cpp/wasm.cpp
         src/main/cpp/wasm_stubs.cpp
     )
@@ -312,6 +319,7 @@ if(DEFINED EMSCRIPTEN)
 else()
     add_library(cowel STATIC ${NATIVE_LIBRARY_SOURCES})
     target_link_libraries(cowel ulight)
+    target_link_libraries(cowel boost_config boost_multiprecision)
     target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
     target_link_options(cowel PUBLIC ${SANITIZER_OPTIONS})
 
@@ -324,6 +332,7 @@ else()
         ${HEADERS}
         src/test/cpp/document_file_testing.cpp
         src/test/cpp/main.cpp
+        src/test/cpp/test_big_int.cpp
         src/test/cpp/test_char_sequence.cpp
         src/test/cpp/test_chars_strings.cpp
         src/test/cpp/test_document_generation.cpp

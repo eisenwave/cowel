@@ -20,6 +20,12 @@
 
 #define COWEL_IF_EMSCRIPTEN(...) ULIGHT_IF_EMSCRIPTEN(...)
 
+#ifdef COWEL_EMSCRIPTEN
+#define COWEL_WASM_IMPORT(module, name) __attribute__((import_module(module), import_name(name)))
+#else
+#define COWEL_WASM_IMPORT(module, name)
+#endif
+
 #ifdef ULIGHT_CLANG
 #define COWEL_CLANG 1
 #if __clang_major__ < 20
@@ -50,12 +56,27 @@
 
 namespace cowel {
 
+using Int32 = int;
+using Uint32 = unsigned;
+using Int64 = long long;
+using Uint64 = unsigned long long;
+
 #if defined(COWEL_CLANG) || defined(COWEL_GCC)
 __extension__ typedef signed __int128 Int128; // NOLINT modernize-use-using
 __extension__ typedef unsigned __int128 Uint128; // NOLINT modernize-use-using
 #else
 #error "COWEL currently only supports Clang or GCC."
 #endif
+
+/// @brief A type with sufficient size (but possibly not alignment)
+/// to provide storage for `Integer`.
+/// This is mainly useful to prevent `Int128` from causing 16-byte alignment
+/// for the entire `Value`, which leads to excessive internal padding.
+struct Underaligned_Int128_Storage {
+    alignas(unsigned long long) unsigned char bytes[sizeof(Int128)];
+};
+
+static_assert(sizeof(Underaligned_Int128_Storage) == sizeof(Int128));
 
 /// @brief If `true`, the current build is a debug build (not a release build).
 inline constexpr bool is_debug_build = COWEL_IF_DEBUG(true) COWEL_IF_NOT_DEBUG(false);

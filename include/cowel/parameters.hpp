@@ -335,7 +335,7 @@ struct Boolean_Matcher final
 
 struct Integer_Matcher final
     : Value_Matcher
-    , Value_Holder<Integer> {
+    , Value_Holder<Big_Int> {
 
     [[nodiscard]]
     explicit Integer_Matcher()

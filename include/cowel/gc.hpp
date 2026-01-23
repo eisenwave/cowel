@@ -58,12 +58,23 @@ struct GC_Node {
     [[nodiscard]]
     std::uintptr_t get_object_address() const
     {
+        // Ensure that the alignment is a power of two.
+        // Anything else suggests memory errors.
+        COWEL_DEBUG_ASSERT((allocation_alignment & (allocation_alignment - 1)) == 0);
+
+        // It is possible that the object is more strictly aligned than the GC_Node.
+        // That is, allocation_alignment > alignof(GC_Node).
+        // In that case, the allocated storage may not immediately follow the GC_Node.
+        // To find the object, we need to compute the next address
+        // at which the object may be located.
         const auto result = reinterpret_cast<std::uintptr_t>(this + 1);
         const std::size_t misalignment = (result & (allocation_alignment - 1));
-        return misalignment ? result + allocation_alignment - misalignment : result;
+        const std::uintptr_t next_aligned_address
+            = misalignment ? result + allocation_alignment - misalignment : result;
+        return next_aligned_address;
     }
 
-    [[nodiscard]]
+    [[nodiscard, gnu::always_inline]]
     void* get_object_pointer() const
     {
         // NOLINTNEXTLINE(performance-no-int-to-ptr)
@@ -116,9 +127,16 @@ public:
         = default;
 
     [[nodiscard]]
-    constexpr GC_Ref(GC_Node* node) noexcept
+    constexpr explicit GC_Ref(GC_Node* const node) noexcept
         : m_node { node }
     {
+        if constexpr (is_debug_build) {
+            // To verify memory integrity, we run various plausibility checks for the node.
+            COWEL_ASSERT(node->allocation_size >= sizeof(GC_Node));
+            const std::size_t align = node->allocation_alignment;
+            COWEL_ASSERT(align >= alignof(T));
+            COWEL_ASSERT((align & (align - 1)) == 0);
+        }
     }
 
     [[nodiscard]]
@@ -163,7 +181,7 @@ public:
     constexpr void reset()
     {
         if (m_node) {
-            COWEL_DEBUG_ASSERT(m_node->allocation_alignment == alignof(T));
+            COWEL_DEBUG_ASSERT(m_node->allocation_alignment >= alignof(T));
             m_node->drop_reference();
             m_node = nullptr;
         }
@@ -173,7 +191,7 @@ public:
     T* operator->() const
     {
         COWEL_ASSERT(m_node);
-        COWEL_DEBUG_ASSERT(m_node->allocation_alignment == alignof(T));
+        COWEL_DEBUG_ASSERT(m_node->allocation_alignment >= alignof(T));
         const std::uintptr_t address = m_node->get_object_address();
         return std::launder(reinterpret_cast<T*>(address));
     }
@@ -196,7 +214,7 @@ public:
     std::span<T> as_span() const
     {
         COWEL_ASSERT(m_node);
-        COWEL_DEBUG_ASSERT(m_node->allocation_alignment == alignof(T));
+        COWEL_DEBUG_ASSERT(m_node->allocation_alignment >= alignof(T));
         return { operator->(), m_node->extent };
     }
 
@@ -204,6 +222,24 @@ public:
     constexpr explicit operator bool() const
     {
         return m_node;
+    }
+
+    /// @brief Returns the pointer to the held `GC_Node`.
+    /// This operation is unsafe because manual modification of the `GC_Node`
+    /// (such as modifying the reference counter)
+    /// may totally break garbage collection.
+    [[nodiscard]]
+    GC_Node* unsafe_get_node() const
+    {
+        return m_node;
+    }
+
+    /// @brief Returns the pointer to the held `GC_Node`
+    /// and releases ownership of the node.
+    [[nodiscard]]
+    GC_Node* unsafe_release_node()
+    {
+        return std::exchange(m_node, nullptr);
     }
 };
 
@@ -239,8 +275,8 @@ GC_Ref<T> gc_ref_make(Args&&... args)
     result = new (result) Allocation { GC_Node {
         .reference_count = 1,
         .extent = 1,
-        .allocation_size = sizeof(T),
-        .allocation_alignment = alignof(T),
+        .allocation_size = sizeof(Allocation),
+        .allocation_alignment = alignof(Allocation),
         .destructor = detail::gc_destructor<T>,
     } };
     if constexpr (is_debug_build) {
@@ -249,7 +285,7 @@ GC_Ref<T> gc_ref_make(Args&&... args)
         COWEL_ASSERT(computed_address == actual_address);
     }
     new (result->storage) T(std::forward<Args>(args)...);
-    return &result->node;
+    return GC_Ref<T> { &result->node };
 }
 
 template <typename T, class R>
@@ -259,16 +295,16 @@ GC_Ref<T> gc_ref_from_range(const R& r)
 {
     using Allocation = GC_Allocation<T>;
     const std::size_t extent = r.size();
-    auto* result = static_cast<Allocation*>(
-        gc_alloc(sizeof(Allocation) + (extent * sizeof(T)), alignof(Allocation))
-    );
+    const std::size_t allocation_size = sizeof(Allocation) + (extent * sizeof(T));
+    const std::size_t allocation_alignment = alignof(Allocation);
+    auto* result = static_cast<Allocation*>(gc_alloc(allocation_size, allocation_alignment));
     COWEL_ASSERT(result);
 
     result = new (result) Allocation { GC_Node {
         .reference_count = 1,
         .extent = extent,
-        .allocation_size = sizeof(T),
-        .allocation_alignment = alignof(T),
+        .allocation_size = allocation_size,
+        .allocation_alignment = allocation_alignment,
         .destructor = detail::gc_destructor<T>,
     } };
     if constexpr (is_debug_build) {
@@ -285,7 +321,7 @@ GC_Ref<T> gc_ref_from_range(const R& r)
         void* const address = result->storage + (i * sizeof(T));
         new (address) T(*it);
     }
-    return &result->node;
+    return GC_Ref<T> { &result->node };
 }
 
 } // namespace cowel

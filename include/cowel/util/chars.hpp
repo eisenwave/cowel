@@ -14,6 +14,7 @@ using ulight::is_ascii;
 using ulight::is_ascii_alpha;
 using ulight::is_ascii_alphanumeric;
 using ulight::is_ascii_digit;
+using ulight::is_ascii_digit_base;
 using ulight::is_ascii_hex_digit;
 using ulight::is_ascii_lower_alpha;
 using ulight::is_ascii_upper_alpha;
