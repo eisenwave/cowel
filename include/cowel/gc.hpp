@@ -126,6 +126,12 @@ public:
     constexpr GC_Ref()
         = default;
 
+    /// @brief Claims ownership of an existing node without increasing its reference count.
+    /// This constructor is mainly useful for allocating a `GC_Node` separately,
+    /// then claiming ownership within a `GC_Ref` as a second stage.
+    ///
+    /// The constructor should not be used for adding ownership to a `GC_Node`
+    /// which is already managed by other `GC_Ref`s.
     [[nodiscard]]
     constexpr explicit GC_Ref(GC_Node* const node) noexcept
         : m_node { node }
