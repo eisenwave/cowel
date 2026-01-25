@@ -440,9 +440,12 @@ struct Big_Int {
             return Big_Int { cowel_big_int_small_result };
         }
 #ifdef COWEL_EMSCRIPTEN
-        return Big_Int { handle };
+        // On WASM builds, a handle is a reference to a BigInt that exists on the host side.
+        // It is not by itself garbage-collected, so we need to allocate a GC_Node for it here.
+        return Big_Int { gc_ref_make<detail::Big_Int_Backend>(handle) };
 #else
-        // NOLINTNEXTLINE(performance-no-int-to-ptr)
+        // On native builds, a handle is already a pointer to a GC_Node,
+        // so we just need to wrap the existing node in a GC_Ref.
         auto* const gc_node = detail::get_handle_node(handle);
         return Big_Int { GC_Ref<detail::Big_Int_Backend> { gc_node } };
 #endif
