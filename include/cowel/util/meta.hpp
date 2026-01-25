@@ -30,7 +30,10 @@ template <typename T>
 concept byte_like = byte_sized<T> && trivial<T>;
 
 template <typename T, typename... Us>
-concept one_of = (std::same_as<T, Us> || ...);
+concept one_of = (std::is_same_v<T, Us> || ...);
+// This deliberately avoids use of concepts in a fold expression
+// due to ice-on-valid-code starting with GCC 13:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123814
 
 template <typename T>
 concept char_like = byte_like<T> && one_of<T, char, char8_t>;
