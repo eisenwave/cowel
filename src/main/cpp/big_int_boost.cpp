@@ -28,7 +28,6 @@ namespace detail {
 static_assert(sizeof(detail::Big_Int_Backend) == sizeof(cpp_int));
 static_assert(alignof(detail::Big_Int_Backend) == alignof(cpp_int));
 
-[[gnu::always_inline]]
 auto& Big_Int_Backend::get()
 {
     return *std::launder(reinterpret_cast<cpp_int*>(m_storage));
@@ -48,7 +47,7 @@ Big_Int_Backend::~Big_Int_Backend()
 
 namespace {
 
-[[nodiscard, gnu::always_inline]]
+[[nodiscard]]
 const cpp_int& access_handle(const Big_Int_Handle handle) noexcept
 {
     const GC_Node* const node = detail::get_handle_node(handle);
@@ -56,7 +55,7 @@ const cpp_int& access_handle(const Big_Int_Handle handle) noexcept
     return *std::launder(static_cast<cpp_int*>(node->get_object_pointer()));
 }
 
-[[nodiscard, gnu::always_inline]]
+[[nodiscard]]
 Big_Int_Handle release_handle(GC_Ref<detail::Big_Int_Backend>& ref) noexcept
 {
     GC_Node* const node = ref.unsafe_release_node();
