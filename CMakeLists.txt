@@ -1,15 +1,29 @@
 cmake_minimum_required(VERSION 3.22)
 project(cowel)
 
-add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/boost/libs/config")
-add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/boost/libs/multiprecision")
-
 add_subdirectory(ulight)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(BOOST_SOURCE_DIR "${CMAKE_SOURCE_DIR}/third_party/boost")
+
 if(NOT DEFINED EMSCRIPTEN)
+    if(NOT EXISTS "${BOOST_SOURCE_DIR}")
+        message(STATUS "Boost not found. Installing boost dependencies...")
+        execute_process(
+            COMMAND bash "${CMAKE_SOURCE_DIR}/src/util/boost-install.sh" "${BOOST_SOURCE_DIR}"
+            RESULT_VARIABLE BOOST_INSTALL_RESULT
+        )
+        if(NOT BOOST_INSTALL_RESULT EQUAL 0)
+            message(FATAL_ERROR "Boost installation failed with exit code ${BOOST_INSTALL_RESULT}")
+        endif()
+        message(STATUS "Boost installation completed successfully")
+    endif()
+
+    add_subdirectory("${BOOST_SOURCE_DIR}/libs/config")
+    add_subdirectory("${BOOST_SOURCE_DIR}/libs/multiprecision")
+
     include(FetchContent)
 
     FetchContent_Declare(
