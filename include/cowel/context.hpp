@@ -22,14 +22,6 @@
 
 namespace cowel {
 
-namespace detail {
-
-// We only use the aliases from fwd.hpp, but we need the definition of
-// `Basic_Transparent_String_View_Equals` to actually make this usable.
-using Suppress_Unused_Include_Transparent_Equals = Basic_Transparent_String_View_Equals<void>;
-
-} // namespace detail
-
 struct Name_Resolver {
     [[nodiscard]]
     virtual Distant<std::u8string_view>

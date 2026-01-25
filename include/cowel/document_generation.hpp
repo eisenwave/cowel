@@ -11,6 +11,7 @@
 #include "cowel/policy/content_policy.hpp"
 
 #include "cowel/content_status.hpp"
+#include "cowel/context.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/services.hpp"
 

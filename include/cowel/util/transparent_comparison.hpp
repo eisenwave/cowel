@@ -58,6 +58,15 @@ struct Basic_Transparent_String_View_Less {
     }
 };
 
+using Transparent_String_View_Equals = Basic_Transparent_String_View_Equals<char>;
+using Transparent_String_View_Equals8 = Basic_Transparent_String_View_Equals<char8_t>;
+using Transparent_String_View_Greater = Basic_Transparent_String_View_Greater<char>;
+using Transparent_String_View_Greater8 = Basic_Transparent_String_View_Greater<char8_t>;
+using Transparent_String_View_Hash = Basic_Transparent_String_View_Hash<char>;
+using Transparent_String_View_Hash8 = Basic_Transparent_String_View_Hash<char8_t>;
+using Transparent_String_View_Less = Basic_Transparent_String_View_Less<char>;
+using Transparent_String_View_Less8 = Basic_Transparent_String_View_Less<char8_t>;
+
 } // namespace cowel
 
 #endif

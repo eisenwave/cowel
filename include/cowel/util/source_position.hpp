@@ -205,6 +205,9 @@ struct Basic_File_Source_Position : Source_Position {
         = default;
 };
 
+using File_Source_Position = Basic_File_Source_Position<File_Id>;
+using File_Source_Span = Basic_File_Source_Span<File_Id>;
+
 } // namespace cowel
 
 #endif

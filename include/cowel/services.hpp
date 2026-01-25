@@ -8,7 +8,6 @@
 
 #include "ulight/ulight.hpp"
 
-#include "cowel/util/annotation_span.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/result.hpp"
@@ -19,21 +18,9 @@
 
 namespace cowel {
 
-namespace detail {
-
-using Suppress_Unused_Include_Annotation_Span = Annotation_Span<void>;
-
-} // namespace detail
-
 using Highlight_Span = ulight::Token;
 using ulight::Highlight_Type;
 using Highlight_Lang = ulight::Lang;
-
-enum struct Syntax_Highlight_Error : Default_Underlying {
-    unsupported_language,
-    bad_code,
-    other,
-};
 
 struct Syntax_Highlighter {
 

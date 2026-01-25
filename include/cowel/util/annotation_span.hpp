@@ -3,8 +3,6 @@
 
 #include <cstddef>
 
-#include "cowel/fwd.hpp"
-
 namespace cowel {
 
 template <typename T>

@@ -3,7 +3,6 @@
 #include <string_view>
 #include <vector>
 
-#include "cowel/util/annotated_string.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/io.hpp"
 #include "cowel/util/result.hpp"
@@ -19,8 +18,6 @@
 
 namespace cowel {
 namespace {
-
-using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
 
 struct Printing_Diagnostic_Policy : Diagnostic_Policy {
     std::u8string_view file;

@@ -11,6 +11,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/to_chars.hpp"
 
+#include "cowel/diagnostic_highlight.hpp"
 #include "cowel/fwd.hpp"
 
 namespace cowel {

@@ -11,11 +11,6 @@
 #include "cowel/fwd.hpp"
 
 namespace cowel {
-namespace detail {
-
-using Suppress_Unused_Include_Source_Position = Basic_File_Source_Position<void>;
-
-}
 
 [[nodiscard]]
 constexpr std::strong_ordering operator<=>(Severity x, Severity y) noexcept

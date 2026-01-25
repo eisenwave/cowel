@@ -24,12 +24,6 @@
 
 namespace cowel {
 
-namespace detail {
-
-using Suppress_Unused_Include_Transparent_Less = Basic_Transparent_String_View_Less<void>;
-
-} // namespace detail
-
 struct Section_Content {
 private:
     std::pmr::vector<char8_t> m_data;

@@ -146,6 +146,7 @@ set(COMMON_LIBRARY_SOURCES
 
     include/cowel/assets.hpp
     include/cowel/ast.hpp
+    include/cowel/ast_fwd.hpp
     include/cowel/builtin_directive_set.hpp
     include/cowel/call_stack.hpp
     include/cowel/content_status.hpp

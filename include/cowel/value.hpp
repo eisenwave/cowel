@@ -7,6 +7,7 @@
 #include "cowel/util/fixed_string.hpp"
 #include "cowel/util/strings.hpp"
 
+#include "cowel/ast_fwd.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/gc.hpp"

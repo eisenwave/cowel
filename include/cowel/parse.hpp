@@ -8,10 +8,12 @@
 #include <string_view>
 #include <vector>
 
-#include "cowel/ast.hpp"
-#include "cowel/fwd.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/function_ref.hpp"
+
+#include "cowel/ast.hpp"
+#include "cowel/fwd.hpp"
+#include "cowel/lex.hpp"
 
 namespace cowel {
 

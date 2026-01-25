@@ -1,8 +1,7 @@
 #ifndef COWEL_DIAGNOSTICS_HPP
 #define COWEL_DIAGNOSTICS_HPP
 
-#include "cowel/fwd.hpp"
-#include "cowel/util/char_sequence.hpp"
+#include "cowel/settings.hpp"
 
 #ifndef COWEL_EMSCRIPTEN
 #include <iosfwd>
@@ -14,10 +13,21 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/annotated_string.hpp"
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
 #include "cowel/util/source_position.hpp"
 
+#include "cowel/diagnostic_highlight.hpp"
+
 namespace cowel {
+
+template <typename T>
+using Annotated_String = Basic_Annotated_String<char, T>;
+template <typename T>
+using Annotated_String8 = Basic_Annotated_String<char8_t, T>;
+
+using Diagnostic_String = Annotated_String8<Diagnostic_Highlight>;
 
 /// @brief Returns the line that contains the given index.
 /// @param source the source string
@@ -65,8 +75,6 @@ void print_affected_line(Diagnostic_String& out, std::u8string_view source, cons
 
 void print_assertion_error(Diagnostic_String& out, const Assertion_Error& error);
 
-void print_io_error(Diagnostic_String& out, std::u8string_view file, IO_Error_Code error);
-
 void print_internal_error_notice(Diagnostic_String& out);
 
 void dump_code_string(std::pmr::vector<char8_t>& out, const Diagnostic_String& string, bool colors);
@@ -99,6 +107,7 @@ inline void print_flush_code_string_stderr(const Diagnostic_String& str)
     flush_stderr();
 }
 
+void print_io_error(Diagnostic_String& out, std::u8string_view file, IO_Error_Code error);
 #endif
 
 } // namespace cowel

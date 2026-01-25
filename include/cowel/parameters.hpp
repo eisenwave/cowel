@@ -18,6 +18,7 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
+#include "cowel/value.hpp"
 
 namespace cowel {
 

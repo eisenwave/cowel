@@ -13,16 +13,12 @@
 #include "cowel/util/meta.hpp"
 #include "cowel/util/source_position.hpp"
 
+#include "cowel/ast_fwd.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/string_kind.hpp"
 
 namespace cowel::ast {
-namespace detail {
-
-using Suppress_Unused_Include_Source_Position_2 = Basic_File_Source_Span<void>;
-
-}
 
 template <typename T>
 using Pmr_Vector = std::vector<T, Propagated_Polymorphic_Allocator<T>>;
@@ -442,13 +438,7 @@ public:
     }
 
     [[nodiscard]]
-    std::span<const ast::Group_Member> get_argument_span() const
-    {
-        if (m_arguments) {
-            return m_arguments->get_members();
-        }
-        return {};
-    }
+    std::span<const ast::Group_Member> get_argument_span() const;
 
     [[nodiscard]]
     Primary* get_content()
@@ -462,13 +452,7 @@ public:
     }
 
     [[nodiscard]]
-    std::span<const ast::Markup_Element> get_content_span() const
-    {
-        if (m_content) {
-            return m_content->get_elements();
-        }
-        return {};
-    }
+    std::span<const ast::Markup_Element> get_content_span() const;
 };
 
 using Member_Value_Variant = std::variant<Directive, Primary>;
@@ -735,6 +719,24 @@ inline std::span<const Group_Member> Primary::get_members() const
 {
     COWEL_DEBUG_ASSERT(m_kind == Primary_Kind::group);
     return std::get<Pmr_Vector<Group_Member>>(m_extra);
+}
+
+[[nodiscard]]
+inline std::span<const ast::Group_Member> Directive::get_argument_span() const
+{
+    if (m_arguments) {
+        return m_arguments->get_members();
+    }
+    return {};
+}
+
+[[nodiscard]]
+inline std::span<const ast::Markup_Element> Directive::get_content_span() const
+{
+    if (m_content) {
+        return m_content->get_elements();
+    }
+    return {};
 }
 // NOLINTEND(readability-redundant-inline-specifier)
 

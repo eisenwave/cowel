@@ -10,12 +10,14 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/html_writer.hpp"
+#include "cowel/util/result.hpp"
 
 #include "cowel/ast.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/directive_display.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
+#include "cowel/value.hpp"
 
 namespace cowel {
 

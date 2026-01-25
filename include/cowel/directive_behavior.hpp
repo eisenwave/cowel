@@ -5,6 +5,7 @@
 
 #include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/invocation.hpp"
 #include "cowel/type.hpp"
 #include "cowel/value.hpp"
 

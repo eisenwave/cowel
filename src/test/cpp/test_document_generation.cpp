@@ -42,8 +42,6 @@ namespace {
 
 constexpr std::u8string_view theme_path = u8"ulight/themes/wg21.json";
 
-using Suppress_Unused_Include_Annotated_String = Basic_Annotated_String<void, void>;
-
 [[nodiscard]]
 Processing_Status write_empty_head_document(
     Text_Sink& out,

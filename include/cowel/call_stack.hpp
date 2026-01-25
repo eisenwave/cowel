@@ -5,6 +5,7 @@
 #include <memory_resource>
 #include <vector>
 
+#include "cowel/directive_behavior.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
 
@@ -14,6 +15,8 @@ struct Stack_Frame {
     const Directive_Behavior& behavior;
     const Invocation& invocation;
 };
+
+struct Scoped_Frame;
 
 struct Call_Stack {
 public:
