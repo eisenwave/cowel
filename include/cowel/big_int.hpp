@@ -101,14 +101,14 @@ int cowel_big_int_compare(cowel_big_int_handle x, cowel_big_int_handle y);
 /// Mathematically, this is `floor(log2(x)) + 1` for positive numbers
 /// and `floor(log2(-x - 1)) + 1` for negative numbers,
 /// where `log2` is the binary logarithm with `log2(0) == 0`.
-COWEL_WASM_IMPORT("env", "cowel_big_int_twos_width")
+COWEL_WASM_IMPORT("env", "big_int_twos_width")
 int cowel_big_int_twos_width(cowel_big_int_handle x);
 
 /// @brief Returns the amount of bits N required for a one's-complement N-bit integer
 /// to represent the value of `x`.
 /// Mathematically, this is `floor(log2(abs(x))) + 1`,
 /// where `log2` is the binary logarithm with `log2(0) == 0`.
-COWEL_WASM_IMPORT("env", "cowel_big_int_ones_width")
+COWEL_WASM_IMPORT("env", "big_int_ones_width")
 int cowel_big_int_ones_width(cowel_big_int_handle x);
 
 /// @brief Returns `-x`.
