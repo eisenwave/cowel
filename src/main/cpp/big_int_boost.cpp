@@ -90,7 +90,7 @@ Big_Int_Handle yield_big_result(cpp_int&& x)
 int twos_width(const cpp_int& x) noexcept // NOLINT(bugprone-exception-escape)
 {
     using boost::multiprecision::limb_type;
-    constexpr int limb_bits = cpp_int::backend_type::limb_bits;
+    constexpr int bits_per_limb = cpp_int::backend_type::limb_bits;
 
     const int sign = x.sign();
     if (sign == 0) [[unlikely]] {
@@ -102,8 +102,10 @@ int twos_width(const cpp_int& x) noexcept // NOLINT(bugprone-exception-escape)
     const std::size_t limb_count = x.backend().size();
     const auto* const limbs = x.backend().limbs();
     for (std::size_t i = limb_count; i-- > 0;) {
-        if (limb_type significant = ~limbs[i]) {
-            return int(i * limb_bits) + int(limb_bits - std::countl_zero(significant));
+        // Limbs are stored separately from the sign,
+        // so counting zeros is correct, even for negative numbers.
+        if (limb_type significant = limbs[i]) {
+            return int(i * bits_per_limb) + int(bits_per_limb - std::countl_zero(significant));
         }
     }
     return 1;

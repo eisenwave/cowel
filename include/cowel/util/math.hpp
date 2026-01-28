@@ -4,6 +4,8 @@
 #include <bit>
 #include <cmath>
 
+#include "cowel/util/assert.hpp"
+
 #include "cowel/fwd.hpp"
 #include "cowel/settings.hpp"
 
@@ -17,6 +19,14 @@ enum struct Div_Rounding : Default_Underlying {
     to_pos_inf,
     /// @brief Rounding toward negative infinity (i.e. "floor").
     to_neg_inf,
+};
+
+template <typename Q, typename R = Q>
+struct Div_Result {
+    Q quotient;
+    R remainder;
+
+    friend bool operator<=>(const Div_Result&, const Div_Result&) = default;
 };
 
 // https://github.com/eisenwave/integer-division
@@ -51,6 +61,36 @@ constexpr Int128 rem_to_neg_inf(Int128 x, Int128 y)
     const bool quotient_negative = (x ^ y) < 0;
     const bool adjust = (x % y != 0) & quotient_negative;
     return (x % y) + (Int128(adjust) * y);
+}
+
+[[nodiscard]]
+constexpr Div_Result<Int128> div_rem_to_zero(const Int128 x, const Int128 y)
+{
+    return { x / y, x % y };
+}
+
+[[nodiscard]]
+constexpr Div_Result<Int128> div_rem_to_pos_inf(const Int128 x, const Int128 y)
+{
+    return { div_to_pos_inf(x, y), rem_to_pos_inf(x, y) };
+}
+
+[[nodiscard]]
+constexpr Div_Result<Int128> div_rem_to_neg_inf(const Int128 x, const Int128 y)
+{
+    return { div_to_neg_inf(x, y), rem_to_neg_inf(x, y) };
+}
+
+[[nodiscard]]
+constexpr Div_Result<Int128> div_rem(const Int128 x, const Int128 y, const Div_Rounding rounding)
+{
+    COWEL_DEBUG_ASSERT(y != 0);
+    switch (rounding) {
+    case Div_Rounding::to_zero: return div_rem_to_zero(x, y);
+    case Div_Rounding::to_pos_inf: return div_rem_to_pos_inf(x, y);
+    case Div_Rounding::to_neg_inf: return div_rem_to_neg_inf(x, y);
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid rounding.");
 }
 
 [[nodiscard]]
@@ -131,7 +171,7 @@ constexpr bool sub_overflow(Int128& out, const Int128 x, const Int128 y) noexcep
 /// @brief Computes `out = x * y` and returns `true`
 /// if the result could not be exactly represented .
 [[nodiscard]]
-constexpr bool mul_overflow(Uint128& out, Uint128 x, unsigned long long y) noexcept
+constexpr bool mul_overflow(Uint128& out, const Uint128 x, const Uint128 y) noexcept
 {
     return __builtin_mul_overflow(x, y, &out);
 }

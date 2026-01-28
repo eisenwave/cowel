@@ -346,7 +346,6 @@ else()
         ${HEADERS}
         src/test/cpp/document_file_testing.cpp
         src/test/cpp/main.cpp
-        src/test/cpp/test_big_int.cpp
         src/test/cpp/test_char_sequence.cpp
         src/test/cpp/test_chars_strings.cpp
         src/test/cpp/test_document_generation.cpp
@@ -354,6 +353,7 @@ else()
         src/test/cpp/test_html_writer.cpp
         src/test/cpp/test_levenshtein.cpp
         src/test/cpp/test_lexing.cpp
+        src/test/cpp/test_math.cpp
         src/test/cpp/test_parsing.cpp
         src/test/cpp/test_to_chars.cpp
         src/test/cpp/test_typo.cpp

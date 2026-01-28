@@ -327,14 +327,6 @@ struct Conversion_Result {
     friend bool operator==(const Conversion_Result&, const Conversion_Result&) = default;
 };
 
-template <typename Q, typename R = Q>
-struct Div_Result {
-    Q quotient;
-    R remainder;
-
-    friend bool operator<=>(const Div_Result&, const Div_Result&) = default;
-};
-
 namespace detail {
 
 #ifdef COWEL_EMSCRIPTEN
@@ -672,7 +664,7 @@ public:
     constexpr Big_Int operator~() const
     {
         if (is_small()) {
-            return Big_Int { get_i128() };
+            return Big_Int { ~get_i128() };
         }
         return from_host_result(cowel_big_int_bit_not(get_host_handle()));
     }
