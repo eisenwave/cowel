@@ -139,9 +139,9 @@ enum struct Float_Format : Default_Underlying {
     fixed,
 };
 
-void splice_bool(Content_Policy& out, bool value);
-void splice_int(Content_Policy& out, Integer value);
-void splice_float(Content_Policy& out, Float value, Float_Format format = Float_Format::splice);
+void splice_bool(Content_Policy& out, bool);
+void splice_int(Content_Policy& out, const Big_Int&);
+void splice_float(Content_Policy& out, Float, Float_Format format = Float_Format::splice);
 
 [[nodiscard]]
 Result<Value, Processing_Status> splice_value_to_string(const Value& value, Context& context);

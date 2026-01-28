@@ -21,11 +21,6 @@ struct Context;
 
 /// @brief The floating-point type corresponding to COWEL's `float` type.
 using Float = double;
-/// @brief The type corresponding to COWEL's `int` type.
-/// While the COWEL language has unbounded integers,
-/// this is not implemented yet.
-/// Using 128-bit integers at least provides support beyond 64-bit.
-using Integer = Int128;
 
 enum struct Syntax_Highlight_Error : Default_Underlying {
     unsupported_language,

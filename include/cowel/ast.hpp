@@ -14,6 +14,7 @@
 #include "cowel/util/source_position.hpp"
 
 #include "cowel/ast_fwd.hpp"
+#include "cowel/big_int.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/string_kind.hpp"
@@ -120,11 +121,6 @@ constexpr std::u8string_view primary_kind_display_name(Primary_Kind kind)
     COWEL_ASSERT_UNREACHABLE(u8"Invalid kind.");
 }
 
-struct Parsed_Int {
-    Integer value;
-    bool in_range;
-};
-
 enum struct Float_Literal_Status : Default_Underlying {
     /// @brief `value` holds the (possibly rounded) value.
     ok,
@@ -146,7 +142,7 @@ private:
     using Extra_Variant = std::variant<
         std::monostate, // No extra.
         std::size_t, // Length of escape sequence.
-        Parsed_Int, // Parsed int value.
+        Big_Int, // Parsed int value.
         Parsed_Float, // Parsed float value.
         Pmr_Vector<Markup_Element>, // Markup elements of block or quoted string.
         Pmr_Vector<Group_Member> // Members of a group.
@@ -259,10 +255,10 @@ public:
     }
 
     [[nodiscard]]
-    Parsed_Int get_int_value() const
+    const Big_Int& get_int_value() const
     {
         COWEL_ASSERT(m_kind == Primary_Kind::int_literal);
-        return std::get<Parsed_Int>(m_extra);
+        return std::get<Big_Int>(m_extra);
     }
 
     [[nodiscard]]

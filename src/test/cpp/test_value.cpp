@@ -28,7 +28,7 @@ static_assert(Value::unit.get_type() == Type::unit);
 static_assert(Value::null.get_type() == Type::null);
 static_assert(Value::boolean(true).get_type() == Type::boolean);
 static_assert(Value::boolean(false).get_type() == Type::boolean);
-static_assert(Value::integer(0).get_type() == Type::integer);
+static_assert(Value::integer(0_n).get_type() == Type::integer);
 static_assert(Value::zero_int.get_type() == Type::integer);
 static_assert(Value::empty_string.get_type() == Type::str);
 
@@ -60,9 +60,9 @@ TEST(Value, boolean)
 
 TEST(Value, integer)
 {
-    EXPECT_EQ(Value::integer(123).as_integer(), Integer { 123 });
-    EXPECT_EQ(Value::integer(0), Value::integer(0));
-    EXPECT_NE(Value::integer(0), Value::integer(1));
+    EXPECT_EQ(Value::integer(123_n).as_integer(), 123_n);
+    EXPECT_EQ(Value::integer(0_n), Value::integer(0_n));
+    EXPECT_NE(Value::integer(0_n), Value::integer(1_n));
 }
 
 TEST(Value, string)

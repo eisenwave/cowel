@@ -205,7 +205,7 @@ Processing_Status Integer_Matcher::match_value(
 {
     COWEL_DEBUG_ASSERT(argument.is_spliceable_value());
 
-    const Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -214,7 +214,7 @@ Processing_Status Integer_Matcher::match_value(
         on_fail.emit(argument.get_source_span(), u8"Expected an integer."sv, context);
         return on_fail.status;
     }
-    m_value = { val.value().as_integer(), argument.get_source_span() };
+    m_value = { std::move(val.value().as_integer()), argument.get_source_span() };
     return Processing_Status::ok;
 }
 

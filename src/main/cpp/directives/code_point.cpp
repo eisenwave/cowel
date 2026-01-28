@@ -1,26 +1,26 @@
 #include <cstddef>
-#include <cstdint>
 #include <expected>
 #include <span>
 #include <string_view>
 
-#include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/code_point_names.hpp"
 #include "cowel/util/result.hpp"
-#include "cowel/util/to_chars.hpp"
 #include "cowel/util/unicode.hpp"
 
 #include "cowel/ast.hpp"
+#include "cowel/big_int.hpp"
+#include "cowel/big_int_ops.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
+#include "cowel/parameters.hpp"
 
 using namespace std::string_view_literals;
 
@@ -54,17 +54,19 @@ Char_By_Num_Behavior::get_code_point(const Invocation& call, Context& context) c
         return args_status;
     }
 
-    const auto code_point = char32_t(num_matcher.get());
-    if (!is_scalar_value(code_point)) {
+    const auto [i32, i32_lossy] = num_matcher.get().as_i32();
+    const auto code_point = char32_t(i32);
+    if (i32_lossy || i32 < 0 || !is_scalar_value(code_point)) {
         constexpr bool to_upper = true;
         constexpr int base = 16;
-        const Characters8 chars = to_characters8(std::uint32_t { code_point }, base, to_upper);
+        const auto num_string = to_u8string(num_matcher.get(), base, to_upper);
         context.try_error(
             diagnostic::char_nonscalar, num_matcher.get_location(),
             joined_char_sequence(
                 {
-                    u8"The computed code point U+"sv,
-                    chars.as_string(),
+                    u8"The computed code point U"sv,
+                    num_string.starts_with(u8'-') ? u8""sv : u8"+"sv,
+                    num_string,
                     u8" is not a Unicode scalar value. "sv,
                     u8"Therefore, it cannot be encoded as UTF-8."sv,
                 }
@@ -110,7 +112,7 @@ Char_By_Name_Behavior::get_code_point(const Invocation& call, Context& context) 
     return code_point;
 }
 
-Result<Integer, Processing_Status>
+Result<Big_Int, Processing_Status>
 Char_Get_Num_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher x_matcher { context.get_transient_memory() };
@@ -157,7 +159,7 @@ Char_Get_Num_Behavior::do_evaluate(const Invocation& call, Context& context) con
         );
     }
 
-    return Integer { code_point };
+    return Big_Int { Int128 { code_point } };
 }
 
 } // namespace cowel
