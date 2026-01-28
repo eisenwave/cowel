@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.22)
 project(cowel)
 
+set(USE_LIBCXX OFF)
+
+if(USE_LIBCXX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    set(CMAKE_CXX_LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -lc++ -lc++abi")
+endif()
+
 add_subdirectory(ulight)
 
 set(CMAKE_CXX_STANDARD 23)

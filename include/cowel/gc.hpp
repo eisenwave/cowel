@@ -81,14 +81,14 @@ struct GC_Node {
         return reinterpret_cast<void*>(get_object_address());
     }
 
-    void destroy() noexcept
+    void destroy_and_free() noexcept
     {
         COWEL_ASSERT(reference_count == 0);
         auto* const p = get_object_pointer();
         if (destructor) {
             destructor(p, extent);
         }
-        gc_free(p, allocation_size, allocation_alignment);
+        gc_free(this, allocation_size, allocation_alignment);
     }
 
     void add_reference() noexcept
@@ -98,12 +98,17 @@ struct GC_Node {
         }
     }
 
-    void drop_reference()
+    /// @brief Decreases the reference count by one
+    /// and returns the remaining reference count.
+    /// The current reference count shall be at least one.
+    std::size_t drop_reference()
     {
         COWEL_ASSERT(reference_count);
-        if (--reference_count == 0) {
-            destroy();
+        const std::size_t remaining_references = --reference_count;
+        if (remaining_references == 0) {
+            destroy_and_free();
         }
+        return remaining_references;
     }
 };
 
