@@ -225,6 +225,10 @@ class BigIntApi {
     }
 
     private generateId(): number {
+        const maxId = (1 << 32) - 1;
+        if (this.currentId >= maxId) {
+            throw new Error(`Maximum number of integer allocations reached (${maxId}).`);
+        }
         return ++this.currentId;
     }
 
@@ -254,38 +258,34 @@ class BigIntApi {
         return value;
     }
 
+    private yieldBigResult(x: bigint): BigIntId {
+        const id = this.generateId();
+        this.repository.set(id, BigInt(x));
+        return id;
+    }
+
     private yieldResult(x: bigint): BigIntId {
         if (x < POW_2_127 && x >= -POW_2_127) {
             this.environment.setSmallResult(x);
             return 0;
         }
-        const id = this.generateId();
-        this.repository.set(id, x);
-        return id;
+        return this.yieldBigResult(x);
     }
 
     big_int_i32(value: number): BigIntId {
-        const id = this.generateId();
-        this.repository.set(id, BigInt(value));
-        return id;
+        return this.yieldBigResult(BigInt(value));
     }
 
     big_int_i64(value: bigint): BigIntId {
-        const id = this.generateId();
-        this.repository.set(id, value);
-        return id;
+        return this.yieldBigResult(value);
     }
 
     big_int_i128(lo: bigint, hi: bigint): BigIntId {
-        const id = this.generateId();
-        this.repository.set(id, BigIntApi.join_i128(lo, hi));
-        return id;
+        return this.yieldBigResult(BigIntApi.join_i128(lo, hi));
     }
 
     big_int_i192(btm: bigint, mid: bigint, top: bigint): BigIntId {
-        const id = this.generateId();
-        this.repository.set(id, BigIntApi.join_i192(btm, mid, top));
-        return id;
+        return this.yieldBigResult(BigIntApi.join_i192(btm, mid, top));
     }
 
     big_int_pow2_i32(exponent: number): BigIntId {
@@ -328,7 +328,7 @@ class BigIntApi {
             return 1;
         }
         const string = value.toString(2);
-        return x >= 0 ? string.length + 1 : string.length;
+        return value >= 0n ? string.length + 1 : string.length;
     }
 
     big_int_neg(x: BigIntId): BigIntId {
@@ -431,14 +431,14 @@ class BigIntApi {
         if (quotient >= -POW_2_127 && quotient < POW_2_127) {
             this.environment.setSmallQuotient(quotient);
         } else {
-            quotientId = this.generateId();
+            quotientId = this.yieldBigResult(quotient);
         }
 
         let remainderId = 0;
         if (remainder >= -POW_2_127 && remainder < POW_2_127) {
             this.environment.setSmallRemainder(remainder);
         } else {
-            remainderId = this.generateId();
+            remainderId = this.yieldBigResult(remainder);
         }
 
         return (BigInt(remainderId) << 32n) | BigInt(quotientId);

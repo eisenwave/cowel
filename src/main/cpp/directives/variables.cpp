@@ -683,7 +683,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
             );
             return Processing_Status::error;
         }
-        if (!zpad > 1'000'000_n) {
+        if (zpad > 1'000'000_n) {
             context.try_error(
                 diagnostic::to_str_zpad, zpad_matcher.get_location(),
                 joined_char_sequence(

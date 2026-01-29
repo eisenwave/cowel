@@ -196,7 +196,6 @@ bool compare(const Value& x, const Value& y)
     }
     case Type_Kind::integer: {
         return do_compare<kind>(x.as_integer(), y.as_integer());
-        COWEL_ASSERT_UNREACHABLE(u8"Unexpected index for integer.");
     }
     case Type_Kind::floating: {
         return do_compare<kind>(x.as_float(), y.as_float());

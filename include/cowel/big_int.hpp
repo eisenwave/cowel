@@ -711,7 +711,7 @@ public:
     {
         if (is_small()) {
             const Int128 small = get_i128();
-            if (small == std::numeric_limits<Int128>::max()) [[unlikely]] {
+            if (small == std::numeric_limits<Int128>::min()) [[unlikely]] {
                 *this = from_host_result(cowel_big_int_i192(-1, Int64(Uint64(-1) >> 1), -1));
             }
             else {
@@ -984,7 +984,7 @@ public:
         const Big_Int quotient = qh == Big_Int_Handle {}
             ? Big_Int { cowel_big_int_div_result.small_quotient }
             : from_host_result(qh);
-        const Big_Int remainder = qh == Big_Int_Handle {}
+        const Big_Int remainder = rh == Big_Int_Handle {}
             ? Big_Int { cowel_big_int_div_result.small_remainder }
             : from_host_result(rh);
         return { quotient, remainder };

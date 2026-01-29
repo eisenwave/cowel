@@ -192,7 +192,7 @@ cpp_int div_to_neg_inf(const cpp_int& x, const cpp_int& y)
 cpp_int rem_to_neg_inf(const cpp_int& x, const cpp_int& y)
 {
     cpp_int result = x % y;
-    const bool quotient_negative = (x.sign() ^ y.sign()) >= 0;
+    const bool quotient_negative = (x.sign() ^ y.sign()) < 0;
     if (quotient_negative && result != 0) {
         result += y;
     }
@@ -487,7 +487,7 @@ cowel_big_int_handle cowel_big_int_shl_i128_i32(const cowel::Int128 x, const cow
         result <<= s;
     }
     else {
-        result >>= s;
+        result >>= -cowel::Uint32(s);
     }
     return yield_result(std::move(result));
 }
@@ -496,7 +496,7 @@ cowel_big_int_handle cowel_big_int_shl_i32(const cowel_big_int_handle x, const c
 {
     const cpp_int& x_int = access_handle(x);
     auto result = s >= 0 ? cpp_int(x_int << s) //
-                         : cpp_int(x_int >> s);
+                         : cpp_int(x_int >> -cowel::Uint32(s));
     return yield_result(std::move(result));
 }
 
@@ -532,7 +532,7 @@ cowel_big_int_handle cowel_big_int_shr_i32(const cowel_big_int_handle x, const c
 {
     const cpp_int& x_int = access_handle(x);
     auto result = s >= 0 ? cpp_int(x_int >> s) //
-                         : cpp_int(x_int << s);
+                         : cpp_int(x_int << -cowel::Uint32(s));
     return yield_result(std::move(result));
 }
 
@@ -727,7 +727,7 @@ cowel_big_int_from_string_status cowel_big_int_from_string(
             else {
                 return cowel_big_int_from_string_status::invalid_argument;
             }
-            if (digit > base) {
+            if (digit >= base) {
                 return cowel_big_int_from_string_status::invalid_argument;
             }
             at_least_one_digit = true;
