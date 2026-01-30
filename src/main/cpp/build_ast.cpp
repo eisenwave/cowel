@@ -88,6 +88,11 @@ Primary Primary::integer(const File_Source_Span source_span, const std::u8string
     const std::size_t digits_start = is_decimal ? 0 : is_negative ? 3 : 2;
     const auto digits = source.substr(digits_start);
     const std::from_chars_result result = from_characters(digits, parsed_int, base);
+    // TODO: It's currently impossible for this to fail because the string is pre-parsed
+    //       and errc::result_out_of_range isn't actually raised anywhere,
+    //       but this may change in the future.
+    //       In that case, perhaps the parser should raise a warning
+    //       about stupendously large integer literals.
     COWEL_ASSERT(result.ec == std::errc {});
     if (!is_decimal && is_negative) {
         parsed_int = -parsed_int;
