@@ -258,8 +258,33 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         ? assets::wg21_json
         : as_u8string_view(options.highlight_theme_json);
 
+    COWEL_ASSERT(options.preserved_variables_size == 0 || options.preserved_variables != nullptr);
+    std::pmr::vector<std::u8string_view> preserved_variables { memory };
+    preserved_variables.reserve(options.preserved_variables_size);
+    for (std::size_t i = 0; i < options.preserved_variables_size; ++i) {
+        const std::u8string_view name {
+            options.preserved_variables[i].text,
+            options.preserved_variables[i].length,
+        };
+        preserved_variables.push_back(name);
+    }
+    const std::convertible_to<Variables_Consumer> auto consume_variables
+        = [&](const std::span<const std::u8string_view> values) {
+              COWEL_ASSERT(options.consume_variables);
+              std::pmr::vector<cowel_string_view_u8> cowel_values { memory };
+              cowel_values.reserve(options.preserved_variables_size);
+              for (const auto v : values) {
+                  cowel_values.push_back({ v.data(), v.length() });
+              }
+              options.consume_variables(
+                  options.consume_variables_data, cowel_values.data(), cowel_values.size()
+              );
+          };
+
     const Generation_Options gen_options {
         .error_behavior = &builtin_behavior.get_error_behavior(),
+        .preserved_variables = preserved_variables,
+        .consume_variables = options.consume_variables ? consume_variables : Variables_Consumer {},
         .highlight_theme_source = highlight_theme_source,
         .builtin_name_resolver = builtin_behavior,
         .file_loader = file_loader,

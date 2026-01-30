@@ -123,7 +123,7 @@ struct cowel_mutable_string_view_u8 {
     size_t length;
 };
 
-typedef int cowel_file_id; // NOLINT(modernize-use-using)
+typedef int cowel_file_id;
 
 /// @brief Data associated with a diagnostic message.
 struct cowel_diagnostic {
@@ -197,33 +197,38 @@ struct cowel_assertion_error_u8 {
     size_t column;
 };
 
-// NOLINTNEXTLINE(modernize-use-using)
+typedef void* cowel_consume_variables_fn(
+    const void* data, //
+    const cowel_string_view* variables,
+    size_t length
+);
+
+typedef void* cowel_consume_variables_fn_u8(
+    const void* data, //
+    const cowel_string_view_u8* variables,
+    size_t length
+);
+
 typedef void* cowel_alloc_fn(const void* data, size_t size, size_t alignment) COWEL_NOEXCEPT;
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void
 cowel_free_fn(const void* data, void* pointer, size_t size, size_t alignment) COWEL_NOEXCEPT;
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef cowel_file_result cowel_load_file_fn(
     const void* data,
     cowel_string_view path,
     cowel_file_id relative_to
 ) COWEL_NOEXCEPT;
-// NOLINTNEXTLINE(modernize-use-using)
 typedef cowel_file_result_u8 cowel_load_file_fn_u8(
     const void* data,
     cowel_string_view_u8 path,
     cowel_file_id relative_to
 ) COWEL_NOEXCEPT;
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void cowel_log_fn(const void* data, const cowel_diagnostic* diagnostic) COWEL_NOEXCEPT;
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void
 cowel_log_fn_u8(const void* data, const cowel_diagnostic_u8* diagnostic) COWEL_NOEXCEPT;
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void cowel_assertion_handler_fn_u8(const cowel_assertion_error_u8* error);
 
 struct cowel_options {
@@ -236,8 +241,33 @@ struct cowel_options {
     cowel_mode mode;
     /// @brief The minimum (inclusive) level that log messages must have to be logged.
     cowel_severity min_log_severity;
-    /// @brief Reserved space.
-    void* reserved_0[4];
+
+    /// @brief A pointer to a block of variable names
+    /// which are preserved until document processing completes.
+    /// May be null (meaning no data),
+    /// but only if `preserved_variables_size` is zero.
+    ///
+    /// This functionality is mainly useful for test facilities and language servers.
+    /// For example, `.cow` files could use a `test_input` and `test_output` directive
+    /// which stores data in two variables.
+    /// An integration test can then read the value of these variables
+    /// and compare test input to output.
+    const cowel_string_view* preserved_variables;
+    /// The size of the `preserved_variables` array.
+    size_t preserved_variables_size;
+    /// @brief After processing completes, if this callback is not null,
+    /// it is invoked with the values of the variables provided in `preserved_variables`.
+    /// The array of strings passed into the callback holds the variable values,
+    /// in the same order as the variable names in `preserved_variables`.
+    ///
+    /// For variables which are not defined under the name given in `preserved_variables`
+    /// and for variables not of type `str`,
+    /// an empty string is passed to `consume_variables` and a warning is raised.
+    /// Therefore, it's the responsibility of the user to ensure that only strings are preserved,
+    /// and that all preserved variables are actually defined.
+    cowel_consume_variables_fn* consume_variables;
+    /// @brief Additional data passed into `consume_variables`.
+    const void* consume_variables_data;
 
     /// @brief A (possibly null) pointer to a function which performs memory allocation.
     /// If `alloc` is null, `cowel_alloc` is used instead,
@@ -290,7 +320,11 @@ struct cowel_options_u8 {
     cowel_string_view_u8 highlight_theme_json;
     cowel_mode mode;
     cowel_severity min_log_severity;
-    void* reserved_0[4];
+
+    const cowel_string_view_u8* preserved_variables;
+    size_t preserved_variables_size;
+    cowel_consume_variables_fn_u8* consume_variables;
+    const void* consume_variables_data;
 
     cowel_alloc_fn* alloc;
     const void* alloc_data;

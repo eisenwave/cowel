@@ -54,7 +54,55 @@ Processing_Status run_generation(
         options.memory,
         &transient_memory,
     };
-    return generate(context);
+    const auto status = generate(context);
+
+    if (options.consume_variables) {
+        const auto& variables = context.get_variables();
+        std::pmr::vector<std::u8string_view> preserved_values { options.memory };
+        preserved_values.reserve(options.preserved_variables.size());
+        for (const std::u8string_view name : options.preserved_variables) {
+            const File_Source_Span warning_span { {}, File_Id::main };
+            const auto it = variables.find(name);
+            if (it == variables.end()) {
+                context.try_warning(
+                    diagnostic::preserved_undefined, warning_span,
+                    joined_char_sequence(
+                        {
+                            u8"The preserved variable \""sv,
+                            name,
+                            u8"\" is not defined at the end of processing."sv,
+                        }
+                    )
+                );
+                preserved_values.push_back({});
+                continue;
+            }
+            const Value& val = it->second;
+            if (!val.is_str()) {
+                context.try_warning(
+                    diagnostic::preserved_not_str, warning_span,
+                    joined_char_sequence(
+                        {
+                            u8"The preserved variable \""sv,
+                            name,
+                            u8"\" must be of type \""sv,
+                            Type::str.get_display_name(),
+                            u8"\" to be accessed by the environment, but is of type \""sv,
+                            val.get_type().get_display_name(),
+                            u8"\". Consider splicing its value into a string or using cowel_to_str."sv,
+                        }
+                    )
+                );
+                preserved_values.push_back({});
+                continue;
+            }
+            preserved_values.push_back(val.as_string());
+        }
+        COWEL_ASSERT(preserved_values.size() == options.preserved_variables.size());
+        options.consume_variables(preserved_values);
+    }
+
+    return status;
 }
 
 namespace {

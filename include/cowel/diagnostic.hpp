@@ -108,6 +108,12 @@ inline constexpr std::u8string_view raw_text_closing = u8"raw-text.closing";
 /// @brief An argument type does not match a parameter type.
 inline constexpr std::u8string_view type_mismatch = u8"type.mismatch";
 
+/// @brief A preserved variable is not defined after processing.
+inline constexpr std::u8string_view preserved_undefined = u8"preserved.undefined";
+
+/// @brief A preserved variable is not a string after processing.
+inline constexpr std::u8string_view preserved_not_str = u8"preserved.not-str";
+
 // DIRECTIVE-SPECIFIC DIAGNOSTICS ==================================================================
 
 /// @brief In an HTML element directive,
