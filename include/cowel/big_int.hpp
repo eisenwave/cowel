@@ -447,13 +447,13 @@ private:
     bool m_is_small;
     union {
         Underaligned_Int128_Storage m_int128;
-        GC_Ref<detail::Big_Int_Backend> m_host_handle;
+        GC_Ref<detail::Big_Int_Backend> m_host_ref;
     };
 
     [[nodiscard]]
     explicit Big_Int(GC_Ref<detail::Big_Int_Backend> ref) noexcept
         : m_is_small { false }
-        , m_host_handle { std::move(ref) }
+        , m_host_ref { std::move(ref) }
     {
     }
 
@@ -486,14 +486,14 @@ public:
     }
 
     [[nodiscard]]
-    constexpr Big_Int(const Big_Int& other)
+    constexpr Big_Int(const Big_Int& other) noexcept
         : m_is_small { other.m_is_small }
     {
         if (other.m_is_small) {
             m_int128 = other.m_int128;
         }
         else {
-            new (&m_host_handle) auto(other.m_host_handle);
+            new (&m_host_ref) auto(other.m_host_ref);
         }
     }
 
@@ -507,7 +507,7 @@ public:
             m_int128 = std::exchange(other.m_int128, {});
         }
         else {
-            new (&m_host_handle) auto(std::move(other.m_host_handle));
+            new (&m_host_ref) auto(std::move(other.m_host_ref));
             other.set_zero();
         }
     }
@@ -533,9 +533,10 @@ public:
 
     /// @brief Copy assignment operator.
     /// Safe for self-copy-assignment.
-    constexpr Big_Int& operator=(const Big_Int& other)
+    constexpr Big_Int& operator=(const Big_Int& other) noexcept
     {
         if (this != &other) {
+            static_assert(std::is_nothrow_copy_constructible_v<Big_Int>);
             auto copy = other;
             swap(copy);
         }
@@ -553,7 +554,11 @@ public:
             m_int128 = other.m_int128;
         }
         else {
-            m_host_handle = std::move(other.m_host_handle);
+            static_assert(
+                std::is_trivially_copyable_v<Big_Int_Handle>,
+                "Assignment of inactive alternatives needs trivial copyability to be well-defined."
+            );
+            m_host_ref = std::move(other.m_host_ref);
         }
         other.set_zero();
         return *this;
@@ -579,7 +584,7 @@ public:
             std::swap(m_int128, other.m_int128);
         }
         else if (!m_is_small && !other.m_is_small) {
-            std::swap(m_host_handle, other.m_host_handle);
+            std::swap(m_host_ref, other.m_host_ref);
         }
         else {
             std::swap(*this, other);
@@ -1350,11 +1355,11 @@ private:
         COWEL_ASSERT(!m_is_small);
         // We have the invariant that any moved-from Big_Int_Impl is "small zero",
         // so it should be impossible that we hold an empty GC_Ref.
-        COWEL_ASSERT(m_host_handle);
+        COWEL_ASSERT(m_host_ref);
 #ifdef COWEL_EMSCRIPTEN
         return m_host_handle->handle();
 #else
-        const auto node_address = reinterpret_cast<std::uintptr_t>(m_host_handle.unsafe_get_node());
+        const auto node_address = reinterpret_cast<std::uintptr_t>(m_host_ref.unsafe_get_node());
         return Big_Int_Handle { node_address };
 #endif
     }
@@ -1362,7 +1367,7 @@ private:
     constexpr void set_zero()
     {
         if (!m_is_small) {
-            m_host_handle.~GC_Ref();
+            m_host_ref.~GC_Ref();
         }
         m_is_small = true;
         m_int128 = {};
