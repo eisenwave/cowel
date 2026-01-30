@@ -1267,9 +1267,9 @@ public:
 
     /// @brief Analogous to
     /// ```cpp
-    /// std::to_chars(digits.data(), digits.data() + digits.size(), out, base)
+    /// std::from_chars(digits.data(), digits.data() + digits.size(), out, base)
     /// ```
-    /// if hypothetically, `std::to_chars` had big integer support.
+    /// if hypothetically, `std::from_chars` had big integer support.
     ///
     /// While there is no strict upper bound to `Big_Int`,
     /// `std::errc::result_out_of_range` may still be returned if parsing exceeds some
@@ -1296,10 +1296,13 @@ public:
         }
         COWEL_ASSERT(result.ec == std::errc::result_out_of_range);
 
-        const std::size_t valid_digits = ascii::length_if(as_u8string_view(digits), [&](char8_t c) {
-            return is_ascii_digit_base(c, base);
-        });
-        if (valid_digits == 0) {
+        const bool negative = digits.starts_with(u8'-');
+        const std::size_t valid_digits = ascii::length_if(
+            as_u8string_view(digits), //
+            [&](char8_t c) { return is_ascii_digit_base(c, base); }, //
+            negative
+        );
+        if (valid_digits <= std::size_t(negative)) {
             return { digits.data(), std::errc::invalid_argument };
         }
         const char* const end = digits.data() + valid_digits;
