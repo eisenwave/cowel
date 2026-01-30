@@ -82,6 +82,7 @@
 - add the ability to store groups (and generally not just strings) in variables (#73, #166)
 - add support for `abbreviation` and `figment` aliases to `cowel_char_by_name` (#11)
 - add language extension for VSCode (#140)
+- add support for arbitrary-precision integers (#195)
 - fix various memory issues (#131)
 - fix some missing code citations for diagnostics in Node.js CLI (#91)
 - fix typos in `link rel` (#93)
