@@ -346,8 +346,7 @@ class BigIntApi {
 
     big_int_trunc_i128(x: BigIntId): boolean {
         const value = this.get(x);
-        const MASK_128 = (1n << 128n) - 1n;
-        const truncated = value & MASK_128;
+        const truncated = BigInt.asIntN(128, value);
         this.environment.setSmallResult(truncated);
         return truncated !== value;
     }
@@ -608,7 +607,12 @@ class BigIntApi {
             return FromStringStatus.invalid_argument;
         }
         const string = this.environment.readString(buffer, length);
-        const value = BigInt(parseInt(string, base));
+        let value: bigint;
+        try {
+            value = parseBigInt(string, base);
+        } catch (_) {
+            return FromStringStatus.invalid_argument;
+        }
         if (value < POW_2_127 && value >= -POW_2_127) {
             this.environment.setSmallResult(value);
             return FromStringStatus.small_result;
@@ -619,6 +623,40 @@ class BigIntApi {
         return FromStringStatus.big_result;
     }
 };
+
+function parseBigInt(string: string, radix: number): bigint {
+    if (radix === 10) {
+        return BigInt(string);
+    }
+
+    // Unfortunately, parseInt only supports number;
+    // there is no counterpart for bigint.
+    // The BigInt constructor does not permit a manually specified radix.
+    // For specific bases (2, 8, 10, 16), we can still use the constructor
+    // (either directly or by using a base prefix).
+    // For "exotic" bases, we need to manually convert.
+
+    const negative = string.startsWith("-");
+    const digits = negative ? string.slice(1) : string;
+
+    const value = ((): bigint => {
+        switch (radix) {
+            case 2: return BigInt(`0b${digits}`);
+            case 8: return BigInt(`0o${digits}`);
+            case 16: return BigInt(`0x${digits}`);
+        }
+        const radixInt = BigInt(radix);
+        let result = 0n;
+        for (const char of digits) {
+            const digit = parseInt(char, radix);
+            result *= radixInt;
+            result += BigInt(digit);
+        }
+        return result;
+    })();
+
+    return negative ? -value : value;
+}
 
 /**
  * Wrapper for the WASM module that provides COWEL functionality.
