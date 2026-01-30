@@ -7,9 +7,10 @@ if [[ $# -eq 0 ]]; then
 fi
 
 BOOST_URL="https://github.com/boostorg/boost.git"
+BOOST_BRANCH="boost-1.90.0"
 DIRECTORY="$1"
 
-git clone "$BOOST_URL" "$DIRECTORY"
+git clone "$BOOST_URL" --branch "$BOOST_BRANCH" "$DIRECTORY"
 (
   cd "$DIRECTORY" || exit 1
   git submodule update --init \
