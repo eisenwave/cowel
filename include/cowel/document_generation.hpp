@@ -17,10 +17,18 @@
 
 namespace cowel {
 
+using Variables_Consumer = Function_Ref<void(std::span<const std::u8string_view>)>;
+
 struct Generation_Options {
     /// @brief To be used for generating error content within the document
     /// when directive processing runs into an error.
     const Directive_Behavior* error_behavior = nullptr;
+
+    /// @brief A list of variable names to feed into `consume_variables` after processing.
+    std::span<const std::u8string_view> preserved_variables = {};
+    /// @brief Invoked with the values of the variables in `preserved_variables`.
+    /// Ignored if null.
+    Variables_Consumer consume_variables = {};
 
     /// @brief The highlight theme source.
     std::u8string_view highlight_theme_source;
