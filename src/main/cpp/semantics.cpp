@@ -233,4 +233,35 @@ static_assert(sizeof(Int128) == 16);
 static_assert(alignof(Value) <= 16, "Value should not be excessively aligned.");
 static_assert(sizeof(Value) <= 64, "Value should not be too large to be passed by value.");
 
+consteval bool test_sanitized()
+{
+    {
+        auto v = Value::boolean(true);
+        v = Value::integer(123_n);
+        v = Value::integer(456_n);
+    }
+    {
+        auto v = Value::boolean(true);
+        v = Value::integer(123_n);
+        v = Value::integer(456_n);
+        v = Value::unit;
+    }
+    const Big_Int x = 123_n;
+    {
+        auto v = Value::integer(x);
+    }
+    {
+        auto v = Value::boolean(true);
+        v = Value::integer(x);
+    }
+    {
+        auto v = Value::boolean(true);
+        v = Value::integer(x);
+        v = Value::unit;
+    }
+    return true;
+}
+
+static_assert(test_sanitized());
+
 } // namespace cowel
