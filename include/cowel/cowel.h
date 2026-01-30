@@ -123,7 +123,7 @@ struct cowel_mutable_string_view_u8 {
     size_t length;
 };
 
-typedef int cowel_file_id; // NOLINT(modernize-use-using)
+typedef int cowel_file_id;
 
 /// @brief Data associated with a diagnostic message.
 struct cowel_diagnostic {
@@ -197,47 +197,38 @@ struct cowel_assertion_error_u8 {
     size_t column;
 };
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void* cowel_consume_variables_fn(
     const void* data, //
     const cowel_string_view* variables,
     size_t length
 );
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void* cowel_consume_variables_fn_u8(
     const void* data, //
     const cowel_string_view_u8* variables,
     size_t length
 );
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void* cowel_alloc_fn(const void* data, size_t size, size_t alignment) COWEL_NOEXCEPT;
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void
 cowel_free_fn(const void* data, void* pointer, size_t size, size_t alignment) COWEL_NOEXCEPT;
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef cowel_file_result cowel_load_file_fn(
     const void* data,
     cowel_string_view path,
     cowel_file_id relative_to
 ) COWEL_NOEXCEPT;
-// NOLINTNEXTLINE(modernize-use-using)
 typedef cowel_file_result_u8 cowel_load_file_fn_u8(
     const void* data,
     cowel_string_view_u8 path,
     cowel_file_id relative_to
 ) COWEL_NOEXCEPT;
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void cowel_log_fn(const void* data, const cowel_diagnostic* diagnostic) COWEL_NOEXCEPT;
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void
 cowel_log_fn_u8(const void* data, const cowel_diagnostic_u8* diagnostic) COWEL_NOEXCEPT;
 
-// NOLINTNEXTLINE(modernize-use-using)
 typedef void cowel_assertion_handler_fn_u8(const cowel_assertion_error_u8* error);
 
 struct cowel_options {
