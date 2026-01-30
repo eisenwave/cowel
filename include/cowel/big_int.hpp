@@ -1357,7 +1357,7 @@ private:
         // so it should be impossible that we hold an empty GC_Ref.
         COWEL_ASSERT(m_host_ref);
 #ifdef COWEL_EMSCRIPTEN
-        return m_host_handle->handle();
+        return m_host_ref->handle();
 #else
         const auto node_address = reinterpret_cast<std::uintptr_t>(m_host_ref.unsafe_get_node());
         return Big_Int_Handle { node_address };
