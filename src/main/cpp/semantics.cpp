@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "cowel/expression_kind.hpp"
 #include "cowel/util/assert.hpp"
 
 #include "cowel/ast.hpp"
@@ -127,7 +128,140 @@ Value Value::group_pack_move(std::span<Value> values)
     return Value { Union { .group = std::move(gc) }, group_index };
 }
 
-static_assert(alignof(Value) <= 8, "Value should not be excessively aligned.");
+namespace {
+
+template <Comparison_Expression_Kind kind, typename T, typename U>
+bool do_compare(const T& x, const U& y)
+{
+    if constexpr (kind == Comparison_Expression_Kind::eq) {
+        return x == y;
+    }
+    else if constexpr (kind == Comparison_Expression_Kind::ne) {
+        return x != y;
+    }
+    else if constexpr (kind == Comparison_Expression_Kind::lt) {
+        return x < y;
+    }
+    else if constexpr (kind == Comparison_Expression_Kind::gt) {
+        return x > y;
+    }
+    else if constexpr (kind == Comparison_Expression_Kind::le) {
+        return x <= y;
+    }
+    else if constexpr (kind == Comparison_Expression_Kind::ge) {
+        return x >= y;
+    }
+    else {
+        static_assert(false);
+    }
+}
+
+[[/* false positive */ maybe_unused]] bool
+members_equal(std::span<const Group_Member_Value> xs, std::span<const Group_Member_Value> ys)
+{
+    if (xs.size() != ys.size()) {
+        return false;
+    }
+    for (std::size_t i = 0; i < xs.size(); ++i) {
+        if (!compare<Comparison_Expression_Kind::eq>(xs[i].name, ys[i].name)) {
+            return false;
+        }
+        if (!compare<Comparison_Expression_Kind::eq>(xs[i].value, ys[i].value)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+} // namespace
+
+template <Comparison_Expression_Kind kind>
+bool compare(const Value& x, const Value& y)
+{
+    switch (x.get_type_kind()) {
+    case Type_Kind::unit:
+    case Type_Kind::null: {
+        if constexpr (kind == Comparison_Expression_Kind::eq) {
+            return true;
+        }
+        else if constexpr (kind == Comparison_Expression_Kind::ne) {
+            return false;
+        }
+        else {
+            COWEL_ASSERT_UNREACHABLE(u8"Relational comparison of unit types?!");
+        }
+    }
+    case Type_Kind::boolean: {
+        return do_compare<kind>(x.as_boolean(), y.as_boolean());
+    }
+    case Type_Kind::integer: {
+        return do_compare<kind>(x.as_integer(), y.as_integer());
+    }
+    case Type_Kind::floating: {
+        return do_compare<kind>(x.as_float(), y.as_float());
+    }
+    case Type_Kind::str: {
+        return do_compare<kind>(x.as_string(), y.as_string());
+    }
+    case Type_Kind::group: {
+        if constexpr (kind == Comparison_Expression_Kind::eq) {
+            return members_equal(x.get_group_members(), y.get_group_members());
+        }
+        else if constexpr (kind == Comparison_Expression_Kind::ne) {
+            return !members_equal(x.get_group_members(), y.get_group_members());
+        }
+        else {
+            COWEL_ASSERT_UNREACHABLE(u8"Relational comparison of unit types?!");
+        }
+    }
+    default: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid type in comparison.");
+}
+
+template bool compare<Comparison_Expression_Kind::eq>(const Value&, const Value&);
+template bool compare<Comparison_Expression_Kind::ne>(const Value&, const Value&);
+template bool compare<Comparison_Expression_Kind::lt>(const Value&, const Value&);
+template bool compare<Comparison_Expression_Kind::gt>(const Value&, const Value&);
+template bool compare<Comparison_Expression_Kind::le>(const Value&, const Value&);
+template bool compare<Comparison_Expression_Kind::ge>(const Value&, const Value&);
+
+static_assert(sizeof(Int32) == 4);
+static_assert(sizeof(Int64) == 8);
+static_assert(sizeof(Int128) == 16);
+
+static_assert(alignof(Value) <= 16, "Value should not be excessively aligned.");
 static_assert(sizeof(Value) <= 64, "Value should not be too large to be passed by value.");
+
+consteval bool test_sanitized()
+{
+    {
+        auto v = Value::boolean(true);
+        v = Value::integer(123_n);
+        v = Value::integer(456_n);
+    }
+    {
+        auto v = Value::boolean(true);
+        v = Value::integer(123_n);
+        v = Value::integer(456_n);
+        v = Value::unit;
+    }
+    const Big_Int x = 123_n;
+    {
+        auto v = Value::integer(x);
+    }
+    {
+        auto v = Value::boolean(true);
+        v = Value::integer(x);
+    }
+    {
+        auto v = Value::boolean(true);
+        v = Value::integer(x);
+        v = Value::unit;
+    }
+    return true;
+}
+
+static_assert(test_sanitized());
 
 } // namespace cowel

@@ -63,7 +63,7 @@ Primary Primary::basic(Primary_Kind kind, File_Source_Span source_span, std::u8s
     COWEL_ASSERT_UNREACHABLE(u8"Kind is not basic basic.");
 }
 
-Primary Primary::integer(File_Source_Span source_span, std::u8string_view source)
+Primary Primary::integer(const File_Source_Span source_span, const std::u8string_view source)
 {
     COWEL_DEBUG_ASSERT(!source.empty() && (source[0] == u8'-' || is_ascii_digit(source[0])));
     COWEL_ASSERT(!source.empty());
@@ -80,33 +80,24 @@ Primary Primary::integer(File_Source_Span source_span, std::u8string_view source
     COWEL_ASSERT(is_decimal || source.length() > 2);
     COWEL_ASSERT(is_decimal || source[std::size_t(is_negative)] == u8'0');
 
-    Integer value = 0;
-    const auto result = [&] -> std::from_chars_result {
-        if (is_decimal) {
-            return from_characters(source, value, base);
-        }
-        const std::size_t digits_start = is_negative ? 3 : 2;
-        const std::u8string_view digits = source.substr(digits_start);
-        if (!is_negative) {
-            return from_characters(digits, value, base);
-        }
-        Uint128 v = 0;
-        const auto r = from_characters(digits, v, base);
-        if (r.ec != std::errc {}) {
-            return r;
-        }
-        constexpr auto max_u128 = Uint128 { 1 } << 127;
-        if (v > max_u128) {
-            return { r.ptr, std::errc::result_out_of_range };
-        }
-        value = Int128(-v);
-        return r;
-    }();
-    COWEL_ASSERT(result.ec != std::errc::invalid_argument);
+    Big_Int parsed_int;
+    // from_characters does not accept base prefixes,
+    // so we need to potentially skip the base prefix and the minus sign preceding it.
+    // For decimal numbers, we can just parse the string as is.
+    // In any case, the result should fit into Big_Int unless it is stupendously huge.
+    const std::size_t digits_start = is_decimal ? 0 : is_negative ? 3 : 2;
+    const auto digits = source.substr(digits_start);
+    const std::from_chars_result result = from_characters(digits, parsed_int, base);
+    // TODO: It's currently impossible for this to fail because the string is pre-parsed
+    //       and errc::result_out_of_range isn't actually raised anywhere,
+    //       but this may change in the future.
+    //       In that case, perhaps the parser should raise a warning
+    //       about stupendously large integer literals.
+    COWEL_ASSERT(result.ec == std::errc {});
+    if (!is_decimal && is_negative) {
+        parsed_int = -parsed_int;
+    }
 
-    const auto parsed_int = result.ec == std::errc {}
-        ? Parsed_Int { .value = value, .in_range = true }
-        : Parsed_Int { .value = 0, .in_range = false };
     return Primary { Primary_Kind::int_literal, source_span, source, parsed_int };
 }
 

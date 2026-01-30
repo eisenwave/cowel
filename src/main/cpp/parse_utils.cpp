@@ -27,7 +27,8 @@ find_blank_line_sequence(std::u8string_view str, Blank_Line_Initial_State initia
     auto state = static_cast<State>(initial_state);
 
     std::size_t blank_begin = 0;
-    std::size_t blank_end;
+    // initialized to suppress false positive GCC warning
+    std::size_t blank_end = -1uz;
 
     for (std::size_t i = 0; i < str.size(); ++i) {
         switch (state) {
@@ -53,6 +54,7 @@ find_blank_line_sequence(std::u8string_view str, Blank_Line_Initial_State initia
                 blank_end = i + 1;
             }
             else if (!is_html_whitespace(str[i])) {
+                COWEL_DEBUG_ASSERT(blank_end != -1uz);
                 return { .begin = blank_begin, .length = blank_end - blank_begin };
             }
             continue;

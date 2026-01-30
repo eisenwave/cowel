@@ -3,11 +3,13 @@
 
 #include <string_view>
 
+#include "cowel/expression_kind.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/fixed_string.hpp"
 #include "cowel/util/strings.hpp"
 
 #include "cowel/ast_fwd.hpp"
+#include "cowel/big_int.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/gc.hpp"
@@ -15,6 +17,11 @@
 #include "cowel/type.hpp"
 
 namespace cowel {
+
+struct Value;
+
+template <Comparison_Expression_Kind kind>
+bool compare(const Value&, const Value&);
 
 /// @brief A symbolic empty class indicating a `null` value or type in COWEL.
 struct Null {
@@ -24,14 +31,6 @@ struct Null {
 /// @brief A symbolic empty class indicating a `void` value or type in COWEL.
 struct Unit {
     friend bool operator==(Unit, Unit) = default;
-};
-
-/// @brief A type with sufficient size (but possibly not alignment)
-/// to provide storage for `Integer`.
-/// This is mainly useful to prevent `Int128` from causing 16-byte alignment
-/// for the entire `Value`, which leads to excessive internal padding.
-struct Int_Storage {
-    alignas(std::size_t) unsigned char bytes[sizeof(Integer)];
 };
 
 using Short_String_Value = Fixed_String8<56>;
@@ -93,7 +92,7 @@ private:
         Unit unit;
         Null null;
         bool boolean;
-        Int_Storage integer;
+        Big_Int integer;
         Float floating;
         std::u8string_view static_string;
         Short_String_Value::array_type short_string;
@@ -140,7 +139,9 @@ public:
     [[nodiscard]]
     static constexpr Value boolean(bool value) noexcept;
     [[nodiscard]]
-    static constexpr Value integer(Integer value) noexcept;
+    static constexpr Value integer(const Big_Int& value) noexcept;
+    [[nodiscard]]
+    static constexpr Value integer(Big_Int&& value) noexcept;
     [[nodiscard]]
     static constexpr Value floating(Float value) noexcept;
 
@@ -203,6 +204,9 @@ public:
             other.m_short_string_length,
         }
     {
+        static_assert(std::is_nothrow_copy_constructible_v<Big_Int>);
+        static_assert(std::is_nothrow_copy_constructible_v<Dynamic_String_Value>);
+        static_assert(std::is_nothrow_copy_constructible_v<Group_Value>);
     }
 
     [[nodiscard]]
@@ -214,31 +218,14 @@ public:
             other.m_short_string_length,
         }
     {
+        static_assert(std::is_nothrow_move_constructible_v<Big_Int>);
+        static_assert(std::is_nothrow_move_constructible_v<Dynamic_String_Value>);
+        static_assert(std::is_nothrow_move_constructible_v<Group_Value>);
     }
 
-    constexpr Value& operator=(const Value& other) noexcept
-    {
-        static_assert(std::is_nothrow_copy_assignable_v<Dynamic_String_Value>);
-        static_assert(std::is_nothrow_copy_assignable_v<Group_Value>);
-        if (this != &other) {
-            m_value.assign(m_index, other.m_value, other.m_index);
-            m_index = other.m_index;
-            m_string_kind = other.m_string_kind;
-            m_short_string_length = other.m_short_string_length;
-        }
-        return *this;
-    }
+    constexpr Value& operator=(const Value& other) noexcept;
 
-    constexpr Value& operator=(Value&& other) noexcept
-    {
-        static_assert(std::is_nothrow_move_assignable_v<Dynamic_String_Value>);
-        static_assert(std::is_nothrow_move_assignable_v<Group_Value>);
-        m_value.assign(m_index, std::move(other).m_value, other.m_index);
-        m_index = other.m_index;
-        m_string_kind = other.m_string_kind;
-        m_short_string_length = other.m_short_string_length;
-        return *this;
-    }
+    constexpr Value& operator=(Value&& other) noexcept;
 
     constexpr ~Value()
     {
@@ -347,6 +334,7 @@ public:
     {
         return get_type_kind() == Type_Kind::boolean;
     }
+
     [[nodiscard]]
     constexpr bool is_int() const noexcept
     {
@@ -384,12 +372,32 @@ public:
         COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::boolean);
         return m_value.boolean;
     }
+
     [[nodiscard]]
-    constexpr Integer as_integer() const
+    constexpr Big_Int& as_integer() &
     {
         COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::integer);
-        return std::bit_cast<Integer>(m_value.integer);
+        return m_value.integer;
     }
+    [[nodiscard]]
+    constexpr const Big_Int& as_integer() const&
+    {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::integer);
+        return m_value.integer;
+    }
+    [[nodiscard]]
+    constexpr Big_Int&& as_integer() &&
+    {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::integer);
+        return std::move(m_value.integer);
+    }
+    [[nodiscard]]
+    constexpr const Big_Int&& as_integer() const&&
+    {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::integer);
+        return std::move(m_value.integer);
+    }
+
     [[nodiscard]]
     constexpr Float as_float() const
     {
@@ -435,6 +443,9 @@ public:
 
     [[nodiscard]]
     Processing_Status splice_block(Content_Policy& out, Context& context) const;
+
+    template <Comparison_Expression_Kind kind>
+    friend bool compare(const Value&, const Value&);
 };
 
 struct Group_Member_Value {
@@ -462,7 +473,7 @@ constexpr Value::Value(
 
 template <typename T>
 [[nodiscard]]
-constexpr Value::Union Value::Union::make(T&& other, Index other_index) noexcept
+constexpr Value::Union Value::Union::make(T&& other, const Index other_index) noexcept
 {
     // Note that accessing other.unit or other.null results in a GCC ICE;
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123346
@@ -470,7 +481,7 @@ constexpr Value::Union Value::Union::make(T&& other, Index other_index) noexcept
     case unit_index: return { .unit = Unit {} };
     case null_index: return { .null = Null {} };
     case boolean_index: return { .boolean = other.boolean };
-    case integer_index: return { .integer = other.integer };
+    case integer_index: return { .integer = std::forward<T>(other).integer };
     case floating_index: return { .floating = other.floating };
     case static_string_index: return { .static_string = other.static_string };
     case short_string_index: return { .short_string = other.short_string };
@@ -483,56 +494,74 @@ constexpr Value::Union Value::Union::make(T&& other, Index other_index) noexcept
 }
 
 template <typename T>
-constexpr void Value::Union::assign(Index self_index, T&& other, Index other_index) noexcept
+constexpr void
+Value::Union::assign(const Index self_index, T&& other, const Index other_index) noexcept
 {
     switch (other_index) {
     case unit_index: unit = other.unit; break;
     case null_index: null = other.null; break;
     case boolean_index: boolean = other.boolean; break;
-    case integer_index: integer = other.integer; break;
     case floating_index: floating = other.floating; break;
     case static_string_index: static_string = other.static_string; break;
     case short_string_index: short_string = other.short_string; break;
+    case block_index: block = other.block; break;
+    case directive_index: directive = other.directive; break;
+
+    case integer_index: {
+        if (self_index == integer_index) {
+            integer = std::forward<T>(other).integer;
+        }
+        else {
+            destroy(self_index);
+            std::construct_at(&integer, std::forward<T>(other).integer);
+        }
+        break;
+    }
     case dynamic_string_index: {
         if (self_index == dynamic_string_index) {
             dynamic_string = std::forward<T>(other).dynamic_string;
         }
         else {
             destroy(self_index);
-            new (&dynamic_string) auto(std::forward<T>(other).dynamic_string);
+            std::construct_at(&dynamic_string, std::forward<T>(other).dynamic_string);
         }
         break;
     }
-    case block_index: block = other.block; break;
-    case directive_index: directive = other.directive; break;
     case group_index: {
-        if (self_index == other_index) {
+        if (self_index == group_index) {
             group = std::forward<T>(other).group;
         }
         else {
             destroy(self_index);
-            new (&group) auto(std::forward<T>(other).group);
+            std::construct_at(&group, std::forward<T>(other).group);
         }
         break;
     };
     }
 }
 
-constexpr void Value::Union::destroy(Index index) noexcept
+constexpr void Value::Union::destroy(const Index index) noexcept
 {
-    static_assert(std::is_trivially_destructible_v<Integer>);
-    static_assert(std::is_trivially_destructible_v<Block_And_Frame>);
-    static_assert(std::is_trivially_destructible_v<Directive_And_Frame>);
     switch (index) {
     case unit_index:
     case null_index:
     case boolean_index:
-    case integer_index:
     case floating_index:
     case static_string_index:
     case short_string_index:
     case block_index:
-    case directive_index: break;
+    case directive_index: {
+        static_assert(std::is_trivially_destructible_v<Unit>);
+        static_assert(std::is_trivially_destructible_v<Null>);
+        static_assert(std::is_trivially_destructible_v<Short_String_Value>);
+        static_assert(std::is_trivially_destructible_v<Block_And_Frame>);
+        static_assert(std::is_trivially_destructible_v<Directive_And_Frame>);
+        break;
+    }
+    case integer_index: {
+        integer.~Big_Int();
+        break;
+    }
     case dynamic_string_index: {
         dynamic_string.~Dynamic_String_Value();
         break;
@@ -544,24 +573,58 @@ constexpr void Value::Union::destroy(Index index) noexcept
     }
 }
 
-constexpr Value Value::boolean(bool value) noexcept
+// The assignment operator needs to be defined out-of-line as a workaround to:
+// https://github.com/llvm/llvm-project/issues/73232
+constexpr Value& Value::operator=(const Value& other) noexcept
+{
+    static_assert(std::is_nothrow_copy_assignable_v<Big_Int>);
+    static_assert(std::is_nothrow_copy_assignable_v<Dynamic_String_Value>);
+    static_assert(std::is_nothrow_copy_assignable_v<Group_Value>);
+    if (this != &other) {
+        m_value.assign(m_index, other.m_value, other.m_index);
+        m_index = other.m_index;
+        m_string_kind = other.m_string_kind;
+        m_short_string_length = other.m_short_string_length;
+    }
+    return *this;
+}
+
+constexpr Value& Value::operator=(Value&& other) noexcept
+{
+    static_assert(std::is_nothrow_move_assignable_v<Big_Int>);
+    static_assert(std::is_nothrow_move_assignable_v<Dynamic_String_Value>);
+    static_assert(std::is_nothrow_move_assignable_v<Group_Value>);
+    m_value.assign(m_index, std::move(other).m_value, other.m_index);
+    m_index = other.m_index;
+    m_string_kind = other.m_string_kind;
+    m_short_string_length = other.m_short_string_length;
+    return *this;
+}
+
+constexpr Value Value::boolean(const bool value) noexcept
 {
     return Value { Union { .boolean = value }, boolean_index };
 }
-constexpr Value Value::integer(Integer value) noexcept
+constexpr Value Value::integer(const Big_Int& value) noexcept
 {
-    return Value { Union { .integer = std::bit_cast<Int_Storage>(value) }, integer_index };
+    return Value { Union { .integer = value }, integer_index };
 }
-constexpr Value Value::floating(Float value) noexcept
+constexpr Value Value::integer(Big_Int&& value) noexcept
+{
+    return Value { Union { .integer = std::move(value) }, integer_index };
+}
+constexpr Value Value::floating(const Float value) noexcept
 {
     return Value { Union { .floating = value }, floating_index };
 }
 
-constexpr Value Value::static_string(std::u8string_view value, String_Kind kind) noexcept
+constexpr Value
+Value::static_string(const std::u8string_view value, const String_Kind kind) noexcept
 {
     return Value { Union { .static_string = value }, static_string_index, kind };
 }
-constexpr Value Value::short_string(const Short_String_Value& value, String_Kind kind) noexcept
+constexpr Value
+Value::short_string(const Short_String_Value& value, const String_Kind kind) noexcept
 {
     return Value {
         Union { .short_string = value.as_array() },
@@ -575,12 +638,44 @@ inline constexpr Value Value::unit = { Union { .unit = Unit {} }, unit_index };
 inline constexpr Value Value::null = { Union { .null = Null {} }, null_index };
 inline constexpr Value Value::true_ = Value::boolean(true);
 inline constexpr Value Value::false_ = Value::boolean(false);
-inline constexpr Value Value::zero_int = Value::integer(0);
+inline constexpr Value Value::zero_int = Value::integer(0_n);
 inline constexpr Value Value::zero_float = Value::floating(0);
 inline constexpr Value Value::empty_string = Value::static_string({}, String_Kind::ascii);
 inline constexpr Value Value::unit_string = Value::static_string(u8"unit", String_Kind::ascii);
 inline constexpr Value Value::true_string = Value::static_string(u8"true", String_Kind::ascii);
 inline constexpr Value Value::false_string = Value::static_string(u8"false", String_Kind::ascii);
+
+extern template bool compare<Comparison_Expression_Kind::eq>(const Value&, const Value&);
+extern template bool compare<Comparison_Expression_Kind::ne>(const Value&, const Value&);
+extern template bool compare<Comparison_Expression_Kind::lt>(const Value&, const Value&);
+extern template bool compare<Comparison_Expression_Kind::gt>(const Value&, const Value&);
+extern template bool compare<Comparison_Expression_Kind::le>(const Value&, const Value&);
+extern template bool compare<Comparison_Expression_Kind::ge>(const Value&, const Value&);
+
+inline bool compare_eq(const Value& x, const Value& y)
+{
+    return compare<Comparison_Expression_Kind::eq>(x, y);
+}
+inline bool compare_ne(const Value& x, const Value& y)
+{
+    return compare<Comparison_Expression_Kind::ne>(x, y);
+}
+inline bool compare_lt(const Value& x, const Value& y)
+{
+    return compare<Comparison_Expression_Kind::lt>(x, y);
+}
+inline bool compare_gt(const Value& x, const Value& y)
+{
+    return compare<Comparison_Expression_Kind::gt>(x, y);
+}
+inline bool compare_le(const Value& x, const Value& y)
+{
+    return compare<Comparison_Expression_Kind::le>(x, y);
+}
+inline bool compare_ge(const Value& x, const Value& y)
+{
+    return compare<Comparison_Expression_Kind::ge>(x, y);
+}
 
 } // namespace cowel
 

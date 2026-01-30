@@ -1,4 +1,5 @@
 #include <cmath>
+#include <limits>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -9,10 +10,10 @@
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/math.hpp"
 #include "cowel/util/result.hpp"
-#include "cowel/util/to_chars.hpp"
 
 #include "cowel/policy/plaintext.hpp"
 
+#include "cowel/big_int_ops.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
@@ -32,108 +33,20 @@ std::pmr::string vec_to_string(const std::pmr::vector<char>& v)
     return { v.data(), v.size(), v.get_allocator() };
 }
 
-[[nodiscard]]
-bool members_equal(std::span<const Group_Member_Value>, std::span<const Group_Member_Value>);
-
-template <Comparison_Expression_Kind kind, typename T>
-bool do_compare(T x, T y)
-{
-    if constexpr (kind == Comparison_Expression_Kind::eq) {
-        return x == y;
-    }
-    else if constexpr (kind == Comparison_Expression_Kind::ne) {
-        return x != y;
-    }
-    else if constexpr (kind == Comparison_Expression_Kind::lt) {
-        return x < y;
-    }
-    else if constexpr (kind == Comparison_Expression_Kind::gt) {
-        return x > y;
-    }
-    else if constexpr (kind == Comparison_Expression_Kind::le) {
-        return x <= y;
-    }
-    else if constexpr (kind == Comparison_Expression_Kind::ge) {
-        return x >= y;
-    }
-    else {
-        static_assert(false);
-    }
-}
-
-template <Comparison_Expression_Kind kind>
-bool compare(const Value& x, const Value& y)
-{
-    switch (x.get_type_kind()) {
-    case Type_Kind::unit:
-    case Type_Kind::null: {
-        if constexpr (kind == Comparison_Expression_Kind::eq) {
-            return true;
-        }
-        else if constexpr (kind == Comparison_Expression_Kind::ne) {
-            return false;
-        }
-        else {
-            COWEL_ASSERT_UNREACHABLE(u8"Relational comparison of unit types?!");
-        }
-    }
-    case Type_Kind::boolean: {
-        return do_compare<kind>(x.as_boolean(), y.as_boolean());
-    }
-    case Type_Kind::integer: {
-        return do_compare<kind>(x.as_integer(), y.as_integer());
-    }
-    case Type_Kind::floating: {
-        return do_compare<kind>(x.as_float(), y.as_float());
-    }
-    case Type_Kind::str: {
-        return do_compare<kind>(x.as_string(), y.as_string());
-    }
-    case Type_Kind::group: {
-        if constexpr (kind == Comparison_Expression_Kind::eq) {
-            return members_equal(x.get_group_members(), y.get_group_members());
-        }
-        else if constexpr (kind == Comparison_Expression_Kind::ne) {
-            return !members_equal(x.get_group_members(), y.get_group_members());
-        }
-        else {
-            COWEL_ASSERT_UNREACHABLE(u8"Relational comparison of unit types?!");
-        }
-    }
-    default: break;
-    }
-    COWEL_ASSERT_UNREACHABLE(u8"Invalid type in comparison.");
-}
-
-bool members_equal(std::span<const Group_Member_Value> xs, std::span<const Group_Member_Value> ys)
-{
-    if (xs.size() != ys.size()) {
-        return false;
-    }
-    for (std::size_t i = 0; i < xs.size(); ++i) {
-        if (!compare<Comparison_Expression_Kind::eq>(xs[i].name, ys[i].name)) {
-            return false;
-        }
-        if (!compare<Comparison_Expression_Kind::eq>(xs[i].value, ys[i].value)) {
-            return false;
-        }
-    }
-    return true;
-}
-
 template <typename T>
 [[nodiscard]]
-T operate_unary(Unary_Numeric_Expression_Kind type, T x)
+T operate_unary(Unary_Numeric_Expression_Kind type, const T& x)
 {
-    if constexpr (signed_or_unsigned<T>) {
+    if constexpr (std::is_same_v<T, Big_Int>) {
         switch (type) {
         case Unary_Numeric_Expression_Kind::pos: return +x;
         case Unary_Numeric_Expression_Kind::neg: return -x;
-        case Unary_Numeric_Expression_Kind::abs: return x < 0 ? -x : x;
+        case Unary_Numeric_Expression_Kind::abs: return abs(x);
         default: COWEL_ASSERT_UNREACHABLE(u8"Invalid unary operation for integers.");
         }
     }
     else {
+        static_assert(std::is_floating_point_v<T>);
         switch (type) {
         case Unary_Numeric_Expression_Kind::pos: return +x;
         case Unary_Numeric_Expression_Kind::neg: return -x;
@@ -151,7 +64,7 @@ T operate_unary(Unary_Numeric_Expression_Kind type, T x)
 
 template <typename T>
 [[nodiscard]]
-T operate_binary(N_Ary_Numeric_Expression_Kind type, T x, T y)
+T operate_binary(N_Ary_Numeric_Expression_Kind type, const T& x, const T& y)
 {
     switch (type) {
     case N_Ary_Numeric_Expression_Kind::add: return x + y;
@@ -182,16 +95,20 @@ T operate_binary(N_Ary_Numeric_Expression_Kind type, T x, T y)
 }
 
 [[nodiscard]]
-Integer operate_binary(Integer_Division_Kind type, Integer x, Integer y)
+Big_Int operate_binary(
+    const Integer_Division_Kind type, //
+    const Big_Int& x,
+    const Big_Int& y
+)
 {
     COWEL_DEBUG_ASSERT(y != 0);
     switch (type) {
     case Integer_Division_Kind::div_to_zero: return x / y;
     case Integer_Division_Kind::rem_to_zero: return x % y;
-    case Integer_Division_Kind::div_to_pos_inf: return div_to_pos_inf(x, y);
-    case Integer_Division_Kind::rem_to_pos_inf: return rem_to_pos_inf(x, y);
-    case Integer_Division_Kind::div_to_neg_inf: return div_to_neg_inf(x, y);
-    case Integer_Division_Kind::rem_to_neg_inf: return rem_to_neg_inf(x, y);
+    case Integer_Division_Kind::div_to_pos_inf: return div(x, y, Div_Rounding::to_pos_inf);
+    case Integer_Division_Kind::rem_to_pos_inf: return rem(x, y, Div_Rounding::to_pos_inf);
+    case Integer_Division_Kind::div_to_neg_inf: return div(x, y, Div_Rounding::to_neg_inf);
+    case Integer_Division_Kind::rem_to_neg_inf: return rem(x, y, Div_Rounding::to_neg_inf);
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid expression type.");
 }
@@ -493,7 +410,7 @@ Unary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
     COWEL_ASSERT_UNREACHABLE(u8"Type of value should have already been checked.");
 }
 
-Result<Integer, Processing_Status>
+Result<Big_Int, Processing_Status>
 Integer_Division_Expression_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     Group_Pack_Value_Matcher group_matcher { context.get_transient_memory() };
@@ -537,12 +454,11 @@ Integer_Division_Expression_Behavior::do_evaluate(const Invocation& call, Contex
     const auto& x_value = group_matcher.get_values()[0].value;
     const auto& [y_value, y_location] = group_matcher.get_values()[1];
 
-    if (y_value.as_integer() == 0) {
+    if (y_value.as_integer().is_zero()) {
         context.try_error(diagnostic::arithmetic_div_by_zero, y_location, u8"Division by zero."sv);
         return Processing_Status::error;
     }
-    const Integer result
-        = operate_binary(m_expression_kind, x_value.as_integer(), y_value.as_integer());
+    Big_Int result = operate_binary(m_expression_kind, x_value.as_integer(), y_value.as_integer());
     return result;
 }
 
@@ -631,7 +547,7 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
 
     switch (first_type.get_kind()) {
     case Type_Kind::integer: {
-        Integer result = first_value.as_integer();
+        Big_Int result = first_value.as_integer();
         for (const auto& [value, location] : values_without_first) {
             result = operate_binary(m_expression_kind, result, value.as_integer());
         }
@@ -739,43 +655,58 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
             );
             return Processing_Status::error;
         }
-        const Integer base = base_matcher.get_or_default(10);
+        const Big_Int base = base_matcher.get_or_default(10_n);
         if (base < 2 || base > 36) {
             context.try_error(
                 diagnostic::to_str_base, base_matcher.get_location(),
                 joined_char_sequence(
                     {
                         u8"The given base "sv,
-                        to_characters8(base).as_string(),
+                        to_u8string(base),
                         u8" is outside the valid range [2,36]."sv,
                     }
                 )
             );
             return Processing_Status::error;
         }
-        const Integer zpad = zpad_matcher.get_or_default(0);
+        const Big_Int zpad = zpad_matcher.get_or_default(0_n);
         if (zpad < 0) {
             context.try_error(
                 diagnostic::to_str_zpad, zpad_matcher.get_location(),
                 joined_char_sequence(
                     {
                         u8"The given zpad "sv,
-                        to_characters8(zpad).as_string(),
+                        to_u8string(zpad),
                         u8" must not be negative."sv,
                     }
                 )
             );
             return Processing_Status::error;
         }
-        const Integer x_int = x_value.as_integer();
-        const Basic_Characters chars = to_characters8(x_int, int(base));
+        if (zpad > 1'000'000_n) {
+            context.try_error(
+                diagnostic::to_str_zpad, zpad_matcher.get_location(),
+                joined_char_sequence(
+                    {
+                        u8"The given zpad "sv,
+                        to_u8string(zpad),
+                        u8" exceeds implementation limits."sv,
+                    }
+                )
+            );
+            return Processing_Status::error;
+        }
+        const auto base_int = int(base);
+        const auto zpad_int = int(zpad);
+        const Big_Int& x_int = x_value.as_integer();
+        const auto chars = to_u8string(x_int, base_int);
         const auto sign_length = std::size_t(x_int < 0);
         const auto significant_digits = chars.length() - sign_length;
-        if (zpad <= significant_digits) {
-            return Value::string(chars.as_string(), String_Kind::ascii);
+        if (std::size_t(zpad_int) <= significant_digits) {
+            return Value::string(chars, String_Kind::ascii);
         }
         const auto zeros_to_prepend
-            = std::max(std::size_t(zpad), significant_digits) - significant_digits;
+            = std::max(std::size_t(zpad_int), significant_digits) - significant_digits;
         std::pmr::vector<char8_t> result { context.get_transient_memory() };
         result.reserve(sign_length + zeros_to_prepend + significant_digits);
         if (x_int < 0) {
@@ -849,7 +780,7 @@ Reinterpret_As_Float_Behavior::do_evaluate(const Invocation& call, Context& cont
         return match_status;
     }
 
-    const Integer& x_int = x_matcher.get();
+    const Big_Int& x_int = x_matcher.get();
     if (x_int < 0) {
         context.try_error(
             diagnostic::reinterpret_out_of_range, x_matcher.get_location(),
@@ -858,21 +789,21 @@ Reinterpret_As_Float_Behavior::do_evaluate(const Invocation& call, Context& cont
                     u8"Only positive values can be reinterpreted as "sv,
                     Type::floating.get_display_name(),
                     u8", but "sv,
-                    to_characters8(x_int).as_string(),
+                    to_u8string(x_int),
                     u8" was given."sv,
                 }
             )
         );
         return Processing_Status::error;
     }
-    constexpr Integer max { std::numeric_limits<std::uint64_t>::max() };
+    constexpr auto max = Int128 { std::numeric_limits<Uint64>::max() };
     if (x_int > max) {
         context.try_error(
             diagnostic::reinterpret_out_of_range, x_matcher.get_location(),
             joined_char_sequence(
                 {
                     u8"The given value "sv,
-                    to_characters8(x_int).as_string(),
+                    to_u8string(x_int),
                     u8" is too large to be reinterpreted as "sv,
                     Type::floating.get_display_name(),
                     u8". The maximum is ((1 << 64) - 1) = 0xffffffffffffffff."sv,
@@ -882,12 +813,13 @@ Reinterpret_As_Float_Behavior::do_evaluate(const Invocation& call, Context& cont
         return Processing_Status::error;
     }
 
-    const auto u64 = std::uint64_t(x_int);
-    COWEL_DEBUG_ASSERT(u64 == x_int);
+    const auto i128 = Int128(x_int);
+    const auto u64 = Uint64(i128);
+    COWEL_DEBUG_ASSERT(Int128 { u64 } == i128);
     return std::bit_cast<Float>(u64);
 }
 
-Result<Integer, Processing_Status>
+Result<Big_Int, Processing_Status>
 Reinterpret_As_Int_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     Float_Matcher x_matcher {};
@@ -904,7 +836,7 @@ Reinterpret_As_Int_Behavior::do_evaluate(const Invocation& call, Context& contex
 
     const Float x_float = x_matcher.get();
     const auto u64 = std::bit_cast<std::uint64_t>(x_float);
-    return Integer(u64);
+    return Big_Int { Int128 { u64 } };
 }
 
 namespace {

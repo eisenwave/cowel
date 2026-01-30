@@ -130,7 +130,7 @@ struct Int_Directive_Behavior : Directive_Behavior {
 
 protected:
     [[nodiscard]]
-    virtual Result<Integer, Processing_Status>
+    virtual Result<Big_Int, Processing_Status>
     do_evaluate(const Invocation& call, Context& context) const = 0;
 };
 

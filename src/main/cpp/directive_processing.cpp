@@ -69,17 +69,17 @@ Bool_Directive_Behavior::splice(Content_Policy& out, const Invocation& call, Con
 Result<Value, Processing_Status>
 Int_Directive_Behavior::evaluate(const Invocation& call, Context& context) const
 {
-    const Result<Integer, Processing_Status> result = do_evaluate(call, context);
+    Result<Big_Int, Processing_Status> result = do_evaluate(call, context);
     if (!result) {
         return result.error();
     }
-    return Value::integer(*result);
+    return Value::integer(std::move(*result));
 }
 
 Processing_Status
 Int_Directive_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    const Result<Integer, Processing_Status> result = do_evaluate(call, context);
+    const Result<Big_Int, Processing_Status> result = do_evaluate(call, context);
     if (!result) {
         return try_generate_error(out, call, context, result.error());
     }
@@ -423,16 +423,17 @@ Processing_Status splice_value(Content_Policy& out, const Value& value, Context&
     COWEL_ASSERT_UNREACHABLE(u8"Invalid kind of value.");
 }
 
-void splice_bool(Content_Policy& out, bool value)
+void splice_bool(Content_Policy& out, const bool value)
 {
     const auto str = value ? u8"true"sv : u8"false"sv;
     out.write(str, Output_Language::text);
 }
 
-void splice_int(Content_Policy& out, Integer value)
+void splice_int(Content_Policy& out, const Big_Int& value)
 {
-    const auto chars = to_characters8(value);
-    out.write(chars.as_string(), Output_Language::text);
+    value.print_to([&](const std::u8string_view string) {
+        out.write(string, Output_Language::text);
+    });
 }
 
 void splice_float(Content_Policy& out, Float value, Float_Format format)
@@ -727,16 +728,7 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         return Value::boolean(value.get_bool_value());
     }
     case ast::Primary_Kind::int_literal: {
-        const ast::Parsed_Int parsed = value.get_int_value();
-        if (!parsed.in_range) {
-            context.try_error(
-                diagnostic::literal_out_of_range, value.get_source_span(),
-                u8"The parsed value exceeds the implementation limit. "
-                u8"Currently, at most signed 128-bit integers are supported."sv
-            );
-            return Processing_Status::error;
-        }
-        return Value::integer(parsed.value);
+        return Value::integer(value.get_int_value());
     }
     case ast::Primary_Kind::decimal_float_literal: {
         const ast::Parsed_Float parsed = value.get_float_value();

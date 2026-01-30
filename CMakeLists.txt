@@ -1,12 +1,36 @@
 cmake_minimum_required(VERSION 3.22)
 project(cowel)
 
+set(USE_LIBCXX OFF)
+
+if(USE_LIBCXX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    set(CMAKE_CXX_LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -lc++ -lc++abi")
+endif()
+
 add_subdirectory(ulight)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(BOOST_SOURCE_DIR "${CMAKE_SOURCE_DIR}/third_party/boost")
+
 if(NOT DEFINED EMSCRIPTEN)
+    if(NOT EXISTS "${BOOST_SOURCE_DIR}")
+        message(STATUS "Boost not found. Installing boost dependencies...")
+        execute_process(
+            COMMAND bash "${CMAKE_SOURCE_DIR}/src/util/boost-install.sh" "${BOOST_SOURCE_DIR}"
+            RESULT_VARIABLE BOOST_INSTALL_RESULT
+        )
+        if(NOT BOOST_INSTALL_RESULT EQUAL 0)
+            message(FATAL_ERROR "Boost installation failed with exit code ${BOOST_INSTALL_RESULT}")
+        endif()
+        message(STATUS "Boost installation completed successfully")
+    endif()
+
+    add_subdirectory("${BOOST_SOURCE_DIR}/libs/config")
+    add_subdirectory("${BOOST_SOURCE_DIR}/libs/multiprecision")
+
     include(FetchContent)
 
     FetchContent_Declare(
@@ -147,6 +171,8 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/assets.hpp
     include/cowel/ast.hpp
     include/cowel/ast_fwd.hpp
+    include/cowel/big_int.hpp
+    include/cowel/big_int_ops.hpp
     include/cowel/builtin_directive_set.hpp
     include/cowel/call_stack.hpp
     include/cowel/content_status.hpp
@@ -232,6 +258,7 @@ set(NATIVE_LIBRARY_SOURCES
     ${COMMON_LIBRARY_SOURCES}
     src/main/cpp/util/io.cpp
     src/main/cpp/util/tty.cpp
+    src/main/cpp/big_int_boost.cpp
     src/main/cpp/relative_file_loader.cpp
 )
 
@@ -261,6 +288,7 @@ if(DEFINED EMSCRIPTEN)
 
     add_executable(cowel-wasm
         ${COMMON_LIBRARY_SOURCES}
+        src/main/cpp/big_int_wasm.cpp
         src/main/cpp/wasm.cpp
         src/main/cpp/wasm_stubs.cpp
     )
@@ -312,6 +340,7 @@ if(DEFINED EMSCRIPTEN)
 else()
     add_library(cowel STATIC ${NATIVE_LIBRARY_SOURCES})
     target_link_libraries(cowel ulight)
+    target_link_libraries(cowel boost_config boost_multiprecision)
     target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
     target_link_options(cowel PUBLIC ${SANITIZER_OPTIONS})
 
@@ -331,6 +360,7 @@ else()
         src/test/cpp/test_html_writer.cpp
         src/test/cpp/test_levenshtein.cpp
         src/test/cpp/test_lexing.cpp
+        src/test/cpp/test_math.cpp
         src/test/cpp/test_parsing.cpp
         src/test/cpp/test_to_chars.cpp
         src/test/cpp/test_typo.cpp
