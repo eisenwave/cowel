@@ -225,7 +225,7 @@ class BigIntApi {
     }
 
     private generateId(): number {
-        const maxId = (1 << 32) - 1;
+        const maxId = 0xffff_ffff;
         if (this.currentId >= maxId) {
             throw new Error(`Maximum number of integer allocations reached (${maxId}).`);
         }
