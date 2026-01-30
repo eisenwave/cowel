@@ -204,6 +204,9 @@ public:
             other.m_short_string_length,
         }
     {
+        static_assert(std::is_nothrow_copy_constructible_v<Big_Int>);
+        static_assert(std::is_nothrow_copy_constructible_v<Dynamic_String_Value>);
+        static_assert(std::is_nothrow_copy_constructible_v<Group_Value>);
     }
 
     [[nodiscard]]
@@ -215,31 +218,14 @@ public:
             other.m_short_string_length,
         }
     {
+        static_assert(std::is_nothrow_move_constructible_v<Big_Int>);
+        static_assert(std::is_nothrow_move_constructible_v<Dynamic_String_Value>);
+        static_assert(std::is_nothrow_move_constructible_v<Group_Value>);
     }
 
-    constexpr Value& operator=(const Value& other) noexcept
-    {
-        static_assert(std::is_nothrow_copy_assignable_v<Dynamic_String_Value>);
-        static_assert(std::is_nothrow_copy_assignable_v<Group_Value>);
-        if (this != &other) {
-            m_value.assign(m_index, other.m_value, other.m_index);
-            m_index = other.m_index;
-            m_string_kind = other.m_string_kind;
-            m_short_string_length = other.m_short_string_length;
-        }
-        return *this;
-    }
+    constexpr Value& operator=(const Value& other) noexcept;
 
-    constexpr Value& operator=(Value&& other) noexcept
-    {
-        static_assert(std::is_nothrow_move_assignable_v<Dynamic_String_Value>);
-        static_assert(std::is_nothrow_move_assignable_v<Group_Value>);
-        m_value.assign(m_index, std::move(other).m_value, other.m_index);
-        m_index = other.m_index;
-        m_string_kind = other.m_string_kind;
-        m_short_string_length = other.m_short_string_length;
-        return *this;
-    }
+    constexpr Value& operator=(Value&& other) noexcept;
 
     constexpr ~Value()
     {
@@ -487,7 +473,7 @@ constexpr Value::Value(
 
 template <typename T>
 [[nodiscard]]
-constexpr Value::Union Value::Union::make(T&& other, Index other_index) noexcept
+constexpr Value::Union Value::Union::make(T&& other, const Index other_index) noexcept
 {
     // Note that accessing other.unit or other.null results in a GCC ICE;
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123346
@@ -495,7 +481,7 @@ constexpr Value::Union Value::Union::make(T&& other, Index other_index) noexcept
     case unit_index: return { .unit = Unit {} };
     case null_index: return { .null = Null {} };
     case boolean_index: return { .boolean = other.boolean };
-    case integer_index: return { .integer = other.integer };
+    case integer_index: return { .integer = std::forward<T>(other).integer };
     case floating_index: return { .floating = other.floating };
     case static_string_index: return { .static_string = other.static_string };
     case short_string_index: return { .short_string = other.short_string };
@@ -508,42 +494,53 @@ constexpr Value::Union Value::Union::make(T&& other, Index other_index) noexcept
 }
 
 template <typename T>
-constexpr void Value::Union::assign(Index self_index, T&& other, Index other_index) noexcept
+constexpr void
+Value::Union::assign(const Index self_index, T&& other, const Index other_index) noexcept
 {
     switch (other_index) {
     case unit_index: unit = other.unit; break;
     case null_index: null = other.null; break;
     case boolean_index: boolean = other.boolean; break;
-    case integer_index: integer = other.integer; break;
     case floating_index: floating = other.floating; break;
     case static_string_index: static_string = other.static_string; break;
     case short_string_index: short_string = other.short_string; break;
+    case block_index: block = other.block; break;
+    case directive_index: directive = other.directive; break;
+
+    case integer_index: {
+        if (self_index == integer_index) {
+            integer = std::forward<T>(other).integer;
+        }
+        else {
+            destroy(self_index);
+            std::construct_at(&integer, std::forward<T>(other).integer);
+        }
+        break;
+    }
     case dynamic_string_index: {
         if (self_index == dynamic_string_index) {
             dynamic_string = std::forward<T>(other).dynamic_string;
         }
         else {
             destroy(self_index);
-            new (&dynamic_string) auto(std::forward<T>(other).dynamic_string);
+            std::construct_at(&dynamic_string, std::forward<T>(other).dynamic_string);
         }
         break;
     }
-    case block_index: block = other.block; break;
-    case directive_index: directive = other.directive; break;
     case group_index: {
-        if (self_index == other_index) {
+        if (self_index == group_index) {
             group = std::forward<T>(other).group;
         }
         else {
             destroy(self_index);
-            new (&group) auto(std::forward<T>(other).group);
+            std::construct_at(&group, std::forward<T>(other).group);
         }
         break;
     };
     }
 }
 
-constexpr void Value::Union::destroy(Index index) noexcept
+constexpr void Value::Union::destroy(const Index index) noexcept
 {
     switch (index) {
     case unit_index:
@@ -554,6 +551,9 @@ constexpr void Value::Union::destroy(Index index) noexcept
     case short_string_index:
     case block_index:
     case directive_index: {
+        static_assert(std::is_trivially_destructible_v<Unit>);
+        static_assert(std::is_trivially_destructible_v<Null>);
+        static_assert(std::is_trivially_destructible_v<Short_String_Value>);
         static_assert(std::is_trivially_destructible_v<Block_And_Frame>);
         static_assert(std::is_trivially_destructible_v<Directive_And_Frame>);
         break;
@@ -571,6 +571,34 @@ constexpr void Value::Union::destroy(Index index) noexcept
         break;
     }
     }
+}
+
+// The assignment operator needs to be defined out-of-line as a workaround to:
+// https://github.com/llvm/llvm-project/issues/73232
+constexpr Value& Value::operator=(const Value& other) noexcept
+{
+    static_assert(std::is_nothrow_copy_assignable_v<Big_Int>);
+    static_assert(std::is_nothrow_copy_assignable_v<Dynamic_String_Value>);
+    static_assert(std::is_nothrow_copy_assignable_v<Group_Value>);
+    if (this != &other) {
+        m_value.assign(m_index, other.m_value, other.m_index);
+        m_index = other.m_index;
+        m_string_kind = other.m_string_kind;
+        m_short_string_length = other.m_short_string_length;
+    }
+    return *this;
+}
+
+constexpr Value& Value::operator=(Value&& other) noexcept
+{
+    static_assert(std::is_nothrow_move_assignable_v<Big_Int>);
+    static_assert(std::is_nothrow_move_assignable_v<Dynamic_String_Value>);
+    static_assert(std::is_nothrow_move_assignable_v<Group_Value>);
+    m_value.assign(m_index, std::move(other).m_value, other.m_index);
+    m_index = other.m_index;
+    m_string_kind = other.m_string_kind;
+    m_short_string_length = other.m_short_string_length;
+    return *this;
 }
 
 constexpr Value Value::boolean(const bool value) noexcept
