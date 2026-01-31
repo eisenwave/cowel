@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "cowel/util/char_sequence.hpp"
+#include "cowel/util/function_ref.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
 
@@ -19,7 +20,7 @@ namespace cowel {
 namespace {
 
 [[nodiscard]]
-constexpr cowel_io_status io_error_to_io_status(IO_Error_Code error)
+constexpr cowel_io_status io_error_to_io_status(const IO_Error_Code error)
 {
     switch (error) {
     case IO_Error_Code::read_error: return COWEL_IO_ERROR_READ;
@@ -32,14 +33,14 @@ constexpr cowel_io_status io_error_to_io_status(IO_Error_Code error)
 
 Relative_File_Loader::Relative_File_Loader(
     std::filesystem::path&& base,
-    std::pmr::memory_resource* memory
+    std::pmr::memory_resource* const memory
 )
     : m_base { std::move(base) }
     , m_entries { memory }
 {
 }
 
-auto Relative_File_Loader::do_load(Char_Sequence8 path_chars, File_Id relative_to)
+auto Relative_File_Loader::do_load(Char_Sequence8 path_chars, const File_Id relative_to)
     -> Complete_Result
 {
     COWEL_ASSERT(is_valid(relative_to));
@@ -78,9 +79,8 @@ auto Relative_File_Loader::do_load(Char_Sequence8 path_chars, File_Id relative_t
     );
 
     const auto result_status = result ? COWEL_IO_OK : io_error_to_io_status(result.error());
-    const auto result_data = result
-        ? cowel_mutable_string_view_u8 { entry.text.data(), entry.text.size() }
-        : cowel_mutable_string_view_u8 {};
+    const auto result_data = result ? as_cowel_string_view(as_u8string_view(entry.text)) //
+                                    : cowel_string_view_u8 {};
 
     return Complete_Result {
         .file_result {
@@ -93,7 +93,7 @@ auto Relative_File_Loader::do_load(Char_Sequence8 path_chars, File_Id relative_t
 }
 
 Result<File_Entry, File_Load_Error>
-Relative_File_Loader::load(Char_Sequence8 path, File_Id relative_to)
+Relative_File_Loader::load(Char_Sequence8 path, const File_Id relative_to)
 {
     COWEL_ASSERT(is_valid(relative_to));
 
@@ -107,6 +107,24 @@ Relative_File_Loader::load(Char_Sequence8 path, File_Id relative_to)
         .source = { result.file_result.data.text, result.file_result.data.length },
         .name = result.entry.path_string,
     };
+}
+
+[[nodiscard]]
+Function_Ref<cowel_file_result_u8(cowel_string_view_u8, cowel_file_id) noexcept>
+Relative_File_Loader::as_cowel_load_file_fn() noexcept
+{
+    using Invoker = decltype(as_cowel_load_file_fn())::Invoker;
+    static_assert(
+        std::is_same_v<Invoker, cowel_load_file_fn_u8>,
+        "as_cowel_load_file_fn must return a Function_Ref "
+        "which is suitable for use as cowel_load_file_fn_u8."
+    );
+
+    constexpr auto result = [](Relative_File_Loader* const self, const cowel_string_view_u8 path,
+                               const cowel_file_id relative_to) noexcept -> cowel_file_result_u8 {
+        return self->do_load(as_u8string_view(path), File_Id(relative_to)).file_result;
+    };
+    return { const_v<result>, this };
 }
 
 } // namespace cowel
