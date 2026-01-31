@@ -81,6 +81,13 @@ The following builtin content policies exist:
     all plaintext is reinterpreted as HTML before being fed into the parent policy.
   }
 
+  \dt{As-text policy}
+  \dd{
+    Like a text-only policy,
+    but instead of discarding HTML,
+    HTML is reinterpreted as plaintext.
+  }
+
   \dt{Source-as-text policy}
   \dd{
     The source code of all processed content is interpreted as plaintext
