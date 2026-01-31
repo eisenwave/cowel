@@ -10,15 +10,14 @@
 
 namespace cowel {
 
-struct Unprocessed_Content_Policy : virtual Plaintext_Content_Policy {
+struct Unprocessed_Content_Policy : virtual Text_Only_Policy {
 private:
 public:
     [[nodiscard]]
     explicit Unprocessed_Content_Policy(Text_Sink& parent)
         : Text_Sink { Output_Language::text }
         , Content_Policy { Output_Language::text }
-        , Plaintext_Content_Policy { parent }
-
+        , Text_Only_Policy { parent }
     {
     }
 

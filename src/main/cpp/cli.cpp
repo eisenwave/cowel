@@ -10,7 +10,6 @@
 #define ARGS_NOEXCEPT
 #include "args.hxx"
 
-#include "cowel/memory_resources.hpp"
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
 #include "cowel/util/function_ref.hpp"
@@ -20,27 +19,15 @@
 
 #include "cowel/assets.hpp"
 #include "cowel/cowel.h"
+#include "cowel/cowel_lib.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/memory_resources.hpp"
 #include "cowel/print.hpp"
 #include "cowel/relative_file_loader.hpp"
 #include "cowel/services.hpp"
 
 namespace cowel {
 namespace {
-
-using cowel::as_u8string_view;
-
-[[nodiscard]]
-cowel_string_view_u8 as_cowel_string_view(std::u8string_view str)
-{
-    return { str.data(), str.length() };
-}
-
-[[nodiscard]]
-std::u8string_view as_u8string_view(cowel_string_view_u8 str)
-{
-    return { str.text, str.length };
-}
 
 [[nodiscard]]
 std::u8string_view severity_highlight(Severity severity)
@@ -221,34 +208,8 @@ int main(int argc, const char* const* const argv)
 
     // TODO: allow custom ulight themes instead of hardcoding wg21.json
 
-    constexpr auto alloc_fn = [](std::pmr::memory_resource* memory, std::size_t size,
-                                 std::size_t alignment) noexcept -> void* {
-#ifdef ULIGHT_EXCEPTIONS
-        try {
-#endif
-            return memory->allocate(size, alignment);
-#ifdef ULIGHT_EXCEPTIONS
-        } catch (...) {
-            return nullptr;
-        }
-#endif
-    };
-    const Function_Ref<void*(std::size_t, std::size_t) noexcept> alloc_ref
-        = { const_v<alloc_fn>, &memory };
-
-    constexpr auto free_fn = [](std::pmr::memory_resource* memory, void* pointer, std::size_t size,
-                                std::size_t alignment) noexcept -> void {
-        memory->deallocate(pointer, size, alignment);
-    };
-    const Function_Ref<void(void*, std::size_t, std::size_t) noexcept> free_ref
-        = { const_v<free_fn>, &memory };
-
-    constexpr auto load_file_fn = [](Relative_File_Loader* file_loader, cowel_string_view_u8 path,
-                                     cowel_file_id relative_to) noexcept -> cowel_file_result_u8 {
-        return file_loader->do_load(as_u8string_view(path), File_Id(relative_to)).file_result;
-    };
-    const Function_Ref<cowel_file_result_u8(cowel_string_view_u8, cowel_file_id) noexcept>
-        load_file_ref = { const_v<load_file_fn>, &file_loader };
+    const auto alloc_options = Allocator_Options::from_memory_resource(&memory);
+    const auto load_file_ref = file_loader.as_cowel_load_file_fn();
 
     constexpr auto log_fn = [](Stderr_Logger* logger, const cowel_diagnostic_u8* diagnostic
                             ) noexcept -> void { (*logger)(*diagnostic); };
@@ -264,15 +225,17 @@ int main(int argc, const char* const* const argv)
         .preserved_variables_size = 0,
         .consume_variables = nullptr,
         .consume_variables_data = nullptr,
-        .alloc = alloc_ref.get_invoker(),
-        .alloc_data = alloc_ref.get_entity(),
-        .free = free_ref.get_invoker(),
-        .free_data = free_ref.get_entity(),
+        .alloc = alloc_options.alloc,
+        .alloc_data = alloc_options.alloc_data,
+        .free = alloc_options.free,
+        .free_data = alloc_options.free_data,
         .load_file = load_file_ref.get_invoker(),
         .load_file_data = load_file_ref.get_entity(),
         .log = log_ref.get_invoker(),
         .log_data = log_ref.get_entity(),
-        .reserved_1 {},
+        .highlighter = nullptr,
+        .highlight_policy = COWEL_SYNTAX_HIGHLIGHT_POLICY_FALL_BACK,
+        .preamble = {},
     };
 
     const cowel_gen_result_u8 result = cowel_generate_html_u8(&options);

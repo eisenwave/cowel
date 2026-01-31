@@ -289,6 +289,7 @@ enum struct Known_Content_Policy : Default_Underlying {
     no_invoke,
     actions,
     text_only,
+    as_text,
     text_as_html,
     source_as_text,
 };
@@ -306,6 +307,16 @@ public:
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
+};
+
+struct Internal_Arg_Source_As_Text_Behavior : Block_Directive_Behavior {
+
+    [[nodiscard]]
+    constexpr explicit Internal_Arg_Source_As_Text_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Processing_Status splice(Content_Policy&, const Invocation&, Context&) const override;
 };
 
 /// @brief Common behavior for generating `<script>` and `<style>` elements
@@ -902,6 +913,27 @@ struct Alias_Behavior final : Unit_Directive_Behavior {
 
     [[nodiscard]]
     Processing_Status do_evaluate(const Invocation&, Context&) const override;
+};
+
+struct Internal_Expect_Diagnostic_Behavior final : Block_Directive_Behavior {
+private:
+    const Processing_Status m_expected_status;
+    const Severity m_expected_severity;
+
+public:
+    [[nodiscard]]
+    constexpr explicit Internal_Expect_Diagnostic_Behavior(
+        Processing_Status status,
+        Severity severity
+    )
+        : m_expected_status { status }
+        , m_expected_severity { severity }
+    {
+    }
+
+    [[nodiscard]]
+    Processing_Status
+    splice(Content_Policy& out, const Invocation& call, Context& context) const override;
 };
 
 struct [[nodiscard]]

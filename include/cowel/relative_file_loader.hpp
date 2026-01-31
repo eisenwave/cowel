@@ -63,6 +63,16 @@ public:
     {
         return int(id) < int(m_entries.size());
     }
+
+    [[nodiscard]]
+    std::pmr::memory_resource* get_memory() const
+    {
+        return m_entries.get_allocator().resource();
+    }
+
+    [[nodiscard]]
+    Function_Ref<cowel_file_result_u8(cowel_string_view_u8, cowel_file_id) noexcept>
+    as_cowel_load_file_fn() noexcept;
 };
 
 } // namespace cowel

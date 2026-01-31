@@ -30,38 +30,52 @@
 #include "cowel/output_language.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/services.hpp"
+#include "cowel/settings.hpp"
 #include "cowel/ulight_highlighter.hpp"
 
 namespace cowel {
+
+Allocator_Options Allocator_Options::from_memory_resource( //
+    std::pmr::memory_resource* const memory
+) noexcept
+{
+    if (memory == nullptr) {
+        return {};
+    }
+
+    constexpr auto alloc_fn = [](std::pmr::memory_resource* memory, std::size_t size,
+                                 std::size_t alignment) noexcept -> void* {
+#ifdef COWEL_EXCEPTIONS
+        try {
+#endif
+            return memory->allocate(size, alignment);
+#ifdef COWEL_EXCEPTIONS
+        } catch (...) {
+            return nullptr;
+        }
+#endif
+    };
+    constexpr auto free_fn = [](std::pmr::memory_resource* memory, void* pointer, std::size_t size,
+                                std::size_t alignment) noexcept -> void {
+        memory->deallocate(pointer, size, alignment);
+    };
+
+    const Function_Ref<void*(std::size_t, std::size_t) noexcept> alloc_ref
+        = { const_v<alloc_fn>, memory };
+    const Function_Ref<void(void*, std::size_t, std::size_t) noexcept> free_ref
+        = { const_v<free_fn>, memory };
+
+    return {
+        .alloc = alloc_ref.get_invoker(),
+        .alloc_data = alloc_ref.get_entity(),
+        .free = free_ref.get_invoker(),
+        .free_data = free_ref.get_entity(),
+    };
+}
+
 namespace {
 
 static_assert(int(File_Id::main) == COWEL_FILE_ID_MAIN);
-
-using cowel::as_u8string_view;
-
-[[nodiscard]]
-std::u8string_view as_u8string_view(cowel_string_view_u8 str)
-{
-    return { str.text, str.length };
-}
-
-[[nodiscard]]
-std::u8string_view as_u8string_view(cowel_mutable_string_view_u8 str)
-{
-    return { str.text, str.length };
-}
-
-[[nodiscard]]
-cowel_string_view as_cowel_string_view(std::string_view str)
-{
-    return { str.data(), str.length() };
-}
-
-[[nodiscard]]
-cowel_string_view_u8 as_cowel_string_view(std::u8string_view str)
-{
-    return { str.data(), str.length() };
-}
 
 /// If `chars` is contiguous, simply returns the underlying `u8string_view`.
 /// Otherwise, spills the contents of `chars` into `buffer`.
@@ -181,7 +195,7 @@ public:
     {
     }
 
-    void operator()(Diagnostic diagnostic) final
+    void operator()(Diagnostic diagnostic) override
     {
         if (!m_log) {
             return;
@@ -202,6 +216,127 @@ public:
         m_log(m_log_data, &diagnostic_u8);
         m_buffer.clear();
     }
+
+    [[nodiscard]]
+    Function_Ref<void(const cowel_diagnostic_u8*) noexcept> as_cowel_log_fn() override
+    {
+        return { m_log, m_log_data };
+    }
+};
+
+struct Syntax_Highlighter_From_Options final : Syntax_Highlighter {
+private:
+    std::pmr::vector<std::u8string_view> m_supported_languages;
+    cowel_syntax_highlighter_u8 m_highlighter;
+    Syntax_Highlighter* m_fallback;
+
+public:
+    [[nodiscard]]
+    explicit Syntax_Highlighter_From_Options(
+        const cowel_syntax_highlighter_u8* highlighter,
+        Syntax_Highlighter* fallback,
+        std::pmr::memory_resource* const memory
+    )
+        : m_supported_languages { memory }
+        , m_highlighter { *highlighter }
+        , m_fallback { fallback }
+    {
+        COWEL_ASSERT(m_highlighter.supported_languages);
+        COWEL_ASSERT(m_highlighter.highlight_by_lang_name);
+        COWEL_ASSERT(m_highlighter.highlight_by_lang_index);
+
+        const std::span<const cowel_string_view_u8> cowel_supported_languages {
+            highlighter->supported_languages,
+            highlighter->supported_languages_size,
+        };
+        const auto fallback_languages = m_fallback ? m_fallback->get_supported_languages()
+                                                   : std::span<const std::u8string_view> {};
+        m_supported_languages.reserve(cowel_supported_languages.size() + fallback_languages.size());
+        for (const auto lang : cowel_supported_languages) {
+            m_supported_languages.push_back(as_u8string_view(lang));
+        }
+        m_supported_languages.insert(
+            m_supported_languages.end(), fallback_languages.begin(), fallback_languages.end()
+        );
+        std::ranges::sort(m_supported_languages);
+        const auto erased_range = std::ranges::unique(m_supported_languages);
+        m_supported_languages.erase(erased_range.begin(), erased_range.end());
+    }
+
+    [[nodiscard]]
+    std::span<const std::u8string_view> get_supported_languages() const override
+    {
+        return m_supported_languages;
+    }
+
+    [[nodiscard]]
+    Distant<std::u8string_view> match_supported_language(
+        const std::u8string_view language,
+        std::pmr::memory_resource* const memory
+    ) const override
+    {
+        const auto [index, distance] = closest_match(m_supported_languages, language, memory);
+        return { m_supported_languages[index], distance };
+    }
+
+    [[nodiscard]]
+    Result<void, Syntax_Highlight_Error> operator()(
+        std::pmr::vector<Highlight_Span>& out,
+        const std::u8string_view code,
+        const std::u8string_view language,
+        std::pmr::memory_resource* const memory
+    ) override
+    {
+        constexpr auto flush = [](std::pmr::vector<Highlight_Span>* out_ptr,
+                                  cowel_syntax_highlight_token* tokens, std::size_t size) noexcept {
+            // cowel_syntax_highlight_token is identical in layout to Highlight_Span,
+            // so rather than copying element by element, we can just memcpy everything.
+            // Unfortunately, there is no resize_and_overwrite function for std::vector,
+            // so resize and overwriting happen in separate steps, and require some zeroing.
+            const std::size_t initial_size = out_ptr->size();
+            out_ptr->resize(initial_size + size);
+            static_assert(std::is_trivially_copyable_v<cowel_syntax_highlight_token>);
+            static_assert(std::is_trivially_copyable_v<Highlight_Span>);
+            static_assert(sizeof(cowel_syntax_highlight_token) == sizeof(Highlight_Span));
+            std::memcpy(
+                out_ptr->data() + initial_size, tokens, size * sizeof(cowel_syntax_highlight_token)
+            );
+        };
+        // We create this Function_Ref just to stash away the ugliness
+        // of downcasting void* and const_casting.
+        const Function_Ref<void(cowel_syntax_highlight_token*, std::size_t) noexcept> flush_ref {
+            const_v<flush>, &out
+        };
+
+        cowel_syntax_highlight_token tokens[512];
+        const cowel_syntax_highlight_buffer buffer {
+            .data = tokens,
+            .size = std::size(tokens),
+            .flush = flush_ref.get_invoker(),
+            .flush_data = flush_ref.get_entity(),
+        };
+        const cowel_syntax_highlight_status status = m_highlighter.highlight_by_lang_name(
+            m_highlighter.data, &buffer, code.data(), code.size(), language.data(), language.size()
+        );
+        switch (status) {
+        case COWEL_SYNTAX_HIGHLIGHT_OK: {
+            return {};
+        }
+        case COWEL_SYNTAX_HIGHLIGHT_ERROR: {
+            return Syntax_Highlight_Error::other;
+        }
+        case COWEL_SYNTAX_HIGHLIGHT_UNSUPPORTED_LANGUAGE: {
+            if (!m_fallback) {
+                return Syntax_Highlight_Error::unsupported_language;
+            }
+            return (*m_fallback)(out, code, language, memory);
+        }
+        case COWEL_SYNTAX_HIGHLIGHT_BAD_CODE: {
+            return Syntax_Highlight_Error::bad_code;
+        }
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid status.");
+    }
 };
 
 [[nodiscard]]
@@ -220,7 +355,6 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 
     File_Loader_From_Options file_loader { options.load_file, options.load_file_data, memory };
     Logger_From_Options logger { options, memory };
-    static constinit Ulight_Syntax_Highlighter highlighter;
 
     [[maybe_unused]]
     const auto try_log
@@ -240,7 +374,29 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 
     try_log(u8"Trace logging enabled."sv, Severity::trace);
 
-    const auto source = as_u8string_view(options.source);
+    static constinit Ulight_Syntax_Highlighter ulight_highlighter;
+    auto from_options_highlighter = [&] -> std::optional<Syntax_Highlighter_From_Options> {
+        if (!options.highlighter) {
+            return {};
+        }
+        Syntax_Highlighter* const fallback
+            = options.highlight_policy == COWEL_SYNTAX_HIGHLIGHT_POLICY_FALL_BACK
+            ? &ulight_highlighter
+            : nullptr;
+        return Syntax_Highlighter_From_Options { options.highlighter, fallback, memory };
+    }();
+    auto& highlighter = [&] -> Syntax_Highlighter& {
+        if (from_options_highlighter) {
+            return *from_options_highlighter;
+        }
+        if (options.highlight_policy == COWEL_SYNTAX_HIGHLIGHT_POLICY_EXCLUSIVE) {
+            return no_support_syntax_highlighter;
+        }
+        return ulight_highlighter;
+    }();
+
+    const auto preamble_source = as_u8string_view(options.preamble);
+    const auto main_source = as_u8string_view(options.source);
 
     const std::convertible_to<Parse_Error_Consumer> auto on_parse_error
         = [&](std::u8string_view id, const Source_Span& pos, Char_Sequence8 message) {
@@ -248,9 +404,17 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
               logger(Diagnostic { Severity::error, id, file_pos, message });
           };
     ast::Pmr_Vector<ast::Markup_Element> root_content;
-    const bool parse_success
-        = lex_and_parse_and_build(root_content, source, File_Id::main, memory, on_parse_error);
-    if (!parse_success) {
+    const bool preamble_parse_success = lex_and_parse_and_build(
+        root_content, preamble_source, File_Id::main, memory, on_parse_error //
+    );
+    if (!preamble_parse_success) {
+        return { .status = COWEL_PROCESSING_ERROR, .output = {} };
+    }
+
+    const bool main_parse_success = lex_and_parse_and_build(
+        root_content, main_source, File_Id::main, memory, on_parse_error //
+    );
+    if (!main_parse_success) {
         return { .status = COWEL_PROCESSING_ERROR, .output = {} };
     }
 

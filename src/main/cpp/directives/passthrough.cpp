@@ -14,6 +14,7 @@
 
 #include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/collecting_logger.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
@@ -344,6 +345,89 @@ Self_Closing_Behavior::splice(Content_Policy& out, const Invocation& call, Conte
     );
     attributes.end_empty();
     return status;
+}
+
+[[nodiscard]]
+Processing_Status Internal_Expect_Diagnostic_Behavior::splice(
+    Content_Policy& out,
+    const Invocation& call,
+    Context& context
+) const
+{
+    String_Matcher id_matcher { context.get_transient_memory() };
+    Group_Member_Matcher id_member { u8"id"sv, Optionality::mandatory, id_matcher };
+    Group_Member_Matcher* parameters[] { &id_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    if (const auto match_status
+        = call_matcher.match_call(call, context, make_fail_callback(), Processing_Status::fatal);
+        match_status != Processing_Status::ok) {
+        return match_status;
+    }
+    const std::u8string_view expected_id = id_matcher.get();
+
+    Logger* const old_logger = &context.get_logger();
+    COWEL_ASSERT(old_logger);
+    COWEL_ASSERT(old_logger->can_log(Severity::error));
+
+    Processing_Status result = Processing_Status::ok;
+
+    Expecting_Logger expecting_logger {
+        old_logger->get_min_severity(),
+        m_expected_severity,
+        expected_id,
+        context.get_transient_memory(),
+    };
+    context.set_logger(expecting_logger);
+    const Processing_Status status
+        = splice_all(out, call.get_content_span(), call.content_frame, context);
+
+    if (status != m_expected_status) {
+        (*old_logger)(Diagnostic {
+            .severity = Severity::error,
+            .id = u8"test.diagnostic"sv,
+            .location = call.directive.get_source_span(),
+            .message = joined_char_sequence(
+                {
+                    u8"Expected the block to evaluate to status \""sv,
+                    status_name(m_expected_status),
+                    u8"\", but got \""sv,
+                    status_name(status),
+                    u8"\"."sv,
+                }
+            ),
+        });
+        result = Processing_Status::error;
+    }
+    for (const Collected_Diagnostic& violation : expecting_logger.get_violations()) {
+        (*old_logger)(Diagnostic {
+            std::max(Severity::error, violation.severity),
+            as_u8string_view(violation.id),
+            violation.location,
+            as_u8string_view(violation.message),
+        });
+        result = Processing_Status::error;
+    }
+    if (!expecting_logger.was_expected_logged()) {
+        (*old_logger)(Diagnostic {
+            .severity = Severity::error,
+            .id = u8"test.diagnostic"sv,
+            .location = call.directive.get_source_span(),
+            .message = joined_char_sequence(
+                {
+                    u8"Expected the block to produce the diagnostic \""sv,
+                    expected_id,
+                    u8"\", but it was not logged (with the expected severity)."sv,
+                }
+            ),
+        });
+        result = Processing_Status::error;
+    }
+
+    context.set_logger(*old_logger);
+    return result;
 }
 
 } // namespace cowel

@@ -395,8 +395,7 @@ public:
     {
         const CST_Instruction push_doc = pop_instruction();
         COWEL_ASSERT(push_doc.kind == CST_Instruction_Kind::push_document);
-        out.clear();
-        out.reserve(push_doc.n);
+        out.reserve(out.size() + push_doc.n);
 
         for (std::size_t i = 0; i < push_doc.n; ++i) {
             append_markup_element(out);
@@ -539,7 +538,9 @@ private:
             return result;
         }();
         const std::u8string_view name = extract(name_span);
-        const std::size_t source_length = peek_token().location.begin - initial_pos.begin;
+        const std::size_t source_end
+            = m_token_index >= m_tokens.size() ? m_source.size() : peek_token().location.begin;
+        const std::size_t source_length = source_end - initial_pos.begin;
         const auto source_span = raw_name_span.with_length(source_length);
         const std::u8string_view source = extract(source_span);
 
@@ -781,11 +782,12 @@ private:
             }
             append_markup_element(content);
         }
+        const auto closing_token = m_tokens[m_token_index];
         advance_by_tokens(1);
 
         const File_Source_Span source_span {
             initial_pos,
-            peek_token().location.begin - initial_pos.begin,
+            closing_token.location.end() - initial_pos.begin,
             m_file,
         };
         return push_kind == CST_Instruction_Kind::push_block

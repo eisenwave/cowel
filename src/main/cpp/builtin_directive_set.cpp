@@ -18,8 +18,16 @@
 namespace cowel {
 namespace {
 
+constexpr Internal_Arg_Source_As_Text_Behavior internal_arg_source_as_text //
+    {};
 constexpr Internal_Eq_Behavior internal_eq //
     {};
+constexpr Internal_Expect_Diagnostic_Behavior internal_expect_error //
+    { Processing_Status::error, Severity::error };
+constexpr Internal_Expect_Diagnostic_Behavior internal_expect_fatal //
+    { Processing_Status::fatal, Severity::fatal };
+constexpr Internal_Expect_Diagnostic_Behavior internal_expect_warning //
+    { Processing_Status::ok, Severity::warning };
 
 constexpr Unary_Numeric_Expression_Behavior cowel_abs //
     { Unary_Numeric_Expression_Kind::abs };
@@ -31,6 +39,8 @@ constexpr Alias_Behavior cowel_alias //
     {};
 constexpr Logical_Expression_Behavior cowel_and //
     { Logical_Expression_Kind::logical_and };
+constexpr Policy_Behavior cowel_as_text //
+    { Known_Content_Policy::as_text };
 constexpr Unary_Numeric_Expression_Behavior cowel_ceil //
     { Unary_Numeric_Expression_Kind::ceil };
 constexpr Char_By_Entity_Behavior cowel_char_by_entity //
@@ -377,7 +387,11 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(Btodo),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(Bug),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(Bwarn),
+    { u8"__arg_source_as_text"sv, &internal_arg_source_as_text },
     { u8"__eq"sv, &internal_eq },
+    { u8"__expect_error"sv, &internal_expect_error },
+    { u8"__expect_fatal"sv, &internal_expect_fatal },
+    { u8"__expect_warning"sv, &internal_expect_warning },
     COWEL_NAME_AND_BEHAVIOR_ENTRY(b),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(bib),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(blockquote),
@@ -394,6 +408,7 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_add),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_alias),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_and),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_as_text),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_ceil),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_entity),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_name),

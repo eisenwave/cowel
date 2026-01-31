@@ -324,7 +324,7 @@ Processing_Status splice_to_plaintext(
 )
 {
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
-    Plaintext_Content_Policy policy { sink };
+    Text_Only_Policy policy { sink };
     return splice_all(policy, content, frame, context);
 }
 
@@ -515,7 +515,7 @@ splice_value_to_plaintext(std::pmr::vector<char8_t>& out, const Value& value, Co
         return Processing_Status::ok;
     }
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
-    Plaintext_Content_Policy policy { sink };
+    Text_Only_Policy policy { sink };
     return splice_value(policy, value, context);
 }
 
@@ -525,7 +525,7 @@ Result<Value, Processing_Status> splice_value_to_string(const Value& value, Cont
         return value;
     }
     Vector_Text_Sink text { Output_Language::text, context.get_transient_memory() };
-    Plaintext_Content_Policy policy { text };
+    Text_Only_Policy policy { text };
     const Processing_Status status = splice_value(policy, value, context);
     if (status != Processing_Status::ok) {
         return status;
@@ -543,7 +543,7 @@ Processing_Status splice_value_to_plaintext(
     COWEL_DEBUG_ASSERT(value.is_spliceable_value());
 
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
-    Plaintext_Content_Policy policy { sink };
+    Text_Only_Policy policy { sink };
     return splice_value(policy, value, frame, context);
 }
 
@@ -623,7 +623,7 @@ Plaintext_Result splice_to_plaintext_optimistic(
     //       However, we could special-case certain directive behaviors
     //       which are known to produce short string constants.
     Capturing_Ref_Text_Sink sink { buffer, Output_Language::text };
-    Plaintext_Content_Policy out { sink };
+    Text_Only_Policy out { sink };
     const Processing_Status status = splice_directive_invocation(out, directive, frame, context);
     return { .status = status, .string = as_u8string_view(buffer) };
 }

@@ -78,7 +78,9 @@ void init_options(
         .load_file_data = nullptr,
         .log = log_callback,
         .log_data = nullptr,
-        .reserved_1 = {},
+        .highlighter = nullptr,
+        .highlight_policy = COWEL_SYNTAX_HIGHLIGHT_POLICY_FALL_BACK,
+        .preamble = {},
     };
 }
 
