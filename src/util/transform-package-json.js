@@ -13,6 +13,7 @@ const [inputPath, outputPath] = argv.slice(2);
 const content = await readFile(inputPath, "utf-8");
 const json = JSON.parse(content);
 
+delete json.scripts;
 delete json.devDependencies;
 
 await writeFile(outputPath, JSON.stringify(json, null, 2) + "\n");

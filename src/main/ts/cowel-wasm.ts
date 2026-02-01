@@ -31,17 +31,32 @@ export enum Severity {
     none = 100,
 }
 
+export enum SyntaxHighlightPolicy {
+    fall_back = 0,
+    exclusive = 1,
+}
+
 export type GenOptions = {
     source: string;
     mode: Mode;
     minSeverity: Severity;
+    preservedVariables?: string[];
+    highlightPolicy: SyntaxHighlightPolicy;
+    enableXHighlighting: boolean;
     loadFile(path: string, baseFileId: number): FileResult;
     log(diagnostic: Diagnostic): void;
 };
 
 export type GenResult = {
+    /** The processing status from document generation. */
     status: ProcessingStatus;
+    /** The generated HTML. */
     output: string;
+    /** The variable names passed in via `preservedVariables`,
+     * mapped to their values at the end of processing,
+     * or mapped to empty strings if the variables have not been set.
+     * In any case, all the provided keys are present. */
+    variables: Record<string, string>;
 };
 
 export type FileResult = {
@@ -106,6 +121,7 @@ interface CowelWasmEnvObject {
     ) => void;
     log: (diagnosticAddress: Address) => void;
     emscripten_notify_memory_growth: (byteLength: number) => void;
+    consume_variables: (variables: Address, length: number) => void;
 
     big_int_i32: (x: number) => BigIntId;
     big_int_i64: (x: bigint) => BigIntId;
@@ -166,7 +182,11 @@ type CowelWasmExports = WebAssembly.Exports & {
         sourceAddress: Address,
         sourceLength: number,
         mode: number,
-        min_log_severity: number
+        minLogSeverity: Severity,
+        preservedVariablesAddress: Address,
+        preservedVariablesSize: number,
+        highlightPolicy: SyntaxHighlightPolicy,
+        enableXHighlighting: boolean,
     ): void;
     register_assertion_handler(): void;
     generate_code_citation(
@@ -183,6 +203,13 @@ type CowelWasmExports = WebAssembly.Exports & {
     readonly cowel_big_int_small_result: Address;
     readonly cowel_big_int_big_result: Address;
     readonly cowel_big_int_div_result: Address;
+};
+
+type OrchestrationAllocations = {
+    options: Allocation,
+    source: Allocation,
+    preservedVariablesArray: Allocation | null,
+    preservedVariablesStrings: Allocation[],
 };
 
 type BigIntId = number;
@@ -671,6 +698,9 @@ export class CowelWasm {
     private heap_i64!: BigInt64Array;
     private bigInts: BigIntApi;
 
+    private preservedVariableNames: string[] = [];
+    private capturedVariables: string[] = [];
+
     private loadFile!: (path: string, baseFileId: number) => FileResult;
     private log!: (diagnostic: Diagnostic) => void;
 
@@ -729,6 +759,14 @@ export class CowelWasm {
                 log: (diagnosticAddress: Address) => {
                     const diagnostic = this.decodeDiagnostic(diagnosticAddress);
                     this.log(diagnostic);
+                },
+                consume_variables: (variablesAddress: Address, length: number) => {
+                    this.capturedVariables = [];
+                    for (let i = 0; i < length; ++i) {
+                        const textAddress = this.heap_u32[variablesAddress / 4 + i * 2 + 0];
+                        const textLength = this.heap_u32[variablesAddress / 4 + i * 2 + 1];
+                        this.capturedVariables.push(this.decodeUtf8(textAddress, textLength));
+                    }
                 },
                 emscripten_notify_memory_growth: (byteLength: number) => {
                     this.onMemoryGrowth(byteLength);
@@ -799,6 +837,13 @@ export class CowelWasm {
         this.free(genResult);
         this.free(allocations.source);
         this.free(allocations.options);
+        // Free preserved variables allocations.
+        for (const allocation of allocations.preservedVariablesStrings) {
+            this.free(allocation);
+        }
+        if (allocations.preservedVariablesArray !== null) {
+            this.free(allocations.preservedVariablesArray);
+        }
 
         return result;
     }
@@ -892,7 +937,14 @@ export class CowelWasm {
         const outputSize = this.heap_u32[address / 4 + 2];
         const output = this.decodeUtf8(outputAddress, outputSize);
 
-        return { status, output };
+        const variables: Record<string, string> = {};
+        for (let i = 0; i < this.preservedVariableNames.length; ++i) {
+            const name = this.preservedVariableNames[i];
+            const value = i < this.capturedVariables.length ? this.capturedVariables[i] : "";
+            variables[name] = value;
+        }
+
+        return { status, output, variables };
     }
 
     /**
@@ -915,9 +967,32 @@ export class CowelWasm {
      * @param genOptions Options for generation.
      * @returns The allocated `cowel_options_u8` and source text.
      */
-    private makeOptions(genOptions: GenOptions): { options: Allocation, source: Allocation } {
+    private makeOptions(genOptions: GenOptions): OrchestrationAllocations {
         const options = this.alloc2(88, 4);
         const source = this.allocUtf8(genOptions.source);
+
+        const preservedVariables = genOptions.preservedVariables ?? [];
+        this.preservedVariableNames = preservedVariables;
+        this.capturedVariables = [];
+
+        let preservedVariablesAddress = 0;
+        const preservedVariablesStrings: Allocation[] = [];
+        let preservedVariablesArray: Allocation | null = null;
+
+        if (preservedVariables.length > 0) {
+            // The type of the array is cowel_string_view_u8[],
+            // where each entry is 8 bytes large.
+            const arrayByteSize = preservedVariables.length * 8;
+            preservedVariablesArray = this.alloc2(arrayByteSize, 4);
+            preservedVariablesAddress = preservedVariablesArray.address;
+
+            for (let i = 0; i < preservedVariables.length; ++i) {
+                const strAlloc = this.allocUtf8(preservedVariables[i]);
+                preservedVariablesStrings.push(strAlloc);
+                this.heap_u32[preservedVariablesAddress / 4 + i * 2 + 0] = strAlloc.address;
+                this.heap_u32[preservedVariablesAddress / 4 + i * 2 + 1] = strAlloc.size;
+            }
+        }
 
         this.exports.init_options(
             options.address,
@@ -925,9 +1000,18 @@ export class CowelWasm {
             source.size,
             genOptions.mode,
             genOptions.minSeverity,
+            preservedVariablesAddress,
+            preservedVariables.length,
+            genOptions.highlightPolicy,
+            genOptions.enableXHighlighting,
         );
 
-        return { options, source };
+        return {
+            options,
+            source,
+            preservedVariablesArray,
+            preservedVariablesStrings,
+        };
     }
 
     /**

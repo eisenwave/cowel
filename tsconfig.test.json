@@ -1,14 +1,14 @@
 {
     "extends": "./tsconfig.base.json",
     "compilerOptions": {
-        "incremental": true,
-        "tsBuildInfoFile": "build/.tsbuildinfo",
-        "outDir": "build/npm",
+        "outDir": "build/test",
         "rootDirs": [
+            "src/test/ts",
             "src/main/ts"
         ]
     },
     "include": [
+        "src/test",
         "src/main"
     ]
 }

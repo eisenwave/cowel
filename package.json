@@ -6,7 +6,11 @@
     "type": "module",
     "bin": "cowel.js",
     "directories": {},
-    "scripts": {},
+    "scripts": {
+        "build": "tsc",
+        "build:test": "tsc -p tsconfig.test.json",
+        "test": "node --test build/test/test/ts/*.js"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/eisenwave/cowel.git"

@@ -261,6 +261,8 @@ async function run(
         source: mainFileResult,
         mode: cowel.Mode.document,
         minSeverity: options.minSeverity,
+        highlightPolicy: cowel.SyntaxHighlightPolicy.fall_back,
+        enableXHighlighting: false,
         loadFile,
         log,
     });

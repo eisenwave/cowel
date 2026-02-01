@@ -25,14 +25,15 @@
 #include "cowel/directive_processing.hpp"
 #include "cowel/document_generation.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/integration_testing.hpp"
 #include "cowel/output_language.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/print.hpp"
 #include "cowel/relative_file_loader.hpp"
+#include "cowel/x_highlighter.hpp"
 
 #include "diff.hpp"
 #include "io.hpp"
-#include "test_highlighter.hpp"
 
 namespace cowel {
 namespace {
@@ -111,14 +112,6 @@ void print_diagnostic(
     out.append(u8'\n');
 }
 
-constexpr std::u8string_view preamble = u8R"!(
-\cowel_macro(test_input){\cowel_var_let(__test_input,"\cowel_as_text{\cowel_to_html{\cowel_put}}")}
-\cowel_macro(test_output){\cowel_var_let(__test_output,"\__arg_source_as_text(cowel_put())")}
-\cowel_alias(test_expect_warning){__expect_warning}
-\cowel_alias(test_expect_error){__expect_error}
-\cowel_alias(test_expect_fatal){__expect_fatal}
-)!"sv;
-
 TEST(Document_Generation, file_tests)
 {
     Global_Memory_Resource memory;
@@ -195,7 +188,7 @@ TEST(Document_Generation, file_tests)
             .log_data = log_fn.get_entity(),
             .highlighter = &syntax_highlighter,
             .highlight_policy = COWEL_SYNTAX_HIGHLIGHT_POLICY_FALL_BACK,
-            .preamble = as_cowel_string_view(preamble),
+            .preamble = as_cowel_string_view(integration_test_preamble),
         };
 
         const cowel_gen_result_u8 result = cowel_generate_html_u8(&cowel_options);

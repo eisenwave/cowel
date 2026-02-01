@@ -146,6 +146,9 @@ jobs:
         --verbose
 
     - name: Test
+      run: npm test
+
+    - name: Test CLI
       run: |
         node "${{ steps.strings.outputs.build_dir }}/npm/" run \
           docs/index.cow \

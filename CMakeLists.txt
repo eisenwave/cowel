@@ -188,6 +188,7 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/document_generation.hpp
     include/cowel/document_sections.hpp
     include/cowel/fwd.hpp
+    include/cowel/integration_testing.hpp
     include/cowel/invocation.hpp
     include/cowel/json.hpp
     include/cowel/lex.hpp
@@ -321,6 +322,7 @@ if(DEFINED EMSCRIPTEN)
     add_custom_target(cowel-npm ALL
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${NPM_DIR}"
         COMMAND "${NPX_EXECUTABLE}" tsc
+        COMMAND "${NPX_EXECUTABLE}" tsc -p "${CMAKE_CURRENT_LIST_DIR}/tsconfig.test.json"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_LIST_DIR}/CHANGELOG.md"
             "${CMAKE_CURRENT_BINARY_DIR}/cowel.wasm"

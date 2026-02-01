@@ -1,5 +1,5 @@
-#ifndef COWEL_TEST_HIGHLIGHTER_HPP
-#define COWEL_TEST_HIGHLIGHTER_HPP
+#ifndef COWEL_X_HIGHLIGHTER_HPP
+#define COWEL_X_HIGHLIGHTER_HPP
 
 #include <cstddef>
 #include <memory_resource>
@@ -21,7 +21,7 @@ namespace cowel {
 /// @brief Runs syntax highlighting for code of a test-only language
 /// where sequences of the character `x` are considered keywords.
 /// Nothing else is highlighted.
-inline void highlight_x(std::pmr::vector<Highlight_Span>& out, std::u8string_view code)
+inline void highlight_x(std::pmr::vector<Highlight_Span>& out, const std::u8string_view code)
 {
     char8_t prev = 0;
     std::size_t begin = 0;
@@ -82,7 +82,7 @@ X_Highlighter final : Syntax_Highlighter {
     }
 
     [[nodiscard]]
-    cowel_syntax_highlighter_u8 as_cowel_syntax_highlighter()
+    constexpr cowel_syntax_highlighter_u8 as_cowel_syntax_highlighter()
     {
         static constexpr cowel_string_view_u8 supported_languages { u8"x", 1 };
 

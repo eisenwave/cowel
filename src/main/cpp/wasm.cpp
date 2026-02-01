@@ -5,9 +5,12 @@
 #include "cowel/util/annotated_string.hpp"
 
 #include "cowel/cowel.h"
+#include "cowel/cowel_lib.hpp"
 #include "cowel/diagnostic_highlight.hpp"
+#include "cowel/integration_testing.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/print.hpp"
+#include "cowel/x_highlighter.hpp"
 
 // The purpose of this cpp file is to accept imports
 // which can be used as callbacks within the cowel.h API.
@@ -25,6 +28,11 @@ cowel_import_load_file_u8(const char8_t* path_text, size_t path_length, cowel_fi
 
 __attribute__((import_module("env"), import_name("log"))) // NOLINT
 void cowel_import_log_u8(const cowel_diagnostic_u8*);
+
+__attribute__((import_module("env"), import_name("consume_variables"))) // NOLINT
+void cowel_import_consume_variables_u8(const cowel_string_view_u8* variables, size_t length);
+
+//
 }
 
 #ifdef COWEL_EMSCRIPTEN
@@ -47,28 +55,44 @@ void log_callback(const void*, const cowel_diagnostic_u8* diagnostic) noexcept
     cowel_import_log_u8(diagnostic);
 }
 
+void consume_variables_callback(const void*, const cowel_string_view_u8* variables, size_t length)
+{
+    cowel_import_consume_variables_u8(variables, length);
+}
+
 } // namespace
 
 extern "C" {
 
 COWEL_EXPORT
 void init_options(
-    cowel_options_u8* result,
-    const char8_t* source_text,
-    std::size_t source_length,
-    cowel_mode mode,
-    cowel_severity min_log_severity
+    cowel_options_u8* const result,
+    const char8_t* const source_text,
+    const std::size_t source_length,
+    const cowel_mode mode,
+    const cowel_severity min_log_severity,
+    const cowel_string_view_u8* const preserved_variables,
+    const size_t preserved_variables_size,
+    const cowel_syntax_highlight_policy highlight_policy,
+    const bool enable_x_highlighting
 ) noexcept
 {
+    static constexpr cowel_syntax_highlighter_u8 x_highlighter
+        = cowel::x_highlighter.as_cowel_syntax_highlighter();
+    const auto* const highlighter = enable_x_highlighting ? &x_highlighter : nullptr;
+
+    const auto preamble = enable_x_highlighting
+        ? cowel::as_cowel_string_view(cowel::integration_test_preamble)
+        : cowel_string_view_u8 {};
+
     *result = cowel_options_u8 {
         .source = { source_text, source_length },
-        // FIXME: embed highlight theme in this binary for now perhaps?
         .highlight_theme_json = { nullptr, 0 },
         .mode = mode,
         .min_log_severity = min_log_severity,
-        .preserved_variables = nullptr,
-        .preserved_variables_size = 0,
-        .consume_variables = nullptr,
+        .preserved_variables = preserved_variables,
+        .preserved_variables_size = preserved_variables_size,
+        .consume_variables = consume_variables_callback,
         .consume_variables_data = nullptr,
         .alloc = nullptr,
         .alloc_data = nullptr,
@@ -78,9 +102,9 @@ void init_options(
         .load_file_data = nullptr,
         .log = log_callback,
         .log_data = nullptr,
-        .highlighter = nullptr,
-        .highlight_policy = COWEL_SYNTAX_HIGHLIGHT_POLICY_FALL_BACK,
-        .preamble = {},
+        .highlighter = highlighter,
+        .highlight_policy = highlight_policy,
+        .preamble = preamble,
     };
 }
 
