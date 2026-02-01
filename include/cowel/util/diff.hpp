@@ -1,0 +1,113 @@
+#ifndef COWEL_DIFF_HPP
+#define COWEL_DIFF_HPP
+
+#include <algorithm>
+#include <cstddef>
+#include <memory_resource>
+#include <span>
+#include <string_view>
+#include <vector>
+
+#include "cowel/util/assert.hpp"
+
+namespace cowel {
+
+enum struct Edit_Type : signed char {
+    /// @brief Delete an element in the source sequence.
+    /// Advance by one element in the source sequence.
+    del = -1,
+    /// @brief Keep the element in the source sequence.
+    /// Advance by one element in both sequences.
+    common = 0,
+    /// @brief Insert the element from the target sequence into the source sequence.
+    /// Advance by one element in the target sequence.
+    ins = 1,
+};
+
+/// @brief Uses the
+/// [Needleman-Wunsch algorithm](https://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm)
+/// to compute the Shortest Edit Script to convert sequence `from` into sequence `to`.
+inline std::pmr::vector<Edit_Type> shortest_edit_script(
+    const std::span<const std::u8string_view> from,
+    const std::span<const std::u8string_view> to,
+    std::pmr::memory_resource* const memory = std::pmr::get_default_resource()
+)
+{
+    std::pmr::vector<std::size_t> f_data((from.size() + 1) * (to.size() + 1), memory);
+    const auto F = [&](std::size_t i, std::size_t j) -> std::size_t& {
+        const std::size_t index = (i * (to.size() + 1)) + j;
+        COWEL_DEBUG_ASSERT(index < f_data.size());
+        return f_data[index];
+    };
+
+    for (std::size_t i = 0; i <= from.size(); ++i) {
+        F(i, 0) = i;
+    }
+    for (std::size_t j = 0; j <= to.size(); ++j) {
+        F(0, j) = j;
+    }
+    for (std::size_t i = 1; i <= from.size(); ++i) {
+        for (std::size_t j = 1; j <= to.size(); ++j) {
+            // The costs here are essentially the same as for Levenshtein distance computation,
+            // except that if the two strings mismatch at a given index,
+            // we consider the cost to be infinite.
+            // This way, the output is made of pure insertions and deletions;
+            // substitutions don't exist.
+            F(i, j) = std::min(
+                {
+                    from[i - 1] == to[j - 1] ? F(i - 1, j - 1) : std::size_t(-1), // common
+                    F(i - 1, j) + 1, // deletion
+                    F(i, j - 1) + 1, // insertion
+                }
+            );
+        }
+    }
+
+    std::size_t i = from.size();
+    std::size_t j = to.size();
+
+    std::pmr::vector<Edit_Type> out { memory };
+    while (i != 0 || j != 0) {
+        if (i != 0 && j != 0 && from[i - 1] == to[j - 1]) {
+            out.push_back(Edit_Type::common);
+            --i;
+            --j;
+        }
+        else if (i != 0 && F(i, j) == F(i - 1, j) + 1) {
+            out.push_back(Edit_Type::del);
+            --i;
+        }
+        else {
+            out.push_back(Edit_Type::ins);
+            --j;
+        }
+    }
+
+    std::ranges::reverse(out);
+
+    // At this stage, we technically have a valid shortest edit script.
+    // However, the script sometimes contains insertions first, sometimes deletions first.
+    // This is bad for human-readability; users typically expect deletions to come first.
+    // To solve this, we partition deletions before insertions
+    // within all block consisting of deletions and insertions.
+
+    auto it = out.begin();
+    while (it != out.end()) {
+        // Find the next block of insertions/deletions.
+        const auto next_mod_begin = std::ranges::find_if(it, out.end(), [](const Edit_Type t) {
+            return t != Edit_Type::common;
+        });
+        const auto next_mod_end = std::ranges::find(next_mod_begin, out.end(), Edit_Type::common);
+        // Partition the block so that deletions all precede insertions.
+        std::ranges::partition(next_mod_begin, next_mod_end, [](Edit_Type t) {
+            return t == Edit_Type::del;
+        });
+        it = next_mod_end;
+    }
+
+    return out;
+}
+
+} // namespace cowel
+
+#endif
