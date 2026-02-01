@@ -1550,6 +1550,36 @@ TEST(Parse, escape_crlf)
     ASSERT_TRUE(run_parse_test(u8"escape_crlf.cow", expected));
 }
 
+TEST(Parse, file_ends_in_brace)
+{
+    // clang-format off
+    static constexpr CST_Instruction expected[] {
+        { CST_Instruction_Kind::push_document, 1 },
+        { CST_Instruction_Kind::push_directive_splice },
+        { CST_Instruction_Kind::push_block },
+        { CST_Instruction_Kind::pop_block },
+        { CST_Instruction_Kind::pop_directive_splice },
+        { CST_Instruction_Kind::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"file_ends_in_brace.cow", expected));
+}
+
+TEST(Parse_And_Build, file_ends_in_brace)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        { Node::directive_with_content(u8"d", Node::block({})) },
+        &memory,
+    };
+
+    std::optional<Actual_Document> parsed
+        = parse_and_build_file(u8"file_ends_in_brace.cow", &memory);
+    ASSERT_TRUE(parsed);
+    const auto actual = parsed->to_expected(); // NOLINT(bugprone-unchecked-optional-access)
+    ASSERT_EQ(expected, actual);
+}
+
 TEST(Parse, hello_code)
 {
     // clang-format off
