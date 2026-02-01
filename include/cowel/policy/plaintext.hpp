@@ -14,13 +14,13 @@
 
 namespace cowel {
 
-struct Plaintext_Content_Policy : virtual Content_Policy {
+struct Text_Only_Policy : virtual Content_Policy {
 protected:
     Text_Sink& m_parent;
 
 public:
     [[nodiscard]]
-    explicit Plaintext_Content_Policy(Text_Sink& parent)
+    explicit Text_Only_Policy(Text_Sink& parent)
         : Text_Sink { Output_Language::text }
         , Content_Policy { Output_Language::text }
         , m_parent { parent }
@@ -72,6 +72,23 @@ public:
     consume(const ast::Directive& directive, Frame_Index frame, Context& context) override
     {
         return splice_directive_invocation(*this, directive, frame, context);
+    }
+};
+
+struct As_Text_Policy : virtual Text_Only_Policy {
+
+    [[nodiscard]]
+    explicit As_Text_Policy(Text_Sink& parent)
+        : Text_Sink { Output_Language::text }
+        , Content_Policy { Output_Language::text }
+        , Text_Only_Policy { parent }
+    {
+    }
+
+    bool write(Char_Sequence8 chars, Output_Language language) override
+    {
+        COWEL_ASSERT(language != Output_Language::none);
+        return m_parent.write(chars, Output_Language::text);
     }
 };
 

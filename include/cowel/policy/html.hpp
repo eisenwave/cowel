@@ -25,10 +25,8 @@ inline bool write_as_html(Text_Sink& out, Char_Sequence8 chars)
     if constexpr (enable_empty_string_assertions) {
         COWEL_ASSERT(!chars.empty());
     }
-    switch (out.get_language()) {
-    case Output_Language::none: return true;
-    case Output_Language::html: break;
-    default: COWEL_ASSERT_UNREACHABLE(u8"Trying to write HTML to non-HTML Text_Sink.");
+    if (out.get_language() == Output_Language::none) {
+        return true;
     }
 
     const auto adapter = [&](auto x) {

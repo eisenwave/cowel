@@ -175,6 +175,7 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/big_int_ops.hpp
     include/cowel/builtin_directive_set.hpp
     include/cowel/call_stack.hpp
+    include/cowel/collecting_logger.hpp
     include/cowel/content_status.hpp
     include/cowel/context.hpp
     include/cowel/cowel_lib.hpp

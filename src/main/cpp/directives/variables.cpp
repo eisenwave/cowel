@@ -736,7 +736,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         // to a spliced Static_String.
         std::pmr::vector<char8_t> text { context.get_transient_memory() };
         Capturing_Ref_Text_Sink sink { text, Output_Language::text };
-        Plaintext_Content_Policy policy { sink };
+        Text_Only_Policy policy { sink };
         splice_float(policy, f, format);
         return Value::string(as_u8string_view(text), String_Kind::ascii);
     }

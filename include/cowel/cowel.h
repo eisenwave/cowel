@@ -45,8 +45,10 @@ enum cowel_io_status {
     COWEL_IO_ERROR,
     /// @brief The operation failed because a file could not be found.
     COWEL_IO_ERROR_NOT_FOUND,
-    /// @brief
+    /// @brief The operation failed when reading the file.
     COWEL_IO_ERROR_READ,
+    /// @brief The operation failed because it would require permissions
+    /// that have not been granted.
     COWEL_IO_ERROR_PERMISSIONS,
 };
 
@@ -170,10 +172,11 @@ struct cowel_diagnostic_u8 {
 struct cowel_file_result {
     /// @brief The status of loading the file, indicating success or failure.
     cowel_io_status status;
-    /// @brief The pointer to the loaded file data,
-    /// allocated using `cowel_options::alloc`.
-    /// If loading failed, this is null.
-    cowel_mutable_string_view data;
+    /// @brief The loaded file data.
+    /// It's the responsibility of the file loader to keep this data alive
+    /// until document generation completes,
+    /// and to subsequently free the data.
+    cowel_string_view data;
     /// @brief A unique identifier for the loaded file.
     /// The identifier `-1` refers to the main file,
     /// which is not actually loaded,
@@ -184,7 +187,7 @@ struct cowel_file_result {
 /// @brief See `cowel_file_result`.
 struct cowel_file_result_u8 {
     cowel_io_status status;
-    cowel_mutable_string_view_u8 data;
+    cowel_string_view_u8 data;
     cowel_file_id id;
 };
 
@@ -197,13 +200,13 @@ struct cowel_assertion_error_u8 {
     size_t column;
 };
 
-typedef void* cowel_consume_variables_fn(
+typedef void cowel_consume_variables_fn(
     const void* data, //
     const cowel_string_view* variables,
     size_t length
 );
 
-typedef void* cowel_consume_variables_fn_u8(
+typedef void cowel_consume_variables_fn_u8(
     const void* data, //
     const cowel_string_view_u8* variables,
     size_t length
@@ -228,6 +231,131 @@ typedef cowel_file_result_u8 cowel_load_file_fn_u8(
 typedef void cowel_log_fn(const void* data, const cowel_diagnostic* diagnostic) COWEL_NOEXCEPT;
 typedef void
 cowel_log_fn_u8(const void* data, const cowel_diagnostic_u8* diagnostic) COWEL_NOEXCEPT;
+
+// NOLINTNEXTLINE(performance-enum-size)
+enum cowel_syntax_highlight_status {
+    /// @brief Successful highlighting.
+    COWEL_SYNTAX_HIGHLIGHT_OK,
+    /// @brief A generic error occurred during highlighting.
+    COWEL_SYNTAX_HIGHLIGHT_ERROR,
+    /// @brief Highlighting was not possible because the specified language is not supported.
+    COWEL_SYNTAX_HIGHLIGHT_UNSUPPORTED_LANGUAGE,
+    /// @brief Highlighting was not possible because the provided code contains an error
+    /// that prevented highlighting.
+    /// This is a rare and unusual failure because highlighters typically silence
+    /// any malformed code.
+    COWEL_SYNTAX_HIGHLIGHT_BAD_CODE,
+};
+
+// NOLINTNEXTLINE(performance-enum-size)
+enum cowel_syntax_highlight_policy {
+    /// @brief If a syntax highlighter is provided and highlighting returns
+    /// `COWEL_SYNTAX_HIGHLIGHT_UNSUPPORTED_LANGUAGE`,
+    /// the builtin µlight highlighter is used instead as a fallback.
+    /// If none is provided, µlight is always used.
+    COWEL_SYNTAX_HIGHLIGHT_POLICY_FALL_BACK,
+    /// @brief If a syntax highlighter is provided,
+    /// no falling back onto the builtin µlight highlighter takes place.
+    /// If none is provided, highlighting always fails.
+    COWEL_SYNTAX_HIGHLIGHT_POLICY_EXCLUSIVE,
+};
+
+struct cowel_syntax_highlight_token {
+    /// @brief The index of the first code unit within the source code
+    /// that has the highlight applied.
+    size_t begin;
+    /// @brief The length of the token, in code units.
+    size_t length;
+    /// @brief The type of highlighting applied to the token.
+    /// See µlight's `ulight.h` for reference.
+    unsigned char type;
+};
+
+typedef void cowel_syntax_highlight_flush_fn(
+    const void* data,
+    cowel_syntax_highlight_token* tokens,
+    size_t size
+) COWEL_NOEXCEPT;
+
+struct cowel_syntax_highlight_buffer {
+    /// @brief A pointer to where the tokens are stored.
+    /// Shall not be null.
+    cowel_syntax_highlight_token* data;
+    /// @brief The size of the buffer.
+    size_t size;
+    /// @brief When the buffer is full,
+    /// invoked with `flush_data`, `data`, and the amount of tokens in the buffer.
+    /// Shall not be null.
+    cowel_syntax_highlight_flush_fn* flush;
+    /// @brief Additional data passed to `flush`.
+    const void* flush_data;
+};
+
+typedef cowel_syntax_highlight_status cowel_syntax_highlight_by_lang_name_fn(
+    const void* data,
+    const cowel_syntax_highlight_buffer* token_buffer,
+    const char* text,
+    size_t text_length,
+    const char* lang_name,
+    size_t lang_name_length
+) COWEL_NOEXCEPT;
+
+typedef cowel_syntax_highlight_status cowel_syntax_highlight_by_lang_name_fn_u8(
+    const void* data,
+    const cowel_syntax_highlight_buffer* token_buffer,
+    const char8_t* text,
+    size_t text_length,
+    const char8_t* lang_name,
+    size_t lang_name_length
+) COWEL_NOEXCEPT;
+
+typedef cowel_syntax_highlight_status cowel_syntax_highlight_by_lang_index_fn(
+    const void* data,
+    const cowel_syntax_highlight_buffer* token_buffer,
+    const char* text,
+    size_t text_length,
+    size_t index
+) COWEL_NOEXCEPT;
+
+typedef cowel_syntax_highlight_status cowel_syntax_highlight_by_lang_index_fn_u8(
+    const void* data,
+    const cowel_syntax_highlight_buffer* token_buffer,
+    const char8_t* text,
+    size_t text_length,
+    size_t index
+) COWEL_NOEXCEPT;
+
+/// @brief A syntax highlighter.
+struct cowel_syntax_highlighter {
+    /// @brief An array of language identifiers supported by the syntax highlighter.
+    const cowel_string_view* supported_languages;
+    /// @brief The size of the `supported_languages` array.
+    size_t supported_languages_size;
+
+    /// @brief Performs syntax highlighting by language name.
+    /// The provided language name is one of the identifiers
+    /// listed in `supported_languages`.
+    /// Shall not be null.
+    cowel_syntax_highlight_by_lang_name_fn* highlight_by_lang_name;
+
+    /// @brief Performs syntax highlighting by index.
+    /// The provided language index is that of one of the identifiers
+    /// listed in `supported_languages`.
+    /// Shall not be null.
+    cowel_syntax_highlight_by_lang_index_fn* highlight_by_lang_index;
+
+    /// @brief Additional data passed into highlighting functions.
+    const void* data;
+};
+
+/// @see `cowel_syntax_highlighter`.
+struct cowel_syntax_highlighter_u8 {
+    const cowel_string_view_u8* supported_languages;
+    size_t supported_languages_size;
+    cowel_syntax_highlight_by_lang_name_fn_u8* highlight_by_lang_name;
+    cowel_syntax_highlight_by_lang_index_fn_u8* highlight_by_lang_index;
+    const void* data;
+};
 
 typedef void cowel_assertion_handler_fn_u8(const cowel_assertion_error_u8* error);
 
@@ -310,8 +438,14 @@ struct cowel_options {
     /// @brief Additional data passed into `log`.
     const void* log_data;
 
-    /// @brief Reserved space.
-    void* reserved_1[4];
+    /// @brief The syntax highlighter.
+    const cowel_syntax_highlighter* highlighter;
+    /// @brief The syntax highlight policy.
+    cowel_syntax_highlight_policy highlight_policy;
+
+    /// @brief Additional source which is prepended to `source`.
+    /// Importantly, this does not shift line numbers within `source`.
+    cowel_string_view preamble;
 };
 
 /// @brief See `cowel_options`.
@@ -334,12 +468,17 @@ struct cowel_options_u8 {
     const void* load_file_data;
     cowel_log_fn_u8* log;
     const void* log_data;
-    void* reserved_1[4];
+
+    const cowel_syntax_highlighter_u8* highlighter;
+    cowel_syntax_highlight_policy highlight_policy;
+
+    cowel_string_view_u8 preamble;
 };
 
 static_assert(sizeof(cowel_string_view) == sizeof(cowel_string_view_u8));
 static_assert(sizeof(cowel_mutable_string_view) == sizeof(cowel_mutable_string_view_u8));
 static_assert(sizeof(cowel_diagnostic) == sizeof(cowel_diagnostic_u8));
+static_assert(sizeof(cowel_syntax_highlighter) == sizeof(cowel_syntax_highlighter_u8));
 static_assert(sizeof(cowel_options) == sizeof(cowel_options_u8));
 
 struct cowel_gen_result {

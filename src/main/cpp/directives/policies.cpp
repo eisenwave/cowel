@@ -21,7 +21,6 @@
 #include "cowel/context.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/invocation.hpp"
-#include "cowel/services.hpp"
 
 namespace cowel {
 namespace {
@@ -118,7 +117,10 @@ Policy_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
         return consume_simply<Actions_Content_Policy>(out, call, context);
     }
     case Known_Content_Policy::text_only: {
-        return consume_simply<Plaintext_Content_Policy>(out, call, context);
+        return consume_simply<Text_Only_Policy>(out, call, context);
+    }
+    case Known_Content_Policy::as_text: {
+        return consume_simply<As_Text_Policy>(out, call, context);
     }
     case Known_Content_Policy::text_as_html: {
         return consume_simply<HTML_Literal_Content_Policy>(out, call, context);
@@ -128,6 +130,32 @@ Policy_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
     }
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid m_policy");
+}
+
+[[nodiscard]]
+Processing_Status Internal_Arg_Source_As_Text_Behavior::splice(
+    Content_Policy& out,
+    const Invocation& call,
+    Context& context
+) const
+{
+    Value_Of_Type_Matcher value_matcher { &Type::block };
+    Group_Member_Matcher value_member { u8"value"sv, Optionality::mandatory, value_matcher };
+    Group_Member_Matcher* const parameters[] { &value_member };
+    Pack_Usual_Matcher args_matcher { parameters };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
+    }
+
+    To_Source_Content_Policy policy { out };
+    const Value& value = value_matcher.get();
+    COWEL_ASSERT(value.is_block());
+    return value.splice_block(policy, context);
 }
 
 } // namespace cowel

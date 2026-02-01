@@ -25,7 +25,6 @@
 #include "cowel/directive_processing.hpp"
 #include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
-#include "cowel/services.hpp"
 #include "cowel/theme_to_css.hpp"
 
 using namespace std::string_view_literals;

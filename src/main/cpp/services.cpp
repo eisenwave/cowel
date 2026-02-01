@@ -10,6 +10,7 @@
 #include "cowel/util/result.hpp"
 #include "cowel/util/typo.hpp"
 
+#include "cowel/cowel_lib.hpp"
 #include "cowel/services.hpp"
 #include "cowel/ulight_highlighter.hpp"
 
@@ -70,6 +71,44 @@ Result<void, Syntax_Highlight_Error> Ulight_Syntax_Highlighter::operator()( //
     case ulight::Status::bad_code: return Syntax_Highlight_Error::bad_code;
     default: return Syntax_Highlight_Error::other;
     }
+}
+
+namespace {
+
+[[nodiscard]]
+Diagnostic to_diagnostic(const cowel_diagnostic_u8& diagnostic)
+{
+    const File_Source_Span location {
+        Source_Position {
+            .line = diagnostic.line,
+            .column = diagnostic.column,
+            .begin = diagnostic.begin,
+        },
+        diagnostic.length,
+        File_Id(diagnostic.file_id),
+    };
+    return {
+        .severity = Severity(diagnostic.severity),
+        .id = as_u8string_view(diagnostic.id),
+        .location = location,
+        .message = as_u8string_view(diagnostic.message),
+    };
+}
+
+} // namespace
+
+[[nodiscard]]
+Function_Ref<void(const cowel_diagnostic_u8*) noexcept> Logger::as_cowel_log_fn()
+{
+    static_assert(
+        std::is_same_v<decltype(as_cowel_log_fn())::Invoker, cowel_log_fn_u8>,
+        "Returned Function_Ref must be suitable for conversion to cowel_log_fn_u8."
+    );
+    constexpr auto result = [](Logger* self, const cowel_diagnostic_u8* const diagnostic) noexcept {
+        COWEL_ASSERT(diagnostic);
+        (*self)(to_diagnostic(*diagnostic));
+    };
+    return { const_v<result>, this };
 }
 
 } // namespace cowel

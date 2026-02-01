@@ -10,6 +10,7 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
+#include "cowel/util/function_ref.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/typo.hpp"
 
@@ -196,6 +197,9 @@ public:
     }
 
     constexpr virtual void operator()(Diagnostic diagnostic) = 0;
+
+    [[nodiscard]]
+    virtual Function_Ref<void(const cowel_diagnostic_u8*) noexcept> as_cowel_log_fn();
 };
 
 struct Ignorant_Logger final : Logger {
