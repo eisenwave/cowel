@@ -255,7 +255,7 @@ enum cowel_syntax_highlight_policy {
     /// If none is provided, µlight is always used.
     COWEL_SYNTAX_HIGHLIGHT_POLICY_FALL_BACK,
     /// @brief If a syntax highlighter is provided,
-    /// no falling back onto the builting µlight highlighter takes place.
+    /// no falling back onto the builtin µlight highlighter takes place.
     /// If none is provided, highlighting always fails.
     COWEL_SYNTAX_HIGHLIGHT_POLICY_EXCLUSIVE,
 };
@@ -327,7 +327,7 @@ typedef cowel_syntax_highlight_status cowel_syntax_highlight_by_lang_index_fn_u8
 
 /// @brief A syntax highlighter.
 struct cowel_syntax_highlighter {
-    /// @brief An array of language identifiers support by the syntax highlighter.
+    /// @brief An array of language identifiers supported by the syntax highlighter.
     const cowel_string_view* supported_languages;
     /// @brief The size of the `supported_languages` array.
     size_t supported_languages_size;
@@ -342,7 +342,7 @@ struct cowel_syntax_highlighter {
     /// The provided language index is that of one of the identifiers
     /// listed in `supported_languages`.
     /// Shall not be null.
-    cowel_syntax_highlight_by_lang_name_fn* highlight_by_lang_index;
+    cowel_syntax_highlight_by_lang_index_fn* highlight_by_lang_index;
 
     /// @brief Additional data passed into highlighting functions.
     const void* data;

@@ -76,16 +76,12 @@ public:
 };
 
 struct As_Text_Policy : virtual Text_Only_Policy {
-protected:
-    Text_Sink& m_parent;
 
-public:
     [[nodiscard]]
     explicit As_Text_Policy(Text_Sink& parent)
         : Text_Sink { Output_Language::text }
         , Content_Policy { Output_Language::text }
         , Text_Only_Policy { parent }
-        , m_parent { parent }
     {
     }
 

@@ -151,8 +151,8 @@ TEST(Document_Generation, file_tests)
         const auto test_input = as_u8string_view(variables[0]);
         const auto test_output = as_u8string_view(variables[1]);
 
-        expected_html.assign(test_input.data(), test_input.data() + test_input.size());
-        actual_html.assign(test_output.data(), test_output.data() + test_output.size());
+        actual_html.assign(test_input.data(), test_input.data() + test_input.size());
+        expected_html.assign(test_output.data(), test_output.data() + test_output.size());
     };
     const Function_Ref<void(const cowel_string_view_u8*, std::size_t)> consume_variables
         = consume_variables_lambda;
