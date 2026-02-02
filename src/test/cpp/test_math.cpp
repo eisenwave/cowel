@@ -557,6 +557,7 @@ TEST(Big_Int, unary_minus)
     EXPECT_EQ(-Big_Int(1), -1);
     EXPECT_EQ(-Big_Int(2), -2);
     EXPECT_EQ(-Big_Int::pow2(100), (Big_Int::pow2(100) * -1_n));
+    EXPECT_EQ(-Big_Int(std::numeric_limits<Int128>::min()), Big_Int::pow2(127));
     EXPECT_EQ(-Big_Int::pow2(200), (Big_Int::pow2(200) * -1_n));
 }
 

@@ -1,0 +1,61 @@
+\test_input{
+\cowel_rem_to_pos_inf(-2, -2)
+\cowel_rem_to_pos_inf(-2, -1)
+\cowel_rem_to_pos_inf(-2, 1)
+\cowel_rem_to_pos_inf(-2, 2)
+
+\cowel_rem_to_pos_inf(-1, -2)
+\cowel_rem_to_pos_inf(-1, -1)
+\cowel_rem_to_pos_inf(-1, 1)
+\cowel_rem_to_pos_inf(-1, 2)
+
+\cowel_rem_to_pos_inf( 0, -2)
+\cowel_rem_to_pos_inf( 0, -1)
+\cowel_rem_to_pos_inf( 0, 1)
+\cowel_rem_to_pos_inf( 0, 2)
+
+\cowel_rem_to_pos_inf( 1, -2)
+\cowel_rem_to_pos_inf( 1, -1)
+\cowel_rem_to_pos_inf( 1, 1)
+\cowel_rem_to_pos_inf( 1, 2)
+
+\cowel_rem_to_pos_inf( 2, -2)
+\cowel_rem_to_pos_inf( 2, -1)
+\cowel_rem_to_pos_inf( 2, 1)
+\cowel_rem_to_pos_inf( 2, 2)
+
+\cowel_rem_to_pos_inf(8, 2)
+\cowel_rem_to_pos_inf(2, 8)
+\test_expect_error("arithmetic.div-by-zero"){\cowel_rem_to_pos_inf(1, 0)}
+}
+
+\test_output{
+0
+0
+0
+0
+
+1
+0
+0
+-1
+
+0
+0
+0
+0
+
+1
+0
+0
+-1
+
+0
+0
+0
+0
+
+0
+-6
+<error->\cowel_rem_to_pos_inf(1, 0)</error->
+}
