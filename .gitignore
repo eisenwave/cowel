@@ -7,3 +7,7 @@ playground/
 
 .clangd
 *.vsix
+
+*.info
+*.profdata
+*.profraw
