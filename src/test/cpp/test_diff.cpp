@@ -1,4 +1,5 @@
 #include <array>
+#include <random>
 #include <string_view>
 
 #include <gtest/gtest.h>
@@ -7,6 +8,8 @@
 
 namespace cowel {
 namespace {
+
+using namespace std::string_view_literals;
 
 TEST(Diff, empty)
 {
@@ -444,6 +447,77 @@ TEST(Diff, complex_scenario)
 
     const std::pmr::vector<Edit_Type> actual = shortest_edit_script(from, to);
     EXPECT_EQ(expected, actual);
+}
+
+std::size_t apply_edits(
+    std::u8string_view* const result,
+    const std::span<const Edit_Type> edits,
+    const std::span<const std::u8string_view> from,
+    const std::span<const std::u8string_view> to
+)
+{
+    std::size_t result_index = 0;
+    std::size_t from_index = 0;
+    std::size_t to_index = 0;
+    for (const auto e : edits) {
+        switch (e) {
+        case Edit_Type::common: {
+            COWEL_ASSERT(from[from_index] == to[to_index]);
+            result[result_index++] = from[from_index];
+            ++from_index;
+            ++to_index;
+            break;
+        }
+        case Edit_Type::del: {
+            ++from_index;
+            break;
+        }
+        case Edit_Type::ins: {
+            result[result_index++] = to[to_index];
+            ++to_index;
+            break;
+        }
+        }
+    }
+    return result_index;
+}
+
+TEST(Diff, fuzz)
+{
+    static constexpr auto alphabet = u8"abcdefghijklmnopqrstuvwxyz"sv;
+    constexpr int samples = 2'000;
+
+    std::u8string_view from_buffer[64];
+    std::u8string_view to_buffer[64];
+    std::u8string_view result_buffer[64];
+
+    static std::default_random_engine rng { 12345 };
+    static std::uniform_int_distribution<std::size_t> size_distr { 0, 64 };
+    static std::uniform_int_distribution<unsigned> letter_distr { 0, 25 };
+
+    for (int i = 0; i < samples; ++i) {
+        const auto from_size = size_distr(rng);
+        const auto to_size = size_distr(rng);
+
+        std::span<std::u8string_view> from { from_buffer, from_size };
+        std::span<std::u8string_view> to { to_buffer, to_size };
+
+        for (std::u8string_view& c : from) {
+            c = alphabet.substr(letter_distr(rng), 1);
+        }
+        for (std::u8string_view& c : to) {
+            c = alphabet.substr(letter_distr(rng), 1);
+        }
+
+        const std::pmr::vector<Edit_Type> edits = shortest_edit_script(from, to);
+        ASSERT_LE(edits.size(), from.size() + to.size());
+
+        const std::size_t result_length = apply_edits(result_buffer, edits, from, to);
+        const std::span<const std::u8string_view> result_span { result_buffer, result_length };
+
+        EXPECT_EQ(result_length, to_size);
+        EXPECT_TRUE(std::ranges::equal(result_span, to));
+    }
 }
 
 } // namespace
