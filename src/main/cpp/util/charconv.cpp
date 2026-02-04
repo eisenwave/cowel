@@ -343,7 +343,7 @@ std::to_chars_result to_chars128(char* const first, char* const last, const Uint
         }
 
         const std::to_chars_result lower_result
-            = std::to_chars(upper_result.ptr, last, std::uint64_t(x % max_pow));
+            = std::to_chars(upper_result.ptr, last, std::uint64_t(x % max_pow), base);
         if (lower_result.ec != std::errc {}) {
             return lower_result;
         }
