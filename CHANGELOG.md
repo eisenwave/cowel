@@ -1,6 +1,6 @@
 # Changelog
 
-## **Next version** (???)
+## **[v0.7.0](https://github.com/eisenwave/cowel/releases/tag/v0.7.0)** (2026-02-05)
 
 - remove support for `-` in directive names (this time for real) (#96)
 - remove the following deprecated directives (#98):
@@ -95,7 +95,7 @@
 - also require at least NodeJS 20.0.0 (#141)
 
 **Full Changelog**:
-[`v0.6.0...master`](https://github.com/eisenwave/cowel/compare/v0.6.0...master)
+[`v0.6.0...v0.7.0`](https://github.com/eisenwave/cowel/compare/v0.6.0...v0.7.0)
 
 ## **[v0.6.0](https://github.com/eisenwave/cowel/releases/tag/v0.6.0)** (2025-08-23)
 
