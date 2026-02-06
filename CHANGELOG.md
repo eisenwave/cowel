@@ -1,5 +1,12 @@
 # Changelog
 
+## **Next version** (???)
+
+- fix `cowel_to_str` for base 36
+
+**Full Changelog**:
+[`v0.6.0...master`](https://github.com/eisenwave/cowel/compare/v0.7.0...master)
+
 ## **[v0.7.0](https://github.com/eisenwave/cowel/releases/tag/v0.7.0)** (2026-02-05)
 
 - remove support for `-` in directive names (this time for real) (#96)

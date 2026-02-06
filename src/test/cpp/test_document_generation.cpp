@@ -220,7 +220,7 @@ TEST(Document_Generation, file_tests)
                 u8"Test output HTML deviates from expected HTML as follows:\n"sv,
                 Diagnostic_Highlight::error_text
             );
-            if (expected_html.size() <= 2000) {
+            if (expected_html.size() <= 10000) {
                 print_lines_diff(error, expected_html_string, actual_html_string);
             }
             else {

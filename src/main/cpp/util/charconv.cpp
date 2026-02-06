@@ -10,38 +10,7 @@
 namespace cowel {
 namespace {
 
-consteval int u64_max_output_digits_naive(int base)
-{
-    COWEL_ASSERT(base >= 2);
-    std::uint64_t x = std::numeric_limits<std::uint64_t>::max();
-    int result = 0;
-    while (x != 0) {
-        x /= std::uint64_t(base);
-        ++result;
-    }
-    return result;
-}
-
-/// @brief Returns the amount of digits necessary to represent
-/// `numeric_limits<std::uint64_t>::max()` in the given base.
-/// Mathematically, this is `floor(log(pow(2, 64)) / log(base))`.
-[[maybe_unused]] [[nodiscard]]
-constexpr int u64_max_output_digits(int base)
-{
-    COWEL_DEBUG_ASSERT(base >= 2);
-    COWEL_DEBUG_ASSERT(base <= 36);
-
-    static constexpr auto table = [] consteval {
-        std::array<signed char, 36> result {};
-        for (std::size_t i = 2; i < result.size(); ++i) {
-            result[i] = static_cast<signed char>(u64_max_output_digits_naive(int(i)));
-        }
-        return result;
-    }();
-    return table[std::size_t(base)];
-}
-
-consteval int u64_max_input_digits_naive(int base)
+consteval int u64_max_input_digits_naive(const int base)
 {
     COWEL_ASSERT(base >= 2);
 
@@ -61,13 +30,13 @@ consteval int u64_max_input_digits_naive(int base)
 /// @brief Returns the amount of digits that `std::uint64_t` can represent
 /// in the given base.
 /// Mathematically, this is `floor(log(pow(2, 64)) / log(base))`.
-constexpr int u64_max_input_digits(int base)
+constexpr int u64_max_input_digits(const int base)
 {
     COWEL_DEBUG_ASSERT(base >= 2);
     COWEL_DEBUG_ASSERT(base <= 36);
 
     static constexpr auto table = [] consteval {
-        std::array<signed char, 36> result {};
+        std::array<signed char, 37> result {};
         for (std::size_t i = 2; i < result.size(); ++i) {
             result[i] = static_cast<signed char>(u64_max_input_digits_naive(int(i)));
         }
@@ -77,7 +46,7 @@ constexpr int u64_max_input_digits(int base)
 }
 
 [[nodiscard]]
-consteval std::uint64_t u64_pow_naive(std::uint64_t x, int y)
+consteval std::uint64_t u64_pow_naive(const std::uint64_t x, const int y)
 {
     std::uint64_t result = 1;
     for (int i = 0; i < y; ++i) {
@@ -92,13 +61,13 @@ consteval std::uint64_t u64_pow_naive(std::uint64_t x, int y)
 /// A result of zero essentially communicates that no bit of `std::uint64_t` is wasted,
 /// such as in the base-2 or base-16 case.
 [[nodiscard]]
-constexpr std::uint64_t u64_max_power(int base)
+constexpr std::uint64_t u64_max_power(const int base)
 {
     COWEL_DEBUG_ASSERT(base >= 2);
     COWEL_DEBUG_ASSERT(base <= 36);
 
     static constexpr auto table = [] consteval {
-        std::array<std::uint64_t, 36> result {};
+        std::array<std::uint64_t, 37> result {};
         for (std::size_t i = 2; i < result.size(); ++i) {
             const int max_exponent = u64_max_input_digits(int(i));
             result[i] = u64_pow_naive(i, max_exponent);
@@ -107,13 +76,6 @@ constexpr std::uint64_t u64_max_power(int base)
     }();
     return table[std::size_t(base)];
 }
-
-static_assert(u64_max_output_digits_naive(2) == 64);
-static_assert(u64_max_output_digits(2) == 64);
-static_assert(u64_max_output_digits_naive(16) == 16);
-static_assert(u64_max_output_digits(16) == 16);
-static_assert(u64_max_output_digits_naive(10) == 20);
-static_assert(u64_max_output_digits(10) == 20);
 
 static_assert(u64_max_input_digits_naive(2) == 64);
 static_assert(u64_max_input_digits(2) == 64);
@@ -138,12 +100,12 @@ static_assert(u64_max_power(16) == 0);
 /// handling 19 digits at a time, with 39 decimal digits being the maximum for 128-bit.
 [[nodiscard]]
 std::from_chars_result
-from_chars128(const char* const first, const char* const last, Uint128& out, int base)
+from_chars128(const char* const first, const char* const last, Uint128& out, const int base)
 {
+    COWEL_ASSERT(first);
+    COWEL_ASSERT(last);
     COWEL_ASSERT(base >= 2);
     COWEL_ASSERT(base <= 36);
-    COWEL_DEBUG_ASSERT(first);
-    COWEL_DEBUG_ASSERT(last);
 
     if (first == last) {
         return { last, std::errc::invalid_argument };
@@ -223,10 +185,12 @@ from_chars128(const char* const first, const char* const last, Uint128& out, int
 
 [[nodiscard]]
 std::from_chars_result
-from_chars128(const char* const first, const char* const last, Int128& out, int base)
+from_chars128(const char* const first, const char* const last, Int128& out, const int base)
 {
-    COWEL_DEBUG_ASSERT(first);
-    COWEL_DEBUG_ASSERT(last);
+    COWEL_ASSERT(first);
+    COWEL_ASSERT(last);
+    COWEL_ASSERT(base >= 2);
+    COWEL_ASSERT(base <= 36);
 
     if (first == last) {
         return { last, std::errc::invalid_argument };
@@ -259,11 +223,13 @@ from_chars128(const char* const first, const char* const last, Int128& out, int 
 }
 
 [[nodiscard]]
-std::to_chars_result to_chars128(char* const first, char* const last, const Uint128 x, int base)
+std::to_chars_result
+to_chars128(char* const first, char* const last, const Uint128 x, const int base)
 {
-    COWEL_DEBUG_ASSERT(first);
-    COWEL_DEBUG_ASSERT(last);
-    COWEL_DEBUG_ASSERT(base >= 2 && base <= 36);
+    COWEL_ASSERT(first);
+    COWEL_ASSERT(last);
+    COWEL_ASSERT(base >= 2);
+    COWEL_ASSERT(base <= 36);
 
     if (x <= std::uint64_t(-1)) {
         return std::to_chars(first, last, std::uint64_t(x), base);
@@ -364,9 +330,13 @@ std::to_chars_result to_chars128(char* const first, char* const last, const Uint
 }
 
 [[nodiscard]]
-std::to_chars_result to_chars128(char* const first, char* const last, const Int128 x, int base)
+std::to_chars_result
+to_chars128(char* const first, char* const last, const Int128 x, const int base)
 {
-    COWEL_DEBUG_ASSERT(base >= 2 && base <= 36);
+    COWEL_ASSERT(first);
+    COWEL_ASSERT(last);
+    COWEL_ASSERT(base >= 2);
+    COWEL_ASSERT(base <= 36);
 
     if (x >= 0) {
         return to_chars128(first, last, Uint128(x), base);
