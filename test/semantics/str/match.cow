@@ -1,0 +1,31 @@
+\test_input{
+\cowel_str_match("awoo", cowel_regex("a"))
+\cowel_str_match("awoo", cowel_regex(".*"))
+
+\cowel_str_match("abc", cowel_regex("\\p{Ll}+"))
+\cowel_str_match("αβγ", cowel_regex("\\p{Ll}+"))
+\cowel_str_match("abc", cowel_regex("\\p{Lu}+"))
+\cowel_str_match("αβγ", cowel_regex("\\p{Lu}+"))
+
+\cowel_str_match("u", cowel_regex("\\u"))
+\cowel_str_match("u003", cowel_regex("\\u003"))
+\cowel_str_match("0", cowel_regex("\\u0030"))
+\cowel_str_match("03", cowel_regex("\\u00303"))
+\cowel_str_match("\\u0030", cowel_regex("\\\\u0030"))
+}
+
+\test_output{
+false
+true
+
+true
+true
+false
+false
+
+true
+true
+true
+true
+true
+}

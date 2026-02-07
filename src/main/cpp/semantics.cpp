@@ -87,6 +87,16 @@ Value Value::string(const std::u8string_view value, const String_Kind kind)
     return dynamic_string_forced(value, kind);
 }
 
+Value Value::regex(const Reg_Exp& value)
+{
+    return Value { Union { .regex = value }, regex_index };
+}
+
+Value Value::regex(Reg_Exp&& value)
+{
+    return Value { Union { .regex = std::move(value) }, regex_index };
+}
+
 Value Value::group(std::span<const Group_Member_Value> values)
 {
     Group_Value gc = gc_ref_from_range<Group_Member_Value>(values);

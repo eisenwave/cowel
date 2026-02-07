@@ -121,6 +121,8 @@ constexpr Unary_Numeric_Expression_Behavior cowel_pos //
     { Unary_Numeric_Expression_Kind::pos };
 constexpr Put_Behavior cowel_put //
     {};
+constexpr Regex_Make_Behavior cowel_regex //
+    {};
 constexpr Reinterpret_As_Float_Behavior cowel_reinterpret_as_float //
     {};
 constexpr Reinterpret_As_Int_Behavior cowel_reinterpret_as_int //
@@ -137,6 +139,8 @@ constexpr Unary_Numeric_Expression_Behavior cowel_sqrt //
     { Unary_Numeric_Expression_Kind::sqrt };
 constexpr Str_Length_Behavior cowel_str_length //
     { Str_Length_Kind::code_point };
+constexpr Str_Match_Behavior cowel_str_match //
+    {};
 constexpr Str_Transform_Behavior cowel_str_to_lower //
     { Text_Transformation::lowercase };
 constexpr Str_Transform_Behavior cowel_str_to_upper //
@@ -449,6 +453,7 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_paragraphs),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_pos),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_put),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_regex),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_reinterpret_as_float),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_reinterpret_as_int),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_rem_to_neg_inf),
@@ -457,6 +462,7 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_source_as_text),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_sqrt),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_length),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_match),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_to_lower),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_to_upper),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_utf8_length),

@@ -114,6 +114,15 @@ inline constexpr std::u8string_view preserved_undefined = u8"preserved.undefined
 /// @brief A preserved variable is not a string after processing.
 inline constexpr std::u8string_view preserved_not_str = u8"preserved.not-str";
 
+/// @brief The pattern of a regular expression is invalid.
+inline constexpr std::u8string_view regex_pattern = u8"regex.pattern";
+
+/// @brief Execution of a regular expression could not succeed (possibly too expensive).
+inline constexpr std::u8string_view regex_execution = u8"regex.execution";
+
+/// @brief Attempted splice is not valid.
+inline constexpr std::u8string_view splice = u8"splice";
+
 // DIRECTIVE-SPECIFIC DIAGNOSTICS ==================================================================
 
 /// @brief In an HTML element directive,

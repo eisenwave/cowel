@@ -28,8 +28,20 @@ if(NOT DEFINED EMSCRIPTEN)
         message(STATUS "Boost installation completed successfully")
     endif()
 
+    # Standalone mode means that Boost libraries won't depend on other Boost libraries.
+    set(BOOST_REGEX_STANDALONE ON CACHE BOOL "Enable Boost.Regex standalone mode" FORCE)
+    set(BOOST_MP_STANDALONE ON CACHE BOOL "Enable Boost.Multiprecision standalone mode" FORCE)
+
     add_subdirectory("${BOOST_SOURCE_DIR}/libs/config")
     add_subdirectory("${BOOST_SOURCE_DIR}/libs/multiprecision")
+    add_subdirectory("${BOOST_SOURCE_DIR}/libs/regex")
+
+    # Mark Boost includes as system headers to suppress warnings.
+    set_target_properties(boost_config boost_multiprecision boost_regex PROPERTIES
+        INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:INTERFACE_INCLUDE_DIRECTORIES>
+    )
+
+    find_package(ICU COMPONENTS data i18n uc REQUIRED)
 
     include(FetchContent)
 
@@ -198,6 +210,7 @@ set(COMMON_LIBRARY_SOURCES
     include/cowel/parse_utils.hpp
     include/cowel/parse.hpp
     include/cowel/print.hpp
+    include/cowel/regexp.hpp
     include/cowel/relative_file_loader.hpp
     include/cowel/services.hpp
     include/cowel/settings.hpp
@@ -260,7 +273,9 @@ set(NATIVE_LIBRARY_SOURCES
     ${COMMON_LIBRARY_SOURCES}
     src/main/cpp/util/io.cpp
     src/main/cpp/util/tty.cpp
+
     src/main/cpp/big_int_boost.cpp
+    src/main/cpp/regexp_boost.cpp
     src/main/cpp/relative_file_loader.cpp
 )
 
@@ -291,6 +306,7 @@ if(DEFINED EMSCRIPTEN)
     add_executable(cowel-wasm
         ${COMMON_LIBRARY_SOURCES}
         src/main/cpp/big_int_wasm.cpp
+        src/main/cpp/regexp_wasm.cpp
         src/main/cpp/wasm.cpp
         src/main/cpp/wasm_stubs.cpp
     )
@@ -306,6 +322,7 @@ if(DEFINED EMSCRIPTEN)
         ${WASM_LINK_OPTIONS}
         ${SANITIZER_OPTIONS}
     )
+    target_compile_definitions(cowel-wasm PUBLIC COWEL_BUILD_WASM=1)
 
     target_compile_options(ulight PRIVATE
         "-fno-exceptions"
@@ -343,9 +360,11 @@ if(DEFINED EMSCRIPTEN)
 else()
     add_library(cowel STATIC ${NATIVE_LIBRARY_SOURCES})
     target_link_libraries(cowel ulight)
-    target_link_libraries(cowel boost_config boost_multiprecision)
+    target_link_libraries(cowel boost_config boost_multiprecision boost_regex)
+    target_link_libraries(cowel ICU::data ICU::i18n ICU::uc)
     target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
     target_link_options(cowel PUBLIC ${SANITIZER_OPTIONS})
+    target_compile_definitions(cowel PUBLIC COWEL_BUILD_NATIVE=1)
 
     add_executable(cowel-cli ${HEADERS}
         src/main/cpp/cli.cpp
@@ -366,6 +385,7 @@ else()
         src/test/cpp/test_lexing.cpp
         src/test/cpp/test_math.cpp
         src/test/cpp/test_parsing.cpp
+        src/test/cpp/test_regexp.cpp
         src/test/cpp/test_to_chars.cpp
         src/test/cpp/test_typo.cpp
         src/test/cpp/test_valid.cpp

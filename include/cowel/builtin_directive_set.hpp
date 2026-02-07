@@ -219,6 +219,28 @@ public:
     Processing_Status do_evaluate(String_Sink& out, const Invocation&, Context&) const override;
 };
 
+struct [[nodiscard]]
+Str_Match_Behavior final : Bool_Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Str_Match_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+};
+
+struct [[nodiscard]]
+Regex_Make_Behavior final : Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Regex_Make_Behavior()
+        : Directive_Behavior { Type::regex }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const override;
+};
+
 // clang-format off
 inline constexpr std::u8string_view lorem_ipsum = u8"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 // clang-format on

@@ -131,7 +131,12 @@ inline Processing_Status splice_all(
 }
 
 [[nodiscard]]
-Processing_Status splice_value(Content_Policy& out, const Value& value, Context& context);
+Processing_Status splice_value(
+    Content_Policy& out,
+    const Value& value,
+    const File_Source_Span& error_location,
+    Context& context
+);
 
 enum struct Float_Format : Default_Underlying {
     splice,
@@ -144,7 +149,11 @@ void splice_int(Content_Policy& out, const Big_Int&);
 void splice_float(Content_Policy& out, Float, Float_Format format = Float_Format::splice);
 
 [[nodiscard]]
-Result<Value, Processing_Status> splice_value_to_string(const Value& value, Context& context);
+Result<Value, Processing_Status> splice_value_to_string(
+    const Value& value,
+    const File_Source_Span& error_location,
+    Context& context
+);
 
 /// @brief Splices the given `value` into the given policy.
 /// That is, consumes all elements in a quoted string or block.
@@ -168,8 +177,12 @@ Processing_Status splice_primary(
     Context& context
 );
 
-Processing_Status
-splice_value_to_plaintext(std::pmr::vector<char8_t>& out, const Value& value, Context& context);
+Processing_Status splice_value_to_plaintext(
+    std::pmr::vector<char8_t>& out, //
+    const Value& value,
+    const File_Source_Span& error_location,
+    Context& context
+);
 
 /// @brief Converts a spliceable value to plaintext.
 [[nodiscard]]

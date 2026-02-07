@@ -754,7 +754,7 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         }
         std::pmr::vector<char8_t> text { context.get_transient_memory() };
         const Processing_Status splice_result
-            = splice_value_to_plaintext(text, x_matcher.get(), context);
+            = splice_value_to_plaintext(text, x_matcher.get(), x_matcher.get_location(), context);
         if (splice_result != Processing_Status::ok) {
             return splice_result;
         }

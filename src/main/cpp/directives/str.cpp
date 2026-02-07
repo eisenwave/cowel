@@ -149,4 +149,74 @@ Processing_Status Str_Transform_Behavior::do_evaluate(
     return Processing_Status::ok;
 }
 
+Result<bool, Processing_Status>
+Str_Match_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    String_Matcher text_matcher { context.get_transient_memory() };
+    Group_Member_Matcher text_member { u8"text", Optionality::mandatory, text_matcher };
+    Value_Of_Type_Matcher regex_matcher { &Type::regex };
+    Group_Member_Matcher regex_member { u8"regex", Optionality::mandatory, regex_matcher };
+    Group_Member_Matcher* const matchers[] { &text_member, &regex_member };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (args_status != Processing_Status::ok) {
+        return args_status;
+    }
+
+    const std::u8string_view text = text_matcher.get();
+    const Reg_Exp& regex = regex_matcher.get().as_regex();
+    const Reg_Exp_Status status = regex.test(text);
+    switch (status) {
+    case Reg_Exp_Status::unmatched: return false;
+    case Reg_Exp_Status::matched: return true;
+    case Reg_Exp_Status::invalid: COWEL_ASSERT_UNREACHABLE(u8"Developer error.");
+    case Reg_Exp_Status::execution_error: {
+        context.try_error(
+            diagnostic::regex_execution, regex_matcher.get_location(),
+            u8"The given regular expression is valid, "
+            u8"but its execution failed (too expensive, or due to an internal error)."sv
+        );
+        return Processing_Status::error;
+    }
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid status.");
+}
+
+Result<Value, Processing_Status>
+Regex_Make_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    String_Matcher pattern_matcher { context.get_transient_memory() };
+    Group_Member_Matcher pattern_member { u8"pattern", Optionality::mandatory, pattern_matcher };
+    Group_Member_Matcher* const matchers[] { &pattern_member };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (args_status != Processing_Status::ok) {
+        return args_status;
+    }
+
+    const std::u8string_view pattern = pattern_matcher.get();
+    Result<Reg_Exp, Reg_Exp_Error_Code> regex = Reg_Exp::make(pattern);
+    if (!regex) {
+        context.try_error(
+            diagnostic::regex_pattern, pattern_matcher.get_location(),
+            joined_char_sequence(
+                {
+                    u8"The provided pattern \""sv,
+                    pattern,
+                    u8"\" is not a valid regular expression."sv,
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+
+    return Value::regex(std::move(*regex));
+}
+
 } // namespace cowel
