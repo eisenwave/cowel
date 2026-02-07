@@ -68,21 +68,6 @@
             { "include": "#argument" },
             { "include": "#comments" }
           ]
-        },
-        {
-          "name": "meta.arguments.cowel",
-          "begin": "(?<=\\))\\(",
-          "beginCaptures": {
-            "0": { "name": "punctuation.section.arguments.begin.cowel" }
-          },
-          "end": "\\)",
-          "endCaptures": {
-            "0": { "name": "punctuation.section.arguments.end.cowel" }
-          },
-          "patterns": [
-            { "include": "#argument" },
-            { "include": "#comments" }
-          ]
         }
       ]
     },

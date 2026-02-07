@@ -1,0 +1,33 @@
+{
+  "description": "Directives should only take one argument list",
+  "assertions": [
+    {
+      "type": "scope-at",
+      "line": 0,
+      "col": 0,
+      "expectedScopes": ["source.cowel", "support.function.directive.cowel"],
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "scope-at",
+      "line": 0,
+      "col": 5,
+      "expectedScopes": ["source.cowel", "meta.arguments.cowel", "punctuation.section.arguments.begin.cowel"],
+      "description": "First argument list start"
+    },
+    {
+      "type": "scope-at",
+      "line": 0,
+      "col": 10,
+      "expectedScopes": ["source.cowel", "meta.arguments.cowel", "punctuation.section.arguments.end.cowel"],
+      "description": "First argument list end"
+    },
+    {
+      "type": "scope-at",
+      "line": 0,
+      "col": 11,
+      "expectedScopes": ["source.cowel"],
+      "description": "Second argument list start (should be plain text)"
+    }
+  ]
+}
