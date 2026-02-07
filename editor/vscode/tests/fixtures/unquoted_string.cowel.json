@@ -1,0 +1,19 @@
+{
+  "description": "Unquoted strings (identifiers) should be highlighted as strings",
+  "assertions": [
+    {
+      "type": "scope-at",
+      "line": 0,
+      "col": 6,
+      "expectedScopes": ["source.cowel", "meta.arguments.cowel", "string.unquoted.cowel"],
+      "description": "arg1 is highlighted as unquoted string"
+    },
+    {
+      "type": "scope-at",
+      "line": 1,
+      "col": 6,
+      "expectedScopes": ["source.cowel", "meta.arguments.cowel", "string.unquoted.cowel"],
+      "description": "valid_identifier is highlighted as unquoted string"
+    }
+  ]
+}

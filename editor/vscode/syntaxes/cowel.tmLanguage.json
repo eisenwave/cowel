@@ -120,6 +120,10 @@
         { "include": "#literals" },
         { "include": "#strings" },
         {
+          "name": "string.unquoted.cowel",
+          "match": "[a-zA-Z_][a-zA-Z0-9_-]*"
+        },
+        {
           "comment": "Nested groups",
           "begin": "\\(",
           "beginCaptures": {
