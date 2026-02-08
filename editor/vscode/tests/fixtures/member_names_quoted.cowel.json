@@ -1,0 +1,26 @@
+{
+  "description": "Distinguish member-name from member-value strings",
+  "assertions": [
+    {
+      "type": "token-has-scope",
+      "line": 0,
+      "col": 4,
+      "scope": "meta.object-literal.key.cowel",
+      "description": "Member-name string has key scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 4,
+      "expected": "meta.object-literal.key.cowel",
+      "description": "Member-name top scope is key"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 16,
+      "expected": "string.quoted.double.cowel",
+      "description": "Member-value string does not have key scope"
+    }
+  ]
+}
