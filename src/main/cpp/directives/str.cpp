@@ -338,6 +338,15 @@ Str_Replace_Behavior::evaluate(const Invocation& call, Context& context) const
     else {
         COWEL_ASSERT(needle.is_regex());
         const Reg_Exp& regex = needle.as_regex();
+        if (m_kind == Str_Replacement_Kind::all && !regex.is_global()) {
+            context.try_error(
+                diagnostic::regex_flags, needle_matcher.get_location(),
+                u8"cowel_replace_all can only be used for a regular expression "
+                u8"whose global flag (\"g\") is set."sv
+            );
+            return Processing_Status::error;
+        }
+
         const auto status = [&] -> Reg_Exp_Status { //
             switch (m_kind) {
             case Str_Replacement_Kind::first: {

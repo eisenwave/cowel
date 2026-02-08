@@ -18,6 +18,11 @@
 \cowel_str_replace_first("awoo", cowel_regex("w"), "w")
 \cowel_str_replace_first("awoo", cowel_regex("awoo"), "awoo")
 
+\cowel_str_replace_first("a-ab-abc", cowel_regex("\\p{Ll}+", "gu"), "x")
+\cowel_str_replace_first("α-αβ-αβγ", cowel_regex("\\p{Ll}+", "gu"), "x")
+\cowel_str_replace_first("a-ab-abc", cowel_regex("\\p{Lu}+", "gu"), "x")
+\cowel_str_replace_first("α-αβ-αβγ", cowel_regex("\\p{Lu}+", "gu"), "x")
+
 \cowel_str_replace_first("awOo", cowel_regex("o", "i"), "x")
 \cowel_str_replace_first("awOo", cowel_regex("o+", "i"), "x")
 }
@@ -41,6 +46,11 @@ awo
 
 awoo
 awoo
+
+x-ab-abc
+x-αβ-αβγ
+a-ab-abc
+α-αβ-αβγ
 
 awxo
 awx

@@ -10,8 +10,12 @@ TEST(Reg_Exp, match)
     EXPECT_EQ(Reg_Exp::make(u8"awoo")->match(u8"awoo"), Reg_Exp_Status::matched);
     EXPECT_EQ(Reg_Exp::make(u8".*")->match(u8"awoo"), Reg_Exp_Status::matched);
 
-    EXPECT_EQ(Reg_Exp::make(u8"\\p{Ll}+")->match(u8"abc"), Reg_Exp_Status::matched);
-    EXPECT_EQ(Reg_Exp::make(u8"\\p{Ll}+")->match(u8"αβγ"), Reg_Exp_Status::matched);
+    EXPECT_EQ(
+        Reg_Exp::make(u8"\\p{Ll}+", Reg_Exp_Flags::unicode)->match(u8"abc"), Reg_Exp_Status::matched
+    );
+    EXPECT_EQ(
+        Reg_Exp::make(u8"\\p{Ll}+", Reg_Exp_Flags::unicode)->match(u8"αβγ"), Reg_Exp_Status::matched
+    );
 
     EXPECT_EQ(Reg_Exp::make(u8"\\u")->match(u8"u"), Reg_Exp_Status::matched);
     EXPECT_EQ(Reg_Exp::make(u8"\\u003")->match(u8"u003"), Reg_Exp_Status::matched);

@@ -1,30 +1,30 @@
 \test_input{
-\cowel_str_replace_all("", cowel_regex(""), "")
-\cowel_str_replace_all("", cowel_regex(""), "x")
-\cowel_str_replace_all("", cowel_regex("w"), "x")
+\cowel_str_replace_all("", cowel_regex("", "g"), "")
+\cowel_str_replace_all("", cowel_regex("", "g"), "x")
+\cowel_str_replace_all("", cowel_regex("w", "g"), "x")
 
-\cowel_str_replace_all("awoo", cowel_regex(""), "x")
-\cowel_str_replace_all("awoo", cowel_regex("w"), "x")
+\cowel_str_replace_all("awoo", cowel_regex("", "g"), "x")
+\cowel_str_replace_all("awoo", cowel_regex("w", "g"), "x")
 
-\cowel_str_replace_all("awoo", cowel_regex("w"), "xxx")
-\cowel_str_replace_all("awoo", cowel_regex("wo"), "xxx")
-\cowel_str_replace_all("awoo", cowel_regex("o"), "xxx")
-\cowel_str_replace_all("awoo", cowel_regex("awoo"), "xxx")
+\cowel_str_replace_all("awoo", cowel_regex("w", "g"), "xxx")
+\cowel_str_replace_all("awoo", cowel_regex("wo", "g"), "xxx")
+\cowel_str_replace_all("awoo", cowel_regex("o", "g"), "xxx")
+\cowel_str_replace_all("awoo", cowel_regex("awoo", "g"), "xxx")
 
-\cowel_str_replace_all("awoo", cowel_regex("awoo"), "")
-\cowel_str_replace_all("awoo", cowel_regex("w"), "")
-\cowel_str_replace_all("awoo", cowel_regex("o"), "")
+\cowel_str_replace_all("awoo", cowel_regex("awoo", "g"), "")
+\cowel_str_replace_all("awoo", cowel_regex("w", "g"), "")
+\cowel_str_replace_all("awoo", cowel_regex("o", "g"), "")
 
-\cowel_str_replace_all("awoo", cowel_regex("w"), "w")
-\cowel_str_replace_all("awoo", cowel_regex("awoo"), "awoo")
+\cowel_str_replace_all("awoo", cowel_regex("w", "g"), "w")
+\cowel_str_replace_all("awoo", cowel_regex("awoo", "g"), "awoo")
 
-\cowel_str_replace_all("a-ab-abc", cowel_regex("\\p{Ll}+"), "x")
-\cowel_str_replace_all("α-αβ-αβγ", cowel_regex("\\p{Ll}+"), "x")
-\cowel_str_replace_all("a-ab-abc", cowel_regex("\\p{Lu}+"), "x")
-\cowel_str_replace_all("α-αβ-αβγ", cowel_regex("\\p{Lu}+"), "x")
+\cowel_str_replace_all("a-ab-abc", cowel_regex("\\p{Ll}+", "gu"), "x")
+\cowel_str_replace_all("α-αβ-αβγ", cowel_regex("\\p{Ll}+", "gu"), "x")
+\cowel_str_replace_all("a-ab-abc", cowel_regex("\\p{Lu}+", "gu"), "x")
+\cowel_str_replace_all("α-αβ-αβγ", cowel_regex("\\p{Lu}+", "gu"), "x")
 
-\cowel_str_replace_all("awOo", cowel_regex("o", "i"), "x")
-\cowel_str_replace_all("awOo", cowel_regex("a|o", "i"), "x")
+\cowel_str_replace_all("awOo", cowel_regex("o", "gi"), "x")
+\cowel_str_replace_all("awOo", cowel_regex("a|o", "gi"), "x")
 }
 
 \test_output{

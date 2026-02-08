@@ -233,22 +233,26 @@ private:
 #else
     GC_Ref<Unique_Host_Reg_Exp> m_ref;
 #endif
+    Reg_Exp_Flags m_flags;
 
 #ifdef COWEL_BUILD_NATIVE
     [[nodiscard]]
-    Reg_Exp(const Reg_Exp_Impl& impl) noexcept
+    Reg_Exp(const Reg_Exp_Impl& impl, const Reg_Exp_Flags flags) noexcept
         : m_impl { impl }
+        , m_flags { flags }
     {
     }
     [[nodiscard]]
-    Reg_Exp(Reg_Exp_Impl&& impl) noexcept
+    Reg_Exp(Reg_Exp_Impl&& impl, const Reg_Exp_Flags flags) noexcept
         : m_impl { std::move(impl) }
+        , m_flags { flags }
     {
     }
 #else
     [[nodiscard]]
-    Reg_Exp(GC_Ref<Unique_Host_Reg_Exp> ref) noexcept
+    Reg_Exp(GC_Ref<Unique_Host_Reg_Exp> ref, const Reg_Exp_Flags flags) noexcept
         : m_ref { std::move(ref) }
+        , m_flags { flags }
     {
     }
 #endif
@@ -270,11 +274,65 @@ public:
         std::u8string_view string,
         std::u8string_view replacement
     ) const;
+
+    [[nodiscard]]
+    Reg_Exp_Flags get_flags() const
+    {
+        return m_flags;
+    }
+
+    [[nodiscard]]
+    constexpr bool is_indices() const
+    {
+        return (m_flags & Reg_Exp_Flags::indices) != Reg_Exp_Flags {};
+    }
+
+    [[nodiscard]]
+    constexpr bool is_global() const
+    {
+        return (m_flags & Reg_Exp_Flags::global) != Reg_Exp_Flags {};
+    }
+
+    [[nodiscard]]
+    constexpr bool is_ignore_case() const
+    {
+        return (m_flags & Reg_Exp_Flags::ignore_case) != Reg_Exp_Flags {};
+    }
+
+    [[nodiscard]]
+    constexpr bool is_multiline() const
+    {
+        return (m_flags & Reg_Exp_Flags::multiline) != Reg_Exp_Flags {};
+    }
+
+    [[nodiscard]]
+    constexpr bool is_dot_all() const
+    {
+        return (m_flags & Reg_Exp_Flags::dot_all) != Reg_Exp_Flags {};
+    }
+
+    [[nodiscard]]
+    constexpr bool is_unicode() const
+    {
+        return (m_flags & Reg_Exp_Flags::unicode) != Reg_Exp_Flags {};
+    }
+
+    [[nodiscard]]
+    constexpr bool is_unicode_sets() const
+    {
+        return (m_flags & Reg_Exp_Flags::unicode_sets) != Reg_Exp_Flags {};
+    }
+
+    [[nodiscard]]
+    constexpr bool is_sticky() const
+    {
+        return (m_flags & Reg_Exp_Flags::sticky) != Reg_Exp_Flags {};
+    }
 };
 
 #ifdef COWEL_BUILD_NATIVE
 [[nodiscard]]
-std::u32string ecma_pattern_to_boost_pattern(std::u32string_view ecma_pattern);
+std::u32string ecma_pattern_to_boost_pattern(std::u32string_view ecma_pattern, Reg_Exp_Flags flags);
 #endif
 
 } // namespace cowel

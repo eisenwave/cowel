@@ -843,20 +843,19 @@ class RegExpApi {
         replacementLength: number,
     ): RegExpStatus {
         const regex = this.repository.get(id);
-        if (!regex) {
+        if (!regex || regex.global === false) {
             return RegExpStatus.invalid;
         }
-        const matchRegexp = new RegExp(regex, "g");
 
         const string = this.environment.readString(stringAddress, stringLength);
         const replacement = this.environment.readString(replacementAddress, replacementLength);
 
         let replaced;
         try {
-            if (!matchRegexp.test(string)) {
+            if (!regex.test(string)) {
                 return RegExpStatus.unmatched;
             }
-            replaced = string.replaceAll(matchRegexp, replacement);
+            replaced = string.replaceAll(regex, replacement);
         } catch (_) {
             return RegExpStatus.execution_error;
         }

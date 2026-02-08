@@ -116,11 +116,11 @@ Result<Reg_Exp, Reg_Exp_Error_Code> Reg_Exp::make(
     }();
 
     auto result = [&] -> boost::u32regex {
-        if (!pattern.contains(u8"\\u")) {
+        if (!pattern.contains(u8'\\')) {
             return boost::make_u32regex(pattern.begin(), pattern.end(), boost_flags);
         }
         const std::u32string ecma_pattern = to_utf32(pattern);
-        const std::u32string boost_pattern = ecma_pattern_to_boost_pattern(ecma_pattern);
+        const std::u32string boost_pattern = ecma_pattern_to_boost_pattern(ecma_pattern, flags);
 
         return boost::make_u32regex(boost_pattern.begin(), boost_pattern.end(), boost_flags);
     }();
@@ -128,7 +128,7 @@ Result<Reg_Exp, Reg_Exp_Error_Code> Reg_Exp::make(
     if (result.status() != 0) {
         return Reg_Exp_Error_Code::bad_pattern;
     }
-    return Reg_Exp { Reg_Exp_Impl { In_Place_Tag {}, std::move(result) } };
+    return Reg_Exp { Reg_Exp_Impl { In_Place_Tag {}, std::move(result) }, flags };
 }
 
 Reg_Exp_Status Reg_Exp::match(const std::u8string_view string) const
@@ -161,6 +161,10 @@ Reg_Exp_Status Reg_Exp::replace_all(
     const std::u8string_view replacement
 ) const
 {
+    if (!is_global()) {
+        return Reg_Exp_Status::invalid;
+    }
+
     const char8_t* const data_end = string.data() + string.size();
     boost::u32regex_iterator it { string.data(), data_end, m_impl.get() };
     const decltype(it) end;
@@ -183,7 +187,8 @@ Reg_Exp_Status Reg_Exp::replace_all(
 }
 
 [[nodiscard]]
-std::u32string ecma_pattern_to_boost_pattern(const std::u32string_view ecma_pattern)
+std::u32string
+ecma_pattern_to_boost_pattern(const std::u32string_view ecma_pattern, const Reg_Exp_Flags flags)
 {
     // https://www.boost.org/doc/libs/latest/libs/regex/doc/html/boost_regex/background/standards.html
     // To fix some compliance issues of Boost.Regex with ECMAScript,
@@ -196,7 +201,8 @@ std::u32string ecma_pattern_to_boost_pattern(const std::u32string_view ecma_patt
     bool escape = false;
     for (std::size_t i = 0; i < ecma_pattern.size(); ++i) {
         if (escape) {
-            if (ecma_pattern[i] == U'u') {
+            switch (ecma_pattern[i]) {
+            case U'u': {
                 constexpr auto hex_digit_predicate
                     = [](const char32_t c) { return is_ascii_hex_digit(c); };
                 const bool is_unicode_escape = i + 4 < ecma_pattern.size()
@@ -217,10 +223,25 @@ std::u32string ecma_pattern_to_boost_pattern(const std::u32string_view ecma_patt
                     // we append u literally.
                     result += U'u';
                 }
+                break;
             }
-            else {
+            case U'p': {
+                // JS RegExp only treats \p{...} as Unicode character properties
+                // when the "u" or "v" flag is set.
+                // To emulate this behavior in the case where the flag is missing,
+                // we translate any "\p" into "p" literally.
+                constexpr auto uv_flags = Reg_Exp_Flags::unicode | Reg_Exp_Flags::unicode_sets;
+                if ((flags & uv_flags) != Reg_Exp_Flags {}) {
+                    result += U'\\';
+                }
+                result += U'p';
+                break;
+            }
+            default: {
                 result += U'\\';
                 result += ecma_pattern[i];
+                break;
+            }
             }
             escape = false;
         }
