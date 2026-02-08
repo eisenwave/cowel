@@ -161,10 +161,6 @@ Reg_Exp_Status Reg_Exp::replace_all(
     const std::u8string_view replacement
 ) const
 {
-    if (!is_global()) {
-        return Reg_Exp_Status::invalid;
-    }
-
     const char8_t* const data_end = string.data() + string.size();
     boost::u32regex_iterator it { string.data(), data_end, m_impl.get() };
     const decltype(it) end;
@@ -187,8 +183,12 @@ Reg_Exp_Status Reg_Exp::replace_all(
 }
 
 [[nodiscard]]
-std::u32string
-ecma_pattern_to_boost_pattern(const std::u32string_view ecma_pattern, const Reg_Exp_Flags flags)
+std::u32string ecma_pattern_to_boost_pattern(
+    const std::u32string_view ecma_pattern, //
+    // Not currently used, but may be used for certain pattern transformations in the future,
+    // such as turning \p{...} into literally p{...} for Unicode awareness is disabled.
+    const Reg_Exp_Flags
+)
 {
     // https://www.boost.org/doc/libs/latest/libs/regex/doc/html/boost_regex/background/standards.html
     // To fix some compliance issues of Boost.Regex with ECMAScript,
@@ -223,18 +223,6 @@ ecma_pattern_to_boost_pattern(const std::u32string_view ecma_pattern, const Reg_
                     // we append u literally.
                     result += U'u';
                 }
-                break;
-            }
-            case U'p': {
-                // JS RegExp only treats \p{...} as Unicode character properties
-                // when the "u" or "v" flag is set.
-                // To emulate this behavior in the case where the flag is missing,
-                // we translate any "\p" into "p" literally.
-                constexpr auto uv_flags = Reg_Exp_Flags::unicode | Reg_Exp_Flags::unicode_sets;
-                if ((flags & uv_flags) != Reg_Exp_Flags {}) {
-                    result += U'\\';
-                }
-                result += U'p';
                 break;
             }
             default: {

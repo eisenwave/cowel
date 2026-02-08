@@ -1739,6 +1739,8 @@ h1 {
 <a href=#dir-cowel_str_to_lower><h4><code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4></a>
 <div class=toc-num data-level=4>8.14.4</div>
 <a href=#dir-cowel_str_to_upper><h4><code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4></a>
+<div class=toc-num data-level=4>8.14.5</div>
+<a href=#dir-cowel_regex><h4><code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</h4></a>
 <div class=toc-num data-level=3>8.15</div>
 <a href=#variable-management><h3>Variable management</h3></a>
 <div class=toc-num data-level=4>8.15.1</div>
@@ -5619,6 +5621,55 @@ COWEL markup:
 </p><code-block>AWOO ÄÖÜ STRASSE 123</code-block>
 </example-block>
 
+<h4 id=dir-cowel_regex><a class=para href=#dir-cowel_regex></a>8.14.5. <code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_regex</h->(<h- data-h=mk_attr>pattern</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>flags</h->: <h- data-h=kw_type>str</h-> = ""): <h- data-h=kw_type>regex</h->
+</pre>
+
+<p>Creates a <tt-><h- data-h=kw_type>regex</h-></tt-> value from a <tt-><h- data-h=mk_attr>pattern</h-></tt->,
+and optionally given <tt-><h- data-h=mk_attr>flags</h-></tt->.
+The semantics are exactly the same as those of the ECMAScript
+<a href=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp><tt->RegExp</tt-> constructor</a>
+invoked with the given arguments,
+except that:
+</p><ul>
+  <li>
+    Some flags are unsupported, such as '<tt->y</tt->' (sticky).
+  </li>
+  <li>
+    The '<tt->g</tt->' (global) and '<tt->u</tt->' (Unicode) flags are always set.
+    By comparison, ECMAScript regular expressions operate on UTF-16 code units
+    of a <tt->string</tt-> rather than on code points.
+  </li>
+  <li>
+    <tt-><h- data-h=kw_type>regex</h-></tt-> is completely stateless,
+    unlike ECMAScript <tt->RegExp</tt-> which keeps state
+    in the form of the <tt->lastIndex</tt-> property.
+  </li>
+</ul>
+
+<p><tt-><h- data-h=mk_attr>flags</h-></tt-> is a string of lowercase letters.
+An error is raised if it contains any duplicates,
+or if a character is not one of the permitted flags:
+</p>
+<dl>
+  <dt>'<tt->i</tt->' (ignore case)</dt>
+  <dd>When matching, casing differences are ignored.</dd>
+  <dt>'<tt->m</tt->' (multiline)</dt>
+  <dd>
+    When enabled, treat '<tt->^</tt->' and '<tt->$</tt->' as matching the beginning or end
+    of <em>each line</em> (delimited by LF or CR),
+    not only the beginning and end of the whole string.
+  </dd>
+  <dt>'<tt->s</tt->' (dot all)</dt>
+  <dd>Allows '<tt->.</tt->' to match newlines.</dd>
+  <dt>'<tt->v</tt->' (Unicode sets)</dt>
+  <dd>Enables more Unicode features.</dd>
+</dl>
+
+<p>Unicode regular expressions operate on the code points of a string.
+</p>
 <h3 id=variable-management><a class=para href=#variable-management></a>8.15. Variable management</h3>
 
 <h4 id=dir-cowel_var_let><a class=para href=#dir-cowel_var_let></a>8.15.1. <code><h- data-h=mk_tag>\cowel_var_let</h-></code> — Initialize a new variable</h4>

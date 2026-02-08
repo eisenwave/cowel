@@ -115,10 +115,6 @@ Reg_Exp_Status Reg_Exp::replace_all(
     const std::u8string_view replacement
 ) const
 {
-    if (!is_global()) {
-        return Reg_Exp_Status::invalid;
-    }
-
     const Reg_Exp_Handle handle = m_ref->handle();
     COWEL_ASSERT(handle != Reg_Exp_Handle {});
 

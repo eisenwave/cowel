@@ -707,25 +707,17 @@ enum RegExpStatus {
 }
 
 enum RegExpFlags {
-    /// `d`.
-    indices = 1 << 0,
-    /// `g`.
-    global = 1 << 1,
     /// `i`.
-    ignore_case = 1 << 2,
+    ignore_case = 1 << 0,
     /// `m`.
-    multiline = 1 << 3,
+    multiline = 1 << 1,
     /// `s`.
-    dot_all = 1 << 4,
-    /// `u`.
-    unicode = 1 << 5,
+    dot_all = 1 << 2,
     /// `v`.
-    unicode_sets = 1 << 6,
-    /// `y`.
-    sticky = 1 << 7,
+    unicode_sets = 1 << 3,
 }
 
-const RegExpFlagsString = "dgimsuvy";
+const RegExpFlagsString = "imsv";
 
 function regExpFlagsToString(flags: RegExpFlags): string {
     let result = "";
@@ -762,7 +754,7 @@ class RegExpApi {
     }
 
     compile(patternAddress: Address, patternLength: number, flags: RegExpFlags): RegExpId {
-        const flagsString = regExpFlagsToString(flags);
+        const flagsString = regExpFlagsToString(flags) + "gu";
         try {
             const pattern = this.environment.readString(patternAddress, patternLength);
             const regexp = new RegExp(pattern, flagsString);
@@ -779,16 +771,17 @@ class RegExpApi {
     }
 
     match(id: RegExpId, stringAddress: Address, stringLength: number): RegExpStatus {
-        const regexp = this.repository.get(id);
-        if (!regexp) {
+        const regex = this.repository.get(id);
+        if (!regex) {
             return RegExpStatus.invalid;
         }
+        regex.lastIndex = 0;
+
         const string = this.environment.readString(stringAddress, stringLength);
-        regexp.lastIndex = 0;
 
         let match;
         try {
-            match = regexp.exec(string);
+            match = regex.exec(string);
         } catch (_) {
             return RegExpStatus.execution_error;
         }
@@ -805,15 +798,16 @@ class RegExpApi {
         stringAddress: Address,
         stringLength: number,
     ): RegExpStatus {
-        const regexp = this.repository.get(id);
-        if (!regexp) {
+        const regex = this.repository.get(id);
+        if (!regex) {
             return RegExpStatus.invalid;
         }
+        regex.lastIndex = 0;
+
         const string = this.environment.readString(stringAddress, stringLength);
-        regexp.lastIndex = 0;
         let match;
         try {
-            match = regexp.exec(string);
+            match = regex.exec(string);
         } catch (_) {
             return RegExpStatus.execution_error;
         }
@@ -846,6 +840,7 @@ class RegExpApi {
         if (!regex || regex.global === false) {
             return RegExpStatus.invalid;
         }
+        regex.lastIndex = 0;
 
         const string = this.environment.readString(stringAddress, stringLength);
         const replacement = this.environment.readString(replacementAddress, replacementLength);

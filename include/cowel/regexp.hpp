@@ -46,25 +46,17 @@ enum struct Reg_Exp_Status : Default_Underlying {
 };
 
 enum struct Reg_Exp_Flags : Default_Underlying {
-    /// @brief `d`.
-    indices = 1 << 0,
-    /// @brief `g`.
-    global = 1 << 1,
     /// @brief `i`.
-    ignore_case = 1 << 2,
+    ignore_case = 1 << 0,
     /// @brief `m`.
-    multiline = 1 << 3,
+    multiline = 1 << 1,
     /// @brief `s`.
-    dot_all = 1 << 4,
-    /// @brief `u`.
-    unicode = 1 << 5,
+    dot_all = 1 << 2,
     /// @brief `v`.
-    unicode_sets = 1 << 6,
-    /// @brief `y`.
-    sticky = 1 << 7,
+    unicode_sets = 1 << 3,
 };
 
-static constexpr std::u8string_view reg_exp_flags_string = u8"dgimsuvy";
+static constexpr std::u8string_view reg_exp_flags_string = u8"imsv";
 
 [[nodiscard]]
 constexpr Reg_Exp_Flags operator|(const Reg_Exp_Flags x, const Reg_Exp_Flags y)
@@ -282,18 +274,6 @@ public:
     }
 
     [[nodiscard]]
-    constexpr bool is_indices() const
-    {
-        return (m_flags & Reg_Exp_Flags::indices) != Reg_Exp_Flags {};
-    }
-
-    [[nodiscard]]
-    constexpr bool is_global() const
-    {
-        return (m_flags & Reg_Exp_Flags::global) != Reg_Exp_Flags {};
-    }
-
-    [[nodiscard]]
     constexpr bool is_ignore_case() const
     {
         return (m_flags & Reg_Exp_Flags::ignore_case) != Reg_Exp_Flags {};
@@ -312,21 +292,9 @@ public:
     }
 
     [[nodiscard]]
-    constexpr bool is_unicode() const
-    {
-        return (m_flags & Reg_Exp_Flags::unicode) != Reg_Exp_Flags {};
-    }
-
-    [[nodiscard]]
-    constexpr bool is_unicode_sets() const
+    constexpr bool has_unicode_sets() const
     {
         return (m_flags & Reg_Exp_Flags::unicode_sets) != Reg_Exp_Flags {};
-    }
-
-    [[nodiscard]]
-    constexpr bool is_sticky() const
-    {
-        return (m_flags & Reg_Exp_Flags::sticky) != Reg_Exp_Flags {};
     }
 };
 

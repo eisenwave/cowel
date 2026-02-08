@@ -2,11 +2,10 @@
 \cowel_str_match("awoo", cowel_regex("a"))
 \cowel_str_match("awoo", cowel_regex(".*"))
 
-\cowel_str_match("abc", cowel_regex("\\p{Ll}+", "u"))
-\cowel_str_match("αβγ", cowel_regex("\\p{Ll}+", "u"))
-\cowel_str_match("abc", cowel_regex("\\p{Lu}+", "u"))
-\cowel_str_match("αβγ", cowel_regex("\\p{Lu}+", "u"))
-\cowel_str_match("p{Ll}}}", cowel_regex("\\p{Ll}+"))
+\cowel_str_match("abc", cowel_regex("\\p{Ll}+"))
+\cowel_str_match("αβγ", cowel_regex("\\p{Ll}+"))
+\cowel_str_match("abc", cowel_regex("\\p{Lu}+"))
+\cowel_str_match("αβγ", cowel_regex("\\p{Lu}+"))
 
 \cowel_str_match("u", cowel_regex("\\u"))
 \cowel_str_match("u003", cowel_regex("\\u003"))
@@ -23,7 +22,6 @@ true
 true
 false
 false
-true
 
 true
 true

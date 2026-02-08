@@ -2326,6 +2326,57 @@ Generated HTML:
 }
 }
 
+\h4(
+  id = "dir-cowel_regex"
+){\cowdoc_dir{cowel_regex} \c{mdash} Create a regular expression}
+
+\pre{
+\cowel_highlight_as("markup-tag"){cowel_regex}(\cowdoc_param("pattern", "str"), \cowdoc_param("flags", "str") = ""): \cowel_highlight_as("keyword-type"){regex}
+}
+
+Creates a \cowdoc_type{regex} value from a \cowdoc_attr{pattern},
+and optionally given \cowdoc_attr{flags}.
+The semantics are exactly the same as those of the ECMAScript
+\ref("https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp"){\tt{RegExp} constructor}
+invoked with the given arguments,
+except that:
+\ul{
+  \li{
+    Some flags are unsupported, such as '\tt{y}' (sticky).
+  }
+  \li{
+    The '\tt{g}' (global) and '\tt{u}' (Unicode) flags are always set.
+    By comparison, ECMAScript regular expressions operate on UTF-16 code units
+    of a \tt{string} rather than on code points.
+  }
+  \li{
+    \cowdoc_type{regex} is completely stateless,
+    unlike ECMAScript \tt{RegExp} which keeps state
+    in the form of the \tt{lastIndex} property.
+  }
+}
+
+\cowdoc_attr{flags} is a string of lowercase letters.
+An error is raised if it contains any duplicates,
+or if a character is not one of the permitted flags:
+
+\dl{
+  \dt{'\tt{i}' (ignore case)}
+  \dd{When matching, casing differences are ignored.}
+  \dt{'\tt{m}' (multiline)}
+  \dd{
+    When enabled, treat '\tt{^}' and '\tt{$}' as matching the beginning or end
+    of \em{each line} (delimited by LF or CR),
+    not only the beginning and end of the whole string.
+  }
+  \dt{'\tt{s}' (dot all)}
+  \dd{Allows '\tt{.}' to match newlines.}
+  \dt{'\tt{v}' (Unicode sets)}
+  \dd{Enables more Unicode features.}
+}
+
+Unicode regular expressions operate on the code points of a string.
+
 \h3{Variable management}
 
 \h4(
