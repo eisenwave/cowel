@@ -107,6 +107,24 @@
       "patterns": [
         {
           "name": "variable.parameter.named.cowel",
+          "begin": "(\")(?=[^\"]*\"\\s*=)",
+          "beginCaptures": {
+            "1": { "name": "string.quoted.double.cowel meta.object-literal.key.cowel punctuation.definition.string.begin.cowel" }
+          },
+          "end": "(\")\\s*(=)",
+          "endCaptures": {
+            "1": { "name": "string.quoted.double.cowel meta.object-literal.key.cowel punctuation.definition.string.end.cowel" },
+            "2": { "name": "keyword.operator.assignment.cowel" }
+          },
+          "contentName": "string.quoted.double.cowel meta.object-literal.key.cowel",
+          "patterns": [
+            { "include": "#escapes" },
+            { "include": "#directives" },
+            { "include": "#comments" }
+          ]
+        },
+        {
+          "name": "variable.parameter.named.cowel",
           "match": "([a-zA-Z_][a-zA-Z0-9_-]*)\\s*(=)",
           "captures": {
             "1": { "name": "entity.name.tag.cowel" },
