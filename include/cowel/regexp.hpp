@@ -3,10 +3,13 @@
 
 #include <cstdint>
 #include <string_view>
+#include <vector>
 
+#include "cowel/util/fixed_string.hpp"
 #include "cowel/util/result.hpp"
 
 #include "cowel/fwd.hpp"
+#include "cowel/util/unicode.hpp"
 
 #ifdef COWEL_BUILD_WASM
 #include "cowel/gc.hpp"
@@ -41,6 +44,111 @@ enum struct Reg_Exp_Status : Default_Underlying {
     /// such as exceeding time limits.
     execution_error,
 };
+
+enum struct Reg_Exp_Flags : Default_Underlying {
+    /// @brief `d`.
+    indices = 1 << 0,
+    /// @brief `g`.
+    global = 1 << 1,
+    /// @brief `i`.
+    ignore_case = 1 << 2,
+    /// @brief `m`.
+    multiline = 1 << 3,
+    /// @brief `s`.
+    dot_all = 1 << 4,
+    /// @brief `u`.
+    unicode = 1 << 5,
+    /// @brief `v`.
+    unicode_sets = 1 << 6,
+    /// @brief `y`.
+    sticky = 1 << 7,
+};
+
+static constexpr std::u8string_view reg_exp_flags_string = u8"dgimsuvy";
+
+[[nodiscard]]
+constexpr Reg_Exp_Flags operator|(const Reg_Exp_Flags x, const Reg_Exp_Flags y)
+{
+    return Reg_Exp_Flags(std::to_underlying(x) | std::to_underlying(y));
+}
+
+[[nodiscard]]
+constexpr Reg_Exp_Flags operator&(const Reg_Exp_Flags x, const Reg_Exp_Flags y)
+{
+    return Reg_Exp_Flags(std::to_underlying(x) & std::to_underlying(y));
+}
+
+constexpr Reg_Exp_Flags& operator|=(Reg_Exp_Flags& x, const Reg_Exp_Flags y)
+{
+    return x = x | y;
+}
+
+constexpr Reg_Exp_Flags& operator&=(Reg_Exp_Flags& x, const Reg_Exp_Flags y)
+{
+    return x = x & y;
+}
+
+enum struct Reg_Exp_Flags_Error_Kind : Default_Underlying {
+    invalid,
+    duplicate,
+};
+
+struct Reg_Exp_Flags_Error {
+    Reg_Exp_Flags_Error_Kind kind;
+    std::size_t index;
+    std::size_t length;
+};
+
+constexpr Result<Reg_Exp_Flags, Reg_Exp_Flags_Error>
+reg_exp_flags_parse(const std::u8string_view flags)
+{
+    Reg_Exp_Flags result {};
+
+    for (std::size_t i = 0; i < flags.size(); ++i) {
+        // Even though we take a single UTF-8 code unit out of flags
+        // (rather than a code point),
+        // this operation is safe because flag_string is pure ASCII,
+        // so searching for only the leading code unit of a code point
+        // gives us no false negatives and no false positives.
+        const std::size_t flag_index = reg_exp_flags_string.find(flags[i]);
+        // However, if there is an error when parsing the flags,
+        // we need to decode the whole code point for diagnostic purposes.
+        const auto compute_bad_length = [&] {
+            return std::size_t(utf8::decode_and_length_or_replacement(flags.substr(i)).length);
+        };
+        if (flag_index == std::u8string_view::npos) {
+            return Reg_Exp_Flags_Error {
+                .kind = Reg_Exp_Flags_Error_Kind::invalid,
+                .index = i,
+                .length = compute_bad_length(),
+            };
+        }
+        const auto new_flag = Reg_Exp_Flags(1 << flag_index);
+        if ((result & new_flag) != Reg_Exp_Flags {}) {
+            return Reg_Exp_Flags_Error {
+                .kind = Reg_Exp_Flags_Error_Kind::duplicate,
+                .index = i,
+                .length = compute_bad_length(),
+            };
+        }
+        result |= new_flag;
+    }
+
+    return result;
+}
+
+[[nodiscard]]
+constexpr Fixed_String8<reg_exp_flags_string.size()>
+reg_exp_flags_to_string(const Reg_Exp_Flags flags)
+{
+    Fixed_String8<reg_exp_flags_string.size()> result;
+    for (std::size_t i = 0; i < reg_exp_flags_string.size(); ++i) {
+        if ((std::size_t(flags) >> i) & 1) {
+            result.push_back(reg_exp_flags_string[i]);
+        }
+    }
+    return result;
+}
 
 struct Reg_Exp_Search_Result {
     Reg_Exp_Status status;
@@ -116,7 +224,8 @@ public:
 struct Reg_Exp {
 public:
     [[nodiscard]]
-    static Result<Reg_Exp, Reg_Exp_Error_Code> make(std::u8string_view pattern);
+    static Result<Reg_Exp, Reg_Exp_Error_Code>
+    make(std::u8string_view pattern, Reg_Exp_Flags flags = {});
 
 private:
 #ifdef COWEL_BUILD_NATIVE
@@ -147,11 +256,20 @@ private:
 public:
     /// @brief Returns `true` if `string` matches this regex in its entirety.
     [[nodiscard]]
-    Reg_Exp_Status test(std::u8string_view string) const;
+    Reg_Exp_Status match(std::u8string_view string) const;
 
-    /// @brief Returns `true` if `string` matches this regex in its entirety.
+    /// @brief Returns `true` if `string` contains an occurrence of this regex.
     [[nodiscard]]
     Reg_Exp_Search_Result search(std::u8string_view string) const;
+
+    /// @brief Replaces every occurrence of this regular expression within `string`
+    /// with `replacement`.
+    [[nodiscard]]
+    Reg_Exp_Status replace_all(
+        std::pmr::vector<char8_t>& out,
+        std::u8string_view string,
+        std::u8string_view replacement
+    ) const;
 };
 
 #ifdef COWEL_BUILD_NATIVE

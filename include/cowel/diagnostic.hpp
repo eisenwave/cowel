@@ -117,6 +117,9 @@ inline constexpr std::u8string_view preserved_not_str = u8"preserved.not-str";
 /// @brief The pattern of a regular expression is invalid.
 inline constexpr std::u8string_view regex_pattern = u8"regex.pattern";
 
+/// @brief The flags of a regular expression are invalid.
+inline constexpr std::u8string_view regex_flags = u8"regex.flags";
+
 /// @brief Execution of a regular expression could not succeed (possibly too expensive).
 inline constexpr std::u8string_view regex_execution = u8"regex.execution";
 

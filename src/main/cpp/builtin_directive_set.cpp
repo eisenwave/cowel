@@ -141,6 +141,10 @@ constexpr Str_Length_Behavior cowel_str_length //
     { Str_Length_Kind::code_point };
 constexpr Str_Match_Behavior cowel_str_match //
     {};
+constexpr Str_Replace_Behavior cowel_str_replace_all //
+    { Str_Replacement_Kind::all };
+constexpr Str_Replace_Behavior cowel_str_replace_first //
+    { Str_Replacement_Kind::first };
 constexpr Str_Transform_Behavior cowel_str_to_lower //
     { Text_Transformation::lowercase };
 constexpr Str_Transform_Behavior cowel_str_to_upper //
@@ -463,6 +467,8 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_sqrt),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_length),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_match),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_replace_all),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_replace_first),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_to_lower),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_to_upper),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_utf8_length),

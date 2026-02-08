@@ -230,6 +230,38 @@ Str_Match_Behavior final : Bool_Directive_Behavior {
 };
 
 struct [[nodiscard]]
+Str_Contains_Behavior final : Bool_Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Str_Contains_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
+};
+
+enum struct Str_Replacement_Kind : bool {
+    first,
+    all,
+};
+
+struct [[nodiscard]]
+Str_Replace_Behavior final : Directive_Behavior {
+private:
+    const Str_Replacement_Kind m_kind;
+
+public:
+    [[nodiscard]]
+    constexpr explicit Str_Replace_Behavior(const Str_Replacement_Kind kind)
+        : Directive_Behavior { Type::str }
+        , m_kind { kind }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const override;
+};
+
+struct [[nodiscard]]
 Regex_Make_Behavior final : Directive_Behavior {
     [[nodiscard]]
     constexpr explicit Regex_Make_Behavior()

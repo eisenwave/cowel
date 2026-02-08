@@ -95,19 +95,34 @@ std::u32string to_utf32(const std::u8string_view utf8)
 
 } // namespace
 
-[[nodiscard]]
-Result<Reg_Exp, Reg_Exp_Error_Code> Reg_Exp::make(const std::u8string_view pattern)
+Result<Reg_Exp, Reg_Exp_Error_Code> Reg_Exp::make(
+    const std::u8string_view pattern, //
+    const Reg_Exp_Flags flags
+)
 {
-    constexpr auto flags = boost::regex_constants::ECMAScript | boost::regex_constants::no_except;
+    // https://www.boost.org/doc/libs/latest/libs/regex/doc/html/boost_regex/ref/syntax_option_type/syntax_option_type_perl.html
+    const auto boost_flags = [&] {
+        auto result = boost::regex_constants::ECMAScript | boost::regex_constants::no_except;
+        if ((flags & Reg_Exp_Flags::ignore_case) != Reg_Exp_Flags {}) {
+            result |= boost::regex_constants::icase;
+        }
+        if ((flags & Reg_Exp_Flags::multiline) == Reg_Exp_Flags {}) {
+            result |= boost::regex_constants::no_mod_m;
+        }
+        if ((flags & Reg_Exp_Flags::dot_all) != Reg_Exp_Flags {}) {
+            result |= boost::regex_constants::mod_s;
+        }
+        return boost::regex_constants::syntax_option_type(result);
+    }();
 
     auto result = [&] -> boost::u32regex {
         if (!pattern.contains(u8"\\u")) {
-            return boost::make_u32regex(pattern.begin(), pattern.end(), flags);
+            return boost::make_u32regex(pattern.begin(), pattern.end(), boost_flags);
         }
         const std::u32string ecma_pattern = to_utf32(pattern);
         const std::u32string boost_pattern = ecma_pattern_to_boost_pattern(ecma_pattern);
 
-        return boost::make_u32regex(boost_pattern.begin(), boost_pattern.end(), flags);
+        return boost::make_u32regex(boost_pattern.begin(), boost_pattern.end(), boost_flags);
     }();
 
     if (result.status() != 0) {
@@ -116,15 +131,13 @@ Result<Reg_Exp, Reg_Exp_Error_Code> Reg_Exp::make(const std::u8string_view patte
     return Reg_Exp { Reg_Exp_Impl { In_Place_Tag {}, std::move(result) } };
 }
 
-[[nodiscard]]
-Reg_Exp_Status Reg_Exp::test(const std::u8string_view string) const
+Reg_Exp_Status Reg_Exp::match(const std::u8string_view string) const
 {
     const bool result
         = boost::u32regex_match(string.data(), string.data() + string.size(), m_impl.get());
     return result ? Reg_Exp_Status::matched : Reg_Exp_Status::unmatched;
 }
 
-[[nodiscard]]
 Reg_Exp_Search_Result Reg_Exp::search(const std::u8string_view string) const
 {
     boost::match_results<const char8_t*> match;
@@ -140,6 +153,33 @@ Reg_Exp_Search_Result Reg_Exp::search(const std::u8string_view string) const
         .length = std::size_t(first.end() - first.begin()),
     };
     return Reg_Exp_Search_Result { Reg_Exp_Status::matched, result_match };
+}
+
+Reg_Exp_Status Reg_Exp::replace_all(
+    std::pmr::vector<char8_t>& out,
+    const std::u8string_view string,
+    const std::u8string_view replacement
+) const
+{
+    const char8_t* const data_end = string.data() + string.size();
+    boost::u32regex_iterator it { string.data(), data_end, m_impl.get() };
+    const decltype(it) end;
+    if (it == end) {
+        return Reg_Exp_Status::unmatched;
+    }
+
+    const char8_t* unmatched_begin = string.data();
+    for (; it != end; ++it) {
+        const auto& match = (*it)[0];
+        const char8_t* const match_begin = match.begin();
+        const char8_t* const match_end = match.end();
+
+        out.insert(out.end(), unmatched_begin, match_begin);
+        out.insert(out.end(), replacement.data(), replacement.data() + replacement.size());
+        unmatched_begin = match_end;
+    }
+    out.insert(out.end(), unmatched_begin, data_end);
+    return Reg_Exp_Status::matched;
 }
 
 [[nodiscard]]

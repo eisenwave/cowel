@@ -1,0 +1,41 @@
+\test_input{
+\cowel_str_replace_all("", "", "")
+\cowel_str_replace_all("", "", "x")
+\cowel_str_replace_all("", "w", "x")
+
+\cowel_str_replace_all("awoo", "", "x")
+\cowel_str_replace_all("awoo", "w", "x")
+
+\cowel_str_replace_all("awoo", "w", "xxx")
+\cowel_str_replace_all("awoo", "wo", "xxx")
+\cowel_str_replace_all("awoo", "o", "xxx")
+\cowel_str_replace_all("awoo", "awoo", "xxx")
+
+\cowel_str_replace_all("awoo", "awoo", "")
+\cowel_str_replace_all("awoo", "w", "")
+\cowel_str_replace_all("awoo", "o", "")
+
+\cowel_str_replace_all("awoo", "w", "w")
+\cowel_str_replace_all("awoo", "awoo", "awoo")
+}
+
+\test_output{
+
+x
+
+
+xaxwxoxox
+axoo
+
+axxxoo
+axxxo
+awxxxxxx
+xxx
+
+
+aoo
+aw
+
+awoo
+awoo
+}

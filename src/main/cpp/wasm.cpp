@@ -94,10 +94,15 @@ void init_options(
         .preserved_variables_size = preserved_variables_size,
         .consume_variables = consume_variables_callback,
         .consume_variables_data = nullptr,
+
+        // These must all stay nullptr.
+        // Providing custom allocators would break the assumption
+        // like in regex_wasm.cpp that allocations take place using cowel_alloc.
         .alloc = nullptr,
         .alloc_data = nullptr,
         .free = nullptr,
         .free_data = nullptr,
+
         .load_file = load_file_callback,
         .load_file_data = nullptr,
         .log = log_callback,
