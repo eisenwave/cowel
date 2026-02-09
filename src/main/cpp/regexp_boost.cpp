@@ -120,9 +120,16 @@ Result<Reg_Exp, Reg_Exp_Error_Code> Reg_Exp::make(
             return boost::make_u32regex(pattern.begin(), pattern.end(), boost_flags);
         }
         const std::u32string ecma_pattern = to_utf32(pattern);
-        const std::u32string boost_pattern = ecma_pattern_to_boost_pattern(ecma_pattern, flags);
+        const std::optional<std::u32string> boost_pattern
+            = ecma_pattern_to_boost_pattern(ecma_pattern, flags);
+        if (!boost_pattern) {
+            static const auto invalid_regex = boost::make_u32regex(
+                "(", boost::regex_constants::ECMAScript | boost::regex_constants::no_except
+            );
+            return invalid_regex;
+        }
 
-        return boost::make_u32regex(boost_pattern.begin(), boost_pattern.end(), boost_flags);
+        return boost::make_u32regex(boost_pattern->begin(), boost_pattern->end(), boost_flags);
     }();
 
     if (result.status() != 0) {
@@ -183,7 +190,7 @@ Reg_Exp_Status Reg_Exp::replace_all(
 }
 
 [[nodiscard]]
-std::u32string ecma_pattern_to_boost_pattern(
+std::optional<std::u32string> ecma_pattern_to_boost_pattern(
     const std::u32string_view ecma_pattern, //
     // Not currently used, but may be used for certain pattern transformations in the future,
     // such as turning \p{...} into literally p{...} for Unicode awareness is disabled.
@@ -196,6 +203,8 @@ std::u32string ecma_pattern_to_boost_pattern(
     // Notably, even with ECMAScript flavor,
     // Boost.Regex treats \u0030 not as U+0030 DIGIT ZERO,
     // but as any uppercase character, followed by 0030 literally.
+
+    constexpr bool is_unicode = true;
 
     std::u32string result;
     bool escape = false;
@@ -218,9 +227,13 @@ std::u32string ecma_pattern_to_boost_pattern(
                     result += U'}';
                     i += 4;
                 }
+                else if constexpr (is_unicode) {
+                    // For Unicode patterns, an incomplete/invalid "\u" escape
+                    // such as \uZZ or \u12X results in an error.
+                    return std::nullopt;
+                }
                 else {
-                    // For any other use of "\u" (e.g. /\uZZ/, /\u()/),
-                    // we append u literally.
+                    // Outside Unicode mode, \u means "u" literally.
                     result += U'u';
                 }
                 break;

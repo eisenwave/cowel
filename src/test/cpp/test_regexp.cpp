@@ -13,8 +13,9 @@ TEST(Reg_Exp, match)
     EXPECT_EQ(Reg_Exp::make(u8"\\p{Ll}+")->match(u8"abc"), Reg_Exp_Status::matched);
     EXPECT_EQ(Reg_Exp::make(u8"\\p{Ll}+")->match(u8"αβγ"), Reg_Exp_Status::matched);
 
-    EXPECT_EQ(Reg_Exp::make(u8"\\u")->match(u8"u"), Reg_Exp_Status::matched);
-    EXPECT_EQ(Reg_Exp::make(u8"\\u003")->match(u8"u003"), Reg_Exp_Status::matched);
+    EXPECT_FALSE(Reg_Exp::make(u8"\\u").has_value());
+    EXPECT_FALSE(Reg_Exp::make(u8"\\u003").has_value());
+
     EXPECT_EQ(Reg_Exp::make(u8"\\u0030")->match(u8"0"), Reg_Exp_Status::matched);
     EXPECT_EQ(Reg_Exp::make(u8"\\u00303")->match(u8"03"), Reg_Exp_Status::matched);
     EXPECT_EQ(Reg_Exp::make(u8"\\\\u0030")->match(u8"\\u0030"), Reg_Exp_Status::matched);

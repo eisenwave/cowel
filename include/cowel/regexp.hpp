@@ -2,6 +2,7 @@
 #define COWEL_REGEX_HPP
 
 #include <cstdint>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -300,7 +301,8 @@ public:
 
 #ifdef COWEL_BUILD_NATIVE
 [[nodiscard]]
-std::u32string ecma_pattern_to_boost_pattern(std::u32string_view ecma_pattern, Reg_Exp_Flags flags);
+std::optional<std::u32string>
+ecma_pattern_to_boost_pattern(std::u32string_view ecma_pattern, Reg_Exp_Flags flags);
 #endif
 
 } // namespace cowel
