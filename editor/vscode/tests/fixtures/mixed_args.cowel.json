@@ -5,7 +5,7 @@
       "type": "top-scope",
       "line": 0,
       "col": 8,
-      "expected": "entity.name.tag.cowel",
+      "expected": "entity.other.attribute-name.cowel",
       "description": "Named argument 'arg1' has correct scope"
     },
     {
@@ -19,7 +19,7 @@
       "type": "top-scope",
       "line": 0,
       "col": 33,
-      "expected": "entity.name.tag.cowel",
+      "expected": "entity.other.attribute-name.cowel",
       "description": "Argument 'arg3' has correct scope"
     },
     {

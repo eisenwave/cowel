@@ -19,7 +19,7 @@
       "type": "top-scope",
       "line": 1,
       "col": 10,
-      "expected": "entity.name.tag.cowel",
+      "expected": "entity.other.attribute-name.cowel",
       "description": "Inner directive argument name has correct scope"
     },
     {
