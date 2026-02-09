@@ -33,14 +33,14 @@
       "type": "scope-chain",
       "line": 1,
       "col": 4,
-      "expected": ["source.cowel", "meta.arguments.cowel", "variable.parameter.named.cowel", "entity.name.tag.cowel"],
+      "expected": ["source.cowel", "meta.arguments.cowel", "variable.parameter.named.cowel", "entity.other.attribute-name.cowel"],
       "description": "Named parameter has full scope chain"
     },
     {
       "type": "token-has-scope",
       "line": 2,
       "col": 13,
-      "scope": "entity.name.tag.cowel",
+      "scope": "entity.other.attribute-name.cowel",
       "description": "Named argument identifier has entity.name.tag scope"
     }
   ]

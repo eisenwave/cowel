@@ -54,7 +54,7 @@
       "type": "top-scope",
       "line": 9,
       "col": 2,
-      "expected": "entity.name.tag.cowel",
+      "expected": "entity.other.attribute-name.cowel",
       "description": "Named argument after comment has correct scope"
     }
   ]

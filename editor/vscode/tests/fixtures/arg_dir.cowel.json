@@ -12,7 +12,7 @@
       "type": "top-scope",
       "line": 0,
       "col": 13,
-      "expected": "entity.name.tag.cowel",
+      "expected": "entity.other.attribute-name.cowel",
       "description": "Named argument name has correct scope"
     },
     {
