@@ -1,0 +1,19 @@
+{
+  "description": "Directive-call names should be highlighted like directive-splice",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive-splice name has directive scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 9,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive-call name has directive scope"
+    }
+  ]
+}
