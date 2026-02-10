@@ -1,5 +1,10 @@
+#include <algorithm>
+#include <cstddef>
+#include <new>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 
 #include "cowel/util/chars.hpp"
 #include "cowel/util/unicode.hpp"
