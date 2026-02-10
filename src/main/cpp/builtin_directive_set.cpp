@@ -137,6 +137,8 @@ constexpr Policy_Behavior cowel_source_as_text //
     { Known_Content_Policy::source_as_text };
 constexpr Unary_Numeric_Expression_Behavior cowel_sqrt //
     { Unary_Numeric_Expression_Kind::sqrt };
+constexpr Str_Contains_Behavior cowel_str_contains //
+    {};
 constexpr Str_Length_Behavior cowel_str_length //
     { Str_Length_Kind::code_point };
 constexpr Str_Match_Behavior cowel_str_match //
@@ -465,6 +467,7 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_rem_to_zero),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_source_as_text),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_sqrt),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_contains),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_length),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_match),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_replace_all),
