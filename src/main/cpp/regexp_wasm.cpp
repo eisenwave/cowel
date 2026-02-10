@@ -13,7 +13,7 @@ extern "C" {
 /// @brief Compiles the pattern on the host and returns a handle.
 /// If the pattern is not valid, returns a value-initialized handle.
 /// @param pattern A pointer to the UTF-8-encoded pattern with ECMAScript flavor.
-/// @param length The length of the pattern, in code points.
+/// @param length The length of the pattern, in code units.
 /// @param flags The set of flags to construct the regular expression with.
 COWEL_WASM_IMPORT("env", "reg_exp_compile")
 cowel::Reg_Exp_Handle
