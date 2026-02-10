@@ -63,7 +63,7 @@ struct Sink_For_Splicing final : String_Sink {
 /// @param max_replacements The (inclusive) maximum amount of replacements.
 /// @returns The amount of replacements that have taken place,
 /// also including identity replacements (where `needle` equals `with`).
-/// The result is less than or equal to `limit`.
+/// The result is less than or equal to `max_replacements`.
 std::size_t replace_all(
     std::pmr::vector<char8_t>& out,
     const std::u8string_view str,
