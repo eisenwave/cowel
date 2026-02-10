@@ -34,11 +34,6 @@ COWEL_WASM_IMPORT("env", "reg_exp_match")
 cowel::Reg_Exp_Status
 cowel_reg_exp_match(cowel::Reg_Exp_Handle r, const char8_t* string, std::size_t length);
 
-struct cowel_reg_exp_search_result {
-    std::size_t index;
-    std::size_t length;
-};
-
 /// @brief Returns `true` if the given regular expression `r` is found in the given `string`.
 /// @param search_result A pointer to where the search results should be written.
 /// @param r The handle.
