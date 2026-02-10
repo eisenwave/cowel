@@ -1736,10 +1736,18 @@ h1 {
 <div class=toc-num data-level=4>8.14.2</div>
 <a href=#dir-cowel_str_utf8_length><h4><code><h- data-h=mk_tag>\cowel_str_utf8_length</h-></code> — Length of string in UTF-8 code units</h4></a>
 <div class=toc-num data-level=4>8.14.3</div>
-<a href=#dir-cowel_str_to_lower><h4><code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4></a>
+<a href=#dir-cowel_str_contains><h4><code><h- data-h=mk_tag>\cowel_str_contains</h-></code> — Test if a string contains another string</h4></a>
 <div class=toc-num data-level=4>8.14.4</div>
-<a href=#dir-cowel_str_to_upper><h4><code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4></a>
+<a href=#dir-cowel_str_match><h4><code><h- data-h=mk_tag>\cowel_str_match</h-></code> — Test if a string matches a regular expression</h4></a>
 <div class=toc-num data-level=4>8.14.5</div>
+<a href=#dir-cowel_str_to_lower><h4><code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4></a>
+<div class=toc-num data-level=4>8.14.6</div>
+<a href=#dir-cowel_str_to_upper><h4><code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4></a>
+<div class=toc-num data-level=4>8.14.7</div>
+<a href=#dir-cowel_str_replace_first><h4><code><h- data-h=mk_tag>\cowel_str_replace_first</h-></code> — Replace first occurrence</h4></a>
+<div class=toc-num data-level=4>8.14.8</div>
+<a href=#dir-cowel_str_replace_all><h4><code><h- data-h=mk_tag>\cowel_str_replace_all</h-></code> — Replace every occurrence</h4></a>
+<div class=toc-num data-level=4>8.14.9</div>
 <a href=#dir-cowel_regex><h4><code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</h4></a>
 <div class=toc-num data-level=3>8.15</div>
 <a href=#variable-management><h3>Variable management</h3></a>
@@ -5583,7 +5591,58 @@ so this operation should not require encoding the string as UTF-8.
 Rather it accesses available information directly.
 </p></note-block>
 
-<h4 id=dir-cowel_str_to_lower><a class=para href=#dir-cowel_str_to_lower></a>8.14.3. <code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4>
+<h4 id=dir-cowel_str_contains><a class=para href=#dir-cowel_str_contains></a>8.14.3. <code><h- data-h=mk_tag>\cowel_str_contains</h-></code> — Test if a string contains another string</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_str_contains</h->(<h- data-h=mk_attr>text</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>needle</h->: <h- data-h=kw_type>str | regex</h->): <h- data-h=kw_type>bool</h->
+</pre>
+
+<p>Returns <code>true</code> if the <tt-><h- data-h=mk_attr>text</h-></tt-> contains <tt-><h- data-h=mk_attr>needle</h-></tt->,
+otherwise <code>false</code>.
+Always returns <code>true</code> if <tt-><h- data-h=mk_attr>needle</h-></tt->
+is an empty string or empty regular expression.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> "o" character is found in "awoo"</h->
+o: <h- data-h=mk_tag>\cowel_str_contains</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>o</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> "A" character is not found.</h->
+A: <h- data-h=mk_tag>\cowel_str_contains</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>A</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Sequence of one or more "o" characters is found.</h->
+o+: <h- data-h=mk_tag>\cowel_str_contains</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_tag>cowel_regex</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>o+</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Empty string is always found.</h->
+<h- data-h=mk_tag>\cowel_str_contains</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> Empty regular expression is always found.</h->
+<h- data-h=mk_tag>\cowel_str_contains</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_tag>cowel_regex</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>o: true
+A: false
+o+: true
+
+true
+true</code-block>
+</example-block>
+
+<h4 id=dir-cowel_str_match><a class=para href=#dir-cowel_str_match></a>8.14.4. <code><h- data-h=mk_tag>\cowel_str_match</h-></code> — Test if a string matches a regular expression</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_str_match</h->(<h- data-h=mk_attr>text</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>regex</h->: <h- data-h=kw_type>regex</h->): <h- data-h=kw_type>bool</h->
+</pre>
+
+<p>Returns <code>true</code> if the <tt-><h- data-h=mk_attr>text</h-></tt-> matches <tt-><h- data-h=mk_attr>regex</h-></tt-> (in its entirety),
+otherwise <code>false</code>.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_str_match</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_tag>cowel_regex</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awo+</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_str_match</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_tag>cowel_regex</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>o+</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>true
+false</code-block>
+</example-block>
+
+<h4 id=dir-cowel_str_to_lower><a class=para href=#dir-cowel_str_to_lower></a>8.14.5. <code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_str_to_lower</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
@@ -5602,7 +5661,7 @@ COWEL markup:
 </p><code-block>awoo äöü 123</code-block>
 </example-block>
 
-<h4 id=dir-cowel_str_to_upper><a class=para href=#dir-cowel_str_to_upper></a>8.14.4. <code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4>
+<h4 id=dir-cowel_str_to_upper><a class=para href=#dir-cowel_str_to_upper></a>8.14.6. <code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_str_to_upper</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
@@ -5621,7 +5680,80 @@ COWEL markup:
 </p><code-block>AWOO ÄÖÜ STRASSE 123</code-block>
 </example-block>
 
-<h4 id=dir-cowel_regex><a class=para href=#dir-cowel_regex></a>8.14.5. <code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</h4>
+<h4 id=dir-cowel_str_replace_first><a class=para href=#dir-cowel_str_replace_first></a>8.14.7. <code><h- data-h=mk_tag>\cowel_str_replace_first</h-></code> — Replace first occurrence</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_str_replace_first</h->(
+  <h- data-h=mk_attr>text</h->: <h- data-h=kw_type>str</h->,
+  <h- data-h=mk_attr>needle</h->: <h- data-h=kw_type>str | regex</h->,
+  <h- data-h=mk_attr>with</h->: <h- data-h=kw_type>str</h->,
+): <h- data-h=kw_type>str</h->
+</pre>
+
+<p>Returns <tt-><h- data-h=mk_attr>text</h-></tt-> with the first occurrence of <tt-><h- data-h=mk_attr>needle</h-></tt->
+replaced with <tt-><h- data-h=mk_attr>with</h-></tt->.
+An empty <tt-><h- data-h=mk_attr>needle</h-></tt-> of type <tt-><h- data-h=kw_type>str</h-></tt->
+is immediately found at the start of <tt-><h- data-h=mk_attr>text</h-></tt->.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block>o -&gt; x:             <h- data-h=mk_tag>\cowel_str_replace_first</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>o</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+delete o:           <h- data-h=mk_tag>\cowel_str_replace_first</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>o</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+w or o -&gt; x:        <h- data-h=mk_tag>\cowel_str_replace_first</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_tag>cowel_regex</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>[wo]</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+empty -&gt; x:         <h- data-h=mk_tag>\cowel_str_replace_first</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+
+Replace everything: <h- data-h=mk_tag>\cowel_str_replace_first</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>xyz</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+No replacement:     <h- data-h=mk_tag>\cowel_str_replace_first</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>o -&gt; x:             awxo
+delete o:           awo
+w or o -&gt; x:        axoo
+empty -&gt; x:         xawoo
+
+Replace everything: xyz
+No replacement:     awoo</code-block>
+</example-block>
+
+<h4 id=dir-cowel_str_replace_all><a class=para href=#dir-cowel_str_replace_all></a>8.14.8. <code><h- data-h=mk_tag>\cowel_str_replace_all</h-></code> — Replace every occurrence</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_str_replace_all</h->(
+  <h- data-h=mk_attr>text</h->: <h- data-h=kw_type>str</h->,
+  <h- data-h=mk_attr>needle</h->: <h- data-h=kw_type>str | regex</h->,
+  <h- data-h=mk_attr>with</h->: <h- data-h=kw_type>str</h->,
+): <h- data-h=kw_type>str</h->
+</pre>
+
+<p>Returns <tt-><h- data-h=mk_attr>text</h-></tt-> with every occurrence of <tt-><h- data-h=mk_attr>needle</h-></tt->
+replaced with <tt-><h- data-h=mk_attr>with</h-></tt->.
+</p>
+<p>Because an empty <tt-><h- data-h=mk_attr>needle</h-></tt->
+(or regular expression that matches an empty string)
+would need to be replaced infinitely many times,
+any matched empty sequence of characters in <tt-><h- data-h=mk_attr>text</h-></tt->
+(that is, a zero-length sequence before or after a code point)
+is replaced exactly once.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block>o -&gt; x:             <h- data-h=mk_tag>\cowel_str_replace_all</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>o</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+delete o:           <h- data-h=mk_tag>\cowel_str_replace_all</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>o</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+w or o -&gt; x:        <h- data-h=mk_tag>\cowel_str_replace_all</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_tag>cowel_regex</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>[wo]</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+empty -&gt; x:         <h- data-h=mk_tag>\cowel_str_replace_all</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+
+Replace everything: <h- data-h=mk_tag>\cowel_str_replace_all</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>xyz</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+No replacement:     <h- data-h=mk_tag>\cowel_str_replace_all</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>o -&gt; x:             awxx
+delete o:           aw
+w or o -&gt; x:        axxx
+empty -&gt; x:         xaxwxoxox
+
+Replace everything: xyz
+No replacement:     awoo</code-block>
+</example-block>
+
+<h4 id=dir-cowel_regex><a class=para href=#dir-cowel_regex></a>8.14.9. <code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_regex</h->(<h- data-h=mk_attr>pattern</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>flags</h->: <h- data-h=kw_type>str</h-> = ""): <h- data-h=kw_type>regex</h->
@@ -5639,8 +5771,10 @@ except that:
   </li>
   <li>
     The '<tt->g</tt->' (global) and '<tt->u</tt->' (Unicode) flags are always set.
+    Consequently, regular expressions operate on the code points of a string.
     By comparison, ECMAScript regular expressions operate on UTF-16 code units
-    of a <tt->string</tt-> rather than on code points.
+    of a <tt->string</tt-> rather than on code points,
+    unless the '<tt->u</tt->' or '<tt->v</tt->' flag is provided.
   </li>
   <li>
     <tt-><h- data-h=kw_type>regex</h-></tt-> is completely stateless,
@@ -5668,8 +5802,6 @@ or if a character is not one of the permitted flags:
   <dd>Enables more Unicode features.</dd>
 </dl>
 
-<p>Unicode regular expressions operate on the code points of a string.
-</p>
 <h3 id=variable-management><a class=para href=#variable-management></a>8.15. Variable management</h3>
 
 <h4 id=dir-cowel_var_let><a class=para href=#dir-cowel_var_let></a>8.15.1. <code><h- data-h=mk_tag>\cowel_var_let</h-></code> — Initialize a new variable</h4>

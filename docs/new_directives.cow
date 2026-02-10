@@ -2277,6 +2277,69 @@ Rather it accesses available information directly.
 }
 
 \h4(
+  id = "dir-cowel_str_contains"
+){\cowdoc_dir{cowel_str_contains} \c{mdash} Test if a string contains another string}
+
+\pre{
+\cowel_highlight_as("markup-tag"){cowel_str_contains}(\cowdoc_param("text", "str"), \cowdoc_param("needle", "str | regex")): \cowel_highlight_as("keyword-type"){bool}
+}
+
+Returns \cowdoc_c{true} if the \cowdoc_attr{text} contains \cowdoc_attr{needle},
+otherwise \cowdoc_c{false}.
+Always returns \cowdoc_c{true} if \cowdoc_attr{needle}
+is an empty string or empty regular expression.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\: "o" character is found in "awoo"
+o: \cowel_str_contains("awoo", "o")
+\: "A" character is not found.
+A: \cowel_str_contains("awoo", "A")
+\: Sequence of one or more "o" characters is found.
+o+: \cowel_str_contains("awoo", cowel_regex("o+"))
+
+\: Empty string is always found.
+\cowel_str_contains("awoo", "")
+\: Empty regular expression is always found.
+\cowel_str_contains("awoo", cowel_regex(""))
+}}
+Generated HTML:
+\htmlblock{
+o: true
+A: false
+o+: true
+
+true
+true
+}
+}
+
+\h4(
+  id = "dir-cowel_str_match"
+){\cowdoc_dir{cowel_str_match} \c{mdash} Test if a string matches a regular expression}
+
+\pre{
+\cowel_highlight_as("markup-tag"){cowel_str_match}(\cowdoc_param("text", "str"), \cowdoc_param("regex", "regex")): \cowel_highlight_as("keyword-type"){bool}
+}
+
+Returns \cowdoc_c{true} if the \cowdoc_attr{text} matches \cowdoc_attr{regex} (in its entirety),
+otherwise \cowdoc_c{false}.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_str_match("awoo", cowel_regex("awo+"))
+\cowel_str_match("awoo", cowel_regex("o+"))
+}}
+Generated HTML:
+\htmlblock{
+true
+false
+}
+}
+
+\h4(
   id = "dir-cowel_str_to_lower"
 ){\cowdoc_dir{cowel_str_to_lower} \c{mdash} Convert string to lowercase}
 
@@ -2327,6 +2390,91 @@ Generated HTML:
 }
 
 \h4(
+  id = "dir-cowel_str_replace_first"
+){\cowdoc_dir{cowel_str_replace_first} \c{mdash} Replace first occurrence}
+
+\pre{
+\cowel_highlight_as("markup-tag"){cowel_str_replace_first}(
+  \cowdoc_param("text", "str"),
+  \cowdoc_param("needle", "str | regex"),
+  \cowdoc_param("with", "str"),
+): \cowel_highlight_as("keyword-type"){str}
+}
+
+Returns \cowdoc_attr{text} with the first occurrence of \cowdoc_attr{needle}
+replaced with \cowdoc_attr{with}.
+An empty \cowdoc_attr{needle} of type \cowdoc_type{str}
+is immediately found at the start of \cowdoc_attr{text}.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+o -> x:             \cowel_str_replace_first("awoo", "o", "x")
+delete o:           \cowel_str_replace_first("awoo", "o", "")
+w or o -> x:        \cowel_str_replace_first("awoo", cowel_regex("[wo]"), "x")
+empty -> x:         \cowel_str_replace_first("awoo", "", "x")
+
+Replace everything: \cowel_str_replace_first("awoo", "awoo", "xyz")
+No replacement:     \cowel_str_replace_first("awoo", "x", "")
+}}
+Generated HTML:
+\htmlblock{
+o -> x:             awxo
+delete o:           awo
+w or o -> x:        axoo
+empty -> x:         xawoo
+
+Replace everything: xyz
+No replacement:     awoo
+}
+}
+
+\h4(
+  id = "dir-cowel_str_replace_all"
+){\cowdoc_dir{cowel_str_replace_all} \c{mdash} Replace every occurrence}
+
+\pre{
+\cowel_highlight_as("markup-tag"){cowel_str_replace_all}(
+  \cowdoc_param("text", "str"),
+  \cowdoc_param("needle", "str | regex"),
+  \cowdoc_param("with", "str"),
+): \cowel_highlight_as("keyword-type"){str}
+}
+
+Returns \cowdoc_attr{text} with every occurrence of \cowdoc_attr{needle}
+replaced with \cowdoc_attr{with}.
+
+Because an empty \cowdoc_attr{needle}
+(or regular expression that matches an empty string)
+would need to be replaced infinitely many times,
+any matched empty sequence of characters in \cowdoc_attr{text}
+(that is, a zero-length sequence before or after a code point)
+is replaced exactly once.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+o -> x:             \cowel_str_replace_all("awoo", "o", "x")
+delete o:           \cowel_str_replace_all("awoo", "o", "")
+w or o -> x:        \cowel_str_replace_all("awoo", cowel_regex("[wo]"), "x")
+empty -> x:         \cowel_str_replace_all("awoo", "", "x")
+
+Replace everything: \cowel_str_replace_all("awoo", "awoo", "xyz")
+No replacement:     \cowel_str_replace_all("awoo", "x", "")
+}}
+Generated HTML:
+\htmlblock{
+o -> x:             awxx
+delete o:           aw
+w or o -> x:        axxx
+empty -> x:         xaxwxoxox
+
+Replace everything: xyz
+No replacement:     awoo
+}
+}
+
+\h4(
   id = "dir-cowel_regex"
 ){\cowdoc_dir{cowel_regex} \c{mdash} Create a regular expression}
 
@@ -2346,8 +2494,10 @@ except that:
   }
   \li{
     The '\tt{g}' (global) and '\tt{u}' (Unicode) flags are always set.
+    Consequently, regular expressions operate on the code points of a string.
     By comparison, ECMAScript regular expressions operate on UTF-16 code units
-    of a \tt{string} rather than on code points.
+    of a \tt{string} rather than on code points,
+    unless the '\tt{u}' or '\tt{v}' flag is provided.
   }
   \li{
     \cowdoc_type{regex} is completely stateless,
@@ -2374,8 +2524,6 @@ or if a character is not one of the permitted flags:
   \dt{'\tt{v}' (Unicode sets)}
   \dd{Enables more Unicode features.}
 }
-
-Unicode regular expressions operate on the code points of a string.
 
 \h3{Variable management}
 
