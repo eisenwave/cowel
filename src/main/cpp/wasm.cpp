@@ -97,7 +97,7 @@ void init_options(
 
         // These must all stay nullptr.
         // Providing custom allocators would break the assumption
-        // like in regex_wasm.cpp that allocations take place using cowel_alloc.
+        // like in regexp_wasm.cpp that allocations take place using cowel_alloc.
         .alloc = nullptr,
         .alloc_data = nullptr,
         .free = nullptr,
