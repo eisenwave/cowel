@@ -179,8 +179,8 @@ private:
     friend Reg_Exp;
 };
 #else
-/// @brief Represents unique ownership over a host-side big integer,
-/// such as JavaScript's `BigInt`.
+/// @brief Represents unique ownership over a host-side regular expression,
+/// such as JavaScript's `RegExp`.
 struct Unique_Host_Reg_Exp {
 private:
     Reg_Exp_Handle m_handle {};
