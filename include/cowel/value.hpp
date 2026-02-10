@@ -439,10 +439,28 @@ public:
     }
 
     [[nodiscard]]
-    constexpr Reg_Exp as_regex() const
+    constexpr Reg_Exp& as_regex() &
     {
         COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::regex);
         return m_value.regex;
+    }
+    [[nodiscard]]
+    constexpr const Reg_Exp& as_regex() const&
+    {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::regex);
+        return m_value.regex;
+    }
+    [[nodiscard]]
+    constexpr Reg_Exp&& as_regex() &&
+    {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::regex);
+        return std::move(m_value.regex);
+    }
+    [[nodiscard]]
+    constexpr const Reg_Exp&& as_regex() const&&
+    {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::regex);
+        return std::move(m_value.regex);
     }
 
     [[nodiscard]]
