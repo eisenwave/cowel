@@ -120,9 +120,9 @@ public:
         return m_buffer.begin() + std::ptrdiff_t(m_length);
     }
 
-    void push_back(const Char c)
+    constexpr void push_back(const Char c)
     {
-        COWEL_ASSERT(m_length <= capacity);
+        COWEL_ASSERT(m_length < capacity);
         m_buffer[m_length++] = c;
     }
 
