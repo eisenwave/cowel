@@ -850,6 +850,7 @@ class RegExpApi {
             if (!regex.test(string)) {
                 return RegExpStatus.unmatched;
             }
+            regex.lastIndex = 0;
             replaced = string.replaceAll(regex, replacement);
         } catch (_) {
             return RegExpStatus.execution_error;
