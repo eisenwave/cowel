@@ -754,7 +754,13 @@ class RegExpApi {
     }
 
     compile(patternAddress: Address, patternLength: number, flags: RegExpFlags): RegExpId {
-        const flagsString = regExpFlagsToString(flags) + "gu";
+        // "g" should always be appended because otherwise,
+        // we couldn't use the RegExp for replaceAll etc.
+        // "v" cannot be combined with "u",
+        // so we only add "v" when "u" is not set.
+        // In any case, this guarantees that the regex operates on code points.
+        const flagsString = regExpFlagsToString(flags) + "g"
+            + ((flags & RegExpFlags.unicode_sets) != 0 ? "" : "v");
         try {
             const pattern = this.environment.readString(patternAddress, patternLength);
             const regexp = new RegExp(pattern, flagsString);
