@@ -3,7 +3,6 @@
 
 #include <string_view>
 
-#include "cowel/expression_kind.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/fixed_string.hpp"
 #include "cowel/util/strings.hpp"
@@ -11,8 +10,10 @@
 #include "cowel/ast_fwd.hpp"
 #include "cowel/big_int.hpp"
 #include "cowel/content_status.hpp"
+#include "cowel/expression_kind.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/gc.hpp"
+#include "cowel/regexp.hpp"
 #include "cowel/string_kind.hpp"
 #include "cowel/type.hpp"
 
@@ -83,6 +84,7 @@ private:
         static_string_index,
         short_string_index,
         dynamic_string_index,
+        regex_index,
         block_index,
         directive_index,
         group_index,
@@ -97,6 +99,7 @@ private:
         std::u8string_view static_string;
         Short_String_Value::array_type short_string;
         Dynamic_String_Value dynamic_string;
+        Reg_Exp regex;
         Block_And_Frame block;
         Directive_And_Frame directive;
         Group_Value group;
@@ -163,6 +166,11 @@ public:
     /// and kept alive using garbage collection.
     [[nodiscard]]
     static Value dynamic_string_forced(std::u8string_view value, String_Kind kind);
+
+    [[nodiscard]]
+    static Value regex(const Reg_Exp&);
+    [[nodiscard]]
+    static Value regex(Reg_Exp&&);
 
     [[nodiscard]]
     static Value block(const ast::Primary& block, Frame_Index frame);
@@ -237,7 +245,7 @@ public:
     constexpr const Type& get_type() const noexcept
     {
         static constexpr auto types = [] {
-            std::array<const Type*, 11> result;
+            std::array<const Type*, 12> result;
             result[unit_index] = &Type::unit;
             result[null_index] = &Type::null;
             result[boolean_index] = &Type::boolean;
@@ -246,6 +254,7 @@ public:
             result[static_string_index] = &Type::str;
             result[short_string_index] = &Type::str;
             result[dynamic_string_index] = &Type::str;
+            result[regex_index] = &Type::regex;
             result[block_index] = &Type::block;
             result[directive_index] = &Type::block;
             result[group_index] = &Type::group;
@@ -259,7 +268,7 @@ public:
     constexpr Type_Kind get_type_kind() const noexcept
     {
         static constexpr auto kinds = [] {
-            std::array<Type_Kind, 11> result;
+            std::array<Type_Kind, 12> result;
             result[unit_index] = Type_Kind::unit;
             result[null_index] = Type_Kind::null;
             result[boolean_index] = Type_Kind::boolean;
@@ -268,6 +277,7 @@ public:
             result[static_string_index] = Type_Kind::str;
             result[short_string_index] = Type_Kind::str;
             result[dynamic_string_index] = Type_Kind::str;
+            result[regex_index] = Type_Kind::regex;
             result[block_index] = Type_Kind::block;
             result[directive_index] = Type_Kind::block;
             result[group_index] = Type_Kind::group;
@@ -311,6 +321,7 @@ public:
         case Type_Kind::str: {
             return y.get_type_kind() == Type_Kind::str && x.as_string() == y.as_string();
         }
+        case Type_Kind::regex:
         case Type_Kind::block:
         case Type_Kind::group: {
             COWEL_ASSERT_UNREACHABLE(u8"Blocks and groups are not equality-comparable.");
@@ -354,6 +365,11 @@ public:
     constexpr bool is_static_string() const noexcept
     {
         return m_index == static_string_index;
+    }
+    [[nodiscard]]
+    constexpr bool is_regex() const noexcept
+    {
+        return get_type_kind() == Type_Kind::regex;
     }
     [[nodiscard]]
     constexpr bool is_block() const noexcept
@@ -423,6 +439,31 @@ public:
     }
 
     [[nodiscard]]
+    constexpr Reg_Exp& as_regex() &
+    {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::regex);
+        return m_value.regex;
+    }
+    [[nodiscard]]
+    constexpr const Reg_Exp& as_regex() const&
+    {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::regex);
+        return m_value.regex;
+    }
+    [[nodiscard]]
+    constexpr Reg_Exp&& as_regex() &&
+    {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::regex);
+        return std::move(m_value.regex);
+    }
+    [[nodiscard]]
+    constexpr const Reg_Exp&& as_regex() const&&
+    {
+        COWEL_DEBUG_ASSERT(get_type_kind() == Type_Kind::regex);
+        return std::move(m_value.regex);
+    }
+
+    [[nodiscard]]
     // NOLINTNEXTLINE(readability-make-member-function-const)
     std::span<Group_Member_Value> get_group_members()
     {
@@ -486,6 +527,7 @@ constexpr Value::Union Value::Union::make(T&& other, const Index other_index) no
     case static_string_index: return { .static_string = other.static_string };
     case short_string_index: return { .short_string = other.short_string };
     case dynamic_string_index: return { .dynamic_string = std::forward<T>(other).dynamic_string };
+    case regex_index: return { .regex = std::forward<T>(other).regex };
     case block_index: return { .block = other.block };
     case directive_index: return { .directive = other.directive };
     case group_index: return { .group = std::forward<T>(other).group };
@@ -527,6 +569,16 @@ Value::Union::assign(const Index self_index, T&& other, const Index other_index)
         }
         break;
     }
+    case regex_index: {
+        if (self_index == regex_index) {
+            regex = std::forward<T>(other).regex;
+        }
+        else {
+            destroy(self_index);
+            std::construct_at(&regex, std::forward<T>(other).regex);
+        }
+        break;
+    }
     case group_index: {
         if (self_index == group_index) {
             group = std::forward<T>(other).group;
@@ -564,6 +616,10 @@ constexpr void Value::Union::destroy(const Index index) noexcept
     }
     case dynamic_string_index: {
         dynamic_string.~Dynamic_String_Value();
+        break;
+    }
+    case regex_index: {
+        regex.~Reg_Exp();
         break;
     }
     case group_index: {

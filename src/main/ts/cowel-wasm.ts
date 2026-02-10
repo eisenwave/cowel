@@ -163,6 +163,19 @@ interface CowelWasmEnvObject {
     big_int_to_string:
     (buffer: Address, capacity: number, x: BigIntId, base: number, to_upper: boolean) => number;
     big_int_from_string: (buffer: Address, length: number, base: number) => FromStringStatus;
+    reg_exp_compile: (pattern: Address, length: number, flags: RegExpFlags) => RegExpId;
+    reg_exp_delete: (r: RegExpId) => boolean;
+    reg_exp_match: (r: RegExpId, text: Address, length: number) => RegExpStatus;
+    reg_exp_search:
+    (searchResult: Address, r: RegExpId, text: Address, length: number) => RegExpStatus;
+    reg_exp_replace_all: (
+        resultAddress: Address,
+        r: RegExpId,
+        text: Address,
+        length: number,
+        replacement: Address,
+        replacementLength: number,
+    ) => RegExpStatus;
 }
 
 type CowelWasmImports = WebAssembly.Imports & {
@@ -213,6 +226,7 @@ type OrchestrationAllocations = {
 };
 
 type BigIntId = number;
+type RegExpId = number;
 
 const MASK_64 = (1n << 64n) - 1n;
 const POW_2_127 = 1n << 127n;
@@ -685,6 +699,175 @@ function parseBigInt(string: string, radix: number): bigint {
     return negative ? -value : value;
 }
 
+enum RegExpStatus {
+    unmatched = 0,
+    matched = 1,
+    invalid = 2,
+    execution_error = 3,
+}
+
+enum RegExpFlags {
+    /// `i`.
+    ignore_case = 1 << 0,
+    /// `m`.
+    multiline = 1 << 1,
+    /// `s`.
+    dot_all = 1 << 2,
+    /// `v`.
+    unicode_sets = 1 << 3,
+}
+
+const RegExpFlagsString = "imsv";
+
+function regExpFlagsToString(flags: RegExpFlags): string {
+    let result = "";
+    for (let i = 0; i < RegExpFlagsString.length; i++) {
+        if ((flags & (1 << i)) !== 0) {
+            result += RegExpFlagsString[i];
+        }
+    }
+    return result;
+}
+
+interface RegExpEnvironment {
+    readString(address: Address, length: number): string;
+    writeSearchResult(address: Address, index: number, length: number): void;
+    allocUtf8(str: string): Allocation;
+    writeStringView(address: Address, allocation: Allocation): void;
+}
+
+class RegExpApi {
+    private readonly repository: Map<RegExpId, RegExp> = new Map();
+    private currentId = 0;
+    private readonly environment: RegExpEnvironment;
+
+    constructor(environment: RegExpEnvironment) {
+        this.environment = environment;
+    }
+
+    private generateId(): number {
+        const maxId = 0xffff_ffff;
+        if (this.currentId >= maxId) {
+            throw new Error(`Maximum number of regex allocations reached (${maxId}).`);
+        }
+        return ++this.currentId;
+    }
+
+    compile(patternAddress: Address, patternLength: number, flags: RegExpFlags): RegExpId {
+        // "g" should always be appended because otherwise,
+        // we couldn't use the RegExp for replaceAll etc.
+        // "v" cannot be combined with "u",
+        // so we only add "v" when "u" is not set.
+        // In any case, this guarantees that the regex operates on code points.
+        const flagsString = regExpFlagsToString(flags) + "g"
+            + ((flags & RegExpFlags.unicode_sets) != 0 ? "" : "v");
+        try {
+            const pattern = this.environment.readString(patternAddress, patternLength);
+            const regexp = new RegExp(pattern, flagsString);
+            const id = this.generateId();
+            this.repository.set(id, regexp);
+            return id;
+        } catch (_) {
+            return 0;
+        }
+    }
+
+    delete(id: RegExpId): boolean {
+        return this.repository.delete(id);
+    }
+
+    match(id: RegExpId, stringAddress: Address, stringLength: number): RegExpStatus {
+        const regex = this.repository.get(id);
+        if (!regex) {
+            return RegExpStatus.invalid;
+        }
+        regex.lastIndex = 0;
+
+        const string = this.environment.readString(stringAddress, stringLength);
+
+        let match;
+        try {
+            match = regex.exec(string);
+        } catch (_) {
+            return RegExpStatus.execution_error;
+        }
+
+        if (match && match.index === 0 && match[0].length === string.length) {
+            return RegExpStatus.matched;
+        }
+        return RegExpStatus.unmatched;
+    }
+
+    search(
+        resultAddress: Address,
+        id: RegExpId,
+        stringAddress: Address,
+        stringLength: number,
+    ): RegExpStatus {
+        const regex = this.repository.get(id);
+        if (!regex) {
+            return RegExpStatus.invalid;
+        }
+        regex.lastIndex = 0;
+
+        const string = this.environment.readString(stringAddress, stringLength);
+        let match;
+        try {
+            match = regex.exec(string);
+        } catch (_) {
+            return RegExpStatus.execution_error;
+        }
+
+        if (!match) {
+            return RegExpStatus.unmatched;
+        }
+
+        // Convert UTF-16 indices from JavaScript to UTF-8 indices for WASM.
+        // JavaScript strings use UTF-16,
+        // but the WASM API expects UTF-8 code unit offsets.
+        const beforeMatch = string.substring(0, match.index);
+        const encoder = new TextEncoder();
+        const utf8Index = encoder.encode(beforeMatch).length;
+        const utf8Length = encoder.encode(match[0]).length;
+
+        this.environment.writeSearchResult(resultAddress, utf8Index, utf8Length);
+        return RegExpStatus.matched;
+    }
+
+    replaceAll(
+        resultAddress: Address,
+        id: RegExpId,
+        stringAddress: Address,
+        stringLength: number,
+        replacementAddress: Address,
+        replacementLength: number,
+    ): RegExpStatus {
+        const regex = this.repository.get(id);
+        if (!regex || regex.global === false) {
+            return RegExpStatus.invalid;
+        }
+        regex.lastIndex = 0;
+
+        const string = this.environment.readString(stringAddress, stringLength);
+        const replacement = this.environment.readString(replacementAddress, replacementLength);
+
+        let replaced;
+        try {
+            if (!regex.test(string)) {
+                return RegExpStatus.unmatched;
+            }
+            regex.lastIndex = 0;
+            replaced = string.replaceAll(regex, replacement);
+        } catch (_) {
+            return RegExpStatus.execution_error;
+        }
+
+        const allocation = this.environment.allocUtf8(replaced);
+        this.environment.writeStringView(resultAddress, allocation);
+        return RegExpStatus.matched;
+    }
+}
+
 /**
  * Wrapper for the WASM module that provides COWEL functionality.
  */
@@ -697,6 +880,7 @@ export class CowelWasm {
     private heap_i32!: Int32Array;
     private heap_i64!: BigInt64Array;
     private bigInts: BigIntApi;
+    private regExps: RegExpApi;
 
     private preservedVariableNames: string[] = [];
     private capturedVariables: string[] = [];
@@ -741,6 +925,24 @@ export class CowelWasm {
             },
         };
         this.bigInts = new BigIntApi(bigIntEnv);
+
+        const regExpEnv: RegExpEnvironment = {
+            readString: (address: Address, length: number): string => {
+                return this.decodeUtf8(address, length);
+            },
+            writeSearchResult: (address: Address, index: number, length: number): void => {
+                this.heap_u32[address / 4 + 0] = index;
+                this.heap_u32[address / 4 + 1] = length;
+            },
+            allocUtf8: (str: string): Allocation => {
+                return this.allocUtf8(str);
+            },
+            writeStringView: (address: Address, allocation: Allocation): void => {
+                this.heap_u32[address / 4 + 0] = allocation.address;
+                this.heap_u32[address / 4 + 1] = allocation.size;
+            },
+        };
+        this.regExps = new RegExpApi(regExpEnv);
     }
 
     async init(module: BufferSource): Promise<void> {
@@ -810,6 +1012,11 @@ export class CowelWasm {
                 big_int_bit_xor: this.bigInts.big_int_bit_xor.bind(this.bigInts),
                 big_int_to_string: this.bigInts.big_int_to_string.bind(this.bigInts),
                 big_int_from_string: this.bigInts.big_int_from_string.bind(this.bigInts),
+                reg_exp_compile: this.regExps.compile.bind(this.regExps),
+                reg_exp_delete: this.regExps.delete.bind(this.regExps),
+                reg_exp_match: this.regExps.match.bind(this.regExps),
+                reg_exp_search: this.regExps.search.bind(this.regExps),
+                reg_exp_replace_all: this.regExps.replaceAll.bind(this.regExps),
             },
         };
 

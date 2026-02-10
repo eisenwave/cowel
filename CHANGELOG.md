@@ -2,6 +2,12 @@
 
 ## **Next version** (???)
 
+- add the following string and regular expression directives (#183, #221):
+  - `cowel_str_contains`
+  - `cowel_str_match`
+  - `cowel_str_replace_first`
+  - `cowel_str_replace_all`
+  - `cowel_str_regex`
 - fix `cowel_to_str` for base 36
 
 **Full Changelog**:

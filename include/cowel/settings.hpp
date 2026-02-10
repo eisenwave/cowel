@@ -54,6 +54,14 @@
 #define COWEL_LIBSTDCXX 1
 #endif
 
+#if !defined(COWEL_BUILD_WASM) && !defined(COWEL_BUILD_NATIVE)
+#error                                                                                             \
+    "Unable to determine build type because neither COWEL_BUILD_WASM nor COWEL_BUILD_NATIVE is defined."
+#endif
+
+#define COWEL_VERSION_MAJOR 0
+#define COWEL_VERSION_MINOR 7
+
 namespace cowel {
 
 using Int32 = int;

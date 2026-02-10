@@ -1,0 +1,27 @@
+\test_input{
+\cowel_str_contains("", "")
+\cowel_str_contains("", "x")
+
+\cowel_str_contains("awoo", "a")
+\cowel_str_contains("awoo", "w")
+\cowel_str_contains("awoo", "o")
+\cowel_str_contains("awoo", "x")
+
+\cowel_str_contains("awoo", "aw")
+\cowel_str_contains("awoo", "awoo")
+\cowel_str_contains("awoo", "awooo")
+}
+
+\test_output{
+true
+false
+
+true
+true
+true
+false
+
+true
+true
+false
+}

@@ -42,7 +42,7 @@ Directive_Behavior::splice(Content_Policy& out, const Invocation& call, Context&
     if (!result) {
         return try_generate_error(out, call, context, result.error());
     }
-    return splice_value(out, *result, context);
+    return splice_value(out, *result, call.directive.get_source_span(), context);
 }
 
 Result<Value, Processing_Status>
@@ -350,7 +350,7 @@ Processing_Status splice_primary(
     Context& context
 )
 {
-    COWEL_ASSERT(primary.is_spliceable_value());
+    COWEL_ASSERT(primary.is_value());
 
     switch (primary.get_kind()) {
     case ast::Primary_Kind::unit_literal:
@@ -364,7 +364,7 @@ Processing_Status splice_primary(
     case ast::Primary_Kind::decimal_float_literal: {
         const Result<Value, Processing_Status> value = evaluate(primary, frame, context);
         COWEL_ASSERT(value);
-        return splice_value(out, *value, context);
+        return splice_value(out, *value, primary.get_source_span(), context);
     }
     case ast::Primary_Kind::quoted_string: {
         return splice_quoted_string(out, primary, frame, context);
@@ -377,7 +377,12 @@ Processing_Status splice_primary(
     COWEL_ASSERT_UNREACHABLE(u8"All spliceable kinds should have been handled above.");
 }
 
-Processing_Status splice_value(Content_Policy& out, const Value& value, Context& context)
+Processing_Status splice_value(
+    Content_Policy& out,
+    const Value& value,
+    const File_Source_Span& error_location,
+    Context& context
+)
 {
     switch (value.get_type_kind()) {
     case Type_Kind::any:
@@ -388,9 +393,19 @@ Processing_Status splice_value(Content_Policy& out, const Value& value, Context&
     case Type_Kind::lazy: {
         COWEL_ASSERT_UNREACHABLE(u8"Values of this type should not exist.");
     }
-    case Type_Kind::group:
-    case Type_Kind::null: {
-        // FIXME: print diagnostic
+    case Type_Kind::null:
+    case Type_Kind::regex:
+    case Type_Kind::group: {
+        context.try_error(
+            diagnostic::splice, error_location,
+            joined_char_sequence(
+                {
+                    u8"Unable to splice value of type "sv,
+                    value.get_type().get_display_name(),
+                    u8"."sv,
+                }
+            )
+        );
         return Processing_Status::error;
     }
 
@@ -507,8 +522,12 @@ Processing_Status Value::splice_block(Content_Policy& out, Context& context) con
     COWEL_ASSERT_UNREACHABLE(u8"Expected block.");
 }
 
-Processing_Status
-splice_value_to_plaintext(std::pmr::vector<char8_t>& out, const Value& value, Context& context)
+Processing_Status splice_value_to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const Value& value,
+    const File_Source_Span& error_location,
+    Context& context
+)
 {
     if (value.is_str()) {
         append(out, value.as_string());
@@ -516,17 +535,21 @@ splice_value_to_plaintext(std::pmr::vector<char8_t>& out, const Value& value, Co
     }
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
     Text_Only_Policy policy { sink };
-    return splice_value(policy, value, context);
+    return splice_value(policy, value, error_location, context);
 }
 
-Result<Value, Processing_Status> splice_value_to_string(const Value& value, Context& context)
+Result<Value, Processing_Status> splice_value_to_string(
+    const Value& value, //
+    const File_Source_Span& error_location,
+    Context& context
+)
 {
     if (value.is_str()) {
         return value;
     }
     Vector_Text_Sink text { Output_Language::text, context.get_transient_memory() };
     Text_Only_Policy policy { text };
-    const Processing_Status status = splice_value(policy, value, context);
+    const Processing_Status status = splice_value(policy, value, error_location, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -960,7 +983,8 @@ Processing_Status named_argument_to_attribute(
     if (!value) {
         return name.error();
     }
-    const Result<Value, Processing_Status> value_string = splice_value_to_string(*value, context);
+    const Result<Value, Processing_Status> value_string
+        = splice_value_to_string(*value, a.get_value_span(), context);
     if (!value_string) {
         return value_string.error();
     }

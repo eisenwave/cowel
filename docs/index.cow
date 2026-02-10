@@ -32,6 +32,10 @@ U+\cowel_str_to_upper(cowel_to_str(..., base=16, zpad=4))\c{nbsp}(\tt{\cowel_cha
 \tt{\cowel_highlight_as("keyword-type"){\cowel_put}}\
 }
 
+\cowel_macro(cowdoc_param){\
+\cowel_highlight_as("markup-attr"){\cowel_put{0}}: \cowel_highlight_as("keyword-type"){\cowel_put{1}}\
+}
+
 \cowel_macro(cowblock){\
 \codeblock(cowel){\cowel_put}\
 }

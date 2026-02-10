@@ -1,0 +1,35 @@
+\test_input{
+\cowel_str_contains("", cowel_regex(""))
+\cowel_str_contains("", cowel_regex("x"))
+
+\cowel_str_contains("awoo", cowel_regex("a"))
+\cowel_str_contains("awoo", cowel_regex("w"))
+\cowel_str_contains("awoo", cowel_regex("o"))
+\cowel_str_contains("awoo", cowel_regex("x"))
+
+\cowel_str_contains("awoo", cowel_regex("aw"))
+\cowel_str_contains("awoo", cowel_regex("awoo"))
+\cowel_str_contains("awoo", cowel_regex("awooo"))
+
+\cowel_str_contains("awoo", cowel_regex("O", "i"))
+\cowel_str_contains("awoo", cowel_regex("AWOO", "i"))
+\cowel_str_contains("awoo", cowel_regex("Ä", "i"))
+}
+
+\test_output{
+true
+false
+
+true
+true
+true
+false
+
+true
+true
+false
+
+true
+true
+false
+}

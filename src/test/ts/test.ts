@@ -88,11 +88,6 @@ describe("Document Generation", async () => {
                 log,
             });
 
-            const expected = result.variables["__test_input"] ?? "";
-            const actual = result.variables["__test_output"] ?? "";
-
-            assert.strictEqual(actual, expected);
-
             if (diagnostics.length > 0) {
                 let errorMessage = `Test produced diagnostics: ${relativePath}\n`;
                 for (const d of diagnostics) {
@@ -104,6 +99,10 @@ describe("Document Generation", async () => {
                 }
                 assert.fail(errorMessage);
             }
+
+            const actual = result.variables["__test_input"] ?? "";
+            const expected = result.variables["__test_output"] ?? "";
+            assert.strictEqual(actual, expected);
         });
     }
 });

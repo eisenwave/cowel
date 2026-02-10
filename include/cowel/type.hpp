@@ -38,6 +38,8 @@ enum struct Type_Kind : Default_Underlying {
     floating,
     /// @brief A UTF-8 string of characters.
     str,
+    /// @brief A regular expression.
+    regex,
     /// @brief A block of markup.
     /// Always lazily evaluated, acting a bit like a C++ lambda with no parameters.
     block,
@@ -99,6 +101,7 @@ constexpr bool type_kind_is_spliceable(Type_Kind kind)
 
     case any:
     case nothing:
+    case regex:
     case group:
     case pack:
     case named:
@@ -120,6 +123,7 @@ constexpr std::u8string_view type_kind_display_name(Type_Kind kind)
     case boolean: return u8"bool";
     case integer: return u8"int";
     case floating: return u8"float";
+    case regex: return u8"regex";
     case str: return u8"str";
     case block: return u8"block";
     case group: return u8"group";
@@ -164,6 +168,8 @@ struct Type {
     static const Type floating;
     /// @brief The `str` type.
     static const Type str;
+    /// @brief The `regex` type.
+    static const Type regex;
     /// @brief The `block` type.
     static const Type block;
     static const Type empty_group;
@@ -609,6 +615,7 @@ inline constexpr Type Type::boolean = Type::basic(Type_Kind::boolean);
 inline constexpr Type Type::integer = Type::basic(Type_Kind::integer);
 inline constexpr Type Type::floating = Type::basic(Type_Kind::floating);
 inline constexpr Type Type::str = Type::basic(Type_Kind::str);
+inline constexpr Type Type::regex = Type::basic(Type_Kind::regex);
 inline constexpr Type Type::block = Type::basic(Type_Kind::block);
 inline constexpr Type Type::group
     = { Type_Kind::group, {}, Flags::canonical | Flags::legal | Flags::dynamic };

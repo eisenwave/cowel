@@ -22,6 +22,7 @@ git clone "$BOOST_URL" \
   git submodule update --init \
   tools/build \
   libs/config \
-  libs/multiprecision
+  libs/multiprecision \
+  libs/regex
   ./bootstrap.sh
 )
