@@ -52,10 +52,15 @@ cowel::Reg_Exp_Status cowel_reg_exp_search(
     std::size_t length
 );
 
-/// @brief Replaces every match of `r` within the given string with
+/// @brief Replaces every match of `r` within the given `string` with the given `replacement`
+/// and writes the resulting UTF-8-encoded string into `result`.
+/// @param result An out-parameter that will be populated with a view of the result string.
+/// The underlying character buffer for this view is allocated and owned by the host.
 /// @param r The handle.
 /// @param string A pointer to the searched UTF-8 string.
-/// @param length The length of the searched string, in code units.
+/// @param string_length The length of the searched string, in code units.
+/// @param replacement A pointer to the UTF-8 replacement string.
+/// @param replacement_length The length of the replacement string, in code units.
 COWEL_WASM_IMPORT("env", "reg_exp_replace_all")
 cowel::Reg_Exp_Status cowel_reg_exp_replace_all(
     cowel_mutable_string_view_u8* result,
