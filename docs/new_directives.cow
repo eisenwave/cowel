@@ -63,16 +63,16 @@ This notation consists of
 The description of \cowdoc_dir{cowel_html_element} looks as follows:
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_html_element}(
-  \cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){str},
-  \cowel_highlight_as("markup-attr"){attr}: \cowel_highlight_as("keyword-type"){lazy(group pack named string)?},
+  \cowdoc_param("name", "str"),
+  \cowdoc_param("attr", "lazy(group pack named string)?"),
 ){...}: \cowel_highlight_as("keyword-type"){block}
 }
 
 Or equivalently:
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_html_element}(
-  \cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){string},
-  \cowel_highlight_as("markup-attr"){attr}: \cowel_highlight_as("keyword-type"){lazy(group(pack(named(string))))?},
+  \cowdoc_param("name", "string"),
+  \cowdoc_param("attr", "lazy(group(pack(named(string))))?"),
 ){...}: \cowel_highlight_as("keyword-type"){block}
 }
 
@@ -168,7 +168,7 @@ COWEL has builtin directives for generating and querying characters.
 ){\cowdoc_dir{cowel_char_by_entity} \c{mdash} Character by HTML character reference}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_char_by_entity}(\cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_char_by_entity}(\cowdoc_param("name", "str")): \cowel_highlight_as("keyword-type"){str}
 }
 
 The \cowdoc_dir{cowel_char_by_entity} directive takes the name of a character
@@ -191,7 +191,7 @@ The '\tt{&}' character can be produced in a number of ways:
 ){\cowdoc_dir{cowel_char_by_name} \c{mdash} Character by Unicode name}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_char_by_name}(\cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_char_by_name}(\cowdoc_param("name", "str")): \cowel_highlight_as("keyword-type"){str}
 }
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is a \cowdoc_type{str} which should be a
@@ -215,7 +215,7 @@ In other words, an exact character sequence is expected.
 ){\cowdoc_dir{cowel_char_by_num} \c{mdash} Character by code point number}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_char_by_num}(\cowel_highlight_as("markup-attr"){num}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_char_by_num}(\cowdoc_param("num", "int")): \cowel_highlight_as("keyword-type"){str}
 }
 
 The input to a \cowdoc_dir{cowel_char_by_num} directive is a \cowdoc_type{str}
@@ -245,7 +245,7 @@ they cannot easily tell what the purpose of the character is.
 ){\cowdoc_dir{cowel_char_get_num} \c{mdash} Get digits of character}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_char_get_num}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_char_get_num}(\cowdoc_param("x", "str")): \cowel_highlight_as("keyword-type"){int}
 }
 
 The \cowdoc_dir{cowel_char_get_num} directive is essentially the
@@ -295,8 +295,8 @@ whereas '\tt{b}' and '\tt{c}' are discarded.
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_html_element}(
-  \cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){string},
-  \cowel_highlight_as("markup-attr"){attr}: \cowel_highlight_as("keyword-type"){lazy(group pack named string)?},
+  \cowdoc_param("name", "string"),
+  \cowdoc_param("attr", "lazy(group pack named string)?"),
 ){...}: \cowel_highlight_as("keyword-type"){block}
 }
 
@@ -342,8 +342,8 @@ if any of the argument names are not valid HTML attribute names.
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_html_self_closing_element}(
-  \cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){string},
-  \cowel_highlight_as("markup-attr"){attr}: \cowel_highlight_as("keyword-type"){lazy(group pack named string)?},
+  \cowdoc_param("name", "string"),
+  \cowdoc_param("attr", "lazy(group pack named string)?"),
 ): \cowel_highlight_as("keyword-type"){block}
 }
 
@@ -724,7 +724,7 @@ Many examples can be found in this document.
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_highlight}(
-  \cowel_highlight_as("markup-attr"){lang}: \cowel_highlight_as("keyword-type"){string},
+  \cowdoc_param("lang", "string"),
 ){...}: \cowel_highlight_as("keyword-type"){block}
 }
 
@@ -745,7 +745,7 @@ which is the highlighter that COWEL uses internally.
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_highlight_as}(
-  \cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){string},
+  \cowdoc_param("name", "string"),
 ){...}: \cowel_highlight_as("keyword-type"){block}
 }
 
@@ -1061,7 +1061,7 @@ COWEL provides directives to load content from other files.
 ){\cowdoc_dir{cowel_include} \c{mdash} Include a sub-document}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_include}(\cowel_highlight_as("markup-attr"){path}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){block}
+\cowel_highlight_as("markup-tag"){cowel_include}(\cowdoc_param("path", "str")): \cowel_highlight_as("keyword-type"){block}
 }
 
 The \cowdoc_dir{cowel_include} directive loads the content from another COWEL document,
@@ -1112,7 +1112,7 @@ of \cowdoc_dir{cowel_include}s.
 ){\cowdoc_dir{cowel_include_text} \c{mdash} Include text from a file}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_include_text}(\cowel_highlight_as("markup-attr"){path}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_include_text}(\cowdoc_param("path", "str")): \cowel_highlight_as("keyword-type"){str}
 }
 
 The \cowdoc_dir{cowel_include_text} directive returns a \cowdoc_type{str}
@@ -1149,7 +1149,7 @@ this renders as:
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_alias}(
-  \cowel_highlight_as("markup-attr"){names}: \cowel_highlight_as("keyword-type"){pack string},
+  \cowdoc_param("names", "pack string"),
 ){...}: \cowel_highlight_as("keyword-type"){unit}
 }
 
@@ -1196,7 +1196,7 @@ One or multiple aliases can be defined as follows:
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_macro}(
-  \cowel_highlight_as("markup-attr"){names}: \cowel_highlight_as("keyword-type"){pack string},
+  \cowdoc_param("names", "pack string"),
 ){...}: \cowel_highlight_as("keyword-type"){unit}
 }
 
@@ -1242,7 +1242,7 @@ may also result in paragraph splits outside the macro.
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_put}(
-  \cowel_highlight_as("markup-attr"){else}: \cowel_highlight_as("keyword-type"){lazy any},
+  \cowdoc_param("else", "lazy any"),
 ){...}: \cowel_highlight_as("keyword-type"){any}
 }
 
@@ -1382,7 +1382,7 @@ but it can have unintended side effects:
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_invoke}(
-  \cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){string},
+  \cowdoc_param("name", "string"),
 ){...}: \cowel_highlight_as("keyword-type"){any}
 }
 
@@ -1421,12 +1421,12 @@ argument forwarding is not supported at all right now.
 ){\cowdoc_dir{cowel_to_str} \c{mdash} Convert to \cowdoc_type{str}}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){unit}): \cowel_highlight_as("keyword-type"){str}
-\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){bool}): \cowel_highlight_as("keyword-type"){str}
-\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){base}: \cowel_highlight_as("keyword-type"){int} = 10, \cowel_highlight_as("markup-attr"){zpad}: \cowel_highlight_as("keyword-type"){int} = 0): \cowel_highlight_as("keyword-type"){str}
-\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}, \cowel_highlight_as("markup-attr"){format}: \cowel_highlight_as("keyword-type"){str} = "splice"): \cowel_highlight_as("keyword-type"){str}
-\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){str}
-\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){block}): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowdoc_param("x", "unit")): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowdoc_param("x", "bool")): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowdoc_param("x", "int"), \cowdoc_param("base", "int") = 10, \cowdoc_param("zpad", "int") = 0): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowdoc_param("x", "float"), \cowdoc_param("format", "str") = "splice"): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowdoc_param("x", "str")): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_to_str}(\cowdoc_param("x", "block")): \cowel_highlight_as("keyword-type"){str}
 }
 
 The \cowdoc_dir{cowel_to_str} directive produces similar output to splicing
@@ -1542,7 +1542,7 @@ but can easily be appended separately.
 ){\cowdoc_dir{cowel_reinterpret_as_float} \c{mdash} Reinterpret as \cowdoc_type{float}}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_reinterpret_as_float}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_reinterpret_as_float}(\cowdoc_param("x", "int")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns a value of type \cowdoc_type{float}
@@ -1580,7 +1580,7 @@ For example, it may be used to create a NaN value with a specific payload or sig
 ){\cowdoc_dir{cowel_reinterpret_as_int} \c{mdash} Reinterpret as \cowdoc_type{int}}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_reinterpret_as_int}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_reinterpret_as_int}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){int}
 }
 
 Returns a value of type \cowdoc_type{int}
@@ -1652,8 +1652,8 @@ The result is in the range \math{\mrow{
 ){\cowdoc_dir{cowel_pos} \c{mdash} Copy}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_pos}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){int}
-\cowel_highlight_as("markup-tag"){cowel_pos}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_pos}(\cowdoc_param("x", "int")): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_pos}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \math{\mrow{\mo(form=prefix){+}\mi{x}}}.
@@ -1671,8 +1671,8 @@ The result is bitwise identical to \cowdoc_attr{x}.
 ){\cowdoc_dir{cowel_neg} \c{mdash} Negation}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_neg}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){int}
-\cowel_highlight_as("markup-tag"){cowel_neg}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_neg}(\cowdoc_param("x", "int")): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_neg}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \math{\mrow{\mo(form=prefix){−}\mi{x}}}.
@@ -1690,8 +1690,8 @@ Negating positive zero results in negative zero, and vice versa.
 ){\cowdoc_dir{cowel_abs} \c{mdash} Absolute value}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_abs}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){int}
-\cowel_highlight_as("markup-tag"){cowel_abs}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_abs}(\cowdoc_param("x", "int")): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_abs}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns the absolute value of \cowdoc_attr{x}.
@@ -1705,7 +1705,7 @@ the result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_sqrt} \c{mdash} Square root}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_sqrt}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_sqrt}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \math{\msqrt{\mi{x}}}.
@@ -1718,7 +1718,7 @@ The result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_trunc} \c{mdash} Round toward zero}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_trunc}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_trunc}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \math{\mi{x}},
@@ -1732,7 +1732,7 @@ The result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_floor} \c{mdash} Round toward negative infinity}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_floor}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_floor}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \math{\mi{x}},
@@ -1746,7 +1746,7 @@ The result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_ceil} \c{mdash} Round toward positive infinity}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_ceil}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_ceil}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \math{\mi{x}},
@@ -1760,7 +1760,7 @@ The result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_nearest} \c{mdash} Round toward the nearest integer}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_nearest}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_nearest}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \math{\mi{x}},
@@ -1780,7 +1780,7 @@ and is the default IEEE-754 rounding mode.
 ){\cowdoc_dir{cowel_nearest_away_zero} \c{mdash} Round toward the nearest integer, with ties broken away from zero}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_nearest_away_zero}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_nearest_away_zero}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \math{\mi{x}},
@@ -1795,8 +1795,8 @@ The result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_min} \c{mdash} Minimum}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_min}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack int}): \cowel_highlight_as("keyword-type"){int}
-\cowel_highlight_as("markup-tag"){cowel_min}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_min}(\cowdoc_param("args", "pack int")): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_min}(\cowdoc_param("args", "pack float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns the lowest of the given values.
@@ -1818,8 +1818,8 @@ ignoring NaN representations.
 ){\cowdoc_dir{cowel_max} \c{mdash} Maximum}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_max}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack int}): \cowel_highlight_as("keyword-type"){int}
-\cowel_highlight_as("markup-tag"){cowel_max}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_max}(\cowdoc_param("args", "pack int")): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_max}(\cowdoc_param("args", "pack float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns the greatest of the given values.
@@ -1841,8 +1841,8 @@ ignoring NaN representations.
 ){\cowdoc_dir{cowel_add} \c{mdash} Addition}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_add}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack int}): \cowel_highlight_as("keyword-type"){int}
-\cowel_highlight_as("markup-tag"){cowel_add}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_add}(\cowdoc_param("args", "pack int")): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_add}(\cowdoc_param("args", "pack float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \left_fold_math_op{+}
@@ -1860,8 +1860,8 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 ){\cowdoc_dir{cowel_sub} \c{mdash} Subtraction}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_sub}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack int}): \cowel_highlight_as("keyword-type"){int}
-\cowel_highlight_as("markup-tag"){cowel_sub}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_sub}(\cowdoc_param("args", "pack int")): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_sub}(\cowdoc_param("args", "pack float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \left_fold_math_op{−}
@@ -1879,8 +1879,8 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 ){\cowdoc_dir{cowel_mul} \c{mdash} Multiplication}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_mul}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack int}): \cowel_highlight_as("keyword-type"){int}
-\cowel_highlight_as("markup-tag"){cowel_mul}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_mul}(\cowdoc_param("args", "pack int")): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_mul}(\cowdoc_param("args", "pack float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \left_fold_math_op{×}
@@ -1898,7 +1898,7 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 ){\cowdoc_dir{cowel_div} \c{mdash} Division}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_div}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack float}): \cowel_highlight_as("keyword-type"){float}
+\cowel_highlight_as("markup-tag"){cowel_div}(\cowdoc_param("args", "pack float")): \cowel_highlight_as("keyword-type"){float}
 }
 
 Returns \left_fold_math_op{÷}
@@ -1920,7 +1920,7 @@ Instead, it results in infinity or NaN depending on the dividend.
 ){\cowdoc_dir{cowel_div_to_zero} \c{mdash} Division rounded toward zero}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_div_to_zero}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_div_to_zero}(\cowdoc_param("x", "int"), \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){int}
 }
 
 Returns the quotient of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
@@ -1937,7 +1937,7 @@ The result is that of the \tt{/} operator in C.
 ){\cowdoc_dir{cowel_rem_to_zero} \c{mdash} Remainder rounded toward zero}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_rem_to_zero}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_rem_to_zero}(\cowdoc_param("x", "int"), \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){int}
 }
 
 Returns the remainder of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
@@ -1955,7 +1955,7 @@ The sign of the result is the sign of the dividend \cowdoc_attr{x}.
 ){\cowdoc_dir{cowel_div_to_pos_inf} \c{mdash} Division rounded toward positive infinity}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_div_to_pos_inf}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_div_to_pos_inf}(\cowdoc_param("x", "int"), \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){int}
 }
 
 Returns the quotient of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
@@ -1968,7 +1968,7 @@ An error is raised of \cowdoc_attr{y} is zero.
 ){\cowdoc_dir{cowel_rem_to_pos_inf} \c{mdash} Remainder rounded toward positive infinity}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_rem_to_pos_inf}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_rem_to_pos_inf}(\cowdoc_param("x", "int"), \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){int}
 }
 
 Returns the remainder of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
@@ -1981,7 +1981,7 @@ An error is raised of \cowdoc_attr{y} is zero.
 ){\cowdoc_dir{cowel_div_to_neg_inf} \c{mdash} Division rounded toward negative infinity}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_div_to_neg_inf}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_div_to_neg_inf}(\cowdoc_param("x", "int"), \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){int}
 }
 
 Returns the quotient of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
@@ -1998,7 +1998,7 @@ The result is that of the \tt{//} operator in Python.
 ){\cowdoc_dir{cowel_rem_to_neg_inf} \c{mdash} Remainder rounded toward negative infinity}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_rem_to_neg_inf}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_rem_to_neg_inf}(\cowdoc_param("x", "int"), \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){int}
 }
 
 Returns the remainder of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
@@ -2025,7 +2025,7 @@ however, the same can be accomplished with \cowdoc_dir{cowel_ne}.
 ){\cowdoc_dir{cowel_not} \c{mdash} Logical NOT}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_not}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){bool}): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_not}(\cowdoc_param("x", "bool")): \cowel_highlight_as("keyword-type"){bool}
 }
 
 Returns \cowdoc_c{true} if \cowdoc_attr{x} is \cowdoc_c{false},
@@ -2036,7 +2036,7 @@ otherwise \cowdoc_c{false}.
 ){\cowdoc_dir{cowel_and} \c{mdash} Logical AND}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_and}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack lazy bool}): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_and}(\cowdoc_param("args", "pack lazy bool")): \cowel_highlight_as("keyword-type"){bool}
 }
 
 Returns \cowdoc_c{true} if none of \cowdoc_attr{args} is \cowdoc_c{false},
@@ -2060,7 +2060,7 @@ after the first \cowdoc_c{false}.
 ){\cowdoc_dir{cowel_or} \c{mdash} Logical OR}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_or}(\cowel_highlight_as("markup-attr"){args}: \cowel_highlight_as("keyword-type"){pack lazy bool}): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_or}(\cowdoc_param("args", "pack lazy bool")): \cowel_highlight_as("keyword-type"){bool}
 }
 
 Returns \cowdoc_c{true} if any of \cowdoc_attr{args} is \cowdoc_c{true},
@@ -2093,12 +2093,12 @@ there is no way to tell apart signaling and quiet operations in COWEL.
 ){\cowdoc_dir{cowel_eq} \c{mdash} Equals}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_eq}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){unit}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){unit}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_eq}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){null}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){null}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_eq}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){bool}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){bool}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_eq}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int},  \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_eq}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float},  \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_eq}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str},  \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_eq}(\cowdoc_param("x", "unit"), \cowdoc_param("y", "unit")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_eq}(\cowdoc_param("x", "null"), \cowdoc_param("y", "null")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_eq}(\cowdoc_param("x", "bool"), \cowdoc_param("y", "bool")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_eq}(\cowdoc_param("x", "int"),  \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_eq}(\cowdoc_param("x", "float"),  \cowdoc_param("y", "float")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_eq}(\cowdoc_param("x", "str"),  \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
 Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{=}\mi{y}}},
@@ -2116,12 +2116,12 @@ the result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_ne} \c{mdash} Not equals}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_ne}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){unit}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){unit}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_ne}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){null}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){null}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_ne}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){bool}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){bool}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_ne}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int},  \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_ne}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float},  \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_ne}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str},  \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_ne}(\cowdoc_param("x", "unit"), \cowdoc_param("y", "unit")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_ne}(\cowdoc_param("x", "null"), \cowdoc_param("y", "null")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_ne}(\cowdoc_param("x", "bool"), \cowdoc_param("y", "bool")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_ne}(\cowdoc_param("x", "int"),  \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_ne}(\cowdoc_param("x", "float"),  \cowdoc_param("y", "float")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_ne}(\cowdoc_param("x", "str"),  \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
 Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≠}\mi{y}}},
@@ -2143,9 +2143,9 @@ The result is \cowdoc_c{cowel_not(cowel_eq(x, y))}.
 ){\cowdoc_dir{cowel_lt} \c{mdash} Less than}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_lt}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_lt}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_lt}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_lt}(\cowdoc_param("x", "int"), \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_lt}(\cowdoc_param("x", "float"), \cowdoc_param("y", "float")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_lt}(\cowdoc_param("x", "str"), \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
 Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{<}\mi{y}}},
@@ -2160,9 +2160,9 @@ the result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_gt} \c{mdash} Greater than}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_gt}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_gt}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_gt}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_gt}(\cowdoc_param("x", "int"), \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_gt}(\cowdoc_param("x", "float"), \cowdoc_param("y", "float")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_gt}(\cowdoc_param("x", "str"), \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
 Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{>}\mi{y}}},
@@ -2177,9 +2177,9 @@ the result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_le} \c{mdash} Less than or equal}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_le}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_le}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_le}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_le}(\cowdoc_param("x", "int"), \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_le}(\cowdoc_param("x", "float"), \cowdoc_param("y", "float")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_le}(\cowdoc_param("x", "str"), \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
 Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≤}\mi{y}}},
@@ -2194,9 +2194,9 @@ the result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_ge} \c{mdash} Greater than or equal}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_ge}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){int}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){int}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_ge}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){float}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){float}): \cowel_highlight_as("keyword-type"){bool}
-\cowel_highlight_as("markup-tag"){cowel_ge}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str}, \cowel_highlight_as("markup-attr"){y}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_ge}(\cowdoc_param("x", "int"), \cowdoc_param("y", "int")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_ge}(\cowdoc_param("x", "float"), \cowdoc_param("y", "float")): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_ge}(\cowdoc_param("x", "str"), \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
 Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≥}\mi{y}}},
@@ -2213,7 +2213,7 @@ the result is that of the IEEE-754 operation
 ){\cowdoc_dir{cowel_str_length} \c{mdash} Length of string}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_str_length}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_str_length}(\cowdoc_param("x", "str")): \cowel_highlight_as("keyword-type"){int}
 }
 
 Returns the length of \cowdoc_attr{x}, in code points.
@@ -2244,7 +2244,7 @@ Generated HTML:
 ){\cowdoc_dir{cowel_str_utf8_length} \c{mdash} Length of string in UTF-8 code units}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_str_utf8_length}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){int}
+\cowel_highlight_as("markup-tag"){cowel_str_utf8_length}(\cowdoc_param("x", "str")): \cowel_highlight_as("keyword-type"){int}
 }
 
 Returns the length of \cowdoc_attr{x}, in UTF-8 code units.
@@ -2384,7 +2384,7 @@ false
 ){\cowdoc_dir{cowel_str_to_lower} \c{mdash} Convert string to lowercase}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_str_to_lower}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_str_to_lower}(\cowdoc_param("x", "str")): \cowel_highlight_as("keyword-type"){str}
 }
 
 Returns \cowdoc_attr{x} converted to lowercase.
@@ -2409,7 +2409,7 @@ Generated HTML:
 ){\cowdoc_dir{cowel_str_to_upper} \c{mdash} Convert string to uppercase}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_str_to_upper}(\cowel_highlight_as("markup-attr"){x}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){str}
+\cowel_highlight_as("markup-tag"){cowel_str_to_upper}(\cowdoc_param("x", "str")): \cowel_highlight_as("keyword-type"){str}
 }
 
 Returns \cowdoc_attr{x} converted to uppercase.
@@ -2573,8 +2573,8 @@ or if a character is not one of the permitted flags:
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_var_let}(
-  \cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){str},
-  \cowel_highlight_as("markup-attr"){value}: \cowel_highlight_as("keyword-type"){any} = null,
+  \cowdoc_param("name", "str"),
+  \cowdoc_param("value", "any") = null,
 ): \cowel_highlight_as("keyword-type"){unit}
 }
 
@@ -2587,8 +2587,8 @@ An error is raised if such a variable already exists.
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_var_set}(
-  \cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){str},
-  \cowel_highlight_as("markup-attr"){value}: \cowel_highlight_as("keyword-type"){any},
+  \cowdoc_param("name", "str"),
+  \cowdoc_param("value", "any"),
 ): \cowel_highlight_as("keyword-type"){unit}
 }
 
@@ -2600,7 +2600,7 @@ An error is raised if no such variable exists.
 ){\cowdoc_dir{cowel_var_exists} \c{mdash} Check whether a variable exists}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_var_exists}(\cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){bool}
+\cowel_highlight_as("markup-tag"){cowel_var_exists}(\cowdoc_param("name", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
 Returns \cowdoc_c{true} if a variable named \cowdoc_attr{name} exists,
@@ -2611,7 +2611,7 @@ otherwise \cowdoc_c{false}.
 ){\cowdoc_dir{cowel_var_get} \c{mdash} Get the value of a variable}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_var_get}(\cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){any}
+\cowel_highlight_as("markup-tag"){cowel_var_get}(\cowdoc_param("name", "str")): \cowel_highlight_as("keyword-type"){any}
 }
 
 Returns the value of the global variable named \cowdoc_attr{name}.
@@ -2622,7 +2622,7 @@ An error is raised if there is no such variable.
 ){\cowdoc_dir{cowel_var_delete} \c{mdash} Delete an existing variable}
 
 \pre{
-\cowel_highlight_as("markup-tag"){cowel_var_delete}(\cowel_highlight_as("markup-attr"){name}: \cowel_highlight_as("keyword-type"){str}): \cowel_highlight_as("keyword-type"){unit}
+\cowel_highlight_as("markup-tag"){cowel_var_delete}(\cowdoc_param("name", "str")): \cowel_highlight_as("keyword-type"){unit}
 }
 
 Deletes the global variable named \cowdoc_attr{name}.
