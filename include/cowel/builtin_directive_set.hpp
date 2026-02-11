@@ -239,6 +239,24 @@ Str_Contains_Behavior final : Bool_Directive_Behavior {
     Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
 };
 
+struct [[nodiscard]]
+Str_Find_Behavior final : Directive_Behavior {
+private:
+    static constexpr Type alternatives[] { Type::null, Type::integer };
+    static constexpr Type return_type = Type::union_of(alternatives);
+    static_assert(return_type.is_canonical());
+
+public:
+    [[nodiscard]]
+    constexpr explicit Str_Find_Behavior()
+        : Directive_Behavior { return_type }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const override;
+};
+
 enum struct Str_Replacement_Kind : bool {
     first,
     all,

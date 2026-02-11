@@ -2316,6 +2316,46 @@ true
 }
 
 \h4(
+  id = "dir-cowel_str_find"
+){\cowdoc_dir{cowel_str_find} \c{mdash} Find the position of a string}
+
+\pre{
+\cowel_highlight_as("markup-tag"){cowel_str_find}(\cowdoc_param("text", "str"), \cowdoc_param("needle", "str | regex")): \cowel_highlight_as("keyword-type"){int | null}
+}
+
+Returns the code point index
+of the first occurrence of \cowdoc_attr{needle} within \cowdoc_attr{text},
+or \cowdoc_c{null} if there is none.
+Always returns \cowdoc_c{0} if \cowdoc_attr{needle}
+is an empty string or empty regular expression.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\: "o" character is found in "awoo"
+o: \cowel_str_find("awoo", "o")
+\: "A" character is not found.
+A: \cowel_str_find("awoo", "A")
+\: Sequence of one or more "o" characters is found.
+o+: \cowel_str_find("awoo", cowel_regex("o+"))
+
+\: Empty string is always found.
+\cowel_str_find("awoo", "")
+\: Empty regular expression is always found.
+\cowel_str_find("awoo", cowel_regex(""))
+}}
+Generated HTML:
+\htmlblock{
+o: 2
+A: null
+o+: 2
+
+0
+0
+}
+}
+
+\h4(
   id = "dir-cowel_str_match"
 ){\cowdoc_dir{cowel_str_match} \c{mdash} Test if a string matches a regular expression}
 

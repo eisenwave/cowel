@@ -2,8 +2,10 @@
 
 ## **Next version** (???)
 
+- change `null` from erroring when spliced to producing the string `"null"`
 - add the following string and regular expression directives (#183, #221):
   - `cowel_str_contains`
+  - `cowel_str_find`
   - `cowel_str_match`
   - `cowel_str_replace_first`
   - `cowel_str_replace_all`

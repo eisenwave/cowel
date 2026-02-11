@@ -142,6 +142,8 @@ public:
     [[nodiscard]]
     static constexpr Value boolean(bool value) noexcept;
     [[nodiscard]]
+    static constexpr Value integer(Int128 value) noexcept;
+    [[nodiscard]]
     static constexpr Value integer(const Big_Int& value) noexcept;
     [[nodiscard]]
     static constexpr Value integer(Big_Int&& value) noexcept;
@@ -660,6 +662,10 @@ constexpr Value& Value::operator=(Value&& other) noexcept
 constexpr Value Value::boolean(const bool value) noexcept
 {
     return Value { Union { .boolean = value }, boolean_index };
+}
+constexpr Value Value::integer(const Int128 value) noexcept
+{
+    return Value { Union { .integer = Big_Int { value } }, integer_index };
 }
 constexpr Value Value::integer(const Big_Int& value) noexcept
 {

@@ -1,0 +1,27 @@
+\test_input{
+\cowel_str_find("", cowel_regex(""))
+\cowel_str_find("awoo", cowel_regex(""))
+
+\cowel_str_find("awoo", cowel_regex("a"))
+\cowel_str_find("awoo", cowel_regex("w"))
+\cowel_str_find("awoo", cowel_regex("o"))
+
+\cowel_str_find("αβγ", cowel_regex("β"))
+
+\cowel_str_find("", cowel_regex("x"))
+\cowel_str_find("awoo", cowel_regex("x"))
+}
+
+\test_output{
+0
+0
+
+0
+1
+2
+
+1
+
+null
+null
+}

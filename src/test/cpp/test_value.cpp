@@ -87,28 +87,40 @@ TEST(Value, string)
 
 TEST(Type, canonical_union_of)
 {
-    EXPECT_EQ(Type::canonical_union_of({ Type::nothing }), Type::nothing);
-    EXPECT_EQ(Type::canonical_union_of({ Type::nothing, Type::nothing }), Type::nothing);
+    std::vector<Type> types = { Type::nothing };
+    EXPECT_EQ(Type::canonical_union_of(types), Type::nothing);
 
-    EXPECT_EQ(Type::canonical_union_of({ Type::any, Type::nothing }), Type::any);
+    types = { Type::nothing, Type::nothing };
+    EXPECT_EQ(Type::canonical_union_of(types), Type::nothing);
 
-    EXPECT_EQ(Type::canonical_union_of({ Type::integer, Type::nothing }), Type::integer);
-    EXPECT_EQ(Type::canonical_union_of({ Type::integer, Type::integer }), Type::integer);
-    EXPECT_EQ(Type::canonical_union_of({ Type::integer }), Type::integer);
+    types = { Type::any, Type::nothing };
+    EXPECT_EQ(Type::canonical_union_of(types), Type::any);
 
-    const auto v = Type::canonical_union_of({ Type::integer, Type::any });
-    EXPECT_EQ(Type::canonical_union_of({ Type::integer, Type::any }), Type::any);
-    EXPECT_EQ(
-        Type::canonical_union_of({ Type::integer, Type::unit }),
-        Type::union_of({ Type::unit, Type::integer })
-    );
+    types = { Type::integer, Type::nothing };
+    EXPECT_EQ(Type::canonical_union_of(types), Type::integer);
+
+    types = { Type::integer, Type::integer };
+    EXPECT_EQ(Type::canonical_union_of(types), Type::integer);
+
+    types = { Type::integer };
+    EXPECT_EQ(Type::canonical_union_of(types), Type::integer);
+
+    types = { Type::integer, Type::any };
+    EXPECT_EQ(Type::canonical_union_of(types), Type::any);
+
+    types = { Type::integer, Type::unit };
+    static constexpr Type unit_and_integer_types[] { Type::unit, Type::integer };
+    EXPECT_EQ(Type::canonical_union_of(types), Type::union_of(unit_and_integer_types));
 }
 
 TEST(Type, analytically_convertible_to)
 {
-    const auto int_or_float = Type::canonical_union_of({ Type::integer, Type::floating });
-    const auto int_and_float = Type::group_of({ Type::integer, Type::floating });
-    const auto lazy_int = Type::lazy(Type::integer);
+    static constexpr Type int_float_types[] { Type::integer, Type::floating };
+    static constexpr auto int_or_float = Type::union_of(int_float_types);
+    static_assert(int_or_float.is_canonical());
+    static constexpr auto int_and_float = Type::group_of(int_float_types);
+    static_assert(int_and_float.is_canonical());
+    static constexpr auto lazy_int = Type::lazy(&Type::integer);
 
     EXPECT_TRUE(Type::any.analytically_convertible_to(Type::any));
     EXPECT_TRUE(Type::nothing.analytically_convertible_to(Type::nothing));
@@ -138,9 +150,11 @@ TEST(Type, analytically_convertible_to)
     EXPECT_TRUE(int_and_float.analytically_convertible_to(Type::group));
     EXPECT_FALSE(int_and_float.analytically_convertible_to(Type::empty_group));
 
-    EXPECT_TRUE(int_and_float.analytically_convertible_to(
-        Type::canonical_union_of({ Type::integer, int_and_float })
-    ));
+    static constexpr Type some_union_types[] { Type::integer, int_and_float };
+    static constexpr auto some_union = Type::union_of(some_union_types);
+    static_assert(some_union.is_canonical());
+    EXPECT_TRUE(int_and_float.analytically_convertible_to(some_union));
+
     EXPECT_FALSE(int_and_float.analytically_convertible_to(int_or_float));
     EXPECT_FALSE(Type::integer.analytically_convertible_to(int_and_float));
     EXPECT_FALSE(Type::floating.analytically_convertible_to(int_and_float));
