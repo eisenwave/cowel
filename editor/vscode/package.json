@@ -1,6 +1,6 @@
 {
   "name": "cowel-language-support",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Syntax highlighting and language support for Compact Web Language (COWEL)",
   "scripts": {
     "test": "ts-node tests/test-runner.ts",

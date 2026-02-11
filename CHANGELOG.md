@@ -1,6 +1,6 @@
 # Changelog
 
-## **Next version** (???)
+## **[v0.8.0](https://github.com/eisenwave/cowel/releases/tag/v0.8.0)** (2026-??-??)
 
 - change `null` from erroring when spliced to producing the string `"null"`
 - add the following string and regular expression directives (#183, #221):
@@ -13,7 +13,7 @@
 - fix `cowel_to_str` for base 36
 
 **Full Changelog**:
-[`v0.6.0...master`](https://github.com/eisenwave/cowel/compare/v0.7.0...master)
+[`v0.7.0...master`](https://github.com/eisenwave/cowel/compare/v0.7.0...master)
 
 ## **[v0.7.0](https://github.com/eisenwave/cowel/releases/tag/v0.7.0)** (2026-02-05)
 
