@@ -386,6 +386,7 @@ else()
         src/test/cpp/test_math.cpp
         src/test/cpp/test_parsing.cpp
         src/test/cpp/test_regexp.cpp
+        src/test/cpp/test_small_vector.cpp
         src/test/cpp/test_to_chars.cpp
         src/test/cpp/test_typo.cpp
         src/test/cpp/test_valid.cpp
