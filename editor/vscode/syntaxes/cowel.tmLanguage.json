@@ -161,6 +161,20 @@
             { "include": "#argument" }
           ]
         },
+        {
+          "name": "meta.content.cowel",
+          "begin": "\\{",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.content.begin.cowel" }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.content.end.cowel" }
+          },
+          "patterns": [
+            { "include": "$self" }
+          ]
+        },
         { "include": "#directives" },
         { "include": "#comments" }
       ]
