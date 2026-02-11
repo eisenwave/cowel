@@ -1,0 +1,26 @@
+{
+  "description": "Blocks as arguments are highlighted as markup",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 3,
+      "expected": "punctuation.section.content.begin.cowel",
+      "description": "Opening brace starts block context"
+    },
+    {
+      "type": "token-has-scope",
+      "line": 0,
+      "col": 4,
+      "scope": "meta.content.cowel",
+      "description": "Content inside block has meta.content scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 7,
+      "expected": "punctuation.section.content.end.cowel",
+      "description": "Closing brace ends block context"
+    }
+  ]
+}
