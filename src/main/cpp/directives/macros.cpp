@@ -220,7 +220,10 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
         return Processing_Status::error;
     }
 
-    static const auto else_type = Type::canonical_union_of({ Type::block, Type::str });
+    static constexpr Type else_alternatives[] { Type::str, Type::block };
+    static constexpr auto else_type = Type::union_of(else_alternatives);
+    static_assert(else_type.is_canonical());
+
     Lazy_Value_Of_Type_Matcher else_matcher { &else_type };
     Group_Member_Matcher else_member { u8"else"sv, Optionality::optional, else_matcher };
     Group_Member_Matcher* const parameters[] { &else_member };

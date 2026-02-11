@@ -162,7 +162,8 @@ const Type& get_static_type(const ast::Directive& directive, Context& context)
 const Type& get_type(const ast::Primary& primary)
 {
     // FIXME: This isn't actually the correct type.
-    static const Type group_anything = Type::group_of({ Type::pack_of(auto(Type::any)) });
+    static constexpr auto pack_any = Type::pack_of(&Type::any);
+    static const Type group_anything = Type::group_of({ &pack_any, 1 });
 
     switch (primary.get_kind()) {
     case ast::Primary_Kind::unit_literal: return Type::unit;
@@ -393,7 +394,6 @@ Processing_Status splice_value(
     case Type_Kind::lazy: {
         COWEL_ASSERT_UNREACHABLE(u8"Values of this type should not exist.");
     }
-    case Type_Kind::null:
     case Type_Kind::regex:
     case Type_Kind::group: {
         context.try_error(
@@ -407,6 +407,11 @@ Processing_Status splice_value(
             )
         );
         return Processing_Status::error;
+    }
+
+    case Type_Kind::null: {
+        out.write(u8"null"sv, Output_Language::text);
+        return Processing_Status::ok;
     }
 
     case Type_Kind::unit: {

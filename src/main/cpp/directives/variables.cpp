@@ -113,6 +113,16 @@ Big_Int operate_binary(
     COWEL_ASSERT_UNREACHABLE(u8"Invalid expression type.");
 }
 
+constexpr Type numeric_types[] { Type::integer, Type::floating };
+constexpr Type numeric_type = Type::union_of(numeric_types);
+static_assert(numeric_type.is_canonical());
+
+constexpr Type variable_types[] {
+    Type::unit, Type::null, Type::boolean, Type::integer, Type::floating, Type::str, Type::group,
+};
+constexpr Type variable_type = Type::union_of(variable_types);
+static_assert(variable_type.is_canonical());
+
 } // namespace
 
 Result<bool, Processing_Status>
@@ -251,11 +261,15 @@ Logical_Expression_Behavior::do_evaluate(const Invocation& call, Context& contex
 Result<bool, Processing_Status>
 Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    static const auto equality_comparable = Type::canonical_union_of(
-        { Type::unit, Type::null, Type::boolean, Type::integer, Type::floating, Type::str }
-    );
-    static const auto relation_comparable
-        = Type::canonical_union_of({ Type::integer, Type::floating, Type::str });
+    static constexpr Type equality_comparable_types[] {
+        Type::unit, Type::null, Type::boolean, Type::integer, Type::floating, Type::str,
+    };
+    static constexpr auto equality_comparable = Type::union_of(equality_comparable_types);
+    static_assert(equality_comparable.is_canonical());
+
+    static constexpr Type relation_comparable_types[] { Type::integer, Type::floating, Type::str };
+    static constexpr auto relation_comparable = Type::union_of(relation_comparable_types);
+    static_assert(relation_comparable.is_canonical());
     const auto* parameter_type = m_expression_kind <= Comparison_Expression_Kind::ne
         ? &equality_comparable
         : &relation_comparable;
@@ -308,17 +322,12 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
 Result<bool, Processing_Status>
 Internal_Eq_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    static const auto equality_comparable = Type::canonical_union_of(
-        {
-            Type::unit,
-            Type::null,
-            Type::boolean,
-            Type::integer,
-            Type::floating,
-            Type::str,
-            Type::group,
-        }
-    );
+    static constexpr Type equality_comparable_types[] {
+        Type::unit,     Type::null, Type::boolean, Type::integer,
+        Type::floating, Type::str,  Type::group,
+    };
+    static constexpr auto equality_comparable = Type::union_of(equality_comparable_types);
+    static_assert(equality_comparable.is_canonical());
 
     Value_Of_Type_Matcher x_value { &equality_comparable };
     Group_Member_Matcher x_member { u8"x"sv, Optionality::mandatory, x_value };
@@ -361,8 +370,6 @@ Internal_Eq_Behavior::do_evaluate(const Invocation& call, Context& context) cons
 Result<Value, Processing_Status>
 Unary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& context) const
 {
-    static const Type numeric_type = Type::canonical_union_of({ Type::integer, Type::floating });
-
     Group_Pack_Value_Matcher group_matcher { context.get_transient_memory() };
     Call_Matcher call_matcher { group_matcher };
 
@@ -504,9 +511,6 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
             }
         }
         else {
-            static const Type numeric_type
-                = Type::canonical_union_of({ Type::integer, Type::floating });
-
             if (!value.get_type().analytically_convertible_to(numeric_type)) {
                 context.try_error(
                     diagnostic::type_mismatch, location,
@@ -571,9 +575,12 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
 Result<Value, Processing_Status>
 To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
 {
-    static const auto to_str_type = Type::canonical_union_of(
-        { Type::unit, Type::boolean, Type::integer, Type::floating, Type::str, Type::block }
-    );
+    static constexpr Type to_str_types[] {
+        Type::unit, Type::boolean, Type::integer, Type::floating, Type::str, Type::block,
+    };
+    static constexpr Type to_str_type = Type::union_of(to_str_types);
+    static_assert(to_str_type.is_canonical());
+
     static constexpr Float_Format float_formats[] {
         Float_Format::fixed,
         Float_Format::scientific,
@@ -839,29 +846,6 @@ Reinterpret_As_Int_Behavior::do_evaluate(const Invocation& call, Context& contex
     return Big_Int { Int128 { u64 } };
 }
 
-namespace {
-
-const Type& get_variable_type()
-{
-    // This is a function in order to avoid dynamic initialization.
-    // Once Type stores a "small vector",
-    // this can likely just be a constexpr variable.
-    static const auto result = Type::canonical_union_of(
-        {
-            Type::unit,
-            Type::null,
-            Type::boolean,
-            Type::integer,
-            Type::floating,
-            Type::str,
-            Type::group,
-        }
-    );
-    return result;
-}
-
-} // namespace
-
 Processing_Status Var_Delete_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher name_matcher { context.get_transient_memory() };
@@ -950,7 +934,7 @@ Processing_Status Var_Let_Behavior::do_evaluate(const Invocation& call, Context&
 {
     String_Matcher name_matcher { context.get_transient_memory() };
     Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
-    Value_Of_Type_Matcher value_matcher { &get_variable_type() };
+    Value_Of_Type_Matcher value_matcher { &variable_type };
     Group_Member_Matcher value_member { u8"value"sv, Optionality::optional, value_matcher };
     Group_Member_Matcher* const parameters[] { &name_member, &value_member };
     Pack_Usual_Matcher args_matcher { parameters };
@@ -989,7 +973,7 @@ Processing_Status Var_Set_Behavior::do_evaluate(const Invocation& call, Context&
 {
     String_Matcher name_matcher { context.get_transient_memory() };
     Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
-    Value_Of_Type_Matcher value_matcher { &get_variable_type() };
+    Value_Of_Type_Matcher value_matcher { &variable_type };
     Group_Member_Matcher value_member { u8"value"sv, Optionality::mandatory, value_matcher };
     Group_Member_Matcher* const parameters[] { &name_member, &value_member };
     Pack_Usual_Matcher args_matcher { parameters };

@@ -255,7 +255,10 @@ Str_Match_Behavior::do_evaluate(const Invocation& call, Context& context) const
 Result<bool, Processing_Status>
 Str_Contains_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    static const auto needle_type = Type::canonical_union_of({ Type::str, Type::regex });
+    static constexpr Type needle_alternatives[] { Type::str, Type::regex };
+    static constexpr auto needle_type = Type::union_of(needle_alternatives);
+    static_assert(needle_type.is_canonical());
+
     String_Matcher text_matcher { context.get_transient_memory() };
     Group_Member_Matcher text_member { u8"text", Optionality::mandatory, text_matcher };
     Value_Of_Type_Matcher needle_matcher { &needle_type };
@@ -296,9 +299,74 @@ Str_Contains_Behavior::do_evaluate(const Invocation& call, Context& context) con
 }
 
 Result<Value, Processing_Status>
+Str_Find_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    static constexpr Type needle_alternatives[] { Type::str, Type::regex };
+    static constexpr auto needle_type = Type::union_of(needle_alternatives);
+    static_assert(needle_type.is_canonical());
+
+    String_Matcher text_matcher { context.get_transient_memory() };
+    Group_Member_Matcher text_member { u8"text", Optionality::mandatory, text_matcher };
+    Value_Of_Type_Matcher needle_matcher { &needle_type };
+    Group_Member_Matcher needle_member { u8"needle", Optionality::mandatory, needle_matcher };
+    Group_Member_Matcher* const matchers[] { &text_member, &needle_member };
+    Pack_Usual_Matcher args_matcher { matchers };
+    Group_Pack_Matcher group_matcher { args_matcher };
+    Call_Matcher call_matcher { group_matcher };
+
+    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    if (args_status != Processing_Status::ok) {
+        return args_status;
+    }
+
+    const std::u8string_view text = text_matcher.get();
+    const Value& needle = needle_matcher.get();
+
+    const auto adjust_index = [&](const std::size_t code_unit_index) -> std::size_t {
+        // For UTF-8 strings containing only ASCII characters,
+        // the code point length is the same as the code unit length.
+        if (text_matcher.get_string_kind() == String_Kind::ascii) {
+            return code_unit_index;
+        }
+        return utf8::count_code_points_or_replacement(text.substr(0, code_unit_index));
+    };
+
+    if (needle.is_str()) {
+        const std::size_t code_unit_index = text.find(needle.as_string());
+        if (code_unit_index == std::u8string_view::npos) {
+            return Value::null;
+        }
+        return Value::integer(adjust_index(code_unit_index));
+    }
+    COWEL_ASSERT(needle.is_regex());
+
+    const Reg_Exp& regex = needle.as_regex();
+    const auto [status, match] = regex.search(text);
+    switch (status) {
+    case Reg_Exp_Status::unmatched: return Value::null;
+    case Reg_Exp_Status::matched: {
+        return Value::integer(adjust_index(match.index));
+    }
+    case Reg_Exp_Status::invalid: COWEL_ASSERT_UNREACHABLE(u8"Developer error.");
+    case Reg_Exp_Status::execution_error: {
+        context.try_error(
+            diagnostic::regex_execution, needle_matcher.get_location(),
+            u8"The given regular expression is valid, "
+            u8"but its execution failed (too expensive, or due to an internal error)."sv
+        );
+        return Processing_Status::error;
+    }
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid status.");
+}
+
+Result<Value, Processing_Status>
 Str_Replace_Behavior::evaluate(const Invocation& call, Context& context) const
 {
-    static const auto needle_type = Type::canonical_union_of({ Type::str, Type::regex });
+    static constexpr Type needle_alternatives[] { Type::str, Type::regex };
+    static constexpr auto needle_type = Type::union_of(needle_alternatives);
+    static_assert(needle_type.is_canonical());
+
     String_Matcher text_matcher { context.get_transient_memory() };
     Group_Member_Matcher text_member { u8"text", Optionality::mandatory, text_matcher };
     Value_Of_Type_Matcher needle_matcher { &needle_type };

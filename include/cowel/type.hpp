@@ -135,20 +135,6 @@ constexpr std::u8string_view type_kind_display_name(Type_Kind kind)
     COWEL_ASSERT_UNREACHABLE(u8"Invalid kind");
 }
 
-namespace detail {
-
-template <typename Head, typename... Tail>
-constexpr auto vector_of(Head&& head, Tail&&... tail) noexcept
-{
-    std::vector<std::remove_cvref_t<Head>> result;
-    result.reserve(1 + sizeof...(tail));
-    result.push_back(std::forward<Head>(head));
-    (result.push_back(std::forward<Tail>(tail)), ...);
-    return result;
-}
-
-} // namespace detail
-
 /// @brief A type in the COWEL type system.
 struct Type {
     /// @brief The `any` type, i.e. the top type.
@@ -185,111 +171,109 @@ struct Type {
         return { kind, {}, Flags::canonical | Flags::legal | dynamic_flag };
     }
 
-    static constexpr Type nullable(const Type& type)
+    static constexpr Type pack_of(const Type* const element)
     {
-        return canonical_union_of(detail::vector_of(Type::null, type));
+        return {
+            Type_Kind::pack,
+            { element, 1 },
+            pack_is_canonical(*element) ? Flags::canonical : Flags {},
+        };
     }
-    /// @brief Forms a canonical representation of a nullable version of `type`.
-    /// That is, the union of `type` and the `null` type.
-    static constexpr Type nullable(Type&& type)
+    static constexpr Type canonical_pack_of(const Type* const element)
     {
-        return canonical_union_of(detail::vector_of(Type::null, std::move(type)));
-    }
-
-    static constexpr Type pack_of(const Type& element)
-    {
-        return { Type_Kind::pack, detail::vector_of(element), Flags {} };
-    }
-    /// @brief Forms a pack type from a given element type,
-    /// which may not be canonical.
-    static constexpr Type pack_of(Type&& element)
-    {
-        return { Type_Kind::pack, detail::vector_of(std::move(element)), Flags {} };
-    }
-    static constexpr Type canonical_pack_of(Type&& element)
-    {
-        element.canonicalize();
-        if (element.m_kind == Type_Kind::nothing) {
+        // Cannot form canonical packs of non-canonical elements.
+        COWEL_ASSERT(element->is_canonical());
+        if (element->m_kind == Type_Kind::nothing) {
             return Type::nothing;
         }
-        if (element.m_kind == Type_Kind::pack) {
-            COWEL_DEBUG_ASSERT(element.m_members.size() == 1);
-            return canonical_pack_of(std::move(element.m_members.front()));
+        if (element->m_kind == Type_Kind::pack) {
+            COWEL_DEBUG_ASSERT(element->m_members.size() == 1);
+            return canonical_pack_of(&element->m_members.front());
         }
-        COWEL_DEBUG_ASSERT(pack_is_canonical(element));
-        return { Type_Kind ::pack, detail::vector_of(std::move(element)), Flags::canonical };
+        COWEL_DEBUG_ASSERT(pack_is_canonical(*element));
+        return { Type_Kind ::pack, { element, 1 }, Flags::canonical };
     }
 
-    static constexpr Type named(const Type& element)
+    static constexpr Type named(const Type* const element)
     {
-        return { Type_Kind::named, detail::vector_of(element), Flags {} };
+        return {
+            Type_Kind::named,
+            { element, 1 },
+            named_is_canonical(*element) ? Flags ::canonical : Flags {},
+        };
     }
-    static constexpr Type named(Type&& element)
+    static constexpr Type canonical_named(const Type* const element)
     {
-        return { Type_Kind::named, detail::vector_of(std::move(element)), Flags {} };
-    }
-    static constexpr Type canonical_named(Type&& element)
-    {
-        element.canonicalize();
-        if (element.m_kind == Type_Kind::nothing) {
+        // Cannot form canonical named from non-canonical.
+        COWEL_ASSERT(element->is_canonical());
+        if (element->m_kind == Type_Kind::nothing) {
             return Type::nothing;
         }
-        COWEL_DEBUG_ASSERT(named_is_canonical(element));
-        return { Type_Kind::named, detail::vector_of(std::move(element)), Flags::canonical };
+        COWEL_DEBUG_ASSERT(named_is_canonical(*element));
+        return { Type_Kind::named, { element, 1 }, Flags::canonical };
     }
 
-    static constexpr Type lazy(const Type& element)
+    static constexpr Type lazy(const Type* const element)
     {
-        return { Type_Kind::lazy, detail::vector_of(element), Flags {} };
+        return {
+            Type_Kind::lazy,
+            { element, 1 },
+            lazy_is_canonical(*element) ? Flags::canonical : Flags {},
+        };
     }
-    static constexpr Type lazy(Type&& element)
+    static constexpr Type canonical_lazy(const Type* const element)
     {
-        return { Type_Kind::lazy, detail::vector_of(std::move(element)), Flags {} };
-    }
-    static Type canonical_lazy(Type&& element)
-    {
-        element.canonicalize();
-        return { Type_Kind::lazy, detail::vector_of(std::move(element)), Flags::canonical };
+        // Cannot form canonical lazy from non-canonical.
+        COWEL_ASSERT(element->is_canonical());
+        return { Type_Kind::lazy, { element, 1 }, Flags::canonical };
     }
 
     /// @brief Forms a group type from a given list of members,
     /// which may not be canonical.
-    static constexpr Type group_of(std::vector<Type>&& members)
+    static constexpr Type group_of(const std::span<const Type> members)
     {
-        return { Type_Kind::group, std::move(members), Flags {} };
+        return {
+            Type_Kind::group,
+            members,
+            group_is_canonical(members) ? Flags::canonical : Flags {},
+        };
     }
-    static constexpr Type canonical_group_of(std::vector<Type>&& members)
+    static constexpr Type canonical_group_of(std::vector<Type>& members)
     {
         for (auto& m : members) {
-            m.canonicalize();
+            COWEL_ASSERT(m.is_canonical());
             if (m == Type::nothing) {
                 return Type::nothing;
             }
         }
         COWEL_DEBUG_ASSERT(group_is_canonical(members));
-        return { Type_Kind::group, std::move(members), Flags::canonical };
+        return { Type_Kind::group, members, Flags::canonical };
     }
 
     /// @brief Forms a union type from a given list of alternatives,
     /// which may not be canonical.
-    static constexpr Type union_of(std::vector<Type>&& alternatives)
+    static constexpr Type union_of(const std::span<const Type> alternatives)
     {
-        return { Type_Kind::union_, std::move(alternatives), Flags {} };
+        return {
+            Type_Kind::union_,
+            alternatives,
+            union_is_canonical(alternatives) ? Flags::canonical : Flags {},
+        };
     }
     /// @brief Forms a union type from the given `alternatives`.
     /// The union is canonicalized as needed.
     /// This implies that the result may not actually be a union,
     /// such as when a single-alternative union is canonicalized to that alternative.
-    static constexpr Type canonical_union_of(std::vector<Type>&& alternatives)
+    static constexpr Type canonical_union_of(std::vector<Type>& alternatives)
     {
         for (auto& a : alternatives) {
-            a.canonicalize();
+            COWEL_ASSERT(a.is_canonical());
         }
         // Nested unions are flattened, recursively.
         while (std::ranges::contains(alternatives, Type_Kind::union_, &Type::m_kind)) {
             for (auto it = alternatives.begin(); it != alternatives.end();) {
                 if (it->m_kind == Type_Kind::union_) {
-                    Type nested_union = std::move(*it);
+                    Type nested_union = *it;
                     it = alternatives.erase(it);
                     it = alternatives.insert(
                         it, std::make_move_iterator(nested_union.m_members.begin()),
@@ -317,11 +301,11 @@ struct Type {
         }
         // Single-alternative unions are canonicalized to that alternative.
         if (alternatives.size() == 1) {
-            return std::move(alternatives.front());
+            return alternatives.front();
         }
 
         COWEL_DEBUG_ASSERT(union_is_canonical(alternatives));
-        return { Type_Kind::union_, std::move(alternatives), Flags::canonical };
+        return { Type_Kind::union_, alternatives, Flags::canonical };
     }
 
     enum struct Flags : unsigned char {
@@ -352,13 +336,17 @@ struct Type {
 private:
     Type_Kind m_kind;
     Flags m_flags;
-    std::vector<Type> m_members;
+    std::span<const Type> m_members;
 
     [[nodiscard]]
-    constexpr Type(Type_Kind kind, std::vector<Type>&& members, Flags flags) noexcept
+    constexpr Type(
+        const Type_Kind kind,
+        const std::span<const Type> members,
+        const Flags flags
+    ) noexcept
         : m_kind { kind }
         , m_flags { flags }
-        , m_members { std::move(members) }
+        , m_members { members }
     {
     }
 
@@ -372,7 +360,7 @@ public:
     [[nodiscard]]
     friend constexpr bool operator==(const Type& x, const Type& y)
     {
-        return x.m_kind == y.m_kind && x.m_members == y.m_members;
+        return x.m_kind == y.m_kind && std::ranges::equal(x.m_members, y.m_members);
     }
     friend constexpr std::strong_ordering operator<=>(const Type& x, const Type& y)
     {
@@ -380,7 +368,10 @@ public:
         if (kind_compare != 0) {
             return kind_compare;
         }
-        return x.m_members <=> y.m_members;
+        return std::lexicographical_compare_three_way(
+            x.m_members.begin(), x.m_members.end(), //
+            y.m_members.begin(), y.m_members.end()
+        );
     }
 
     /// @brief Returns `true` if this type is equivalent to `other`.
@@ -474,7 +465,7 @@ public:
     std::u8string get_display_name() const;
 
     [[nodiscard]]
-    constexpr bool is_dynamic() const
+    bool is_dynamic() const
     {
         return (m_flags & Flags::dynamic) != Flags {};
     }
@@ -495,54 +486,31 @@ public:
             return false;
         }
 
-        switch (m_kind) {
-        case Type_Kind::pack: {
-            COWEL_ASSERT(m_members.size() == 1);
-            return pack_is_canonical(m_members.front());
-        }
-        case Type_Kind::named: {
-            COWEL_ASSERT(m_members.size() == 1);
-            return named_is_canonical(m_members.front());
-        }
-        case Type_Kind::lazy: {
-            COWEL_ASSERT(m_members.size() == 1);
-            return lazy_is_canonical(m_members.front());
-        }
-        case Type_Kind::group: return group_is_canonical(m_members);
-        case Type_Kind::union_: return union_is_canonical(m_members);
-        default: {
-            COWEL_DEBUG_ASSERT(is_basic());
-            return true;
-        }
-        }
-        COWEL_ASSERT_UNREACHABLE(u8"Invalid type kind.");
-    }
+        const bool result = [&] {
+            switch (m_kind) {
+            case Type_Kind::pack: {
+                COWEL_ASSERT(m_members.size() == 1);
+                return pack_is_canonical(m_members.front());
+            }
+            case Type_Kind::named: {
+                COWEL_ASSERT(m_members.size() == 1);
+                return named_is_canonical(m_members.front());
+            }
+            case Type_Kind::lazy: {
+                COWEL_ASSERT(m_members.size() == 1);
+                return lazy_is_canonical(m_members.front());
+            }
+            case Type_Kind::group: return group_is_canonical(m_members);
+            case Type_Kind::union_: return union_is_canonical(m_members);
+            default: {
+                COWEL_DEBUG_ASSERT(is_basic());
+                return true;
+            }
+            }
+            COWEL_ASSERT_UNREACHABLE(u8"Invalid type kind.");
+        }();
 
-    constexpr void canonicalize()
-    {
-        if ((m_flags & Flags::canonical) != Flags {}) {
-            return;
-        }
-        switch (m_kind) {
-        case Type_Kind::pack: {
-            COWEL_ASSERT(m_members.size() == 1);
-            *this = canonical_pack_of(std::move(m_members.front()));
-            break;
-        }
-        case Type_Kind::group: {
-            *this = canonical_group_of(std::move(m_members));
-            break;
-        }
-        case Type_Kind::union_: {
-            *this = canonical_union_of(std::move(m_members));
-            break;
-        }
-        default: {
-            break;
-        }
-        }
-        COWEL_DEBUG_ASSERT(is_canonical());
-        m_flags |= Flags::canonical;
+        return result;
     }
 
     [[nodiscard]]
