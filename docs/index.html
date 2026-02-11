@@ -1556,6 +1556,8 @@ h1 {
 <div class=toc-num data-level=4>6.2.8</div>
 <a href=#type-str><h4><tt-><h- data-h=kw_type>str</h-></tt-> — String</h4></a>
 <div class=toc-num data-level=4>6.2.9</div>
+<a href=#type-regex><h4><tt-><h- data-h=kw_type>regex</h-></tt-> — Regular expression</h4></a>
+<div class=toc-num data-level=4>6.2.10</div>
 <a href=#type-block><h4><tt-><h- data-h=kw_type>block</h-></tt-> — Block</h4></a>
 <div class=toc-num data-level=3>6.3</div>
 <a href=#compound-types><h3>Compound types</h3></a>
@@ -3167,30 +3169,36 @@ but should be expanded greatly in the near future.
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>str</h-><h- data-h=str_dlim>"</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>block</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p>The commas in a *type-list* act as separators and have no impact on the type.
+<p>The commas in a <g-term>type-list</g-term> act as separators and have no impact on the type.
 </p>
-<p>Note that the type `group(int)` is a unambigously a *prefix-type* where `int` is the only element in the *type-list*,
-not a `group` *type-prefix* followed by an `(int)` *optional-type*.
+<p>Note that the type <tt-><h- data-h=kw_type>group(int)</h-></tt-> is a unambigously a <g-term>prefix-type</g-term>
+where <tt-><h- data-h=kw_type>int</h-></tt-> is the only element in the <g-term>type-list</g-term>,
+not a <tt-><h- data-h=kw_type>group</h-></tt-> <g-term>type-prefix</g-term>
+followed by an <tt-><h- data-h=kw_type>(int)</h-></tt-> <g-term>optional-type</g-term>.
 </p>
-<p>Also note that in `group(int)?`, the `?` forms an optional group, not a group of an optional `int`.
+<p>Also note that in <tt-><h- data-h=kw_type>group(int)?</h-></tt->,
+the <tt-><h- data-h=kw_type>?</h-></tt-> forms an optional group,
+not a group of an optional <tt-><h- data-h=kw_type>int</h-></tt->.
 </p>
 <h3 id=general-principles><a class=para href=#general-principles></a>6.1. General principles</h3>
 
-<p>The process of converting any union type $U$ into its canonical form
-is called *canonicalization*.
-A type is in its *canonical* form if canonicalization leaves the type unchanged;
-otherwise it is in its *degenerate* form.
+<p>The process of converting any union type <math display=inline><mi>U</mi></math> into its canonical form
+is called <dfn>canonicalization</dfn>.
+A type is in its <dfn>canonical</dfn> form if canonicalization leaves the type unchanged;
+otherwise it is in its <dfn>degenerate</dfn> form.
 </p>
-<p>Two types are *equivalent* if they are identical after both are canonicalized.
+<p>Two types are <dfn>equivalent</dfn> if they are identical after both are canonicalized.
 Equivalent types are semantically the same, but may be spelled differently.
 </p>
-<p>For example, the degenerate union type `any | any` is equivalent to `any`.
-</p>
+<example-block><p><intro-></intro-> 
+The degenerate union type <tt-><h- data-h=kw_type>any | any</h-></tt-> is equivalent to <tt-><h- data-h=kw_type>any</h-></tt->.
+</p></example-block>
+
 <h3 id=basic-types><a class=para href=#basic-types></a>6.2. Basic types</h3>
 
 <p>Basic types are the most simple building block of the type system.
 They cannot be broken down any further, although some basic types
-(namely `any` and `nothing` are symbolic types).
+(namely <tt-><h- data-h=kw_type>any</h-></tt-> and <tt-><h- data-h=kw_type>nothing</h-></tt-> are symbolic types).
 </p>
 <p>Canonicalization has no effect for basic types;
 they are always in their canonical form.
@@ -3262,7 +3270,15 @@ A value of type <tt-><h- data-h=kw_type>str</h-></tt-> can be obtained using str
 such as <code>"abc"</code>.
 </p></note-block>
 
-<h4 id=type-block><a class=para href=#type-block></a>6.2.9. <tt-><h- data-h=kw_type>block</h-></tt-> — Block</h4>
+<h4 id=type-regex><a class=para href=#type-regex></a>6.2.9. <tt-><h- data-h=kw_type>regex</h-></tt-> — Regular expression</h4>
+
+<p><tt-><h- data-h=kw_type>regex</h-></tt-> is a regular expression.
+</p>
+<note-block><p><intro-></intro-> 
+A value of type <tt-><h- data-h=kw_type>regex</h-></tt-> can be obtained using <a href=#dir-cowel_regex>§8.14.10. <code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</a>.
+</p></note-block>
+
+<h4 id=type-block><a class=para href=#type-block></a>6.2.10. <tt-><h- data-h=kw_type>block</h-></tt-> — Block</h4>
 
 <p><tt-><h- data-h=kw_type>block</h-></tt-> stores markup elements.
 It is very similar to <tt-><h- data-h=kw_type>str</h-></tt->,

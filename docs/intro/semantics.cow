@@ -16,30 +16,36 @@ but should be expanded greatly in the near future.
 
 \codeblock(ebnf){\cowel_include_text("type_grammar.ebnf")}
 
-The commas in a *type-list* act as separators and have no impact on the type.
+The commas in a \gterm{type-list} act as separators and have no impact on the type.
 
-Note that the type `group(int)` is a unambigously a *prefix-type* where `int` is the only element in the *type-list*,
-not a `group` *type-prefix* followed by an `(int)` *optional-type*.
+Note that the type \cowdoc_type{group(int)} is a unambigously a \gterm{prefix-type}
+where \cowdoc_type{int} is the only element in the \gterm{type-list},
+not a \cowdoc_type{group} \gterm{type-prefix}
+followed by an \cowdoc_type{(int)} \gterm{optional-type}.
 
-Also note that in `group(int)?`, the `?` forms an optional group, not a group of an optional `int`.
+Also note that in \cowdoc_type{group(int)?},
+the \cowdoc_type{?} forms an optional group,
+not a group of an optional \cowdoc_type{int}.
 
 \h3{General principles}
 
-The process of converting any union type $U$ into its canonical form
-is called *canonicalization*.
-A type is in its *canonical* form if canonicalization leaves the type unchanged;
-otherwise it is in its *degenerate* form.
+The process of converting any union type \math{\mi{U}} into its canonical form
+is called \dfn{canonicalization}.
+A type is in its \dfn{canonical} form if canonicalization leaves the type unchanged;
+otherwise it is in its \dfn{degenerate} form.
 
-Two types are *equivalent* if they are identical after both are canonicalized.
+Two types are \dfn{equivalent} if they are identical after both are canonicalized.
 Equivalent types are semantically the same, but may be spelled differently.
 
-For example, the degenerate union type `any | any` is equivalent to `any`.
+\Bex{
+The degenerate union type \cowdoc_type{any | any} is equivalent to \cowdoc_type{any}.
+}
 
 \h3{Basic types}
 
 Basic types are the most simple building block of the type system.
 They cannot be broken down any further, although some basic types
-(namely `any` and `nothing` are symbolic types).
+(namely \cowdoc_type{any} and \cowdoc_type{nothing} are symbolic types).
 
 Canonicalization has no effect for basic types;
 they are always in their canonical form.
@@ -109,6 +115,14 @@ such as \cowdoc_c{1.0} or \cowdoc_c{10e+5}.
 \Bnote{
 A value of type \cowdoc_type{str} can be obtained using string literals
 such as \cowdoc_c{"abc"}.
+}
+
+\h4(id="type-regex"){\cowdoc_type{regex} \N{EM DASH} Regular expression}
+
+\cowdoc_type{regex} is a regular expression.
+
+\Bnote{
+A value of type \cowdoc_type{regex} can be obtained using \ref("#dir-cowel_regex").
 }
 
 \h4(id="type-block"){\cowdoc_type{block} \N{EM DASH} Block}
