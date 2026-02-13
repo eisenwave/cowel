@@ -44,19 +44,10 @@ char8_t token_kind_first_char(const Token_Kind kind)
 [[nodiscard]]
 std::size_t match_reserved_number(const std::u8string_view str)
 {
-    if (str.empty() || str.length() < 3) {
+    if (str.empty() || (str[0] != u8'.' && !is_ascii_digit(str[0]))) {
         return 0;
     }
-    std::size_t length = 0;
-    if (str[0] == u8'-') {
-        if (!is_ascii_digit(str[1])) {
-            return 0;
-        }
-        length += 2;
-    }
-    else if (str[0] == u8'.') {
-        length += 1;
-    }
+    std::size_t length = 1;
     while (length < str.length()) {
         const std::u8string_view remainder = str.substr(length);
         if (remainder.starts_with(u8"e+") || remainder.starts_with(u8"E+")
@@ -404,20 +395,25 @@ private:
                 consume_quoted_string();
                 continue;
             }
+            case u8'~': {
+                emit(Token_Kind::bitwise_not, 1);
+                advance_by(1);
+                continue;
+            }
+            case u8'!': {
+                emit(Token_Kind::logical_not, 1);
+                advance_by(1);
+                continue;
+            }
             case u8'-': {
-                const std::u8string_view remainder = peek_all();
-                const std::size_t length = 1 + match_identifier(remainder.substr(1));
-                const std::u8string_view token = remainder.substr(0, length);
-                if (token == u8"-infinity"sv) {
-                    emit(Token_Kind::negative_infinity, length);
-                    advance_by(length);
-                    continue;
-                }
-                if (remainder.length() >= 2 && is_ascii_digit(remainder[1])) {
-                    consume_numeric_literal();
-                    continue;
-                }
-                break;
+                emit(Token_Kind::minus, 1);
+                advance_by(1);
+                continue;
+            }
+            case u8'+': {
+                emit(Token_Kind::plus, 1);
+                advance_by(1);
+                continue;
             }
             case u8'0':
             case u8'1':
@@ -462,7 +458,7 @@ private:
 
     void consume_numeric_literal()
     {
-        COWEL_DEBUG_ASSERT(peek(u8'-') || peek(u8'.') || is_ascii_digit(peek()));
+        COWEL_DEBUG_ASSERT(peek(u8'.') || is_ascii_digit(peek()));
         const std::u8string_view remainder = peek_all();
 
         // Numeric limits are a subset of RESERVED-NUMBER-TOKEN.

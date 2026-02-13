@@ -14,6 +14,7 @@ namespace cowel {
 
 #define COWEL_TOKEN_KIND_ENUM_DATA(F)                                                              \
     F(binary_int, "BINARY-INT", '\0')                                                              \
+    F(bitwise_not, "BITWISE-NOT", '~')                                                             \
     F(block_comment, "BLOCK-COMMENT", '\\')                                                        \
     F(block_text, "BLOCK-TEXT", '\0')                                                              \
     F(brace_left, "BRACE-LEFT", '{')                                                               \
@@ -32,11 +33,13 @@ namespace cowel {
     F(identifier, "IDENTIFIER", '\0')                                                              \
     F(infinity, "INFINITY", 'i')                                                                   \
     F(line_comment, "LINE-COMMENT", '\\')                                                          \
-    F(negative_infinity, "NEGATIVE-INFINITY", '-')                                                 \
+    F(logical_not, "LOGICAL-NOT", '!')                                                             \
+    F(minus, "MINUS", '-')                                                                         \
     F(null, "NULL", 'n')                                                                           \
     F(octal_int, "OCTAL-INT", '\0')                                                                \
     F(parenthesis_left, "PARENTHESIS-LEFT", '(')                                                   \
     F(parenthesis_right, "PARENTHESIS-RIGHT", ')')                                                 \
+    F(plus, "PLUS", '+')                                                                           \
     F(quoted_string_text, "QUOTED-STRING-TEXT", '\0')                                              \
     F(reserved_escape, "RESERVED-ESCAPE", '\\')                                                    \
     F(reserved_number, "RESERVED-NUMBER", '\0')                                                    \

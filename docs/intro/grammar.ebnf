@@ -17,19 +17,29 @@ group
 group-member-list
   = group-member, { COMMA-TOKEN, group-member }, [ COMMA-TOKEN ];
 group-member
-  = member-name, EQUALS-TOKEN, member-value
-  | member-value
+  = member-name, EQUALS-TOKEN, expression
+  | expression
   | ELLIPSIS-TOKEN;
 member-name
   = identifier
   | quoted-string;
-member-value
-  = directive-call
-  | primary-value;
-directive-call
-  = unquoted-identifier, group, [ block ]
+expression
+  = prefix-expression;
+prefix-expression
+  = postfix-expression
+  | prefix-operator, prefix-expression;
+prefix-operator
+  = BITWISE-NOT-TOKEN
+  | LOGICAL-NOT-TOKEN
+  | PLUS-TOKEN
+  | MINUS-TOKEN;
+postfix-expression
+  = primary-expression
+  | directive-call-expression;
+directive-call-expression
+  = identifier, group, [ block ]
   | identifier, block;
-primary-value
+primary-expression
   = UNIT-TOKEN
   | NULL-TOKEN
   | bool-literal
@@ -40,7 +50,8 @@ primary-value
   | block
   | group;
 bool-literal
-  = TRUE-TOKEN | FALSE-TOKEN;
+  = TRUE-TOKEN
+  | FALSE-TOKEN;
 int-literal
   = BINARY-INT-TOKEN
   | OCTAL-INT-TOKEN
@@ -48,10 +59,9 @@ int-literal
   | HEXADECIMAL-INT-TOKEN;
 float-literal
   = INFINITY-TOKEN
-  | NEGATIVE-INFINITY-TOKEN
   | DECIMAL-FLOAT-TOKEN;
 unquoted-string
-  = IDENTIFIER-TOKEN;
+  = IDENTIFIER-TOKEN ? not followed by group or block ?;
 quoted-string
   = STRING-QUOTE-TOKEN, { quoted-string-markup-element }, STRING-QUOTE-TOKEN;
 quoted-string-markup-element

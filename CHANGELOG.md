@@ -3,6 +3,8 @@
 ## **[v0.8.0](https://github.com/eisenwave/cowel/releases/tag/v0.8.0)** (2026-??-??)
 
 - change `null` from erroring when spliced to producing the string `"null"`
+- change numeric literals not to include a leading `-`
+- add `~`, `!`, `+`, and `-` unary prefix operators
 - add the following string and regular expression directives (#183, #221):
   - `cowel_str_contains`
   - `cowel_str_find`

@@ -1,0 +1,9 @@
+\test_input{
+\cowel_to_str(!true)
+\cowel_to_str(!false)
+}
+
+\test_output{
+false
+true
+}

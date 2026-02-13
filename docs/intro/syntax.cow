@@ -313,10 +313,13 @@ GROUP-CONTENT
   | HEXADECIMAL-INT-TOKEN
   | DECIMAL-FLOAT-TOKEN
   | INFINITY-TOKEN
-  | NEGATIVE-INFINITY-TOKEN
   | EQUALS-TOKEN
   | COMMA-TOKEN
   | ELLIPSIS-TOKEN
+  | BITWISE-NOT-TOKEN
+  | LOGICAL-NOT-TOKEN
+  | PLUS-TOKEN
+  | MINUS-TOKEN
   | UNIT-TOKEN
   | NULL-TOKEN
   | TRUE-TOKEN
@@ -353,13 +356,13 @@ int-literal
   | DECIMAL-INT-TOKEN
   | HEXADECIMAL-INT-TOKEN;
 BINARY-INT-TOKEN
-  = [ "-" ], "0b", BINARY-DIGIT, { BINARY-DIGIT };
+  = "0b", BINARY-DIGIT, { BINARY-DIGIT };
 OCTAL-INT-TOKEN
-  = [ "-" ], "0o", OCTAL-DIGIT, { OCTAL-DIGIT };
+  = "0o", OCTAL-DIGIT, { OCTAL-DIGIT };
 DECIMAL-INT-TOKEN
-  = [ "-" ], DIGIT, { DIGIT };
+  = DIGIT, { DIGIT };
 HEXADECIMAL-INT-TOKEN
-  = [ "-" ], "0x", HEXADECIMAL-DIGIT, { HEXADECIMAL-DIGIT };
+  = "0x", HEXADECIMAL-DIGIT, { HEXADECIMAL-DIGIT };
 BINARY-DIGIT
   = "0" | "1";
 OCTAL-DIGIT
@@ -389,11 +392,10 @@ The \gterm{HEXADECIMAL-DIGIT}s \tt{a..f} and \tt{A..F} both represent
 digits of value \math{\mn{10}}..\math{\mn{15}}.
 
 Leading zeros are ignored.
-The value is negative if the leading \cowdoc_cp(0x2D) is present.
 
 \Bex{
-The \gterm{int-literal} \cowdoc_c{-0123} represents the integer value
-\math{\mrow{\mo(form=prefix){−}\mn{123}}}.
+The \gterm{int-literal} \cowdoc_c{0123} represents the integer value
+\math{\mrow\mn{123}}.
 
 The \gterm{BINARY-INT-TOKEN} \cowdoc_c{0b11111111},
 the \gterm{OCTAL-INT-TOKEN} \cowdoc_c{0o377},
@@ -402,23 +404,27 @@ the \gterm{HEXADECIMAL-INT-TOKEN} \cowdoc_c{0xff}
 all represent the value \math{\mn{255}}.
 }
 
+\Btip{
+Negative numbers can be be written by prepending a \cowdoc_cp(0x2D),
+such as in \cowdoc_c{-1.0}.
+This is an application of the unary minus operator to a \gterm{float-literal};
+the minus sign is not part of it.
+}
+
 \h4(id="float-literal"){\gterm{float-literal} \N{EM DASH} Floating-point literal}
 
 \codeblock(ebnf){
 float-literal
   = INFINITY-TOKEN
-  | NEGATIVE-INFINITY-TOKEN
   | DECIMAL-FLOAT-TOKEN;
 INFINITY-TOKEN
   = "infinity" ? not followed by IDENTIFIER-CHAR ?;
-NEGATIVE-INFINITY-TOKEN
-  = "-infinity;" ? not followed by IDENTIFIER-CHAR ?;
 DECIMAL-FLOAT-TOKEN
   = DECIMAL-FLOAT ? not followed by IDENTIFIER-CHAR ?;
 DECIMAL-FLOAT
-  = [ "-" ], DIGIT, { DIGIT }, ".", { DIGIT }, [ EXPONENT ]
-  | [ "-" ], ".", DIGIT, { DIGIT }, [ EXPONENT ]
-  | [ "-" ], DIGIT, { DIGIT }, EXPONENT;
+  = DIGIT, { DIGIT }, ".", { DIGIT }, [ EXPONENT ]
+  | ".", DIGIT, { DIGIT }, [ EXPONENT ]
+  | DIGIT, { DIGIT }, EXPONENT;
 EXPONENT
   = ("e" | "E"), [ "+" | "-" ], DIGIT, { DIGIT };
 }
@@ -426,15 +432,14 @@ EXPONENT
 A \gterm{float-literal} represents a value of type \cowdoc_type{float}
 (\ref("#type-float")).
 
-The value of '\tt{-infinity}' is negative infinity, and
-the value of '\tt{infinity}' is positive infinity.
+The value a \gterm{float-literal} that is an \gterm{INFINITY-TOKEN} is positive infinity.
 
 A \gterm{DECIMAL-FLOAT-TOKEN} consists of several parts:
 \ul{
   \li{
-    An \dfn{integral part}, either matching a \gterm{int-literal}
-    or consisting of only a leading \cowdoc_cp(0x2D),
-    which is equivalent to '\tt{-0}'.
+    An \dfn{integral part}, either matching a \gterm{int-literal},
+    or if there are no digits before '\tt{.}',
+    which is treated as '\tt{0.}'.
   }
   \li{
     The radix point \cowdoc_cp(0x2E).
@@ -452,9 +457,7 @@ The value of a \gterm{DECIMAL-FLOAT-TOKEN} is determined as follows:
 
 \ol{
   \li{
-    Let \math{\mi{s}} be -1 if the leading \cowdoc_cp(0x2D) is present,
-    otherwise 1;
-    let \math{\mi{k}} be the integer value of the integral part
+    Let \math{\mi{k}} be the integer value of the integral part
     (determined as for a \gterm{int-literal});
     let \math{\mi{f}} be the the integer value of the fractional part;
     let \math{\mi{p}} be the amount of digits including leading zeros of the fractional part;
@@ -463,8 +466,6 @@ The value of a \gterm{DECIMAL-FLOAT-TOKEN} is determined as follows:
   \li{
     Let the \dfn{scaled value} of the \gterm{DECIMAL-FLOAT-TOKEN} be
     \mathblock{\mrow{
-      \mi{s}
-      \mo{×}
       \mo{\N{LEFT PARENTHESIS}}
       \mi{k}
       \mo{+}
@@ -484,14 +485,19 @@ The value of a \gterm{DECIMAL-FLOAT-TOKEN} is determined as follows:
 
 \Bex{
 \ul{
+  \li{\cowdoc_c{0.} exactly represents positive zero.}
   \li{\cowdoc_c{1.0} exactly represents the value 1.0.}
   \li{\cowdoc_c{.1} is rounded to a value nearest to 0.1.}
   \li{\cowdoc_c{1e1000000} is rounded to positive infinity.}
-  \li{\cowdoc_c{-1e1000000} is rounded to negative infinity.}
   \li{\cowdoc_c{1e-1000000} is rounded to positive zero.}
-  \li{\cowdoc_c{-1e-1000000} is rounded to negative zero.}
-  \li{\cowdoc_c{-0.0} exactly represents a negative zero.}
 }
+}
+
+\Btip{
+Negative numbers can be be written by prepending a \cowdoc_cp(0x2D),
+such as in \cowdoc_c{-1.0}.
+This is an application of the unary minus operator to a \gterm{float-literal};
+the minus sign is not part of it.
 }
 
 \:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

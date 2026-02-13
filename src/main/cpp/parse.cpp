@@ -306,7 +306,7 @@ private:
         consume_blank_sequence();
 
         if (push_type != CST_Instruction_Kind::push_ellipsis_argument) {
-            if (!expect_member_value()) {
+            if (!expect_expression()) {
                 error(m_tokens[m_pos].location, u8"Invalid group member value."sv);
                 skip_to_next_group_member();
                 return;
@@ -389,7 +389,7 @@ private:
         return false;
     }
 
-    bool expect_member_value()
+    bool expect_expression()
     {
         const Token* const next = peek();
         if (!next) {
@@ -397,6 +397,34 @@ private:
         }
 
         switch (next->kind) {
+        case Token_Kind::bitwise_not: {
+            return expect_prefix_expression(
+                Token_Kind::bitwise_not, //
+                CST_Instruction_Kind::push_expr_bitwise_not,
+                CST_Instruction_Kind::pop_expr_bitwise_not
+            );
+        }
+        case Token_Kind::logical_not: {
+            return expect_prefix_expression(
+                Token_Kind::logical_not, //
+                CST_Instruction_Kind::push_expr_logical_not,
+                CST_Instruction_Kind::pop_expr_logical_not
+            );
+        }
+        case Token_Kind::plus: {
+            return expect_prefix_expression(
+                Token_Kind::plus, //
+                CST_Instruction_Kind::push_expr_unary_plus,
+                CST_Instruction_Kind::pop_expr_unary_plus
+            );
+        }
+        case Token_Kind::minus: {
+            return expect_prefix_expression(
+                Token_Kind::minus, //
+                CST_Instruction_Kind::push_expr_unary_minus,
+                CST_Instruction_Kind::pop_expr_unary_minus
+            );
+        }
         case Token_Kind::string_quote: {
             consume_quoted(
                 CST_Instruction_Kind::push_quoted_string, CST_Instruction_Kind::pop_quoted_string
@@ -431,10 +459,6 @@ private:
             emit_and_advance_by_one(CST_Instruction_Kind::keyword_infinity);
             return true;
         }
-        case Token_Kind::negative_infinity: {
-            emit_and_advance_by_one(CST_Instruction_Kind::keyword_neg_infinity);
-            return true;
-        }
         case Token_Kind::binary_int: {
             emit_and_advance_by_one(CST_Instruction_Kind::binary_int);
             return true;
@@ -456,7 +480,7 @@ private:
             return true;
         }
         case Token_Kind::identifier: {
-            if (expect_directive_call()) {
+            if (expect_directive_call_expression()) {
                 return true;
             }
             emit_and_advance_by_one(CST_Instruction_Kind::unquoted_string);
@@ -483,7 +507,35 @@ private:
         COWEL_ASSERT_UNREACHABLE(u8"Unexpected token in group.");
     }
 
-    bool expect_directive_call()
+    bool expect_prefix_expression(
+        const Token_Kind op,
+        const CST_Instruction_Kind push,
+        const CST_Instruction_Kind pop
+    )
+    {
+        Scoped_Attempt a = attempt();
+
+        const Token* const next = expect(op);
+        if (!next) {
+            return false;
+        }
+
+        m_out.push_back({ push });
+        consume_blank_sequence();
+        // Prefix expressions currently have the lowest precedence,
+        // so matching an expression here is synonymous with recursing into parsing
+        // another prefix expression.
+        // However, this strategy will need to be revised when lower-precedence
+        // expressions are added in the future.
+        if (!expect_expression()) {
+            return false;
+        }
+        m_out.push_back({ pop });
+        a.commit();
+        return true;
+    }
+
+    bool expect_directive_call_expression()
     {
         Scoped_Attempt a = attempt();
 
@@ -492,7 +544,7 @@ private:
             return false;
         }
 
-        m_out.push_back({ CST_Instruction_Kind::push_directive_call });
+        m_out.push_back({ CST_Instruction_Kind::push_expr_directive_call });
 
         consume_blank_sequence();
         bool has_group = false;
@@ -512,7 +564,7 @@ private:
             return false;
         }
 
-        m_out.push_back({ CST_Instruction_Kind::pop_directive_call });
+        m_out.push_back({ CST_Instruction_Kind::pop_expr_directive_call });
 
         a.commit();
         return true;
@@ -596,7 +648,6 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(keyword_null);
         COWEL_ENUM_STRING_CASE8(keyword_unit);
         COWEL_ENUM_STRING_CASE8(keyword_infinity);
-        COWEL_ENUM_STRING_CASE8(keyword_neg_infinity);
         COWEL_ENUM_STRING_CASE8(line_comment);
         COWEL_ENUM_STRING_CASE8(block_comment);
         COWEL_ENUM_STRING_CASE8(ellipsis);
@@ -606,8 +657,16 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_document);
         COWEL_ENUM_STRING_CASE8(push_directive_splice);
         COWEL_ENUM_STRING_CASE8(pop_directive_splice);
-        COWEL_ENUM_STRING_CASE8(push_directive_call);
-        COWEL_ENUM_STRING_CASE8(pop_directive_call);
+        COWEL_ENUM_STRING_CASE8(push_expr_bitwise_not);
+        COWEL_ENUM_STRING_CASE8(pop_expr_bitwise_not);
+        COWEL_ENUM_STRING_CASE8(push_expr_logical_not);
+        COWEL_ENUM_STRING_CASE8(pop_expr_logical_not);
+        COWEL_ENUM_STRING_CASE8(push_expr_unary_plus);
+        COWEL_ENUM_STRING_CASE8(pop_expr_unary_plus);
+        COWEL_ENUM_STRING_CASE8(push_expr_unary_minus);
+        COWEL_ENUM_STRING_CASE8(pop_expr_unary_minus);
+        COWEL_ENUM_STRING_CASE8(push_expr_directive_call);
+        COWEL_ENUM_STRING_CASE8(pop_expr_directive_call);
         COWEL_ENUM_STRING_CASE8(push_group);
         COWEL_ENUM_STRING_CASE8(pop_group);
         COWEL_ENUM_STRING_CASE8(push_named_member);
@@ -643,14 +702,17 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case keyword_null: return Token_Kind::null;
     case keyword_unit: return Token_Kind::unit;
     case keyword_infinity: return Token_Kind::infinity;
-    case keyword_neg_infinity: return Token_Kind::negative_infinity;
     case line_comment: return Token_Kind::line_comment;
     case block_comment: return Token_Kind::block_comment;
     case ellipsis: return Token_Kind::ellipsis;
     case equals: return Token_Kind::equals;
     case comma: return Token_Kind::comma;
     case push_directive_splice: return Token_Kind::directive_splice_name;
-    case push_directive_call: return Token_Kind::identifier;
+    case push_expr_bitwise_not: return Token_Kind::bitwise_not;
+    case push_expr_logical_not: return Token_Kind::logical_not;
+    case push_expr_unary_minus: return Token_Kind::minus;
+    case push_expr_unary_plus: return Token_Kind::plus;
+    case push_expr_directive_call: return Token_Kind::identifier;
     case push_group: return Token_Kind::parenthesis_left;
     case pop_group: return Token_Kind::parenthesis_right;
     case push_block: return Token_Kind::brace_left;
@@ -671,7 +733,11 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case push_ellipsis_argument:
     case pop_ellipsis_argument:
     case pop_directive_splice:
-    case pop_directive_call:
+    case pop_expr_bitwise_not:
+    case pop_expr_logical_not:
+    case pop_expr_unary_minus:
+    case pop_expr_unary_plus:
+    case pop_expr_directive_call:
         //
         return Token_Kind::error;
     }
@@ -696,14 +762,17 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case keyword_null:
     case keyword_unit:
     case keyword_infinity:
-    case keyword_neg_infinity:
     case line_comment:
     case block_comment:
     case ellipsis:
     case equals:
     case comma:
     case push_directive_splice:
-    case push_directive_call:
+    case push_expr_bitwise_not:
+    case push_expr_logical_not:
+    case push_expr_unary_minus:
+    case push_expr_unary_plus:
+    case push_expr_directive_call:
     case push_group:
     case pop_group:
     case push_block:
@@ -723,7 +792,11 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case push_ellipsis_argument:
     case pop_ellipsis_argument:
     case pop_directive_splice:
-    case pop_directive_call: return false;
+    case pop_expr_bitwise_not:
+    case pop_expr_logical_not:
+    case pop_expr_unary_minus:
+    case pop_expr_unary_plus:
+    case pop_expr_directive_call: return false;
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid instruction.");
 }

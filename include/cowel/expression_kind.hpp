@@ -14,6 +14,13 @@ enum struct Comparison_Expression_Kind : Default_Underlying {
     ge,
 };
 
+enum struct Unary_Expression_Kind : Default_Underlying {
+    bitwise_not,
+    logical_not,
+    plus,
+    minus,
+};
+
 };
 
 #endif

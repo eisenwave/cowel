@@ -143,7 +143,7 @@ Block_Directive_Behavior::evaluate(const Invocation& call, Context&) const
 }
 
 [[nodiscard]]
-const Type& get_static_type(const ast::Member_Value& v, Context& context)
+const Type& get_static_type(const ast::Expression& v, Context& context)
 {
     if (const auto* const d = v.try_as_directive()) {
         return get_static_type(*d, context);
@@ -201,6 +201,21 @@ const Directive_Behavior* Context::find_directive(std::u8string_view name)
         return macro;
     }
     return m_builtin_name_resolver(name);
+}
+
+bool Context::emplace_macro(
+    std::pmr::u8string&& name,
+    const std::span<const ast::Markup_Element> definition
+)
+{
+    // TODO: once available, upgrade this to std::from_range construction
+    std::pmr::vector<ast::Markup_Element> body {
+        definition.begin(),
+        definition.end(),
+        m_macros.get_allocator(),
+    };
+    const auto [_, success] = m_macros.try_emplace(std::move(name), std::move(body));
+    return success;
 }
 
 std::span<const ast::Markup_Element>
@@ -330,9 +345,9 @@ Processing_Status splice_to_plaintext(
 }
 
 [[nodiscard]]
-Processing_Status splice_value(
+Processing_Status splice_expression(
     Content_Policy& out,
-    const ast::Member_Value& value,
+    const ast::Expression& value,
     Frame_Index frame,
     Context& context
 )
@@ -561,9 +576,9 @@ Result<Value, Processing_Status> splice_value_to_string(
     return Value::string(as_u8string_view(*text), String_Kind::unknown);
 }
 
-Processing_Status splice_value_to_plaintext(
+Processing_Status splice_expression_to_plaintext(
     std::pmr::vector<char8_t>& out,
-    const ast::Member_Value& value,
+    const ast::Expression& value,
     Frame_Index frame,
     Context& context
 )
@@ -572,93 +587,12 @@ Processing_Status splice_value_to_plaintext(
 
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
     Text_Only_Policy policy { sink };
-    return splice_value(policy, value, frame, context);
-}
-
-[[nodiscard]]
-Plaintext_Result splice_value_to_plaintext_optimistic(
-    std::pmr::vector<char8_t>& buffer,
-    const ast::Member_Value& value,
-    Frame_Index frame,
-    Context& context
-)
-{
-    const auto visitor
-        = [&](const auto& v) { return splice_to_plaintext_optimistic(buffer, v, frame, context); };
-    return std::visit(visitor, value);
-}
-
-Plaintext_Result splice_to_plaintext_optimistic(
-    std::pmr::vector<char8_t>& buffer,
-    const ast::Primary& value,
-    Frame_Index frame,
-    Context& context
-)
-{
-    COWEL_ASSERT(buffer.empty());
-    switch (value.get_kind()) {
-    case ast::Primary_Kind::unit_literal: {
-        return { Processing_Status::ok, {} };
-    }
-
-    case ast::Primary_Kind::null_literal:
-    case ast::Primary_Kind::bool_literal:
-    // FIXME: simply taking the original source representation is wrong for int and float
-    case ast::Primary_Kind::int_literal:
-    case ast::Primary_Kind::decimal_float_literal:
-    case ast::Primary_Kind::infinity:
-    case ast::Primary_Kind::unquoted_string: {
-        return { Processing_Status::ok, value.get_source() };
-    }
-
-    case ast::Primary_Kind::quoted_string:
-    case ast::Primary_Kind::block: {
-        if (value.get_elements().empty()) {
-            return { Processing_Status::ok, u8""sv };
-        }
-        if (value.get_elements().size() == 1) {
-            if (const auto* const text = value.get_elements().front().try_as_primary()) {
-                if (text->get_kind() == ast::Primary_Kind::text) {
-                    return { Processing_Status::ok, text->get_source() };
-                }
-            }
-        }
-        const Processing_Status status
-            = splice_to_plaintext(buffer, value.get_elements(), frame, context);
-        return { status, as_u8string_view(buffer) };
-    }
-
-    case ast::Primary_Kind::text:
-    case ast::Primary_Kind::comment:
-    case ast::Primary_Kind::escape: {
-        COWEL_ASSERT_UNREACHABLE(u8"Conversion from markup element to text requested.");
-    }
-    case ast::Primary_Kind::group: {
-        COWEL_ASSERT_UNREACHABLE(u8"Conversion from group to text requested.");
-    }
-    }
-    COWEL_ASSERT_UNREACHABLE(u8"Invalid primary kind.");
-}
-
-Plaintext_Result splice_to_plaintext_optimistic(
-    std::pmr::vector<char8_t>& buffer,
-    const ast::Directive& directive,
-    Frame_Index frame,
-    Context& context
-)
-{
-    // TODO: There's nothing actually optimistic about this.
-    //       However, we could special-case certain directive behaviors
-    //       which are known to produce short string constants.
-    Capturing_Ref_Text_Sink sink { buffer, Output_Language::text };
-    Text_Only_Policy out { sink };
-    const Processing_Status status = splice_directive_invocation(out, directive, frame, context);
-    return { .status = status, .string = as_u8string_view(buffer) };
+    return splice_expression(policy, value, frame, context);
 }
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate_member_value(const ast::Member_Value& value, Frame_Index frame, Context& context)
+evaluate_expression(const ast::Expression& value, Frame_Index frame, Context& context)
 {
     const auto visitor = [&](const auto& v) { return evaluate(v, frame, context); };
     return std::visit(visitor, value);
@@ -686,6 +620,115 @@ evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
     call.call_frame = scope.get_index();
     return behavior->evaluate(call, context);
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status> evaluate(
+    const ast::Unary_Expression& expression, //
+    const Frame_Index frame,
+    Context& context
+)
+{
+    Result<Value, Processing_Status> result
+        = evaluate_expression(expression.get_operand(), frame, context);
+    if (!result) {
+        return result;
+    }
+    return evaluate_unary(expression.get_kind(), *result, expression.get_source_span(), context);
+}
+
+Result<Value, Processing_Status> evaluate_unary(
+    Unary_Expression_Kind kind, //
+    const Value& value,
+    const File_Source_Span& error_location,
+    Context& context
+)
+{
+    static constexpr Type numeric_types[] { Type::integer, Type::floating };
+    static constexpr auto numeric_type = Type::union_of(numeric_types);
+    static_assert(numeric_type.is_canonical());
+
+    switch (kind) {
+    case Unary_Expression_Kind::bitwise_not: {
+        if (!value.is_int()) {
+            context.try_error(
+                diagnostic::type_mismatch, error_location,
+                joined_char_sequence(
+                    {
+                        u8"Bitwise negation requires an operand of type "sv,
+                        Type::integer.get_display_name(),
+                        u8", but got "sv,
+                        value.get_type().get_display_name(),
+                        u8"."sv,
+                    }
+                )
+            );
+            return Processing_Status::error;
+        }
+        return Value::integer(~value.as_integer());
+    }
+
+    case Unary_Expression_Kind::logical_not: {
+        if (!value.is_bool()) {
+            context.try_error(
+                diagnostic::type_mismatch, error_location,
+                joined_char_sequence(
+                    {
+                        u8"Logical negation requires an operand of type "sv,
+                        Type::boolean.get_display_name(),
+                        u8", but got "sv,
+                        value.get_type().get_display_name(),
+                        u8"."sv,
+                    }
+                )
+            );
+            return Processing_Status::error;
+        }
+        return Value::boolean(!value.as_boolean());
+    }
+
+    case Unary_Expression_Kind::plus: {
+        if (value.is_int() || value.is_float()) {
+            return value;
+        }
+        context.try_error(
+            diagnostic::type_mismatch, error_location,
+            joined_char_sequence(
+                {
+                    u8"Unary plus requires an operand of type "sv,
+                    numeric_type.get_display_name(),
+                    u8", but got "sv,
+                    value.get_type().get_display_name(),
+                    u8"."sv,
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+
+    case Unary_Expression_Kind::minus: {
+        if (value.is_int()) {
+            return Value::integer(-value.as_integer());
+        }
+        if (value.is_float()) {
+            return Value::floating(-value.as_float());
+        }
+        context.try_error(
+            diagnostic::type_mismatch, error_location,
+            joined_char_sequence(
+                {
+                    u8"Unary minus requires an operand of type "sv,
+                    numeric_type.get_display_name(),
+                    u8", but got "sv,
+                    value.get_type().get_display_name(),
+                    u8"."sv,
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid expression kind.");
 }
 
 namespace {
@@ -723,7 +766,7 @@ struct Evaluate_Member_Values {
                     return name.error();
                 }
                 Result<Value, Processing_Status> value
-                    = evaluate_member_value(m.get_value(), frame, context);
+                    = evaluate_expression(m.get_value(), frame, context);
                 if (!value) {
                     COWEL_DEBUG_ASSERT(value.error() != Processing_Status::ok);
                     return value.error();
@@ -804,13 +847,13 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         return Value::static_string(value.get_source(), value.get_string_kind());
     }
     case ast::Primary_Kind::quoted_string: {
-        std::pmr::vector<char8_t> text { context.get_transient_memory() };
-        const Plaintext_Result result = splice_to_plaintext_optimistic(text, value, frame, context);
-        if (result.status != Processing_Status::ok) {
-            return result.status;
+        Vector_Text_Sink text { Output_Language::text, context.get_transient_memory() };
+        Text_Only_Policy policy { text };
+        const Processing_Status result = splice_primary(policy, value, frame, context);
+        if (result != Processing_Status::ok) {
+            return result;
         }
-        return text.empty() ? Value::static_string(result.string, value.get_string_kind())
-                            : Value::string(as_u8string_view(text), value.get_string_kind());
+        return Value::string(as_u8string_view(*text), value.get_string_kind());
     }
     case ast::Primary_Kind::block: {
         return Value::block(value, frame);
@@ -984,7 +1027,7 @@ Processing_Status named_argument_to_attribute(
         return name.error();
     }
     const Result<Value, Processing_Status> value
-        = evaluate_member_value(a.get_value(), frame, context);
+        = evaluate_expression(a.get_value(), frame, context);
     if (!value) {
         return name.error();
     }

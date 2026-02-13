@@ -353,7 +353,9 @@ is done as follows:
         The shortest representation is chosen so that
         when a trailing '\tt{.}' is added (if need be),
         when the representation is interpreted as a
-        \gterm{float-literal}, the same rounded value is recovered.
+        \gterm{float-literal} optionally preceded by a \gterm{MINUS-TOKEN}
+        and then evaluated,
+        the same rounded value is recovered.
         Representations with empty integral or fractional part
         adjacent to '\tt{.}' are not eligible.
         Only exponents starting with '\tt{e+}' or '\tt{e-}' are eligible.

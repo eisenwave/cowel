@@ -8,7 +8,7 @@
 namespace cowel {
 
 Processing_Status Lazy_Value_Of_Type_Matcher::match_value(
-    const ast::Member_Value& argument,
+    const ast::Expression& argument,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
@@ -39,7 +39,7 @@ Processing_Status Lazy_Value_Of_Type_Matcher::match_value(
 }
 
 Processing_Status Value_Of_Type_Matcher::match_value(
-    const ast::Member_Value& argument,
+    const ast::Expression& argument,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
@@ -47,7 +47,7 @@ Processing_Status Value_Of_Type_Matcher::match_value(
 {
     COWEL_DEBUG_ASSERT(argument.is_value());
 
-    Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    Result<Value, Processing_Status> val = evaluate_expression(argument, frame, context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -72,7 +72,7 @@ Processing_Status Value_Of_Type_Matcher::match_value(
 }
 
 Processing_Status Textual_Matcher::match_value(
-    const ast::Member_Value& argument,
+    const ast::Expression& argument,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
@@ -97,17 +97,18 @@ Processing_Status Textual_Matcher::match_value(
     }
 
     std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
-    const auto [status, string]
-        = splice_value_to_plaintext_optimistic(buffer, argument, frame, context);
+    const Processing_Status status
+        = splice_expression_to_plaintext(buffer, argument, frame, context);
     if (status != Processing_Status::ok) {
         return status;
     }
-    return match_string(argument, string, context, on_fail.emit) ? Processing_Status::ok
-                                                                 : on_fail.status;
+    return match_string(argument, as_u8string_view(buffer), context, on_fail.emit)
+        ? Processing_Status::ok
+        : on_fail.status;
 }
 
 Processing_Status Spliceable_To_String_Matcher::match_value(
-    const ast::Member_Value& argument, //
+    const ast::Expression& argument, //
     Frame_Index frame, //
     Context& context, //
     const Match_Fail_Options& on_fail
@@ -131,23 +132,19 @@ Processing_Status Spliceable_To_String_Matcher::match_value(
         return on_fail.status;
     }
 
-    std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
-    const auto [status, string]
-        = splice_value_to_plaintext_optimistic(buffer, argument, frame, context);
+    m_data.clear();
+    const Processing_Status status
+        = splice_expression_to_plaintext(m_data, argument, frame, context);
     if (status != Processing_Status::ok) {
+        m_data.clear();
         return status;
     }
-    if (buffer.empty()) {
-        m_value = { string, argument.get_source_span() };
-        return Processing_Status::ok;
-    }
-    m_data = std::move(buffer);
     m_value = { as_u8string_view(m_data), argument.get_source_span() };
     return Processing_Status::ok;
 }
 
 Processing_Status String_Matcher::match_value(
-    const ast::Member_Value& argument, //
+    const ast::Expression& argument, //
     Frame_Index frame, //
     Context& context, //
     const Match_Fail_Options& on_fail
@@ -156,7 +153,7 @@ Processing_Status String_Matcher::match_value(
     COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
     COWEL_DEBUG_ASSERT(argument.is_spliceable_value());
 
-    const Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    const Result<Value, Processing_Status> val = evaluate_expression(argument, frame, context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -173,7 +170,7 @@ Processing_Status String_Matcher::match_value(
 }
 
 Processing_Status Boolean_Matcher::match_value(
-    const ast::Member_Value& argument,
+    const ast::Expression& argument,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
@@ -181,7 +178,7 @@ Processing_Status Boolean_Matcher::match_value(
 {
     COWEL_DEBUG_ASSERT(argument.is_spliceable_value());
 
-    const Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    const Result<Value, Processing_Status> val = evaluate_expression(argument, frame, context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -197,7 +194,7 @@ Processing_Status Boolean_Matcher::match_value(
 }
 
 Processing_Status Integer_Matcher::match_value(
-    const ast::Member_Value& argument,
+    const ast::Expression& argument,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
@@ -205,7 +202,7 @@ Processing_Status Integer_Matcher::match_value(
 {
     COWEL_DEBUG_ASSERT(argument.is_spliceable_value());
 
-    Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    Result<Value, Processing_Status> val = evaluate_expression(argument, frame, context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -219,7 +216,7 @@ Processing_Status Integer_Matcher::match_value(
 }
 
 Processing_Status Float_Matcher::match_value(
-    const ast::Member_Value& argument,
+    const ast::Expression& argument,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
@@ -227,7 +224,7 @@ Processing_Status Float_Matcher::match_value(
 {
     COWEL_DEBUG_ASSERT(argument.is_spliceable_value());
 
-    const Result<Value, Processing_Status> val = evaluate_member_value(argument, frame, context);
+    const Result<Value, Processing_Status> val = evaluate_expression(argument, frame, context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -241,7 +238,7 @@ Processing_Status Float_Matcher::match_value(
 }
 
 bool Sorted_Options_Matcher::match_string(
-    const ast::Member_Value& argument,
+    const ast::Expression& argument,
     std::u8string_view str,
     Context& context,
     Fail_Callback on_fail
@@ -329,7 +326,7 @@ Processing_Status Empty_Pack_Matcher::match_pack(
 }
 
 Processing_Status Group_Matcher::match_value(
-    const ast::Member_Value& argument,
+    const ast::Expression& argument,
     Frame_Index frame,
     Context& context,
     const Match_Fail_Options& on_fail
@@ -394,7 +391,7 @@ Processing_Status Pack_Usual_Matcher::do_match(
                 return on_fail.status;
             }
             argument_indices_by_parameter[arg_index + cumulative_arg_index] = int(arg_index);
-            const ast::Member_Value& value = member.get_value();
+            const ast::Expression& value = member.get_value();
             const auto member_status = m_member_matchers[arg_index + cumulative_arg_index]
                                            ->get_value_matcher()
                                            .match_value(value, frame, context, on_fail);
@@ -550,7 +547,7 @@ Processing_Status Group_Pack_Value_Matcher::match_pack(
 
         case ast::Member_Kind::positional: {
             Result<Value, Processing_Status> member_result
-                = evaluate_member_value(member.get_value(), frame, context);
+                = evaluate_expression(member.get_value(), frame, context);
             if (!member_result) {
                 return status_max(member_result.error(), on_fail.status);
             }

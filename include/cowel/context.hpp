@@ -418,14 +418,7 @@ public:
     }
 
     [[nodiscard]]
-    bool emplace_macro(std::pmr::u8string&& name, std::span<const ast::Markup_Element> definition)
-    {
-        // TODO: once available, upgrade this to std::from_range construction
-        std::pmr::vector<ast::Markup_Element> body { definition.begin(), definition.end(),
-                                                     m_macros.get_allocator() };
-        const auto [_, success] = m_macros.try_emplace(std::move(name), std::move(body));
-        return success;
-    }
+    bool emplace_macro(std::pmr::u8string&& name, std::span<const ast::Markup_Element> definition);
 };
 
 } // namespace cowel

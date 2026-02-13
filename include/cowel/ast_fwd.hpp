@@ -4,7 +4,7 @@
 namespace cowel::ast {
 
 struct Markup_Element;
-struct Member_Value;
+struct Expression;
 struct Directive;
 struct Group_Member;
 struct Primary;

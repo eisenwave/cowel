@@ -206,10 +206,10 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
     return Processing_Status::ok;
 }
 
-Result<const ast::Member_Value*, Processing_Status>
+Result<const ast::Expression*, Processing_Status>
 Put_Behavior::resolve(const Invocation& call, Context& context) const
 {
-    constexpr const ast::Member_Value* found_content_result {};
+    constexpr const ast::Expression* found_content_result {};
 
     if (call.content_frame == Frame_Index::root) {
         context.try_error(
@@ -338,7 +338,7 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
 Result<Value, Processing_Status>
 Put_Behavior::evaluate(const Invocation& call, Context& context) const
 {
-    const Result<const ast::Member_Value*, Processing_Status> result = resolve(call, context);
+    const Result<const ast::Expression*, Processing_Status> result = resolve(call, context);
     if (!result) {
         return result.error();
     }
@@ -353,14 +353,14 @@ Put_Behavior::evaluate(const Invocation& call, Context& context) const
         COWEL_ASSERT(target_invocation.content);
         return Value::block(*target_invocation.content, target_invocation.content_frame);
     }
-    return evaluate_member_value(**result, target_invocation.content_frame, context);
+    return evaluate_expression(**result, target_invocation.content_frame, context);
 }
 
 Processing_Status
 Put_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     // FIXME: Maybe this function should just go away
-    const Result<const ast::Member_Value*, Processing_Status> result = resolve(call, context);
+    const Result<const ast::Expression*, Processing_Status> result = resolve(call, context);
     if (!result) {
         return try_generate_error(out, call, context, result.error());
     }
@@ -376,7 +376,7 @@ Put_Behavior::splice(Content_Policy& out, const Invocation& call, Context& conte
     }
     // FIXME: This may not be a spliceable value,
     //        such as when a group was found.
-    return splice_value(out, **result, target_invocation.content_frame, context);
+    return splice_expression(out, **result, target_invocation.content_frame, context);
 }
 
 Processing_Status
