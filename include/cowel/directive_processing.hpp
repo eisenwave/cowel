@@ -162,9 +162,9 @@ Result<Value, Processing_Status> splice_value_to_string(
 /// @param value The primary.
 /// `primary.is_spliceable_value()` shall be `true`.
 [[nodiscard]]
-Processing_Status splice_value(
+Processing_Status splice_expression(
     Content_Policy& out,
-    const ast::Member_Value& value,
+    const ast::Expression& value,
     Frame_Index frame,
     Context& context
 );
@@ -186,9 +186,9 @@ Processing_Status splice_value_to_plaintext(
 
 /// @brief Converts a spliceable value to plaintext.
 [[nodiscard]]
-Processing_Status splice_value_to_plaintext(
+Processing_Status splice_expression_to_plaintext(
     std::pmr::vector<char8_t>& out,
-    const ast::Member_Value& value,
+    const ast::Expression& value,
     Frame_Index frame,
     Context& context
 );
@@ -215,7 +215,7 @@ splice_block(Content_Policy& out, const ast::Primary& block, Frame_Index frame, 
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate_member_value(const ast::Member_Value& value, Frame_Index frame, Context& context);
+evaluate_expression(const ast::Expression& value, Frame_Index frame, Context& context);
 
 [[nodiscard]]
 Result<Value, Processing_Status>
@@ -226,7 +226,18 @@ Result<Value, Processing_Status>
 evaluate(const ast::Primary& value, Frame_Index frame, Context& context);
 
 [[nodiscard]]
-const Type& get_static_type(const ast::Member_Value& v, Context& context);
+Result<Value, Processing_Status>
+evaluate(const ast::Unary_Expression& expression, Frame_Index frame, Context& context);
+
+Result<Value, Processing_Status> evaluate_unary(
+    Unary_Expression_Kind kind, //
+    const Value& value,
+    const File_Source_Span& error_location,
+    Context& context
+);
+
+[[nodiscard]]
+const Type& get_static_type(const ast::Expression& v, Context& context);
 
 /// @brief Returns the static type of a directive,
 /// based on its behavior within the `context`.
@@ -261,39 +272,6 @@ struct Plaintext_Result {
     Processing_Status status;
     std::u8string_view string;
 };
-
-[[nodiscard]]
-Plaintext_Result splice_value_to_plaintext_optimistic(
-    std::pmr::vector<char8_t>& buffer,
-    const ast::Member_Value& value,
-    Frame_Index frame,
-    Context& context
-);
-
-/// @brief Like `splice_to_plaintext`,
-/// but optimistically assumes that empty or short literals are passed.
-/// If so, writing characters to `buffer` can be avoided completely,
-/// and the string contents of a literal are returned directly.
-/// @param buffer The output buffer.
-/// @param value The value to be converted to plaintext.
-/// `value.is_spliceable_value()` shall be true.
-/// @param frame The content frame of the value.
-/// @param context The context.
-[[nodiscard]]
-Plaintext_Result splice_to_plaintext_optimistic(
-    std::pmr::vector<char8_t>& buffer,
-    const ast::Primary& value,
-    Frame_Index frame,
-    Context& context
-);
-
-[[nodiscard]]
-Plaintext_Result splice_to_plaintext_optimistic(
-    std::pmr::vector<char8_t>& buffer,
-    const ast::Directive& directive,
-    Frame_Index frame,
-    Context& context
-);
 
 enum struct To_HTML_Mode : Default_Underlying {
     direct,

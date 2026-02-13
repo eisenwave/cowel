@@ -177,7 +177,7 @@ Group_Member Group_Member::ellipsis(File_Source_Span source_span, std::u8string_
     // clang-format on
 }
 
-Group_Member Group_Member::named(Primary&& name, Member_Value&& value)
+Group_Member Group_Member::named(Primary&& name, Expression&& value)
 {
     COWEL_DEBUG_ASSERT(
         name.get_kind() == ast::Primary_Kind::unquoted_string
@@ -195,7 +195,7 @@ Group_Member Group_Member::named(Primary&& name, Member_Value&& value)
 }
 
 [[nodiscard]]
-Group_Member Group_Member::positional(Member_Value&& value)
+Group_Member Group_Member::positional(Expression&& value)
 {
     const File_Source_Span source_span = value.get_source_span();
     // clang-format off
@@ -213,7 +213,7 @@ Group_Member::Group_Member(
     const File_Source_Span& source_span,
     std::u8string_view source,
     std::optional<Primary>&& name,
-    std::optional<Member_Value>&& value,
+    std::optional<Expression>&& value,
     Member_Kind type
 )
     : m_source_span { source_span }
@@ -251,6 +251,22 @@ Directive::Directive(
         && std::ranges::contains(
               m_arguments->get_members(), ast::Member_Kind::ellipsis, &ast::Group_Member::get_kind
         );
+}
+
+Unary_Expression::Unary_Expression(
+    GC_Ref<Expression> operand,
+    const Unary_Expression_Kind kind,
+    const File_Source_Span source_span,
+    const std::u8string_view source
+)
+    : m_operand { std::move(operand) }
+    , m_kind { kind }
+    , m_source_span { source_span }
+    , m_source { source }
+{
+    COWEL_ASSERT(m_operand);
+    COWEL_ASSERT(m_source_span.length == m_source.length());
+    COWEL_ASSERT(!m_source.empty());
 }
 
 void Primary::assert_validity() const
@@ -352,8 +368,7 @@ constexpr std::optional<ast::Primary_Kind> instruction_type_primary_kind(CST_Ins
     case keyword_null: return ast::Primary_Kind::null_literal;
     case keyword_true:
     case keyword_false: return ast::Primary_Kind::bool_literal;
-    case keyword_infinity:
-    case keyword_neg_infinity: return ast::Primary_Kind::infinity;
+    case keyword_infinity: return ast::Primary_Kind::infinity;
     case line_comment:
     case block_comment: return ast::Primary_Kind::comment;
     default: return {};
@@ -497,7 +512,7 @@ private:
             (kind == Directive_Kind::splice
              && instruction.kind == CST_Instruction_Kind::push_directive_splice)
             || (kind == Directive_Kind::call
-                && instruction.kind == CST_Instruction_Kind::push_directive_call)
+                && instruction.kind == CST_Instruction_Kind::push_expr_directive_call)
         );
 
         const auto initial_pos = peek_token().location;
@@ -523,7 +538,7 @@ private:
             (kind == Directive_Kind::splice
              && pop_instruction.kind == CST_Instruction_Kind::pop_directive_splice)
             || (kind == Directive_Kind::call
-                && pop_instruction.kind == CST_Instruction_Kind::pop_directive_call)
+                && pop_instruction.kind == CST_Instruction_Kind::pop_expr_directive_call)
         );
 
         const File_Source_Span raw_name_span = { initial_pos, m_file };
@@ -634,19 +649,19 @@ private:
             advance_by_tokens(1);
             ignore_skips();
 
-            ast::Member_Value value = build_member_value();
+            ast::Expression expression = build_expression();
             ignore_skips();
             const auto pop_instruction = this->pop_instruction();
             COWEL_ASSERT(pop_instruction.kind == CST_Instruction_Kind::pop_named_member);
-            return ast::Group_Member::named(std::move(name), std::move(value));
+            return ast::Group_Member::named(std::move(name), std::move(expression));
         }
 
         case CST_Instruction_Kind::push_positional_member: {
-            ast::Member_Value value = build_member_value();
+            ast::Expression expression = build_expression();
             ignore_skips();
             const auto pop_instruction = this->pop_instruction();
             COWEL_ASSERT(pop_instruction.kind == CST_Instruction_Kind::pop_positional_member);
-            return ast::Group_Member::positional(std::move(value));
+            return ast::Group_Member::positional(std::move(expression));
         }
 
         case CST_Instruction_Kind::push_ellipsis_argument: {
@@ -692,16 +707,42 @@ private:
     }
 
     [[nodiscard]]
-    ast::Member_Value build_member_value()
+    ast::Expression build_expression()
     {
         const CST_Instruction instruction = peek_instruction();
         switch (instruction.kind) {
+        case CST_Instruction_Kind::push_expr_bitwise_not: {
+            return build_unary_expression(
+                CST_Instruction_Kind::push_expr_bitwise_not,
+                CST_Instruction_Kind::pop_expr_bitwise_not
+            );
+        }
+        case CST_Instruction_Kind::push_expr_logical_not: {
+            return build_unary_expression(
+                CST_Instruction_Kind::push_expr_logical_not,
+                CST_Instruction_Kind::pop_expr_logical_not
+            );
+        }
+        case CST_Instruction_Kind::push_expr_unary_plus: {
+            return build_unary_expression(
+                CST_Instruction_Kind::push_expr_unary_plus,
+                CST_Instruction_Kind::pop_expr_unary_plus
+            );
+        }
+        case CST_Instruction_Kind::push_expr_unary_minus: {
+            return build_unary_expression(
+                CST_Instruction_Kind::push_expr_unary_minus,
+                CST_Instruction_Kind::pop_expr_unary_minus
+            );
+        }
+        case CST_Instruction_Kind::push_expr_directive_call: {
+            return build_directive(Directive_Kind::call);
+        }
         case CST_Instruction_Kind::keyword_null:
         case CST_Instruction_Kind::keyword_unit:
         case CST_Instruction_Kind::keyword_true:
         case CST_Instruction_Kind::keyword_false:
         case CST_Instruction_Kind::keyword_infinity:
-        case CST_Instruction_Kind::keyword_neg_infinity:
         case CST_Instruction_Kind::unquoted_string:
         case CST_Instruction_Kind::binary_int:
         case CST_Instruction_Kind::octal_int:
@@ -719,12 +760,54 @@ private:
         case CST_Instruction_Kind::push_quoted_string: {
             return try_build_quoted_string().value();
         }
-        case CST_Instruction_Kind::push_directive_call: {
-            return build_directive(Directive_Kind::call);
-        }
         default: break;
         }
-        COWEL_ASSERT_UNREACHABLE(u8"Invalid member value.");
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid expression.");
+    }
+
+    [[nodiscard]]
+    ast::Unary_Expression build_unary_expression(
+        const CST_Instruction_Kind push_kind, //
+        const CST_Instruction_Kind pop_kind
+    )
+    {
+        const auto unary_kind = [&] -> Unary_Expression_Kind {
+            switch (push_kind) {
+            case CST_Instruction_Kind::push_expr_bitwise_not:
+                return Unary_Expression_Kind::bitwise_not;
+            case CST_Instruction_Kind::push_expr_logical_not:
+                return Unary_Expression_Kind::logical_not;
+            case CST_Instruction_Kind::push_expr_unary_plus: //
+                return Unary_Expression_Kind::plus;
+            case CST_Instruction_Kind::push_expr_unary_minus: //
+                return Unary_Expression_Kind::minus;
+            default: break;
+            }
+            COWEL_ASSERT_UNREACHABLE(u8"Push kind does not correspond to unary expression.");
+        }();
+
+        const CST_Instruction push = pop_instruction();
+        COWEL_ASSERT(push.kind == push_kind);
+        COWEL_DEBUG_ASSERT(cst_instruction_kind_advances(push_kind));
+        const Source_Span push_location = peek_token().location;
+        advance_by_tokens(1);
+        ignore_skips();
+
+        ast::Expression operand = build_expression();
+
+        const CST_Instruction pop = pop_instruction();
+        COWEL_ASSERT(pop.kind == pop_kind);
+        COWEL_DEBUG_ASSERT(!cst_instruction_kind_advances(pop.kind));
+        const Source_Span pop_location = peek_token().location;
+
+        const auto location = make_file_span(push_location, pop_location);
+
+        return ast::Unary_Expression {
+            gc_ref_make<ast::Expression>(std::move(operand)),
+            unary_kind,
+            location,
+            extract(location),
+        };
     }
 
     [[nodiscard]]
@@ -785,14 +868,23 @@ private:
         const auto closing_token = m_tokens[m_token_index];
         advance_by_tokens(1);
 
-        const File_Source_Span source_span {
-            initial_pos,
-            closing_token.location.end() - initial_pos.begin,
-            m_file,
-        };
+        const auto source_span = make_file_span(initial_pos, closing_token.location);
         return push_kind == CST_Instruction_Kind::push_block
             ? ast::Primary::block(source_span, extract(source_span), std::move(content))
             : ast::Primary::quoted_string(source_span, extract(source_span), std::move(content));
+    }
+
+    [[nodiscard]]
+    File_Source_Span make_file_span(const Source_Span& span) const
+    {
+        return { span, m_file };
+    }
+
+    [[nodiscard]]
+    File_Source_Span make_file_span(const Source_Span& from, const Source_Span& to) const
+    {
+        COWEL_DEBUG_ASSERT(to.begin >= from.end());
+        return { from, to.end() - from.begin, m_file };
     }
 };
 

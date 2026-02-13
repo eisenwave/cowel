@@ -72,10 +72,13 @@ GROUP-CONTENT
   | HEXADECIMAL-INT-TOKEN
   | DECIMAL-FLOAT-TOKEN
   | INFINITY-TOKEN
-  | NEGATIVE-INFINITY-TOKEN
   | EQUALS-TOKEN
   | COMMA-TOKEN
   | ELLIPSIS-TOKEN
+  | BITWISE-NOT-TOKEN
+  | LOGICAL-NOT-TOKEN
+  | PLUS-TOKEN
+  | MINUS-TOKEN
   | UNIT-TOKEN
   | NULL-TOKEN
   | TRUE-TOKEN
@@ -90,6 +93,14 @@ COMMA-TOKEN
   = ",";
 ELLIPSIS-TOKEN
   = "...";
+BITWISE-NOT-TOKEN
+  = "~";
+LOGICAL-NOT-TOKEN
+  = "!";
+PLUS-TOKEN
+  = "+";
+MINUS-TOKEN
+  = "-";
 UNIT-TOKEN
   = "unit" ? not followed by IDENTIFIER-CHAR ?;
 NULL-TOKEN
@@ -100,13 +111,13 @@ FALSE-TOKEN
   = "false" ? not followed by IDENTIFIER-CHAR ?;
 
 BINARY-INT-TOKEN
-  = [ "-" ], "0b", BINARY-DIGIT, { BINARY-DIGIT };
+  = "0b", BINARY-DIGIT, { BINARY-DIGIT };
 OCTAL-INT-TOKEN
-  = [ "-" ], "0o", OCTAL-DIGIT, { OCTAL-DIGIT };
+  = "0o", OCTAL-DIGIT, { OCTAL-DIGIT };
 DECIMAL-INT-TOKEN
-  = [ "-" ], DIGIT, { DIGIT };
+  = DIGIT, { DIGIT };
 HEXADECIMAL-INT-TOKEN
-  = [ "-" ], "0x", HEXADECIMAL-DIGIT, { HEXADECIMAL-DIGIT };
+  = "0x", HEXADECIMAL-DIGIT, { HEXADECIMAL-DIGIT };
 BINARY-DIGIT
   = "0" | "1";
 OCTAL-DIGIT
@@ -118,14 +129,12 @@ HEXADECIMAL-DIGIT
 
 INFINITY-TOKEN
   = "infinity" ? not followed by IDENTIFIER-CHAR ?;
-NEGATIVE-INFINITY-TOKEN
-  = "-infinity;" ? not followed by IDENTIFIER-CHAR ?;
 DECIMAL-FLOAT-TOKEN
   = DECIMAL-FLOAT ? not followed by IDENTIFIER-CHAR ?;
 DECIMAL-FLOAT
-  = [ "-" ], DIGIT, { DIGIT }, ".", { DIGIT }, [ EXPONENT ]
-  | [ "-" ], ".", DIGIT, { DIGIT }, [ EXPONENT ]
-  | [ "-" ], DIGIT, { DIGIT }, EXPONENT;
+  = DIGIT, { DIGIT }, ".", { DIGIT }, [ EXPONENT ]
+  | ".", DIGIT, { DIGIT }, [ EXPONENT ]
+  | DIGIT, { DIGIT }, EXPONENT;
 EXPONENT
   = ("e" | "E"), [ "+" | "-" ], DIGIT, { DIGIT };
 
@@ -137,7 +146,7 @@ RESERVED-NUMBER-TOKEN
   - HEXADECIMAL-INT-TOKEN
   - DECIMAL-FLOAT-TOKEN;
 PERMISSIVE-NUMBER
-  = ( [ "-" ], DIGIT | "." ), ? maximal sequence ([0-9a-zA-Z.]|e+|E+|e-|E-)+ ?;
+  = ( DIGIT | "." ), ? maximal sequence ([0-9a-zA-Z.]|e+|E+|e-|E-)+ ?;
 
 QUOTED-STRING
   = STRING-QUOTE-TOKEN, { QUOTED-STRING-MARKUP-ELEMENT }, STRING-QUOTE-TOKEN;

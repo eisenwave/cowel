@@ -46,6 +46,10 @@ enum struct Node_Kind : Default_Underlying {
     infinity,
     unquoted_member_name,
     unquoted_string,
+    bitwise_not,
+    logical_not,
+    unary_plus,
+    unary_minus,
     text,
     escape,
     line_comment,
@@ -110,6 +114,30 @@ struct Node {
     static Node infinity(std::u8string_view text)
     {
         return { .kind = Node_Kind::infinity, .name_or_text = text };
+    }
+
+    [[nodiscard]]
+    static Node bitwise_not(Node&& operand)
+    {
+        return { .kind = Node_Kind::bitwise_not, .children = { std::move(operand) } };
+    }
+
+    [[nodiscard]]
+    static Node logical_not(Node&& operand)
+    {
+        return { .kind = Node_Kind::logical_not, .children = { std::move(operand) } };
+    }
+
+    [[nodiscard]]
+    static Node unary_plus(Node&& operand)
+    {
+        return { .kind = Node_Kind::unary_plus, .children = { std::move(operand) } };
+    }
+
+    [[nodiscard]]
+    static Node unary_minus(Node&& operand)
+    {
+        return { .kind = Node_Kind::unary_minus, .children = { std::move(operand) } };
     }
 
     [[nodiscard]]
@@ -347,6 +375,19 @@ struct Node {
     }
 
     [[nodiscard]]
+    static Node from(const ast::Unary_Expression& actual)
+    {
+        Node operand = from(actual.get_operand());
+        switch (actual.get_kind()) {
+        case Unary_Expression_Kind::bitwise_not: return bitwise_not(std::move(operand));
+        case Unary_Expression_Kind::logical_not: return logical_not(std::move(operand));
+        case Unary_Expression_Kind::plus: return unary_plus(std::move(operand));
+        case Unary_Expression_Kind::minus: return unary_minus(std::move(operand));
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid expression kind.");
+    }
+
+    [[nodiscard]]
     static Node from(const ast::Group_Member& arg)
     {
         switch (arg.get_kind()) {
@@ -364,7 +405,7 @@ struct Node {
     }
 
     [[nodiscard]]
-    static Node from(const ast::Member_Value& arg)
+    static Node from(const ast::Expression& arg)
     {
         const auto visitor = [&](const auto& v) -> Node { return from(v); };
         return std::visit(visitor, arg);
@@ -447,6 +488,19 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
 
     case Node_Kind::unquoted_string: {
         return out << "UnqString(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::bitwise_not: {
+        return out << "BitwiseNot(" << node.children.front() << ')';
+    }
+    case Node_Kind::logical_not: {
+        return out << "LogicalNot(" << node.children.front() << ')';
+    }
+    case Node_Kind::unary_plus: {
+        return out << "UnaryPlus(" << node.children.front() << ')';
+    }
+    case Node_Kind::unary_minus: {
+        return out << "UnaryMinus(" << node.children.front() << ')';
     }
 
     case Node_Kind::text: {
@@ -1292,7 +1346,9 @@ TEST(Parse, integers)
         { CST_Instruction_Kind::skip },
 
         { CST_Instruction_Kind::push_positional_member }, // -123
+        { CST_Instruction_Kind::push_expr_unary_minus },
         { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_unary_minus },
         { CST_Instruction_Kind::pop_positional_member },
         { CST_Instruction_Kind::comma },
         { CST_Instruction_Kind::skip },
@@ -1372,6 +1428,136 @@ TEST(Parse, literals)
     ASSERT_TRUE(run_parse_test(u8"literals.cow", expected));
 }
 
+TEST(Parse, unary_prefix)
+{
+    // clang-format off
+    static constexpr CST_Instruction expected[] {
+        { CST_Instruction_Kind::push_document, 2 },
+        { CST_Instruction_Kind::push_directive_splice },
+        { CST_Instruction_Kind::push_group, 12 },
+
+        { CST_Instruction_Kind::skip }, // ~0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_bitwise_not },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_bitwise_not },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // !0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_logical_not },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_logical_not },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // +0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_unary_plus },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_unary_plus },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // -0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_unary_minus },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_unary_minus },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // ~ 0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_bitwise_not },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_bitwise_not },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // ! 0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_logical_not },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_logical_not },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // + 0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_unary_plus },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_unary_plus },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // - 0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_unary_minus },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_unary_minus },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // ~ \* *\ 0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_bitwise_not },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_bitwise_not },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // ! \* *\ 0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_logical_not },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_logical_not },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // + \* *\ 0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_unary_plus },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_unary_plus },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip }, // - \* *\ 0
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_unary_minus },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::decimal_int },
+        { CST_Instruction_Kind::pop_expr_unary_minus },
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::pop_group },
+        { CST_Instruction_Kind::pop_directive_splice },
+        { CST_Instruction_Kind::text },
+        { CST_Instruction_Kind::pop_document },
+    };
+    // clang-format on
+    ASSERT_TRUE(run_parse_test(u8"unary_prefix.cow", expected));
+}
+
 TEST(Parse, floats)
 {
     // clang-format off
@@ -1441,7 +1627,13 @@ TEST(Parse, floats)
         { CST_Instruction_Kind::comma },
 
         { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::decimal_float }, 
+        { CST_Instruction_Kind::pop_positional_member },
+        { CST_Instruction_Kind::comma },
+
+        { CST_Instruction_Kind::skip },
+        { CST_Instruction_Kind::push_positional_member },
         { CST_Instruction_Kind::decimal_float }, 
         { CST_Instruction_Kind::pop_positional_member },
         { CST_Instruction_Kind::comma },
@@ -1459,14 +1651,10 @@ TEST(Parse, floats)
         { CST_Instruction_Kind::comma },
 
         { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
+        { CST_Instruction_Kind::push_positional_member },
+        { CST_Instruction_Kind::push_expr_unary_minus },
         { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
+        { CST_Instruction_Kind::pop_expr_unary_minus },
         { CST_Instruction_Kind::pop_positional_member },
         { CST_Instruction_Kind::comma },
 
@@ -1489,21 +1677,23 @@ TEST(Parse_And_Build, floats)
                 u8"d",
                 Node::group(
                     {
-                        Node::positional({ Node::floating_point(u8"0."sv) }),
-                        Node::positional({ Node::floating_point(u8".0"sv) }),
-                        Node::positional({ Node::floating_point(u8"0.0"sv) }),
-                        Node::positional({ Node::floating_point(u8"0e0"sv) }),
-                        Node::positional({ Node::floating_point(u8"0.e0"sv) }),
-                        Node::positional({ Node::floating_point(u8".0e0"sv) }),
-                        Node::positional({ Node::floating_point(u8"0.0e0"sv) }),
-                        Node::positional({ Node::floating_point(u8"0e0"sv) }),
-                        Node::positional({ Node::floating_point(u8"0e+0"sv) }),
-                        Node::positional({ Node::floating_point(u8"0e-0"sv) }),
-                        Node::positional({ Node::floating_point(u8"0E0"sv) }),
-                        Node::positional({ Node::floating_point(u8"0E+0"sv) }),
-                        Node::positional({ Node::floating_point(u8"0E-0"sv) }),
-                        Node::positional({ Node::floating_point(u8"123.456e789"sv) }),
-                        Node::positional({ Node::floating_point(u8"-123.456e789"sv) }),
+                        Node::positional(Node::floating_point(u8"0."sv)),
+                        Node::positional(Node::floating_point(u8".0"sv)),
+                        Node::positional(Node::floating_point(u8"0.0"sv)),
+                        Node::positional(Node::floating_point(u8"0e0"sv)),
+                        Node::positional(Node::floating_point(u8"0.e0"sv)),
+                        Node::positional(Node::floating_point(u8".0e0"sv)),
+                        Node::positional(Node::floating_point(u8"0.0e0"sv)),
+                        Node::positional(Node::floating_point(u8"0e0"sv)),
+                        Node::positional(Node::floating_point(u8"0e+0"sv)),
+                        Node::positional(Node::floating_point(u8"0e-0"sv)),
+                        Node::positional(Node::floating_point(u8"0E0"sv)),
+                        Node::positional(Node::floating_point(u8"0E+0"sv)),
+                        Node::positional(Node::floating_point(u8"0E-0"sv)),
+                        Node::positional(Node::floating_point(u8"123.456e789"sv)),
+                        Node::positional(
+                            Node::unary_minus(Node::floating_point(u8"123.456e789"sv))
+                        ),
                     }
                 )
             ),
@@ -1514,7 +1704,15 @@ TEST(Parse_And_Build, floats)
 
     for (const auto& arg : expected.front().children.front().children) {
         COWEL_ASSERT(arg.kind == Node_Kind::positional_argument);
-        const std::u8string_view literal = arg.children.front().name_or_text;
+        const auto& float_node = [&] -> const Node& {
+            const auto& child = arg.children.front();
+            if (child.kind == Node_Kind::decimal_float_literal) {
+                return child;
+            }
+            COWEL_ASSERT(child.children.front().kind == Node_Kind::decimal_float_literal);
+            return child.children.front();
+        }();
+        const std::u8string_view literal = float_node.name_or_text;
         const std::optional<double> d = from_characters_or_inf<double>(literal);
         ASSERT_TRUE(d);
     }
@@ -1685,10 +1883,10 @@ TEST(Parse, directive_as_argument)
         { CST_Instruction_Kind::push_directive_splice }, // \a(x())
         { CST_Instruction_Kind::push_group, 1 },
         { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_directive_call },
+        { CST_Instruction_Kind::push_expr_directive_call },
         { CST_Instruction_Kind::push_group, 0 },
         { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_call },
+        { CST_Instruction_Kind::pop_expr_directive_call },
         { CST_Instruction_Kind::pop_positional_member },
         { CST_Instruction_Kind::pop_group },
         { CST_Instruction_Kind::pop_directive_splice },
@@ -1697,12 +1895,12 @@ TEST(Parse, directive_as_argument)
         { CST_Instruction_Kind::push_directive_splice }, // \b(x(){})
         { CST_Instruction_Kind::push_group, 1 },
         { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_directive_call },
+        { CST_Instruction_Kind::push_expr_directive_call },
         { CST_Instruction_Kind::push_group, 0 },
         { CST_Instruction_Kind::pop_group },
         { CST_Instruction_Kind::push_block, 0 },
         { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_directive_call },
+        { CST_Instruction_Kind::pop_expr_directive_call },
         { CST_Instruction_Kind::pop_positional_member },
         { CST_Instruction_Kind::pop_group },
         { CST_Instruction_Kind::pop_directive_splice },
@@ -1711,14 +1909,14 @@ TEST(Parse, directive_as_argument)
         { CST_Instruction_Kind::push_directive_splice }, // \c(x () {})
         { CST_Instruction_Kind::push_group, 1 },
         { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_directive_call },
+        { CST_Instruction_Kind::push_expr_directive_call },
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::push_group, 0 },
         { CST_Instruction_Kind::pop_group },
         { CST_Instruction_Kind::skip },
         { CST_Instruction_Kind::push_block, 0 },
         { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_directive_call },
+        { CST_Instruction_Kind::pop_expr_directive_call },
         { CST_Instruction_Kind::pop_positional_member },
         { CST_Instruction_Kind::pop_group },
         { CST_Instruction_Kind::pop_directive_splice },
@@ -1727,10 +1925,10 @@ TEST(Parse, directive_as_argument)
         { CST_Instruction_Kind::push_directive_splice }, // \d(x{})
         { CST_Instruction_Kind::push_group, 1 },
         { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_directive_call },
+        { CST_Instruction_Kind::push_expr_directive_call },
         { CST_Instruction_Kind::push_block, 0 },
         { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_directive_call },
+        { CST_Instruction_Kind::pop_expr_directive_call },
         { CST_Instruction_Kind::pop_positional_member },
         { CST_Instruction_Kind::pop_group },
         { CST_Instruction_Kind::pop_directive_splice },

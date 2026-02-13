@@ -940,7 +940,7 @@ struct Put_Behavior final : Directive_Behavior {
 
 private:
     [[nodiscard]]
-    Result<const ast::Member_Value*, Processing_Status> resolve(const Invocation&, Context&) const;
+    Result<const ast::Expression*, Processing_Status> resolve(const Invocation&, Context&) const;
 };
 
 struct Paragraph_Enter_Behavior final : Block_Directive_Behavior {

@@ -21,7 +21,6 @@
 #include "cowel/util/unicode.hpp"
 
 #include "cowel/diagnostic_highlight.hpp"
-#include "cowel/fwd.hpp"
 #include "cowel/lex.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/print.hpp"
@@ -221,6 +220,10 @@ std::u8string_view token_kind_source(const Token_Kind kind)
     case reserved_number:
     case whitespace: return {};
 
+    case bitwise_not: return u8"~"sv;
+    case logical_not: return u8"!"sv;
+    case minus: return u8"-"sv;
+    case plus: return u8"+"sv;
     case brace_left: return u8"{"sv;
     case brace_right: return u8"}"sv;
     case comma: return u8","sv;
@@ -228,7 +231,6 @@ std::u8string_view token_kind_source(const Token_Kind kind)
     case equals: return u8"="sv;
     case false_: return u8"false"sv;
     case infinity: return u8"infinity"sv;
-    case negative_infinity: return u8"-infinity"sv;
     case null: return u8"null"sv;
     case parenthesis_left: return u8"("sv;
     case parenthesis_right: return u8")"sv;

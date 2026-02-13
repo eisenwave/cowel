@@ -215,14 +215,14 @@ struct Logical_Expression_Evaluator {
                 continue;
             }
             case ast::Member_Kind::positional: {
-                const ast::Member_Value& member_value = member.get_value();
+                const ast::Expression& member_value = member.get_value();
                 const std::optional<Type> static_type
                     = cowel::get_static_type(member_value, context);
                 if (static_type && *static_type != Type::boolean) {
                     return type_error(*static_type, member_value.get_source_span());
                 }
                 const Result<Value, Processing_Status> member_result
-                    = evaluate_member_value(member_value, frame, context);
+                    = evaluate_expression(member_value, frame, context);
                 if (!member_result) {
                     return member_result.error();
                 }

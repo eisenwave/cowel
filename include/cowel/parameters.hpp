@@ -80,7 +80,7 @@ struct Value_Matcher : virtual Was_Matched {
     /// @return A `Processing_Status` if content generation failed during the matching process.
     [[nodiscard]]
     virtual Processing_Status match_value(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail
@@ -92,7 +92,7 @@ struct Value_Matcher : virtual Was_Matched {
 struct Lazy_Value_Of_Type_Matcher final : Value_Matcher {
 private:
     const Type* m_expected_type;
-    const ast::Member_Value* m_markup = nullptr;
+    const ast::Expression* m_markup = nullptr;
     Frame_Index m_markup_frame { -2 };
 
 public:
@@ -115,7 +115,7 @@ public:
     }
 
     [[nodiscard]]
-    const ast::Member_Value& get() const
+    const ast::Expression& get() const
     {
         COWEL_ASSERT(was_matched());
         return *m_markup;
@@ -134,14 +134,14 @@ public:
     }
 
     [[nodiscard]]
-    const ast::Member_Value* get_or_null() const
+    const ast::Expression* get_or_null() const
     {
         return m_markup;
     }
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         Frame_Index frame,
         Context&,
         const Match_Fail_Options& //
@@ -156,7 +156,7 @@ struct Textual_Matcher : Value_Matcher {
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail
@@ -164,7 +164,7 @@ struct Textual_Matcher : Value_Matcher {
 
     [[nodiscard]]
     virtual bool match_string(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         std::u8string_view str,
         Context& context,
         Fail_Callback on_fail
@@ -256,7 +256,7 @@ public:
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail
@@ -279,7 +279,7 @@ public:
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail
@@ -302,7 +302,7 @@ public:
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail
@@ -326,7 +326,7 @@ struct Boolean_Matcher final
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         Frame_Index frame,
         Context&,
         const Match_Fail_Options& on_fail
@@ -343,7 +343,7 @@ struct Integer_Matcher final
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         Frame_Index frame,
         Context&,
         const Match_Fail_Options& on_fail
@@ -360,7 +360,7 @@ struct Float_Matcher final
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         Frame_Index frame,
         Context&,
         const Match_Fail_Options& on_fail
@@ -384,7 +384,7 @@ public:
 
     [[nodiscard]]
     bool match_string(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         std::u8string_view str,
         Context&,
         Fail_Callback on_fail
@@ -539,7 +539,7 @@ struct Group_Matcher : Value_Matcher {
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Member_Value& argument,
+        const ast::Expression& argument,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail

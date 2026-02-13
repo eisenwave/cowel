@@ -176,3 +176,145 @@ just like \cowdoc_dir{comment} yourself:
 \\cowel_macro(comment2){}
 }
 
+\h2{Expressions}
+
+Besides directives,
+evaluation also processes \dfn{expressions}.
+Every expression has a type
+and returns a value when evaluated.
+
+\h3{\gterm{primary-expression}}
+
+\codeblock(ebnf){
+primary-expression
+  = UNIT-TOKEN
+  | NULL-TOKEN
+  | bool-literal
+  | int-literal
+  | float-literal
+  | unquoted-string
+  | quoted-string
+  | block
+  | group;
+}
+
+The most simple kind of expression is a \gterm{primary-expression},
+which cannot be broken down into other expressions.
+
+The types and values of \gterm{primary-expression}s
+are described in \ref("#lexical-analysis").
+
+\Bex{
+An \gterm{int-literal} is a \gterm{primary-expression} of type \cowdoc_type{int}.
+When evaluated, the value of a \gterm{primary-expression}
+that is a \gterm{int-literal} is always the same:
+the \cowdoc_type{int} value specified by the literal.
+}
+
+\h3{\gterm{directive-call-expression}}
+
+\codeblock(ebnf){
+directive-call-expression
+  = identifier, group, [ block ]
+  | identifier, block;
+}
+
+A \gterm{directive-call-expression} invokes a directive
+whose name is the given \gterm{identifier}.
+If no such directive exists,
+an error is raised.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_to_str( cowel_sqrt(4.0) )
+}}
+
+Generated HTML:
+\htmlblock{
+2
+}
+}
+
+\h3{\gterm{prefix-expression}}
+
+\codeblock(ebnf){
+prefix-expression
+  = postfix-expression
+  | prefix-operator, prefix-expression;
+prefix-operator
+  = BITWISE-NOT-TOKEN
+  | LOGICAL-NOT-TOKEN
+  | PLUS-TOKEN
+  | MINUS-TOKEN;
+}
+
+A \gterm{prefix-expression} applies an operation
+to the \gterm{prefix-expression} \math{\mi{e}} nested within.
+
+The operation is specified by the \gterm{prefix-operator}:
+
+\ul{
+  \li{
+    If the operator is a \gterm{BITWISE-NOT-TOKEN},
+    \math{\mi{e}} must be type \cowdoc_type{int},
+    otherwise an error is raised.
+    The type of the expression is \cowdoc_type{int},
+    and the result of the expression is
+    \math{\mrow{\mo(form=prefix){−}\mi{e}\mo{−}\mn{1}}}.
+  }
+  \li{
+    If the operator is a \gterm{LOGICAL-NOT-TOKEN},
+    \math{\mi{e}} must be type \cowdoc_type{bool},
+    otherwise an error is raised.
+    The type of the expression is \cowdoc_type{bool},
+    and the result of the expression is
+    \cowdoc_c{true} if \math{\mi{e}} is \cowdoc_c{false},
+    otherwise \cowdoc_c{false}.
+  }
+  \li{
+    If the operator is a \gterm{PLUS-TOKEN},
+    \math{\mi{e}} must be type \cowdoc_type{int} or \cowdoc_type{float},
+    otherwise an error is raised.
+    The type and result of the expression is that of \math{\mi{e}}.
+  }
+  \li{
+    If the operator is a \gterm{MINUS-TOKEN},
+    \math{\mi{e}} must be type \cowdoc_type{int} or \cowdoc_type{float},
+    otherwise an error is raised.
+    The type of the expression is that of \math{\mi{e}},
+    and the result of the expression is
+    \math{\mrow{\mo(form=prefix){−}\mi{e}}}.
+  }
+}
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+~1: \cowel_to_str(~1)
++1: \cowel_to_str(+1)
+-1: \cowel_to_str(-1)
+
+!true:  \cowel_to_str(!true)
+!false: \cowel_to_str(!false)
+}}
+Generated HTML:
+\htmlblock{
+~1: \cowel_to_str(~1)
++1: \cowel_to_str(+1)
+-1: \cowel_to_str(-1)
+
+!true:  \cowel_to_str(!true)
+!false: \cowel_to_str(!false)
+}
+}
+
+\Bnote{
+Most \gterm{prefix-expression}s can be equivalently expressed
+using builtin directives:
+\ul{
+  \li{\cowdoc_c{cowel_not(x)} is equivalent to \cowdoc_c{!x}.}
+  \li{\cowdoc_c{cowel_pos(x)} is equivalent to \cowdoc_c{+x}.}
+  \li{\cowdoc_c{cowel_neg(x)} is equivalent to \cowdoc_c{-x}.}
+}
+}

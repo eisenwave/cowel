@@ -15,7 +15,9 @@
 
 #include "cowel/ast_fwd.hpp"
 #include "cowel/big_int.hpp"
+#include "cowel/expression_kind.hpp"
 #include "cowel/fwd.hpp"
+#include "cowel/gc.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/string_kind.hpp"
 
@@ -137,6 +139,8 @@ struct Parsed_Float {
     Float_Literal_Status status;
 };
 
+/// @brief Represents a *primary-expression* or other terminal syntactical construct,
+/// like *block-comment* in markup.
 struct Primary {
 private:
     using Extra_Variant = std::variant<
@@ -352,12 +356,18 @@ private:
     void assert_validity() const;
 };
 
+static_assert(std::is_copy_constructible_v<Primary>);
+static_assert(std::is_move_constructible_v<Primary>);
+static_assert(std::is_copy_assignable_v<Primary>);
+static_assert(std::is_move_assignable_v<Primary>);
+
 enum struct Member_Kind : Default_Underlying {
     named,
     positional,
     ellipsis,
 };
 
+/// @brief Represents a *directive-splice* or *directive-call*.
 struct Directive final {
 private:
     File_Source_Span m_source_span;
@@ -451,10 +461,70 @@ public:
     std::span<const ast::Markup_Element> get_content_span() const;
 };
 
-using Member_Value_Variant = std::variant<Directive, Primary>;
+static_assert(std::is_copy_constructible_v<Directive>);
+static_assert(std::is_move_constructible_v<Directive>);
+static_assert(std::is_copy_assignable_v<Directive>);
+static_assert(std::is_move_assignable_v<Directive>);
 
-struct Member_Value : Member_Value_Variant {
-    using std::variant<Directive, Primary>::variant;
+/// @brief Represents a *unary-expression*.
+struct Unary_Expression {
+private:
+    GC_Ref<Expression> m_operand;
+    Unary_Expression_Kind m_kind;
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+
+public:
+    [[nodiscard]]
+    Unary_Expression(const Unary_Expression&);
+    [[nodiscard]]
+    Unary_Expression(Unary_Expression&&) noexcept;
+    Unary_Expression(
+        GC_Ref<Expression> operand,
+        Unary_Expression_Kind kind,
+        File_Source_Span source_span,
+        std::u8string_view source
+    );
+
+    Unary_Expression& operator=(const Unary_Expression&);
+    Unary_Expression& operator=(Unary_Expression&&) noexcept;
+    ~Unary_Expression();
+
+    [[nodiscard]]
+    const Expression& get_operand() const
+    {
+        return *m_operand;
+    }
+
+    [[nodiscard]]
+    Unary_Expression_Kind get_kind() const
+    {
+        return m_kind;
+    }
+
+    [[nodiscard]]
+    File_Source_Span get_source_span() const
+    {
+        return m_source_span;
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        return m_source;
+    }
+};
+
+static_assert(std::is_copy_constructible_v<Unary_Expression>);
+static_assert(std::is_move_constructible_v<Unary_Expression>);
+static_assert(std::is_copy_assignable_v<Unary_Expression>);
+static_assert(std::is_move_assignable_v<Unary_Expression>);
+
+using Expression_Variant = std::variant<Directive, Primary, Unary_Expression>;
+
+/// @brief Represents an *expression*.
+struct Expression : Expression_Variant {
+    using Expression_Variant::variant;
 
     [[nodiscard]]
     bool is_directive() const
@@ -465,6 +535,11 @@ struct Member_Value : Member_Value_Variant {
     bool is_primary() const
     {
         return std::holds_alternative<ast::Primary>(*this);
+    }
+    [[nodiscard]]
+    bool is_unary() const
+    {
+        return std::holds_alternative<ast::Unary_Expression>(*this);
     }
 
     [[nodiscard]]
@@ -490,27 +565,44 @@ struct Member_Value : Member_Value_Variant {
     }
 
     [[nodiscard]]
+    const ast::Unary_Expression& as_unary() const
+    {
+        return std::get<ast::Unary_Expression>(*this);
+    }
+    [[nodiscard]]
+    const ast::Unary_Expression* try_as_unary() const
+    {
+        return std::get_if<ast::Unary_Expression>(this);
+    }
+
+    [[nodiscard]]
     bool is_spliceable_value() const noexcept
     {
         // FIXME: This doesn't seem correct;
-        //        directives can return `void` or `group`,
+        //        directives can return `group`,
         //        and aren't necessarily spliceable.
-        return is_directive() || as_primary().is_spliceable_value();
+        return is_directive() //
+            || (is_primary() && as_primary().is_spliceable_value())
+            || (is_unary() && as_unary().get_operand().is_spliceable_value());
     }
 
     [[nodiscard]]
     bool is_spliceable() const noexcept
     {
         // FIXME: This doesn't seem correct;
-        //        directives can return `void` or `group`,
+        //        directives can return `group`,
         //        and aren't necessarily spliceable.
-        return is_directive() || as_primary().is_spliceable();
+        return is_directive() //
+            || (is_primary() && as_primary().is_spliceable())
+            || (is_unary() && as_unary().get_operand().is_spliceable());
     }
 
     [[nodiscard]]
     bool is_value() const noexcept
     {
-        return is_directive() || as_primary().is_value();
+        return is_directive() //
+            || (is_primary() && as_primary().is_value())
+            || (is_unary() && as_unary().get_operand().is_value());
     }
 
     [[nodiscard]]
@@ -530,6 +622,11 @@ struct Member_Value : Member_Value_Variant {
     }
 };
 
+static_assert(std::is_copy_constructible_v<Expression>);
+static_assert(std::is_move_constructible_v<Expression>);
+static_assert(std::is_copy_assignable_v<Expression>);
+static_assert(std::is_move_assignable_v<Expression>);
+
 struct [[nodiscard]]
 Group_Member final {
 public:
@@ -541,18 +638,18 @@ public:
     [[nodiscard]]
     static Group_Member named( //
         Primary&& name,
-        Member_Value&& value
+        Expression&& value
     );
     [[nodiscard]]
     static Group_Member positional( //
-        Member_Value&& value
+        Expression&& value
     );
 
 private:
     File_Source_Span m_source_span;
     std::u8string_view m_source;
     std::optional<Primary> m_name;
-    std::optional<Member_Value> m_value;
+    std::optional<Expression> m_value;
     Member_Kind m_kind;
 
     [[nodiscard]]
@@ -560,7 +657,7 @@ private:
         const File_Source_Span& source_span,
         std::u8string_view source,
         std::optional<Primary>&& name,
-        std::optional<Member_Value>&& value,
+        std::optional<Expression>&& value,
         Member_Kind type
     );
 
@@ -619,7 +716,7 @@ public:
     }
 
     [[nodiscard]]
-    const Member_Value& get_value() const
+    const Expression& get_value() const
     {
         return m_value.value();
     }
@@ -630,6 +727,11 @@ public:
         return get_value().get_source_span();
     }
 };
+
+static_assert(std::is_copy_constructible_v<Group_Member>);
+static_assert(std::is_move_constructible_v<Group_Member>);
+static_assert(std::is_copy_assignable_v<Group_Member>);
+static_assert(std::is_move_assignable_v<Group_Member>);
 
 using Markup_Element_Variant = std::variant<Directive, Primary>;
 
@@ -680,7 +782,7 @@ struct Markup_Element : Markup_Element_Variant {
     }
 };
 
-static_assert(std::is_move_constructible_v<Markup_Element>);
+static_assert(std::is_copy_constructible_v<Markup_Element>);
 static_assert(std::is_move_constructible_v<Markup_Element>);
 static_assert(std::is_copy_assignable_v<Markup_Element>);
 static_assert(std::is_move_assignable_v<Markup_Element>);
@@ -692,6 +794,12 @@ inline Primary::Primary(const Primary&) = default;
 inline Primary& Primary::operator=(Primary&&) noexcept = default;
 inline Primary& Primary::operator=(const Primary&) = default;
 inline Primary::~Primary() = default;
+
+inline Unary_Expression::Unary_Expression(const Unary_Expression&) = default;
+inline Unary_Expression::Unary_Expression(Unary_Expression&&) noexcept = default;
+inline Unary_Expression& Unary_Expression::operator=(const Unary_Expression&) = default;
+inline Unary_Expression& Unary_Expression::operator=(Unary_Expression&&) noexcept = default;
+inline Unary_Expression::~Unary_Expression() = default;
 
 inline Group_Member::Group_Member(Group_Member&&) noexcept = default;
 inline Group_Member::Group_Member(const Group_Member&) = default;
