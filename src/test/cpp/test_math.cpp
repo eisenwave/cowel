@@ -479,6 +479,11 @@ TEST(Big_Int, get_twos_width)
     EXPECT_EQ(Big_Int::pow2(100).get_twos_width(), 102);
     EXPECT_EQ((-Big_Int::pow2(100)).get_twos_width(), 101);
 
+    EXPECT_EQ(Big_Int::pow2(127).get_twos_width(), 129);
+    EXPECT_EQ((Big_Int::pow2(127) - 1_n).get_twos_width(), 128);
+    EXPECT_EQ((-Big_Int::pow2(127)).get_twos_width(), 128);
+    EXPECT_EQ((-Big_Int::pow2(127) - 1_n).get_twos_width(), 129);
+
     EXPECT_EQ(Big_Int::pow2(200).get_twos_width(), 202);
     EXPECT_EQ((-Big_Int::pow2(200)).get_twos_width(), 201);
 
