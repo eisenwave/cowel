@@ -21,6 +21,6 @@ enum struct Unary_Expression_Kind : Default_Underlying {
     minus,
 };
 
-};
+}; // namespace cowel
 
 #endif
