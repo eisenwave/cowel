@@ -41,6 +41,8 @@ constexpr Logical_Expression_Behavior cowel_and //
     { Logical_Expression_Kind::logical_and };
 constexpr Policy_Behavior cowel_as_text //
     { Known_Content_Policy::as_text };
+constexpr Unary_Numeric_Expression_Behavior cowel_bit_not //
+    { Unary_Numeric_Expression_Kind::bit_not };
 constexpr Unary_Numeric_Expression_Behavior cowel_ceil //
     { Unary_Numeric_Expression_Kind::ceil };
 constexpr Char_By_Entity_Behavior cowel_char_by_entity //
@@ -421,6 +423,7 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_alias),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_and),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_as_text),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_bit_not),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_ceil),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_entity),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_name),

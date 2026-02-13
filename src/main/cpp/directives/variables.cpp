@@ -33,31 +33,44 @@ std::pmr::string vec_to_string(const std::pmr::vector<char>& v)
     return { v.data(), v.size(), v.get_allocator() };
 }
 
-template <typename T>
 [[nodiscard]]
-T operate_unary(Unary_Numeric_Expression_Kind type, const T& x)
+Big_Int operate_unary(Unary_Numeric_Expression_Kind type, const Big_Int& x)
 {
-    if constexpr (std::is_same_v<T, Big_Int>) {
-        switch (type) {
-        case Unary_Numeric_Expression_Kind::pos: return +x;
-        case Unary_Numeric_Expression_Kind::neg: return -x;
-        case Unary_Numeric_Expression_Kind::abs: return abs(x);
-        default: COWEL_ASSERT_UNREACHABLE(u8"Invalid unary operation for integers.");
-        }
+    switch (type) {
+    case Unary_Numeric_Expression_Kind::bit_not: return ~x;
+    case Unary_Numeric_Expression_Kind::pos: return +x;
+    case Unary_Numeric_Expression_Kind::neg: return -x;
+    case Unary_Numeric_Expression_Kind::abs: return abs(x);
+
+    case Unary_Numeric_Expression_Kind::sqrt:
+    case Unary_Numeric_Expression_Kind::trunc:
+    case Unary_Numeric_Expression_Kind::floor:
+    case Unary_Numeric_Expression_Kind::ceil:
+    case Unary_Numeric_Expression_Kind::nearest:
+    case Unary_Numeric_Expression_Kind::nearest_away_zero: {
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid unary operation for integers.");
     }
-    else {
-        static_assert(std::is_floating_point_v<T>);
-        switch (type) {
-        case Unary_Numeric_Expression_Kind::pos: return +x;
-        case Unary_Numeric_Expression_Kind::neg: return -x;
-        case Unary_Numeric_Expression_Kind::abs: return std::abs(x);
-        case Unary_Numeric_Expression_Kind::sqrt: return std::sqrt(x);
-        case Unary_Numeric_Expression_Kind::trunc: return std::trunc(x);
-        case Unary_Numeric_Expression_Kind::floor: return std::floor(x);
-        case Unary_Numeric_Expression_Kind::ceil: return std::ceil(x);
-        case Unary_Numeric_Expression_Kind::nearest: return cowel::roundeven(x);
-        case Unary_Numeric_Expression_Kind::nearest_away_zero: return std::round(x);
-        }
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid expression type.");
+}
+
+[[nodiscard]]
+Float operate_unary(Unary_Numeric_Expression_Kind type, const Float x)
+{
+    switch (type) {
+    case Unary_Numeric_Expression_Kind::pos: return +x;
+    case Unary_Numeric_Expression_Kind::neg: return -x;
+    case Unary_Numeric_Expression_Kind::abs: return std::abs(x);
+    case Unary_Numeric_Expression_Kind::sqrt: return std::sqrt(x);
+    case Unary_Numeric_Expression_Kind::trunc: return std::trunc(x);
+    case Unary_Numeric_Expression_Kind::floor: return std::floor(x);
+    case Unary_Numeric_Expression_Kind::ceil: return std::ceil(x);
+    case Unary_Numeric_Expression_Kind::nearest: return cowel::roundeven(x);
+    case Unary_Numeric_Expression_Kind::nearest_away_zero: return std::round(x);
+
+    case Unary_Numeric_Expression_Kind::bit_not: {
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid unary operation for floats.");
+    }
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid expression type.");
 }
@@ -389,13 +402,13 @@ Unary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
     const auto& first_value = group_matcher.get_values().front().value;
     const auto& first_type = first_value.get_type();
 
-    if (!first_type.analytically_convertible_to(numeric_type)) {
+    if (!first_type.analytically_convertible_to(*m_type)) {
         context.try_error(
             diagnostic::type_mismatch, group_matcher.get_values().front().location,
             joined_char_sequence(
                 {
                     u8"Expected a value of type "sv,
-                    numeric_type.get_display_name(),
+                    m_type->get_display_name(),
                     u8", but got "sv,
                     first_type.get_display_name(),
                     u8".",
