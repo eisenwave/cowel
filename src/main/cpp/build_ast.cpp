@@ -762,7 +762,7 @@ private:
         }
         default: break;
         }
-        COWEL_ASSERT_UNREACHABLE(u8"Invalid member value.");
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid expression.");
     }
 
     [[nodiscard]]
