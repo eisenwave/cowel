@@ -2069,6 +2069,25 @@ otherwise \cowdoc_c{false}.
 \cowdoc_attr{args} is evaluated from left to right,
 and any remaining elements are ignored once the result is known.
 
+\h3(id="bitwise-operations"){Bitwise operations}
+
+Bitwise operations work exclusively on operands of type \cowdoc_type{int}.
+
+\h4(
+  id = "dir-cowel_bit_not"
+){\cowdoc_dir{cowel_bit_not} \c{mdash} Bitwise NOT}
+
+\pre{
+\cowel_highlight_as("markup-tag"){cowel_bit_not}(\cowdoc_param("x", "int")): \cowel_highlight_as("keyword-type"){int}
+}
+
+Returns \math{\mrow{\mo(form=prefix){−}\mi{x}\mo{−}\mn{1}}}.
+
+\Bnote{
+This has the effect of flipping each bit
+in the (possibly infinite) two's complement representation of \cowdoc_attr{x}.
+}
+
 \h3(id="comparison-operations"){Comparison operations}
 
 In all relational comparison below

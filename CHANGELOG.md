@@ -12,7 +12,10 @@
   - `cowel_str_replace_first`
   - `cowel_str_replace_all`
   - `cowel_str_regex`
+- add a `cowel_bit_not` directive (#235)
 - fix `cowel_to_str` for base 36
+- fix crash when invoking `float`-only numeric directives (#234)
+- fix numeric bugs in `int` on native build
 
 **Full Changelog**:
 [`v0.7.0...master`](https://github.com/eisenwave/cowel/compare/v0.7.0...master)

@@ -310,9 +310,10 @@ Generated HTML:
 }
 
 \Bnote{
-Most \gterm{prefix-expression}s can be equivalently expressed
+All \gterm{prefix-expression}s can be equivalently expressed
 using builtin directives:
 \ul{
+  \li{\cowdoc_c{cowel_bit_not(x)} is equivalent to \cowdoc_c{~x}.}
   \li{\cowdoc_c{cowel_not(x)} is equivalent to \cowdoc_c{!x}.}
   \li{\cowdoc_c{cowel_pos(x)} is equivalent to \cowdoc_c{+x}.}
   \li{\cowdoc_c{cowel_neg(x)} is equivalent to \cowdoc_c{-x}.}

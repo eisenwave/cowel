@@ -16,6 +16,7 @@
 #include <boost/multiprecision/cpp_int.hpp>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/math.hpp"
 
 #include "cowel/big_int.hpp"
 
@@ -87,11 +88,8 @@ Big_Int_Handle yield_big_result(cpp_int&& x)
 }
 
 [[nodiscard]]
-int twos_width(const cpp_int& x) noexcept // NOLINT(bugprone-exception-escape)
+int twos_width(const cpp_int& x)
 {
-    using boost::multiprecision::limb_type;
-    constexpr int bits_per_limb = cpp_int::backend_type::limb_bits;
-
     const int sign = x.sign();
     if (sign == 0) [[unlikely]] {
         return 1;
@@ -99,22 +97,26 @@ int twos_width(const cpp_int& x) noexcept // NOLINT(bugprone-exception-escape)
     if (sign > 0) {
         return int(msb(x)) + 2;
     }
-    const std::size_t limb_count = x.backend().size();
-    const auto* const limbs = x.backend().limbs();
-    for (std::size_t i = limb_count; i-- > 0;) {
-        // Limbs are stored separately from the sign,
-        // so counting zeros is correct, even for negative numbers.
-        if (limb_type significant = limbs[i]) {
-            return int(i * bits_per_limb) + int(bits_per_limb - std::countl_zero(significant));
-        }
+    if (x >= std::numeric_limits<Int128>::min()) {
+        return cowel::twos_width(Int128(x));
     }
-    return 1;
+    const cpp_int complement = ~x;
+    return complement == 0 ? 1 : int(msb(complement)) + 2;
+}
+
+[[nodiscard]]
+bool fits_i128(const cpp_int& x)
+{
+    const int sign = x.sign();
+    return sign > 0 ? x <= std::numeric_limits<Int128>::max()
+        : sign < 0  ? x >= std::numeric_limits<Int128>::min()
+                    : true;
 }
 
 [[nodiscard]]
 Big_Int_Handle yield_result(const cpp_int& x)
 {
-    if (twos_width(x) <= 128) {
+    if (fits_i128(x)) {
         cowel_big_int_small_result = Int128(x);
         return {};
     }
@@ -124,7 +126,7 @@ Big_Int_Handle yield_result(const cpp_int& x)
 [[nodiscard]]
 Big_Int_Handle yield_result(cpp_int&& x)
 {
-    if (twos_width(x) <= 128) {
+    if (fits_i128(x)) {
         cowel_big_int_small_result = Int128(x);
         x = {};
         return {};
@@ -408,14 +410,14 @@ cowel_big_int_handle_pair cowel_big_int_div_rem(
     }();
 
     std::array<Big_Int_Handle, 2> handles;
-    if (twos_width(div_result.quotient) <= 128) {
+    if (fits_i128(div_result.quotient)) {
         handles[0] = {};
         cowel_big_int_div_result.small_quotient = Int128(div_result.quotient);
     }
     else {
         handles[0] = yield_big_result(std::move(div_result.quotient));
     }
-    if (twos_width(div_result.remainder) <= 128) {
+    if (fits_i128(div_result.remainder)) {
         handles[1] = {};
         cowel_big_int_div_result.small_remainder = Int128(div_result.remainder);
     }
@@ -747,7 +749,7 @@ cowel_big_int_from_string_status cowel_big_int_from_string(
     if (digits.starts_with('-')) {
         result = -result;
     }
-    if (twos_width(result) <= 128) {
+    if (fits_i128(result)) {
         cowel_big_int_small_result = Int128(result);
         COWEL_DEBUG_ASSERT(cowel_big_int_small_result == result);
         return cowel_big_int_from_string_status::small_result;

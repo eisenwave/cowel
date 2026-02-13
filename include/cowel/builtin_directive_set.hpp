@@ -470,6 +470,7 @@ struct Internal_Eq_Behavior final : Bool_Directive_Behavior {
 };
 
 enum struct Unary_Numeric_Expression_Kind : Default_Underlying {
+    bit_not,
     pos,
     neg,
     abs,
@@ -481,15 +482,34 @@ enum struct Unary_Numeric_Expression_Kind : Default_Underlying {
     nearest_away_zero,
 };
 
+constexpr bool expression_kind_takes_int(const Unary_Numeric_Expression_Kind kind)
+{
+    return kind < Unary_Numeric_Expression_Kind::sqrt;
+}
+
+constexpr bool expression_kind_takes_float(const Unary_Numeric_Expression_Kind kind)
+{
+    return kind != Unary_Numeric_Expression_Kind ::bit_not;
+}
+
 struct Unary_Numeric_Expression_Behavior final : Directive_Behavior {
 private:
+    static constexpr Type numeric_types[] { Type::integer, Type::floating };
+    static constexpr auto numeric_type = Type::union_of(numeric_types);
+    static_assert(numeric_type.is_canonical());
+
     const Unary_Numeric_Expression_Kind m_expression_kind;
+    const Type* const m_type;
 
 public:
     [[nodiscard]]
     constexpr explicit Unary_Numeric_Expression_Behavior(Unary_Numeric_Expression_Kind kind)
         : Directive_Behavior { Type::any }
         , m_expression_kind { kind }
+        , m_type { expression_kind_takes_int(kind) && expression_kind_takes_float(kind)
+                       ? &numeric_type
+                       : expression_kind_takes_float(kind) ? &Type::floating
+                                                           : &Type::integer }
     {
     }
 
