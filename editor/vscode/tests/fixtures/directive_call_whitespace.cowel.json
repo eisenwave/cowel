@@ -1,0 +1,33 @@
+{
+  "description": "Directive-call with whitespace and comments between identifier and group",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 3,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive-call with space before group"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 3,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive-call without space"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 3,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive-call with block comment before group"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 3,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive-call with line comment before group"
+    }
+  ]
+}
