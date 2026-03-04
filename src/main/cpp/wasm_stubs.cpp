@@ -20,4 +20,18 @@ int __wasi_fd_seek(int, long long, int, int)
 {
     __builtin_trap();
 }
+
+extern "C" [[gnu::used]]
+int __wasi_environ_sizes_get(int* environ_count, int* environ_buf_size)
+{
+    *environ_count = 0;
+    *environ_buf_size = 0;
+    return 0;
+}
+
+extern "C" [[gnu::used]]
+int __wasi_environ_get(char**, char*)
+{
+    return 0;
+}
 // NOLINTEND

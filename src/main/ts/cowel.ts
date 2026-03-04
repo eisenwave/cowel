@@ -2,9 +2,7 @@
 import path from "path";
 import fs from "fs";
 import process from "process";
-import yargs from "yargs";
 import { fileURLToPath } from "url";
-import * as helpers from "yargs/helpers";
 
 import * as cowel from "./cowel-wasm.js";
 
@@ -43,73 +41,21 @@ enum AnsiCode {
     highWhite = "\x1B[0;97m",
 }
 
-const severityKeys = [
-    "min",
-    "trace",
-    "debug",
-    "info",
-    "soft_warning",
-    "warning",
-    "error",
-    "fatal",
-    "none",
-];
+const helpText = `\
+Usage: cowel run <input> <output> [options]
 
-function getEnumValue<T extends object>(
-    enumObj: T,
-    key: string,
-): number | undefined {
-    if (key in enumObj && typeof enumObj[key as keyof T] === "number") {
-        return enumObj[key as keyof T] as unknown as number;
-    }
-    return undefined;
-}
+Commands:
+  run <input> <output>  Processes a COWEL document
 
-const parser = yargs(helpers.hideBin(process.argv))
-    .scriptName("cowel")
-    .usage("Usage: $0 <command>")
-    .command(
-        "run <input> <output>",
-        "Processes a COWEL document",
-        yargs => {
-            return yargs
-                .positional("input", {
-                    type: "string",
-                    description: "Input file",
-                })
-                .positional("output", {
-                    type: "string",
-                    description: "Output file",
-                })
-                .option("severity", {
-                    alias: "l",
-                    type: "string",
-                    choices: severityKeys,
-                    default: cowel.Severity[cowel.Severity.info],
-                    description: "Minimum (>=) severity for log messages",
-                });
-        },
-    )
-    .option("no-color", {
-        type: "boolean",
-        default: false,
-        description: "Disable colored output",
-    })
-    .version(false)
-    .option("version", {
-        alias: "v",
-        type: "boolean",
-        description: "Show version",
-    })
-    .strict()
-    .help("h")
-    .alias("h", "help")
-    .wrap(Math.min(process.stdout.columns || Infinity, 100));
-
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-function parseArgs() {
-    return parser.parseSync();
-}
+Options:
+  -h, --help            Display this help menu
+  -v, --version         Show version
+  -l, --severity        Minimum (>=) severity for log messages
+                        Choices: min, trace, debug, info, soft_warning,
+                                 warning, error, fatal, none
+                        Default: info
+      --no-color        Disable colored output
+`;
 
 type LoadedFile = {
     path: string;
@@ -236,8 +182,6 @@ async function run(
     outputPath: string,
     options: RunOptions,
 ): Promise<number> {
-    const moduleBytes = readModuleFileSync("cowel.wasm");
-
     const mainFileResult = ((): string => {
         try {
             const data = fs.readFileSync(inputPath);
@@ -255,9 +199,7 @@ async function run(
 
     mainDocumentDir = path.dirname(inputPath);
 
-    wasm = await cowel.load(moduleBytes);
-
-    const result = await wasm.generateHtml({
+    const result = await wasm!.generateHtml({
         source: mainFileResult,
         mode: cowel.Mode.document,
         minSeverity: options.minSeverity,
@@ -301,34 +243,30 @@ async function run(
 }
 
 async function main(): Promise<number> {
-    const args = parseArgs();
+    const moduleBytes = readModuleFileSync("cowel.wasm");
+    wasm = await cowel.load(moduleBytes);
 
-    if (args.version) {
-        console.info(getVersion());
-        return 0;
-    }
-    if (args._.length === 0) {
-        parser.showHelp();
-        return 1;
-    }
-    if (args["no-color"]) {
-        colorsEnabled = false;
-    }
+    const opts = wasm.parseCliOptions(process.argv.slice(2));
 
-    const inputPath = String(args.input);
-    const outputPath = String(args.output);
-
-    const minSeverity = getEnumValue(cowel.Severity, args.severity);
-    if (minSeverity === undefined) {
-        logError(
-            "",
-            "option.severity",
-            `"${args.severity}" is not a valid severity; see --help.`,
-        );
+    if (!opts.ok) {
+        process.stderr.write(opts.errorMessage + "\n");
         return 1;
     }
 
-    return run(inputPath, outputPath, { minSeverity });
+    switch (opts.command) {
+        case "none":
+        case "help":
+            process.stdout.write(helpText);
+            return opts.command === "help" ? 0 : 1;
+        case "version":
+            console.info(getVersion());
+            return 0;
+        case "run":
+            break;
+    }
+
+    colorsEnabled = !opts.noColor;
+    return run(opts.input, opts.output, { minSeverity: opts.minSeverity });
 }
 
 process.exitCode = await main();

@@ -40,6 +40,8 @@ static_assert(sizeof(cowel_options_u8) == 88);
 static_assert(alignof(cowel_options_u8) == 4);
 static_assert(sizeof(cowel_gen_result) == 12);
 static_assert(alignof(cowel_gen_result) == 4);
+static_assert(sizeof(cowel_parsed_cli_options) == 36);
+static_assert(alignof(cowel_parsed_cli_options) == 4);
 #endif
 
 namespace {

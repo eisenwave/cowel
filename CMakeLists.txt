@@ -54,14 +54,15 @@ if(NOT DEFINED EMSCRIPTEN)
     set(BUILD_GMOCK OFF)
     set(BUILD_GTEST ON)
     FetchContent_MakeAvailable(googletest)
-
-    FetchContent_Declare(
-        tayweeargs
-        GIT_REPOSITORY https://github.com/Taywee/args.git
-        GIT_TAG        6.4.7
-    )
-    FetchContent_MakeAvailable(tayweeargs)
 endif()
+
+include(FetchContent)
+FetchContent_Declare(
+    tayweeargs
+    GIT_REPOSITORY https://github.com/Taywee/args.git
+    GIT_TAG        6.4.7
+)
+FetchContent_MakeAvailable(tayweeargs)
 
 find_package(Python3 REQUIRED)
 
@@ -247,6 +248,7 @@ set(COMMON_LIBRARY_SOURCES
     src/main/cpp/directives/wg21.cpp
 
     src/main/cpp/build_ast.cpp
+    src/main/cpp/cli_options.cpp
     src/main/cpp/content_policies.cpp
     src/main/cpp/cowel_lib.cpp
     src/main/cpp/directive_processing.cpp
@@ -330,7 +332,7 @@ if(DEFINED EMSCRIPTEN)
     target_link_options(ulight PRIVATE
         "-fno-exceptions"
     )
-    target_link_libraries(cowel-wasm PRIVATE ulight)
+    target_link_libraries(cowel-wasm PRIVATE ulight args)
 
     set(NPM_DIR "${CMAKE_BINARY_DIR}/npm")
     find_program(NPX_EXECUTABLE npx REQUIRED)
@@ -359,7 +361,7 @@ if(DEFINED EMSCRIPTEN)
     )
 else()
     add_library(cowel STATIC ${NATIVE_LIBRARY_SOURCES})
-    target_link_libraries(cowel ulight)
+    target_link_libraries(cowel ulight args)
     target_link_libraries(cowel boost_config boost_multiprecision boost_regex)
     target_link_libraries(cowel ICU::data ICU::i18n ICU::uc)
     target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})

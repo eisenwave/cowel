@@ -1,14 +1,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <iostream>
 #include <memory_resource>
 #include <string_view>
-#include <unordered_map>
 #include <utility>
-#include <vector>
-
-#define ARGS_NOEXCEPT
-#include "args.hxx"
 
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
@@ -61,18 +57,21 @@ struct Stderr_Logger {
     const std::u8string_view main_file_source;
     Diagnostic_String out;
     bool any_errors = false;
+    bool colors_enabled = true;
 
     [[nodiscard]]
     constexpr Stderr_Logger(
         Relative_File_Loader& file_loader,
         std::u8string_view main_file_name,
         std::u8string_view main_file_source,
-        std::pmr::memory_resource* memory
+        std::pmr::memory_resource* memory,
+        bool colors_enabled = true
     )
         : file_loader { file_loader }
         , main_file_name { main_file_name }
         , main_file_source { main_file_source }
         , out { memory }
+        , colors_enabled { colors_enabled }
     {
     }
 
@@ -102,9 +101,13 @@ struct Stderr_Logger {
 
         const File_Source_Span location = as_file_source_span(diagnostic);
 
-        out.append(severity_highlight(severity));
+        if (colors_enabled) {
+            out.append(severity_highlight(severity));
+        }
         out.append(severity_tag(severity));
-        out.append(ansi::reset);
+        if (colors_enabled) {
+            out.append(ansi::reset);
+        }
         out.append(u8": ");
         if (diagnostic.length == 0) {
             print_location_of_file(out, file_entry.name);
@@ -114,11 +117,15 @@ struct Stderr_Logger {
         }
         out.append(u8' ');
         out.append(as_u8string_view(diagnostic.message));
-        out.append(ansi::h_black);
+        if (colors_enabled) {
+            out.append(ansi::h_black);
+        }
         out.append(u8" [");
         out.append(as_u8string_view(diagnostic.id));
         out.append(u8']');
-        out.append(ansi::reset);
+        if (colors_enabled) {
+            out.append(ansi::reset);
+        }
         out.append(u8'\n');
         if (diagnostic.length != 0) {
             print_affected_line(out, file_entry.source, location);
@@ -128,62 +135,59 @@ struct Stderr_Logger {
     }
 };
 
+constexpr std::string_view help_text = R"(Usage: cowel run <input> <output> [options]
+
+Commands:
+  run <input> <output>  Processes a COWEL document
+
+Options:
+  -h, --help            Display this help menu
+  -v, --version         Show version
+  -l, --severity        Minimum (>=) severity for log messages
+                        Choices: min, trace, debug, info, soft_warning,
+                                 warning, error, fatal, none
+                        Default: info
+      --no-color        Disable colored output
+)";
+
+constexpr std::string_view version_text = "0.8.0\n";
+
 int main(int argc, const char* const* const argv)
 {
-    static const std::unordered_map<std::string, Severity> severity_arg_map {
-        { "min", Severity::min },
-        { "trace", Severity::trace },
-        { "debug", Severity::debug },
-        { "info", Severity::info },
-        { "soft_warning", Severity::soft_warning },
-        { "warning", Severity::warning },
-        { "error", Severity::error },
-        { "fatal", Severity::fatal },
-        { "none", Severity::none },
-    };
+    cowel_parsed_cli_options opts
+        = cowel_parse_cli_options(argv + 1, static_cast<size_t>(argc - 1));
 
-    args::ArgumentParser parser { "Processes COWEL documents into HTML." };
-    parser.helpParams.width = 100;
-    parser.helpParams.addChoices = true;
-    args::Positional<std::string> input_arg {
-        parser,
-        "input",
-        "Input COWEL file",
-        args::Options::Required,
-    };
-    args::Positional<std::string> output_arg {
-        parser,
-        "output",
-        "Output HTML file",
-        args::Options::Required,
-    };
-    args::MapFlag<std::string, Severity> severity_arg {
-        parser,
-        "severity",
-        "Minimum (>=) severity for log messages",
-        { 'l', "severity" },
-        severity_arg_map,
-        Severity::info,
-    };
-    args::HelpFlag help_arg {
-        parser, "help", "Display this help menu", { 'h', "help" }, args::Options::Global
-    };
+    struct Opts_Guard {
+        cowel_parsed_cli_options& opts;
+        explicit Opts_Guard(cowel_parsed_cli_options& o)
+            : opts { o }
+        {
+        }
+        Opts_Guard(const Opts_Guard&) = delete;
+        Opts_Guard& operator=(const Opts_Guard&) = delete;
+        ~Opts_Guard()
+        {
+            cowel_free_cli_options(&opts);
+        }
+    } guard { opts };
 
-    if (argc <= 1) {
-        parser.Help(std::cout);
+    if (!opts.ok) {
+        std::cerr << as_string_view(as_u8string_view(opts.error_message)) << '\n';
         return EXIT_FAILURE;
     }
-    if (!parser.ParseCLI(argc, argv) || parser.GetError() != args::Error::None) {
-        std::cerr << parser.GetErrorMsg() << '\n';
-        return EXIT_FAILURE;
-    }
-    if (help_arg.Matched()) {
-        parser.Help(std::cout);
-        return EXIT_SUCCESS;
+
+    switch (opts.command) {
+    case COWEL_CLI_COMMAND_NONE:
+    case COWEL_CLI_COMMAND_HELP:
+        std::cout << help_text;
+        return opts.command == COWEL_CLI_COMMAND_HELP ? EXIT_SUCCESS : EXIT_FAILURE;
+    case COWEL_CLI_COMMAND_VERSION: std::cout << version_text; return EXIT_SUCCESS;
+    case COWEL_CLI_COMMAND_RUN: break;
     }
 
-    const std::string in_path = input_arg.Get();
-    const std::string out_path = output_arg.Get();
+    const std::string in_path = std::string(as_string_view(as_u8string_view(opts.input)));
+    const std::string out_path = std::string(as_string_view(as_u8string_view(opts.output)));
+    const bool colors_enabled = !opts.no_color;
 
     Global_Memory_Resource global_memory;
     std::pmr::unsynchronized_pool_resource memory { &global_memory };
@@ -204,7 +208,7 @@ int main(int argc, const char* const* const argv)
     const auto in_source = as_u8string_view(*in_text);
 
     Relative_File_Loader file_loader { std::move(in_path_directory), &memory };
-    Stderr_Logger logger { file_loader, in_path_u8, in_source, &memory };
+    Stderr_Logger logger { file_loader, in_path_u8, in_source, &memory, colors_enabled };
 
     // TODO: allow custom ulight themes instead of hardcoding wg21.json
 
@@ -220,7 +224,7 @@ int main(int argc, const char* const* const argv)
         .source = as_cowel_string_view(in_source),
         .highlight_theme_json = as_cowel_string_view(assets::wg21_json),
         .mode = COWEL_MODE_DOCUMENT,
-        .min_log_severity = cowel_severity(severity_arg.Get()),
+        .min_log_severity = opts.min_severity,
         .preserved_variables = nullptr,
         .preserved_variables_size = 0,
         .consume_variables = nullptr,

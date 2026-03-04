@@ -216,6 +216,9 @@ type CowelWasmExports = WebAssembly.Exports & {
     readonly cowel_big_int_small_result: Address;
     readonly cowel_big_int_big_result: Address;
     readonly cowel_big_int_div_result: Address;
+
+    cowel_parse_cli_options(result: Address, args: Address, argCount: number): void;
+    cowel_free_cli_options(options: Address): void;
 };
 
 type OrchestrationAllocations = {
@@ -868,6 +871,16 @@ class RegExpApi {
     }
 }
 
+export type ParsedCliOptions = {
+    command: "none" | "help" | "version" | "run";
+    ok: boolean;
+    input: string;
+    output: string;
+    minSeverity: Severity;
+    noColor: boolean;
+    errorMessage: string;
+};
+
 /**
  * Wrapper for the WASM module that provides COWEL functionality.
  */
@@ -1083,6 +1096,86 @@ export class CowelWasm {
         this.free(resultAllocation);
 
         return result;
+    }
+
+    /**
+     * Parses command-line arguments by calling into the WASM module.
+     * The result struct layout (WASM32) is:
+     *   offset  0: command        (uint32)
+     *   offset  4: input.text     (ptr)
+     *   offset  8: input.length   (uint32)
+     *   offset 12: output.text    (ptr)
+     *   offset 16: output.length  (uint32)
+     *   offset 20: min_severity   (uint32)
+     *   offset 24: no_color       (uint8)
+     *   offset 25: ok             (uint8)
+     *   offset 26: padding        (2 bytes)
+     *   offset 28: error.text     (ptr)
+     *   offset 32: error.length   (uint32)
+     *   total: 36 bytes, align 4
+     */
+    parseCliOptions(args: string[]): ParsedCliOptions {
+        const encoder = new TextEncoder();
+
+        // Allocate each arg as a null-terminated UTF-8 string in WASM memory.
+        const argAllocs: Allocation[] = args.map(arg => {
+            const encoded = encoder.encode(arg);
+            const alloc = this.alloc2(encoded.length + 1, 1);
+            this.heap_u8.set(encoded, alloc.address);
+            this.heap_u8[alloc.address + encoded.length] = 0;
+            return alloc;
+        });
+
+        // Build a pointer array; use address 0 when there are no args
+        // `cowel_parse_cli_options` short-circuits on `arg_count` == 0.
+        let argsArray: Allocation | null = null;
+        let argsArrayAddr = 0;
+        if (args.length > 0) {
+            argsArray = this.alloc2(args.length * 4, 4);
+            argsArrayAddr = argsArray.address;
+            for (let i = 0; i < argAllocs.length; i++) {
+                this.heap_u32[argsArray.address / 4 + i] = argAllocs[i].address;
+            }
+        }
+
+        // Allocate the result struct.
+        const resultAlloc = this.alloc2(36, 4);
+        this.exports.cowel_parse_cli_options(resultAlloc.address, argsArrayAddr, args.length);
+
+        // Read fields from the result struct.
+        const command = this.heap_u32[resultAlloc.address / 4 + 0];
+        const inputTextAddr = this.heap_u32[resultAlloc.address / 4 + 1];
+        const inputLength = this.heap_u32[resultAlloc.address / 4 + 2];
+        const outputTextAddr = this.heap_u32[resultAlloc.address / 4 + 3];
+        const outputLength = this.heap_u32[resultAlloc.address / 4 + 4];
+        const minSeverity: Severity = this.heap_u32[resultAlloc.address / 4 + 5];
+        const noColor = this.heap_u8[resultAlloc.address + 24] !== 0;
+        const ok = this.heap_u8[resultAlloc.address + 25] !== 0;
+        const errorTextAddr = this.heap_u32[resultAlloc.address / 4 + 7];
+        const errorLength = this.heap_u32[resultAlloc.address / 4 + 8];
+
+        // Decode heap-allocated strings before freeing.
+        const input = inputTextAddr !== 0 ? this.decodeUtf8(inputTextAddr, inputLength) : "";
+        const output = outputTextAddr !== 0 ? this.decodeUtf8(outputTextAddr, outputLength) : "";
+        const errorMessage = errorTextAddr !== 0 ? this.decodeUtf8(errorTextAddr, errorLength) : "";
+
+        this.exports.cowel_free_cli_options(resultAlloc.address);
+        this.free(resultAlloc);
+        if (argsArray !== null) {
+            this.free(argsArray);
+        }
+        for (const alloc of argAllocs) {
+            this.free(alloc);
+        }
+
+        const commandStr = (
+            command === 0 ? "none" :
+                command === 1 ? "help" :
+                    command === 2 ? "version" :
+                        "run"
+        ) as ParsedCliOptions["command"];
+
+        return { command: commandStr, ok, input, output, minSeverity, noColor, errorMessage };
     }
 
     private onMemoryGrowth(_byteLength: number): void {
