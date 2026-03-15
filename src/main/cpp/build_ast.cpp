@@ -187,7 +187,7 @@ Group_Member Group_Member::named(Primary&& name, Expression&& value)
     return {
         value.get_source_span(),
         value.get_source(),
-        gc_ref_make<Primary>( std::move(name)),
+        gc_ref_make<Primary>(std::move(name)),
         gc_ref_make<Expression>(std::move(value)),
         Member_Kind::named,
     };

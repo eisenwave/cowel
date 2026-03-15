@@ -297,24 +297,6 @@ void diagnose(
     Context& context
 );
 
-[[nodiscard, deprecated]]
-Processing_Status named_arguments_to_attributes(
-    Text_Buffer_Attribute_Writer& out,
-    std::span<const ast::Group_Member> arguments,
-    Frame_Index frame,
-    Context& context,
-    Attribute_Style style = Attribute_Style::double_if_needed
-);
-
-[[nodiscard, deprecated]]
-Processing_Status named_argument_to_attribute(
-    Text_Buffer_Attribute_Writer& out,
-    const ast::Group_Member& a,
-    Frame_Index frame,
-    Context& context,
-    Attribute_Style style = Attribute_Style::double_if_needed
-);
-
 Result<void, std::size_t> named_str_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
     std::span<const Group_Member_Value> arguments,

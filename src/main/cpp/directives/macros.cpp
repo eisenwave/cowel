@@ -109,7 +109,7 @@ struct Put_Positional {
             }
             case ast::Member_Kind::positional: {
                 if (needle_index == index++) {
-                    return Argument ::positional(arg);
+                    return Argument::positional(arg);
                 }
                 continue;
             }

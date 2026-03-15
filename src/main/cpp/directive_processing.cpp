@@ -917,58 +917,6 @@ void diagnose(
     }
 }
 
-Processing_Status named_arguments_to_attributes(
-    Text_Buffer_Attribute_Writer& out,
-    std::span<const ast::Group_Member> arguments,
-    Frame_Index frame,
-    Context& context,
-    Attribute_Style style
-)
-{
-    return process_greedy(arguments, [&](const ast::Group_Member& a) -> Processing_Status {
-        if (a.get_kind() == ast::Member_Kind::ellipsis) {
-            const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
-            return named_arguments_to_attributes(
-                out, ellipsis_frame.invocation.get_arguments_span(),
-                ellipsis_frame.invocation.content_frame, context, style
-            );
-        }
-        COWEL_ASSERT(a.get_kind() == ast::Member_Kind::named);
-        return named_argument_to_attribute(out, a, frame, context, style);
-    });
-}
-
-Processing_Status named_argument_to_attribute(
-    Text_Buffer_Attribute_Writer& out,
-    const ast::Group_Member& a,
-    Frame_Index frame,
-    Context& context,
-    Attribute_Style style
-)
-{
-    COWEL_ASSERT(a.get_kind() == ast::Member_Kind::named);
-
-    const Result<Value, Processing_Status> name = evaluate(a.get_name(), frame, context);
-    if (!name) {
-        return name.error();
-    }
-    const Result<Value, Processing_Status> value
-        = evaluate_expression(a.get_value(), frame, context);
-    if (!value) {
-        return name.error();
-    }
-    const Result<Value, Processing_Status> value_string
-        = splice_value_to_string(*value, a.get_value_span(), context);
-    if (!value_string) {
-        return value_string.error();
-    }
-
-    // TODO: this is simply going to crash if the attribute name is not valid;
-    // investigate whether this needs work, and possibly leave a comment here if it's okay
-    out.write_attribute(HTML_Attribute_Name(name->as_string()), value_string->as_string(), style);
-    return Processing_Status::ok;
-}
-
 Result<void, std::size_t> named_str_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
     const std::span<const Group_Member_Value> arguments,
@@ -1050,7 +998,6 @@ Processing_Status named_arguments_to_attributes_or_error(
     const bool are_arguments_strings = matcher.get_element_type() == Type::str
         || std::ranges::all_of(matcher.get(),
                                [](const Group_Member_Value& val) { return val.value.is_str(); });
-
     if (are_arguments_strings) {
         return do_named_arguments_to_attributes_or_error(matcher.get());
     }
@@ -1060,6 +1007,9 @@ Processing_Status named_arguments_to_attributes_or_error(
         const auto& [name, value] = matcher.get()[i];
         Result<Value, Processing_Status> spliced
             = splice_value_to_string(value, matcher.get_locations()[i], context);
+        if (!spliced) {
+            return spliced.error();
+        }
         string_values.push_back({ .name = name, .value = std::move(*spliced) });
     }
     return do_named_arguments_to_attributes_or_error(string_values);

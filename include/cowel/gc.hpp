@@ -155,9 +155,10 @@ public:
         }
     }
 
-    [[nodiscard]]
-    constexpr GC_Ref(GC_Ref<std::remove_const_t<T>> other) noexcept
+    template <std::same_as<std::remove_const_t<T>> U>
         requires std::is_const_v<T>
+    [[nodiscard]]
+    constexpr GC_Ref(GC_Ref<U> other) noexcept
         : m_node { other.unsafe_release_node() }
     {
         // This conversion is safe because GC_Node is type-erased
