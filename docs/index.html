@@ -1898,8 +1898,6 @@ h1 {
 <div class=toc-num data-level=4>10.13.1</div>
 <a href=#dir-div><h4><code><h- data-h=mk_tag>\div</h-></code> — Content division</h4></a>
 <div class=toc-num data-level=4>10.13.2</div>
-<a href=#dir-trim><h4><code><h- data-h=mk_tag>\trim</h-></code> — Trim input</h4></a>
-<div class=toc-num data-level=4>10.13.3</div>
 <a href=#dir-p><h4><code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4></a>
 </div>
 
@@ -2548,7 +2546,7 @@ digits of value <math display=inline><mn>10</mn></math>..<math display=inline><m
 </p>
 <example-block><p><intro-></intro-> 
 The <g-term>int-literal</g-term> <code>0123</code> represents the integer value
-<math display=inline><mrow></mrow><mn>123</mn></math>.
+<math display=inline><mn>123</mn></math>.
 </p>
 <p>The <g-term>BINARY-INT-TOKEN</g-term> <code>0b11111111</code>,
 the <g-term>OCTAL-INT-TOKEN</g-term> <code>0o377</code>,
@@ -3822,10 +3820,6 @@ This notation consists of
     and optionally followed by '<tt->=</tt->' and a <dfn>default value</dfn>, and
   </li>
   <li>
-    optionally,
-    the symbol <tt->{...}</tt-> to indicate that the directive accepts content.
-  </li>
-  <li>
     the result type of the directive,
     separated by '<tt->:</tt->'
   </li>
@@ -3837,7 +3831,8 @@ The description of <code><h- data-h=mk_tag>\cowel_html_element</h-></code> looks
 <h- data-h=mk_tag>cowel_html_element</h->(
   <h- data-h=mk_attr>name</h->: <h- data-h=kw_type>str</h->,
   <h- data-h=mk_attr>attr</h->: <h- data-h=kw_type>lazy(group pack named string)?</h->,
-){...}: <h- data-h=kw_type>block</h->
+  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
+): <h- data-h=kw_type>block</h->
 </pre>
 
 <p>Or equivalently:
@@ -3845,7 +3840,8 @@ The description of <code><h- data-h=mk_tag>\cowel_html_element</h-></code> looks
 <h- data-h=mk_tag>cowel_html_element</h->(
   <h- data-h=mk_attr>name</h->: <h- data-h=kw_type>string</h->,
   <h- data-h=mk_attr>attr</h->: <h- data-h=kw_type>lazy(group(pack(named(string))))?</h->,
-){...}: <h- data-h=kw_type>block</h->
+  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
+): <h- data-h=kw_type>block</h->
 </pre>
 
 <p>This describes that <code><h- data-h=mk_tag>\cowel_html_element</h-></code> can be invoked as follows,
@@ -3887,8 +3883,16 @@ unless all positional arguments appear contiguously at the start of the argument
 </p>
 <ol>
   <li>
+    If a block argument is provided,
+    that argument matches the last parameter of the directive.
+    <example-block><p><intro-></intro-> 
+    The syntax <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>d</h-><h- data-h=sym_par>(</h-><h- data-h=str>a</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>b</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->xzy<h- data-h=sym_brac>}</h-></code> is equivalent to <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>d</h-><h- data-h=sym_par>(</h-><h- data-h=str>a</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>b</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_brac>{</h->xzy<h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-></code>.
+    </p></example-block>
+  </li>
+  <li>
     Positional arguments match parameters in the same order.
-    An error is raised if there are more positional arguments than parameters.
+    An error is raised if there are more positional arguments than parameters,
+    or if the corresponding parameter was already matched by a block argument.
   </li>
   <li>
     The following named arguments match parameters with the same name.
@@ -4045,7 +4049,8 @@ whereas '<tt->b</tt->' and '<tt->c</tt->' are discarded.
 <h- data-h=mk_tag>cowel_html_element</h->(
   <h- data-h=mk_attr>name</h->: <h- data-h=kw_type>string</h->,
   <h- data-h=mk_attr>attr</h->: <h- data-h=kw_type>lazy(group pack named string)?</h->,
-){...}: <h- data-h=kw_type>block</h->
+  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
+): <h- data-h=kw_type>block</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_html_element</h-></code> directive generates content,
@@ -4165,7 +4170,7 @@ which, in turn, feeds content into some parent content policy.
 <h4 id=dir-cowel_to_html><a class=para href=#dir-cowel_to_html></a>9.4.1. <code><h- data-h=mk_tag>\cowel_to_html</h-></code> — Process with to-HTML policy</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_to_html</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_to_html</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
 <p><code><h- data-h=mk_tag>\cowel_to_html</h-></code> simply processes the provided content using the to-HTML policy.
@@ -4206,7 +4211,7 @@ Use of
 <h4 id=dir-cowel_no_invoke><a class=para href=#dir-cowel_no_invoke></a>9.4.2. <code><h- data-h=mk_tag>\cowel_no_invoke</h-></code> — Process with no-invoke policy</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_no_invoke</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_no_invoke</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
 <p><code><h- data-h=mk_tag>\cowel_no_invoke</h-></code> processes the provided content
@@ -4233,7 +4238,7 @@ That is, comments are ignored, and escapes are expanded.
 <h4 id=dir-cowel_actions><a class=para href=#dir-cowel_actions></a>9.4.3. <code><h- data-h=mk_tag>\cowel_actions</h-></code> — Process with actions policy</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_actions</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_actions</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
 <p><code><h- data-h=mk_tag>\cowel_actions</h-></code> processes the provided content
@@ -4288,7 +4293,7 @@ but macro definitions produce no output.
 <h4 id=dir-cowel_text_only><a class=para href=#dir-cowel_text_only></a>9.4.4. <code><h- data-h=mk_tag>\cowel_text_only</h-></code> — Process with text-only policy</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_text_only</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_text_only</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
 <p><code><h- data-h=mk_tag>\cowel_text_only</h-></code> processes the provided content
@@ -4316,7 +4321,7 @@ such as in the <code>strong</code> positional argument to
 <h4 id=dir-cowel_text_as_html><a class=para href=#dir-cowel_text_as_html></a>9.4.5. <code><h- data-h=mk_tag>\cowel_text_as_html</h-></code> — Process with text-as-HTML policy</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_text_as_html</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_text_as_html</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
 <p><code><h- data-h=mk_tag>\cowel_no_invoke</h-></code> processes the provided content
@@ -4340,7 +4345,7 @@ While there are legitimate uses (e.g. inline SVG images and other large HTML blo
 <h4 id=dir-cowel_as_text><a class=para href=#dir-cowel_as_text></a>9.4.6. <code><h- data-h=mk_tag>\cowel_as_text</h-></code> — Process with as-text policy</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_as_text</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_as_text</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
 <p><code><h- data-h=mk_tag>\cowel_as_text</h-></code> processes the provided content
@@ -4384,7 +4389,7 @@ to render the generated HTML (rather than having it go directly into the output 
 <h4 id=dir-cowel_source_as_text><a class=para href=#dir-cowel_source_as_text></a>9.4.7. <code><h- data-h=mk_tag>\cowel_source_as_text</h-></code> — Process with source-as-text policy</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_source_as_text</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_source_as_text</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
 <p><code><h- data-h=mk_tag>\cowel_no_invoke</h-></code> processes the provided content
@@ -4421,7 +4426,8 @@ Many examples can be found in this document.
 <pre>
 <h- data-h=mk_tag>cowel_highlight</h->(
   <h- data-h=mk_attr>lang</h->: <h- data-h=kw_type>string</h->,
-){...}: <h- data-h=kw_type>block</h->
+  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
+): <h- data-h=kw_type>block</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_highlight</h-></code>
@@ -4440,7 +4446,8 @@ which is the highlighter that COWEL uses internally.
 <pre>
 <h- data-h=mk_tag>cowel_highlight_as</h->(
   <h- data-h=mk_attr>name</h->: <h- data-h=kw_type>string</h->,
-){...}: <h- data-h=kw_type>block</h->
+  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
+): <h- data-h=kw_type>block</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_highlight_as</h-></code> directive forces certain syntax highlighting
@@ -4484,7 +4491,7 @@ Only µlight long names should be used directly.
 <h4 id=dir-cowel_highlight_phantom><a class=para href=#dir-cowel_highlight_phantom></a>9.5.3. <code><h- data-h=mk_tag>\cowel_highlight_phantom</h-></code> — Syntax highlight phantom text</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_highlight_phantom</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_highlight_phantom</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_highlight_phantom</h-></code> directive
@@ -4572,7 +4579,7 @@ Second paragraph.
 <h4 id=dir-cowel_paragraphs><a class=para href=#dir-cowel_paragraphs></a>9.6.2. <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> — Perform paragraph splitting</h4>
 
 <pre>
-<h- data-h=mk_tag>cowel_paragraphs</h->(){...}: <h- data-h=kw_type>block</h->
+<h- data-h=mk_tag>cowel_paragraphs</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_paragraphs</h-></code> directive
@@ -4796,7 +4803,8 @@ this renders as:
 <pre>
 <h- data-h=mk_tag>cowel_alias</h->(
   <h- data-h=mk_attr>names</h->: <h- data-h=kw_type>pack string</h->,
-){...}: <h- data-h=kw_type>unit</h->
+  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
+): <h- data-h=kw_type>unit</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_alias</h-></code> directive defines one or more aliases for an existing directive.
@@ -4839,7 +4847,8 @@ One or multiple aliases can be defined as follows:
 <pre>
 <h- data-h=mk_tag>cowel_macro</h->(
   <h- data-h=mk_attr>names</h->: <h- data-h=kw_type>pack string</h->,
-){...}: <h- data-h=kw_type>unit</h->
+  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
+): <h- data-h=kw_type>unit</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_macro</h-></code> directive defines a block of content which
@@ -4879,7 +4888,8 @@ may also result in paragraph splits outside the macro.
 <pre>
 <h- data-h=mk_tag>cowel_put</h->(
   <h- data-h=mk_attr>else</h->: <h- data-h=kw_type>lazy any</h->,
-){...}: <h- data-h=kw_type>any</h->
+  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
+): <h- data-h=kw_type>any</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_put</h-></code> directive processes content
@@ -5003,7 +5013,8 @@ but it can have unintended side effects:
 <pre>
 <h- data-h=mk_tag>cowel_invoke</h->(
   <h- data-h=mk_attr>name</h->: <h- data-h=kw_type>string</h->,
-){...}: <h- data-h=kw_type>any</h->
+  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
+): <h- data-h=kw_type>any</h->
 </pre>
 
 <p>The <code><h- data-h=mk_tag>\cowel_invoke</h-></code> directive invokes a directive by name.
@@ -7074,48 +7085,7 @@ tags.
 It displays as a block, and its content is an HTML context.
 <code><h- data-h=mk_tag>\div</h-></code>'s named arguments are turned into HTML attributes.
 </p>
-<h4 id=dir-trim><a class=para href=#dir-trim></a>10.13.2. <code><h- data-h=mk_tag>\trim</h-></code> — Trim input</h4>
-
-<p>The content of a <code><h- data-h=mk_tag>\text</h-></code> directive is an HTML context
-(<a href=#contexts-and-output>§5.1. Content policies</a>).
-Its arguments are ignored.
-<code><h- data-h=mk_tag>\text</h-></code> is a formatting directive.
-</p>
-<p>The process of <dfn>trimming</dfn> eliminates leading and trailing whitespace in the input,
-at the COWEL source level.
-</p>
-<example-block><p><intro-></intro-> 
-</p><code-block>Every<h- data-h=mk_tag>\trim</h-><h- data-h=sym_brac>{</h-> day<h- data-h=sym_brac>}</h-></code-block>
-<p>This renders as:
-</p><div class=indent>
-Everyday
-</div>
-</example-block>
-
-<tip-block><p><intro-></intro-> 
-<code><h- data-h=mk_tag>\trim</h-></code> is primarily useful inside of macros.
-We might not want to space-separate content if some of it is empty.
-For example, we could define a <code><h- data-h=mk_tag>\Note</h-></code> macro
-where the user can <em>optionally</em> provide a number for that note:
-</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>macro</h-><h- data-h=sym_par>(</h->\Note<h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>trim</h-><h- data-h=sym_brac>{</h->Note <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>put</h-><h- data-h=sym_brac>}</h->:<h- data-h=sym_brac>}</h->
-
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Note</h-> Something something.
-
-<h- data-h=mk_tag>\</h-><h- data-h=mk_tag>Note</h-><h- data-h=sym_brac>{</h->1<h- data-h=sym_brac>}</h-> Something else.</code-block>
-<p>This renders as:
-</p><div class=indent>
-<p>Note: Something something.
-</p>
-<p>Note 1: Something else.
-</p></div>
-<p>Notice that because <code><h- data-h=mk_tag>\put</h-></code> expands to no content,
-the trailing space after <code>Note</code> is eliminated.
-If it wasn't eliminated, we would end up with
-<code><h- data-h=sym_brac>{</h->Note :<h- data-h=sym_brac>}</h-></code>,
-but there should never be a space before the colon.
-</p></tip-block>
-
-<h4 id=dir-p><a class=para href=#dir-p></a>10.13.3. <code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4>
+<h4 id=dir-p><a class=para href=#dir-p></a>10.13.2. <code><h- data-h=mk_tag>\p</h-></code> — Paragraphs</h4>
 
 <p>The <code><h- data-h=mk_tag>\p</h-></code> directive surrounds its content in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
 </p></main></body>

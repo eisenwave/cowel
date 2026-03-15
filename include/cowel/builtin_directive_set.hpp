@@ -642,22 +642,6 @@ struct Var_Delete_Behavior final : Unit_Directive_Behavior {
     Processing_Status do_evaluate(const Invocation& call, Context& context) const final;
 };
 
-struct Trim_Behavior : Block_Directive_Behavior {
-protected:
-    const Directive_Display m_display;
-
-public:
-    [[nodiscard]]
-    constexpr explicit Trim_Behavior(Directive_Display display)
-        : m_display { display }
-    {
-    }
-
-    [[nodiscard]]
-    Processing_Status
-    splice(Content_Policy& out, const Invocation& call, Context& context) const override;
-};
-
 struct Passthrough_Behavior : Block_Directive_Behavior {
 protected:
     const Policy_Usage m_policy;
@@ -944,6 +928,8 @@ struct Macro_Behavior final : Unit_Directive_Behavior {
     Processing_Status do_evaluate(const Invocation&, Context&) const override;
 };
 
+struct Argument;
+
 struct Put_Behavior final : Directive_Behavior {
 
     [[nodiscard]]
@@ -960,7 +946,7 @@ struct Put_Behavior final : Directive_Behavior {
 
 private:
     [[nodiscard]]
-    Result<const ast::Expression*, Processing_Status> resolve(const Invocation&, Context&) const;
+    Result<Argument, Processing_Status> resolve(const Invocation&, Context&) const;
 };
 
 struct Paragraph_Enter_Behavior final : Block_Directive_Behavior {

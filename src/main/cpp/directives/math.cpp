@@ -90,94 +90,118 @@ constexpr std::ptrdiff_t mathml_element_index(std::u8string_view name)
 static_assert(mathml_permits_text_bits[mathml_element_index(u8"mi")]);
 static_assert(!mathml_permits_text_bits[mathml_element_index(u8"munderover")]);
 
-[[nodiscard]]
-Processing_Status to_math_html(
-    Content_Policy& out,
-    std::span<const ast::Markup_Element> contents,
-    Frame_Index content_frame,
-    Context& context,
-    bool permit_text = false
-)
-{
-    return process_greedy(contents, [&](const ast::Markup_Element& c) -> Processing_Status {
-        const auto* const d = c.try_as_directive();
-        if (!d) {
-            if (!permit_text) {
-                const auto* const t = c.try_as_primary();
-                if (t && t->get_kind() == ast::Primary_Kind::text) {
-                    const bool is_blank_text = std::ranges::all_of(t->get_source(), [](char8_t c) {
-                        return is_ascii_blank(c);
-                    });
-                    if (!is_blank_text) {
-                        context.try_warning(
-                            diagnostic::math::text, c.get_source_span(),
-                            u8"Text cannot appear in this context. "
-                            u8"MathML requires text to be enclosed in <mi>, <mn>, etc., "
-                            u8"which correspond to \\mi, \\mn, and other pseudo-directives."sv
-                        );
-                    }
-                }
+constexpr Type bool_or_str_types[] { Type::boolean, Type::str };
+constexpr auto bool_or_str = Type::union_of(bool_or_str_types);
+constexpr auto named_bool_or_str = Type::named(&bool_or_str);
+constexpr auto pack_named_bool_or_str = Type::pack_of(&named_bool_or_str);
+static_assert(pack_named_bool_or_str.is_canonical());
+
+struct Math_Content_Policy final : HTML_Content_Policy {
+private:
+    bool m_permit_text;
+
+public:
+    [[nodiscard]]
+    Math_Content_Policy(Text_Sink& parent, const bool permit_text)
+        : Text_Sink { Output_Language::html }
+        , Content_Policy { Output_Language::html }
+        , HTML_Content_Policy { parent }
+        , m_permit_text { permit_text }
+    {
+    }
+
+    [[nodiscard]]
+    Processing_Status
+    consume(const ast::Primary& node, const Frame_Index frame, Context& context) override
+    {
+        const auto kind = node.get_kind();
+        const bool attempt_diagnose_text = !m_permit_text
+            && (kind == ast::Primary_Kind::text || kind == ast::Primary_Kind::escape);
+        if (attempt_diagnose_text) {
+            const bool is_non_blank_escape
+                = kind == ast::Primary_Kind::escape && !expand_escape(node).empty();
+            const bool is_non_blank_text = kind == ast::Primary_Kind::text
+                && !std::ranges::all_of(node.get_source(),
+                                        [](const char8_t c) { return is_ascii_blank(c); });
+            if (is_non_blank_escape || is_non_blank_text) {
+                context.try_warning(
+                    diagnostic::math::text, node.get_source_span(),
+                    u8"Text cannot appear in this context. "
+                    u8"MathML requires text to be enclosed in <mi>, <mn>, etc., "
+                    u8"which correspond to \\mi, \\mn, and other pseudo-directives."sv
+                );
             }
-            return out.consume_content(c, content_frame, context);
         }
-        const std::u8string_view name_string = d->get_name();
+        return HTML_Content_Policy::consume(node, frame, context);
+    }
+
+    [[nodiscard]]
+    Processing_Status
+    consume(const ast::Directive& d, const Frame_Index content_frame, Context& context) override
+    {
+        const std::u8string_view name_string = d.get_name();
         const std::ptrdiff_t index = mathml_element_index(name_string);
         if (index < 0) {
-            return out.consume(*d, content_frame, context);
+            return HTML_Content_Policy::consume(d, content_frame, context);
         }
 
-        Group_Pack_Named_Lazy_Spliceable_Matcher args_matcher;
+        Pack_Named_Of_Type_Matcher attr_matcher { pack_named_bool_or_str };
+        Parameter args_param { u8"attr"sv, Optionality::optional, attr_matcher };
+        Block_Matcher content_matcher;
+        Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+        Parameter* const parameters[] { &args_param, &content_param };
 
-        const auto match_status = args_matcher.match_group(
-            d->get_arguments(), content_frame, context,
-            {
-                .emit = make_fail_callback(),
-                .status = Processing_Status::error,
-                .location = d->get_name_span(),
-            }
-        );
+        Invocation call {
+            .name = name_string,
+            .directive = d,
+            .arguments = d.get_arguments(),
+            .content = d.get_content(),
+            .content_frame = content_frame,
+            .call_frame = content_frame,
+        };
+        const auto match_status = match_call(parameters, call, context);
         if (match_status != Processing_Status::ok) {
             return match_status;
         }
 
         // directive names are HTML tag names
         const HTML_Tag_Name name { Unchecked {}, name_string };
-        HTML_Writer_Buffer buffer { out, Output_Language::html };
+        HTML_Writer_Buffer buffer { *this, Output_Language::html };
         Text_Buffer_HTML_Writer writer { buffer };
         auto attributes = writer.open_tag_with_attributes(name);
-        const auto attributes_status = named_arguments_to_attributes(
-            attributes, d->get_argument_span(), content_frame, context
-        );
+        const auto attributes_status
+            = named_arguments_to_attributes_or_error(attributes, attr_matcher, context);
         attributes.end();
-        if (status_is_break(attributes_status)) {
-            writer.close_tag(name);
-            buffer.flush();
-            return attributes_status;
-        }
 
         buffer.flush();
+
         const bool child_permits_text = mathml_permits_text_bits[std::size_t(index)];
-        const auto nested_status
-            = to_math_html(out, d->get_content_span(), content_frame, context, child_permits_text);
+        const bool old_permit_text = std::exchange(m_permit_text, child_permits_text);
+        const auto nested_status = content_matcher.get().splice_block(*this, context);
+        m_permit_text = old_permit_text;
+
         writer.close_tag(name);
         buffer.flush();
         return status_concat(attributes_status, nested_status);
-    });
-}
+    }
+};
 
 } // namespace
 
 Processing_Status
 Math_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    constexpr auto tag_name = html_tag::math;
-    const std::u8string_view display_string
-        = m_display == Directive_Display::in_line ? u8"inline" : u8"block";
+    static constexpr auto tag_name = html_tag::math;
+    const auto display_string
+        = m_display == Directive_Display::in_line ? u8"inline"sv : u8"block"sv;
 
-    Group_Pack_Named_Lazy_Spliceable_Matcher args_matcher;
-    Call_Matcher call_matcher { args_matcher };
+    Pack_Named_Of_Type_Matcher attr_matcher { pack_named_bool_or_str };
+    Parameter attr_param { u8"attr"sv, Optionality::optional, attr_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &attr_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
                                              : match_status;
@@ -190,19 +214,13 @@ Math_Behavior::splice(Content_Policy& out, const Invocation& call, Context& cont
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(tag_name);
     attributes.write_display(display_string);
-    const auto attributes_status = named_arguments_to_attributes(
-        attributes, call.get_arguments_span(), call.content_frame, context
-    );
+    const Processing_Status attributes_status
+        = named_arguments_to_attributes_or_error(attributes, attr_matcher, context);
     attributes.end();
-    if (status_is_break(attributes_status)) {
-        writer.close_tag(tag_name);
-        buffer.flush();
-        return attributes_status;
-    }
     buffer.flush();
 
-    const auto nested_status
-        = to_math_html(policy, call.get_content_span(), call.content_frame, context);
+    Math_Content_Policy math_policy { policy, /*permit_text=*/false };
+    const auto nested_status = content_matcher.get().splice_block(math_policy, context);
     writer.close_tag(tag_name);
     buffer.flush();
     return status_concat(attributes_status, nested_status);

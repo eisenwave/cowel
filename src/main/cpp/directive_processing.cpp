@@ -274,64 +274,6 @@ void try_lookup_error(const ast::Directive& directive, Context& context)
 
 } // namespace
 
-Processing_Status splice_all_trimmed(
-    Content_Policy& out,
-    std::span<const ast::Markup_Element> content,
-    Frame_Index frame,
-    Context& context
-)
-{
-    content = trim_blank_text(content);
-
-    struct Visitor {
-        Content_Policy& out;
-        Context& context;
-        std::size_t i;
-        std::size_t size;
-        Frame_Index frame;
-
-        void write_trimmed(std::u8string_view str) const
-        {
-            // Note that the following two conditions are not mutually exclusive
-            // when content contains just one element.
-            if (i == 0) {
-                str = trim_ascii_blank_left(str);
-            }
-            if (i + 1 == size) {
-                str = trim_ascii_blank_right(str);
-            }
-            // The trimming above should have gotten rid of entirely empty strings.
-            COWEL_ASSERT(!str.empty());
-            out.write(str, Output_Language::text);
-        }
-
-        [[nodiscard]]
-        Processing_Status operator()(const ast::Primary& node) const
-        {
-            if (node.get_kind() != ast::Primary_Kind::text) {
-                return out.consume(node, frame, context);
-            }
-            write_trimmed(node.get_source());
-            return Processing_Status::ok;
-        }
-
-        [[nodiscard]]
-        Processing_Status operator()(const ast::Directive& e) const
-        {
-            return out.consume(e, frame, context);
-        }
-    };
-
-    return process_greedy(
-        content,
-        [&, i = 0uz](const ast::Markup_Element& c) mutable -> Processing_Status {
-            const auto result = std::visit(Visitor { out, context, i, content.size(), frame }, c);
-            ++i;
-            return result;
-        }
-    );
-}
-
 Processing_Status splice_to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Markup_Element> content,
@@ -583,8 +525,6 @@ Processing_Status splice_expression_to_plaintext(
     Context& context
 )
 {
-    COWEL_DEBUG_ASSERT(value.is_spliceable_value());
-
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
     Text_Only_Policy policy { sink };
     return splice_expression(policy, value, frame, context);
@@ -916,20 +856,6 @@ Processing_Status splice_directive_invocation( //
     );
 }
 
-Processing_Status
-match_empty_arguments(const Invocation& call, Context& context, Processing_Status fail_status)
-{
-    Empty_Pack_Matcher args_matcher;
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
-
-    const auto fail_callback = fail_status == Processing_Status::fatal
-        ? make_fail_callback<Severity::fatal>()
-        : make_fail_callback<Severity::error>();
-
-    return call_matcher.match_call(call, context, fail_callback, fail_status);
-}
-
 void diagnose(
     Syntax_Highlight_Error error,
     std::u8string_view lang,
@@ -991,56 +917,102 @@ void diagnose(
     }
 }
 
-Processing_Status named_arguments_to_attributes(
+Result<void, std::size_t> named_str_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
-    std::span<const ast::Group_Member> arguments,
-    Frame_Index frame,
-    Context& context,
-    Attribute_Style style
+    const std::span<const Group_Member_Value> arguments,
+    const Attribute_Style style
 )
 {
-    return process_greedy(arguments, [&](const ast::Group_Member& a) -> Processing_Status {
-        if (a.get_kind() == ast::Member_Kind::ellipsis) {
-            const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
-            return named_arguments_to_attributes(
-                out, ellipsis_frame.invocation.get_arguments_span(),
-                ellipsis_frame.invocation.content_frame, context, style
-            );
+    for (std::size_t i = 0; i < arguments.size(); ++i) {
+        const auto& [key, value] = arguments[i];
+        COWEL_ASSERT(key.is_str());
+        COWEL_ASSERT(value.is_str());
+        const std::u8string_view key_string = key.as_string();
+        if (!is_html_attribute_name(key_string)) {
+            return i;
         }
-        COWEL_ASSERT(a.get_kind() == ast::Member_Kind::named);
-        return named_argument_to_attribute(out, a, frame, context, style);
-    });
+        out.write_attribute(HTML_Attribute_Name(key_string), value.as_string(), style);
+    }
+    return {};
 }
 
-Processing_Status named_argument_to_attribute(
+Processing_Status named_arguments_to_attributes_or_error(
     Text_Buffer_Attribute_Writer& out,
-    const ast::Group_Member& a,
-    Frame_Index frame,
+    const Group_Pack_Named_Str_Matcher& matcher,
     Context& context,
     Attribute_Style style
 )
 {
-    COWEL_ASSERT(a.get_kind() == ast::Member_Kind::named);
+    if (!matcher.was_matched()) {
+        return Processing_Status::ok;
+    }
+    const Result<void, std::size_t> result
+        = named_str_arguments_to_attributes(out, matcher.get().get_group_members(), style);
+    if (result) {
+        return Processing_Status::ok;
+    }
+    context.try_error(
+        diagnostic::html_attribute, matcher.get_location(),
+        joined_char_sequence(
+            {
+                u8"The key \""sv,
+                matcher.get().get_group_members()[result.error()].name.as_string(),
+                u8"\" is not a valid HTML attribute name."sv,
+            }
+        )
+    );
+    return Processing_Status::error;
+}
 
-    const Result<Value, Processing_Status> name = evaluate(a.get_name(), frame, context);
-    if (!name) {
-        return name.error();
-    }
-    const Result<Value, Processing_Status> value
-        = evaluate_expression(a.get_value(), frame, context);
-    if (!value) {
-        return name.error();
-    }
-    const Result<Value, Processing_Status> value_string
-        = splice_value_to_string(*value, a.get_value_span(), context);
-    if (!value_string) {
-        return value_string.error();
+Processing_Status named_arguments_to_attributes_or_error(
+    Text_Buffer_Attribute_Writer& out,
+    const Pack_Named_Of_Type_Matcher& matcher,
+    Context& context,
+    Attribute_Style style
+)
+{
+    if (!matcher.was_matched()) {
+        return Processing_Status::ok;
     }
 
-    // TODO: this is simply going to crash if the attribute name is not valid;
-    // investigate whether this needs work, and possibly leave a comment here if it's okay
-    out.write_attribute(HTML_Attribute_Name(name->as_string()), value_string->as_string(), style);
-    return Processing_Status::ok;
+    const auto do_named_arguments_to_attributes_or_error
+        = [&](std::span<const Group_Member_Value> arguments) -> Processing_Status {
+        const Result<void, std::size_t> result
+            = named_str_arguments_to_attributes(out, arguments, style);
+        if (result) {
+            return Processing_Status::ok;
+        }
+        context.try_error(
+            diagnostic::html_attribute, matcher.get_locations()[result.error()],
+            joined_char_sequence(
+                {
+                    u8"The key \""sv,
+                    matcher.get()[result.error()].name.as_string(),
+                    u8"\" is not a valid HTML attribute name."sv,
+                }
+            )
+        );
+        return Processing_Status::error;
+    };
+
+    const bool are_arguments_strings = matcher.get_element_type() == Type::str
+        || std::ranges::all_of(matcher.get(),
+                               [](const Group_Member_Value& val) { return val.value.is_str(); });
+    if (are_arguments_strings) {
+        return do_named_arguments_to_attributes_or_error(matcher.get());
+    }
+
+    Small_Vector<Group_Member_Value, 8> string_values;
+    for (std::size_t i = 0; i < matcher.get().size(); ++i) {
+        const auto& [name, value] = matcher.get()[i];
+        Result<Value, Processing_Status> spliced
+            = splice_value_to_string(value, matcher.get_locations()[i], context);
+        if (!spliced) {
+            return spliced.error();
+        }
+        string_values.push_back({ .name = name, .value = std::move(*spliced) });
+    }
+    return do_named_arguments_to_attributes_or_error(string_values);
 }
 
 Processing_Status try_generate_error(

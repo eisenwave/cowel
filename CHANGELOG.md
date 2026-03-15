@@ -2,6 +2,9 @@
 
 ## **[v0.8.0](https://github.com/eisenwave/cowel/releases/tag/v0.8.0)** (2026-??-??)
 
+- remove the following deprecated directives:
+  - `trim`
+- make `\d{}` call syntax equivalent to `\d({})`
 - change `null` from erroring when spliced to producing the string `"null"`
 - change numeric literals not to include a leading `-` (#233)
 - add `~`, `!`, `+`, and `-` unary prefix operators (#233)
@@ -16,6 +19,10 @@
 - fix `cowel_to_str` for base 36
 - fix crash when invoking `float`-only numeric directives (#234)
 - fix numeric bugs in `int` on native build
+- fix `cowel_not` not callable with named argument
+- fix `cowel_sqrt` and other unary numeric directives not callable with named arguments
+- fix crash (instead of error) when providing an invalid HTML attribute name
+- fix various minor documentation bugs
 
 **Full Changelog**:
 [`v0.7.0...master`](https://github.com/eisenwave/cowel/compare/v0.7.0...master)

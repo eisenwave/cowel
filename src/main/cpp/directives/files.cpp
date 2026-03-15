@@ -45,15 +45,10 @@ Processing_Status
 Include_Text_Behavior::do_evaluate(String_Sink& out, const Invocation& call, Context& context) const
 {
     String_Matcher path_matcher { context.get_transient_memory() };
-    Group_Member_Matcher path_member { u8"path", Optionality::mandatory, path_matcher };
-    Group_Member_Matcher* matchers[] { &path_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter path_param { u8"path", Optionality::mandatory, path_matcher };
+    Parameter* const parameters[] { &path_param };
 
-    const auto match_status = call_matcher.match_call(
-        call, context, make_fail_callback<Severity::fatal>(), Processing_Status::fatal
-    );
+    const auto match_status = match_call_fatal_error(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -89,15 +84,10 @@ Processing_Status
 Include_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     String_Matcher path_matcher { context.get_transient_memory() };
-    Group_Member_Matcher path_member { u8"path", Optionality::mandatory, path_matcher };
-    Group_Member_Matcher* matchers[] { &path_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter path_param { u8"path", Optionality::mandatory, path_matcher };
+    Parameter* const parameters[] { &path_param };
 
-    const auto match_status = call_matcher.match_call(
-        call, context, make_fail_callback<Severity::fatal>(), Processing_Status::fatal
-    );
+    const auto match_status = match_call_fatal_error(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }

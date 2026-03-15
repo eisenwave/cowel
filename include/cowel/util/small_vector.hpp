@@ -78,6 +78,23 @@ public:
     }
 
     [[nodiscard]]
+    constexpr explicit Small_Vector(const std::size_t amount, const Alloc& alloc = {})
+        : m_alloc { alloc }
+    {
+        resize(amount);
+    }
+    [[nodiscard]]
+    constexpr explicit Small_Vector(
+        const std::size_t amount,
+        const T& value,
+        const Alloc& alloc = {}
+    )
+        : m_alloc { alloc }
+    {
+        resize(amount, value);
+    }
+
+    [[nodiscard]]
     constexpr Small_Vector(std::initializer_list<T> list, const Alloc& alloc = {})
         : m_alloc { alloc }
     {
@@ -190,13 +207,14 @@ public:
 
     [[nodiscard]]
     friend constexpr bool operator==(const Small_Vector& x, const Small_Vector& y)
+        requires std::equality_comparable<T>
     {
         return x.m_size == y.m_size && std::ranges::equal(x, y);
     }
 
     [[nodiscard]]
     friend constexpr auto operator<=>(const Small_Vector& x, const Small_Vector& y)
-        -> decltype(x.front() <=> y.front())
+        requires std::three_way_comparable<T>
     {
         return std::lexicographical_compare_three_way(x.begin(), x.end(), y.begin(), y.end());
     }
@@ -216,6 +234,33 @@ public:
             return;
         }
         grow_to(amount);
+    }
+
+    constexpr void resize(const std::size_t amount, const T& value = {})
+    {
+        if (amount < m_size) {
+            if (amount == 0) {
+                clear();
+            }
+            else if (m_using_small) {
+                std::ranges::fill(m_small_data + amount, m_small_data + m_size, T {});
+            }
+            else {
+                std::ranges::destroy(m_dynamic_data + amount, m_dynamic_data + m_size);
+            }
+        }
+        else if (amount > m_size) {
+            if (m_using_small && amount <= small_cap) {
+                std::ranges::fill(m_small_data + m_size, m_small_data + amount, value);
+            }
+            else {
+                ensure_dynamic_storage(amount);
+                std::ranges::uninitialized_fill(
+                    m_dynamic_data + m_size, m_dynamic_data + amount, value
+                );
+            }
+        }
+        m_size = amount;
     }
 
     constexpr void swap(Small_Vector& other) noexcept(std::is_nothrow_move_constructible_v<T>)

@@ -240,7 +240,7 @@ public:
     }
 
     [[nodiscard]]
-    File_Source_Span get_source_span() const
+    const File_Source_Span& get_source_span() const
     {
         return m_source_span;
     }
@@ -405,7 +405,7 @@ public:
     }
 
     [[nodiscard]]
-    File_Source_Span get_source_span() const
+    const File_Source_Span& get_source_span() const
     {
         return m_source_span;
     }
@@ -503,7 +503,7 @@ public:
     }
 
     [[nodiscard]]
-    File_Source_Span get_source_span() const
+    const File_Source_Span& get_source_span() const
     {
         return m_source_span;
     }
@@ -576,28 +576,6 @@ struct Expression : Expression_Variant {
     }
 
     [[nodiscard]]
-    bool is_spliceable_value() const noexcept
-    {
-        // FIXME: This doesn't seem correct;
-        //        directives can return `group`,
-        //        and aren't necessarily spliceable.
-        return is_directive() //
-            || (is_primary() && as_primary().is_spliceable_value())
-            || (is_unary() && as_unary().get_operand().is_spliceable_value());
-    }
-
-    [[nodiscard]]
-    bool is_spliceable() const noexcept
-    {
-        // FIXME: This doesn't seem correct;
-        //        directives can return `group`,
-        //        and aren't necessarily spliceable.
-        return is_directive() //
-            || (is_primary() && as_primary().is_spliceable())
-            || (is_unary() && as_unary().get_operand().is_spliceable());
-    }
-
-    [[nodiscard]]
     bool is_value() const noexcept
     {
         return is_directive() //
@@ -606,10 +584,10 @@ struct Expression : Expression_Variant {
     }
 
     [[nodiscard]]
-    File_Source_Span get_source_span() const
+    const File_Source_Span& get_source_span() const
     {
         return std::visit(
-            [&](const auto& v) -> File_Source_Span { return v.get_source_span(); }, *this
+            [&](const auto& v) -> const File_Source_Span& { return v.get_source_span(); }, *this
         );
     }
 
@@ -648,16 +626,16 @@ public:
 private:
     File_Source_Span m_source_span;
     std::u8string_view m_source;
-    std::optional<Primary> m_name;
-    std::optional<Expression> m_value;
+    GC_Ref<Primary> m_name;
+    GC_Ref<Expression> m_value;
     Member_Kind m_kind;
 
     [[nodiscard]]
     Group_Member(
         const File_Source_Span& source_span,
         std::u8string_view source,
-        std::optional<Primary>&& name,
-        std::optional<Expression>&& value,
+        GC_Ref<Primary> name,
+        GC_Ref<Expression> value,
         Member_Kind type
     );
 
@@ -679,7 +657,7 @@ public:
     }
 
     [[nodiscard]]
-    File_Source_Span get_source_span() const
+    const File_Source_Span& get_source_span() const
     {
         return m_source_span;
     }
@@ -693,14 +671,19 @@ public:
     [[nodiscard]]
     bool has_name() const
     {
-        return m_name.has_value();
+        return bool(m_name);
     }
 
     [[nodiscard]]
     const Primary& get_name() const
     {
         COWEL_ASSERT(m_kind == Member_Kind::named);
-        return m_name.value();
+        return *m_name;
+    }
+    [[nodiscard]]
+    GC_Ref<const Primary> get_name_ref() const
+    {
+        return m_name;
     }
 
     [[nodiscard]]
@@ -712,13 +695,18 @@ public:
     [[nodiscard]]
     bool has_value() const
     {
-        return m_value.has_value();
+        return bool(m_value);
     }
 
     [[nodiscard]]
     const Expression& get_value() const
     {
-        return m_value.value();
+        return *m_value;
+    }
+    [[nodiscard]]
+    GC_Ref<const Expression> get_value_ref() const
+    {
+        return m_value;
     }
 
     [[nodiscard]]

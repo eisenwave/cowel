@@ -17,16 +17,12 @@ Processing_Status
 Invoke_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     Spliceable_To_String_Matcher directive_name_string { context.get_transient_memory() };
-    Group_Member_Matcher string_argument { u8"name", Optionality::mandatory,
-                                           directive_name_string };
-    Group_Member_Matcher* parameters[] { &string_argument };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter string_param { u8"name", Optionality::mandatory, directive_name_string };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::optional, content_matcher };
+    Parameter* const parameters[] { &string_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(
-        call, context, make_fail_callback<Severity::fatal>(), Processing_Status::error
-    );
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
                                              : match_status;

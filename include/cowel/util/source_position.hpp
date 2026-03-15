@@ -136,6 +136,14 @@ struct Basic_File_Source_Span : Source_Span {
     File file;
 
     [[nodiscard]]
+    constexpr Basic_File_Source_Span()
+        requires std::is_default_constructible_v<File>
+        : Source_Span {}
+        , file {}
+    {
+    }
+
+    [[nodiscard]]
     constexpr Basic_File_Source_Span(const Source_Span& local, File file)
         : Source_Span { local }
         , file { file }

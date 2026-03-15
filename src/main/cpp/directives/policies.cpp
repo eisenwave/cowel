@@ -29,26 +29,45 @@ template <typename T>
 [[nodiscard]]
 Processing_Status consume_simply(Content_Policy& out, const Invocation& call, Context& context)
 {
-    const auto match_status = match_empty_arguments(call, context);
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &content_param };
+
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
-    T policy { out };
-    return splice_all(policy, call.get_content_span(), call.content_frame, context);
+
+    auto policy = [&] -> T {
+        if constexpr (std::is_same_v<T, Paragraph_Split_Policy>) {
+            return T { out, context.get_transient_memory() };
+        }
+        else if constexpr (std::is_same_v<T, HTML_Content_Policy>) {
+            return ensure_html_policy(out);
+        }
+        else {
+            return T { out };
+        }
+    }();
+    const Processing_Status result = content_matcher.get().splice_block(policy, context);
+    if constexpr (std::is_same_v<T, Paragraph_Split_Policy>) {
+        policy.leave_paragraph();
+    }
+    return result;
 }
 
 [[nodiscard]]
-Processing_Status consume_paragraphs(Content_Policy& out, const Invocation& call, Context& context)
+Processing_Status consume_current(Content_Policy& out, const Invocation& call, Context& context)
 {
-    const auto match_status = match_empty_arguments(call, context);
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &content_param };
+
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
-    Paragraph_Split_Policy policy { out, context.get_transient_memory() };
-    const Processing_Status result
-        = splice_all(policy, call.get_content_span(), call.content_frame, context);
-    policy.leave_paragraph();
-    return result;
+    return content_matcher.get().splice_block(out, context);
 }
 
 [[nodiscard]]
@@ -56,21 +75,19 @@ Processing_Status
 consume_syntax_highlighted(Content_Policy& out, const Invocation& call, Context& context)
 {
     Spliceable_To_String_Matcher lang_string { context.get_transient_memory() };
-    Group_Member_Matcher lang_member { u8"lang"sv, Optionality::mandatory, lang_string };
-    Group_Member_Matcher* parameters[] { &lang_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter lang_param { u8"lang"sv, Optionality::mandatory, lang_string };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &lang_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
                                              : match_status;
     }
 
     Syntax_Highlight_Policy policy { context.get_transient_memory() };
-    const Processing_Status consume_status
-        = splice_all(policy, call.get_content_span(), call.content_frame, context);
+    const Processing_Status consume_status = content_matcher.get().splice_block(policy, context);
     const Result<void, Syntax_Highlight_Error> result
         = policy.dump_html_to(out, context, lang_string.get());
     if (!result) {
@@ -87,19 +104,10 @@ Policy_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
 {
     switch (m_policy) {
     case Known_Content_Policy::current: {
-        const auto match_status = match_empty_arguments(call, context);
-        if (match_status != Processing_Status::ok) {
-            return match_status;
-        }
-        return splice_all(out, call.get_content_span(), call.content_frame, context);
+        return consume_current(out, call, context);
     }
     case Known_Content_Policy::to_html: {
-        const auto match_status = match_empty_arguments(call, context);
-        if (match_status != Processing_Status::ok) {
-            return match_status;
-        }
-        HTML_Content_Policy policy = ensure_html_policy(out);
-        return splice_all(policy, call.get_content_span(), call.content_frame, context);
+        return consume_simply<HTML_Content_Policy>(out, call, context);
     }
     case Known_Content_Policy::highlight: {
         return consume_syntax_highlighted(out, call, context);
@@ -108,7 +116,7 @@ Policy_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
         return consume_simply<Phantom_Content_Policy>(out, call, context);
     }
     case Known_Content_Policy::paragraphs: {
-        return consume_paragraphs(out, call, context);
+        return consume_simply<Paragraph_Split_Policy>(out, call, context);
     }
     case Known_Content_Policy::no_invoke: {
         return consume_simply<Unprocessed_Content_Policy>(out, call, context);
@@ -139,14 +147,11 @@ Processing_Status Internal_Arg_Source_As_Text_Behavior::splice(
     Context& context
 ) const
 {
-    Value_Of_Type_Matcher value_matcher { &Type::block };
-    Group_Member_Matcher value_member { u8"value"sv, Optionality::mandatory, value_matcher };
-    Group_Member_Matcher* const parameters[] { &value_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Value_Of_Type_Matcher value_matcher { Type::block };
+    Parameter value_param { u8"value"sv, Optionality::mandatory, value_matcher };
+    Parameter* const parameters[] { &value_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
                                              : match_status;

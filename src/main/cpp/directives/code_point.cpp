@@ -43,13 +43,10 @@ Result<char32_t, Processing_Status>
 Char_By_Num_Behavior::get_code_point(const Invocation& call, Context& context) const
 {
     Integer_Matcher num_matcher;
-    Group_Member_Matcher num_member { u8"num", Optionality::mandatory, num_matcher };
-    Group_Member_Matcher* matchers[] { &num_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter num_param { u8"num", Optionality::mandatory, num_matcher };
+    Parameter* const parameters[] { &num_param };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }
@@ -85,13 +82,10 @@ Char_By_Name_Behavior::get_code_point(const Invocation& call, Context& context) 
     constexpr auto error_point = char32_t(-1);
 
     String_Matcher name_matcher { context.get_transient_memory() };
-    Group_Member_Matcher name_member { u8"name", Optionality::mandatory, name_matcher };
-    Group_Member_Matcher* matchers[] { &name_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter name_param { u8"name", Optionality::mandatory, name_matcher };
+    Parameter* const parameters[] { &name_param };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }
@@ -116,13 +110,10 @@ Result<Big_Int, Processing_Status>
 Char_Get_Num_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher x_matcher { context.get_transient_memory() };
-    Group_Member_Matcher x_member { u8"x", Optionality::mandatory, x_matcher };
-    Group_Member_Matcher* matchers[] { &x_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter x_parameter { u8"x", Optionality::mandatory, x_matcher };
+    Parameter* const parameters[] { &x_parameter };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }
@@ -151,7 +142,7 @@ Char_Get_Num_Behavior::do_evaluate(const Invocation& call, Context& context) con
     if (std::size_t(length) != input_text.size()) {
         COWEL_ASSERT(std::size_t(length) <= input_text.size());
         context.try_warning(
-            diagnostic::ignored_content, call.directive.get_source_span(),
+            diagnostic::ignored_input, call.directive.get_source_span(),
             u8"Some of the code units inside were ignored because only the first given code point "
             u8"is converted. "
             u8"This can happen if you type a glyph that consist of multiple "

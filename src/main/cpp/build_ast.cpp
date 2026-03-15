@@ -187,8 +187,8 @@ Group_Member Group_Member::named(Primary&& name, Expression&& value)
     return {
         value.get_source_span(),
         value.get_source(),
-        std::move(name),
-        std::move(value),
+        gc_ref_make<Primary>(std::move(name)),
+        gc_ref_make<Expression>(std::move(value)),
         Member_Kind::named,
     };
     // clang-format on
@@ -203,7 +203,7 @@ Group_Member Group_Member::positional(Expression&& value)
         source_span,
         value.get_source(),
         {},
-        std::move(value),
+        gc_ref_make<Expression>(std::move(value)),
         Member_Kind::positional,
     };
     // clang-format on
@@ -212,8 +212,8 @@ Group_Member Group_Member::positional(Expression&& value)
 Group_Member::Group_Member(
     const File_Source_Span& source_span,
     std::u8string_view source,
-    std::optional<Primary>&& name,
-    std::optional<Expression>&& value,
+    GC_Ref<Primary> name,
+    GC_Ref<Expression> value,
     Member_Kind type
 )
     : m_source_span { source_span }

@@ -132,32 +132,25 @@ Bibliography_Add_Behavior::splice(Content_Policy&, const Invocation& call, Conte
     auto* memory = context.get_transient_memory();
 
     Spliceable_To_String_Matcher id_string { memory };
-    Group_Member_Matcher id_member { u8"id", Optionality::mandatory, id_string };
+    Parameter id_param { u8"id", Optionality::mandatory, id_string };
     Spliceable_To_String_Matcher title_string { memory };
-    Group_Member_Matcher title_member { u8"title", Optionality::optional, title_string };
+    Parameter title_param { u8"title", Optionality::optional, title_string };
     Spliceable_To_String_Matcher date_string { memory };
-    Group_Member_Matcher date_member { u8"date", Optionality::optional, date_string };
+    Parameter date_param { u8"date", Optionality::optional, date_string };
     Spliceable_To_String_Matcher publisher_string { memory };
-    Group_Member_Matcher publisher_member { u8"publisher", Optionality::optional,
-                                            publisher_string };
+    Parameter publisher_param { u8"publisher", Optionality::optional, publisher_string };
     Spliceable_To_String_Matcher link_string { memory };
-    Group_Member_Matcher link_member { u8"link", Optionality::optional, link_string };
+    Parameter link_param { u8"link", Optionality::optional, link_string };
     Spliceable_To_String_Matcher long_link_string { memory };
-    Group_Member_Matcher long_link_member { u8"long-link", Optionality::optional,
-                                            long_link_string };
+    Parameter long_link_param { u8"long-link", Optionality::optional, long_link_string };
     Spliceable_To_String_Matcher author_string { memory };
-    Group_Member_Matcher author_member { u8"author", Optionality::optional, author_string };
-
-    Group_Member_Matcher* const matchers[] {
-        &id_member,   &title_member,     &date_member,   &publisher_member,
-        &link_member, &long_link_member, &author_member,
+    Parameter author_param { u8"author", Optionality::optional, author_string };
+    Parameter* const parameters[] {
+        &id_param,   &title_param,     &date_param,   &publisher_param,
+        &link_param, &long_link_param, &author_param,
     };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
 
-    const Processing_Status match_status
-        = call_matcher.match_call(call, context, make_fail_callback(), Processing_Status::error);
+    const Processing_Status match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }

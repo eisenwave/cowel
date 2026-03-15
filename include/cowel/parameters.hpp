@@ -10,6 +10,7 @@
 
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/function_ref.hpp"
+#include "cowel/util/small_vector.hpp"
 #include "cowel/util/source_position.hpp"
 #include "cowel/util/strings.hpp"
 
@@ -63,112 +64,165 @@ consteval Fail_Callback make_fail_callback() noexcept
     return { const_v<lambda> };
 }
 
-// VALUE ===========================================================================================
-
-struct Value_Matcher : virtual Was_Matched {
+struct Argument {
+public:
     [[nodiscard]]
-    explicit Value_Matcher()
-        : Was_Matched {}
+    static Argument positional(const ast::Group_Member& member)
+    {
+        COWEL_ASSERT(member.get_kind() == ast::Member_Kind::positional);
+        return { Value::null, member };
+    }
+
+    [[nodiscard]]
+    static Argument block(const ast::Primary& primary)
+    {
+        COWEL_ASSERT(primary.get_kind() == ast::Primary_Kind::block);
+        return Argument { primary };
+    }
+
+    [[nodiscard]]
+    static Argument named(Value name, const ast::Group_Member& member)
+    {
+        COWEL_ASSERT(member.get_kind() == ast::Member_Kind::named);
+        return { std::move(name), member };
+    }
+
+private:
+    static Result<Value, Processing_Status>
+    group_member_evaluate(const void*, Frame_Index, Context&);
+    static Processing_Status group_member_splice(
+        const void*, //
+        Content_Policy&,
+        Frame_Index,
+        Context&
+    );
+    static Processing_Status group_member_splice_to_plaintext(
+        const void*, //
+        std::pmr::vector<char8_t>& out,
+        Frame_Index,
+        Context&
+    );
+    static const File_Source_Span& group_member_get_source_span(const void*) noexcept;
+    static const Type& group_member_get_static_type(const void*, Context&) noexcept;
+
+    static Result<Value, Processing_Status> primary_evaluate(const void*, Frame_Index, Context&);
+    static Processing_Status primary_splice(
+        const void*, //
+        Content_Policy&,
+        Frame_Index,
+        Context&
+    );
+    static Processing_Status primary_splice_to_plaintext(
+        const void*, //
+        std::pmr::vector<char8_t>& out,
+        Frame_Index,
+        Context&
+    );
+    static const File_Source_Span& primary_get_source_span(const void*) noexcept;
+    static const Type& primary_get_static_type(const void*, Context&) noexcept;
+
+    /// @brief The evaluated argument name (in the case of named arguments),
+    /// or `null` in the case of positional arguments.
+    Value m_name;
+    /// @brief A type-erased reference to the AST node.
+    const void* m_ast_node = nullptr;
+    Result<Value, Processing_Status> (*m_evaluate)(const void*, Frame_Index, Context&) = nullptr;
+    Processing_Status (*m_splice)(const void*, Content_Policy&, Frame_Index, Context&) = nullptr;
+    Processing_Status (*m_splice_to_plaintext)(
+        const void*,
+        std::pmr::vector<char8_t>&,
+        Frame_Index,
+        Context&
+    ) = nullptr;
+    const File_Source_Span& (*m_get_value_location)(const void*) noexcept = nullptr;
+    const Type& (*m_get_static_type)(const void*, Context&) noexcept = nullptr;
+    /// @brief The location of the argument as a whole.
+    /// Unlike the location of the expression,
+    /// this also includes the argument name.
+    File_Source_Span m_location;
+
+    [[nodiscard]]
+    Argument(Value name, const ast::Group_Member& arg) noexcept
+        : m_name { std::move(name) }
+        , m_ast_node { &arg }
+        , m_evaluate { group_member_evaluate }
+        , m_splice { group_member_splice }
+        , m_splice_to_plaintext { group_member_splice_to_plaintext }
+        , m_get_value_location { group_member_get_source_span }
+        , m_get_static_type { group_member_get_static_type }
+        , m_location { arg.get_source_span() }
     {
     }
 
-    /// @brief Attempts matching the value contained in `argument`
-    /// according to this matcher's behavior.
-    /// @param argument The argument to match.
-    /// @param frame The frame index of the argument.
-    /// @param context The current context.
-    /// @return A `Processing_Status` if content generation failed during the matching process.
     [[nodiscard]]
-    virtual Processing_Status match_value(
-        const ast::Expression& argument,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) = 0;
-};
-
-/// @brief Matches a lazy value of single specific kind.
-/// This is typically used for blocks and quoted strings.
-struct Lazy_Value_Of_Type_Matcher final : Value_Matcher {
-private:
-    const Type* m_expected_type;
-    const ast::Expression* m_markup = nullptr;
-    Frame_Index m_markup_frame { -2 };
+    explicit Argument(const ast::Primary& arg) noexcept
+        : m_name { Value::null }
+        , m_ast_node { &arg }
+        , m_evaluate { primary_evaluate }
+        , m_splice { primary_splice }
+        , m_splice_to_plaintext { primary_splice_to_plaintext }
+        , m_get_value_location { primary_get_source_span }
+        , m_get_static_type { primary_get_static_type }
+        , m_location { arg.get_source_span() }
+    {
+    }
 
 public:
     [[nodiscard]]
-    explicit Lazy_Value_Of_Type_Matcher(const Type* expected_type)
-        : m_expected_type { expected_type }
-    {
-        COWEL_ASSERT(expected_type);
-    }
-
-    [[nodiscard]]
-    bool was_matched() const override
-    {
-        return m_markup != nullptr;
-    }
-
-    void reset() noexcept override
-    {
-        m_markup = nullptr;
-    }
-
-    [[nodiscard]]
-    const ast::Expression& get() const
-    {
-        COWEL_ASSERT(was_matched());
-        return *m_markup;
-    }
-
-    [[nodiscard]]
-    const Type& get_expected_type() const
-    {
-        return *m_expected_type;
-    }
-
-    [[nodiscard]]
-    Frame_Index get_frame() const
-    {
-        return m_markup_frame;
-    }
-
-    [[nodiscard]]
-    const ast::Expression* get_or_null() const
-    {
-        return m_markup;
-    }
-
-    [[nodiscard]]
-    Processing_Status match_value(
-        const ast::Expression& argument,
-        Frame_Index frame,
-        Context&,
-        const Match_Fail_Options& //
-    ) override;
-};
-
-struct Textual_Matcher : Value_Matcher {
-
-    [[nodiscard]]
-    explicit Textual_Matcher()
+    Argument()
         = default;
 
     [[nodiscard]]
-    Processing_Status match_value(
-        const ast::Expression& argument,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) override;
+    const Value& get_name() const
+    {
+        return m_name;
+    }
+    [[nodiscard]]
+    const File_Source_Span& get_location() const
+    {
+        return m_location;
+    }
 
     [[nodiscard]]
-    virtual bool match_string(
-        const ast::Expression& argument,
-        std::u8string_view str,
-        Context& context,
-        Fail_Callback on_fail
-    ) = 0;
+    Result<Value, Processing_Status> evaluate(const Frame_Index frame, Context& context) const
+    {
+        return m_evaluate(m_ast_node, frame, context);
+    }
+    [[nodiscard]]
+    Processing_Status splice(Content_Policy& out, const Frame_Index frame, Context& context) const
+    {
+        return m_splice(m_ast_node, out, frame, context);
+    }
+    [[nodiscard]]
+    Processing_Status splice_to_plaintext(
+        std::pmr::vector<char8_t>& out,
+        const Frame_Index frame,
+        Context& context
+    ) const
+    {
+        return m_splice_to_plaintext(m_ast_node, out, frame, context);
+    }
+    [[nodiscard]]
+    const File_Source_Span& get_value_location() const
+    {
+        return m_get_value_location(m_ast_node);
+    }
+    [[nodiscard]]
+    const Type& get_static_type(Context& context) const
+    {
+        return m_get_static_type(m_ast_node, context);
+    }
+
+    [[nodiscard]]
+    constexpr bool is_named() const
+    {
+        return !m_name.is_null();
+    }
+    [[nodiscard]]
+    constexpr bool is_positional() const
+    {
+        return m_name.is_null();
+    }
 };
 
 template <typename T>
@@ -240,23 +294,112 @@ public:
     }
 };
 
-struct Value_Of_Type_Matcher
-    : Value_Matcher
-    , Value_Holder<Value> {
+struct Value_Matcher : virtual Was_Matched {
 private:
-    const Type* m_expected_type;
+    Type m_type;
+    static_assert(
+        std::is_trivially_copyable_v<Type>,
+        "This design needs to be reconsidered if Type is expensive to copy."
+    );
 
 public:
     [[nodiscard]]
-    explicit Value_Of_Type_Matcher(const Type* expected_type)
-        : m_expected_type { expected_type }
+    explicit Value_Matcher(const Type& type)
+        : Was_Matched {}
+        , m_type { type }
     {
-        COWEL_ASSERT(expected_type);
+        COWEL_DEBUG_ASSERT(type.is_canonical());
+    }
+
+    /// @brief Attempts matching the value contained in `argument`
+    /// according to this matcher's behavior.
+    /// @param argument The argument to match.
+    /// @param frame The frame index of the argument.
+    /// @param context The current context.
+    /// @return A `Processing_Status` if content generation failed during the matching process.
+    [[nodiscard]]
+    virtual Processing_Status match_value(
+        const Argument& argument,
+        Frame_Index frame,
+        Context& context,
+        const Match_Fail_Options& on_fail
+    ) = 0;
+
+    [[nodiscard]]
+    const Type& get_type() const
+    {
+        return m_type;
+    }
+};
+
+/// @brief Matches a lazy value of single specific kind.
+/// This is typically used for blocks and quoted strings.
+struct Lazy_Value_Of_Type_Matcher final
+    : Value_Matcher
+    , Value_Holder<Argument> {
+private:
+    Frame_Index m_markup_frame { -2 };
+
+public:
+    [[nodiscard]]
+    explicit Lazy_Value_Of_Type_Matcher(const Type& expected_type)
+        : Value_Matcher { expected_type }
+    {
     }
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Expression& argument,
+        const Argument& argument,
+        Frame_Index frame,
+        Context&,
+        const Match_Fail_Options& //
+    ) override;
+
+    [[nodiscard]]
+    Frame_Index get_frame() const
+    {
+        COWEL_ASSERT(was_matched());
+        return m_markup_frame;
+    }
+};
+
+struct Textual_Matcher : Value_Matcher {
+
+    [[nodiscard]]
+    explicit Textual_Matcher()
+        : Value_Matcher { Type::str }
+    {
+    }
+
+    [[nodiscard]]
+    Processing_Status match_value(
+        const Argument& argument,
+        Frame_Index frame,
+        Context& context,
+        const Match_Fail_Options& on_fail
+    ) override;
+
+    [[nodiscard]]
+    virtual bool match_string(
+        const Argument& argument,
+        std::u8string_view str,
+        Context& context,
+        Fail_Callback on_fail
+    ) = 0;
+};
+
+struct Value_Of_Type_Matcher
+    : Value_Matcher
+    , Value_Holder<Value> {
+    [[nodiscard]]
+    explicit Value_Of_Type_Matcher(const Type& expected_type)
+        : Value_Matcher { expected_type }
+    {
+    }
+
+    [[nodiscard]]
+    Processing_Status match_value(
+        const Argument& argument,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail
@@ -272,14 +415,15 @@ private:
 
 public:
     [[nodiscard]]
-    explicit Spliceable_To_String_Matcher(std::pmr::memory_resource* memory)
-        : m_data { memory }
+    explicit Spliceable_To_String_Matcher(std::pmr::memory_resource* const memory)
+        : Value_Matcher { Type::any }
+        , m_data { memory }
     {
     }
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Expression& argument,
+        const Argument& argument,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail
@@ -295,14 +439,15 @@ private:
 
 public:
     [[nodiscard]]
-    explicit String_Matcher(std::pmr::memory_resource* memory)
-        : m_data { memory }
+    explicit String_Matcher(std::pmr::memory_resource* const memory)
+        : Value_Matcher { Type::str }
+        , m_data { memory }
     {
     }
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Expression& argument,
+        const Argument& argument,
         Frame_Index frame,
         Context& context,
         const Match_Fail_Options& on_fail
@@ -322,11 +467,13 @@ struct Boolean_Matcher final
 
     [[nodiscard]]
     explicit Boolean_Matcher()
-        = default;
+        : Value_Matcher { Type::boolean }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Expression& argument,
+        const Argument& argument,
         Frame_Index frame,
         Context&,
         const Match_Fail_Options& on_fail
@@ -339,11 +486,13 @@ struct Integer_Matcher final
 
     [[nodiscard]]
     explicit Integer_Matcher()
-        = default;
+        : Value_Matcher { Type::integer }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Expression& argument,
+        const Argument& argument,
         Frame_Index frame,
         Context&,
         const Match_Fail_Options& on_fail
@@ -356,11 +505,13 @@ struct Float_Matcher final
 
     [[nodiscard]]
     explicit Float_Matcher()
-        = default;
+        : Value_Matcher { Type::floating }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status match_value(
-        const ast::Expression& argument,
+        const Argument& argument,
         Frame_Index frame,
         Context&,
         const Match_Fail_Options& on_fail
@@ -384,7 +535,7 @@ public:
 
     [[nodiscard]]
     bool match_string(
-        const ast::Expression& argument,
+        const Argument& argument,
         std::u8string_view str,
         Context&,
         Fail_Callback on_fail
@@ -410,9 +561,213 @@ public:
     }
 };
 
-// GROUP MEMBER ====================================================================================
+struct Block_Matcher final
+    : Value_Matcher
+    , Value_Holder<Value> {
 
-struct Group_Member_Matcher {
+    [[nodiscard]]
+    explicit Block_Matcher()
+        : Value_Matcher { Type::block }
+    {
+    }
+
+    [[nodiscard]]
+    Processing_Status match_value(
+        const Argument& argument,
+        Frame_Index frame,
+        Context&,
+        const Match_Fail_Options& on_fail
+    ) override;
+};
+
+struct Pack_Of_Type_Matcher : Value_Matcher {
+public:
+    using value_type = Value_And_Location<Value>;
+
+private:
+    Small_Vector<value_type, 16> m_values;
+
+public:
+    [[nodiscard]]
+    explicit Pack_Of_Type_Matcher(const Type& type)
+        : Value_Matcher { type }
+    {
+        COWEL_ASSERT(type.is_pack());
+        COWEL_ASSERT(type.is_canonical());
+    }
+
+    [[nodiscard]]
+    Processing_Status match_value(
+        const Argument& argument,
+        Frame_Index frame,
+        Context& context,
+        const Match_Fail_Options& on_fail
+    ) override;
+
+    [[nodiscard]]
+    bool was_matched() const override
+    {
+        return !m_values.empty();
+    }
+
+    void reset() noexcept override
+    {
+        m_values.clear();
+    }
+
+    [[nodiscard]]
+    std::span<value_type> get()
+    {
+        return m_values;
+    }
+    [[nodiscard]]
+    std::span<const value_type> get() const
+    {
+        return m_values;
+    }
+};
+
+struct Pack_Lazy_Any_Matcher : Value_Matcher {
+public:
+    using value_type = Argument;
+
+private:
+    Small_Vector<value_type, 16> m_values;
+
+public:
+    [[nodiscard]]
+    explicit Pack_Lazy_Any_Matcher()
+        : Value_Matcher { Type::pack_of(&Type::any) }
+    {
+    }
+
+    [[nodiscard]]
+    Processing_Status match_value(
+        const Argument& argument, //
+        Frame_Index,
+        Context&,
+        const Match_Fail_Options&
+    ) override
+    {
+        m_values.push_back(argument);
+        return Processing_Status::ok;
+    }
+
+    [[nodiscard]]
+    bool was_matched() const override
+    {
+        return !m_values.empty();
+    }
+
+    void reset() noexcept override
+    {
+        m_values.clear();
+    }
+
+    [[nodiscard]]
+    std::span<const value_type> get() const
+    {
+        return m_values;
+    }
+};
+
+struct Pack_Named_Of_Type_Matcher : Value_Matcher {
+    using value_type = Group_Member_Value;
+
+private:
+    Small_Vector<value_type, 16> m_values;
+    Small_Vector<File_Source_Span, 16> m_locations;
+
+protected:
+    const Type& m_element_type;
+
+public:
+    [[nodiscard]]
+    explicit Pack_Named_Of_Type_Matcher(const Type& pack_named_type)
+        : Value_Matcher { pack_named_type }
+        , m_element_type { pack_named_type.get_members().front().get_members().front() }
+    {
+        COWEL_ASSERT(pack_named_type.is_pack());
+        COWEL_ASSERT(pack_named_type.get_members().front().is_named());
+        COWEL_DEBUG_ASSERT(pack_named_type.is_canonical());
+    }
+
+    [[nodiscard]]
+    Processing_Status match_value(
+        const Argument& argument,
+        Frame_Index frame,
+        Context& context,
+        const Match_Fail_Options& on_fail
+    ) override;
+
+    [[nodiscard]]
+    bool was_matched() const override
+    {
+        return !m_values.empty();
+    }
+
+    void reset() noexcept override
+    {
+        m_values.clear();
+    }
+
+    [[nodiscard]]
+    std::span<const value_type> get() const
+    {
+        return m_values;
+    }
+
+    [[nodiscard]]
+    std::span<const File_Source_Span> get_locations() const
+    {
+        return m_locations;
+    }
+
+    [[nodiscard]]
+    const Type& get_element_type() const
+    {
+        return m_element_type;
+    }
+};
+
+namespace detail {
+
+inline constexpr auto named_str = Type::named(&Type::str);
+inline constexpr auto pack_named_str = Type::pack_of(&named_str);
+inline constexpr auto group_pack_named_str = Type::group_of({ &pack_named_str, 1 });
+
+} // namespace detail
+
+struct Pack_Named_Str_Matcher final : Pack_Named_Of_Type_Matcher {
+
+    [[nodiscard]]
+    explicit Pack_Named_Str_Matcher()
+        : Pack_Named_Of_Type_Matcher { detail::pack_named_str }
+    {
+    }
+};
+
+struct Group_Pack_Named_Str_Matcher final
+    : Value_Matcher
+    , Value_Holder<Value> {
+    using value_type = const ast::Group_Member*;
+
+    [[nodiscard]]
+    explicit Group_Pack_Named_Str_Matcher()
+        : Value_Matcher { detail::group_pack_named_str }
+    {
+    }
+
+    [[nodiscard]]
+    Processing_Status match_value(
+        const Argument& argument,
+        Frame_Index frame,
+        Context& context,
+        const Match_Fail_Options& on_fail
+    ) override;
+};
+
+struct Parameter {
 private:
     std::u8string_view m_name;
     Optionality m_optionality;
@@ -420,7 +775,7 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Group_Member_Matcher(
+    constexpr explicit Parameter(
         std::u8string_view name,
         Optionality optionality,
         Value_Matcher& value_matcher
@@ -460,394 +815,33 @@ public:
     {
         return m_value_matcher;
     }
-};
-
-// PACK ============================================================================================
-
-struct Pack_Matcher {
-public:
-    [[nodiscard]]
-    explicit Pack_Matcher()
-        = default;
 
     [[nodiscard]]
-    virtual Processing_Status match_pack(
-        std::span<const ast::Group_Member> members,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) = 0;
-};
-
-struct Pack_Usual_Matcher final : Pack_Matcher {
-private:
-    std::span<Group_Member_Matcher* const> m_member_matchers;
-
-public:
-    [[nodiscard]]
-    explicit Pack_Usual_Matcher(std::span<Group_Member_Matcher* const> member_matchers)
-        : m_member_matchers { member_matchers }
+    const Type& get_type() const
     {
-        if constexpr (is_debug_build) {
-            for (const auto* const matcher : member_matchers) {
-                COWEL_ASSERT(matcher != nullptr);
-            }
-        }
+        return m_value_matcher.get_type();
     }
-
-    [[nodiscard]]
-    Processing_Status match_pack(
-        std::span<const ast::Group_Member> members,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) override;
-
-private:
-    [[nodiscard]]
-    Processing_Status do_match(
-        std::span<const ast::Group_Member> members,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail,
-        std::span<int> argument_indices_by_parameter,
-        std::size_t cumulative_arg_index
-    );
-};
-
-struct Empty_Pack_Matcher final : Pack_Matcher {
-public:
-    [[nodiscard]]
-    explicit Empty_Pack_Matcher()
-        = default;
-
-    [[nodiscard]]
-    Processing_Status match_pack(
-        std::span<const ast::Group_Member> members,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) override;
-};
-
-// GROUP ===========================================================================================
-
-struct Group_Matcher : Value_Matcher {
-    [[nodiscard]]
-    explicit Group_Matcher()
-        = default;
-
-    [[nodiscard]]
-    Processing_Status match_value(
-        const ast::Expression& argument,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) override;
-
-    /// @brief Matches a group.
-    /// @param group The group, or a null pointer in the event of an artificial empty group
-    /// such as the one in a directive invocation with no group.
-    [[nodiscard]]
-    virtual Processing_Status match_group(
-        const ast::Primary* group,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) = 0;
-};
-
-struct Group_Pack_Lazy_Any_Matcher final : Group_Matcher {
-private:
-    const ast::Primary* m_group = nullptr;
-    Frame_Index m_group_frame;
-
-public:
-    [[nodiscard]]
-    explicit Group_Pack_Lazy_Any_Matcher()
-        = default;
-
-    [[nodiscard]]
-    bool was_matched() const override
-    {
-        return m_group != nullptr;
-    }
-
-    void reset() noexcept override
-    {
-        m_group = nullptr;
-    }
-
-    [[nodiscard]]
-    const ast::Primary& get() const
-    {
-        COWEL_ASSERT(was_matched());
-        return *m_group;
-    }
-
-    [[nodiscard]]
-    Frame_Index get_frame() const
-    {
-        COWEL_ASSERT(was_matched());
-        return m_group_frame;
-    }
-
-    [[nodiscard]]
-    Processing_Status match_group(
-        const ast::Primary* group,
-        Frame_Index frame,
-        Context&,
-        const Match_Fail_Options& //
-    ) override
-    {
-        COWEL_ASSERT(!group || group->get_kind() == ast::Primary_Kind::group);
-
-        m_group = group;
-        m_group_frame = frame;
-        return Processing_Status::ok;
-    }
-};
-
-struct Group_Pack_Named_Lazy_Any_Matcher : Group_Matcher {
-    using Filter = bool(const ast::Group_Member&);
-
-private:
-    const ast::Primary* m_group = nullptr;
-    Frame_Index m_group_frame;
-    Filter* m_filter = nullptr;
-
-public:
-    [[nodiscard]]
-    explicit Group_Pack_Named_Lazy_Any_Matcher()
-        = default;
-
-    [[nodiscard]]
-    explicit Group_Pack_Named_Lazy_Any_Matcher(Filter* filter) noexcept
-        : m_filter { filter }
-    {
-    }
-
-    [[nodiscard]]
-    bool was_matched() const override
-    {
-        return m_group != nullptr;
-    }
-
-    void reset() noexcept override
-    {
-        m_group = nullptr;
-    }
-
-    [[nodiscard]]
-    const ast::Primary& get() const
-    {
-        COWEL_ASSERT(m_group);
-        return *m_group;
-    }
-
-    [[nodiscard]]
-    Frame_Index get_frame() const
-    {
-        COWEL_ASSERT(was_matched());
-        return m_group_frame;
-    }
-
-    [[nodiscard]]
-    Processing_Status match_group(
-        const ast::Primary* group,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) override
-    {
-        COWEL_ASSERT(!group || group->get_kind() == ast::Primary_Kind::group);
-
-        m_group = group;
-        m_group_frame = frame;
-
-        if (!group) {
-            return Processing_Status::ok;
-        }
-        return match_pack(group->get_members(), frame, context, on_fail);
-    }
-
-private:
-    [[nodiscard]]
-    Processing_Status match_pack(
-        std::span<const ast::Group_Member> members,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    );
 };
 
 [[nodiscard]]
-inline bool is_html_attribute_convertible(const ast::Group_Member& member)
+Processing_Status match_call(
+    std::span<Parameter* const> parameters,
+    const Invocation& call,
+    Context& context,
+    Fail_Callback on_fail = make_fail_callback(),
+    Processing_Status on_fail_status = Processing_Status::error
+);
+
+[[nodiscard]]
+inline Processing_Status match_call_fatal_error(
+    const std::span<Parameter* const> parameters,
+    const Invocation& call,
+    Context& context,
+    const Fail_Callback on_fail = make_fail_callback<Severity::fatal>()
+)
 {
-    return member.get_kind() == ast::Member_Kind::named //
-        && member.has_value() //
-        && member.get_value().is_spliceable();
+    return match_call(parameters, call, context, on_fail, Processing_Status::fatal);
 }
-
-/// @brief A `Group_Pack_Named_Lazy_Any_Matcher` which uses
-/// `is_html_attribute_convertible` as a filter.
-struct Group_Pack_Named_Lazy_Spliceable_Matcher : Group_Pack_Named_Lazy_Any_Matcher {
-    [[nodiscard]]
-    explicit Group_Pack_Named_Lazy_Spliceable_Matcher() noexcept
-        : Group_Pack_Named_Lazy_Any_Matcher(&is_html_attribute_convertible)
-    {
-    }
-};
-
-struct Group_Pack_Value_Matcher : Group_Matcher {
-private:
-    bool m_matched = false;
-    std::pmr::vector<Value_And_Location<Value>> m_values;
-
-public:
-    [[nodiscard]]
-    explicit Group_Pack_Value_Matcher(std::pmr::memory_resource* memory)
-        : m_values { memory }
-    {
-    }
-
-    [[nodiscard]]
-    bool was_matched() const override
-    {
-        return m_matched;
-    }
-
-    void reset() noexcept override
-    {
-        m_matched = false;
-    }
-
-    [[nodiscard]]
-    std::span<const Value_And_Location<Value>> get_values() const
-    {
-        COWEL_ASSERT(m_matched);
-        return m_values;
-    }
-
-    [[nodiscard]]
-    Processing_Status match_group(
-        const ast::Primary* group,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) override
-    {
-        COWEL_ASSERT(!group || group->get_kind() == ast::Primary_Kind::group);
-        COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
-
-        const auto members = [&] -> std::span<const ast::Group_Member> {
-            if (group) {
-                return group->get_members();
-            }
-            return {};
-        }();
-        const Processing_Status result = match_pack(members, frame, context, on_fail);
-        if (result == Processing_Status::ok) {
-            m_matched = true;
-        }
-        return result;
-    }
-
-private:
-    [[nodiscard]]
-    Processing_Status match_pack(
-        std::span<const ast::Group_Member> members,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    );
-};
-
-struct Group_Pack_Matcher final : Group_Matcher {
-private:
-    Pack_Matcher& m_pack_matcher;
-    const ast::Primary* m_group = nullptr;
-
-public:
-    [[nodiscard]]
-    explicit Group_Pack_Matcher(Pack_Matcher& pack_matcher)
-        : m_pack_matcher { pack_matcher }
-    {
-    }
-
-    [[nodiscard]]
-    bool was_matched() const override
-    {
-        return m_group != nullptr;
-    }
-
-    void reset() noexcept override
-    {
-        m_group = nullptr;
-    }
-
-    [[nodiscard]]
-    Processing_Status match_group(
-        const ast::Primary* group,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    ) override
-    {
-        const auto members = [&] -> std::span<const ast::Group_Member> {
-            if (group) {
-                return group->get_members();
-            }
-            return {};
-        }();
-        return m_pack_matcher.match_pack(members, frame, context, on_fail);
-    }
-};
-
-// CALL ============================================================================================
-
-struct Call_Matcher {
-private:
-    Group_Matcher& m_group_matcher;
-
-public:
-    [[nodiscard]]
-    explicit Call_Matcher(Group_Matcher& args)
-        : m_group_matcher { args }
-    {
-    }
-
-    [[nodiscard]]
-    Processing_Status match_call(
-        const Invocation& call,
-        Context& context,
-        Fail_Callback on_fail,
-        Processing_Status on_fail_status = Processing_Status::error
-    )
-    {
-        return match_group(
-            call.arguments, call.content_frame, context,
-            Match_Fail_Options {
-                .emit = on_fail,
-                .status = on_fail_status,
-                .location = call.get_arguments_source_span(),
-            }
-        );
-    }
-
-private:
-    [[nodiscard]]
-    Processing_Status match_group(
-        const ast::Primary* group,
-        Frame_Index frame,
-        Context& context,
-        const Match_Fail_Options& on_fail
-    )
-    {
-        COWEL_ASSERT(!group || group->get_kind() == ast::Primary_Kind::group);
-        return m_group_matcher.match_group(group, frame, context, on_fail);
-    }
-};
 
 } // namespace cowel
 

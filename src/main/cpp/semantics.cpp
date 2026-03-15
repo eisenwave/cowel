@@ -2,7 +2,6 @@
 #include <ranges>
 #include <span>
 #include <string>
-#include <vector>
 
 #include "cowel/expression_kind.hpp"
 #include "cowel/util/assert.hpp"
@@ -69,7 +68,6 @@ Value Value::block(const ast::Primary& block, Frame_Index frame)
 
 Value Value::block(const ast::Directive& block, Frame_Index frame)
 {
-    // TODO: assertions
     return Value { Union { .directive = Directive_And_Frame { &block, frame } }, directive_index };
 }
 

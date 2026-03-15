@@ -61,21 +61,15 @@ Error_Behavior::splice(Content_Policy& out, const Invocation& call, Context&) co
 }
 
 Processing_Status
-Trim_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
-{
-    // TODO: warn about unused arguments
-    ensure_paragraph_matches_display(out, m_display);
-
-    return splice_all_trimmed(out, call.get_content_span(), call.content_frame, context);
-}
-
-Processing_Status
 Passthrough_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Spliceable_Matcher group_matcher;
-    Call_Matcher call_matcher { group_matcher };
+    Pack_Named_Str_Matcher attr_matcher;
+    Parameter attr_param { u8"attr"sv, Optionality::optional, attr_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::optional, content_matcher };
+    Parameter* const parameters[] { &attr_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context, make_fail_callback());
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -89,19 +83,14 @@ Passthrough_Behavior::splice(Content_Policy& out, const Invocation& call, Contex
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     Text_Buffer_Attribute_Writer attributes = writer.open_tag_with_attributes(name);
-    const auto attributes_status = named_arguments_to_attributes(
-        attributes, call.get_arguments_span(), call.content_frame, context
-    );
+    const auto attributes_status
+        = named_arguments_to_attributes_or_error(attributes, attr_matcher, context);
     attributes.end();
-    if (status_is_break(attributes_status)) {
-        writer.close_tag(name);
-        buffer.flush();
-        return attributes_status;
-    }
     buffer.flush();
 
-    const auto content_status
-        = splice_all(policy, call.get_content_span(), call.content_frame, context);
+    const auto content_status = content_matcher.has_value()
+        ? content_matcher.get().splice_block(policy, context)
+        : Processing_Status::ok;
     writer.close_tag(name);
     buffer.flush();
     return status_concat(attributes_status, content_status);
@@ -110,28 +99,29 @@ Passthrough_Behavior::splice(Content_Policy& out, const Invocation& call, Contex
 Processing_Status
 HTML_Element_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Spliceable_To_String_Matcher name_string_matcher { context.get_transient_memory() };
-    Group_Member_Matcher name_member_matcher { u8"name"sv, Optionality::mandatory,
-                                               name_string_matcher };
-    Group_Pack_Named_Lazy_Spliceable_Matcher attributes_group_matcher;
-    Group_Member_Matcher attributes_matcher { u8"attr"sv, Optionality::optional,
-                                              attributes_group_matcher };
-    Group_Member_Matcher* parameters[] { &name_member_matcher, &attributes_matcher };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Spliceable_To_String_Matcher name_matcher { context.get_transient_memory() };
+    Parameter name_param { u8"name"sv, Optionality::mandatory, name_matcher };
+    Group_Pack_Named_Str_Matcher attr_matcher;
+    Parameter attr_param { u8"attr"sv, Optionality::optional, attr_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::optional, content_matcher };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    Parameter* const parameters[] { &name_param, &attr_param, &content_param };
+    const std::size_t parameter_count
+        = m_self_closing == HTML_Element_Self_Closing::self_closing ? 2 : 3;
+    const auto actual_parameters = std::span { parameters }.subspan(0, parameter_count);
+
+    const auto match_status = match_call(actual_parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
                                              : match_status;
     }
 
-    const auto name_string = as_u8string_view(name_string_matcher.get());
+    const auto name_string = as_u8string_view(name_matcher.get());
     const std::optional<HTML_Tag_Name> name = HTML_Tag_Name::make(name_string);
     if (!name) {
         context.try_error(
-            diagnostic::html_element_name_invalid, name_string_matcher.get_location(),
+            diagnostic::html_element_name_invalid, name_matcher.get_location(),
             joined_char_sequence(
                 {
                     u8"The given tag name \""sv,
@@ -146,31 +136,16 @@ HTML_Element_Behavior::splice(Content_Policy& out, const Invocation& call, Conte
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(*name);
-    auto status = [&] -> Processing_Status {
-        if (!attributes_group_matcher.was_matched()) {
-            return Processing_Status ::ok;
-        }
-        return named_arguments_to_attributes(
-            attributes, attributes_group_matcher.get().get_members(),
-            attributes_group_matcher.get_frame(), context
-        );
-    }();
-
+    auto status = named_arguments_to_attributes_or_error(attributes, attr_matcher, context);
     if (m_self_closing == HTML_Element_Self_Closing::self_closing) {
+        COWEL_ASSERT(!content_matcher.was_matched());
         attributes.end_empty();
-        if (!call.get_content_span().empty()) {
-            context.try_warning(
-                diagnostic::ignored_content, call.content->get_source_span(),
-                u8"Content in a self-closing HTML element is ignored."sv
-            );
-        }
     }
     else {
         attributes.end();
         buffer.flush();
-        if (status_is_continue(status)) {
-            const auto content_status
-                = splice_all(out, call.get_content_span(), call.content_frame, context);
+        if (status_is_continue(status) && content_matcher.was_matched()) {
+            const auto content_status = content_matcher.get().splice_block(out, context);
             status = status_concat(status, content_status);
         }
         writer.close_tag(*name);
@@ -185,10 +160,13 @@ HTML_Element_Behavior::splice(Content_Policy& out, const Invocation& call, Conte
 Processing_Status
 In_Tag_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Spliceable_Matcher group_matcher;
-    Call_Matcher call_matcher { group_matcher };
+    Pack_Named_Str_Matcher attr_matcher;
+    Parameter attr_param { u8"attr"sv, Optionality::optional, attr_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &attr_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -202,19 +180,12 @@ In_Tag_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(m_tag_name);
     attributes.write_class(m_class_name);
-    const auto attributes_status = named_arguments_to_attributes(
-        attributes, call.get_arguments_span(), call.content_frame, context
-    );
+    const Processing_Status attributes_status
+        = named_arguments_to_attributes_or_error(attributes, attr_matcher, context);
     attributes.end();
-    if (status_is_break(attributes_status)) {
-        writer.close_tag(m_tag_name);
-        buffer.flush();
-        return attributes_status;
-    }
     buffer.flush();
 
-    const auto content_status
-        = splice_all(policy, call.get_content_span(), call.content_frame, context);
+    const auto content_status = content_matcher.get().splice_block(policy, context);
 
     writer.close_tag(m_tag_name);
     buffer.flush();
@@ -224,10 +195,13 @@ In_Tag_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
 Processing_Status
 Special_Block_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Spliceable_Matcher group_matcher;
-    Call_Matcher call_matcher { group_matcher };
+    Pack_Named_Str_Matcher attr_matcher;
+    Parameter attr_param { u8"attr"sv, Optionality::optional, attr_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &attr_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -246,15 +220,9 @@ Special_Block_Behavior::splice(Content_Policy& out, const Invocation& call, Cont
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(m_name);
-    const auto attributes_status = named_arguments_to_attributes(
-        attributes, call.get_arguments_span(), call.content_frame, context
-    );
+    const Processing_Status attributes_status
+        = named_arguments_to_attributes_or_error(attributes, attr_matcher, context);
     attributes.end();
-    if (status_is_break(attributes_status)) {
-        writer.close_tag(m_name);
-        buffer.flush();
-        return attributes_status;
-    }
 
     if (emit_intro) {
         writer.open_tag(html_tag::p);
@@ -265,8 +233,7 @@ Special_Block_Behavior::splice(Content_Policy& out, const Invocation& call, Cont
     }
     buffer.flush();
 
-    const auto content_status
-        = splice_all(policy, call.get_content_span(), call.content_frame, context);
+    const auto content_status = content_matcher.get().splice_block(policy, context);
 
     policy.leave_paragraph();
     writer.close_tag(m_name);
@@ -277,10 +244,13 @@ Special_Block_Behavior::splice(Content_Policy& out, const Invocation& call, Cont
 Processing_Status
 URL_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Spliceable_Matcher group_matcher;
-    Call_Matcher call_matcher { group_matcher };
+    Pack_Named_Str_Matcher attr_matcher;
+    Parameter attr_param { u8"attr"sv, Optionality::optional, attr_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &attr_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -289,8 +259,9 @@ URL_Behavior::splice(Content_Policy& out, const Invocation& call, Context& conte
 
     std::pmr::vector<char8_t> url { context.get_transient_memory() };
     append(url, m_url_prefix);
-    const auto text_status
-        = splice_to_plaintext(url, call.get_content_span(), call.content_frame, context);
+    const auto text_status = splice_value_to_plaintext(
+        url, content_matcher.get(), content_matcher.get_location(), context
+    );
     if (text_status != Processing_Status::ok) {
         return text_status;
     }
@@ -300,9 +271,8 @@ URL_Behavior::splice(Content_Policy& out, const Invocation& call, Context& conte
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(html_tag::a);
-    const auto attributes_status = named_arguments_to_attributes(
-        attributes, call.get_arguments_span(), call.content_frame, context
-    );
+    const Processing_Status attributes_status
+        = named_arguments_to_attributes_or_error(attributes, attr_matcher, context);
     attributes.write_href(url_string);
     attributes.write_class(u8"sans"sv);
     attributes.end();
@@ -318,21 +288,15 @@ URL_Behavior::splice(Content_Policy& out, const Invocation& call, Context& conte
 Processing_Status
 Self_Closing_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Spliceable_Matcher group_matcher;
-    Call_Matcher call_matcher { group_matcher };
+    Pack_Named_Str_Matcher attr_matcher;
+    Parameter attr_param { u8"attr"sv, Optionality::optional, attr_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::optional, content_matcher };
+    Parameter* const parameters[] { &attr_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
-    }
-
-    // TODO: this should use some utility function
-    if (!call.get_content_span().empty()) {
-        context.try_warning(
-            diagnostic::ignored_content, call.content->get_source_span(),
-            u8"Content was ignored. Use empty braces,"
-            "i.e. {} to resolve this warning."sv
-        );
     }
 
     ensure_paragraph_matches_display(out, m_display);
@@ -340,9 +304,8 @@ Self_Closing_Behavior::splice(Content_Policy& out, const Invocation& call, Conte
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     auto attributes = writer.open_tag_with_attributes(m_tag_name);
-    const auto status = named_arguments_to_attributes(
-        attributes, call.get_arguments_span(), call.content_frame, context
-    );
+    const Processing_Status status
+        = named_arguments_to_attributes_or_error(attributes, attr_matcher, context);
     attributes.end_empty();
     return status;
 }
@@ -355,14 +318,12 @@ Processing_Status Internal_Expect_Diagnostic_Behavior::splice(
 ) const
 {
     String_Matcher id_matcher { context.get_transient_memory() };
-    Group_Member_Matcher id_member { u8"id"sv, Optionality::mandatory, id_matcher };
-    Group_Member_Matcher* parameters[] { &id_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter id_param { u8"id"sv, Optionality::mandatory, id_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &id_param, &content_param };
 
-    if (const auto match_status
-        = call_matcher.match_call(call, context, make_fail_callback(), Processing_Status::fatal);
+    if (const auto match_status = match_call_fatal_error(parameters, call, context);
         match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -381,8 +342,7 @@ Processing_Status Internal_Expect_Diagnostic_Behavior::splice(
         context.get_transient_memory(),
     };
     context.set_logger(expecting_logger);
-    const Processing_Status status
-        = splice_all(out, call.get_content_span(), call.content_frame, context);
+    const Processing_Status status = content_matcher.get().splice_block(out, context);
 
     if (status != m_expected_status) {
         (*old_logger)(Diagnostic {
@@ -411,17 +371,27 @@ Processing_Status Internal_Expect_Diagnostic_Behavior::splice(
         result = Processing_Status::error;
     }
     if (!expecting_logger.was_expected_logged()) {
+        std::pmr::u8string message { context.get_transient_memory() };
+        message += u8"Expected the block to produce the diagnostic \""sv;
+        message += expected_id;
+        message += u8"\", but it was not logged (with the expected severity)."sv;
+        if (!expecting_logger.get_extra_diagnostics().empty()) {
+            message += u8" However, the following additional diagnostics were logged: "sv;
+            for (bool first = true;
+                 const Collected_Diagnostic& extra : expecting_logger.get_extra_diagnostics()) {
+                if (!first) {
+                    message += u8", "sv;
+                }
+                message += extra.id;
+                first = false;
+            }
+        }
+
         (*old_logger)(Diagnostic {
             .severity = Severity::error,
             .id = u8"test.diagnostic"sv,
             .location = call.directive.get_source_span(),
-            .message = joined_char_sequence(
-                {
-                    u8"Expected the block to produce the diagnostic \""sv,
-                    expected_id,
-                    u8"\", but it was not logged (with the expected severity)."sv,
-                }
-            ),
+            .message = as_u8string_view(message),
         });
         result = Processing_Status::error;
     }
