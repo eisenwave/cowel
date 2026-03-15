@@ -67,6 +67,7 @@ private:
     const std::u8string_view m_expected_id;
     bool m_expected_logged = false;
     std::pmr::vector<Collected_Diagnostic> m_violations;
+    std::pmr::vector<Collected_Diagnostic> m_extra;
 
 public:
     explicit Expecting_Logger(
@@ -88,6 +89,12 @@ public:
         return m_violations;
     }
 
+    [[nodiscard]]
+    std::span<const Collected_Diagnostic> get_extra_diagnostics() const
+    {
+        return m_extra;
+    }
+
     void operator()(const Diagnostic diagnostic) override
     {
         std::pmr::vector<char8_t> id_data;
@@ -97,13 +104,17 @@ public:
             m_expected_logged = true;
             return;
         }
+        std::pmr::memory_resource* const memory = m_violations.get_allocator().resource();
         // Additional warnings or errors are not considered a violation,
         // but getting anything with greater severity should not happen.
-        if (diagnostic.severity > m_expected_severity) {
-            static_assert(std::is_trivially_copyable_v<Diagnostic>);
-            std::pmr::memory_resource* const memory = m_violations.get_allocator().resource();
-            m_violations.emplace_back(diagnostic, memory);
-        }
+        auto& target = diagnostic.severity > m_expected_severity ? m_violations : m_extra;
+
+        static_assert(
+            std::is_trivially_copyable_v<Diagnostic>,
+            "emplace_back is expected to perform a trivial copy. "
+            "A design change is needed if that is not possible."
+        );
+        target.emplace_back(diagnostic, memory);
     }
 
     [[nodiscard]]

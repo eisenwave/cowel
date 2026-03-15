@@ -118,13 +118,12 @@ Processing_Status
 Ref_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     Spliceable_To_String_Matcher to_matcher { context.get_transient_memory() };
-    Group_Member_Matcher to_member { u8"to"sv, Optionality::mandatory, to_matcher };
-    Group_Member_Matcher* const parameters[] { &to_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter to_param { u8"to"sv, Optionality::mandatory, to_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::optional, content_matcher };
+    Parameter* const parameters[] { &to_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
                                              : match_status;
@@ -152,7 +151,7 @@ Ref_Behavior::splice(Content_Policy& out, const Invocation& call, Context& conte
             target_string,
         };
         reference_section(buffer, joined_char_sequence(section_name_parts));
-        if (call.has_empty_content()) {
+        if (!content_matcher.was_matched()) {
             writer.write_inner_html(u8'[');
             writer.write_inner_text(target_string);
             writer.write_inner_html(u8']');
@@ -168,7 +167,7 @@ Ref_Behavior::splice(Content_Policy& out, const Invocation& call, Context& conte
             .write_href(target_string)
             .end();
         auto status = Processing_Status::ok;
-        if (call.has_empty_content()) {
+        if (!content_matcher.was_matched()) {
             const std::u8string_view section_name_parts[] {
                 section_name::id_preview,
                 u8".",
@@ -178,7 +177,7 @@ Ref_Behavior::splice(Content_Policy& out, const Invocation& call, Context& conte
         }
         else {
             buffer.flush();
-            status = splice_all(out, call.get_content_span(), call.content_frame, context);
+            status = content_matcher.get().splice_block(out, context);
         }
         writer.close_tag(html_tag::a);
         buffer.flush();
@@ -187,13 +186,13 @@ Ref_Behavior::splice(Content_Policy& out, const Invocation& call, Context& conte
 
     COWEL_ASSERT(classification.type == Reference_Type::url);
 
-    if (!call.has_empty_content()) {
+    if (content_matcher.was_matched()) {
         writer
             .open_tag_with_attributes(html_tag::a) //
             .write_href(target_string)
             .end();
         buffer.flush();
-        const auto status = splice_all(out, call.get_content_span(), call.content_frame, context);
+        const auto status = content_matcher.get().splice_block(out, context);
         writer.close_tag(html_tag::a);
         buffer.flush();
         return status;

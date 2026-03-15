@@ -9,11 +9,13 @@ namespace cowel {
 
 Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    Group_Pack_Value_Matcher strings { context.get_transient_memory() };
-    Call_Matcher call_matcher { strings };
+    Pack_Of_Type_Matcher names { Type::pack_of(&Type::str) };
+    Parameter names_param { u8"names"sv, Optionality::optional, names };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &names_param, &content_param };
 
-    const Processing_Status match_status
-        = call_matcher.match_call(call, context, make_fail_callback(), Processing_Status::fatal);
+    const Processing_Status match_status = match_call_fatal_error(parameters, call, context);
     switch (match_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk:
@@ -29,7 +31,7 @@ Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& c
     }
     }
 
-    for (const auto& [alias_name, location] : strings.get_values()) {
+    for (const auto& [alias_name, location] : names.get()) {
         if (!alias_name.is_str()) {
             context.try_error(
                 diagnostic::type_mismatch, location,
@@ -47,9 +49,10 @@ Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& c
         }
     }
 
+    const Value& content = content_matcher.get();
     std::pmr::vector<char8_t> target_text { context.get_transient_memory() };
     const Processing_Status target_status
-        = splice_to_plaintext(target_text, call.get_content_span(), call.content_frame, context);
+        = splice_value_to_plaintext(target_text, content, content_matcher.get_location(), context);
     switch (target_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk:
@@ -103,7 +106,7 @@ Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& c
         return Processing_Status::fatal;
     }
 
-    for (const auto& [alias_name_value, location] : strings.get_values()) {
+    for (const auto& [alias_name_value, location] : names.get()) {
         const std::u8string_view alias_name = alias_name_value.as_string();
         if (alias_name.empty()) {
             context.try_fatal(

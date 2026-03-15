@@ -38,7 +38,7 @@ struct Put_Named {
     /// @param members The group members, usually call arguments.
     /// @param frame The content frame of the call.
     [[nodiscard]]
-    Result<const ast::Group_Member*, Processing_Status>
+    Result<std::optional<Argument>, Processing_Status>
     find(std::span<const ast::Group_Member> members, Frame_Index frame) const
     {
         for (const ast::Group_Member& arg : members) {
@@ -62,19 +62,19 @@ struct Put_Named {
                 //       which is probably not desirable.
                 //       However, cowel_macro and cowel_put are kinda on the chopping block,
                 //       so it's not worth solving this right now.
-                const Result<Value, Processing_Status> name_value
+                Result<Value, Processing_Status> name_value
                     = evaluate(arg.get_name(), frame, context);
                 if (!name_value) {
                     return name_value.error();
                 }
                 if (name_value->as_string() == needle_name) {
-                    return &arg;
+                    return std::optional<Argument>(Argument::named(std::move(*name_value), arg));
                 }
                 continue;
             }
             }
         }
-        return nullptr;
+        return std::optional<Argument> {};
     }
 };
 
@@ -89,7 +89,7 @@ struct Put_Positional {
     /// @param members The group members, usually call arguments.
     /// @param frame The content frame of the call.
     [[nodiscard]]
-    const ast::Group_Member* find(std::span<const ast::Group_Member> members, Frame_Index frame)
+    std::optional<Argument> find(std::span<const ast::Group_Member> members, Frame_Index frame)
     {
         for (const ast::Group_Member& arg : members) {
             switch (arg.get_kind()) {
@@ -98,7 +98,7 @@ struct Put_Positional {
             }
             case ast::Member_Kind::ellipsis: {
                 const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
-                const auto* maybe_result = find(
+                auto maybe_result = find(
                     ellipsis_frame.invocation.get_arguments_span(),
                     ellipsis_frame.invocation.content_frame
                 );
@@ -109,7 +109,7 @@ struct Put_Positional {
             }
             case ast::Member_Kind::positional: {
                 if (needle_index == index++) {
-                    return &arg;
+                    return Argument ::positional(arg);
                 }
                 continue;
             }
@@ -123,11 +123,13 @@ struct Put_Positional {
 
 Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    Group_Pack_Value_Matcher strings { context.get_transient_memory() };
-    Call_Matcher call_matcher { strings };
+    Pack_Of_Type_Matcher names { Type::pack_of(&Type::str) };
+    Parameter names_param { u8"names"sv, Optionality::optional, names };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &names_param, &content_param };
 
-    const Processing_Status match_status
-        = call_matcher.match_call(call, context, make_fail_callback(), Processing_Status::fatal);
+    const Processing_Status match_status = match_call_fatal_error(parameters, call, context);
     switch (match_status) {
     case Processing_Status::ok: break;
     case Processing_Status::brk:
@@ -143,7 +145,7 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
     }
     }
 
-    for (const auto& [alias_name, location] : strings.get_values()) {
+    for (const auto& [alias_name, location] : names.get()) {
         if (!alias_name.is_str()) {
             context.try_error(
                 diagnostic::type_mismatch, location,
@@ -161,7 +163,7 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
         }
     }
 
-    for (const auto& [alias_name_value, location] : strings.get_values()) {
+    for (const auto& [alias_name_value, location] : names.get()) {
         const std::u8string_view alias_name = alias_name_value.as_string();
         if (alias_name.empty()) {
             context.try_fatal(
@@ -206,11 +208,9 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
     return Processing_Status::ok;
 }
 
-Result<const ast::Expression*, Processing_Status>
+Result<Argument, Processing_Status>
 Put_Behavior::resolve(const Invocation& call, Context& context) const
 {
-    constexpr const ast::Expression* found_content_result {};
-
     if (call.content_frame == Frame_Index::root) {
         context.try_error(
             diagnostic::put_outside, call.directive.get_source_span(),
@@ -224,14 +224,13 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
     static constexpr auto else_type = Type::union_of(else_alternatives);
     static_assert(else_type.is_canonical());
 
-    Lazy_Value_Of_Type_Matcher else_matcher { &else_type };
-    Group_Member_Matcher else_member { u8"else"sv, Optionality::optional, else_matcher };
-    Group_Member_Matcher* const parameters[] { &else_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Lazy_Value_Of_Type_Matcher else_matcher { else_type };
+    Parameter else_param { u8"else"sv, Optionality::optional, else_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::optional, content_matcher };
+    Parameter* const parameters[] { &else_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -239,9 +238,17 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
     Call_Stack& stack = context.get_call_stack();
     const Invocation& target_invocation = stack[call.content_frame].invocation;
 
-    // Simple case like \put where we expand the given contents.
-    if (call.has_empty_content()) {
-        return found_content_result;
+    // Simple case like \cowel_put where we expand the given contents.
+    if (!content_matcher.was_matched()) {
+        if (!target_invocation.content) {
+            context.try_error(
+                diagnostic::put_invalid, call.directive.get_source_span(),
+                u8"\\cowel_put attempted to expand a block argument, but none was provided. "
+                u8"Use \\cowel_put(else={}) to silence such cases."sv
+            );
+            return Processing_Status::error;
+        }
+        return Argument::block(*target_invocation.content);
     }
 
     const bool has_else = else_matcher.was_matched();
@@ -256,17 +263,19 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
 
     // Simple case like \put where we expand the given contents.
     if (target_string.empty()) {
-        return found_content_result;
+        // FIXME: error if need be
+        COWEL_ASSERT(target_invocation.content);
+        return Argument::block(*target_invocation.content);
     }
 
     const std::optional<std::size_t> needle_index = from_characters<std::size_t>(target_string);
-    const auto arg_result = [&] -> Result<const ast::Group_Member*, Processing_Status> {
+    const auto arg_result = [&] -> Result<std::optional<Argument>, Processing_Status> {
         if (needle_index) {
             Put_Positional expand_positional {
                 .context = context,
                 .needle_index = *needle_index,
             };
-            const ast::Group_Member* const maybe_result = expand_positional.find(
+            std::optional<Argument> maybe_result = expand_positional.find(
                 target_invocation.get_arguments_span(), target_invocation.content_frame
             );
             if (!maybe_result && !has_else) {
@@ -293,7 +302,7 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
                 .context = context,
                 .needle_name = target_string,
             };
-            Result<const ast::Group_Member*, Processing_Status> maybe_result = expand_named.find(
+            Result<std::optional<Argument>, Processing_Status> maybe_result = expand_named.find(
                 target_invocation.get_arguments_span(), target_invocation.content_frame
             );
             if (!maybe_result) {
@@ -318,16 +327,16 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
     if (!arg_result) {
         return arg_result.error();
     }
-    const auto* const arg = *arg_result;
+    const std::optional<Argument>& arg = *arg_result;
     if (!arg) {
         if (!has_else) {
             // Error has already been printed above.
             return Processing_Status::error;
         }
-        return &else_matcher.get();
+        return else_matcher.get();
     }
 
-    return &arg->get_value();
+    return *arg;
 }
 
 // FIXME: Something is seriously inconsistent here.
@@ -338,7 +347,7 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
 Result<Value, Processing_Status>
 Put_Behavior::evaluate(const Invocation& call, Context& context) const
 {
-    const Result<const ast::Expression*, Processing_Status> result = resolve(call, context);
+    const Result<Argument, Processing_Status> result = resolve(call, context);
     if (!result) {
         return result.error();
     }
@@ -346,21 +355,14 @@ Put_Behavior::evaluate(const Invocation& call, Context& context) const
     Call_Stack& stack = context.get_call_stack();
     const Invocation& target_invocation = stack[call.content_frame].invocation;
 
-    if (*result == nullptr) {
-        // FIXME: I'm pretty sure nothing so far has guaranteed that the block exists.
-        //        We don't need to worry about that for splicing,
-        //        but when evaluating, we need to obtain some Value.
-        COWEL_ASSERT(target_invocation.content);
-        return Value::block(*target_invocation.content, target_invocation.content_frame);
-    }
-    return evaluate_expression(**result, target_invocation.content_frame, context);
+    return result->evaluate(target_invocation.content_frame, context);
 }
 
 Processing_Status
 Put_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     // FIXME: Maybe this function should just go away
-    const Result<const ast::Expression*, Processing_Status> result = resolve(call, context);
+    const Result<Argument, Processing_Status> result = resolve(call, context);
     if (!result) {
         return try_generate_error(out, call, context, result.error());
     }
@@ -369,14 +371,7 @@ Put_Behavior::splice(Content_Policy& out, const Invocation& call, Context& conte
     const Invocation& target_invocation = stack[call.content_frame].invocation;
 
     try_inherit_paragraph(out);
-    if (*result == nullptr) {
-        return splice_all(
-            out, target_invocation.get_content_span(), target_invocation.content_frame, context
-        );
-    }
-    // FIXME: This may not be a spliceable value,
-    //        such as when a group was found.
-    return splice_expression(out, **result, target_invocation.content_frame, context);
+    return result->splice(out, target_invocation.content_frame, context);
 }
 
 Processing_Status

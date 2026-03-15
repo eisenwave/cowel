@@ -94,13 +94,10 @@ Result<Short_String_Value, Processing_Status>
 Char_By_Entity_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher name_matcher { context.get_transient_memory() };
-    Group_Member_Matcher name_member { u8"name", Optionality::mandatory, name_matcher };
-    Group_Member_Matcher* matchers[] { &name_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter name_param { u8"name", Optionality::mandatory, name_matcher };
+    Parameter* const parameters[] { &name_param };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }

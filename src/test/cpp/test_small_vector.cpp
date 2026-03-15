@@ -1023,6 +1023,165 @@ TEST(Small_Vector, grow_with_existing_allocation)
     EXPECT_EQ(object_count, 0);
 }
 
+TEST(Small_Vector, resize_to_zero)
+{
+    object_count = 0;
+    {
+        Small_Vector<Counted, 4> vec;
+        vec.push_back(Counted { 1 });
+        vec.push_back(Counted { 2 });
+        vec.push_back(Counted { 3 });
+        EXPECT_EQ(vec.size(), 3);
+        EXPECT_TRUE(vec.small());
+        EXPECT_EQ(object_count, 4);
+
+        vec.resize(0);
+        EXPECT_EQ(vec.size(), 0);
+        EXPECT_TRUE(vec.empty());
+        EXPECT_TRUE(vec.small());
+        EXPECT_EQ(object_count, 4);
+    }
+    EXPECT_EQ(object_count, 0);
+}
+
+TEST(Small_Vector, resize_shrink_small)
+{
+    object_count = 0;
+    {
+        Small_Vector<Counted, 4> vec;
+        vec.push_back(Counted { 1 });
+        vec.push_back(Counted { 2 });
+        vec.push_back(Counted { 3 });
+        EXPECT_EQ(vec.size(), 3);
+        EXPECT_TRUE(vec.small());
+        EXPECT_EQ(object_count, 4);
+
+        vec.resize(1);
+        EXPECT_EQ(vec.size(), 1);
+        EXPECT_TRUE(vec.small());
+        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(vec[0].value, 1);
+    }
+    EXPECT_EQ(object_count, 0);
+}
+
+TEST(Small_Vector, resize_shrink_dynamic)
+{
+    object_count = 0;
+    {
+        Small_Vector<Counted, 2> vec;
+        vec.push_back(Counted { 1 });
+        vec.push_back(Counted { 2 });
+        vec.push_back(Counted { 3 });
+        vec.push_back(Counted { 4 });
+        vec.push_back(Counted { 5 });
+        EXPECT_EQ(vec.size(), 5);
+        EXPECT_FALSE(vec.small());
+        EXPECT_EQ(object_count, 7);
+
+        vec.resize(2);
+        EXPECT_EQ(vec.size(), 2);
+        EXPECT_FALSE(vec.small());
+        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(vec[0].value, 1);
+        EXPECT_EQ(vec[1].value, 2);
+    }
+    EXPECT_EQ(object_count, 0);
+}
+
+TEST(Small_Vector, resize_grow_within_small)
+{
+    object_count = 0;
+    {
+        Small_Vector<Counted, 4> vec;
+        vec.push_back(Counted { 1 });
+        EXPECT_EQ(vec.size(), 1);
+        EXPECT_TRUE(vec.small());
+        EXPECT_EQ(object_count, 4);
+
+        vec.resize(3);
+        EXPECT_EQ(vec.size(), 3);
+        EXPECT_TRUE(vec.small());
+        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(vec[0].value, 1);
+        EXPECT_EQ(vec[1].value, 0);
+        EXPECT_EQ(vec[2].value, 0);
+    }
+    EXPECT_EQ(object_count, 0);
+}
+
+TEST(Small_Vector, resize_grow_to_dynamic)
+{
+    object_count = 0;
+    {
+        Small_Vector<Counted, 2> vec;
+        vec.push_back(Counted { 1 });
+        EXPECT_EQ(vec.size(), 1);
+        EXPECT_TRUE(vec.small());
+        EXPECT_EQ(object_count, 2);
+
+        vec.resize(5);
+        EXPECT_EQ(vec.size(), 5);
+        EXPECT_FALSE(vec.small());
+        EXPECT_GE(vec.capacity(), 5);
+        EXPECT_EQ(object_count, 7);
+        EXPECT_EQ(vec[0].value, 1);
+        EXPECT_EQ(vec[1].value, 0);
+        EXPECT_EQ(vec[2].value, 0);
+        EXPECT_EQ(vec[3].value, 0);
+        EXPECT_EQ(vec[4].value, 0);
+    }
+    EXPECT_EQ(object_count, 0);
+}
+
+TEST(Small_Vector, resize_grow_dynamic)
+{
+    object_count = 0;
+    {
+        Small_Vector<Counted, 2> vec;
+        vec.push_back(Counted { 1 });
+        vec.push_back(Counted { 2 });
+        vec.push_back(Counted { 3 });
+        EXPECT_EQ(vec.size(), 3);
+        EXPECT_FALSE(vec.small());
+        EXPECT_EQ(object_count, 5);
+
+        vec.resize(6);
+        EXPECT_EQ(vec.size(), 6);
+        EXPECT_FALSE(vec.small());
+        EXPECT_GE(vec.capacity(), 6);
+        EXPECT_EQ(object_count, 8);
+        EXPECT_EQ(vec[0].value, 1);
+        EXPECT_EQ(vec[1].value, 2);
+        EXPECT_EQ(vec[2].value, 3);
+        EXPECT_EQ(vec[3].value, 0);
+        EXPECT_EQ(vec[4].value, 0);
+        EXPECT_EQ(vec[5].value, 0);
+    }
+    EXPECT_EQ(object_count, 0);
+}
+
+TEST(Small_Vector, resize_same_size)
+{
+    object_count = 0;
+    {
+        Small_Vector<Counted, 4> vec;
+        vec.push_back(Counted { 1 });
+        vec.push_back(Counted { 2 });
+        EXPECT_EQ(vec.size(), 2);
+        EXPECT_TRUE(vec.small());
+        EXPECT_EQ(object_count, 4);
+
+        vec.resize(2);
+        EXPECT_EQ(vec.size(), 2);
+        EXPECT_TRUE(vec.small());
+        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(vec[0].value, 1);
+        EXPECT_EQ(vec[1].value, 2);
+    }
+    EXPECT_EQ(object_count, 0);
+}
+
 consteval int f()
 {
     Small_Vector<int, 16> v;

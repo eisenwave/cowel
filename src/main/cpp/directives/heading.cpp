@@ -36,14 +36,15 @@ namespace {
 [[nodiscard]]
 Processing_Status synthesize_id(
     std::pmr::vector<char8_t>& out,
-    std::span<const ast::Markup_Element> content,
-    Frame_Index content_frame,
+    const Value& content,
+    const File_Source_Span& error_location,
     Context& context
 )
 {
+    COWEL_ASSERT(content.is_block());
     // TODO: diagnostic on bad status
     // TODO: disallow side effects, or maybe use content policies to pull out just the text?
-    const auto status = splice_to_plaintext(out, content, content_frame, context);
+    const auto status = splice_value_to_plaintext(out, content, error_location, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -63,25 +64,20 @@ Processing_Status
 Heading_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     Spliceable_To_String_Matcher id_matcher { context.get_transient_memory() };
-    Group_Member_Matcher id_member { u8"id"sv, Optionality::optional, id_matcher };
+    Parameter id_param { u8"id"sv, Optionality::optional, id_matcher };
     Boolean_Matcher listed_boolean;
-    Group_Member_Matcher listed_member { u8"listed"sv, Optionality::optional, listed_boolean };
+    Parameter listed_param { u8"listed"sv, Optionality::optional, listed_boolean };
     Boolean_Matcher show_number_boolean;
-    Group_Member_Matcher show_number_member { u8"show_number"sv, Optionality::optional,
-                                              show_number_boolean };
-    Group_Pack_Named_Lazy_Spliceable_Matcher attr_group;
-    Group_Member_Matcher attr_member { u8"attr"sv, Optionality::optional, attr_group };
-    Group_Member_Matcher* const parameters[] {
-        &id_member,
-        &listed_member,
-        &show_number_member,
-        &attr_member,
+    Parameter show_number_param { u8"show_number"sv, Optionality::optional, show_number_boolean };
+    Group_Pack_Named_Str_Matcher attr_group;
+    Parameter attr_param { u8"attr"sv, Optionality::optional, attr_group };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] {
+        &id_param, &listed_param, &show_number_param, &attr_param, &content_param,
     };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
                                              : match_status;
@@ -119,7 +115,7 @@ Heading_Behavior::splice(Content_Policy& out, const Invocation& call, Context& c
         }
 
         const auto status = synthesize_id(
-            synthesized_id_buffer, call.get_content_span(), call.content_frame, context
+            synthesized_id_buffer, content_matcher.get(), content_matcher.get_location(), context
         );
         return {
             .status = status,
@@ -142,11 +138,8 @@ Heading_Behavior::splice(Content_Policy& out, const Invocation& call, Context& c
     if (id.exists) {
         attributes.write_id(id.string);
     }
-    const auto attributes_status = attr_group.was_matched()
-        ? named_arguments_to_attributes(
-              attributes, attr_group.get().get_members(), attr_group.get_frame(), context
-          )
-        : Processing_Status::ok;
+    const Processing_Status attributes_status
+        = named_arguments_to_attributes_or_error(attributes, attr_group, context);
     attributes.end();
     current_status = status_concat(current_status, attributes_status);
     if (status_is_break(attributes_status)) {
@@ -160,8 +153,7 @@ Heading_Behavior::splice(Content_Policy& out, const Invocation& call, Context& c
     {
         Capturing_Ref_Text_Sink heading_sink { heading_html, Output_Language::html };
         HTML_Content_Policy html_policy { heading_sink };
-        const auto heading_status
-            = splice_all(html_policy, call.get_content_span(), call.content_frame, context);
+        const auto heading_status = content_matcher.get().splice_block(html_policy, context);
         current_status = status_concat(current_status, heading_status);
         if (status_is_break(heading_status)) {
             writer.close_tag(tag_name);
@@ -283,35 +275,21 @@ namespace {
 
 [[nodiscard]]
 Processing_Status with_section_name(
-    Content_Policy& out,
+    const std::u8string_view name,
     const Invocation& call,
     Context& context,
-    std::u8string_view no_section_diagnostic,
-    Function_Ref<Processing_Status(std::u8string_view section)> action
+    const std::u8string_view no_section_diagnostic,
+    const Function_Ref<Processing_Status(std::u8string_view section)> action
 )
 {
-    Spliceable_To_String_Matcher section_matcher { context.get_transient_memory() };
-    Group_Member_Matcher section_member { u8"section"sv, Optionality::mandatory, section_matcher };
-    Group_Member_Matcher* parameters[] { &section_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
-
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
-    if (match_status != Processing_Status::ok) {
-        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
-                                             : match_status;
-    }
-
-    const auto section_string = as_u8string_view(section_matcher.get());
-    if (section_string.empty()) {
+    if (name.empty()) {
         context.try_error(
             no_section_diagnostic, call.directive.get_source_span(), u8"No section was provided."sv
         );
         return Processing_Status::error;
     }
 
-    return action(section_string);
+    return action(name);
 }
 
 } // namespace
@@ -319,26 +297,54 @@ Processing_Status with_section_name(
 Processing_Status
 There_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
+    String_Matcher section_matcher { context.get_transient_memory() };
+    Parameter section_param { u8"section"sv, Optionality::mandatory, section_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &section_param, &content_param };
+
+    const auto match_status = match_call(parameters, call, context);
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
+    }
+
     const auto action = [&](std::u8string_view section) -> Processing_Status {
         const auto scope = context.get_sections().go_to_scoped(section);
-        return splice_all(
-            context.get_sections().current_policy(), call.get_content_span(), call.content_frame,
+        return content_matcher.get().splice_block(
+            context.get_sections().current_policy(), //
             context
         );
     };
-    return with_section_name(out, call, context, diagnostic::there::no_section, action);
+    return with_section_name(
+        section_matcher.get(), call, context, diagnostic::there::no_section, action
+    );
 }
 
 Processing_Status
 Here_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
+    String_Matcher section_matcher { context.get_transient_memory() };
+    Parameter section_param { u8"section"sv, Optionality::mandatory, section_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &section_param, &content_param };
+
+    const auto match_status = match_call(parameters, call, context);
+    if (match_status != Processing_Status::ok) {
+        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
+                                             : match_status;
+    }
+
     ensure_paragraph_matches_display(out, m_display);
 
     const auto action = [&](std::u8string_view section) -> Processing_Status {
         reference_section(out, section);
         return Processing_Status::ok;
     };
-    return with_section_name(out, call, context, diagnostic::here::no_section, action);
+    return with_section_name(
+        section_matcher.get(), call, context, diagnostic::here::no_section, action
+    );
 }
 
 Processing_Status

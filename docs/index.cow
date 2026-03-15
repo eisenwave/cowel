@@ -64,7 +64,7 @@ U+\cowel_str_to_upper(cowel_to_str(..., base=16, zpad=4))\c{nbsp}(\tt{\cowel_cha
   meta,
   (
     property = "og:\cowel_put{0}",
-    content = cowel_put{},
+    content = "\cowel_put{}",
   ),
 )\
 }

@@ -24,10 +24,13 @@ namespace cowel {
 Processing_Status
 HTML_Raw_Text_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Group_Pack_Named_Lazy_Spliceable_Matcher args_matcher {};
-    Call_Matcher call_matcher { args_matcher };
+    Group_Pack_Named_Str_Matcher attr_matcher {};
+    Parameter attr_param { u8"attr"sv, Optionality::optional, attr_matcher };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &attr_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -37,18 +40,15 @@ HTML_Raw_Text_Behavior::splice(Content_Policy& out, const Invocation& call, Cont
     HTML_Writer_Buffer buffer { out, Output_Language::html };
     Text_Buffer_HTML_Writer writer { buffer };
     Text_Buffer_Attribute_Writer attributes = writer.open_tag_with_attributes(m_tag_name);
-    const auto attributes_status = named_arguments_to_attributes(
-        attributes, call.get_arguments_span(), call.content_frame, context
-    );
+    const Processing_Status attributes_status
+        = named_arguments_to_attributes_or_error(attributes, attr_matcher, context);
     attributes.end();
-    if (status_is_break(attributes_status)) {
-        return attributes_status;
-    }
     Processing_Status status = attributes_status;
 
     std::pmr::vector<char8_t> raw_text { context.get_transient_memory() };
-    const auto content_status
-        = splice_to_plaintext(raw_text, call.get_content_span(), call.content_frame, context);
+    const auto content_status = splice_value_to_plaintext(
+        raw_text, content_matcher.get(), content_matcher.get_location(), context
+    );
     status = status_concat(status, content_status);
     if (status_is_continue(content_status)) {
         COWEL_ASSERT(m_tag_name == u8"style"sv || m_tag_name == u8"script"sv);

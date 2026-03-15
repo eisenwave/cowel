@@ -141,40 +141,16 @@ static_assert(variable_type.is_canonical());
 Result<bool, Processing_Status>
 Logical_Not_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    Group_Pack_Value_Matcher group_matcher { context.get_transient_memory() };
-    Call_Matcher call_matcher { group_matcher };
+    Boolean_Matcher x_matcher;
+    Parameter x_param { u8"x"sv, Optionality::mandatory, x_matcher };
+    Parameter* const parameters[] { &x_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
 
-    if (group_matcher.get_values().size() != 1) {
-        context.try_error(
-            diagnostic::type_mismatch, call.get_arguments_source_span(),
-            u8"Logical NOT is unary and requires exactly one argument"sv
-        );
-        return Processing_Status::error;
-    }
-
-    const auto& argument = group_matcher.get_values().front();
-
-    if (argument.value.get_type() != Type::boolean) {
-        context.try_error(
-            diagnostic::type_mismatch, argument.location,
-            joined_char_sequence(
-                {
-                    u8"Expected a value of type "sv,
-                    Type::boolean.get_display_name(),
-                    u8", but got "sv,
-                    argument.value.get_type().get_display_name(),
-                    u8".",
-                }
-            )
-        );
-    }
-
-    return !argument.value.as_boolean();
+    return !x_matcher.get();
 }
 
 namespace {
@@ -203,52 +179,27 @@ struct Logical_Expression_Evaluator {
 
     [[nodiscard]]
     Result<bool, Processing_Status>
-    operator()(std::span<const ast::Group_Member> members, Frame_Index frame) const
+    operator()(std::span<const Argument> arguments, Frame_Index frame) const
     {
         const bool neutral_element = kind == Logical_Expression_Kind::logical_and;
         const bool terminator = !neutral_element;
 
-        for (const ast::Group_Member& member : members) {
-            switch (member.get_kind()) {
-            case ast::Member_Kind::named: {
-                return Processing_Status::error;
+        for (const Argument& member : arguments) {
+            COWEL_ASSERT(member.is_positional());
+            const Type& static_type = member.get_static_type(context);
+            if (!static_type.analytically_convertible_to(Type::boolean)) {
+                return type_error(static_type, member.get_value_location());
             }
-            case ast::Member_Kind::ellipsis: {
-                const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
-                Result<bool, Processing_Status> maybe_result = (*this)(
-                    ellipsis_frame.invocation.get_arguments_span(),
-                    ellipsis_frame.invocation.content_frame
-                );
-                if (!maybe_result) {
-                    return maybe_result;
-                }
-                if (*maybe_result == terminator) {
-                    return *maybe_result;
-                }
-                continue;
+            const Result<Value, Processing_Status> member_result = member.evaluate(frame, context);
+            if (!member_result) {
+                return member_result.error();
             }
-            case ast::Member_Kind::positional: {
-                const ast::Expression& member_value = member.get_value();
-                const std::optional<Type> static_type
-                    = cowel::get_static_type(member_value, context);
-                if (static_type && *static_type != Type::boolean) {
-                    return type_error(*static_type, member_value.get_source_span());
-                }
-                const Result<Value, Processing_Status> member_result
-                    = evaluate_expression(member_value, frame, context);
-                if (!member_result) {
-                    return member_result.error();
-                }
-                if (!member_result->is_bool()) {
-                    return type_error(member_result->get_type(), member_value.get_source_span());
-                }
-                if (member_result->as_boolean() == terminator) {
-                    return terminator;
-                }
-                continue;
+            if (!member_result->is_bool()) {
+                return type_error(member_result->get_type(), member.get_value_location());
             }
+            if (member_result->as_boolean() == terminator) {
+                return terminator;
             }
-            COWEL_ASSERT_UNREACHABLE(u8"Invalid member kind.");
         }
         return neutral_element;
     }
@@ -259,16 +210,17 @@ struct Logical_Expression_Evaluator {
 Result<bool, Processing_Status>
 Logical_Expression_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    Group_Pack_Lazy_Any_Matcher group_matcher;
-    Call_Matcher call_matcher { group_matcher };
+    Pack_Lazy_Any_Matcher args_matcher;
+    Parameter args_param { u8"args"sv, Optionality::mandatory, args_matcher };
+    Parameter* const parameters[] { &args_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
 
     const Logical_Expression_Evaluator evaluator { m_expression_kind, context };
-    return evaluator(group_matcher.get().get_members(), call.content_frame);
+    return evaluator(args_matcher.get(), call.content_frame);
 }
 
 Result<bool, Processing_Status>
@@ -283,20 +235,17 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
     static constexpr Type relation_comparable_types[] { Type::integer, Type::floating, Type::str };
     static constexpr auto relation_comparable = Type::union_of(relation_comparable_types);
     static_assert(relation_comparable.is_canonical());
-    const auto* parameter_type = m_expression_kind <= Comparison_Expression_Kind::ne
-        ? &equality_comparable
-        : &relation_comparable;
+    const auto& parameter_type = m_expression_kind <= Comparison_Expression_Kind::ne
+        ? equality_comparable
+        : relation_comparable;
 
     Value_Of_Type_Matcher x_value { parameter_type };
-    Group_Member_Matcher x_member { u8"x"sv, Optionality::mandatory, x_value };
+    Parameter x_param { u8"x"sv, Optionality::mandatory, x_value };
     Value_Of_Type_Matcher y_value { parameter_type };
-    Group_Member_Matcher y_member { u8"y"sv, Optionality::mandatory, y_value };
-    Group_Member_Matcher* const matchers[] { &x_member, &y_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter y_param { u8"y"sv, Optionality::mandatory, y_value };
+    Parameter* const parameters[] { &x_param, &y_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -342,16 +291,13 @@ Internal_Eq_Behavior::do_evaluate(const Invocation& call, Context& context) cons
     static constexpr auto equality_comparable = Type::union_of(equality_comparable_types);
     static_assert(equality_comparable.is_canonical());
 
-    Value_Of_Type_Matcher x_value { &equality_comparable };
-    Group_Member_Matcher x_member { u8"x"sv, Optionality::mandatory, x_value };
-    Value_Of_Type_Matcher y_value { &equality_comparable };
-    Group_Member_Matcher y_member { u8"y"sv, Optionality::mandatory, y_value };
-    Group_Member_Matcher* const matchers[] { &x_member, &y_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Value_Of_Type_Matcher x_value { equality_comparable };
+    Parameter x_param { u8"x"sv, Optionality::mandatory, x_value };
+    Value_Of_Type_Matcher y_value { equality_comparable };
+    Parameter y_param { u8"y"sv, Optionality::mandatory, y_value };
+    Parameter* const parameters[] { &x_param, &y_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -383,47 +329,22 @@ Internal_Eq_Behavior::do_evaluate(const Invocation& call, Context& context) cons
 Result<Value, Processing_Status>
 Unary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& context) const
 {
-    Group_Pack_Value_Matcher group_matcher { context.get_transient_memory() };
-    Call_Matcher call_matcher { group_matcher };
+    Value_Of_Type_Matcher x_matcher { *m_type };
+    Parameter x_param { u8"x"sv, Optionality::mandatory, x_matcher };
+    Parameter* const parameters[] { &x_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
 
-    if (group_matcher.get_values().size() != 1) {
-        context.try_error(
-            diagnostic::type_mismatch, call.get_arguments_source_span(),
-            u8"Unary operation requires exactly one argument"sv
-        );
-        return Processing_Status::error;
-    }
-
-    const auto& first_value = group_matcher.get_values().front().value;
-    const auto& first_type = first_value.get_type();
-
-    if (!first_type.analytically_convertible_to(*m_type)) {
-        context.try_error(
-            diagnostic::type_mismatch, group_matcher.get_values().front().location,
-            joined_char_sequence(
-                {
-                    u8"Expected a value of type "sv,
-                    m_type->get_display_name(),
-                    u8", but got "sv,
-                    first_type.get_display_name(),
-                    u8".",
-                }
-            )
-        );
-        return Processing_Status::error;
-    }
-
-    switch (first_type.get_kind()) {
+    const Value& x = x_matcher.get();
+    switch (x.get_type_kind()) {
     case Type_Kind::integer: {
-        return Value::integer(operate_unary(m_expression_kind, first_value.as_integer()));
+        return Value::integer(operate_unary(m_expression_kind, x.as_integer()));
     }
     case Type_Kind::floating: {
-        return Value::floating(operate_unary(m_expression_kind, first_value.as_float()));
+        return Value::floating(operate_unary(m_expression_kind, x.as_float()));
     }
     default: break;
     }
@@ -433,67 +354,42 @@ Unary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
 Result<Big_Int, Processing_Status>
 Integer_Division_Expression_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
-    Group_Pack_Value_Matcher group_matcher { context.get_transient_memory() };
-    Call_Matcher call_matcher { group_matcher };
+    Integer_Matcher x_matcher;
+    Parameter x_param { u8"x"sv, Optionality::mandatory, x_matcher };
+    Integer_Matcher y_matcher;
+    Parameter y_param { u8"y"sv, Optionality::mandatory, y_matcher };
+    Parameter* const parameters[] { &x_param, &y_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
 
-    bool type_check_ok = true;
-    if (group_matcher.get_values().size() != 2) {
+    const Big_Int& x = x_matcher.get();
+    const Big_Int& y = y_matcher.get();
+
+    if (y.is_zero()) {
         context.try_error(
-            diagnostic::type_mismatch, call.get_arguments_source_span(),
-            u8"Binary operation requires two arguments."sv
+            diagnostic::arithmetic_div_by_zero, y_matcher.get_location(), u8"Division by zero."sv
         );
-        type_check_ok = false;
-    }
-
-    for (const auto& [value, location] : group_matcher.get_values()) {
-        if (value.get_type() != Type::integer) {
-            context.try_error(
-                diagnostic::type_mismatch, location,
-                joined_char_sequence(
-                    {
-                        u8"Expected a value of type "sv,
-                        Type::integer.get_display_name(),
-                        u8", but got "sv,
-                        value.get_type().get_display_name(),
-                        u8".",
-                    }
-                )
-            );
-            type_check_ok = false;
-        }
-    }
-    if (!type_check_ok) {
         return Processing_Status::error;
     }
-
-    const auto& x_value = group_matcher.get_values()[0].value;
-    const auto& [y_value, y_location] = group_matcher.get_values()[1];
-
-    if (y_value.as_integer().is_zero()) {
-        context.try_error(diagnostic::arithmetic_div_by_zero, y_location, u8"Division by zero."sv);
-        return Processing_Status::error;
-    }
-    Big_Int result = operate_binary(m_expression_kind, x_value.as_integer(), y_value.as_integer());
-    return result;
+    return operate_binary(m_expression_kind, x, y);
 }
 
 Result<Value, Processing_Status>
 N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& context) const
 {
-    Group_Pack_Value_Matcher group_matcher { context.get_transient_memory() };
-    Call_Matcher call_matcher { group_matcher };
+    Pack_Of_Type_Matcher args_matcher { Type::pack_of(&Type::any) };
+    Parameter args_param { u8"args"sv, Optionality::mandatory, args_matcher };
+    Parameter* const parameters[] { &args_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
 
-    if (group_matcher.get_values().empty()) {
+    if (args_matcher.get().empty()) {
         context.try_error(
             diagnostic::type_mismatch, call.get_arguments_source_span(),
             u8"Cannot perform arithmetic with empty pack of arguments."sv
@@ -501,11 +397,11 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
         return Processing_Status::error;
     }
 
-    const auto& first_value = group_matcher.get_values().front().value;
+    const auto& first_value = args_matcher.get().front().value;
     const auto& first_type = first_value.get_type();
 
     bool type_check_ok = true;
-    for (const auto& [value, location] : group_matcher.get_values()) {
+    for (const auto& [value, location] : args_matcher.get()) {
         if (m_expression_kind == N_Ary_Numeric_Expression_Kind::div) {
             if (value.get_type() != Type::floating) {
                 context.try_error(
@@ -558,9 +454,9 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
         return Processing_Status::error;
     }
 
-    COWEL_ASSERT(!group_matcher.get_values().empty());
+    COWEL_ASSERT(!args_matcher.get().empty());
 
-    const auto values_without_first = group_matcher.get_values() | std::views::drop(1);
+    const auto values_without_first = args_matcher.get() | std::views::drop(1);
 
     switch (first_type.get_kind()) {
     case Type_Kind::integer: {
@@ -605,25 +501,22 @@ To_Str_Behavior::evaluate(const Invocation& call, Context& context) const
         u8"splice"sv,
     };
 
-    Value_Of_Type_Matcher x_matcher { &to_str_type };
-    Group_Member_Matcher x_member { u8"x"sv, Optionality::mandatory, x_matcher };
+    Value_Of_Type_Matcher x_matcher { to_str_type };
+    Parameter x_param { u8"x"sv, Optionality::mandatory, x_matcher };
     Integer_Matcher base_matcher;
-    Group_Member_Matcher base_member { u8"base"sv, Optionality::optional, base_matcher };
+    Parameter base_param { u8"base"sv, Optionality::optional, base_matcher };
     Integer_Matcher zpad_matcher;
-    Group_Member_Matcher zpad_member { u8"zpad"sv, Optionality::optional, zpad_matcher };
+    Parameter zpad_param { u8"zpad"sv, Optionality::optional, zpad_matcher };
     Sorted_Options_Matcher format_matcher { format_options };
-    Group_Member_Matcher format_member { u8"format"sv, Optionality::optional, format_matcher };
-    Group_Member_Matcher* const parameters[] {
-        &x_member,
-        &base_member,
-        &zpad_member,
-        &format_member,
+    Parameter format_param { u8"format"sv, Optionality::optional, format_matcher };
+    Parameter* const parameters[] {
+        &x_param,
+        &base_param,
+        &zpad_param,
+        &format_param,
     };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -789,13 +682,10 @@ Result<Float, Processing_Status>
 Reinterpret_As_Float_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     Integer_Matcher x_matcher {};
-    Group_Member_Matcher to_member { u8"x"sv, Optionality::mandatory, x_matcher };
-    Group_Member_Matcher* const parameters[] { &to_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter to_param { u8"x"sv, Optionality::mandatory, x_matcher };
+    Parameter* const parameters[] { &to_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -843,13 +733,10 @@ Result<Big_Int, Processing_Status>
 Reinterpret_As_Int_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     Float_Matcher x_matcher {};
-    Group_Member_Matcher x_member { u8"x"sv, Optionality::mandatory, x_matcher };
-    Group_Member_Matcher* const parameters[] { &x_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter x_param { u8"x"sv, Optionality::mandatory, x_matcher };
+    Parameter* const parameters[] { &x_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -862,13 +749,10 @@ Reinterpret_As_Int_Behavior::do_evaluate(const Invocation& call, Context& contex
 Processing_Status Var_Delete_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher name_matcher { context.get_transient_memory() };
-    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
-    Group_Member_Matcher* const parameters[] { &name_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter name_param { u8"name"sv, Optionality::mandatory, name_matcher };
+    Parameter* const parameters[] { &name_param };
 
-    const auto status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto status = match_call(parameters, call, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -897,13 +781,10 @@ Result<bool, Processing_Status>
 Var_Exists_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher name_matcher { context.get_transient_memory() };
-    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
-    Group_Member_Matcher* const parameters[] { &name_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter name_param { u8"name"sv, Optionality::mandatory, name_matcher };
+    Parameter* const parameters[] { &name_param };
 
-    const auto status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto status = match_call(parameters, call, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -915,13 +796,10 @@ Result<Value, Processing_Status>
 Var_Get_Behavior::evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher name_matcher { context.get_transient_memory() };
-    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
-    Group_Member_Matcher* const parameters[] { &name_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter name_param { u8"name"sv, Optionality::mandatory, name_matcher };
+    Parameter* const parameters[] { &name_param };
 
-    const auto status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto status = match_call(parameters, call, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -946,15 +824,12 @@ Var_Get_Behavior::evaluate(const Invocation& call, Context& context) const
 Processing_Status Var_Let_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher name_matcher { context.get_transient_memory() };
-    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
-    Value_Of_Type_Matcher value_matcher { &variable_type };
-    Group_Member_Matcher value_member { u8"value"sv, Optionality::optional, value_matcher };
-    Group_Member_Matcher* const parameters[] { &name_member, &value_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter name_param { u8"name"sv, Optionality::mandatory, name_matcher };
+    Value_Of_Type_Matcher value_matcher { variable_type };
+    Parameter value_param { u8"value"sv, Optionality::optional, value_matcher };
+    Parameter* const parameters[] { &name_param, &value_param };
 
-    const auto status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto status = match_call(parameters, call, context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -985,15 +860,12 @@ Processing_Status Var_Let_Behavior::do_evaluate(const Invocation& call, Context&
 Processing_Status Var_Set_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher name_matcher { context.get_transient_memory() };
-    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_matcher };
-    Value_Of_Type_Matcher value_matcher { &variable_type };
-    Group_Member_Matcher value_member { u8"value"sv, Optionality::mandatory, value_matcher };
-    Group_Member_Matcher* const parameters[] { &name_member, &value_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter name_param { u8"name"sv, Optionality::mandatory, name_matcher };
+    Value_Of_Type_Matcher value_matcher { variable_type };
+    Parameter value_param { u8"value"sv, Optionality::mandatory, value_matcher };
+    Parameter* const parameters[] { &name_param, &value_param };
 
-    const auto status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto status = match_call(parameters, call, context);
     if (status != Processing_Status::ok) {
         return status;
     }

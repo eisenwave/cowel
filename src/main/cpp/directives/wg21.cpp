@@ -8,7 +8,6 @@
 #include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/html.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
@@ -22,14 +21,13 @@ namespace cowel {
 Processing_Status
 WG21_Head_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
-    Lazy_Value_Of_Type_Matcher title_markup { &Type::block };
-    Group_Member_Matcher title_member { u8"title"sv, Optionality::mandatory, title_markup };
-    Group_Member_Matcher* const parameters[] { &title_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Lazy_Value_Of_Type_Matcher title_markup { Type::block };
+    Parameter title_param { u8"title"sv, Optionality::mandatory, title_markup };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &title_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
@@ -43,14 +41,12 @@ WG21_Head_Behavior::splice(Content_Policy& out, const Invocation& call, Context&
         .write_class(u8"wg21-head"sv)
         .end();
 
-    const std::span<const ast::Markup_Element> title_elements
-        = title_markup.get().as_primary().get_elements();
+    const Argument& title_arg = title_markup.get();
     {
         // FIXME: multiple evaluations of title input
         std::pmr::vector<char8_t> title_plaintext { context.get_transient_memory() };
-        const auto status = splice_to_plaintext(
-            title_plaintext, title_elements, title_markup.get_frame(), context
-        );
+        const auto status
+            = title_arg.splice_to_plaintext(title_plaintext, title_markup.get_frame(), context);
         if (status != Processing_Status::ok) {
             writer.close_tag(html_tag::div);
             return status;
@@ -70,8 +66,7 @@ WG21_Head_Behavior::splice(Content_Policy& out, const Invocation& call, Context&
     writer.open_tag(html_tag::h1);
 
     HTML_Content_Policy html_policy { buffer };
-    const auto title_status
-        = splice_all(html_policy, title_elements, title_markup.get_frame(), context);
+    const auto title_status = title_arg.splice(html_policy, title_markup.get_frame(), context);
 
     writer.close_tag(html_tag::h1);
     if (status_is_break(title_status)) {
@@ -79,8 +74,7 @@ WG21_Head_Behavior::splice(Content_Policy& out, const Invocation& call, Context&
     }
 
     writer.write_inner_html(u8'\n');
-    const auto status
-        = splice_all(html_policy, call.get_content_span(), call.content_frame, context);
+    const auto status = content_matcher.get().splice_block(html_policy, context);
     writer.close_tag(html_tag::div);
 
     return status;

@@ -35,17 +35,21 @@ Processing_Status
 Code_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     Spliceable_To_String_Matcher lang_string_matcher { context.get_transient_memory() };
-    Group_Member_Matcher lang_member { u8"lang"sv, Optionality::mandatory, lang_string_matcher };
+    Parameter lang_param { u8"lang"sv, Optionality::mandatory, lang_string_matcher };
     Boolean_Matcher nested_boolean;
-    Group_Member_Matcher nested_member { u8"nested"sv, Optionality::optional, nested_boolean };
+    Parameter nested_param { u8"nested"sv, Optionality::optional, nested_boolean };
     Boolean_Matcher borders_boolean;
-    Group_Member_Matcher borders_member { u8"borders"sv, Optionality::optional, borders_boolean };
-    Group_Member_Matcher* parameters[] { &lang_member, &nested_member, &borders_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter borders_param { u8"borders"sv, Optionality::optional, borders_boolean };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] {
+        &lang_param,
+        &nested_param,
+        &borders_param,
+        &content_param,
+    };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
                                              : match_status;
@@ -57,8 +61,7 @@ Code_Behavior::splice(Content_Policy& out, const Invocation& call, Context& cont
     // Note that for consistent side effects,
     // we still process all the arguments above.
     if (out.get_language() == Output_Language::text) {
-        const Processing_Status text_status
-            = splice_all(out, call.get_content_span(), call.content_frame, context);
+        const Processing_Status text_status = content_matcher.get().splice_block(out, context);
         return text_status;
     }
 
@@ -88,8 +91,7 @@ Code_Behavior::splice(Content_Policy& out, const Invocation& call, Context& cont
 
     Syntax_Highlight_Policy highlight_policy //
         { context.get_transient_memory() };
-    const auto highlight_status
-        = splice_all(highlight_policy, call.get_content_span(), call.content_frame, context);
+    const auto highlight_status = content_matcher.get().splice_block(highlight_policy, context);
 
     const Result<void, Syntax_Highlight_Error> result = [&] {
         if (!should_trim) {
@@ -130,13 +132,12 @@ Processing_Status
 Highlight_As_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
     Spliceable_To_String_Matcher name_string { context.get_transient_memory() };
-    Group_Member_Matcher name_member { u8"name"sv, Optionality::mandatory, name_string };
-    Group_Member_Matcher* parameters[] { &name_member };
-    Pack_Usual_Matcher args_matcher { parameters };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter name_param { u8"name"sv, Optionality::mandatory, name_string };
+    Block_Matcher content_matcher;
+    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
+    Parameter* const parameters[] { &name_param, &content_param };
 
-    const auto match_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
                                              : match_status;
@@ -162,7 +163,7 @@ Highlight_As_Behavior::splice(Content_Policy& out, const Invocation& call, Conte
 
     // We do the same special casing as for \code (see above for explanation).
     if (out.get_language() == Output_Language::text) {
-        return splice_all(out, call.get_content_span(), call.content_frame, context);
+        return content_matcher.get().splice_block(out, context);
     }
 
     HTML_Content_Policy policy = ensure_html_policy(out);
@@ -173,8 +174,7 @@ Highlight_As_Behavior::splice(Content_Policy& out, const Invocation& call, Conte
         .write_attribute(html_attr::data_h, short_name)
         .end();
     buffer.flush();
-    const Processing_Status result
-        = splice_all(policy, call.get_content_span(), call.content_frame, context);
+    const Processing_Status result = content_matcher.get().splice_block(policy, context);
     if (status_is_break(result)) {
         return result;
     }

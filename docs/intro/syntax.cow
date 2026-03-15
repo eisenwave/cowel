@@ -167,9 +167,9 @@ The meaning of the escape sequences is described in the table below.
   }
   \tr{
     \td{
-      \nobr{\cowdoc_esc U+000A LINE FEED},
-      \nobr{\cowdoc_esc U+000D CARRIAGE RETURN},
-      \nobr{\cowdoc_esc U+000A U+000D (CRLF escape)}
+      \nobr{\cowdoc_esc{} U+000A LINE FEED},
+      \nobr{\cowdoc_esc{} U+000D CARRIAGE RETURN},
+      \nobr{\cowdoc_esc{} U+000A U+000D (CRLF escape)}
     }
     \td{
       Expands to nothing.
@@ -395,7 +395,7 @@ Leading zeros are ignored.
 
 \Bex{
 The \gterm{int-literal} \cowdoc_c{0123} represents the integer value
-\math{\mrow\mn{123}}.
+\math{\mn{123}}.
 
 The \gterm{BINARY-INT-TOKEN} \cowdoc_c{0b11111111},
 the \gterm{OCTAL-INT-TOKEN} \cowdoc_c{0o377},

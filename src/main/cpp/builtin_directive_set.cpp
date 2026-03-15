@@ -351,8 +351,6 @@ constexpr There_Behavior there //
     {};
 constexpr Fixed_Name_Passthrough_Behavior tr //
     { HTML_Tag_Name(u8"tr"), Policy_Usage::html, Directive_Display::block };
-constexpr Trim_Behavior trim //
-    { Directive_Display::in_line };
 constexpr Fixed_Name_Passthrough_Behavior tt //
     { HTML_Tag_Name(u8"tt-"), Policy_Usage::inherit, Directive_Display::in_line };
 constexpr Fixed_Name_Passthrough_Behavior u //
@@ -551,7 +549,6 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(thead),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(there),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(tr),
-    COWEL_NAME_AND_BEHAVIOR_ENTRY(trim),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(tt),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(u),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(ul),

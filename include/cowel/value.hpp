@@ -206,6 +206,12 @@ private:
 
 public:
     [[nodiscard]]
+    constexpr Value() noexcept
+        : Value { Value::null }
+    {
+    }
+
+    [[nodiscard]]
     constexpr Value(const Value& other) noexcept
         : Value {
             other.m_value,
@@ -466,20 +472,9 @@ public:
     }
 
     [[nodiscard]]
-    // NOLINTNEXTLINE(readability-make-member-function-const)
-    std::span<Group_Member_Value> get_group_members()
-    {
-        // The linter suppression is necessary because of a clang-tidy bug:
-        // https://github.com/llvm/llvm-project/issues/174269
-        COWEL_ASSERT(get_type_kind() == Type_Kind::group);
-        return m_value.group.as_span();
-    }
+    std::span<Group_Member_Value> get_group_members();
     [[nodiscard]]
-    std::span<const Group_Member_Value> get_group_members() const
-    {
-        COWEL_ASSERT(get_type_kind() == Type_Kind::group);
-        return m_value.group.as_span();
-    }
+    std::span<const Group_Member_Value> get_group_members() const;
 
     // TODO: There is currently no efficient way to move strings out of a Value.
     //       Maybe an rvalue reference overload for the functions above would make sense.
@@ -498,6 +493,20 @@ struct Group_Member_Value {
     /// @brief The value of the group member.
     Value value;
 };
+
+// NOLINTNEXTLINE(readability-make-member-function-const)
+inline std::span<Group_Member_Value> Value::get_group_members()
+{
+    // The linter suppression is necessary because of a clang-tidy bug:
+    // https://github.com/llvm/llvm-project/issues/174269
+    COWEL_ASSERT(get_type_kind() == Type_Kind::group);
+    return m_value.group.as_span();
+}
+inline std::span<const Group_Member_Value> Value::get_group_members() const
+{
+    COWEL_ASSERT(get_type_kind() == Type_Kind::group);
+    return m_value.group.as_span();
+}
 
 template <class T>
 constexpr Value::Value(

@@ -127,13 +127,10 @@ Result<Big_Int, Processing_Status>
 Str_Length_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher x_matcher { context.get_transient_memory() };
-    Group_Member_Matcher x_member { u8"x", Optionality::mandatory, x_matcher };
-    Group_Member_Matcher* matchers[] { &x_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter x_param { u8"x", Optionality::mandatory, x_matcher };
+    Parameter* const parameters[] { &x_param };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }
@@ -174,13 +171,10 @@ Processing_Status Str_Transform_Behavior::do_evaluate(
 ) const
 {
     String_Matcher x_matcher { context.get_transient_memory() };
-    Group_Member_Matcher x_member { u8"x", Optionality::mandatory, x_matcher };
-    Group_Member_Matcher* matchers[] { &x_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter x_param { u8"x", Optionality::mandatory, x_matcher };
+    Parameter* const parameters[] { &x_param };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }
@@ -220,15 +214,12 @@ Result<bool, Processing_Status>
 Str_Match_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher text_matcher { context.get_transient_memory() };
-    Group_Member_Matcher text_member { u8"text", Optionality::mandatory, text_matcher };
-    Value_Of_Type_Matcher regex_matcher { &Type::regex };
-    Group_Member_Matcher regex_member { u8"regex", Optionality::mandatory, regex_matcher };
-    Group_Member_Matcher* const matchers[] { &text_member, &regex_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter text_param { u8"text", Optionality::mandatory, text_matcher };
+    Value_Of_Type_Matcher regex_matcher { Type::regex };
+    Parameter regex_param { u8"regex", Optionality::mandatory, regex_matcher };
+    Parameter* const parameters[] { &text_param, &regex_param };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }
@@ -260,15 +251,12 @@ Str_Contains_Behavior::do_evaluate(const Invocation& call, Context& context) con
     static_assert(needle_type.is_canonical());
 
     String_Matcher text_matcher { context.get_transient_memory() };
-    Group_Member_Matcher text_member { u8"text", Optionality::mandatory, text_matcher };
-    Value_Of_Type_Matcher needle_matcher { &needle_type };
-    Group_Member_Matcher needle_member { u8"needle", Optionality::mandatory, needle_matcher };
-    Group_Member_Matcher* const matchers[] { &text_member, &needle_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter text_param { u8"text", Optionality::mandatory, text_matcher };
+    Value_Of_Type_Matcher needle_matcher { needle_type };
+    Parameter needle_param { u8"needle", Optionality::mandatory, needle_matcher };
+    Parameter* const parameters[] { &text_param, &needle_param };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }
@@ -306,15 +294,12 @@ Str_Find_Behavior::evaluate(const Invocation& call, Context& context) const
     static_assert(needle_type.is_canonical());
 
     String_Matcher text_matcher { context.get_transient_memory() };
-    Group_Member_Matcher text_member { u8"text", Optionality::mandatory, text_matcher };
-    Value_Of_Type_Matcher needle_matcher { &needle_type };
-    Group_Member_Matcher needle_member { u8"needle", Optionality::mandatory, needle_matcher };
-    Group_Member_Matcher* const matchers[] { &text_member, &needle_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter text_param { u8"text", Optionality::mandatory, text_matcher };
+    Value_Of_Type_Matcher needle_matcher { needle_type };
+    Parameter needle_param { u8"needle", Optionality::mandatory, needle_matcher };
+    Parameter* const parameters[] { &text_param, &needle_param };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }
@@ -368,17 +353,14 @@ Str_Replace_Behavior::evaluate(const Invocation& call, Context& context) const
     static_assert(needle_type.is_canonical());
 
     String_Matcher text_matcher { context.get_transient_memory() };
-    Group_Member_Matcher text_member { u8"text", Optionality::mandatory, text_matcher };
-    Value_Of_Type_Matcher needle_matcher { &needle_type };
-    Group_Member_Matcher needle_member { u8"needle", Optionality::mandatory, needle_matcher };
+    Parameter text_param { u8"text", Optionality::mandatory, text_matcher };
+    Value_Of_Type_Matcher needle_matcher { needle_type };
+    Parameter needle_param { u8"needle", Optionality::mandatory, needle_matcher };
     String_Matcher with_matcher { context.get_transient_memory() };
-    Group_Member_Matcher with_member { u8"with", Optionality::mandatory, with_matcher };
-    Group_Member_Matcher* const matchers[] { &text_member, &needle_member, &with_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter with_param { u8"with", Optionality::mandatory, with_matcher };
+    Parameter* const parameters[] { &text_param, &needle_param, &with_param };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }
@@ -452,15 +434,12 @@ Result<Value, Processing_Status>
 Regex_Make_Behavior::evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher pattern_matcher { context.get_transient_memory() };
-    Group_Member_Matcher pattern_member { u8"pattern", Optionality::mandatory, pattern_matcher };
+    Parameter pattern_param { u8"pattern", Optionality::mandatory, pattern_matcher };
     String_Matcher flags_matcher { context.get_transient_memory() };
-    Group_Member_Matcher flags_member { u8"flags", Optionality::optional, flags_matcher };
-    Group_Member_Matcher* const matchers[] { &pattern_member, &flags_member };
-    Pack_Usual_Matcher args_matcher { matchers };
-    Group_Pack_Matcher group_matcher { args_matcher };
-    Call_Matcher call_matcher { group_matcher };
+    Parameter flags_param { u8"flags", Optionality::optional, flags_matcher };
+    Parameter* const parameters[] { &pattern_param, &flags_param };
 
-    const auto args_status = call_matcher.match_call(call, context, make_fail_callback());
+    const auto args_status = match_call(parameters, call, context);
     if (args_status != Processing_Status::ok) {
         return args_status;
     }

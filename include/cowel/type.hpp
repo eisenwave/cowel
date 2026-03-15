@@ -356,6 +356,26 @@ public:
     {
         return m_kind;
     }
+    [[nodiscard]]
+    constexpr bool is_pack() const
+    {
+        return m_kind == Type_Kind::pack;
+    }
+    [[nodiscard]]
+    constexpr bool is_group() const
+    {
+        return m_kind == Type_Kind::group;
+    }
+    [[nodiscard]]
+    constexpr bool is_named() const
+    {
+        return m_kind == Type_Kind::named;
+    }
+    [[nodiscard]]
+    constexpr bool is_lazy() const
+    {
+        return m_kind == Type_Kind::lazy;
+    }
 
     [[nodiscard]]
     friend constexpr bool operator==(const Type& x, const Type& y)

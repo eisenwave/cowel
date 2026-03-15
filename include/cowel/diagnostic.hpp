@@ -69,8 +69,8 @@ inline constexpr std::u8string_view directive_lookup_unresolved = u8"directive-l
 /// @brief Duplicate arguments to a directive were provided.
 inline constexpr std::u8string_view duplicate_args = u8"duplicate.args";
 
-/// @brief The content of a directive was ignored.
-inline constexpr std::u8string_view ignored_content = u8"ignored.content";
+/// @brief Some input was ignored.
+inline constexpr std::u8string_view ignored_input = u8"ignored.input";
 
 /// @brief Parse error.
 inline constexpr std::u8string_view parse = u8"parse";
@@ -131,6 +131,9 @@ inline constexpr std::u8string_view splice = u8"splice";
 /// @brief In an HTML element directive,
 /// the provided tag name is invalid.
 inline constexpr std::u8string_view html_element_name_invalid = u8"html.element.name.invalid";
+
+/// @brief Invalid HTML attribute name.
+inline constexpr std::u8string_view html_attribute = u8"html.attribute";
 
 /// @brief In a `\cowel_include` directive,
 /// no file path was provided.

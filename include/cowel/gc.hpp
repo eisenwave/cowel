@@ -112,18 +112,23 @@ struct GC_Node {
     }
 };
 
-template <class T>
+template <typename T>
 struct GC_Allocation {
     GC_Node node;
     alignas(T) unsigned char storage[sizeof(T)] {};
 };
 
-template <class T>
+template <typename T>
 struct GC_Ref;
 
-template <class T>
+template <typename T>
 struct GC_Ref {
 private:
+    // All other GC_Refs are friends.
+    // This is necessary for converting constructors.
+    template <typename U>
+    friend struct GC_Ref;
+
     GC_Node* m_node = nullptr;
 
 public:
@@ -148,6 +153,18 @@ public:
             COWEL_ASSERT(align >= alignof(T));
             COWEL_ASSERT((align & (align - 1)) == 0);
         }
+    }
+
+    [[nodiscard]]
+    constexpr GC_Ref(GC_Ref<std::remove_const_t<T>> other) noexcept
+        requires std::is_const_v<T>
+        : m_node { other.unsafe_release_node() }
+    {
+        // This conversion is safe because GC_Node is type-erased
+        // and performs destruction using the original type's destructor.
+        // As long as we don't violate strict aliasing and conversion of the pointer
+        // doesn't require address adjustment,
+        // we can "reinterpret" a GC_Ref.
     }
 
     [[nodiscard]]

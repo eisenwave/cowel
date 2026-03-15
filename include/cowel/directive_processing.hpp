@@ -177,6 +177,7 @@ Processing_Status splice_primary(
     Context& context
 );
 
+[[nodiscard]]
 Processing_Status splice_value_to_plaintext(
     std::pmr::vector<char8_t>& out, //
     const Value& value,
@@ -253,14 +254,6 @@ const Type& get_static_type(const ast::Directive& directive, Context& context);
 const Type& get_type(const ast::Primary& primary);
 
 [[nodiscard]]
-Processing_Status splice_all_trimmed(
-    Content_Policy& out,
-    std::span<const ast::Markup_Element> content,
-    Frame_Index,
-    Context& context
-);
-
-[[nodiscard]]
 Processing_Status splice_to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Markup_Element> content,
@@ -297,13 +290,6 @@ enum struct Paragraphs_State : bool {
     inside,
 };
 
-[[nodiscard]]
-Processing_Status match_empty_arguments(
-    const Invocation& call,
-    Context& context,
-    Processing_Status fail_status = Processing_Status::error
-);
-
 void diagnose(
     Syntax_Highlight_Error error,
     std::u8string_view lang,
@@ -311,7 +297,7 @@ void diagnose(
     Context& context
 );
 
-[[nodiscard]]
+[[nodiscard, deprecated]]
 Processing_Status named_arguments_to_attributes(
     Text_Buffer_Attribute_Writer& out,
     std::span<const ast::Group_Member> arguments,
@@ -320,11 +306,34 @@ Processing_Status named_arguments_to_attributes(
     Attribute_Style style = Attribute_Style::double_if_needed
 );
 
-[[nodiscard]]
+[[nodiscard, deprecated]]
 Processing_Status named_argument_to_attribute(
     Text_Buffer_Attribute_Writer& out,
     const ast::Group_Member& a,
     Frame_Index frame,
+    Context& context,
+    Attribute_Style style = Attribute_Style::double_if_needed
+);
+
+Result<void, std::size_t> named_str_arguments_to_attributes(
+    Text_Buffer_Attribute_Writer& out,
+    std::span<const Group_Member_Value> arguments,
+    Attribute_Style style = Attribute_Style::double_if_needed
+);
+
+struct Group_Pack_Named_Str_Matcher;
+struct Pack_Named_Of_Type_Matcher;
+
+Processing_Status named_arguments_to_attributes_or_error(
+    Text_Buffer_Attribute_Writer& out,
+    const Group_Pack_Named_Str_Matcher& matcher,
+    Context& context,
+    Attribute_Style style = Attribute_Style::double_if_needed
+);
+
+Processing_Status named_arguments_to_attributes_or_error(
+    Text_Buffer_Attribute_Writer& out,
+    const Pack_Named_Of_Type_Matcher& matcher,
     Context& context,
     Attribute_Style style = Attribute_Style::double_if_needed
 );
