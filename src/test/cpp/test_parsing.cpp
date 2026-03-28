@@ -672,6 +672,117 @@ void dump_instructions(
     }
 }
 
+std::optional<CST_Instruction_Kind> cst_instruction_kind_from_name(std::u8string_view name)
+{
+    using enum CST_Instruction_Kind;
+    // clang-format off
+    if (name == u8"skip")                     { return skip; }
+    if (name == u8"escape")                   { return escape; }
+    if (name == u8"text")                     { return text; }
+    if (name == u8"unquoted_member_name")     { return unquoted_member_name; }
+    if (name == u8"unquoted_string")          { return unquoted_string; }
+    if (name == u8"binary_int")               { return binary_int; }
+    if (name == u8"octal_int")                { return octal_int; }
+    if (name == u8"decimal_int")              { return decimal_int; }
+    if (name == u8"hexadecimal_int")          { return hexadecimal_int; }
+    if (name == u8"decimal_float")            { return decimal_float; }
+    if (name == u8"keyword_true")             { return keyword_true; }
+    if (name == u8"keyword_false")            { return keyword_false; }
+    if (name == u8"keyword_null")             { return keyword_null; }
+    if (name == u8"keyword_unit")             { return keyword_unit; }
+    if (name == u8"keyword_infinity")         { return keyword_infinity; }
+    if (name == u8"line_comment")             { return line_comment; }
+    if (name == u8"block_comment")            { return block_comment; }
+    if (name == u8"ellipsis")                 { return ellipsis; }
+    if (name == u8"equals")                   { return equals; }
+    if (name == u8"comma")                    { return comma; }
+    if (name == u8"push_document")            { return push_document; }
+    if (name == u8"pop_document")             { return pop_document; }
+    if (name == u8"push_directive_splice")    { return push_directive_splice; }
+    if (name == u8"pop_directive_splice")     { return pop_directive_splice; }
+    if (name == u8"push_expr_bitwise_not")    { return push_expr_bitwise_not; }
+    if (name == u8"pop_expr_bitwise_not")     { return pop_expr_bitwise_not; }
+    if (name == u8"push_expr_logical_not")    { return push_expr_logical_not; }
+    if (name == u8"pop_expr_logical_not")     { return pop_expr_logical_not; }
+    if (name == u8"push_expr_unary_plus")     { return push_expr_unary_plus; }
+    if (name == u8"pop_expr_unary_plus")      { return pop_expr_unary_plus; }
+    if (name == u8"push_expr_unary_minus")    { return push_expr_unary_minus; }
+    if (name == u8"pop_expr_unary_minus")     { return pop_expr_unary_minus; }
+    if (name == u8"push_expr_directive_call") { return push_expr_directive_call; }
+    if (name == u8"pop_expr_directive_call")  { return pop_expr_directive_call; }
+    if (name == u8"push_group")               { return push_group; }
+    if (name == u8"pop_group")                { return pop_group; }
+    if (name == u8"push_named_member")        { return push_named_member; }
+    if (name == u8"pop_named_member")         { return pop_named_member; }
+    if (name == u8"push_positional_member")   { return push_positional_member; }
+    if (name == u8"pop_positional_member")    { return pop_positional_member; }
+    if (name == u8"push_ellipsis_argument")   { return push_ellipsis_argument; }
+    if (name == u8"pop_ellipsis_argument")    { return pop_ellipsis_argument; }
+    if (name == u8"push_block")               { return push_block; }
+    if (name == u8"pop_block")                { return pop_block; }
+    if (name == u8"push_quoted_member_name")  { return push_quoted_member_name; }
+    if (name == u8"pop_quoted_member_name")   { return pop_quoted_member_name; }
+    if (name == u8"push_quoted_string")       { return push_quoted_string; }
+    if (name == u8"pop_quoted_string")        { return pop_quoted_string; }
+    // clang-format on
+    return std::nullopt;
+}
+
+std::optional<std::vector<CST_Instruction>>
+load_parse_expectations(std::u8string_view path)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    std::pmr::vector<char8_t> raw { &memory };
+    if (const Result<void, IO_Error_Code> r = load_utf8_file(raw, path); !r) {
+        Diagnostic_String error;
+        print_io_error(error, path, r.error());
+        print_code_string_stdout(error);
+        return std::nullopt;
+    }
+
+    std::vector<CST_Instruction> result;
+    std::u8string_view remaining { raw.data(), raw.size() };
+
+    while (!remaining.empty()) {
+        const std::size_t newline = remaining.find(u8'\n');
+        std::u8string_view line = trim_ascii_blank(remaining.substr(0, newline));
+        remaining = newline == std::u8string_view::npos ? u8"" : remaining.substr(newline + 1);
+
+        if (line.empty()) {
+            continue;
+        }
+
+        const std::size_t space = line.find(u8' ');
+        const std::u8string_view kind_name = line.substr(0, space);
+        const std::optional<CST_Instruction_Kind> kind = cst_instruction_kind_from_name(kind_name);
+        if (!kind) {
+            Diagnostic_String error;
+            error.append(u8"Unknown instruction kind: ", Diagnostic_Highlight::error_text);
+            error.append(kind_name, Diagnostic_Highlight::tag);
+            error.append(u8'\n');
+            print_code_string_stdout(error);
+            return std::nullopt;
+        }
+
+        std::size_t n = 0;
+        if (space != std::u8string_view::npos) {
+            const std::u8string_view operand = trim_ascii_blank_left(line.substr(space));
+            if (from_characters(operand, n).ec != std::errc {}) {
+                Diagnostic_String error;
+                error.append(u8"Invalid operand: ", Diagnostic_Highlight::error_text);
+                error.append(operand, Diagnostic_Highlight::tag);
+                error.append(u8'\n');
+                print_code_string_stdout(error);
+                return std::nullopt;
+            }
+        }
+
+        result.push_back({ *kind, n });
+    }
+
+    return result;
+}
+
 bool run_parse_test(std::u8string_view file, std::span<const CST_Instruction> expected)
 {
     for (const auto& e : expected) {
@@ -719,6 +830,19 @@ bool run_parse_test(std::u8string_view file, std::span<const CST_Instruction> ex
     return true;
 }
 
+bool run_parse_test(std::u8string_view cow_file, std::u8string_view expectations_file)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    std::pmr::u8string path { u8"test/parse/", &memory };
+    path += expectations_file;
+
+    const std::optional<std::vector<CST_Instruction>> expected = load_parse_expectations(path);
+    if (!expected) {
+        return false;
+    }
+    return run_parse_test(cow_file, *expected);
+}
+
 // NOLINTBEGIN(bugprone-unchecked-optional-access)
 #define COWEL_PARSE_AND_BUILD_BOILERPLATE(...)                                                     \
     std::optional<Actual_Document> parsed = parse_and_build_file(__VA_ARGS__, &memory);            \
@@ -729,11 +853,7 @@ bool run_parse_test(std::u8string_view file, std::span<const CST_Instruction> ex
 
 TEST(Parse, empty)
 {
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 0 },
-        { CST_Instruction_Kind::pop_document, 0 },
-    };
-    ASSERT_TRUE(run_parse_test(u8"empty.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"empty.cow", u8"empty.expected"));
 }
 
 TEST(Parse_And_Build, empty)
@@ -746,122 +866,27 @@ TEST(Parse_And_Build, empty)
 
 TEST(Parse, directive_brace_escape_2)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_block, 4 },
-        { CST_Instruction_Kind::escape },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::escape },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"directive_brace_escape_2.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"directive_brace_escape_2.cow", u8"directive_brace_escape_2.expected"));
 }
 
 TEST(Parse, directive_multiline)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_named_member },
-        { CST_Instruction_Kind::unquoted_member_name },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::equals },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::unquoted_string },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::pop_named_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"directive_multiline.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"directive_multiline.cow", u8"directive_multiline.expected"));
 }
 
 TEST(Parse, directive_multiline_trailing_comma)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_named_member },
-        { CST_Instruction_Kind::unquoted_member_name },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::equals },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::unquoted_string },
-        { CST_Instruction_Kind::pop_named_member },
-        { CST_Instruction_Kind::comma },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"directive_multiline_trailing_comma.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"directive_multiline_trailing_comma.cow", u8"directive_multiline_trailing_comma.expected"));
 }
 
 TEST(Parse, comments)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 17 },
-        { CST_Instruction_Kind::line_comment },
-        { CST_Instruction_Kind::line_comment },
-        { CST_Instruction_Kind::line_comment },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::line_comment },
-        { CST_Instruction_Kind::line_comment },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::line_comment },
-        { CST_Instruction_Kind::line_comment },
-        { CST_Instruction_Kind::block_comment },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::block_comment },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::block_comment },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::block_comment },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"comments.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"comments.cow", u8"comments.expected"));
 }
 
 TEST(Parse, arguments_comments_1)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 0 },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"arguments/comments_1.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"arguments/comments_1.cow", u8"arguments/comments_1.expected"));
 }
 
 TEST(Parse_And_Build, arguments_comments_1)
@@ -881,40 +906,7 @@ TEST(Parse_And_Build, arguments_comments_1)
 
 TEST(Parse, arguments_comments_2)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 2 },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::unquoted_string },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_named_member },
-        { CST_Instruction_Kind::unquoted_member_name },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::equals },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::unquoted_string },
-        { CST_Instruction_Kind::pop_named_member },
-        { CST_Instruction_Kind::comma },
-        { CST_Instruction_Kind::skip },
-
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"arguments/comments_2.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"arguments/comments_2.cow", u8"arguments/comments_2.expected"));
 }
 
 TEST(Parse_And_Build, arguments_comments_2)
@@ -942,19 +934,7 @@ TEST(Parse_And_Build, arguments_comments_2)
 
 TEST(Parse, arguments_ellipsis)
 {
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_ellipsis_argument },
-        { CST_Instruction_Kind::ellipsis },
-        { CST_Instruction_Kind::pop_ellipsis_argument },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    ASSERT_TRUE(run_parse_test(u8"arguments/ellipsis.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"arguments/ellipsis.cow", u8"arguments/ellipsis.expected"));
 }
 
 TEST(Parse_And_Build, arguments_ellipsis)
@@ -974,34 +954,7 @@ TEST(Parse_And_Build, arguments_ellipsis)
 
 TEST(Parse, group_1)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 2 },
-
-        { CST_Instruction_Kind::push_positional_member }, // (x)
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::unquoted_string },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, // ()
-        { CST_Instruction_Kind::push_group },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_positional_member },
-
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"arguments/group_1.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"arguments/group_1.cow", u8"arguments/group_1.expected"));
 }
 
 TEST(Parse_And_Build, group_1)
@@ -1036,38 +989,7 @@ TEST(Parse_And_Build, group_1)
 
 TEST(Parse, group_2)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-
-        { CST_Instruction_Kind::push_named_member }, // n =  (x, y)
-        { CST_Instruction_Kind::unquoted_member_name },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::equals },
-        { CST_Instruction_Kind::skip },
-        
-        { CST_Instruction_Kind::push_group, 2 }, // (x, y)
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::unquoted_string },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::unquoted_string },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-
-        { CST_Instruction_Kind::pop_named_member },
-
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"arguments/group_2.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"arguments/group_2.cow", u8"arguments/group_2.expected"));
 }
 
 TEST(Parse_And_Build, group_2)
@@ -1099,30 +1021,7 @@ TEST(Parse_And_Build, group_2)
 
 TEST(Parse, group_3)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_group, 0 },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"arguments/group_3.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"arguments/group_3.cow", u8"arguments/group_3.expected"));
 }
 
 TEST(Parse_And_Build, group_3)
@@ -1152,520 +1051,37 @@ TEST(Parse_And_Build, group_3)
 
 TEST(Parse, unquoted)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 10 },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::keyword_null },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::keyword_true },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::keyword_false },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::unquoted_string },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::unquoted_string },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"arguments/unquoted.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"arguments/unquoted.cow", u8"arguments/unquoted.expected"));
 }
 
 TEST(Parse, string)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 8 },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_quoted_string },
-        { CST_Instruction_Kind::pop_quoted_string },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_quoted_string, 1 },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_quoted_string },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_quoted_string, 1 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::pop_quoted_string },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_quoted_string, 3 },
-        { CST_Instruction_Kind::escape },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::escape },
-        { CST_Instruction_Kind::pop_quoted_string },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"arguments/string.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"arguments/string.cow", u8"arguments/string.expected"));
 }
 
 TEST(Parse, block)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 8 },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_block, 0 },
-        { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_block, 1 },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_block, 1 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_block, 5 },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::escape },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::escape },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"arguments/block.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"arguments/block.cow", u8"arguments/block.expected"));
 }
 
 TEST(Parse, integers)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 4 },
-
-        { CST_Instruction_Kind::push_positional_member }, // 0
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-        { CST_Instruction_Kind::skip },
-
-        { CST_Instruction_Kind::push_positional_member }, // 123
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-        { CST_Instruction_Kind::skip },
-
-        { CST_Instruction_Kind::push_positional_member }, // -123
-        { CST_Instruction_Kind::push_expr_unary_minus },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_unary_minus },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-        { CST_Instruction_Kind::skip },
-
-        { CST_Instruction_Kind::push_positional_member }, // 0xff
-        { CST_Instruction_Kind::hexadecimal_int },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"integers.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"integers.cow", u8"integers.expected"));
 }
 
 TEST(Parse, literals)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 7 },
-
-        { CST_Instruction_Kind::skip }, // unit
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::keyword_unit }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // null
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::keyword_null }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // true
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::keyword_true }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // false
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::keyword_false }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // 0
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_int }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // ""
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::push_quoted_string }, 
-        { CST_Instruction_Kind::pop_quoted_string }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // awoo
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::unquoted_string }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"literals.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"literals.cow", u8"literals.expected"));
 }
 
 TEST(Parse, unary_prefix)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 12 },
-
-        { CST_Instruction_Kind::skip }, // ~0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_bitwise_not },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_bitwise_not },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // !0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_logical_not },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_logical_not },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // +0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_unary_plus },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_unary_plus },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // -0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_unary_minus },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_unary_minus },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // ~ 0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_bitwise_not },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_bitwise_not },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // ! 0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_logical_not },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_logical_not },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // + 0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_unary_plus },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_unary_plus },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // - 0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_unary_minus },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_unary_minus },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // ~ \* *\ 0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_bitwise_not },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_bitwise_not },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // ! \* *\ 0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_logical_not },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_logical_not },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // + \* *\ 0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_unary_plus },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_unary_plus },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip }, // - \* *\ 0
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_unary_minus },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::decimal_int },
-        { CST_Instruction_Kind::pop_expr_unary_minus },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"unary_prefix.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"unary_prefix.cow", u8"unary_prefix.expected"));
 }
 
 TEST(Parse, floats)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 15 },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member }, 
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_unary_minus },
-        { CST_Instruction_Kind::decimal_float }, 
-        { CST_Instruction_Kind::pop_expr_unary_minus },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"floats.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"floats.cow", u8"floats.expected"));
 }
 
 TEST(Parse_And_Build, floats)
@@ -1722,45 +1138,17 @@ TEST(Parse_And_Build, floats)
 
 TEST(Parse, escape_lf)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 3 },
-        { CST_Instruction_Kind::escape },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::escape },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"escape_lf.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"escape_lf.cow", u8"escape_lf.expected"));
 }
 
 TEST(Parse, escape_crlf)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 3 },
-        { CST_Instruction_Kind::escape },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::escape },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"escape_crlf.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"escape_crlf.cow", u8"escape_crlf.expected"));
 }
 
 TEST(Parse, file_ends_in_brace)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 1 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_block },
-        { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"file_ends_in_brace.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"file_ends_in_brace.cow", u8"file_ends_in_brace.expected"));
 }
 
 TEST(Parse_And_Build, file_ends_in_brace)
@@ -1780,19 +1168,7 @@ TEST(Parse_And_Build, file_ends_in_brace)
 
 TEST(Parse, hello_code)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_block, 1 },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },
-        { CST_Instruction_Kind::pop_document, 0 },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"hello_code.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"hello_code.cow", u8"hello_code.expected"));
 }
 
 TEST(Parse_And_Build, hello_code)
@@ -1814,41 +1190,7 @@ TEST(Parse_And_Build, hello_code)
 
 TEST(Parse, hello_directive)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 2 },
-        { CST_Instruction_Kind::push_directive_splice },
-        { CST_Instruction_Kind::push_group, 2 },
-
-        { CST_Instruction_Kind::push_named_member },
-        { CST_Instruction_Kind::unquoted_member_name }, // "hello"
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::equals },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::unquoted_string },          // "world"
-        { CST_Instruction_Kind::pop_named_member },
-
-        { CST_Instruction_Kind::comma },
-
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_named_member },
-        { CST_Instruction_Kind::unquoted_member_name }, // "x"
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::equals },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::decimal_int },          // "0"
-        { CST_Instruction_Kind::pop_named_member },
-
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::push_block, 1 },    // {
-        { CST_Instruction_Kind::text },          // "test"
-        { CST_Instruction_Kind::pop_block },        // }
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text },          // \n
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"hello_directive.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"hello_directive.cow", u8"hello_directive.expected"));
 }
 
 TEST(Parse_And_Build, hello_directive)
@@ -1876,68 +1218,7 @@ TEST(Parse_And_Build, hello_directive)
 
 TEST(Parse, directive_as_argument)
 {
-    // clang-format off
-    static constexpr CST_Instruction expected[] {
-        { CST_Instruction_Kind::push_document, 8 },
-        
-        { CST_Instruction_Kind::push_directive_splice }, // \a(x())
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_directive_call },
-        { CST_Instruction_Kind::push_group, 0 },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_expr_directive_call },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text }, // \n
-
-        { CST_Instruction_Kind::push_directive_splice }, // \b(x(){})
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_directive_call },
-        { CST_Instruction_Kind::push_group, 0 },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::push_block, 0 },
-        { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_expr_directive_call },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text }, // \n
-
-        { CST_Instruction_Kind::push_directive_splice }, // \c(x () {})
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_directive_call },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_group, 0 },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::skip },
-        { CST_Instruction_Kind::push_block, 0 },
-        { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_expr_directive_call },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text }, // \n
-
-        { CST_Instruction_Kind::push_directive_splice }, // \d(x{})
-        { CST_Instruction_Kind::push_group, 1 },
-        { CST_Instruction_Kind::push_positional_member },
-        { CST_Instruction_Kind::push_expr_directive_call },
-        { CST_Instruction_Kind::push_block, 0 },
-        { CST_Instruction_Kind::pop_block },
-        { CST_Instruction_Kind::pop_expr_directive_call },
-        { CST_Instruction_Kind::pop_positional_member },
-        { CST_Instruction_Kind::pop_group },
-        { CST_Instruction_Kind::pop_directive_splice },
-        { CST_Instruction_Kind::text }, // \n
-
-        { CST_Instruction_Kind::pop_document },
-    };
-    // clang-format on
-    ASSERT_TRUE(run_parse_test(u8"directive_as_argument.cow", expected));
+    ASSERT_TRUE(run_parse_test(u8"directive_as_argument.cow", u8"directive_as_argument.expected"));
 }
 
 TEST(Parse_And_Build, directive_as_argument)

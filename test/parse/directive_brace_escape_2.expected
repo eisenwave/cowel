@@ -1,0 +1,11 @@
+push_document 2
+push_directive_splice
+push_block 4
+escape
+text
+escape
+text
+pop_block
+pop_directive_splice
+text
+pop_document

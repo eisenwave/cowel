@@ -1,0 +1,28 @@
+push_document 2
+push_directive_splice
+push_group 4
+push_positional_member
+decimal_int
+pop_positional_member
+comma
+skip
+push_positional_member
+decimal_int
+pop_positional_member
+comma
+skip
+push_positional_member
+push_expr_unary_minus
+decimal_int
+pop_expr_unary_minus
+pop_positional_member
+comma
+skip
+push_positional_member
+hexadecimal_int
+pop_positional_member
+comma
+pop_group
+pop_directive_splice
+text
+pop_document

@@ -1,0 +1,20 @@
+push_document 17
+line_comment
+line_comment
+line_comment
+push_directive_splice
+pop_directive_splice
+line_comment
+line_comment
+text
+line_comment
+line_comment
+block_comment
+text
+block_comment
+text
+block_comment
+text
+block_comment
+text
+pop_document

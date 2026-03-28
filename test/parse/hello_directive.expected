@@ -1,0 +1,26 @@
+push_document 2
+push_directive_splice
+push_group 2
+push_named_member
+unquoted_member_name
+skip
+equals
+skip
+unquoted_string
+pop_named_member
+comma
+skip
+push_named_member
+unquoted_member_name
+skip
+equals
+skip
+decimal_int
+pop_named_member
+pop_group
+push_block 1
+text
+pop_block
+pop_directive_splice
+text
+pop_document
