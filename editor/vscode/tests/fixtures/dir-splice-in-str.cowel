@@ -1,2 +1,2 @@
-\dir("\splice")\
-\dir("\splice e")\
+\d("\x{abc}")
+\d("\x(100)")
