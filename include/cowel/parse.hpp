@@ -17,60 +17,65 @@
 
 namespace cowel {
 
+#define COWEL_CST_INSTRUCTION_KIND_ENUM_DATA(F)                                                    \
+    F(skip, "skip")                                                                                \
+    F(escape, "escape")                                                                            \
+    F(text, "text")                                                                                \
+    F(unquoted_member_name, "unquoted_member_name")                                                \
+    F(unquoted_string, "unquoted_string")                                                          \
+    F(binary_int, "binary_int")                                                                    \
+    F(octal_int, "octal_int")                                                                      \
+    F(decimal_int, "decimal_int")                                                                  \
+    F(hexadecimal_int, "hexadecimal_int")                                                          \
+    F(decimal_float, "decimal_float")                                                              \
+    F(keyword_true, "keyword_true")                                                                \
+    F(keyword_false, "keyword_false")                                                              \
+    F(keyword_null, "keyword_null")                                                                \
+    F(keyword_unit, "keyword_unit")                                                                \
+    F(keyword_infinity, "keyword_infinity")                                                        \
+    F(line_comment, "line_comment")                                                                \
+    F(block_comment, "block_comment")                                                              \
+    F(ellipsis, "ellipsis")                                                                        \
+    F(equals, "equals")                                                                            \
+    F(comma, "comma")                                                                              \
+    /* `n` is the amount of markup elements in the document. */                                    \
+    F(push_document, "push_document")                                                              \
+    F(pop_document, "pop_document")                                                                \
+    F(push_directive_splice, "push_directive_splice")                                              \
+    F(pop_directive_splice, "pop_directive_splice")                                                \
+    F(push_expr_bitwise_not, "push_expr_bitwise_not")                                              \
+    F(pop_expr_bitwise_not, "pop_expr_bitwise_not")                                                \
+    F(push_expr_logical_not, "push_expr_logical_not")                                              \
+    F(pop_expr_logical_not, "pop_expr_logical_not")                                                \
+    F(push_expr_unary_plus, "push_expr_unary_plus")                                                \
+    F(pop_expr_unary_plus, "pop_expr_unary_plus")                                                  \
+    F(push_expr_unary_minus, "push_expr_unary_minus")                                              \
+    F(pop_expr_unary_minus, "pop_expr_unary_minus")                                                \
+    F(push_expr_directive_call, "push_expr_directive_call")                                        \
+    F(pop_expr_directive_call, "pop_expr_directive_call")                                          \
+    /* `n` is the amount of group members. */                                                      \
+    F(push_group, "push_group")                                                                    \
+    F(pop_group, "pop_group")                                                                      \
+    F(push_named_member, "push_named_member")                                                      \
+    F(pop_named_member, "pop_named_member")                                                        \
+    F(push_positional_member, "push_positional_member")                                            \
+    F(pop_positional_member, "pop_positional_member")                                              \
+    F(push_ellipsis_argument, "push_ellipsis_argument")                                            \
+    F(pop_ellipsis_argument, "pop_ellipsis_argument")                                              \
+    /* `n` is the amount of markup elements in the block. */                                       \
+    F(push_block, "push_block")                                                                    \
+    F(pop_block, "pop_block")                                                                      \
+    /* `n` is the amount of markup elements in the member name. */                                 \
+    F(push_quoted_member_name, "push_quoted_member_name")                                          \
+    F(pop_quoted_member_name, "pop_quoted_member_name")                                            \
+    /* `n` is the amount of markup elements in the string. */                                      \
+    F(push_quoted_string, "push_quoted_string")                                                    \
+    F(pop_quoted_string, "pop_quoted_string")
+
+#define COWEL_CST_INSTRUCTION_KIND_ENUMERATOR(id, name) id,
+
 enum struct CST_Instruction_Kind : Default_Underlying {
-    skip,
-    escape,
-    text,
-    unquoted_member_name,
-    unquoted_string,
-    binary_int,
-    octal_int,
-    decimal_int,
-    hexadecimal_int,
-    decimal_float,
-    keyword_true,
-    keyword_false,
-    keyword_null,
-    keyword_unit,
-    keyword_infinity,
-    line_comment,
-    block_comment,
-    ellipsis,
-    equals,
-    comma,
-    /// @brief `n` is the amount of markup elements in the document.
-    push_document,
-    pop_document,
-    push_directive_splice,
-    pop_directive_splice,
-    push_expr_bitwise_not,
-    pop_expr_bitwise_not,
-    push_expr_logical_not,
-    pop_expr_logical_not,
-    push_expr_unary_plus,
-    pop_expr_unary_plus,
-    push_expr_unary_minus,
-    pop_expr_unary_minus,
-    push_expr_directive_call,
-    pop_expr_directive_call,
-    /// @brief `n` is the amount of group members.
-    push_group,
-    pop_group,
-    push_named_member,
-    pop_named_member,
-    push_positional_member,
-    pop_positional_member,
-    push_ellipsis_argument,
-    pop_ellipsis_argument,
-    /// @brief `n` is the amount of markup elements in the block.
-    push_block,
-    pop_block,
-    /// @brief `n` is the amount of markup elements in the member name.
-    push_quoted_member_name,
-    pop_quoted_member_name,
-    /// @brief `n` is the amount of markup elements in the string.
-    push_quoted_string,
-    pop_quoted_string,
+    COWEL_CST_INSTRUCTION_KIND_ENUM_DATA(COWEL_CST_INSTRUCTION_KIND_ENUMERATOR)
 };
 
 [[nodiscard]]

@@ -674,58 +674,28 @@ void dump_instructions(
 
 std::optional<CST_Instruction_Kind> cst_instruction_kind_from_name(std::u8string_view name)
 {
-    using enum CST_Instruction_Kind;
-    // clang-format off
-    if (name == u8"skip")                     { return skip; }
-    if (name == u8"escape")                   { return escape; }
-    if (name == u8"text")                     { return text; }
-    if (name == u8"unquoted_member_name")     { return unquoted_member_name; }
-    if (name == u8"unquoted_string")          { return unquoted_string; }
-    if (name == u8"binary_int")               { return binary_int; }
-    if (name == u8"octal_int")                { return octal_int; }
-    if (name == u8"decimal_int")              { return decimal_int; }
-    if (name == u8"hexadecimal_int")          { return hexadecimal_int; }
-    if (name == u8"decimal_float")            { return decimal_float; }
-    if (name == u8"keyword_true")             { return keyword_true; }
-    if (name == u8"keyword_false")            { return keyword_false; }
-    if (name == u8"keyword_null")             { return keyword_null; }
-    if (name == u8"keyword_unit")             { return keyword_unit; }
-    if (name == u8"keyword_infinity")         { return keyword_infinity; }
-    if (name == u8"line_comment")             { return line_comment; }
-    if (name == u8"block_comment")            { return block_comment; }
-    if (name == u8"ellipsis")                 { return ellipsis; }
-    if (name == u8"equals")                   { return equals; }
-    if (name == u8"comma")                    { return comma; }
-    if (name == u8"push_document")            { return push_document; }
-    if (name == u8"pop_document")             { return pop_document; }
-    if (name == u8"push_directive_splice")    { return push_directive_splice; }
-    if (name == u8"pop_directive_splice")     { return pop_directive_splice; }
-    if (name == u8"push_expr_bitwise_not")    { return push_expr_bitwise_not; }
-    if (name == u8"pop_expr_bitwise_not")     { return pop_expr_bitwise_not; }
-    if (name == u8"push_expr_logical_not")    { return push_expr_logical_not; }
-    if (name == u8"pop_expr_logical_not")     { return pop_expr_logical_not; }
-    if (name == u8"push_expr_unary_plus")     { return push_expr_unary_plus; }
-    if (name == u8"pop_expr_unary_plus")      { return pop_expr_unary_plus; }
-    if (name == u8"push_expr_unary_minus")    { return push_expr_unary_minus; }
-    if (name == u8"pop_expr_unary_minus")     { return pop_expr_unary_minus; }
-    if (name == u8"push_expr_directive_call") { return push_expr_directive_call; }
-    if (name == u8"pop_expr_directive_call")  { return pop_expr_directive_call; }
-    if (name == u8"push_group")               { return push_group; }
-    if (name == u8"pop_group")                { return pop_group; }
-    if (name == u8"push_named_member")        { return push_named_member; }
-    if (name == u8"pop_named_member")         { return pop_named_member; }
-    if (name == u8"push_positional_member")   { return push_positional_member; }
-    if (name == u8"pop_positional_member")    { return pop_positional_member; }
-    if (name == u8"push_ellipsis_argument")   { return push_ellipsis_argument; }
-    if (name == u8"pop_ellipsis_argument")    { return pop_ellipsis_argument; }
-    if (name == u8"push_block")               { return push_block; }
-    if (name == u8"pop_block")                { return pop_block; }
-    if (name == u8"push_quoted_member_name")  { return push_quoted_member_name; }
-    if (name == u8"pop_quoted_member_name")   { return pop_quoted_member_name; }
-    if (name == u8"push_quoted_string")       { return push_quoted_string; }
-    if (name == u8"pop_quoted_string")        { return pop_quoted_string; }
-    // clang-format on
-    return std::nullopt;
+    struct Name_And_Instruction_Kind {
+        std::u8string_view name;
+        CST_Instruction_Kind kind;
+    };
+
+#define COWEL_CST_INSTRUCTION_KIND_TABLE_ENTRY(id, name) { u8##name##sv, CST_Instruction_Kind::id },
+
+    static constexpr auto table = [] {
+        auto result = std::to_array<Name_And_Instruction_Kind>(
+            { COWEL_CST_INSTRUCTION_KIND_ENUM_DATA(COWEL_CST_INSTRUCTION_KIND_TABLE_ENTRY) }
+        );
+        std::ranges::sort(result, {}, &Name_And_Instruction_Kind::name);
+        return result;
+    }();
+    static_assert(std::ranges::is_sorted(table, {}, &Name_And_Instruction_Kind::name));
+
+    // NOLINTNEXTLINE(readability-qualified-auto)
+    const auto result = std::ranges::lower_bound(table, name, {}, &Name_And_Instruction_Kind::name);
+    if (result == table.end() || result->name != name) {
+        return {};
+    }
+    return result->kind;
 }
 
 std::optional<std::vector<CST_Instruction>> load_parse_expectations(std::u8string_view path)
