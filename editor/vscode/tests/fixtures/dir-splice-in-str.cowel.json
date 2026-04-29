@@ -6,42 +6,42 @@
       "line": 0,
       "col": 1,
       "expected": "support.function.directive.cowel",
-      "description": "Original: outer directive has correct scope"
+      "description": "Outer directive has correct scope"
     },
     {
       "type": "top-scope",
       "line": 0,
       "col": 7,
       "expected": "support.function.directive.cowel",
-      "description": "Original: directive splice inside string has correct scope"
+      "description": "Directive splice inside string has correct scope"
     },
     {
       "type": "token-has-scope",
       "line": 0,
       "col": 7,
       "scope": "string.quoted.double.cowel",
-      "description": "Original: directive splice inside string still has string parent scope"
+      "description": "Directive splice inside string still has string parent scope"
     },
     {
       "type": "top-scope",
       "line": 1,
       "col": 1,
       "expected": "support.function.directive.cowel",
-      "description": "Original: second outer directive has correct scope"
+      "description": "Second outer directive has correct scope"
     },
     {
       "type": "top-scope",
       "line": 1,
       "col": 7,
       "expected": "support.function.directive.cowel",
-      "description": "Original: directive splice inside string (with trailing text) has correct scope"
+      "description": "Directive splice inside string (with trailing text) has correct scope"
     },
     {
       "type": "token-has-scope",
       "line": 1,
       "col": 14,
       "scope": "string.quoted.double.cowel",
-      "description": "Original: text after directive splice still has string scope"
+      "description": "Text after directive splice still has string scope"
     },
     {
       "type": "top-scope",
@@ -55,70 +55,70 @@
       "line": 2,
       "col": 4,
       "expected": "support.function.directive.cowel",
-      "description": "New splice (braces): directive splice inside string has correct scope"
+      "description": "Splice (braces): directive splice inside string has correct scope"
     },
     {
       "type": "token-has-scope",
       "line": 2,
       "col": 4,
       "scope": "string.quoted.double.cowel",
-      "description": "New splice (braces): directive splice inside string still has string parent scope"
+      "description": "Splice (braces): directive splice inside string still has string parent scope"
     },
     {
       "type": "top-scope",
       "line": 2,
       "col": 6,
       "expected": "punctuation.section.content.begin.cowel",
-      "description": "New splice (braces): opening brace after splice directive is highlighted"
+      "description": "Splice (braces): opening brace after splice directive is highlighted"
     },
     {
       "type": "top-scope",
       "line": 2,
       "col": 10,
       "expected": "punctuation.section.content.end.cowel",
-      "description": "New splice (braces): closing brace after splice directive is highlighted"
+      "description": "Splice (braces): closing brace after splice directive is highlighted"
     },
     {
       "type": "top-scope",
       "line": 3,
       "col": 1,
       "expected": "support.function.directive.cowel",
-      "description": "New splice (parens): outer directive has correct scope"
+      "description": "Splice (parens): outer directive has correct scope"
     },
     {
       "type": "top-scope",
       "line": 3,
       "col": 4,
       "expected": "support.function.directive.cowel",
-      "description": "New splice (parens): splice directive with argument group has correct scope"
+      "description": "Splice (parens): splice directive with argument group has correct scope"
     },
     {
       "type": "top-scope",
       "line": 3,
       "col": 6,
       "expected": "punctuation.section.arguments.begin.cowel",
-      "description": "New splice (parens): opening parenthesis after splice directive is highlighted"
+      "description": "Splice (parens): opening parenthesis after splice directive is highlighted"
     },
     {
       "type": "top-scope",
       "line": 3,
       "col": 7,
       "expected": "constant.numeric.integer.decimal.cowel",
-      "description": "New splice (parens): numeric literal inside splice argument group is highlighted"
+      "description": "Splice (parens): numeric literal inside splice argument group is highlighted"
     },
     {
       "type": "top-scope",
       "line": 3,
       "col": 10,
       "expected": "punctuation.section.arguments.end.cowel",
-      "description": "New splice (parens): closing parenthesis after splice directive is highlighted"
+      "description": "Splice (parens): closing parenthesis after splice directive is highlighted"
     },
     {
       "type": "token-has-scope",
       "line": 3,
       "col": 4,
       "scope": "string.quoted.double.cowel",
-      "description": "New splice (parens): splice directive in line still has string parent scope"
+      "description": "Splice (parens): splice directive in line still has string parent scope"
     }
   ]
 }
