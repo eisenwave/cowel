@@ -4,9 +4,8 @@
         "incremental": true,
         "tsBuildInfoFile": "build/.tsbuildinfo",
         "outDir": "build/npm",
-        "rootDirs": [
-            "src/main/ts"
-        ]
+        "rootDir": "src/main/ts",
+        "types": ["node"]
     },
     "include": [
         "src/main"
