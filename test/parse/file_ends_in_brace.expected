@@ -1,0 +1,6 @@
+push_document 1
+push_directive_splice
+push_block 0
+pop_block
+pop_directive_splice
+pop_document

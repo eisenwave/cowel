@@ -1,0 +1,42 @@
+push_document 10
+push_directive_splice
+push_group 1
+push_positional_member
+keyword_null
+pop_positional_member
+pop_group
+pop_directive_splice
+text
+push_directive_splice
+push_group 1
+push_positional_member
+keyword_true
+pop_positional_member
+pop_group
+pop_directive_splice
+text
+push_directive_splice
+push_group 1
+push_positional_member
+keyword_false
+pop_positional_member
+pop_group
+pop_directive_splice
+text
+push_directive_splice
+push_group 1
+push_positional_member
+unquoted_string
+pop_positional_member
+pop_group
+pop_directive_splice
+text
+push_directive_splice
+push_group 1
+push_positional_member
+unquoted_string
+pop_positional_member
+pop_group
+pop_directive_splice
+text
+pop_document
