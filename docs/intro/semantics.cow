@@ -335,6 +335,9 @@ The effect of splicing depends on the type of value:
   \li{
     Splicing a value of type \cowdoc_type{group} raises an error.
   }
+  \li{
+    Splicing a value of type \cowdoc_type{regex} raises an error.
+  }
 }
 
 \h4(id="splicing-float"){Splicing values of type \cowdoc_type{float}}
