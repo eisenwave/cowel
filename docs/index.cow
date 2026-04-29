@@ -36,6 +36,9 @@ U+\cowel_str_to_upper(cowel_to_str(..., base=16, zpad=4))\c{nbsp}(\tt{\cowel_cha
 \cowel_highlight_as("markup-attr"){\cowel_put{0}}: \cowel_highlight_as("keyword-type"){\cowel_put{1}}\
 }
 
+\cowel_macro(cowdoc_dir_h4){\h4(id = "dir-\cowel_put{0}"
+){\cowdoc_dir{\cowel_put{0}} \cowel_char_by_name("EM DASH") \cowel_put{1}}}
+
 \cowel_macro(cowblock){\
 \codeblock(cowel){\cowel_put}\
 }

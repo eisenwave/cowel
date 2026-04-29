@@ -18,7 +18,7 @@ but should be expanded greatly in the near future.
 
 The commas in a \gterm{type-list} act as separators and have no impact on the type.
 
-Note that the type \cowdoc_type{group(int)} is a unambigously a \gterm{prefix-type}
+Note that the type \cowdoc_type{group(int)} is a unambiguously a \gterm{prefix-type}
 where \cowdoc_type{int} is the only element in the \gterm{type-list},
 not a \cowdoc_type{group} \gterm{type-prefix}
 followed by an \cowdoc_type{(int)} \gterm{optional-type}.
