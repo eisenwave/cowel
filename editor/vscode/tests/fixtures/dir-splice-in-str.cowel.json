@@ -1,5 +1,5 @@
 {
-  "description": "Test directive splices inside quoted strings (original cases + new splice cases)",
+  "description": "Test directive splices inside quoted strings",
   "assertions": [
     {
       "type": "top-scope",
