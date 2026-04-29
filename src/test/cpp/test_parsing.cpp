@@ -728,8 +728,7 @@ std::optional<CST_Instruction_Kind> cst_instruction_kind_from_name(std::u8string
     return std::nullopt;
 }
 
-std::optional<std::vector<CST_Instruction>>
-load_parse_expectations(std::u8string_view path)
+std::optional<std::vector<CST_Instruction>> load_parse_expectations(std::u8string_view path)
 {
     std::pmr::monotonic_buffer_resource memory;
     std::pmr::vector<char8_t> raw { &memory };
@@ -866,7 +865,9 @@ TEST(Parse_And_Build, empty)
 
 TEST(Parse, directive_brace_escape_2)
 {
-    ASSERT_TRUE(run_parse_test(u8"directive_brace_escape_2.cow", u8"directive_brace_escape_2.expected"));
+    ASSERT_TRUE(
+        run_parse_test(u8"directive_brace_escape_2.cow", u8"directive_brace_escape_2.expected")
+    );
 }
 
 TEST(Parse, directive_multiline)
@@ -876,7 +877,9 @@ TEST(Parse, directive_multiline)
 
 TEST(Parse, directive_multiline_trailing_comma)
 {
-    ASSERT_TRUE(run_parse_test(u8"directive_multiline_trailing_comma.cow", u8"directive_multiline_trailing_comma.expected"));
+    ASSERT_TRUE(run_parse_test(
+        u8"directive_multiline_trailing_comma.cow", u8"directive_multiline_trailing_comma.expected"
+    ));
 }
 
 TEST(Parse, comments)
