@@ -154,12 +154,12 @@ constexpr std::string_view version_text = "0.8.0\n";
 
 int main(int argc, const char* const* const argv)
 {
-    cowel_parsed_cli_options opts
-        = cowel_parse_cli_options(argv + 1, static_cast<size_t>(argc - 1));
+    cowel_parsed_cli_options_u8 opts
+        = cowel_parse_cli_options_u8(argv + 1, static_cast<size_t>(argc - 1));
 
     struct Opts_Guard {
-        cowel_parsed_cli_options& opts;
-        explicit Opts_Guard(cowel_parsed_cli_options& o)
+        cowel_parsed_cli_options_u8& opts;
+        explicit Opts_Guard(cowel_parsed_cli_options_u8& o)
             : opts { o }
         {
         }
@@ -167,7 +167,7 @@ int main(int argc, const char* const* const argv)
         Opts_Guard& operator=(const Opts_Guard&) = delete;
         ~Opts_Guard()
         {
-            cowel_free_cli_options(&opts);
+            cowel_free_cli_options_u8(&opts);
         }
     } guard { opts };
 
@@ -185,17 +185,12 @@ int main(int argc, const char* const* const argv)
     case COWEL_CLI_COMMAND_RUN: break;
     }
 
-    const std::string in_path = std::string(as_string_view(as_u8string_view(opts.input)));
-    const std::string out_path = std::string(as_string_view(as_u8string_view(opts.output)));
+    const auto in_path_u8 = as_u8string_view(opts.input);
+    const auto out_path_u8 = as_u8string_view(opts.output);
     const bool colors_enabled = !opts.no_color;
 
     Global_Memory_Resource global_memory;
     std::pmr::unsynchronized_pool_resource memory { &global_memory };
-
-    const std::u8string_view in_path_u8 = as_u8string_view(in_path);
-    auto in_path_directory = std::filesystem::path { in_path }.parent_path();
-
-    const std::u8string_view out_path_u8 = as_u8string_view(out_path);
 
     const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text
         = load_utf8_file(in_path_u8, &memory);
@@ -207,6 +202,7 @@ int main(int argc, const char* const* const argv)
     }
     const auto in_source = as_u8string_view(*in_text);
 
+    auto in_path_directory = std::filesystem::path { as_string_view(in_path_u8) }.parent_path();
     Relative_File_Loader file_loader { std::move(in_path_directory), &memory };
     Stderr_Logger logger { file_loader, in_path_u8, in_source, &memory, colors_enabled };
 
@@ -244,7 +240,8 @@ int main(int argc, const char* const* const argv)
 
     const cowel_gen_result_u8 result = cowel_generate_html_u8(&options);
 
-    const auto out_file = fopen_unique(out_path.data(), "wb");
+    const std::string out_path = std::string(as_string_view(out_path_u8));
+    const auto out_file = fopen_unique(out_path.c_str(), "wb");
     if (!out_file) {
         if (result.output.text != nullptr) {
             memory.deallocate(result.output.text, result.output.length, alignof(char8_t));

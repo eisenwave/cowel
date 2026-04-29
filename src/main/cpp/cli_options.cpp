@@ -6,22 +6,9 @@
 #include "args.hxx"
 
 #include "cowel/cowel.h"
-#include "cowel/cowel_lib.hpp"
 
 namespace cowel {
 namespace {
-
-const std::unordered_map<std::string, cowel_severity> severity_arg_map {
-    { "min", COWEL_SEVERITY_MIN },
-    { "trace", COWEL_SEVERITY_TRACE },
-    { "debug", COWEL_SEVERITY_DEBUG },
-    { "info", COWEL_SEVERITY_INFO },
-    { "soft_warning", COWEL_SEVERITY_SOFT_WARNING },
-    { "warning", COWEL_SEVERITY_WARNING },
-    { "error", COWEL_SEVERITY_ERROR },
-    { "fatal", COWEL_SEVERITY_FATAL },
-    { "none", COWEL_SEVERITY_NONE },
-};
 
 [[nodiscard]]
 cowel_mutable_string_view_u8 alloc_str(std::string_view s) noexcept
@@ -34,17 +21,32 @@ cowel_mutable_string_view_u8 alloc_str(std::string_view s) noexcept
 
 extern "C" {
 
-cowel_parsed_cli_options cowel_parse_cli_options(const char* const* args, size_t arg_count) noexcept
+cowel_parsed_cli_options_u8
+cowel_parse_cli_options_u8(const char* const* args, size_t arg_count) noexcept
 {
     if (arg_count == 0) {
-        return { .command = COWEL_CLI_COMMAND_NONE,
-                 .input = {},
-                 .output = {},
-                 .min_severity = COWEL_SEVERITY_INFO,
-                 .no_color = false,
-                 .ok = true,
-                 .error_message = {} };
+        return {
+            .command = COWEL_CLI_COMMAND_NONE,
+            .input = {},
+            .output = {},
+            .min_severity = COWEL_SEVERITY_INFO,
+            .no_color = false,
+            .ok = true,
+            .error_message = {},
+        };
     }
+
+    static const std::unordered_map<std::string, cowel_severity> severity_arg_map {
+        { "min", COWEL_SEVERITY_MIN },
+        { "trace", COWEL_SEVERITY_TRACE },
+        { "debug", COWEL_SEVERITY_DEBUG },
+        { "info", COWEL_SEVERITY_INFO },
+        { "soft_warning", COWEL_SEVERITY_SOFT_WARNING },
+        { "warning", COWEL_SEVERITY_WARNING },
+        { "error", COWEL_SEVERITY_ERROR },
+        { "fatal", COWEL_SEVERITY_FATAL },
+        { "none", COWEL_SEVERITY_NONE },
+    };
 
     args::ArgumentParser parser { "Processes COWEL documents into HTML." };
     parser.helpParams.width = 100;
@@ -80,7 +82,7 @@ cowel_parsed_cli_options cowel_parse_cli_options(const char* const* args, size_t
                 "severity",
                 "Minimum (>=) severity for log messages",
                 { 'l', "severity" },
-                cowel::severity_arg_map,
+                severity_arg_map,
                 COWEL_SEVERITY_INFO,
             };
             sub.Parse();
@@ -101,22 +103,26 @@ cowel_parsed_cli_options cowel_parse_cli_options(const char* const* args, size_t
     // Check help/version before the error check:
     // in ARGS_NOEXCEPT mode, HelpFlag sets an error even on success.
     if (help_arg.Matched()) {
-        return { .command = COWEL_CLI_COMMAND_HELP,
-                 .input = {},
-                 .output = {},
-                 .min_severity = COWEL_SEVERITY_INFO,
-                 .no_color = false,
-                 .ok = true,
-                 .error_message = {} };
+        return {
+            .command = COWEL_CLI_COMMAND_HELP,
+            .input = {},
+            .output = {},
+            .min_severity = COWEL_SEVERITY_INFO,
+            .no_color = false,
+            .ok = true,
+            .error_message = {},
+        };
     }
     if (version_arg.Matched()) {
-        return { .command = COWEL_CLI_COMMAND_VERSION,
-                 .input = {},
-                 .output = {},
-                 .min_severity = COWEL_SEVERITY_INFO,
-                 .no_color = false,
-                 .ok = true,
-                 .error_message = {} };
+        return {
+            .command = COWEL_CLI_COMMAND_VERSION,
+            .input = {},
+            .output = {},
+            .min_severity = COWEL_SEVERITY_INFO,
+            .no_color = false,
+            .ok = true,
+            .error_message = {},
+        };
     }
     if (parser.GetError() != args::Error::None) {
         const std::string msg
@@ -132,13 +138,15 @@ cowel_parsed_cli_options cowel_parse_cli_options(const char* const* args, size_t
         };
     }
     if (!run_cmd) {
-        return { .command = COWEL_CLI_COMMAND_NONE,
-                 .input = {},
-                 .output = {},
-                 .min_severity = COWEL_SEVERITY_INFO,
-                 .no_color = false,
-                 .ok = true,
-                 .error_message = {} };
+        return {
+            .command = COWEL_CLI_COMMAND_NONE,
+            .input = {},
+            .output = {},
+            .min_severity = COWEL_SEVERITY_INFO,
+            .no_color = false,
+            .ok = true,
+            .error_message = {},
+        };
     }
 
     return {
@@ -152,17 +160,17 @@ cowel_parsed_cli_options cowel_parse_cli_options(const char* const* args, size_t
     };
 }
 
-void cowel_free_cli_options(cowel_parsed_cli_options* options) noexcept
+void cowel_free_cli_options_u8(cowel_parsed_cli_options_u8* const options) noexcept
 {
-    if (!options) {
-        return;
-    }
-    auto free_str = [](cowel_mutable_string_view_u8& s) noexcept {
+    static constexpr auto free_str = [](cowel_mutable_string_view_u8& s) noexcept {
         if (s.text) {
             cowel_free(s.text, s.length, alignof(char8_t));
             s = {};
         }
     };
+    if (!options) {
+        return;
+    }
     free_str(options->input);
     free_str(options->output);
     free_str(options->error_message);

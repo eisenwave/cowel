@@ -217,8 +217,8 @@ type CowelWasmExports = WebAssembly.Exports & {
     readonly cowel_big_int_big_result: Address;
     readonly cowel_big_int_div_result: Address;
 
-    cowel_parse_cli_options(result: Address, args: Address, argCount: number): void;
-    cowel_free_cli_options(options: Address): void;
+    cowel_parse_cli_options_u8(result: Address, args: Address, argCount: number): void;
+    cowel_free_cli_options_u8(options: Address): void;
 };
 
 type OrchestrationAllocations = {
@@ -1140,7 +1140,7 @@ export class CowelWasm {
 
         // Allocate the result struct.
         const resultAlloc = this.alloc2(36, 4);
-        this.exports.cowel_parse_cli_options(resultAlloc.address, argsArrayAddr, args.length);
+        this.exports.cowel_parse_cli_options_u8(resultAlloc.address, argsArrayAddr, args.length);
 
         // Read fields from the result struct.
         const command = this.heap_u32[resultAlloc.address / 4 + 0];
@@ -1159,7 +1159,7 @@ export class CowelWasm {
         const output = outputTextAddr !== 0 ? this.decodeUtf8(outputTextAddr, outputLength) : "";
         const errorMessage = errorTextAddr !== 0 ? this.decodeUtf8(errorTextAddr, errorLength) : "";
 
-        this.exports.cowel_free_cli_options(resultAlloc.address);
+        this.exports.cowel_free_cli_options_u8(resultAlloc.address);
         this.free(resultAlloc);
         if (argsArray !== null) {
             this.free(argsArray);

@@ -532,7 +532,7 @@ COWEL_EXPORT
 void cowel_set_assertion_handler_u8(cowel_assertion_handler_fn_u8* handler) COWEL_NOEXCEPT;
 
 /// @brief Identifies the action requested by a parsed CLI invocation.
-enum cowel_cli_command {
+enum cowel_cli_command { // NOLINT(performance-enum-size)
     /// @brief No arguments were given; the caller should display help.
     COWEL_CLI_COMMAND_NONE,
     /// @brief The -h or --help flag was given.
@@ -546,7 +546,7 @@ enum cowel_cli_command {
 /// @brief The result of parsing CLI arguments via `cowel_parse_cli_options`.
 /// Strings held by this struct are heap-allocated via `cowel_alloc` and must be
 /// released by calling `cowel_free_cli_options`.
-struct cowel_parsed_cli_options {
+struct cowel_parsed_cli_options_u8 {
     /// @brief The command that was parsed.
     cowel_cli_command command;
 
@@ -578,14 +578,14 @@ struct cowel_parsed_cli_options {
 /// @returns A `cowel_parsed_cli_options` whose string fields are heap-allocated
 /// via `cowel_alloc` and must be freed by calling `cowel_free_cli_options`.
 COWEL_EXPORT COWEL_NODISCARD
-cowel_parsed_cli_options
-cowel_parse_cli_options(const char* const* args, size_t arg_count) COWEL_NOEXCEPT;
+cowel_parsed_cli_options_u8
+cowel_parse_cli_options_u8(const char* const* args, size_t arg_count) COWEL_NOEXCEPT;
 
 /// @brief Frees all heap-allocated strings inside `options`.
 /// After this call, the contents of `*options` are unspecified.
 /// Does nothing if `options` is null.
 COWEL_EXPORT
-void cowel_free_cli_options(cowel_parsed_cli_options* options) COWEL_NOEXCEPT;
+void cowel_free_cli_options_u8(cowel_parsed_cli_options_u8* options) COWEL_NOEXCEPT;
 
 // clang-format on
 
