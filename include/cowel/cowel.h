@@ -531,6 +531,62 @@ cowel_gen_result_u8 cowel_generate_html_u8(const cowel_options_u8* options) COWE
 COWEL_EXPORT
 void cowel_set_assertion_handler_u8(cowel_assertion_handler_fn_u8* handler) COWEL_NOEXCEPT;
 
+/// @brief Identifies the action requested by a parsed CLI invocation.
+enum cowel_cli_command { // NOLINT(performance-enum-size)
+    /// @brief No arguments were given; the caller should display help.
+    COWEL_CLI_COMMAND_NONE,
+    /// @brief The -h or --help flag was given.
+    COWEL_CLI_COMMAND_HELP,
+    /// @brief The -v or --version flag was given.
+    COWEL_CLI_COMMAND_VERSION,
+    /// @brief The run subcommand was given with valid input and output paths.
+    COWEL_CLI_COMMAND_RUN,
+};
+
+/// @brief The result of parsing CLI arguments via `cowel_parse_cli_options`.
+/// Strings held by this struct are heap-allocated via `cowel_alloc` and must be
+/// released by calling `cowel_free_cli_options`.
+struct cowel_parsed_cli_options_u8 {
+    /// @brief The command that was parsed.
+    cowel_cli_command command;
+
+    /// @brief Path to the input file.
+    /// Valid only when `command` is `COWEL_CLI_COMMAND_RUN`.
+    cowel_mutable_string_view_u8 input;
+    /// @brief Path to the output file.
+    /// Valid only when `command` is `COWEL_CLI_COMMAND_RUN`.
+    cowel_mutable_string_view_u8 output;
+    /// @brief Minimum log severity.
+    /// Valid only when `command` is `COWEL_CLI_COMMAND_RUN`.
+    /// Defaults to `COWEL_SEVERITY_INFO`.
+    cowel_severity min_severity;
+    /// @brief If true, ANSI color codes should be suppressed in output.
+    /// Valid only when `command` is `COWEL_CLI_COMMAND_RUN`.
+    bool no_color;
+
+    /// @brief True if parsing succeeded, false otherwise.
+    bool ok;
+    /// @brief Human-readable error description.
+    /// Valid only when `ok` is false.
+    cowel_mutable_string_view_u8 error_message;
+};
+
+/// @brief Parses CLI arguments into a `cowel_parsed_cli_options` struct.
+/// @param args A pointer to an array of null-terminated argument strings,
+/// not including the program name.
+/// @param arg_count The number of strings in `args`.
+/// @returns A `cowel_parsed_cli_options` whose string fields are heap-allocated
+/// via `cowel_alloc` and must be freed by calling `cowel_free_cli_options`.
+COWEL_EXPORT COWEL_NODISCARD
+cowel_parsed_cli_options_u8
+cowel_parse_cli_options_u8(const char* const* args, size_t arg_count) COWEL_NOEXCEPT;
+
+/// @brief Frees all heap-allocated strings inside `options`.
+/// After this call, the contents of `*options` are unspecified.
+/// Does nothing if `options` is null.
+COWEL_EXPORT
+void cowel_free_cli_options_u8(cowel_parsed_cli_options_u8* options) COWEL_NOEXCEPT;
+
 // clang-format on
 
 #ifdef __cplusplus
