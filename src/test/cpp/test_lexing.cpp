@@ -13,6 +13,7 @@
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ascii_algorithm.hpp"
 #include "cowel/util/char_sequence_ops.hpp"
+#include "cowel/util/chars.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/io.hpp"
 #include "cowel/util/result.hpp"
@@ -31,23 +32,6 @@ using namespace std::string_view_literals;
 
 namespace cowel {
 namespace {
-
-[[nodiscard]]
-constexpr bool is_ascii_printing(char8_t c)
-{
-    // TODO: move this into ulight
-    static constexpr ulight::Charset256 chars //
-        = ulight::is_ascii_alphanumeric_set //
-        | ulight::is_ascii_punctuation_set //
-        | ulight::detail::to_charset256(u8' ');
-    return chars.contains(c);
-}
-
-[[nodiscard]]
-constexpr bool is_ascii_printing(char32_t c)
-{
-    return is_ascii(c) && is_ascii_printing(char8_t(c));
-}
 
 struct Lex_Actual_Error {
     Source_Span location;

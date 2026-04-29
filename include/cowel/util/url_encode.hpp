@@ -5,71 +5,26 @@
 #include <iterator>
 #include <string_view>
 
-#include "ulight/impl/ascii_chars.hpp"
-#include "ulight/impl/chars.hpp"
-#include "ulight/impl/charset.hpp"
-
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/chars.hpp"
 #include "cowel/util/html.hpp"
 
 namespace cowel {
 
-using ulight::Charset256;
-using ulight::is_ascii_alphanumeric_set;
-using ulight::detail::to_charset256;
-
-inline constexpr auto is_url_reserved_set = to_charset256(u8"!#$&'()*+,/:;=?@[]");
-
 /// @brief Returns `true` if `c` is a "reserved character" in a URL.
 /// That is, a character which may have special meaning within a URL.
 ///
 /// Note that this does not include control characters and many other characters which
 /// have to be percent-encoded in all circumstances.
-[[nodiscard]]
-constexpr bool is_url_reserved(char8_t c) noexcept
-{
-    // https://en.wikipedia.org/wiki/Percent-encoding
-    return is_url_reserved_set.contains(c);
-}
-
-[[nodiscard]]
-constexpr bool is_url_reserved(char32_t c) noexcept
-{
-    return is_ascii(c) && is_url_reserved(char8_t(c));
-}
-
-inline constexpr auto is_url_unreserved_set = is_ascii_alphanumeric_set | to_charset256(u8"-_~");
+inline constexpr auto is_url_reserved = Charset256(u8"!#$&'()*+,/:;=?@[]");
 
 /// @brief Returns `true` if `c` is an "unreserved character" in a URL.
 /// That is, a character which does not need to be percent-encoded.
-[[nodiscard]]
-constexpr bool is_url_unreserved(char8_t c) noexcept
-{
-    return is_url_unreserved_set.contains(c);
-}
-
-[[nodiscard]]
-constexpr bool is_url_unreserved(char32_t c) noexcept
-{
-    return is_ascii(c) && is_url_unreserved(char8_t(c));
-}
-
-inline constexpr auto is_url_always_encoded_set = ~(is_url_unreserved_set | is_url_reserved_set);
+inline constexpr auto is_url_unreserved = is_ascii_alphanumeric | Charset256(u8"-_~");
 
 /// @brief Returns `true` if `c` is a character that is always percent-encoded in URLs.
 /// That is, control characters, double quotes, whitespace, etc.
-[[nodiscard]]
-constexpr bool is_url_always_encoded(char8_t c) noexcept
-{
-    return is_url_always_encoded_set.contains(c);
-}
-
-[[nodiscard]]
-constexpr bool is_url_always_encoded(char32_t c) noexcept
-{
-    return is_ascii(c) && is_url_unreserved(char8_t(c));
-}
+inline constexpr auto is_url_always_encoded = ~(is_url_unreserved | is_url_reserved);
 
 namespace detail {
 

@@ -8,7 +8,6 @@
 #include <string_view>
 #include <vector>
 
-#include "cowel/util/chars.hpp"
 #include "cowel/util/levenshtein.hpp"
 #include "cowel/util/levenshtein_utf8.hpp"
 #include "cowel/util/strings.hpp"
@@ -34,7 +33,7 @@ Distant<std::size_t> closest_match_ascii(
     for (std::size_t i = 0; i < haystack.size(); ++i) {
         const std::u8string_view hay = haystack[i];
         const auto distance = [&] -> std::size_t {
-            if (is_ascii(hay)) {
+            if (is_all_ascii(hay)) {
                 return code_unit_levenshtein_distance(hay, needle, memory);
             }
             const auto needle32
@@ -65,7 +64,7 @@ Distant<std::size_t> closest_match(
     std::pmr::memory_resource* memory
 )
 {
-    if (is_ascii(needle)) {
+    if (is_all_ascii(needle)) {
         return closest_match_ascii(haystack, needle, memory);
     }
 

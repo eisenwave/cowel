@@ -14,7 +14,7 @@
 
 namespace cowel {
 
-using ulight::is_ascii;
+using ulight::is_all_ascii;
 using ulight::cowel::match_identifier;
 
 // see is_ascii_digit
@@ -177,10 +177,9 @@ constexpr bool is_identifier(std::u8string_view str) noexcept
 
 namespace detail {
 
-static constexpr ulight::Charset256 sanitized_id_set
-    = ulight::is_ascii_alphanumeric_set | ulight::detail::to_charset256(u8"-_.:");
+inline constexpr ulight::Charset256 sanitized_id_set = is_ascii_alphanumeric | Charset256(u8"-_.:");
 
-}
+} // namespace detail
 
 template <typename Alloc>
 void sanitize_html_id(std::vector<char8_t, Alloc>& id)
@@ -195,7 +194,7 @@ void sanitize_html_id(std::vector<char8_t, Alloc>& id)
             c = u8'-';
             return false;
         }
-        return !detail::sanitized_id_set.contains(c);
+        return !detail::sanitized_id_set(c);
     });
 }
 

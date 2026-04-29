@@ -2,12 +2,14 @@
 #define COWEL_CHARS_HPP
 
 #include "ulight/impl/ascii_chars.hpp"
-#include "ulight/impl/lang/cowel_chars.hpp"
-#include "ulight/impl/lang/html_chars.hpp"
 #include "ulight/impl/unicode_chars.hpp"
+
+#include "ulight/impl/lang/cowel.hpp"
+#include "ulight/impl/lang/html.hpp"
 
 namespace cowel {
 
+using ulight::Charset256;
 using ulight::code_point_max;
 using ulight::code_point_max_ascii;
 using ulight::is_ascii;
@@ -17,16 +19,9 @@ using ulight::is_ascii_digit;
 using ulight::is_ascii_digit_base;
 using ulight::is_ascii_hex_digit;
 using ulight::is_ascii_lower_alpha;
+using ulight::is_ascii_printing;
+using ulight::is_ascii_punctuation;
 using ulight::is_ascii_upper_alpha;
-using ulight::is_cowel_escapeable;
-using ulight::is_cowel_identifier;
-using ulight::is_cowel_identifier_start;
-using ulight::is_cowel_special;
-using ulight::is_html_ascii_unquoted_attribute_value_character;
-using ulight::is_html_attribute_name_character;
-using ulight::is_html_min_raw_passthrough_character;
-using ulight::is_html_tag_name_character;
-using ulight::is_html_whitespace;
 using ulight::is_scalar_value;
 using ulight::private_use_area_max;
 using ulight::supplementary_pua_a_max;
@@ -35,6 +30,15 @@ using ulight::supplementary_pua_b_max;
 using ulight::supplementary_pua_b_min;
 using ulight::to_ascii_lower;
 using ulight::to_ascii_upper;
+using ulight::cowel::is_cowel_escapeable;
+using ulight::cowel::is_cowel_identifier;
+using ulight::cowel::is_cowel_identifier_start;
+using ulight::cowel::is_cowel_special;
+using ulight::html::is_html_ascii_unquoted_attribute_value_character;
+using ulight::html::is_html_attribute_name_character;
+using ulight::html::is_html_min_raw_passthrough_character;
+using ulight::html::is_html_tag_name_character;
+using ulight::html::is_html_whitespace;
 
 /// @brief Returns true if `c` is a blank character.
 /// This matches the C locale definition,
