@@ -1,12 +1,13 @@
 # Changelog
 
-## **[v0.8.0](https://github.com/eisenwave/cowel/releases/tag/v0.8.0)** (2026-??-??)
+## **[v0.8.0](https://github.com/eisenwave/cowel/releases/tag/v0.8.0)** (2026-04-30)
 
 - remove the following deprecated directives:
   - `trim`
-- make `\d{}` call syntax equivalent to `\d({})`
+- change `\d{}` call syntax to be equivalent to `\d({})` (#241)
 - change `null` from erroring when spliced to producing the string `"null"`
 - change numeric literals not to include a leading `-` (#233)
+- change the CLI to be unified between the node and native builds (#240)
 - add `~`, `!`, `+`, and `-` unary prefix operators (#233)
 - add the following string and regular expression directives (#183, #221):
   - `cowel_str_contains`
@@ -22,10 +23,12 @@
 - fix `cowel_not` not callable with named argument
 - fix `cowel_sqrt` and other unary numeric directives not callable with named arguments
 - fix crash (instead of error) when providing an invalid HTML attribute name
+- fix various syntax highlighting problems
 - fix various minor documentation bugs
+- also improve testing infrastructure (#242)
 
 **Full Changelog**:
-[`v0.7.0...master`](https://github.com/eisenwave/cowel/compare/v0.7.0...master)
+[`v0.7.0...v0.8.0`](https://github.com/eisenwave/cowel/compare/v0.7.0...v0.8.0)
 
 ## **[v0.7.0](https://github.com/eisenwave/cowel/releases/tag/v0.7.0)** (2026-02-05)
 
