@@ -76,3 +76,26 @@ Therefore, COWEL permits contributions that are partially authored by AI.
 > - attempting to commit hallucinated dependencies and API calls
 > 
 > … is treated as gross negligence and will result in a permanent ban from the repository.
+
+## Creating a release
+
+The procedure for creating a release is as follows:
+
+1. Verify that all `package.json` files have the correct version.
+2. Completely delete the `build/` directory to prevent any stale files.
+   In particular, TS incremental builds won't rebuild the JS files when deleted.
+3. Use emscripten to build with `-DCMAKE_BUILD_TYPE=Release`.
+   This outputs the publishable node package to `npm/build` as a side product.
+4. From the project root, to publish the cowel npm build:
+  - `cd npm/build`
+  - Double-check `node cowel.js --version`
+  - Double-check `node cowel.js run ../../docs/index.cow ../../docs/index.html`
+  - `npm login`
+  - `npm publish --access public`
+5. From the project root, to create the VScode extension:
+  - `cd editor/vscode`
+  - `npm run build`
+6. `git tag -a v0.x.0 -m 'Version 0.x.0`
+7. `git push --tags`
+8. Create the release on GitHub from `CHANGELOG.md`.
+   Upload the VSCode plugin (`.vsix` file) as part of the release.
