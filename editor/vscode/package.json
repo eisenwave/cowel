@@ -59,6 +59,13 @@
         "language": "cowel",
         "scopeName": "source.cowel",
         "path": "./syntaxes/cowel.tmLanguage.json",
+        "tokenTypes": {
+          "punctuation.section.arguments.begin.cowel": "other",
+          "punctuation.section.arguments.end.cowel": "other",
+          "punctuation.section.content.begin.cowel": "other",
+          "punctuation.section.content.end.cowel": "other",
+          "support.function.directive.cowel": "other"
+        },
         "balancedBracketScopes": [
           "*"
         ],
