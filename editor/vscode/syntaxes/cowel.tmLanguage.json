@@ -56,7 +56,7 @@
       "patterns": [
         {
           "name": "meta.arguments.cowel",
-          "begin": "(?<!\\))\\(",
+          "begin": "\\G\\(",
           "beginCaptures": {
             "0": { "name": "punctuation.section.arguments.begin.cowel" }
           },
@@ -75,7 +75,7 @@
       "patterns": [
         {
           "name": "meta.content.cowel",
-          "begin": "(?<![\\)\\}])\\{",
+          "begin": "\\G\\{",
           "beginCaptures": {
             "0": { "name": "punctuation.section.content.begin.cowel" }
           },
