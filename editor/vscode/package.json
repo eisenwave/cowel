@@ -20,7 +20,7 @@
   "publisher": "cowel",
   "devDependencies": {
     "@types/node": "^25.0.3",
-    "@vscode/vsce": "^3.7.1",
+    "@vscode/vsce": "^3.9.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vscode-oniguruma": "^2.0.1",
