@@ -1,5 +1,12 @@
 # Changelog
 
+## **[v0.8.1](https://github.com/eisenwave/cowel/releases/tag/v0.8.1)** (2026-??-??)
+
+- fix lexer crash on *DIRECTIVE-SPLICE-NAME-TOKEN* in *GROUP* (#249)
+
+**Full Changelog**:
+[`v0.8.0...main`](https://github.com/eisenwave/cowel/compare/v0.8.0...main)
+
 ## **[v0.8.0](https://github.com/eisenwave/cowel/releases/tag/v0.8.0)** (2026-04-30)
 
 - remove the following deprecated directives:
