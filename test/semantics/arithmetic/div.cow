@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_div(1.0))
+
 \cowel_div(-infinity)
 \cowel_div(-1.0)
 \cowel_div(-0.5)
@@ -49,6 +51,8 @@
 }
 
 \test_output{
+float
+
 -infinity
 -1
 -0.5

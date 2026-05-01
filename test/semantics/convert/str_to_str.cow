@@ -1,9 +1,13 @@
 \test_input{
+\__typeof(cowel_to_str(""))
+
 \cowel_to_str(awoo)
 \cowel_to_str("chan")
 }
 
 \test_output{
+str
+
 awoo
 chan
 }

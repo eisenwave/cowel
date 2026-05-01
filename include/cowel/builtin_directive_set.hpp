@@ -1014,6 +1014,16 @@ public:
     splice(Content_Policy& out, const Invocation& call, Context& context) const override;
 };
 
+struct Internal_Typeof_Behavior final : Short_String_Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Internal_Typeof_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Result<Short_String_Value, Processing_Status>
+    do_evaluate(const Invocation& call, Context& context) const override;
+};
+
 struct [[nodiscard]]
 Builtin_Directive_Set final : Name_Resolver {
 private:

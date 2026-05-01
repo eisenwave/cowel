@@ -400,4 +400,21 @@ Processing_Status Internal_Expect_Diagnostic_Behavior::splice(
     return result;
 }
 
+Result<Short_String_Value, Processing_Status>
+Internal_Typeof_Behavior::do_evaluate(const Invocation& call, Context& context) const
+{
+    Value_Of_Type_Matcher expr_matcher { Type::any };
+    Parameter expr_param { u8"expr"sv, Optionality::mandatory, expr_matcher };
+    Parameter* const parameters[] { &expr_param };
+
+    if (const auto match_status = match_call_fatal_error(parameters, call, context);
+        match_status != Processing_Status::ok) {
+        return match_status;
+    }
+
+    const std::u8string_view name
+        = type_kind_display_name(expr_matcher.get().get_type().get_kind());
+    return Short_String_Value { name };
+}
+
 } // namespace cowel

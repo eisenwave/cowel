@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_str_replace_all("", cowel_regex(""), ""))
+
 \cowel_str_replace_all("", cowel_regex(""), "")
 \cowel_str_replace_all("", cowel_regex(""), "x")
 \cowel_str_replace_all("", cowel_regex("w"), "x")
@@ -28,6 +30,8 @@
 }
 
 \test_output{
+str
+
 
 x
 

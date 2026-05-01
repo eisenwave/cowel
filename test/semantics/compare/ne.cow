@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_ne(0, 0))
+
 \cowel_ne(unit, unit)
 
 \cowel_ne(null, null)
@@ -34,6 +36,8 @@
 }
 
 \test_output{
+bool
+
 false
 
 false

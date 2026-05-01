@@ -28,6 +28,8 @@ constexpr Internal_Expect_Diagnostic_Behavior internal_expect_fatal //
     { Processing_Status::fatal, Severity::fatal };
 constexpr Internal_Expect_Diagnostic_Behavior internal_expect_warning //
     { Processing_Status::ok, Severity::warning };
+constexpr Internal_Typeof_Behavior internal_typeof //
+    {};
 
 constexpr Unary_Numeric_Expression_Behavior cowel_abs //
     { Unary_Numeric_Expression_Kind::abs };
@@ -404,6 +406,7 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     { u8"__expect_error"sv, &internal_expect_error },
     { u8"__expect_fatal"sv, &internal_expect_fatal },
     { u8"__expect_warning"sv, &internal_expect_warning },
+    { u8"__typeof"sv, &internal_typeof },
     COWEL_NAME_AND_BEHAVIOR_ENTRY(b),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(bib),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(blockquote),

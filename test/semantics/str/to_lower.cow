@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_str_to_lower(""))
+
 \cowel_str_to_lower("")
 \cowel_str_to_lower("awoo")
 \cowel_str_to_lower("AWOO")
@@ -12,6 +14,8 @@
 }
 
 \test_output{
+str
+
 
 awoo
 awoo

@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_rem_to_zero(1, 1))
+
 \cowel_rem_to_zero(-2, -2)
 \cowel_rem_to_zero(-2, -1)
 \cowel_rem_to_zero(-2, 1)
@@ -30,6 +32,8 @@
 }
 
 \test_output{
+int
+
 0
 0
 0

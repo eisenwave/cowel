@@ -1,4 +1,7 @@
 \test_input{
+\__typeof(cowel_sub(0))
+\__typeof(cowel_sub(0.0))
+
 \cowel_sub(8)
 \cowel_sub(8, 2)
 \cowel_sub(8, 2, 5)
@@ -68,6 +71,9 @@
 }
 
 \test_output{
+int
+float
+
 8
 6
 1

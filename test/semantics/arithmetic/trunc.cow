@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_trunc(0.0))
+
 \cowel_trunc(-infinity)
 \cowel_trunc(-1.0)
 \cowel_trunc(-0.75)
@@ -16,6 +18,8 @@
 }
 
 \test_output{
+float
+
 -infinity
 -1
 -0

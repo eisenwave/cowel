@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_eq(0, 0))
+
 \cowel_eq(unit, unit)
 
 \cowel_eq(null, null)
@@ -34,6 +36,8 @@
 }
 
 \test_output{
+bool
+
 true
 
 true

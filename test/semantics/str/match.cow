@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_str_match("", cowel_regex("")))
+
 \cowel_str_match("awoo", cowel_regex("a"))
 \cowel_str_match("awoo", cowel_regex(".*"))
 
@@ -15,6 +17,8 @@
 }
 
 \test_output{
+bool
+
 false
 true
 

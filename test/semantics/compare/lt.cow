@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_lt(0, 0))
+
 \cowel_lt(0, 0)
 \cowel_lt(0, 1)
 \cowel_lt(1, 0)
@@ -28,6 +30,8 @@
 }
 
 \test_output{
+bool
+
 false
 true
 false

@@ -1,4 +1,7 @@
 \test_input{
+\__typeof(cowel_min(0))
+\__typeof(cowel_min(0.0))
+
 \cowel_min(1)
 
 \cowel_min(1, 0, -5, 3)
@@ -19,6 +22,9 @@
 }
 
 \test_output{
+int
+float
+
 1
 
 -5

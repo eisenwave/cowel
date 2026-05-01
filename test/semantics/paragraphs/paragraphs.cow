@@ -1,4 +1,6 @@
 \test_input{\cowel_paragraphs{
+\__typeof(cowel_paragraphs{})
+
 This is
 a paragraph.
 
@@ -6,6 +8,8 @@ This is another paragraph.
 }}
 
 \test_output{
+block
+
 <p>This is
 a paragraph.
 </p>

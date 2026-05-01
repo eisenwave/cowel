@@ -1,4 +1,8 @@
 \test_input{\cowel_paragraphs{
+\__typeof(cowel_paragraphs{})
+\__typeof(cowel_paragraph_enter())
+\__typeof(cowel_paragraph_leave())
+
 First paragraph.
 
 Second paragraph.
@@ -17,6 +21,10 @@ Eight paragraph.\cowel_paragraph_leave\cowel_paragraph_leave\cowel_paragraph_lea
 }}
 
 \test_output{
+block
+block
+block
+
 <p>First paragraph.
 </p>
 <p>Second paragraph.
