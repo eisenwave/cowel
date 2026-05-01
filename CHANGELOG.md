@@ -1,6 +1,6 @@
 # Changelog
 
-## **[v0.8.1](https://github.com/eisenwave/cowel/releases/tag/v0.8.1)** (2026-??-??)
+## **[v0.8.1](https://github.com/eisenwave/cowel/releases/tag/v0.8.1)** (2026-05-01)
 
 - fix lexer crash on *DIRECTIVE-SPLICE-NAME-TOKEN* in *GROUP* (#249)
 - fix infinite loop on parse failure (#248)
@@ -9,7 +9,7 @@
 - fix crash when evaluating `\bib` (#256)
 
 **Full Changelog**:
-[`v0.8.0...main`](https://github.com/eisenwave/cowel/compare/v0.8.0...main)
+[`v0.8.0...`v0.8.1`](https://github.com/eisenwave/cowel/compare/v0.8.0...v0.8.1)
 
 ## **[v0.8.0](https://github.com/eisenwave/cowel/releases/tag/v0.8.0)** (2026-04-30)
 

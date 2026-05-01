@@ -85,9 +85,9 @@ The procedure for creating a release is as follows:
 2. Completely delete the `build/` directory to prevent any stale files.
    In particular, TS incremental builds won't rebuild the JS files when deleted.
 3. Use emscripten to build with `-DCMAKE_BUILD_TYPE=Release`.
-   This outputs the publishable node package to `npm/build` as a side product.
+   This outputs the publishable node package to `build/npm` as a side product.
 4. From the project root, to publish the cowel npm build:
-  - `cd npm/build`
+  - `cd build/npm`
   - Double-check `node cowel.js --version`
   - Double-check `node cowel.js run ../../docs/index.cow ../../docs/index.html`
   - `npm login`
