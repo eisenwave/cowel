@@ -30,7 +30,6 @@
 #include "cowel/output_language.hpp"
 #include "cowel/parse.hpp"
 #include "cowel/services.hpp"
-#include "cowel/settings.hpp"
 #include "cowel/ulight_highlighter.hpp"
 
 namespace cowel {
@@ -545,8 +544,10 @@ void do_handle_assertion(const Assertion_Error& error)
         .message = as_cowel_string_view(error.message),
         .file_name = as_cowel_string_view(file_name),
         .function_name = as_cowel_string_view(function_name),
-        .line = error.location.line(),
-        .column = error.location.column(),
+        // std::source_location::line() and ::column() are 1-based,
+        // so a decrement is needed.
+        .line = error.location.line() - 1,
+        .column = error.location.column() - 1,
     };
     thread_local_assertion_handler(&cowel_error);
 }
