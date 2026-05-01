@@ -498,14 +498,14 @@ private:
         case Token_Kind::ellipsis:
         case Token_Kind::equals:
         case Token_Kind::parenthesis_right:
-        case Token_Kind::brace_right: return false;
-
+        case Token_Kind::brace_right:
         case Token_Kind::directive_splice_name:
+        case Token_Kind::escape: return false;
+
         case Token_Kind::document_text:
         case Token_Kind::quoted_string_text:
         case Token_Kind::block_text:
         case Token_Kind::error:
-        case Token_Kind::escape:
         case Token_Kind::reserved_escape:
         case Token_Kind::reserved_number:
         case Token_Kind::whitespace:

@@ -1300,6 +1300,16 @@ TEST(Parse_And_Build, arguments_balanced_braces)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/balanced_braces.cow");
 }
 
+TEST(Parse_Fail, directive_splice_as_argument)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"directive_splice_as_argument.cow"));
+}
+
+TEST(Parse_Fail, escape_as_argument)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"escape_as_argument.cow"));
+}
+
 TEST(Parse_Fail, hyphen_arg_name)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"hyphen_arg_name.cow"));
