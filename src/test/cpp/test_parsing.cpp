@@ -593,49 +593,65 @@ struct Parsed_File {
     }
 };
 
-[[nodiscard]]
-std::optional<Parsed_File> parse_file(std::u8string_view file, std::pmr::memory_resource* memory)
-{
-    std::pmr::u8string full_file { u8"test/parse/", memory };
-    full_file += file;
+enum struct Parse_Error_Stage : Default_Underlying {
+    /// @brief Loading the UTF-8 source failed.
+    load,
+    /// @brief Loading succeeded, but lexing failed.
+    lex,
+    /// @brief Lexing succeeded, but parsing failed.
+    parse,
+};
 
+[[nodiscard]]
+Result<Parsed_File, Parse_Error_Stage> parse_file(
+    const std::u8string_view path,
+    std::pmr::memory_resource* const memory,
+    const bool silence_parse_error = false
+)
+{
     Parsed_File result {
         .source = std::pmr::vector<char8_t> { memory },
         .tokens = std::pmr::vector<Token> { memory },
         .instructions = std::pmr::vector<CST_Instruction> { memory },
     };
 
-    const Result<void, cowel::IO_Error_Code> r = load_utf8_file(result.source, full_file);
+    const Result<void, cowel::IO_Error_Code> r = load_utf8_file(result.source, path);
     if (!r) {
         Diagnostic_String out { memory };
-        print_io_error(out, full_file, r.error());
+        print_io_error(out, path, r.error());
         print_code_string_stdout(out);
-        return {};
+        return Parse_Error_Stage::load;
     }
 
     const std::convertible_to<Parse_Error_Consumer> auto on_error
         = [&](std::u8string_view /* id */, const Source_Span& location, Char_Sequence8 message) {
               Diagnostic_String out { memory };
-              print_file_position(out, file, location);
+              print_file_position(out, path, location);
               out.append(u8' ');
               append_char_sequence(out, message, Diagnostic_Highlight::text);
               out.append(u8'\n');
               print_code_string_stdout(out);
           };
     if (!lex(result.tokens, result.get_source_string(), on_error)) {
-        return {};
+        return Parse_Error_Stage::lex;
     }
-    if (!parse(result.instructions, result.tokens, on_error)) {
-        return {};
+    if (!parse(
+            result.instructions, result.tokens,
+            silence_parse_error ? Parse_Error_Consumer {} : on_error
+        )) {
+        return Parse_Error_Stage::parse;
     }
     return result;
 }
 
 [[nodiscard]]
 std::optional<Actual_Document>
-parse_and_build_file(std::u8string_view file, std::pmr::memory_resource* memory)
+parse_and_build_file(const std::u8string_view file_name, std::pmr::memory_resource* const memory)
 {
-    std::optional<Parsed_File> parsed = parse_file(file, memory);
+    std::pmr::u8string path { u8"test/parse/", memory };
+    path += file_name;
+
+    Result<Parsed_File, Parse_Error_Stage> parsed = parse_file(path, memory);
     if (!parsed) {
         return {};
     }
@@ -752,7 +768,10 @@ std::optional<std::vector<CST_Instruction>> load_parse_expectations(std::u8strin
     return result;
 }
 
-bool run_parse_test(std::u8string_view file, std::span<const CST_Instruction> expected)
+bool run_parse_test(
+    const std::u8string_view file_name,
+    const std::span<const CST_Instruction> expected
+)
 {
     for (const auto& e : expected) {
         COWEL_ASSERT(cst_instruction_kind_has_operand(e.kind) || e.n == 0);
@@ -761,7 +780,9 @@ bool run_parse_test(std::u8string_view file, std::span<const CST_Instruction> ex
     constexpr std::u8string_view indent = u8"    ";
 
     std::pmr::monotonic_buffer_resource memory;
-    std::optional<Parsed_File> actual = parse_file(file, &memory);
+    std::pmr::u8string path { u8"test/parse/", &memory };
+    path += file_name;
+    Result<Parsed_File, Parse_Error_Stage> actual = parse_file(path, &memory);
     if (!actual) {
         Diagnostic_String error;
         error.append(
@@ -799,7 +820,11 @@ bool run_parse_test(std::u8string_view file, std::span<const CST_Instruction> ex
     return true;
 }
 
-bool run_parse_test(std::u8string_view cow_file, std::u8string_view expectations_file)
+[[nodiscard]]
+bool run_parse_test(
+    const std::u8string_view cow_file_name,
+    const std::u8string_view expectations_file
+)
 {
     std::pmr::monotonic_buffer_resource memory;
     std::pmr::u8string path { u8"test/parse/", &memory };
@@ -809,7 +834,23 @@ bool run_parse_test(std::u8string_view cow_file, std::u8string_view expectations
     if (!expected) {
         return false;
     }
-    return run_parse_test(cow_file, *expected);
+    return run_parse_test(cow_file_name, *expected);
+}
+
+/// @brief Returns `true` if parsing `test/parse/failures/${file_name}` results in a parser error.
+/// This is primarily useful for verifying that no invalid markup is accepted
+/// and that the parser doesn't run into an infinite loop or crash on invalid input.
+[[nodiscard]]
+bool run_parse_fail_test(const std::u8string_view file_name)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    std::pmr::u8string path { u8"test/parse/failures/", &memory };
+    path += file_name;
+
+    constexpr bool silence_parse_error = true;
+    const Result<Parsed_File, Parse_Error_Stage> result
+        = parse_file(path, &memory, silence_parse_error);
+    return !result && result.error() == Parse_Error_Stage::parse;
 }
 
 // NOLINTBEGIN(bugprone-unchecked-optional-access)
@@ -1257,6 +1298,35 @@ TEST(Parse_And_Build, arguments_balanced_braces)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/balanced_braces.cow");
+}
+
+TEST(Parse_Fail, hyphen_arg_name)
+{
+    // clang-format off
+    /*
+    std::__detail::__extent_storage<18446744073709551615ul>::_M_extent(const std::__detail::__extent_storage<18446744073709551615ul> * this) (\usr\include\c++\14\span:94)
+    std::span<cowel::Token const, 18446744073709551615ul>::size(const std::span<cowel::Token const, 18446744073709551615ul> * this) (\usr\include\c++\14\span:252)
+    std::span<cowel::Token const, 18446744073709551615ul>::operator[](const std::span<cowel::Token const, 18446744073709551615ul> * this, size_type __idx) (\usr\include\c++\14\span:286)
+    cowel::(anonymous namespace)::Parser::peek(const cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:126)
+    cowel::(anonymous namespace)::Parser::skip_to_next_group_member(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:331)
+    cowel::(anonymous namespace)::Parser::consume_group_member(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:319)
+    cowel::(anonymous namespace)::Parser::consume_group(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:272)
+    cowel::(anonymous namespace)::Parser::consume_directive_splice(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:245)
+    cowel::(anonymous namespace)::Parser::expect_markup_element(cowel::(anonymous namespace)::Parser * this, const cowel::(anonymous namespace)::Content_Context context) (\home\user\projects\cowel\src\main\cpp\parse.cpp:221)
+    cowel::(anonymous namespace)::Parser::consume_markup_sequence(cowel::(anonymous namespace)::Parser * this, cowel::(anonymous namespace)::Content_Context context) (\home\user\projects\cowel\src\main\cpp\parse.cpp:179)
+    cowel::(anonymous namespace)::Parser::consume_document(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:170)
+    cowel::(anonymous namespace)::Parser::operator()(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:89)
+    cowel::parse(std::pmr::vector<cowel::CST_Instruction> & out, std::span<cowel::Token const, 18446744073709551615ul> tokens, cowel::Parse_Error_Consumer on_error) (\home\user\projects\cowel\src\main\cpp\parse.cpp:810)
+    cowel::(anonymous namespace)::parse_file(const std::u8string_view path, std::pmr::memory_resource * const memory, const bool silence_parse_error) (\home\user\projects\cowel\src\test\cpp\test_parsing.cpp:638)
+    cowel::(anonymous namespace)::run_parse_fail_test(const std::u8string_view file_name) (\home\user\projects\cowel\src\test\cpp\test_parsing.cpp:852)
+    cowel::(anonymous namespace)::Parse_Fail_hyphen_arg_name_Test::TestBody(cowel::(anonymous namespace)::Parse_Fail_hyphen_arg_name_Test * this) (\home\user\projects\cowel\src\test\cpp\test_parsing.cpp:1305)
+    testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test * object, void (testing::Test::*)(testing::Test * const) method, const char * location) (\home\user\projects\cowel\build\_deps\googletest-src\googletest\src\gtest.cc:2664)
+    testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test * object, void (testing::Test::*)(testing::Test * const) method, const char * location) (\home\user\projects\cowel\build\_deps\googletest-src\googletest\src\gtest.cc:2700)
+    testing::Test::Run(testing::Test * this) (\home\user\projects\cowel\build\_deps\googletest-src\googletest\src\gtest.cc:2739)
+    testing::TestInfo::Run(testing::TestInfo * this) (\home\user\projects\cowel\build\_deps\googletest-src\googletest\src\gtest.cc:2885)
+    */
+    // clang-format on
+    ASSERT_TRUE(run_parse_fail_test(u8"hyphen_arg_name.cow"));
 }
 
 } // namespace
