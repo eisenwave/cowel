@@ -1302,30 +1302,6 @@ TEST(Parse_And_Build, arguments_balanced_braces)
 
 TEST(Parse_Fail, hyphen_arg_name)
 {
-    // clang-format off
-    /*
-    std::__detail::__extent_storage<18446744073709551615ul>::_M_extent(const std::__detail::__extent_storage<18446744073709551615ul> * this) (\usr\include\c++\14\span:94)
-    std::span<cowel::Token const, 18446744073709551615ul>::size(const std::span<cowel::Token const, 18446744073709551615ul> * this) (\usr\include\c++\14\span:252)
-    std::span<cowel::Token const, 18446744073709551615ul>::operator[](const std::span<cowel::Token const, 18446744073709551615ul> * this, size_type __idx) (\usr\include\c++\14\span:286)
-    cowel::(anonymous namespace)::Parser::peek(const cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:126)
-    cowel::(anonymous namespace)::Parser::skip_to_next_group_member(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:331)
-    cowel::(anonymous namespace)::Parser::consume_group_member(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:319)
-    cowel::(anonymous namespace)::Parser::consume_group(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:272)
-    cowel::(anonymous namespace)::Parser::consume_directive_splice(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:245)
-    cowel::(anonymous namespace)::Parser::expect_markup_element(cowel::(anonymous namespace)::Parser * this, const cowel::(anonymous namespace)::Content_Context context) (\home\user\projects\cowel\src\main\cpp\parse.cpp:221)
-    cowel::(anonymous namespace)::Parser::consume_markup_sequence(cowel::(anonymous namespace)::Parser * this, cowel::(anonymous namespace)::Content_Context context) (\home\user\projects\cowel\src\main\cpp\parse.cpp:179)
-    cowel::(anonymous namespace)::Parser::consume_document(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:170)
-    cowel::(anonymous namespace)::Parser::operator()(cowel::(anonymous namespace)::Parser * this) (\home\user\projects\cowel\src\main\cpp\parse.cpp:89)
-    cowel::parse(std::pmr::vector<cowel::CST_Instruction> & out, std::span<cowel::Token const, 18446744073709551615ul> tokens, cowel::Parse_Error_Consumer on_error) (\home\user\projects\cowel\src\main\cpp\parse.cpp:810)
-    cowel::(anonymous namespace)::parse_file(const std::u8string_view path, std::pmr::memory_resource * const memory, const bool silence_parse_error) (\home\user\projects\cowel\src\test\cpp\test_parsing.cpp:638)
-    cowel::(anonymous namespace)::run_parse_fail_test(const std::u8string_view file_name) (\home\user\projects\cowel\src\test\cpp\test_parsing.cpp:852)
-    cowel::(anonymous namespace)::Parse_Fail_hyphen_arg_name_Test::TestBody(cowel::(anonymous namespace)::Parse_Fail_hyphen_arg_name_Test * this) (\home\user\projects\cowel\src\test\cpp\test_parsing.cpp:1305)
-    testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test * object, void (testing::Test::*)(testing::Test * const) method, const char * location) (\home\user\projects\cowel\build\_deps\googletest-src\googletest\src\gtest.cc:2664)
-    testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test * object, void (testing::Test::*)(testing::Test * const) method, const char * location) (\home\user\projects\cowel\build\_deps\googletest-src\googletest\src\gtest.cc:2700)
-    testing::Test::Run(testing::Test * this) (\home\user\projects\cowel\build\_deps\googletest-src\googletest\src\gtest.cc:2739)
-    testing::TestInfo::Run(testing::TestInfo * this) (\home\user\projects\cowel\build\_deps\googletest-src\googletest\src\gtest.cc:2885)
-    */
-    // clang-format on
     ASSERT_TRUE(run_parse_fail_test(u8"hyphen_arg_name.cow"));
 }
 
