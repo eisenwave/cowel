@@ -1,9 +1,13 @@
 \test_input{
+\__typeof(!false)
+
 \cowel_to_str(!true)
 \cowel_to_str(!false)
 }
 
 \test_output{
+bool
+
 false
 true
 }

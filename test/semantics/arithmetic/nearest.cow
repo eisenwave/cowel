@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_nearest(0.0))
+
 \cowel_nearest(-infinity)
 \cowel_nearest(-1.0)
 \cowel_nearest(-0.75)
@@ -16,6 +18,8 @@
 }
 
 \test_output{
+float
+
 -infinity
 -1
 -1

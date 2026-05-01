@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_str_contains("", ""))
+
 \cowel_str_contains("", "")
 \cowel_str_contains("", "x")
 
@@ -13,6 +15,8 @@
 }
 
 \test_output{
+bool
+
 true
 false
 

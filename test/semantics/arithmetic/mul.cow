@@ -1,4 +1,7 @@
 \test_input{
+\__typeof(cowel_mul(1))
+\__typeof(cowel_mul(1.0))
+
 \cowel_mul(8)
 \cowel_mul(8, 2)
 \cowel_mul(8, 2, 5)
@@ -69,6 +72,9 @@
 }
 
 \test_output{
+int
+float
+
 8
 16
 80

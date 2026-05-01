@@ -1,4 +1,10 @@
 \test_input{
+\__typeof(cowel_var_exists(type_probe))
+\__typeof(cowel_var_let(type_probe, 1))
+\__typeof(cowel_var_set(type_probe, 2))
+\__typeof(cowel_var_get(type_probe))
+\__typeof(cowel_var_delete(type_probe))
+
 \cowel_var_exists(x)
 \cowel_var_exists(y)
 \cowel_var_exists(z)
@@ -32,6 +38,12 @@
 }
 
 \test_output{
+bool
+unit
+unit
+int
+unit
+
 false
 false
 false

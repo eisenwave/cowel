@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_str_length(""))
+
 \: Empty or blank strings
 \cowel_str_length("")
 \cowel_str_length(" ")
@@ -17,6 +19,8 @@
 }
 
 \test_output{
+int
+
 0
 1
 3

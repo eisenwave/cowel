@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(~0)
+
 \cowel_to_str(~-1)
 \cowel_to_str(~0)
 \cowel_to_str(~+1)
@@ -11,6 +13,8 @@
 }
 
 \test_output{
+int
+
 0
 -1
 -2

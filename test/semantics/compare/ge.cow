@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_ge(0, 0))
+
 \cowel_ge(0, 0)
 \cowel_ge(0, 1)
 \cowel_ge(1, 0)
@@ -28,6 +30,8 @@
 }
 
 \test_output{
+bool
+
 true
 false
 true

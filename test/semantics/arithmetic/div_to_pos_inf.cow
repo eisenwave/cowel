@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_div_to_pos_inf(1, 1))
+
 \cowel_div_to_pos_inf(-2, -2)
 \cowel_div_to_pos_inf(-2, -1)
 \cowel_div_to_pos_inf(-2, 1)
@@ -43,6 +45,8 @@
 }
 
 \test_output{
+int
+
 1
 2
 -2

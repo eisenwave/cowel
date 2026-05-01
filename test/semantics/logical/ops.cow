@@ -1,4 +1,8 @@
 \test_input{
+\__typeof(cowel_not(false))
+\__typeof(cowel_and(false, true))
+\__typeof(cowel_or(false, true))
+
 \cowel_not(true)
 \cowel_not(false)
 
@@ -22,6 +26,10 @@
 }
 
 \test_output{
+bool
+bool
+bool
+
 false
 true
 

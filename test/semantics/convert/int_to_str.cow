@@ -1,4 +1,6 @@
 \test_input{
+\__typeof(cowel_to_str(0))
+
 \cowel_to_str(255)
 
 \cowel_to_str(255, base=2)
@@ -235,6 +237,8 @@
 }
 
 \test_output{
+str
+
 255
 
 11111111

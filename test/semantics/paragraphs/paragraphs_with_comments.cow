@@ -1,4 +1,6 @@
 \test_input{\cowel_paragraphs{
+\__typeof(cowel_paragraphs{})
+
 A
 \: comment
 
@@ -7,6 +9,8 @@ B
 }
 
 \test_output{
+block
+
 <p>A
 </p>
 <p>B
