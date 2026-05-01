@@ -308,7 +308,7 @@ private:
         if (push_type != CST_Instruction_Kind::push_ellipsis_argument) {
             if (!expect_expression()) {
                 error(m_tokens[m_pos].location, u8"Invalid group member value."sv);
-                skip_to_next_group_member();
+                skip_to_end_of_group_member();
                 return;
             }
             consume_blank_sequence();
@@ -316,7 +316,7 @@ private:
 
         if (!peek(Token_Kind::comma) && !peek(Token_Kind::parenthesis_right)) {
             error(m_tokens[m_pos].location, u8"Invalid group member."sv);
-            skip_to_next_group_member();
+            skip_to_end_of_group_member();
             return;
         }
 
@@ -324,7 +324,14 @@ private:
         m_out.push_back({ pop_type });
     }
 
-    void skip_to_next_group_member()
+    /// @brief Advances the parser past this group member,
+    /// to a comma or closing parenthesis.
+    ///
+    /// This function should only be used for error recovery.
+    /// It also takes nested constructs like parentheses and braces into account,
+    /// and parses these as groups or blocks.
+    /// Doing so is usually sufficient to avoid an explosion in error count on recovery.
+    void skip_to_end_of_group_member()
     {
         const std::size_t initial_pos = m_pos;
         while (true) {
@@ -346,6 +353,7 @@ private:
                 continue;
             }
             default: {
+                advance_by(1);
                 continue;
             }
             }

@@ -3,6 +3,7 @@
 ## **[v0.8.1](https://github.com/eisenwave/cowel/releases/tag/v0.8.1)** (2026-??-??)
 
 - fix lexer crash on *DIRECTIVE-SPLICE-NAME-TOKEN* in *GROUP* (#249)
+- fix infinite loop on parse failure (#248)
 
 **Full Changelog**:
 [`v0.8.0...main`](https://github.com/eisenwave/cowel/compare/v0.8.0...main)
