@@ -184,13 +184,7 @@ private:
     bool expect_markup_element(Content_Context context, std::size_t& brace_level)
     {
         if (peek(u8'\\')) {
-            const bool non_escape_matched //
-                = expect_line_comment() //
-                || expect_block_comment() //
-                || expect_directive_splice();
-            if (!non_escape_matched) {
-                consume_escape();
-            }
+            consume_backslash_prefixed();
             return true;
         }
 
@@ -273,6 +267,18 @@ private:
         const auto kind = escape.is_reserved ? Token_Kind::reserved_escape : Token_Kind::escape;
         emit(kind, escape.length);
         advance_by(escape.length);
+    }
+
+    void consume_backslash_prefixed()
+    {
+        COWEL_DEBUG_ASSERT(peek(u8'\\'));
+        const bool non_escape_matched //
+            = expect_line_comment() //
+            || expect_block_comment() //
+            || expect_directive_splice();
+        if (!non_escape_matched) {
+            consume_escape();
+        }
     }
 
     [[nodiscard]]
@@ -429,10 +435,7 @@ private:
                 continue;
             }
             case u8'\\': {
-                const bool comment_matched = expect_line_comment() || expect_block_comment();
-                if (!comment_matched) {
-                    consume_escape();
-                }
+                consume_backslash_prefixed();
                 continue;
             }
             case u8' ':
