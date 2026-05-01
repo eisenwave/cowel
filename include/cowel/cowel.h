@@ -192,11 +192,17 @@ struct cowel_file_result_u8 {
 };
 
 struct cowel_assertion_error_u8 {
+    /// @brief The type of assertion.
     cowel_assertion_type type;
+    /// @brief The assertion message.
     cowel_string_view_u8 message;
+    /// @brief The file in which the assertion failed.
     cowel_string_view_u8 file_name;
+    /// @brief The name of the function in which the assertion failed.
     cowel_string_view_u8 function_name;
+    /// @brief The line index (starting at zero) where the diagnostic occurred.
     size_t line;
+    /// @brief The offset from the start of the line in code units.
     size_t column;
 };
 
