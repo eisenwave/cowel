@@ -6,6 +6,7 @@
 - fix infinite loop on parse failure (#248)
 - fix parser crash on *DIRECTIVE-SPLICE-NAME-TOKEN* or *ESCAPE-TOKEN* in *GROUP* (#252)
 - fix off-by-one line and column numbers in assertion errors (#254)
+- fix crash when evaluating `\bib` (#256)
 
 **Full Changelog**:
 [`v0.8.0...main`](https://github.com/eisenwave/cowel/compare/v0.8.0...main)
