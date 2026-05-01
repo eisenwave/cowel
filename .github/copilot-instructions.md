@@ -182,6 +182,7 @@ Mitigation:
 - Document generation: `src/main/cpp/document_generation.cpp`
 - Services/settings/context: `src/main/cpp/services.cpp`, `include/cowel/settings.hpp`, `include/cowel/context.hpp`
 - C++ tests focused by behavior: `src/test/cpp/test_*.cpp`
+- Lexer and parser test fixture format: `test/README.md`
 
 ## Pre-PR Validation Checklist (Replicate CI)
 
