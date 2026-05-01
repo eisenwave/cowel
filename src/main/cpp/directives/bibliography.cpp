@@ -142,7 +142,7 @@ Bibliography_Add_Behavior::splice(Content_Policy&, const Invocation& call, Conte
     Spliceable_To_String_Matcher link_string { memory };
     Parameter link_param { u8"link", Optionality::optional, link_string };
     Spliceable_To_String_Matcher long_link_string { memory };
-    Parameter long_link_param { u8"long-link", Optionality::optional, long_link_string };
+    Parameter long_link_param { u8"long_link", Optionality::optional, long_link_string };
     Spliceable_To_String_Matcher author_string { memory };
     Parameter author_param { u8"author", Optionality::optional, author_string };
     Parameter* const parameters[] {
