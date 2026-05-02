@@ -655,6 +655,20 @@ private:
         case Token_Kind::whitespace:
         case Token_Kind::block_comment:
         case Token_Kind::line_comment: break;
+
+        case Token_Kind::asterisk:
+        case Token_Kind::equals_equals:
+        case Token_Kind::greater_equal:
+        case Token_Kind::greater_than:
+        case Token_Kind::less_equal:
+        case Token_Kind::less_than:
+        case Token_Kind::logical_and:
+        case Token_Kind::logical_or:
+        case Token_Kind::not_equals:
+        case Token_Kind::percent:
+        case Token_Kind::slash:
+            // Parsing of binary operators not yet supported.
+            return false;
         }
         COWEL_ASSERT_UNREACHABLE(u8"Unexpected token in group.");
     }
