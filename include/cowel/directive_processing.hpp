@@ -230,6 +230,10 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context);
 Result<Value, Processing_Status>
 evaluate(const ast::Unary_Expression& expression, Frame_Index frame, Context& context);
 
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate(const ast::Binary_Expression& expression, Frame_Index frame, Context& context);
+
 Result<Value, Processing_Status> evaluate_unary(
     Unary_Expression_Kind kind, //
     const Value& value,

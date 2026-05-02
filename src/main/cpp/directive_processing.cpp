@@ -577,6 +577,16 @@ Result<Value, Processing_Status> evaluate(
     return evaluate_unary(expression.get_kind(), *result, expression.get_source_span(), context);
 }
 
+[[nodiscard]]
+Result<Value, Processing_Status> evaluate(
+    const ast::Binary_Expression&, //
+    const Frame_Index,
+    Context&
+)
+{
+    COWEL_ASSERT_UNREACHABLE(u8"Evaluation not yet implemented.");
+}
+
 Result<Value, Processing_Status> evaluate_unary(
     Unary_Expression_Kind kind, //
     const Value& value,

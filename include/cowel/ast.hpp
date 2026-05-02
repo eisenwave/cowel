@@ -520,7 +520,68 @@ static_assert(std::is_move_constructible_v<Unary_Expression>);
 static_assert(std::is_copy_assignable_v<Unary_Expression>);
 static_assert(std::is_move_assignable_v<Unary_Expression>);
 
-using Expression_Variant = std::variant<Directive, Primary, Unary_Expression>;
+/// @brief Represents a *binary-expression*.
+struct Binary_Expression {
+private:
+    GC_Ref<Expression> m_lhs;
+    GC_Ref<Expression> m_rhs;
+    Binary_Expression_Kind m_kind;
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+
+public:
+    [[nodiscard]]
+    Binary_Expression(const Binary_Expression&);
+    [[nodiscard]]
+    Binary_Expression(Binary_Expression&&) noexcept;
+    Binary_Expression(
+        GC_Ref<Expression> lhs,
+        GC_Ref<Expression> rhs,
+        Binary_Expression_Kind kind,
+        File_Source_Span source_span,
+        std::u8string_view source
+    );
+
+    Binary_Expression& operator=(const Binary_Expression&);
+    Binary_Expression& operator=(Binary_Expression&&) noexcept;
+    ~Binary_Expression();
+
+    [[nodiscard]]
+    const Expression& get_lhs() const
+    {
+        return *m_lhs;
+    }
+    [[nodiscard]]
+    const Expression& get_rhs() const
+    {
+        return *m_rhs;
+    }
+
+    [[nodiscard]]
+    Binary_Expression_Kind get_kind() const
+    {
+        return m_kind;
+    }
+
+    [[nodiscard]]
+    const File_Source_Span& get_source_span() const
+    {
+        return m_source_span;
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        return m_source;
+    }
+};
+
+static_assert(std::is_copy_constructible_v<Binary_Expression>);
+static_assert(std::is_move_constructible_v<Binary_Expression>);
+static_assert(std::is_copy_assignable_v<Binary_Expression>);
+static_assert(std::is_move_assignable_v<Binary_Expression>);
+
+using Expression_Variant = std::variant<Directive, Primary, Unary_Expression, Binary_Expression>;
 
 /// @brief Represents an *expression*.
 struct Expression : Expression_Variant {
@@ -540,6 +601,11 @@ struct Expression : Expression_Variant {
     bool is_unary() const
     {
         return std::holds_alternative<ast::Unary_Expression>(*this);
+    }
+    [[nodiscard]]
+    bool is_binary() const
+    {
+        return std::holds_alternative<ast::Binary_Expression>(*this);
     }
 
     [[nodiscard]]
@@ -576,11 +642,24 @@ struct Expression : Expression_Variant {
     }
 
     [[nodiscard]]
+    const ast::Binary_Expression& as_binary() const
+    {
+        return std::get<ast::Binary_Expression>(*this);
+    }
+    [[nodiscard]]
+    const ast::Binary_Expression* try_as_binary() const
+    {
+        return std::get_if<ast::Binary_Expression>(this);
+    }
+
+    [[nodiscard]]
     bool is_value() const noexcept
     {
         return is_directive() //
             || (is_primary() && as_primary().is_value())
-            || (is_unary() && as_unary().get_operand().is_value());
+            || (is_unary() && as_unary().get_operand().is_value())
+            || (is_binary() && as_binary().get_lhs().is_value() && as_binary().get_rhs().is_value()
+            );
     }
 
     [[nodiscard]]
@@ -788,6 +867,12 @@ inline Unary_Expression::Unary_Expression(Unary_Expression&&) noexcept = default
 inline Unary_Expression& Unary_Expression::operator=(const Unary_Expression&) = default;
 inline Unary_Expression& Unary_Expression::operator=(Unary_Expression&&) noexcept = default;
 inline Unary_Expression::~Unary_Expression() = default;
+
+inline Binary_Expression::Binary_Expression(const Binary_Expression&) = default;
+inline Binary_Expression::Binary_Expression(Binary_Expression&&) noexcept = default;
+inline Binary_Expression& Binary_Expression::operator=(const Binary_Expression&) = default;
+inline Binary_Expression& Binary_Expression::operator=(Binary_Expression&&) noexcept = default;
+inline Binary_Expression::~Binary_Expression() = default;
 
 inline Group_Member::Group_Member(Group_Member&&) noexcept = default;
 inline Group_Member::Group_Member(const Group_Member&) = default;

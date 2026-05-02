@@ -50,6 +50,19 @@ enum struct Node_Kind : Default_Underlying {
     logical_not,
     unary_plus,
     unary_minus,
+    binary_logical_or,
+    binary_logical_and,
+    binary_equals,
+    binary_not_equals,
+    binary_less_than,
+    binary_greater_than,
+    binary_less_equal,
+    binary_greater_equal,
+    binary_add,
+    binary_subtract,
+    binary_multiply,
+    binary_divide,
+    binary_modulo,
     text,
     escape,
     line_comment,
@@ -138,6 +151,123 @@ struct Node {
     static Node unary_minus(Node&& operand)
     {
         return { .kind = Node_Kind::unary_minus, .children = { std::move(operand) } };
+    }
+
+    [[nodiscard]]
+    static Node logical_or(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_logical_or,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node logical_and(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_logical_and,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node equals(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_equals,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node not_equals(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_not_equals,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node less_than(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_less_than,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node greater_than(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_greater_than,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node less_equal(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_less_equal,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node greater_equal(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_greater_equal,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node add(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_add,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node subtract(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_subtract,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node multiply(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_multiply,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node divide(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_divide,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node modulo(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_modulo,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
     }
 
     [[nodiscard]]
@@ -388,6 +518,30 @@ struct Node {
     }
 
     [[nodiscard]]
+    static Node from(const ast::Binary_Expression& actual)
+    {
+        Node lhs = from(actual.get_lhs());
+        Node rhs = from(actual.get_rhs());
+        switch (actual.get_kind()) {
+        case Binary_Expression_Kind::logical_or: return logical_or(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::logical_and:
+            return logical_and(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::eq: return equals(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::ne: return not_equals(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::lt: return less_than(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::gt: return greater_than(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::le: return less_equal(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::ge: return greater_equal(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::plus: return add(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::minus: return subtract(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::multiply: return multiply(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::divide: return divide(std::move(lhs), std::move(rhs));
+        case Binary_Expression_Kind::remainder: return modulo(std::move(lhs), std::move(rhs));
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid expression kind.");
+    }
+
+    [[nodiscard]]
     static Node from(const ast::Group_Member& arg)
     {
         switch (arg.get_kind()) {
@@ -501,6 +655,47 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
     }
     case Node_Kind::unary_minus: {
         return out << "UnaryMinus(" << node.children.front() << ')';
+    }
+    case Node_Kind::binary_logical_or: {
+        return out << "LogicalOr(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::binary_logical_and: {
+        return out << "LogicalAnd(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::binary_equals: {
+        return out << "Equals(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::binary_not_equals: {
+        return out << "NotEquals(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::binary_less_than: {
+        return out << "LessThan(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::binary_greater_than: {
+        return out << "GreaterThan(" << node.children.front() << ", " << node.children.back()
+                   << ')';
+    }
+    case Node_Kind::binary_less_equal: {
+        return out << "LessEqual(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::binary_greater_equal: {
+        return out << "GreaterEqual(" << node.children.front() << ", " << node.children.back()
+                   << ')';
+    }
+    case Node_Kind::binary_add: {
+        return out << "Add(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::binary_subtract: {
+        return out << "Subtract(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::binary_multiply: {
+        return out << "Multiply(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::binary_divide: {
+        return out << "Divide(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::binary_modulo: {
+        return out << "Modulo(" << node.children.front() << ", " << node.children.back() << ')';
     }
 
     case Node_Kind::text: {
@@ -1111,6 +1306,211 @@ TEST(Parse_And_Build, floats)
     }
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"floats.cow");
+}
+
+TEST(Parse_And_Build, binary_add)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group(
+                    {
+                        Node::positional(Node::add(Node::integer(u8"1"), Node::integer(u8"2"))),
+                        Node::positional(Node::add(Node::integer(u8"1"), Node::integer(u8"2"))),
+                        Node::positional(Node::add(Node::integer(u8"1"), Node::integer(u8"2"))),
+                    }
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"binary_add.cow");
+}
+
+TEST(Parse_And_Build, binary_chaining)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group(
+                    {
+                        Node::positional(
+                            Node::add(
+                                Node::add(Node::integer(u8"1"), Node::integer(u8"2")),
+                                Node::integer(u8"3")
+                            )
+                        ),
+                        Node::positional(
+                            Node::subtract(
+                                Node::subtract(Node::integer(u8"1"), Node::integer(u8"2")),
+                                Node::integer(u8"3")
+                            )
+                        ),
+                        Node::positional(
+                            Node::multiply(
+                                Node::multiply(Node::integer(u8"1"), Node::integer(u8"2")),
+                                Node::integer(u8"3")
+                            )
+                        ),
+                        Node::positional(
+                            Node::divide(
+                                Node::divide(Node::integer(u8"1"), Node::integer(u8"2")),
+                                Node::integer(u8"3")
+                            )
+                        ),
+                        Node::positional(
+                            Node::modulo(
+                                Node::modulo(Node::integer(u8"1"), Node::integer(u8"2")),
+                                Node::integer(u8"3")
+                            )
+                        ),
+                    }
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"binary_chaining.cow");
+}
+
+TEST(Parse_And_Build, binary_logical)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group(
+                    {
+                        Node::positional(
+                            Node::logical_and(Node::integer(u8"0"), Node::integer(u8"1"))
+                        ),
+                        Node::positional(
+                            Node::logical_or(Node::integer(u8"0"), Node::integer(u8"1"))
+                        ),
+                        Node::positional(
+                            Node::logical_and(
+                                Node::logical_and(Node::integer(u8"0"), Node::integer(u8"1")),
+                                Node::integer(u8"2")
+                            )
+                        ),
+                        Node::positional(
+                            Node::logical_or(
+                                Node::logical_or(Node::integer(u8"0"), Node::integer(u8"1")),
+                                Node::integer(u8"2")
+                            )
+                        ),
+                    }
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"binary_logical.cow");
+}
+
+TEST(Parse_And_Build, binary_precedence_add_mult)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group(
+                    {
+                        Node::positional(
+                            Node::add(
+                                Node::integer(u8"1"),
+                                Node::multiply(Node::integer(u8"2"), Node::integer(u8"3"))
+                            )
+                        ),
+                        Node::positional(
+                            Node::add(
+                                Node::multiply(Node::integer(u8"1"), Node::integer(u8"2")),
+                                Node::integer(u8"3")
+                            )
+                        ),
+                        Node::positional(
+                            Node::add(
+                                Node::integer(u8"1"),
+                                Node::divide(Node::integer(u8"2"), Node::integer(u8"3"))
+                            )
+                        ),
+                        Node::positional(
+                            Node::add(
+                                Node::divide(Node::integer(u8"1"), Node::integer(u8"2")),
+                                Node::integer(u8"3")
+                            )
+                        ),
+                        Node::positional(
+                            Node::add(
+                                Node::integer(u8"1"),
+                                Node::modulo(Node::integer(u8"2"), Node::integer(u8"3"))
+                            )
+                        ),
+                        Node::positional(
+                            Node::add(
+                                Node::modulo(Node::integer(u8"1"), Node::integer(u8"2")),
+                                Node::integer(u8"3")
+                            )
+                        ),
+                    }
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"binary_precedence_add_mult.cow");
+}
+
+TEST(Parse_And_Build, binary_prefix_interaction)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group(
+                    {
+                        Node::positional(
+                            Node::add(Node::integer(u8"1"), Node::unary_plus(Node::integer(u8"2")))
+                        ),
+                        Node::positional(
+                            Node::add(Node::integer(u8"1"), Node::unary_minus(Node::integer(u8"2")))
+                        ),
+                        Node::positional(
+                            Node::add(Node::integer(u8"1"), Node::logical_not(Node::integer(u8"0")))
+                        ),
+                        Node::positional(
+                            Node::add(Node::integer(u8"1"), Node::bitwise_not(Node::integer(u8"0")))
+                        ),
+                        Node::positional(
+                            Node::add(Node::unary_minus(Node::integer(u8"1")), Node::integer(u8"2"))
+                        ),
+                        Node::positional(
+                            Node::add(Node::unary_plus(Node::integer(u8"1")), Node::integer(u8"2"))
+                        ),
+                    }
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"binary_prefix_interaction.cow");
 }
 
 TEST(Parse_And_Build, file_ends_in_brace)

@@ -269,6 +269,25 @@ Unary_Expression::Unary_Expression(
     COWEL_ASSERT(!m_source.empty());
 }
 
+Binary_Expression::Binary_Expression(
+    GC_Ref<Expression> lhs,
+    GC_Ref<Expression> rhs,
+    const Binary_Expression_Kind kind,
+    const File_Source_Span source_span,
+    const std::u8string_view source
+)
+    : m_lhs { std::move(lhs) }
+    , m_rhs { std::move(rhs) }
+    , m_kind { kind }
+    , m_source_span { source_span }
+    , m_source { source }
+{
+    COWEL_ASSERT(m_lhs);
+    COWEL_ASSERT(m_rhs);
+    COWEL_ASSERT(m_source_span.length == m_source.length());
+    COWEL_ASSERT(!m_source.empty());
+}
+
 void Primary::assert_validity() const
 {
     COWEL_ASSERT(!m_source_span.empty());
@@ -373,6 +392,52 @@ constexpr std::optional<ast::Primary_Kind> instruction_type_primary_kind(CST_Ins
     case block_comment: return ast::Primary_Kind::comment;
     default: return {};
     }
+}
+
+[[nodiscard]]
+constexpr Binary_Expression_Kind instruction_kind_binary_kind(const CST_Instruction_Kind push_kind)
+{
+    using enum CST_Instruction_Kind;
+    switch (push_kind) {
+    case push_expr_logical_or: return Binary_Expression_Kind::logical_or;
+    case push_expr_logical_and: return Binary_Expression_Kind::logical_and;
+    case push_expr_equals: return Binary_Expression_Kind::eq;
+    case push_expr_not_equals: return Binary_Expression_Kind::ne;
+    case push_expr_less_than: return Binary_Expression_Kind::lt;
+    case push_expr_greater_than: return Binary_Expression_Kind::gt;
+    case push_expr_less_equal: return Binary_Expression_Kind::le;
+    case push_expr_greater_equal: return Binary_Expression_Kind::ge;
+    case push_expr_add: return Binary_Expression_Kind::plus;
+    case push_expr_subtract: return Binary_Expression_Kind::minus;
+    case push_expr_multiply: return Binary_Expression_Kind::multiply;
+    case push_expr_divide: return Binary_Expression_Kind::divide;
+    case push_expr_modulo: return Binary_Expression_Kind::remainder;
+    default: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Push kind does not correspond to binary expression.");
+}
+
+[[nodiscard]]
+constexpr Token_Kind instruction_kind_token_kind(const CST_Instruction_Kind push_kind)
+{
+    using enum CST_Instruction_Kind;
+    switch (push_kind) {
+    case push_expr_logical_or: return Token_Kind::logical_or;
+    case push_expr_logical_and: return Token_Kind::logical_and;
+    case push_expr_equals: return Token_Kind::equals_equals;
+    case push_expr_not_equals: return Token_Kind::not_equals;
+    case push_expr_less_than: return Token_Kind::less_than;
+    case push_expr_greater_than: return Token_Kind::greater_than;
+    case push_expr_less_equal: return Token_Kind::less_equal;
+    case push_expr_greater_equal: return Token_Kind::greater_equal;
+    case push_expr_add: return Token_Kind::plus;
+    case push_expr_subtract: return Token_Kind::minus;
+    case push_expr_multiply: return Token_Kind::asterisk;
+    case push_expr_divide: return Token_Kind::slash;
+    case push_expr_modulo: return Token_Kind::percent;
+    default: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Push kind does not correspond to a binary operator.");
 }
 
 struct [[nodiscard]] AST_Builder {
@@ -711,6 +776,77 @@ private:
     {
         const CST_Instruction instruction = peek_instruction();
         switch (instruction.kind) {
+        case CST_Instruction_Kind::push_expr_logical_or: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_logical_or,
+                CST_Instruction_Kind::pop_expr_logical_or
+            );
+        }
+        case CST_Instruction_Kind::push_expr_logical_and: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_logical_and,
+                CST_Instruction_Kind::pop_expr_logical_and
+            );
+        }
+        case CST_Instruction_Kind::push_expr_equals: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_equals, CST_Instruction_Kind::pop_expr_equals
+            );
+        }
+        case CST_Instruction_Kind::push_expr_not_equals: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_not_equals,
+                CST_Instruction_Kind::pop_expr_not_equals
+            );
+        }
+        case CST_Instruction_Kind::push_expr_less_than: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_less_than, CST_Instruction_Kind::pop_expr_less_than
+            );
+        }
+        case CST_Instruction_Kind::push_expr_greater_than: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_greater_than,
+                CST_Instruction_Kind::pop_expr_greater_than
+            );
+        }
+        case CST_Instruction_Kind::push_expr_less_equal: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_less_equal,
+                CST_Instruction_Kind::pop_expr_less_equal
+            );
+        }
+        case CST_Instruction_Kind::push_expr_greater_equal: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_greater_equal,
+                CST_Instruction_Kind::pop_expr_greater_equal
+            );
+        }
+        case CST_Instruction_Kind::push_expr_add: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_add, CST_Instruction_Kind::pop_expr_add
+            );
+        }
+        case CST_Instruction_Kind::push_expr_subtract: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_subtract, CST_Instruction_Kind::pop_expr_subtract
+            );
+        }
+        case CST_Instruction_Kind::push_expr_multiply: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_multiply, CST_Instruction_Kind::pop_expr_multiply
+            );
+        }
+        case CST_Instruction_Kind::push_expr_divide: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_divide, CST_Instruction_Kind::pop_expr_divide
+            );
+        }
+        case CST_Instruction_Kind::push_expr_modulo: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_modulo, CST_Instruction_Kind::pop_expr_modulo
+            );
+        }
         case CST_Instruction_Kind::push_expr_bitwise_not: {
             return build_unary_expression(
                 CST_Instruction_Kind::push_expr_bitwise_not,
@@ -777,6 +913,50 @@ private:
         default: break;
         }
         COWEL_ASSERT_UNREACHABLE(u8"Invalid expression.");
+    }
+
+    [[nodiscard]]
+    ast::Binary_Expression build_binary_expression(
+        const CST_Instruction_Kind push_kind, //
+        const CST_Instruction_Kind pop_kind
+    )
+    {
+        const CST_Instruction push = pop_instruction();
+        COWEL_ASSERT(push.kind == push_kind);
+        COWEL_DEBUG_ASSERT(!cst_instruction_kind_advances(push.kind));
+
+        const auto consume_expression_trivia_instruction = [&]() {
+            const CST_Instruction trivia_instruction = pop_instruction();
+            COWEL_ASSERT(trivia_instruction.kind == CST_Instruction_Kind::skip);
+            advance_by_tokens(1);
+        };
+
+        ast::Expression lhs = build_expression();
+        while (peek_token().kind != instruction_kind_token_kind(push_kind)) {
+            consume_expression_trivia_instruction();
+        }
+
+        // Binary operators are represented by push/pop instruction pairs,
+        // but the operator token itself still needs to be consumed here.
+        advance_by_tokens(1);
+        ignore_skips();
+
+        ast::Expression rhs = build_expression();
+        ignore_skips();
+
+        const CST_Instruction pop = pop_instruction();
+        COWEL_ASSERT(pop.kind == pop_kind);
+        COWEL_DEBUG_ASSERT(!cst_instruction_kind_advances(pop.kind));
+
+        const auto source_span = make_file_span(lhs.get_source_span(), rhs.get_source_span());
+
+        return ast::Binary_Expression {
+            gc_ref_make<ast::Expression>(std::move(lhs)),
+            gc_ref_make<ast::Expression>(std::move(rhs)),
+            instruction_kind_binary_kind(push_kind),
+            source_span,
+            extract(source_span),
+        };
     }
 
     [[nodiscard]]
