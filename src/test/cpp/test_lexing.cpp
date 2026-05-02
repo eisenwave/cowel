@@ -509,6 +509,7 @@ TEST(Lex, file_tests)
 
     std::pmr::vector<fs::path> test_paths { &memory };
     find_files_recursively(test_paths, "test/lex", filter);
+    std::ranges::sort(test_paths);
 
     bool overall_success = true;
     for (const auto& path : test_paths) {

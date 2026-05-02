@@ -861,9 +861,50 @@ bool run_parse_fail_test(const std::u8string_view file_name)
     ASSERT_EQ(expected, actual)
 // NOLINTEND(bugprone-unchecked-optional-access)
 
-TEST(Parse, empty)
+TEST(Parse, file_tests)
 {
-    ASSERT_TRUE(run_parse_test(u8"empty.cow", u8"empty.expected"));
+    constexpr auto filter = [](const fs::directory_entry& entry) -> bool {
+        const fs::path& path = entry.path();
+        return path.native().ends_with(".cow") || path.native().ends_with(".cowel");
+    };
+
+    std::pmr::monotonic_buffer_resource memory;
+
+    std::pmr::vector<fs::path> test_paths { &memory };
+    find_files_recursively(test_paths, "test/parse", filter);
+    std::ranges::sort(test_paths);
+
+    const fs::path parse_root = "test/parse";
+
+    bool overall_success = true;
+    for (const fs::path& source_path : test_paths) {
+        fs::path expectation_path = source_path;
+        expectation_path.replace_extension(".expected");
+
+        if (!fs::is_regular_file(expectation_path)) {
+            continue;
+        }
+
+        const std::u8string source_test_path = source_path.generic_u8string();
+        const std::u8string source_relative
+            = fs::relative(source_path, parse_root).generic_u8string();
+        const std::u8string expectation_relative
+            = fs::relative(expectation_path, parse_root).generic_u8string();
+
+        if (!run_parse_test(source_relative, expectation_relative)) {
+            overall_success = false;
+        }
+        else {
+            Diagnostic_String out;
+            print_location_of_file(out, source_test_path);
+            out.append(u8' ');
+            out.append(u8"OK", Diagnostic_Highlight::success);
+            out.append(u8'\n');
+            print_code_string_stdout(out);
+        }
+    }
+
+    EXPECT_TRUE(overall_success);
 }
 
 TEST(Parse_And_Build, empty)
@@ -872,35 +913,6 @@ TEST(Parse_And_Build, empty)
     static const ast::Pmr_Vector<Node> expected { &memory };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"empty.cow");
-}
-
-TEST(Parse, directive_brace_escape_2)
-{
-    ASSERT_TRUE(
-        run_parse_test(u8"directive_brace_escape_2.cow", u8"directive_brace_escape_2.expected")
-    );
-}
-
-TEST(Parse, directive_multiline)
-{
-    ASSERT_TRUE(run_parse_test(u8"directive_multiline.cow", u8"directive_multiline.expected"));
-}
-
-TEST(Parse, directive_multiline_trailing_comma)
-{
-    ASSERT_TRUE(run_parse_test(
-        u8"directive_multiline_trailing_comma.cow", u8"directive_multiline_trailing_comma.expected"
-    ));
-}
-
-TEST(Parse, comments)
-{
-    ASSERT_TRUE(run_parse_test(u8"comments.cow", u8"comments.expected"));
-}
-
-TEST(Parse, arguments_comments_1)
-{
-    ASSERT_TRUE(run_parse_test(u8"arguments/comments_1.cow", u8"arguments/comments_1.expected"));
 }
 
 TEST(Parse_And_Build, arguments_comments_1)
@@ -916,11 +928,6 @@ TEST(Parse_And_Build, arguments_comments_1)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/comments_1.cow");
-}
-
-TEST(Parse, arguments_comments_2)
-{
-    ASSERT_TRUE(run_parse_test(u8"arguments/comments_2.cow", u8"arguments/comments_2.expected"));
 }
 
 TEST(Parse_And_Build, arguments_comments_2)
@@ -946,11 +953,6 @@ TEST(Parse_And_Build, arguments_comments_2)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/comments_2.cow");
 }
 
-TEST(Parse, arguments_ellipsis)
-{
-    ASSERT_TRUE(run_parse_test(u8"arguments/ellipsis.cow", u8"arguments/ellipsis.expected"));
-}
-
 TEST(Parse_And_Build, arguments_ellipsis)
 {
     static std::pmr::monotonic_buffer_resource memory;
@@ -964,11 +966,6 @@ TEST(Parse_And_Build, arguments_ellipsis)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/ellipsis.cow");
-}
-
-TEST(Parse, group_1)
-{
-    ASSERT_TRUE(run_parse_test(u8"arguments/group_1.cow", u8"arguments/group_1.expected"));
 }
 
 TEST(Parse_And_Build, group_1)
@@ -991,11 +988,6 @@ TEST(Parse_And_Build, group_1)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/group_1.cow");
-}
-
-TEST(Parse, group_2)
-{
-    ASSERT_TRUE(run_parse_test(u8"arguments/group_2.cow", u8"arguments/group_2.expected"));
 }
 
 TEST(Parse_And_Build, group_2)
@@ -1025,11 +1017,6 @@ TEST(Parse_And_Build, group_2)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/group_2.cow");
 }
 
-TEST(Parse, group_3)
-{
-    ASSERT_TRUE(run_parse_test(u8"arguments/group_3.cow", u8"arguments/group_3.expected"));
-}
-
 TEST(Parse_And_Build, group_3)
 {
     static std::pmr::monotonic_buffer_resource memory;
@@ -1044,26 +1031,6 @@ TEST(Parse_And_Build, group_3)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/group_3.cow");
-}
-
-TEST(Parse, unquoted)
-{
-    ASSERT_TRUE(run_parse_test(u8"arguments/unquoted.cow", u8"arguments/unquoted.expected"));
-}
-
-TEST(Parse, string)
-{
-    ASSERT_TRUE(run_parse_test(u8"arguments/string.cow", u8"arguments/string.expected"));
-}
-
-TEST(Parse, block)
-{
-    ASSERT_TRUE(run_parse_test(u8"arguments/block.cow", u8"arguments/block.expected"));
-}
-
-TEST(Parse, group_4)
-{
-    ASSERT_TRUE(run_parse_test(u8"arguments/group_4.cow", u8"arguments/group_4.expected"));
 }
 
 TEST(Parse_And_Build, group_4)
@@ -1092,125 +1059,6 @@ TEST(Parse_And_Build, group_4)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/group_4.cow");
-}
-
-TEST(Parse, integers)
-{
-    ASSERT_TRUE(run_parse_test(u8"integers.cow", u8"integers.expected"));
-}
-
-TEST(Parse, literals)
-{
-    ASSERT_TRUE(run_parse_test(u8"literals.cow", u8"literals.expected"));
-}
-
-TEST(Parse, unary_prefix)
-{
-    ASSERT_TRUE(run_parse_test(u8"unary_prefix.cow", u8"unary_prefix.expected"));
-}
-
-TEST(Parse, binary_add)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_add.cow", u8"binary_add.expected"));
-}
-
-TEST(Parse, binary_chaining)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_chaining.cow", u8"binary_chaining.expected"));
-}
-
-TEST(Parse, binary_comparison)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_comparison.cow", u8"binary_comparison.expected"));
-}
-
-TEST(Parse, binary_comprehensive)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_comprehensive.cow", u8"binary_comprehensive.expected"));
-}
-
-TEST(Parse, binary_divide)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_divide.cow", u8"binary_divide.expected"));
-}
-
-TEST(Parse, binary_equals)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_equals.cow", u8"binary_equals.expected"));
-}
-
-TEST(Parse, binary_greater_equal)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_greater_equal.cow", u8"binary_greater_equal.expected"));
-}
-
-TEST(Parse, binary_greater_than)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_greater_than.cow", u8"binary_greater_than.expected"));
-}
-
-TEST(Parse, binary_less_equal)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_less_equal.cow", u8"binary_less_equal.expected"));
-}
-
-TEST(Parse, binary_less_than)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_less_than.cow", u8"binary_less_than.expected"));
-}
-
-TEST(Parse, binary_logical)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_logical.cow", u8"binary_logical.expected"));
-}
-
-TEST(Parse, binary_logical_and)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_logical_and.cow", u8"binary_logical_and.expected"));
-}
-
-TEST(Parse, binary_logical_or)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_logical_or.cow", u8"binary_logical_or.expected"));
-}
-
-TEST(Parse, binary_modulo)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_modulo.cow", u8"binary_modulo.expected"));
-}
-
-TEST(Parse, binary_multiply)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_multiply.cow", u8"binary_multiply.expected"));
-}
-
-TEST(Parse, binary_not_equals)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_not_equals.cow", u8"binary_not_equals.expected"));
-}
-
-TEST(Parse, binary_prefix_interaction)
-{
-    ASSERT_TRUE(
-        run_parse_test(u8"binary_prefix_interaction.cow", u8"binary_prefix_interaction.expected")
-    );
-}
-
-TEST(Parse, binary_precedence_add_mult)
-{
-    ASSERT_TRUE(
-        run_parse_test(u8"binary_precedence_add_mult.cow", u8"binary_precedence_add_mult.expected")
-    );
-}
-
-TEST(Parse, binary_subtract)
-{
-    ASSERT_TRUE(run_parse_test(u8"binary_subtract.cow", u8"binary_subtract.expected"));
-}
-
-TEST(Parse, floats)
-{
-    ASSERT_TRUE(run_parse_test(u8"floats.cow", u8"floats.expected"));
 }
 
 TEST(Parse_And_Build, floats)
@@ -1265,21 +1113,6 @@ TEST(Parse_And_Build, floats)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"floats.cow");
 }
 
-TEST(Parse, escape_lf)
-{
-    ASSERT_TRUE(run_parse_test(u8"escape_lf.cow", u8"escape_lf.expected"));
-}
-
-TEST(Parse, escape_crlf)
-{
-    ASSERT_TRUE(run_parse_test(u8"escape_crlf.cow", u8"escape_crlf.expected"));
-}
-
-TEST(Parse, file_ends_in_brace)
-{
-    ASSERT_TRUE(run_parse_test(u8"file_ends_in_brace.cow", u8"file_ends_in_brace.expected"));
-}
-
 TEST(Parse_And_Build, file_ends_in_brace)
 {
     static std::pmr::monotonic_buffer_resource memory;
@@ -1293,11 +1126,6 @@ TEST(Parse_And_Build, file_ends_in_brace)
     ASSERT_TRUE(parsed);
     const auto actual = parsed->to_expected(); // NOLINT(bugprone-unchecked-optional-access)
     ASSERT_EQ(expected, actual);
-}
-
-TEST(Parse, hello_code)
-{
-    ASSERT_TRUE(run_parse_test(u8"hello_code.cow", u8"hello_code.expected"));
 }
 
 TEST(Parse_And_Build, hello_code)
@@ -1315,11 +1143,6 @@ TEST(Parse_And_Build, hello_code)
     ASSERT_TRUE(parsed);
     const auto actual = parsed->to_expected(); // NOLINT(bugprone-unchecked-optional-access)
     ASSERT_EQ(expected, actual);
-}
-
-TEST(Parse, hello_directive)
-{
-    ASSERT_TRUE(run_parse_test(u8"hello_directive.cow", u8"hello_directive.expected"));
 }
 
 TEST(Parse_And_Build, hello_directive)
@@ -1343,11 +1166,6 @@ TEST(Parse_And_Build, hello_directive)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"hello_directive.cow");
-}
-
-TEST(Parse, directive_as_argument)
-{
-    ASSERT_TRUE(run_parse_test(u8"directive_as_argument.cow", u8"directive_as_argument.expected"));
 }
 
 TEST(Parse_And_Build, directive_as_argument)
