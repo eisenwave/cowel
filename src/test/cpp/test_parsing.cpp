@@ -1109,6 +1109,105 @@ TEST(Parse, unary_prefix)
     ASSERT_TRUE(run_parse_test(u8"unary_prefix.cow", u8"unary_prefix.expected"));
 }
 
+TEST(Parse, binary_add)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_add.cow", u8"binary_add.expected"));
+}
+
+TEST(Parse, binary_chaining)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_chaining.cow", u8"binary_chaining.expected"));
+}
+
+TEST(Parse, binary_comparison)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_comparison.cow", u8"binary_comparison.expected"));
+}
+
+TEST(Parse, binary_comprehensive)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_comprehensive.cow", u8"binary_comprehensive.expected"));
+}
+
+TEST(Parse, binary_divide)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_divide.cow", u8"binary_divide.expected"));
+}
+
+TEST(Parse, binary_equals)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_equals.cow", u8"binary_equals.expected"));
+}
+
+TEST(Parse, binary_greater_equal)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_greater_equal.cow", u8"binary_greater_equal.expected"));
+}
+
+TEST(Parse, binary_greater_than)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_greater_than.cow", u8"binary_greater_than.expected"));
+}
+
+TEST(Parse, binary_less_equal)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_less_equal.cow", u8"binary_less_equal.expected"));
+}
+
+TEST(Parse, binary_less_than)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_less_than.cow", u8"binary_less_than.expected"));
+}
+
+TEST(Parse, binary_logical)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_logical.cow", u8"binary_logical.expected"));
+}
+
+TEST(Parse, binary_logical_and)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_logical_and.cow", u8"binary_logical_and.expected"));
+}
+
+TEST(Parse, binary_logical_or)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_logical_or.cow", u8"binary_logical_or.expected"));
+}
+
+TEST(Parse, binary_modulo)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_modulo.cow", u8"binary_modulo.expected"));
+}
+
+TEST(Parse, binary_multiply)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_multiply.cow", u8"binary_multiply.expected"));
+}
+
+TEST(Parse, binary_not_equals)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_not_equals.cow", u8"binary_not_equals.expected"));
+}
+
+TEST(Parse, binary_prefix_interaction)
+{
+    ASSERT_TRUE(
+        run_parse_test(u8"binary_prefix_interaction.cow", u8"binary_prefix_interaction.expected")
+    );
+}
+
+TEST(Parse, binary_precedence_add_mult)
+{
+    ASSERT_TRUE(
+        run_parse_test(u8"binary_precedence_add_mult.cow", u8"binary_precedence_add_mult.expected")
+    );
+}
+
+TEST(Parse, binary_subtract)
+{
+    ASSERT_TRUE(run_parse_test(u8"binary_subtract.cow", u8"binary_subtract.expected"));
+}
+
 TEST(Parse, floats)
 {
     ASSERT_TRUE(run_parse_test(u8"floats.cow", u8"floats.expected"));

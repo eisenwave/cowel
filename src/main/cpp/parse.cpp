@@ -20,6 +20,110 @@ enum struct Content_Context : Default_Underlying {
     quoted_string,
 };
 
+/// @brief Returns the precedence of a binary operator token kind.
+/// Higher numbers indicate higher precedence (bind more tightly).
+/// Returns 0 if the token is not a binary operator.
+[[nodiscard]]
+constexpr int token_kind_op_precedence(const Token_Kind kind)
+{
+    using enum Token_Kind;
+    switch (kind) {
+    case logical_or: return 1;
+    case logical_and: return 2;
+    case equals_equals:
+    case not_equals: return 3;
+    case less_than:
+    case greater_than:
+    case less_equal:
+    case greater_equal: return 4;
+    case plus:
+    case minus: return 5;
+    case asterisk:
+    case slash:
+    case percent: return 6;
+    default: return 0;
+    }
+}
+
+struct Binary_Op_Instructions {
+    CST_Instruction_Kind push;
+    CST_Instruction_Kind pop;
+};
+
+[[nodiscard]]
+constexpr Binary_Op_Instructions token_kind_binary_op_instructions(const Token_Kind kind)
+{
+    switch (kind) {
+    case Token_Kind::logical_or:
+        return {
+            CST_Instruction_Kind::push_expr_logical_or,
+            CST_Instruction_Kind::pop_expr_logical_or,
+        };
+    case Token_Kind::logical_and:
+        return {
+            CST_Instruction_Kind::push_expr_logical_and,
+            CST_Instruction_Kind::pop_expr_logical_and,
+        };
+    case Token_Kind::equals_equals:
+        return {
+            CST_Instruction_Kind::push_expr_equals,
+            CST_Instruction_Kind::pop_expr_equals,
+        };
+    case Token_Kind::not_equals:
+        return {
+            CST_Instruction_Kind::push_expr_not_equals,
+            CST_Instruction_Kind::pop_expr_not_equals,
+        };
+    case Token_Kind::less_than:
+        return {
+            CST_Instruction_Kind::push_expr_less_than,
+            CST_Instruction_Kind::pop_expr_less_than,
+        };
+    case Token_Kind::greater_than:
+        return {
+            CST_Instruction_Kind::push_expr_greater_than,
+            CST_Instruction_Kind::pop_expr_greater_than,
+        };
+    case Token_Kind::less_equal:
+        return {
+            CST_Instruction_Kind::push_expr_less_equal,
+            CST_Instruction_Kind::pop_expr_less_equal,
+        };
+    case Token_Kind::greater_equal:
+        return {
+            CST_Instruction_Kind::push_expr_greater_equal,
+            CST_Instruction_Kind::pop_expr_greater_equal,
+        };
+    case Token_Kind::plus:
+        return {
+            CST_Instruction_Kind::push_expr_add,
+            CST_Instruction_Kind::pop_expr_add,
+        };
+    case Token_Kind::minus:
+        return {
+            CST_Instruction_Kind::push_expr_subtract,
+            CST_Instruction_Kind::pop_expr_subtract,
+        };
+    case Token_Kind::asterisk:
+        return {
+            CST_Instruction_Kind::push_expr_multiply,
+            CST_Instruction_Kind::pop_expr_multiply,
+        };
+    case Token_Kind::slash:
+        return {
+            CST_Instruction_Kind::push_expr_divide,
+            CST_Instruction_Kind::pop_expr_divide,
+        };
+    case Token_Kind::percent:
+        return {
+            CST_Instruction_Kind::push_expr_modulo,
+            CST_Instruction_Kind::pop_expr_modulo,
+        };
+    default: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid binary operator token kind.");
+}
+
 struct [[nodiscard]] Parser {
 private:
     struct [[nodiscard]] Scoped_Attempt {
@@ -105,6 +209,7 @@ private:
         m_pos += n;
     }
 
+    [[nodiscard]]
     Scoped_Attempt attempt()
     {
         return Scoped_Attempt { *this };
@@ -541,7 +646,81 @@ private:
         return false;
     }
 
+    [[nodiscard]]
     bool expect_expression()
+    {
+        constexpr int min_precedence = 0;
+        return expect_expression_with_min_precedence(min_precedence);
+    }
+
+    /// @brief Pratt parser implementation for binary expressions.
+    /// This parses an expression with at least the given minimum precedence,
+    /// handling left-associative binary operators correctly.
+    [[nodiscard]]
+    bool expect_expression_with_min_precedence(const int min_precedence)
+    {
+        COWEL_DEBUG_ASSERT(min_precedence >= 0);
+
+        // Record where the left operand begins in the output.
+        // When a binary operator is found, we insert the push instruction here,
+        // so that push_op wraps the entire left subtree (not just the right operand).
+        const std::size_t left_start = m_out.size();
+
+        if (!expect_unary_expression()) {
+            return false;
+        }
+
+        // Now try to parse binary operators and their right operands.
+        // We loop while the next token is a binary operator with sufficient precedence.
+        while (true) {
+            consume_blank_sequence();
+
+            const Token* const next = peek();
+            if (!next) {
+                break;
+            }
+
+            const int op_precedence = token_kind_op_precedence(next->kind);
+            if (op_precedence == 0 || op_precedence < min_precedence) {
+                // Next token is not a binary operator, or has lower precedence than required.
+                // Stop parsing; the caller (higher-precedence parser) will handle this.
+                break;
+            }
+
+            // We have a binary operator with sufficient precedence.
+            // For left-associativity, the right operand should have precedence > op_precedence.
+            // This ensures that x+y+z is parsed as (x+y)+z, not x+(y+z).
+            const Token* const op_token = next;
+            const auto [push_op, pop_op] = token_kind_binary_op_instructions(op_token->kind);
+
+            // Consume the operator token.
+            advance_by(1);
+
+            // Insert the push instruction before the left subtree so that the binary
+            // expression node wraps both operands: push_op left right pop_op.
+            m_out.insert(
+                m_out.begin() + static_cast<std::ptrdiff_t>(left_start), CST_Instruction { push_op }
+            );
+            consume_blank_sequence();
+
+            // Parse the right operand with higher precedence (for left-associativity).
+            if (!expect_expression_with_min_precedence(op_precedence + 1)) {
+                error(m_tokens[m_pos].location, u8"Expected expression after binary operator."sv);
+                skip_to_end_of_group_member();
+            }
+
+            m_out.push_back({ pop_op });
+        }
+
+        return true;
+    }
+
+    /// @brief Parses a primary expression or a prefix operator followed by an expression.
+    ///
+    /// This is the base case for the Pratt parser; it parses the left-most operand
+    /// and any prefix operators that precede it.
+    [[nodiscard]]
+    bool expect_unary_expression()
     {
         const Token* const next = peek();
         if (!next) {
@@ -549,34 +728,46 @@ private:
         }
 
         switch (next->kind) {
+            // Prefix expressions:
         case Token_Kind::bitwise_not: {
-            return expect_prefix_expression(
+            return do_expect_prefix_expression(
                 Token_Kind::bitwise_not, //
                 CST_Instruction_Kind::push_expr_bitwise_not,
                 CST_Instruction_Kind::pop_expr_bitwise_not
             );
         }
         case Token_Kind::logical_not: {
-            return expect_prefix_expression(
+            return do_expect_prefix_expression(
                 Token_Kind::logical_not, //
                 CST_Instruction_Kind::push_expr_logical_not,
                 CST_Instruction_Kind::pop_expr_logical_not
             );
         }
         case Token_Kind::plus: {
-            return expect_prefix_expression(
+            return do_expect_prefix_expression(
                 Token_Kind::plus, //
                 CST_Instruction_Kind::push_expr_unary_plus,
                 CST_Instruction_Kind::pop_expr_unary_plus
             );
         }
         case Token_Kind::minus: {
-            return expect_prefix_expression(
+            return do_expect_prefix_expression(
                 Token_Kind::minus, //
                 CST_Instruction_Kind::push_expr_unary_minus,
                 CST_Instruction_Kind::pop_expr_unary_minus
             );
         }
+
+        // Postfix expressions:
+        case Token_Kind::identifier: {
+            if (expect_directive_call_expression()) {
+                return true;
+            }
+            emit_and_advance_by_one(CST_Instruction_Kind::unquoted_string);
+            return true;
+        }
+
+        // Primary expressions:
         case Token_Kind::string_quote: {
             consume_quoted(
                 CST_Instruction_Kind::push_quoted_string, CST_Instruction_Kind::pop_quoted_string
@@ -631,31 +822,16 @@ private:
             emit_and_advance_by_one(CST_Instruction_Kind::decimal_float);
             return true;
         }
-        case Token_Kind::identifier: {
-            if (expect_directive_call_expression()) {
-                return true;
-            }
-            emit_and_advance_by_one(CST_Instruction_Kind::unquoted_string);
-            return true;
-        }
+
+        // Tokens that cannot start an expression in general.
         case Token_Kind::comma:
         case Token_Kind::ellipsis:
         case Token_Kind::equals:
         case Token_Kind::parenthesis_right:
         case Token_Kind::brace_right:
         case Token_Kind::directive_splice_name:
-        case Token_Kind::escape: return false;
-
-        case Token_Kind::document_text:
-        case Token_Kind::quoted_string_text:
-        case Token_Kind::block_text:
-        case Token_Kind::error:
-        case Token_Kind::reserved_escape:
-        case Token_Kind::reserved_number:
-        case Token_Kind::whitespace:
-        case Token_Kind::block_comment:
-        case Token_Kind::line_comment: break;
-
+        case Token_Kind::escape:
+        // Binary operators cannot start an expression (they're infix).
         case Token_Kind::asterisk:
         case Token_Kind::equals_equals:
         case Token_Kind::greater_equal:
@@ -666,34 +842,38 @@ private:
         case Token_Kind::logical_or:
         case Token_Kind::not_equals:
         case Token_Kind::percent:
-        case Token_Kind::slash:
-            // Parsing of binary operators not yet supported.
-            return false;
+        case Token_Kind::slash: return false;
+
+        case Token_Kind::document_text:
+        case Token_Kind::quoted_string_text:
+        case Token_Kind::block_text:
+        case Token_Kind::error:
+        case Token_Kind::reserved_escape:
+        case Token_Kind::reserved_number:
+        case Token_Kind::whitespace:
+        case Token_Kind::block_comment:
+        case Token_Kind::line_comment: break;
         }
-        COWEL_ASSERT_UNREACHABLE(u8"Unexpected token in group.");
+
+        error(m_tokens[m_pos].location, u8"Unexpected token in expression."sv);
+        return false;
     }
 
-    bool expect_prefix_expression(
+    [[nodiscard]]
+    bool do_expect_prefix_expression(
         const Token_Kind op,
         const CST_Instruction_Kind push,
         const CST_Instruction_Kind pop
     )
     {
-        Scoped_Attempt a = attempt();
-
         const Token* const next = expect(op);
-        if (!next) {
-            return false;
-        }
+        COWEL_ASSERT(next && next->kind == op);
+
+        Scoped_Attempt a = attempt();
 
         m_out.push_back({ push });
         consume_blank_sequence();
-        // Prefix expressions currently have the lowest precedence,
-        // so matching an expression here is synonymous with recursing into parsing
-        // another prefix expression.
-        // However, this strategy will need to be revised when lower-precedence
-        // expressions are added in the future.
-        if (!expect_expression()) {
+        if (!expect_unary_expression()) {
             return false;
         }
         m_out.push_back({ pop });
@@ -701,6 +881,7 @@ private:
         return true;
     }
 
+    [[nodiscard]]
     bool expect_directive_call_expression()
     {
         Scoped_Attempt a = attempt();
@@ -835,6 +1016,32 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_expr_parenthesized);
         COWEL_ENUM_STRING_CASE8(push_expr_directive_call);
         COWEL_ENUM_STRING_CASE8(pop_expr_directive_call);
+        COWEL_ENUM_STRING_CASE8(push_expr_logical_or);
+        COWEL_ENUM_STRING_CASE8(pop_expr_logical_or);
+        COWEL_ENUM_STRING_CASE8(push_expr_logical_and);
+        COWEL_ENUM_STRING_CASE8(pop_expr_logical_and);
+        COWEL_ENUM_STRING_CASE8(push_expr_equals);
+        COWEL_ENUM_STRING_CASE8(pop_expr_equals);
+        COWEL_ENUM_STRING_CASE8(push_expr_not_equals);
+        COWEL_ENUM_STRING_CASE8(pop_expr_not_equals);
+        COWEL_ENUM_STRING_CASE8(push_expr_less_than);
+        COWEL_ENUM_STRING_CASE8(pop_expr_less_than);
+        COWEL_ENUM_STRING_CASE8(push_expr_greater_than);
+        COWEL_ENUM_STRING_CASE8(pop_expr_greater_than);
+        COWEL_ENUM_STRING_CASE8(push_expr_less_equal);
+        COWEL_ENUM_STRING_CASE8(pop_expr_less_equal);
+        COWEL_ENUM_STRING_CASE8(push_expr_greater_equal);
+        COWEL_ENUM_STRING_CASE8(pop_expr_greater_equal);
+        COWEL_ENUM_STRING_CASE8(push_expr_add);
+        COWEL_ENUM_STRING_CASE8(pop_expr_add);
+        COWEL_ENUM_STRING_CASE8(push_expr_subtract);
+        COWEL_ENUM_STRING_CASE8(pop_expr_subtract);
+        COWEL_ENUM_STRING_CASE8(push_expr_multiply);
+        COWEL_ENUM_STRING_CASE8(pop_expr_multiply);
+        COWEL_ENUM_STRING_CASE8(push_expr_divide);
+        COWEL_ENUM_STRING_CASE8(pop_expr_divide);
+        COWEL_ENUM_STRING_CASE8(push_expr_modulo);
+        COWEL_ENUM_STRING_CASE8(pop_expr_modulo);
         COWEL_ENUM_STRING_CASE8(push_group);
         COWEL_ENUM_STRING_CASE8(pop_group);
         COWEL_ENUM_STRING_CASE8(push_named_member);
@@ -908,6 +1115,32 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case pop_expr_unary_minus:
     case pop_expr_unary_plus:
     case pop_expr_directive_call:
+    case push_expr_logical_or:
+    case pop_expr_logical_or:
+    case push_expr_logical_and:
+    case pop_expr_logical_and:
+    case push_expr_equals:
+    case pop_expr_equals:
+    case push_expr_not_equals:
+    case pop_expr_not_equals:
+    case push_expr_less_than:
+    case pop_expr_less_than:
+    case push_expr_greater_than:
+    case pop_expr_greater_than:
+    case push_expr_less_equal:
+    case pop_expr_less_equal:
+    case push_expr_greater_equal:
+    case pop_expr_greater_equal:
+    case push_expr_add:
+    case pop_expr_add:
+    case push_expr_subtract:
+    case pop_expr_subtract:
+    case push_expr_multiply:
+    case pop_expr_multiply:
+    case push_expr_divide:
+    case pop_expr_divide:
+    case push_expr_modulo:
+    case pop_expr_modulo:
         //
         return Token_Kind::error;
     }
@@ -968,7 +1201,33 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case pop_expr_logical_not:
     case pop_expr_unary_minus:
     case pop_expr_unary_plus:
-    case pop_expr_directive_call: return false;
+    case pop_expr_directive_call:
+    case push_expr_logical_or:
+    case pop_expr_logical_or:
+    case push_expr_logical_and:
+    case pop_expr_logical_and:
+    case push_expr_equals:
+    case pop_expr_equals:
+    case push_expr_not_equals:
+    case pop_expr_not_equals:
+    case push_expr_less_than:
+    case pop_expr_less_than:
+    case push_expr_greater_than:
+    case pop_expr_greater_than:
+    case push_expr_less_equal:
+    case pop_expr_less_equal:
+    case push_expr_greater_equal:
+    case pop_expr_greater_equal:
+    case push_expr_add:
+    case pop_expr_add:
+    case push_expr_subtract:
+    case pop_expr_subtract:
+    case push_expr_multiply:
+    case pop_expr_multiply:
+    case push_expr_divide:
+    case pop_expr_divide:
+    case push_expr_modulo:
+    case pop_expr_modulo: return false;
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid instruction.");
 }

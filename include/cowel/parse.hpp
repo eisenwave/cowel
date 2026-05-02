@@ -55,6 +55,32 @@ namespace cowel {
     F(pop_expr_parenthesized, "pop_expr_parenthesized")                                            \
     F(push_expr_directive_call, "push_expr_directive_call")                                        \
     F(pop_expr_directive_call, "pop_expr_directive_call")                                          \
+    F(push_expr_logical_or, "push_expr_logical_or")                                                \
+    F(pop_expr_logical_or, "pop_expr_logical_or")                                                  \
+    F(push_expr_logical_and, "push_expr_logical_and")                                              \
+    F(pop_expr_logical_and, "pop_expr_logical_and")                                                \
+    F(push_expr_equals, "push_expr_equals")                                                        \
+    F(pop_expr_equals, "pop_expr_equals")                                                          \
+    F(push_expr_not_equals, "push_expr_not_equals")                                                \
+    F(pop_expr_not_equals, "pop_expr_not_equals")                                                  \
+    F(push_expr_less_than, "push_expr_less_than")                                                  \
+    F(pop_expr_less_than, "pop_expr_less_than")                                                    \
+    F(push_expr_greater_than, "push_expr_greater_than")                                            \
+    F(pop_expr_greater_than, "pop_expr_greater_than")                                              \
+    F(push_expr_less_equal, "push_expr_less_equal")                                                \
+    F(pop_expr_less_equal, "pop_expr_less_equal")                                                  \
+    F(push_expr_greater_equal, "push_expr_greater_equal")                                          \
+    F(pop_expr_greater_equal, "pop_expr_greater_equal")                                            \
+    F(push_expr_add, "push_expr_add")                                                              \
+    F(pop_expr_add, "pop_expr_add")                                                                \
+    F(push_expr_subtract, "push_expr_subtract")                                                    \
+    F(pop_expr_subtract, "pop_expr_subtract")                                                      \
+    F(push_expr_multiply, "push_expr_multiply")                                                    \
+    F(pop_expr_multiply, "pop_expr_multiply")                                                      \
+    F(push_expr_divide, "push_expr_divide")                                                        \
+    F(pop_expr_divide, "pop_expr_divide")                                                          \
+    F(push_expr_modulo, "push_expr_modulo")                                                        \
+    F(pop_expr_modulo, "pop_expr_modulo")                                                          \
     /* `n` is the amount of group members. */                                                      \
     F(push_group, "push_group")                                                                    \
     F(pop_group, "pop_group")                                                                      \
