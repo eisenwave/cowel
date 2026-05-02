@@ -379,6 +379,11 @@ private:
                 continue;
             }
             case u8'=': {
+                if (peek_all().starts_with(u8"=="sv)) {
+                    emit(Token_Kind::equals_equals, 2);
+                    advance_by(2);
+                    continue;
+                }
                 emit(Token_Kind::equals, 1);
                 advance_by(1);
                 continue;
@@ -401,15 +406,71 @@ private:
                 consume_quoted_string();
                 continue;
             }
+            case u8'*': {
+                emit(Token_Kind::asterisk, 1);
+                advance_by(1);
+                continue;
+            }
+            case u8'/': {
+                emit(Token_Kind::slash, 1);
+                advance_by(1);
+                continue;
+            }
+            case u8'%': {
+                emit(Token_Kind::percent, 1);
+                advance_by(1);
+                continue;
+            }
             case u8'~': {
                 emit(Token_Kind::bitwise_not, 1);
                 advance_by(1);
                 continue;
             }
             case u8'!': {
+                if (peek_all().starts_with(u8"!="sv)) {
+                    emit(Token_Kind::not_equals, 2);
+                    advance_by(2);
+                    continue;
+                }
                 emit(Token_Kind::logical_not, 1);
                 advance_by(1);
                 continue;
+            }
+            case u8'<': {
+                if (peek_all().starts_with(u8"<="sv)) {
+                    emit(Token_Kind::less_equal, 2);
+                    advance_by(2);
+                    continue;
+                }
+                emit(Token_Kind::less_than, 1);
+                advance_by(1);
+                continue;
+            }
+            case u8'>': {
+                if (peek_all().starts_with(u8">="sv)) {
+                    emit(Token_Kind::greater_equal, 2);
+                    advance_by(2);
+                    continue;
+                }
+                emit(Token_Kind::greater_than, 1);
+                advance_by(1);
+                continue;
+            }
+            case u8'&': {
+                if (peek_all().starts_with(u8"&&"sv)) {
+                    emit(Token_Kind::logical_and, 2);
+                    advance_by(2);
+                    continue;
+                }
+                break;
+            }
+            case u8'|': {
+                if (peek_all().starts_with(u8"||"sv)) {
+                    emit(Token_Kind::logical_or, 2);
+                    advance_by(2);
+                    continue;
+                }
+                break;
             }
             case u8'-': {
                 emit(Token_Kind::minus, 1);

@@ -2,6 +2,20 @@
 
 ## **[v0.9.0](https://github.com/eisenwave/cowel/releases/tag/v0.9.0)** (2026-??-??)
 
+- add binary operators:
+  - `+` addition
+  - `-` subtraction
+  - `*` multiplication
+  - `/` division
+  - `%` remainder
+  - `==` equality
+  - `!=` inequality
+  - `<` less than
+  - `>` greater than
+  - `<=` less than or equal to
+  - `>=` greater than or equal to
+  - `&&` logical AND
+  - `||` logical OR
 - change the type of `(X)` in expression to be that of `x` (#259):
   - add *parenthesized-expression* as a construct
   - disambiguate *group* as *parenthesized-expression* if possible

@@ -2114,13 +2114,24 @@ a <g-term>DOCUMENT</g-term> is matched as follows:
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>HEXADECIMAL-INT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>DECIMAL-FLOAT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>INFINITY-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>EQUALS-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>COMMA-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BITWISE-NOT-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-NOT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-OR-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-AND-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>EQUALS-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>NOT-EQUALS-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LESS-THAN-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>GREATER-THAN-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LESS-EQUAL-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>GREATER-EQUAL-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PLUS-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>MINUS-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ASTERISK-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>SLASH-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PERCENT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BITWISE-NOT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-NOT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>UNIT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>NULL-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>TRUE-TOKEN</h->
@@ -2129,20 +2140,42 @@ a <g-term>DOCUMENT</g-term> is matched as follows:
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BLOCK-COMMENT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>WHITESPACE-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>RESERVED-NUMBER-TOKEN</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>EQUALS-TOKEN</h->
+<h- data-h=name_nt_decl>ASSIGN-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>=</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>COMMA-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>,</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>ELLIPSIS-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>...</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>BITWISE-NOT-TOKEN</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>~</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>LOGICAL-NOT-TOKEN</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>LOGICAL-OR-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>||</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>LOGICAL-AND-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>&amp;&amp;</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>EQUALS-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>==</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>NOT-EQUALS-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>!=</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>LESS-THAN-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>&lt;</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>GREATER-THAN-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>&gt;</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>LESS-EQUAL-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>&lt;=</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>GREATER-EQUAL-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>&gt;=</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>PLUS-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>MINUS-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>-</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>ASTERISK-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>*</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>SLASH-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>/</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>PERCENT-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>%</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>BITWISE-NOT-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>~</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>LOGICAL-NOT-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>UNIT-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>unit</h-><h- data-h=str_dlim>"</h-> <h- data-h=name_mac>? not followed by IDENTIFIER-CHAR ?</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>NULL-TOKEN</h->
@@ -2689,15 +2722,38 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>quoted-string</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>prefix-expression</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-or-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>logical-or-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-and-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>logical-or-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LOGICAL-OR-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>logical-and-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>logical-and-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>equality-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>logical-and-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LOGICAL-AND-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>equality-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>equality-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>relational-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>equality-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>EQUALS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>relational-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>equality-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>NOT-EQUALS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>relational-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>relational-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>additive-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>relational-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LESS-THAN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>additive-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>relational-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>GREATER-THAN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>additive-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>relational-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LESS-EQUAL-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>additive-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>relational-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>GREATER-EQUAL-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>additive-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>additive-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>multiplicative-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>additive-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PLUS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>multiplicative-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>additive-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>MINUS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>multiplicative-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>multiplicative-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>multiplicative-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASTERISK-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>multiplicative-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>SLASH-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>multiplicative-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PERCENT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>prefix-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>postfix-expression</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>prefix-operator</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>prefix-operator</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>BITWISE-NOT-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-NOT-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PLUS-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>MINUS-TOKEN</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BITWISE-NOT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-NOT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PLUS-NOT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>MINUS-NOT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>postfix-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>primary-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>directive-call-expression</h-><h- data-h=sym_punc>;</h->
@@ -2705,7 +2761,8 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_sqr>]</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>block</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>primary-expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>UNIT-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parenthesized-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>UNIT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>NULL-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>bool-literal</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>int-literal</h->
@@ -2713,8 +2770,7 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>unquoted-string</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>quoted-string</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>block</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>group</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>parenthesized-expression</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>parenthesized-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>bool-literal</h->
