@@ -21,6 +21,22 @@ enum struct Unary_Expression_Kind : Default_Underlying {
     minus,
 };
 
+enum struct Binary_Expression_Kind : Default_Underlying {
+    logical_or,
+    logical_and,
+    eq,
+    ne,
+    lt,
+    gt,
+    le,
+    ge,
+    plus,
+    minus,
+    multiply,
+    divide,
+    remainder,
+};
+
 }; // namespace cowel
 
 #endif
