@@ -1036,8 +1036,7 @@ TEST(Parse_And_Build, group_3)
     static const ast::Pmr_Vector<Node> expected {
         {
             Node::directive_with_arguments(
-                u8"d",
-                Node::group({ Node::positional({ Node::group({}) }) })
+                u8"d", Node::group({ Node::positional({ Node::group({}) }) })
             ),
             Node::text(u8"\n"),
         },
