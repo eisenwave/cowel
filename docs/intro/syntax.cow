@@ -610,13 +610,20 @@ which is constructed as follows:
 
 \codeblock(ebnf){
 group
-  = PARENTHESIS-LEFT-TOKEN, [ group-member-list ], PARENTHESIS-RIGHT-TOKEN;
+  = PARENTHESIS-LEFT-TOKEN, PARENTHESIS-RIGHT-TOKEN
+  | PARENTHESIS-LEFT-TOKEN, named-group-member, [ COMMA-TOKEN, [ group-member-list ] ], PARENTHESIS-RIGHT-TOKEN
+  | PARENTHESIS-LEFT-TOKEN, ELLIPSIS-TOKEN, [ COMMA-TOKEN, [ group-member-list ] ], PARENTHESIS-RIGHT-TOKEN
+  | PARENTHESIS-LEFT-TOKEN, positional-group-member, COMMA-TOKEN, [ group-member-list ], PARENTHESIS-RIGHT-TOKEN;
 group-member-list
   = group-member, { COMMA-TOKEN, group-member }, [ COMMA-TOKEN ];
 group-member
-  = member-name, EQUALS-TOKEN, member-value
-  | member-value
+  = named-group-member
+  | positional-group-member
   | ELLIPSIS-TOKEN;
+named-group-member
+  = member-name, EQUALS-TOKEN, expression;
+positional-group-member
+  = expression;
 member-name
   = identifier
   | quoted-string;
@@ -679,7 +686,7 @@ not its escaped variant \cowdoc_c{\\=}.
 \h5{Positional arguments}
 
 A \dfn{positional argument} is a \gterm{group-member} of the form
-\gterm{member-value}.
+\gterm{expression}.
 
 Positional arguments are content just like any other content,
 except that an unbalanced closing \cowdoc_cp(0x5D) or a \cowdoc_cp(0x2C)
@@ -730,20 +737,20 @@ They can appear both in positional and in named arguments.
 
 \Bex{
 \codeblock(cowel){\literally{
-\d((x), (), (y,))    \: groups as positional arguments
+\d((x,), (), (y,))   \: groups as positional arguments
 \d(n = (x, y))       \: group as named argument
 \d(((())))           \: nested empty groups
 }}
 }
 
-\Bwarn{
-In the future, parentheses surrounding a single positional argument
-will be treated as (ignored) parentheses around an expression,
-like in typical programming languages.
+\Bnote{
+Parentheses surrounding a single positional expression
+act as parenthesization,
+not as a \gterm{group}.
 
 For a group containing a single positional member,
-\cowdoc_c{(x,)} may also be used.
-That is, the trailing comma can only be used in a group,
+\cowdoc_c{(x,)} may be used.
+The trailing comma can only appear in a group,
 not in an expression,
 so it acts as a disambiguator.
 }

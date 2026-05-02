@@ -1,0 +1,15 @@
+\test_input{
+0:     \__typeof(0)
+():    \__typeof(())
+(0):   \__typeof((0))
+(0,):  \__typeof((0,))
+(x=0): \__typeof((x=0))
+}
+
+\test_output{
+0:     int
+():    group
+(0):   int
+(0,):  group
+(x=0): group
+}

@@ -13,13 +13,20 @@ directive-splice
 identifier
   = IDENTIFIER-TOKEN;
 group
-  = PARENTHESIS-LEFT-TOKEN, [ group-member-list ], PARENTHESIS-RIGHT-TOKEN;
+  = PARENTHESIS-LEFT-TOKEN, PARENTHESIS-RIGHT-TOKEN
+  | PARENTHESIS-LEFT-TOKEN, named-group-member, [ COMMA-TOKEN, [ group-member-list ] ], PARENTHESIS-RIGHT-TOKEN
+  | PARENTHESIS-LEFT-TOKEN, ELLIPSIS-TOKEN, [ COMMA-TOKEN, [ group-member-list ] ], PARENTHESIS-RIGHT-TOKEN
+  | PARENTHESIS-LEFT-TOKEN, positional-group-member, COMMA-TOKEN, [ group-member-list ], PARENTHESIS-RIGHT-TOKEN;
 group-member-list
   = group-member, { COMMA-TOKEN, group-member }, [ COMMA-TOKEN ];
 group-member
-  = member-name, EQUALS-TOKEN, expression
-  | expression
+  = named-group-member
+  | positional-group-member
   | ELLIPSIS-TOKEN;
+named-group-member
+  = member-name, EQUALS-TOKEN, expression;
+positional-group-member
+  = expression;
 member-name
   = identifier
   | quoted-string;
@@ -48,7 +55,10 @@ primary-expression
   | unquoted-string
   | quoted-string
   | block
-  | group;
+  | group
+  | parenthesized-expression;
+parenthesized-expression
+  = PARENTHESIS-LEFT-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
 bool-literal
   = TRUE-TOKEN
   | FALSE-TOKEN;

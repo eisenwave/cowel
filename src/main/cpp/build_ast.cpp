@@ -735,6 +735,20 @@ private:
                 CST_Instruction_Kind::pop_expr_unary_minus
             );
         }
+        case CST_Instruction_Kind::push_expr_parenthesized: {
+            const CST_Instruction push = pop_instruction();
+            COWEL_ASSERT(push.kind == CST_Instruction_Kind::push_expr_parenthesized);
+            advance_by_tokens(1);
+
+            ignore_skips();
+            ast::Expression expression = build_expression();
+            ignore_skips();
+
+            const CST_Instruction pop = pop_instruction();
+            COWEL_ASSERT(pop.kind == CST_Instruction_Kind::pop_expr_parenthesized);
+            advance_by_tokens(1);
+            return expression;
+        }
         case CST_Instruction_Kind::push_expr_directive_call: {
             return build_directive(Directive_Kind::call);
         }
