@@ -13,6 +13,8 @@
 namespace cowel {
 
 #define COWEL_TOKEN_KIND_ENUM_DATA(F)                                                              \
+    F(equals, "ASSIGN", '=')                                                                       \
+    F(asterisk, "ASTERISK", '*')                                                                   \
     F(binary_int, "BINARY-INT", '\0')                                                              \
     F(bitwise_not, "BITWISE-NOT", '~')                                                             \
     F(block_comment, "BLOCK-COMMENT", '\\')                                                        \
@@ -25,24 +27,33 @@ namespace cowel {
     F(directive_splice_name, "DIRECTIVE-SPLICE-NAME", '\\')                                        \
     F(document_text, "DOCUMENT-TEXT", '\0')                                                        \
     F(ellipsis, "ELLIPSIS", '.')                                                                   \
-    F(equals, "EQUALS", '=')                                                                       \
+    F(equals_equals, "EQUALS", '=')                                                                \
     F(error, "ERROR", '\0')                                                                        \
     F(escape, "ESCAPE", '\\')                                                                      \
     F(false_, "FALSE", 'f')                                                                        \
+    F(greater_equal, "GREATER-EQUAL", '>')                                                         \
+    F(greater_than, "GREATER-THAN", '>')                                                           \
     F(hexadecimal_int_literal, "HEXADECIMAL-INT", '\0')                                            \
     F(identifier, "IDENTIFIER", '\0')                                                              \
     F(infinity, "INFINITY", 'i')                                                                   \
+    F(less_equal, "LESS-EQUAL", '<')                                                               \
+    F(less_than, "LESS-THAN", '<')                                                                 \
     F(line_comment, "LINE-COMMENT", '\\')                                                          \
+    F(logical_and, "LOGICAL-AND", '&')                                                             \
     F(logical_not, "LOGICAL-NOT", '!')                                                             \
+    F(logical_or, "LOGICAL-OR", '|')                                                               \
     F(minus, "MINUS", '-')                                                                         \
+    F(not_equals, "NOT-EQUALS", '!')                                                               \
     F(null, "NULL", 'n')                                                                           \
     F(octal_int, "OCTAL-INT", '\0')                                                                \
     F(parenthesis_left, "PARENTHESIS-LEFT", '(')                                                   \
     F(parenthesis_right, "PARENTHESIS-RIGHT", ')')                                                 \
+    F(percent, "PERCENT", '%')                                                                     \
     F(plus, "PLUS", '+')                                                                           \
     F(quoted_string_text, "QUOTED-STRING-TEXT", '\0')                                              \
     F(reserved_escape, "RESERVED-ESCAPE", '\\')                                                    \
     F(reserved_number, "RESERVED-NUMBER", '\0')                                                    \
+    F(slash, "SLASH", '/')                                                                         \
     F(string_quote, "STRING-QUOTE", '"')                                                           \
     F(true_, "TRUE", 't')                                                                          \
     F(unit, "UNIT", 'u')                                                                           \

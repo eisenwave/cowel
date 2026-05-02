@@ -206,13 +206,24 @@ std::u8string_view token_kind_source(const Token_Kind kind)
 
     case bitwise_not: return u8"~"sv;
     case logical_not: return u8"!"sv;
+    case logical_and: return u8"&&"sv;
+    case logical_or: return u8"||"sv;
+    case not_equals: return u8"!="sv;
     case minus: return u8"-"sv;
     case plus: return u8"+"sv;
+    case asterisk: return u8"*"sv;
+    case slash: return u8"/"sv;
+    case percent: return u8"%"sv;
     case brace_left: return u8"{"sv;
     case brace_right: return u8"}"sv;
     case comma: return u8","sv;
     case ellipsis: return u8"..."sv;
     case equals: return u8"="sv;
+    case equals_equals: return u8"=="sv;
+    case less_than: return u8"<"sv;
+    case less_equal: return u8"<="sv;
+    case greater_than: return u8">"sv;
+    case greater_equal: return u8">="sv;
     case false_: return u8"false"sv;
     case infinity: return u8"infinity"sv;
     case null: return u8"null"sv;

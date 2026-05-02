@@ -31,15 +31,38 @@ member-name
   = identifier
   | quoted-string;
 expression
-  = prefix-expression;
+  = logical-or-expression;
+logical-or-expression
+  = logical-and-expression
+  | logical-or-expression, LOGICAL-OR-TOKEN, logical-and-expression;
+logical-and-expression
+  = equality-expression
+  | logical-and-expression, LOGICAL-AND-TOKEN, equality-expression;
+equality-expression
+  = relational-expression
+  | equality-expression, EQUALS-TOKEN, relational-expression
+  | equality-expression, NOT-EQUALS-TOKEN, relational-expression;
+relational-expression
+  = additive-expression
+  | relational-expression, LESS-THAN-TOKEN, additive-expression
+  | relational-expression, GREATER-THAN-TOKEN, additive-expression
+  | relational-expression, LESS-EQUAL-TOKEN, additive-expression
+  | relational-expression, GREATER-EQUAL-TOKEN, additive-expression;
+additive-expression
+  = multiplicative-expression
+  | additive-expression, PLUS-TOKEN, multiplicative-expression
+  | additive-expression, MINUS-TOKEN, multiplicative-expression;
+multiplicative-expression
+  = prefix-expression
+  | multiplicative-expression, ASTERISK-TOKEN, prefix-expression
+  | multiplicative-expression, SLASH-TOKEN, prefix-expression
+  | multiplicative-expression, PERCENT-TOKEN, prefix-expression;
 prefix-expression
   = postfix-expression
-  | prefix-operator, prefix-expression;
-prefix-operator
-  = BITWISE-NOT-TOKEN
-  | LOGICAL-NOT-TOKEN
-  | PLUS-TOKEN
-  | MINUS-TOKEN;
+  | BITWISE-NOT-TOKEN, prefix-expression
+  | LOGICAL-NOT-TOKEN, prefix-expression
+  | PLUS-NOT-TOKEN, prefix-expression
+  | MINUS-NOT-TOKEN, prefix-expression;
 postfix-expression
   = primary-expression
   | directive-call-expression;
@@ -47,7 +70,8 @@ directive-call-expression
   = identifier, group, [ block ]
   | identifier, block;
 primary-expression
-  = UNIT-TOKEN
+  = parenthesized-expression
+  | UNIT-TOKEN
   | NULL-TOKEN
   | bool-literal
   | int-literal
@@ -55,8 +79,7 @@ primary-expression
   | unquoted-string
   | quoted-string
   | block
-  | group
-  | parenthesized-expression;
+  | group;
 parenthesized-expression
   = PARENTHESIS-LEFT-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
 bool-literal
