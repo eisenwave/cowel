@@ -275,6 +275,146 @@ private:
         COWEL_ASSERT_UNREACHABLE(u8"Unterminated group should have been dealt with by lexer.");
     }
 
+    // Parses a construct starting with `(` in a context where expressions can appear.
+    //
+    // This is difficult because e.g. `(0)` is a parenthesized-expression,
+    // whereas `(0,)` is a group with a single positional member.
+    // In general, we only know the meaning of the construct after reading the first member
+    // (ellipses and named members imply parsing as a group)
+    // or something immediately following it
+    // (a comma following a positional member implies parsing as a group).
+    void consume_group_or_parenthesized_expression()
+    {
+        COWEL_ASSERT(expect(Token_Kind::parenthesis_left));
+
+        const std::size_t wrapper_instruction_index = m_out.size();
+        m_out.push_back({ CST_Instruction_Kind::push_expr_parenthesized });
+
+        consume_blank_sequence();
+        if (expect(Token_Kind::parenthesis_right)) {
+            m_out[wrapper_instruction_index] = { CST_Instruction_Kind::push_group, 0 };
+            m_out.push_back({ CST_Instruction_Kind::pop_group });
+            return;
+        }
+
+        const std::size_t first_member_instruction_index = m_out.size();
+        enum struct First_Member_Kind : Default_Underlying {
+            named,
+            positional,
+            ellipsis,
+        };
+
+        const auto consume_group_tail = [&](std::size_t member_count) -> void {
+            while (!eof()) {
+                if (expect(Token_Kind::parenthesis_right)) {
+                    m_out[wrapper_instruction_index].n = member_count;
+                    m_out.push_back({ CST_Instruction_Kind::pop_group });
+                    return;
+                }
+                if (expect(Token_Kind::comma)) {
+                    m_out.push_back({ CST_Instruction_Kind::comma });
+                    consume_blank_sequence();
+                    if (expect(Token_Kind::parenthesis_right)) {
+                        m_out[wrapper_instruction_index].n = member_count;
+                        m_out.push_back({ CST_Instruction_Kind::pop_group });
+                        return;
+                    }
+                    consume_group_member();
+                    ++member_count;
+                    continue;
+                }
+                error(m_tokens[m_pos].location, u8"Invalid group member."sv);
+                skip_to_end_of_group_member();
+            }
+
+            error(
+                m_tokens.back().location,
+                u8"Unterminated group should have been dealt with by lexer."sv
+            );
+        };
+
+        const auto promote_first_member_to_group
+            = [&](const CST_Instruction_Kind push, const CST_Instruction_Kind pop) -> void {
+            m_out[wrapper_instruction_index] = { CST_Instruction_Kind::push_group, 1 };
+            // We have parsed an expression without the push/pop for the group member,
+            // so this wrapping needs to be retroactively inserted.
+            m_out.insert(
+                m_out.begin() + static_cast<std::ptrdiff_t>(first_member_instruction_index),
+                { push }
+            );
+            m_out.push_back({ pop });
+        };
+
+        const auto first_member_kind = [&] -> std::optional<First_Member_Kind> {
+            if (expect_member_name()) {
+                consume_blank_sequence();
+                if (!expect_expression()) {
+                    // Even though we couldn't parse the argument expression,
+                    // we still return `named` because we recognize the group member kind.
+                    error(m_tokens[m_pos].location, u8"Invalid group member value."sv);
+                    skip_to_end_of_group_member();
+                }
+                return First_Member_Kind::named;
+            }
+            if (expect(Token_Kind::ellipsis)) {
+                m_out.push_back({ CST_Instruction_Kind::ellipsis });
+                return First_Member_Kind::ellipsis;
+            }
+            if (expect_expression()) {
+                return First_Member_Kind::positional;
+            }
+            return {};
+        }();
+        if (!first_member_kind) {
+            error(m_tokens[m_pos].location, u8"Invalid group member value."sv);
+            m_out[wrapper_instruction_index] = { CST_Instruction_Kind::push_group, 0 };
+            consume_group_tail(0);
+            return;
+        }
+
+        consume_blank_sequence();
+
+        if (*first_member_kind == First_Member_Kind::positional
+            && expect(Token_Kind::parenthesis_right)) {
+            m_out.push_back({ CST_Instruction_Kind::pop_expr_parenthesized });
+            return;
+        }
+
+        switch (*first_member_kind) {
+        case First_Member_Kind::named: {
+            promote_first_member_to_group(
+                CST_Instruction_Kind::push_named_member, CST_Instruction_Kind::pop_named_member
+            );
+            consume_group_tail(1);
+            return;
+        }
+        case First_Member_Kind::positional: {
+            if (!peek(Token_Kind::comma)) {
+                error(
+                    m_tokens[m_pos].location,
+                    u8"Expected ')' or ',' after parenthesized expression."sv
+                );
+                skip_to_end_of_group_member();
+            }
+            promote_first_member_to_group(
+                CST_Instruction_Kind::push_positional_member,
+                CST_Instruction_Kind::pop_positional_member
+            );
+            consume_group_tail(1);
+            return;
+        }
+        case First_Member_Kind::ellipsis: {
+            promote_first_member_to_group(
+                CST_Instruction_Kind::push_ellipsis_argument,
+                CST_Instruction_Kind::pop_ellipsis_argument
+            );
+            consume_group_tail(1);
+            return;
+        }
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid first member kind.");
+    }
+
     void consume_group_member()
     {
         COWEL_ASSERT(!eof());
@@ -333,6 +473,10 @@ private:
     /// Doing so is usually sufficient to avoid an explosion in error count on recovery.
     void skip_to_end_of_group_member()
     {
+        if (peek(Token_Kind::comma) || peek(Token_Kind::parenthesis_right)) {
+            return;
+        }
+
         const std::size_t initial_pos = m_pos;
         while (true) {
             const Token* const next = peek();
@@ -440,7 +584,7 @@ private:
             return true;
         }
         case Token_Kind::parenthesis_left: {
-            consume_group();
+            consume_group_or_parenthesized_expression();
             return true;
         }
         case Token_Kind::brace_left: {
@@ -673,6 +817,8 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_expr_unary_plus);
         COWEL_ENUM_STRING_CASE8(push_expr_unary_minus);
         COWEL_ENUM_STRING_CASE8(pop_expr_unary_minus);
+        COWEL_ENUM_STRING_CASE8(push_expr_parenthesized);
+        COWEL_ENUM_STRING_CASE8(pop_expr_parenthesized);
         COWEL_ENUM_STRING_CASE8(push_expr_directive_call);
         COWEL_ENUM_STRING_CASE8(pop_expr_directive_call);
         COWEL_ENUM_STRING_CASE8(push_group);
@@ -720,6 +866,8 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case push_expr_logical_not: return Token_Kind::logical_not;
     case push_expr_unary_minus: return Token_Kind::minus;
     case push_expr_unary_plus: return Token_Kind::plus;
+    case push_expr_parenthesized: return Token_Kind::parenthesis_left;
+    case pop_expr_parenthesized: return Token_Kind::parenthesis_right;
     case push_expr_directive_call: return Token_Kind::identifier;
     case push_group: return Token_Kind::parenthesis_left;
     case pop_group: return Token_Kind::parenthesis_right;
@@ -780,9 +928,11 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case push_expr_logical_not:
     case push_expr_unary_minus:
     case push_expr_unary_plus:
+    case push_expr_parenthesized:
     case push_expr_directive_call:
     case push_group:
     case pop_group:
+    case pop_expr_parenthesized:
     case push_block:
     case pop_block:
     case push_quoted_member_name:

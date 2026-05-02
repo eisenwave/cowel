@@ -980,15 +980,7 @@ TEST(Parse_And_Build, group_1)
                 u8"d",
                 Node::group(
                     {
-                        Node::positional(
-                            { Node::group(
-                                { Node::positional(
-                                    {
-                                        Node::unquoted_string(u8"x"),
-                                    }
-                                ) }
-                            ) }
-                        ),
+                        Node::positional({ Node::unquoted_string(u8"x") }),
                         Node::positional({ Node::group({}) }),
                     }
                 )
@@ -1044,16 +1036,7 @@ TEST(Parse_And_Build, group_3)
     static const ast::Pmr_Vector<Node> expected {
         {
             Node::directive_with_arguments(
-                u8"d",
-                Node::group(
-                    { Node::positional(
-                        { Node::group(
-                            { Node::positional(
-                                { Node::group({ Node::positional({ Node::group({}) }) }) }
-                            ) }
-                        ) }
-                    ) }
-                )
+                u8"d", Node::group({ Node::positional({ Node::group({}) }) })
             ),
             Node::text(u8"\n"),
         },
@@ -1076,6 +1059,39 @@ TEST(Parse, string)
 TEST(Parse, block)
 {
     ASSERT_TRUE(run_parse_test(u8"arguments/block.cow", u8"arguments/block.expected"));
+}
+
+TEST(Parse, group_4)
+{
+    ASSERT_TRUE(run_parse_test(u8"arguments/group_4.cow", u8"arguments/group_4.expected"));
+}
+
+TEST(Parse_And_Build, group_4)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group(
+                    {
+                        Node::positional({ Node::unquoted_string(u8"x") }),
+                        Node::positional(
+                            { Node::group({ Node::positional({ Node::unquoted_string(u8"x") }) }) }
+                        ),
+                        Node::positional(
+                            { Node::group({ Node::named(u8"x", Node::integer(u8"0")) }) }
+                        ),
+                        Node::positional({ Node::unquoted_string(u8"x") }),
+                    }
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/group_4.cow");
 }
 
 TEST(Parse, integers)
@@ -1313,6 +1329,11 @@ TEST(Parse_Fail, escape_as_argument)
 TEST(Parse_Fail, hyphen_arg_name)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"hyphen_arg_name.cow"));
+}
+
+TEST(Parse_Fail, parenthesized_named_member_missing_value)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"parenthesized_named_member_missing_value.cow"));
 }
 
 } // namespace

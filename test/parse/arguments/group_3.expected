@@ -2,16 +2,12 @@ push_document 2
 push_directive_splice
 push_group 1
 push_positional_member
-push_group 1
-push_positional_member
-push_group 1
-push_positional_member
+push_expr_parenthesized
+push_expr_parenthesized
 push_group 0
 pop_group
-pop_positional_member
-pop_group
-pop_positional_member
-pop_group
+pop_expr_parenthesized
+pop_expr_parenthesized
 pop_positional_member
 pop_group
 pop_directive_splice

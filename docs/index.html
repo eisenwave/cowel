@@ -2671,13 +2671,20 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
 <h- data-h=name_nt_decl>identifier</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>group</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group-member-list</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>named-group-member</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group-member-list</h-> <h- data-h=sym_sqr>]</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group-member-list</h-> <h- data-h=sym_sqr>]</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>positional-group-member</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group-member-list</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>group-member-list</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>group-member</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>group-member</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>COMMA-TOKEN</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>group-member</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>member-name</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>EQUALS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>named-group-member</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>positional-group-member</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>named-group-member</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>member-name</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>EQUALS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>positional-group-member</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>member-name</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>quoted-string</h-><h- data-h=sym_punc>;</h->
@@ -2706,7 +2713,10 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>unquoted-string</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>quoted-string</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>block</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>group</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>parenthesized-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>parenthesized-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>bool-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>TRUE-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>FALSE-TOKEN</h-><h- data-h=sym_punc>;</h->
@@ -2821,13 +2831,20 @@ You can use an empty block of content to "cut a name short":
 which is constructed as follows:
 </p>
 <code-block><h- data-h=name_nt_decl>group</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group-member-list</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>named-group-member</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group-member-list</h-> <h- data-h=sym_sqr>]</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group-member-list</h-> <h- data-h=sym_sqr>]</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>positional-group-member</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group-member-list</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>group-member-list</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>group-member</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>group-member</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>COMMA-TOKEN</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>group-member</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>member-name</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>EQUALS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>member-value</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>member-value</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>named-group-member</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>positional-group-member</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>named-group-member</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>member-name</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>EQUALS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>positional-group-member</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>member-name</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>quoted-string</h-><h- data-h=sym_punc>;</h-></code-block>
@@ -2883,7 +2900,7 @@ not its escaped variant <code><h- data-h=err>\</h-><h- data-h=err>=</h-></code>.
 <h5 id=positional-arguments><a class=para href=#positional-arguments></a>4.3.2.2. Positional arguments</h5>
 
 <p>A <dfn>positional argument</dfn> is a <g-term>group-member</g-term> of the form
-<g-term>member-value</g-term>.
+<g-term>expression</g-term>.
 </p>
 <p>Positional arguments are content just like any other content,
 except that an unbalanced closing U+005D (<tt->]</tt->) or a U+002C (<tt->,</tt->)
@@ -2927,22 +2944,22 @@ and end with <code><h- data-h=sym_par>)</h-></code>.
 They can appear both in positional and in named arguments.
 </p>
 <example-block><p><intro-></intro-> 
-</p><code-block><h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=str>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=str>y</h-><h- data-h=sym_punc>,</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->    <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> groups as positional arguments</h->
+</p><code-block><h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=str>x</h-><h- data-h=sym_punc>,</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=str>y</h-><h- data-h=sym_punc>,</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> groups as positional arguments</h->
 <h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>n</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=str>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->       <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> group as named argument</h->
 <h- data-h=mk_tag>\d</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->           <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> nested empty groups</h-></code-block>
 </example-block>
 
-<warning-block><p><intro-></intro-> 
-In the future, parentheses surrounding a single positional argument
-will be treated as (ignored) parentheses around an expression,
-like in typical programming languages.
+<note-block><p><intro-></intro-> 
+Parentheses surrounding a single positional expression
+act as parenthesization,
+not as a <g-term>group</g-term>.
 </p>
 <p>For a group containing a single positional member,
-<code>(x,)</code> may also be used.
-That is, the trailing comma can only be used in a group,
+<code>(x,)</code> may be used.
+The trailing comma can only appear in a group,
 not in an expression,
 so it acts as a disambiguator.
-</p></warning-block>
+</p></note-block>
 
 <h4 id=directive-content><a class=para href=#directive-content></a>4.3.3. Directive content</h4>
 

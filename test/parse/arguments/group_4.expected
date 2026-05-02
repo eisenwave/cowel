@@ -1,0 +1,39 @@
+push_document 2
+push_directive_splice
+push_group 4
+push_positional_member
+push_expr_parenthesized
+unquoted_string
+pop_expr_parenthesized
+pop_positional_member
+comma
+push_positional_member
+push_group 1
+push_positional_member
+unquoted_string
+pop_positional_member
+comma
+pop_group
+pop_positional_member
+comma
+push_positional_member
+push_group 1
+push_named_member
+unquoted_member_name
+equals
+decimal_int
+pop_named_member
+pop_group
+pop_positional_member
+comma
+push_positional_member
+push_expr_parenthesized
+push_expr_parenthesized
+unquoted_string
+pop_expr_parenthesized
+pop_expr_parenthesized
+pop_positional_member
+pop_group
+pop_directive_splice
+text
+pop_document

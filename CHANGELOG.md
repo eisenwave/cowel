@@ -1,11 +1,15 @@
 # Changelog
 
-## **[v0.8.2](https://github.com/eisenwave/cowel/releases/tag/v0.8.2)** (2026-??-??)
+## **[v0.9.0](https://github.com/eisenwave/cowel/releases/tag/v0.9.0)** (2026-??-??)
 
+- change the type of `(X)` in expression to be that of `x` (#259):
+  - add *parenthesized-expression* as a construct
+  - disambiguate *group* as *parenthesized-expression* if possible
+  - `(x=X)`, `(X,)`, `()` remain a *group*
 - also add internal `__typeof` directive and test types of directives
 
 **Full Changelog**:
-[`v0.8.0...main`](https://github.com/eisenwave/cowel/compare/v0.8.0...main)
+[`v0.8.1...main`](https://github.com/eisenwave/cowel/compare/v0.8.1...main)
 
 ## **[v0.8.1](https://github.com/eisenwave/cowel/releases/tag/v0.8.1)** (2026-05-01)
 

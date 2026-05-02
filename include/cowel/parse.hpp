@@ -51,6 +51,8 @@ namespace cowel {
     F(pop_expr_unary_plus, "pop_expr_unary_plus")                                                  \
     F(push_expr_unary_minus, "push_expr_unary_minus")                                              \
     F(pop_expr_unary_minus, "pop_expr_unary_minus")                                                \
+    F(push_expr_parenthesized, "push_expr_parenthesized")                                          \
+    F(pop_expr_parenthesized, "pop_expr_parenthesized")                                            \
     F(push_expr_directive_call, "push_expr_directive_call")                                        \
     F(pop_expr_directive_call, "pop_expr_directive_call")                                          \
     /* `n` is the amount of group members. */                                                      \
