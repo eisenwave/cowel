@@ -3,6 +3,17 @@
 Trust this document first.
 Only search the repository when information here is missing or proves incorrect.
 
+## COWEL Language Reference
+
+For a concise agent-friendly summary of COWEL syntax, types, directives, and content policies,
+see [`.github/lang-summary.md`](lang-summary.md).
+
+Whenever a language change is made to the COWEL language
+(new syntax, changed semantics,
+new or removed builtin directives that are documented in these Markdown files,
+type system changes, etc.),
+both this file and `lang-summary.md` must be updated to reflect the change.
+
 ## Repository Summary
 
 - `cowel` is a C++23 + Node.js project for **Compact Web Language (COWEL)**,
