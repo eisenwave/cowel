@@ -103,6 +103,13 @@ public:
         return splice_directive_invocation(*this, directive, frame, context);
     }
 
+    [[nodiscard]]
+    Processing_Status
+    consume(const ast::Expression& expression, Frame_Index frame, Context& context) override
+    {
+        return splice_expression(*this, expression, frame, context);
+    }
+
     /// @brief Writes pure HTML content to `out`,
     /// consisting of the received HTML content,
     /// interleaved with syntax highlighting HTML (`<h->...</h->`)

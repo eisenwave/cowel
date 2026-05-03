@@ -16,6 +16,7 @@
   - `>=` greater than or equal to
   - `&&` logical AND
   - `||` logical OR
+- add *expression-splice*: `\(...)` (#276)
 - change the type of `(X)` in expression to be that of `x` (#259):
   - add *parenthesized-expression* as a construct
   - disambiguate *group* as *parenthesized-expression* if possible

@@ -800,7 +800,7 @@ static_assert(std::is_move_constructible_v<Group_Member>);
 static_assert(std::is_copy_assignable_v<Group_Member>);
 static_assert(std::is_move_assignable_v<Group_Member>);
 
-using Markup_Element_Variant = std::variant<Directive, Primary>;
+using Markup_Element_Variant = std::variant<Directive, Primary, Expression>;
 
 template <typename T>
 concept content_variant_alternative = []<typename... Ts>(std::variant<Ts...>*) {
@@ -809,6 +809,24 @@ concept content_variant_alternative = []<typename... Ts>(std::variant<Ts...>*) {
 
 struct Markup_Element : Markup_Element_Variant {
     using Markup_Element_Variant::variant;
+
+    [[nodiscard]]
+    bool is_directive() const
+    {
+        return std::holds_alternative<ast::Directive>(*this);
+    }
+
+    [[nodiscard]]
+    bool is_primary() const
+    {
+        return std::holds_alternative<ast::Primary>(*this);
+    }
+
+    [[nodiscard]]
+    bool is_expression() const
+    {
+        return std::holds_alternative<ast::Expression>(*this);
+    }
 
     [[nodiscard]]
     const ast::Directive& as_directive() const
@@ -830,6 +848,20 @@ struct Markup_Element : Markup_Element_Variant {
     const ast::Primary* try_as_primary() const
     {
         return std::get_if<ast::Primary>(this);
+    }
+
+    [[nodiscard]]
+    const ast::Expression& as_expression() const
+    {
+        const auto* const result = try_as_expression();
+        COWEL_ASSERT(result);
+        return *result;
+    }
+
+    [[nodiscard]]
+    const ast::Expression* try_as_expression() const
+    {
+        return std::get_if<ast::Expression>(this);
     }
 
     [[nodiscard]]

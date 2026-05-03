@@ -2057,6 +2057,7 @@ a <g-term>DOCUMENT</g-term> is matched as follows:
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LINE-COMMENT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BLOCK-COMMENT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>EXPRESSION-SPLICE</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>RESERVED-ESCAPE-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>ESCAPE-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ESCAPABLE-CHAR</h->
@@ -2086,6 +2087,10 @@ a <g-term>DOCUMENT</g-term> is matched as follows:
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-> <h- data-h=name_mac>? not followed by "(" or "{" ?</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>DIRECTIVE-SPLICE-NAME-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>EXPRESSION-SPLICE</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>GROUP-CONTENT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>EXPRESSION-SPLICE-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=name_nt_decl>IDENTIFIER-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-START-CHAR</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>IDENTIFIER-CHAR</h-> <h- data-h=sym_brac>}</h->
@@ -2711,9 +2716,12 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>ESCAPE-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LINE-COMMENT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BLOCK-COMMENT-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>directive-splice</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>directive-splice</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>expression-splice</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>directive-splice</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>expressions-splice</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>identifier</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>group</h->

@@ -275,6 +275,7 @@ private:
         const bool non_escape_matched //
             = expect_line_comment() //
             || expect_block_comment() //
+            || expect_expression_splice() //
             || expect_directive_splice();
         if (!non_escape_matched) {
             consume_escape();
@@ -353,11 +354,29 @@ private:
         return true;
     }
 
-    void consume_group()
+    [[nodiscard]]
+    bool expect_expression_splice()
     {
-        COWEL_ASSERT(expect_and_emit(u8'(', Token_Kind::parenthesis_left));
+        if (!peek_all().starts_with(u8"\\("sv)) {
+            return false;
+        }
 
-        std::size_t depth = 1;
+        const Source_Position initial_pos = m_pos;
+        emit(Token_Kind::expression_splice, 2);
+        advance_by(2);
+        if (!consume_parenthesized_content(1)) {
+            error(
+                Source_Span { initial_pos, 2 },
+                u8"No matching ')'. This expression splice is unterminated."sv
+            );
+        }
+        return true;
+    }
+
+    [[nodiscard]]
+    bool consume_parenthesized_content(std::size_t depth)
+    {
+        COWEL_DEBUG_ASSERT(depth > 0);
         while (!eof()) {
             switch (peek()) {
             case u8'(': {
@@ -370,7 +389,7 @@ private:
                 emit(Token_Kind::parenthesis_right, 1);
                 advance_by(1);
                 if (--depth == 0) {
-                    return;
+                    return true;
                 }
                 continue;
             }
@@ -518,6 +537,14 @@ private:
                 advance_by(1);
             }
         }
+
+        return false;
+    }
+
+    void consume_group()
+    {
+        COWEL_ASSERT(expect_and_emit(u8'(', Token_Kind::parenthesis_left));
+        void(consume_parenthesized_content(1));
     }
 
     void consume_numeric_literal()

@@ -67,6 +67,11 @@ struct Content_Policy : virtual Text_Sink {
         = 0;
 
     [[nodiscard]]
+    virtual Processing_Status //
+    consume(const ast::Expression& expression, Frame_Index frame, Context& context)
+        = 0;
+
+    [[nodiscard]]
     Processing_Status //
     consume_content(const ast::Markup_Element& content, Frame_Index frame, Context& context)
     {

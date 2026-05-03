@@ -298,10 +298,23 @@ Processing_Status splice_expression(
     Context& context
 )
 {
+    // Fast path for directives.
+    // Can bypass forming a `Value` when splicing directives that return blocks.
     if (const auto* const directive = value.try_as_directive()) {
         return splice_directive_invocation(out, *directive, frame, context);
     }
-    return splice_primary(out, value.as_primary(), frame, context);
+    // Fast path for primary-expressions.
+    // Can bypass forming a Value when splicing string literals etc.
+    if (const auto* const primary = value.try_as_primary()) {
+        return splice_primary(out, *primary, frame, context);
+    }
+
+    // General path for anything else: evaluate and splice the value.
+    const Result<Value, Processing_Status> evaluated = evaluate_expression(value, frame, context);
+    if (!evaluated) {
+        return evaluated.error();
+    }
+    return splice_value(out, *evaluated, value.get_source_span(), context);
 }
 
 [[nodiscard]]

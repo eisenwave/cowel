@@ -545,8 +545,30 @@ private:
             out.push_back(build_directive(Directive_Kind::splice));
             break;
         }
+        case push_expression_splice: {
+            out.push_back(build_expression_splice());
+            break;
+        }
         default: COWEL_ASSERT_UNREACHABLE(u8"Invalid markup element instruction.");
         }
+    }
+
+    [[nodiscard]]
+    ast::Expression build_expression_splice()
+    {
+        const CST_Instruction push = pop_instruction();
+        COWEL_ASSERT(push.kind == CST_Instruction_Kind::push_expression_splice);
+        advance_by_tokens(1);
+
+        ignore_skips();
+        ast::Expression expression = build_expression();
+        ignore_skips();
+
+        const CST_Instruction pop = pop_instruction();
+        COWEL_ASSERT(pop.kind == CST_Instruction_Kind::pop_expression_splice);
+        advance_by_tokens(1);
+
+        return expression;
     }
 
     [[nodiscard]]

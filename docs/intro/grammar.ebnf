@@ -7,9 +7,12 @@ common-markup-element
   = ESCAPE-TOKEN
   | LINE-COMMENT-TOKEN
   | BLOCK-COMMENT-TOKEN
-  | directive-splice;
+  | directive-splice
+  | expression-splice;
 directive-splice
   = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], [ block ];
+expressions-splice
+  = EXPRESSION-SPLICE-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
 identifier
   = IDENTIFIER-TOKEN;
 group

@@ -39,6 +39,12 @@ public:
     {
         return m_parent.consume(directive, frame, context);
     }
+    [[nodiscard]]
+    Processing_Status
+    consume(const ast::Expression& expression, Frame_Index frame, Context& context) override
+    {
+        return m_parent.consume(expression, frame, context);
+    }
 };
 
 } // namespace cowel
