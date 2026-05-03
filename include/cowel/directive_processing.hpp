@@ -242,6 +242,26 @@ Result<Value, Processing_Status> evaluate_unary(
 );
 
 [[nodiscard]]
+Result<bool, Processing_Status> evaluate_comparison(
+    Comparison_Expression_Kind kind,
+    const Value& lhs,
+    const Value& rhs,
+    const File_Source_Span& lhs_location,
+    const File_Source_Span& rhs_location,
+    Context& context
+);
+
+[[nodiscard]]
+Result<Value, Processing_Status> evaluate_binary_numeric(
+    Binary_Expression_Kind kind,
+    const Value& lhs,
+    const Value& rhs,
+    const File_Source_Span& lhs_location,
+    const File_Source_Span& rhs_location,
+    Context& context
+);
+
+[[nodiscard]]
 const Type& get_static_type(const ast::Expression& v, Context& context);
 
 /// @brief Returns the static type of a directive,

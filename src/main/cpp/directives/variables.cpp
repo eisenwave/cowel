@@ -187,7 +187,8 @@ struct Logical_Expression_Evaluator {
         for (const Argument& member : arguments) {
             COWEL_ASSERT(member.is_positional());
             const Type& static_type = member.get_static_type(context);
-            if (!static_type.analytically_convertible_to(Type::boolean)) {
+            if (static_type != Type::any
+                && !static_type.analytically_convertible_to(Type::boolean)) {
                 return type_error(static_type, member.get_value_location());
             }
             const Result<Value, Processing_Status> member_result = member.evaluate(frame, context);
@@ -250,35 +251,10 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
         return match_status;
     }
 
-    const Value& x = x_value.get();
-    const Value& y = y_value.get();
-
-    if (x.get_type() != y.get_type()) {
-        context.try_error(
-            diagnostic::type_mismatch, y_value.get_location(),
-            joined_char_sequence(
-                {
-                    u8"Cannot compare values of different type; that is, cannot compare "sv,
-                    y.get_type().get_display_name(),
-                    u8" with left-hand-side type "sv,
-                    x.get_type().get_display_name(),
-                    u8".",
-                }
-            )
-        );
-        return Processing_Status::error;
-    }
-
-    switch (m_expression_kind) {
-    case Comparison_Expression_Kind::eq: return compare<Comparison_Expression_Kind::eq>(x, y);
-    case Comparison_Expression_Kind::ne: return compare<Comparison_Expression_Kind::ne>(x, y);
-    case Comparison_Expression_Kind::lt: return compare<Comparison_Expression_Kind::lt>(x, y);
-    case Comparison_Expression_Kind::gt: return compare<Comparison_Expression_Kind::gt>(x, y);
-    case Comparison_Expression_Kind::le: return compare<Comparison_Expression_Kind::le>(x, y);
-    case Comparison_Expression_Kind::ge: return compare<Comparison_Expression_Kind::ge>(x, y);
-    }
-
-    COWEL_ASSERT_UNREACHABLE(u8"Invalid expression kind.");
+    return evaluate_comparison(
+        m_expression_kind, x_value.get(), y_value.get(), x_value.get_location(),
+        y_value.get_location(), context
+    );
 }
 
 Result<bool, Processing_Status>

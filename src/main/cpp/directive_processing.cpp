@@ -148,7 +148,11 @@ const Type& get_static_type(const ast::Expression& v, Context& context)
     if (const auto* const d = v.try_as_directive()) {
         return get_static_type(*d, context);
     }
-    return get_type(v.as_primary());
+    if (const auto* const p = v.try_as_primary()) {
+        return get_type(*p);
+    }
+    // TODO: infer static type for binary expressions
+    return Type::any;
 }
 
 [[nodiscard]]
@@ -578,13 +582,133 @@ Result<Value, Processing_Status> evaluate(
 }
 
 [[nodiscard]]
-Result<Value, Processing_Status> evaluate(
-    const ast::Binary_Expression&, //
-    const Frame_Index,
-    Context&
-)
+Result<Value, Processing_Status>
+evaluate(const ast::Binary_Expression& expression, const Frame_Index frame, Context& context)
 {
-    COWEL_ASSERT_UNREACHABLE(u8"Evaluation not yet implemented.");
+    const Binary_Expression_Kind kind = expression.get_kind();
+    const File_Source_Span& span = expression.get_source_span();
+
+    // Short-circuit logical operators: evaluate LHS first;
+    // if the result determines the outcome, skip RHS evaluation.
+    if (kind == Binary_Expression_Kind::logical_or || kind == Binary_Expression_Kind::logical_and) {
+        const bool terminator = kind == Binary_Expression_Kind::logical_or;
+
+        auto lhs_result = evaluate_expression(expression.get_lhs(), frame, context);
+        if (!lhs_result) {
+            return lhs_result;
+        }
+        if (!lhs_result->is_bool()) {
+            context.try_error(
+                diagnostic::type_mismatch, span,
+                joined_char_sequence(
+                    {
+                        u8"Expected a value of type "sv,
+                        Type::boolean.get_display_name(),
+                        u8", but got "sv,
+                        lhs_result->get_type().get_display_name(),
+                        u8"."sv,
+                    }
+                )
+            );
+            return Processing_Status::error;
+        }
+        if (lhs_result->as_boolean() == terminator) {
+            return Value::boolean(terminator);
+        }
+
+        auto rhs_result = evaluate_expression(expression.get_rhs(), frame, context);
+        if (!rhs_result) {
+            return rhs_result;
+        }
+        if (!rhs_result->is_bool()) {
+            context.try_error(
+                diagnostic::type_mismatch, span,
+                joined_char_sequence(
+                    {
+                        u8"Expected a value of type "sv,
+                        Type::boolean.get_display_name(),
+                        u8", but got "sv,
+                        rhs_result->get_type().get_display_name(),
+                        u8"."sv,
+                    }
+                )
+            );
+            return Processing_Status::error;
+        }
+        return Value::boolean(rhs_result->as_boolean());
+    }
+
+    // For all other operators, evaluate both operands unconditionally.
+    auto lhs_result = evaluate_expression(expression.get_lhs(), frame, context);
+    if (!lhs_result) {
+        return lhs_result;
+    }
+    auto rhs_result = evaluate_expression(expression.get_rhs(), frame, context);
+    if (!rhs_result) {
+        return rhs_result;
+    }
+
+    const Value& lhs = *lhs_result;
+    const Value& rhs = *rhs_result;
+
+    switch (kind) {
+    case Binary_Expression_Kind::eq: {
+        const auto r
+            = evaluate_comparison(Comparison_Expression_Kind::eq, lhs, rhs, span, span, context);
+        if (!r) {
+            return r.error();
+        }
+        return Value::boolean(*r);
+    }
+    case Binary_Expression_Kind::ne: {
+        const auto r
+            = evaluate_comparison(Comparison_Expression_Kind::ne, lhs, rhs, span, span, context);
+        if (!r) {
+            return r.error();
+        }
+        return Value::boolean(*r);
+    }
+    case Binary_Expression_Kind::lt: {
+        const auto r
+            = evaluate_comparison(Comparison_Expression_Kind::lt, lhs, rhs, span, span, context);
+        if (!r) {
+            return r.error();
+        }
+        return Value::boolean(*r);
+    }
+    case Binary_Expression_Kind::gt: {
+        const auto r
+            = evaluate_comparison(Comparison_Expression_Kind::gt, lhs, rhs, span, span, context);
+        if (!r) {
+            return r.error();
+        }
+        return Value::boolean(*r);
+    }
+    case Binary_Expression_Kind::le: {
+        const auto r
+            = evaluate_comparison(Comparison_Expression_Kind::le, lhs, rhs, span, span, context);
+        if (!r) {
+            return r.error();
+        }
+        return Value::boolean(*r);
+    }
+    case Binary_Expression_Kind::ge: {
+        const auto r
+            = evaluate_comparison(Comparison_Expression_Kind::ge, lhs, rhs, span, span, context);
+        if (!r) {
+            return r.error();
+        }
+        return Value::boolean(*r);
+    }
+    case Binary_Expression_Kind::plus:
+    case Binary_Expression_Kind::minus:
+    case Binary_Expression_Kind::multiply:
+    case Binary_Expression_Kind::divide:
+    case Binary_Expression_Kind::remainder:
+        return evaluate_binary_numeric(kind, lhs, rhs, span, span, context);
+    default: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Unhandled binary expression kind.");
 }
 
 Result<Value, Processing_Status> evaluate_unary(

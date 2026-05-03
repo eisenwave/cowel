@@ -1,0 +1,123 @@
+\test_input{
+\__typeof(2 * 3)
+\__typeof(2.0 * 3.0)
+
+\cowel_pos(8 * 2)
+\cowel_pos(8 * 2 * 5)
+\cowel_pos(2 * 8)
+\cowel_pos(2 * -8)
+
+\cowel_pos( 0 *  0)
+\cowel_pos( 0 *  1)
+\cowel_pos( 0 * -1)
+\cowel_pos( 1 * -1)
+\cowel_pos(-1 * -1)
+
+\cowel_pos( 0x80000000000000000000000000000000 * -1)
+\cowel_pos(-0x80000000000000000000000000000000 * -1)
+\cowel_pos( 0x40000000000000000000000000000000 * 2)
+\cowel_pos(-0x40000000000000000000000000000000 * 2)
+
+\cowel_pos( 0x10000000000000000000000000 *  0x10000000000000000000000000)
+\cowel_pos( 0x10000000000000000000000000 * -0x10000000000000000000000000)
+\cowel_pos(-0x10000000000000000000000000 *  0x10000000000000000000000000)
+\cowel_pos(-0x10000000000000000000000000 * -0x10000000000000000000000000)
+
+\cowel_pos( 0.0 *  0.0)
+\cowel_pos(-0.0 *  0.0)
+\cowel_pos( 0.0 * -0.0)
+\cowel_pos(-0.0 * -0.0)
+
+\cowel_pos( 1.0 *  1.0)
+\cowel_pos(-1.0 *  1.0)
+\cowel_pos( 1.0 * -1.0)
+\cowel_pos(-1.0 * -1.0)
+
+\cowel_pos(8.0 * 2.0)
+\cowel_pos(8.0 * 2.0 * 5.0)
+\cowel_pos(2.0 * 8.0)
+\cowel_pos(2.0 * -8.0)
+
+\cowel_pos(infinity * 0.0)
+\cowel_pos(infinity * 1.0)
+\cowel_pos(infinity * infinity)
+
+\cowel_pos(-infinity * 0.0)
+\cowel_pos(-infinity * 1.0)
+\cowel_pos(-infinity * -infinity)
+
+\cowel_pos(-infinity * infinity)
+\cowel_pos(infinity * -infinity)
+
+\cowel_pos(cowel_reinterpret_as_float(0x7ff8000000000000) * -infinity)
+\cowel_pos(cowel_reinterpret_as_float(0x7ff8000000000000) * -1.0)
+\cowel_pos(cowel_reinterpret_as_float(0x7ff8000000000000) * -0.5)
+\cowel_pos(cowel_reinterpret_as_float(0x7ff8000000000000) * -0.0)
+\cowel_pos(cowel_reinterpret_as_float(0x7ff8000000000000) *  0.0)
+\cowel_pos(cowel_reinterpret_as_float(0x7ff8000000000000) *  0.5)
+\cowel_pos(cowel_reinterpret_as_float(0x7ff8000000000000) *  1.0)
+\cowel_pos(cowel_reinterpret_as_float(0x7ff8000000000000) *  infinity)
+\cowel_pos(cowel_reinterpret_as_float(0x7ff8000000000000) *  cowel_reinterpret_as_float(0x7ff8000000000000))
+}
+
+\test_output{
+int
+float
+
+16
+80
+16
+-16
+
+0
+0
+0
+-1
+1
+
+-170141183460469231731687303715884105728
+170141183460469231731687303715884105728
+170141183460469231731687303715884105728
+-170141183460469231731687303715884105728
+
+1606938044258990275541962092341162602522202993782792835301376
+-1606938044258990275541962092341162602522202993782792835301376
+-1606938044258990275541962092341162602522202993782792835301376
+1606938044258990275541962092341162602522202993782792835301376
+
+0
+-0
+-0
+0
+
+1
+-1
+-1
+1
+
+16
+80
+16
+-16
+
+NaN
+infinity
+infinity
+
+NaN
+-infinity
+infinity
+
+-infinity
+-infinity
+
+NaN
+NaN
+NaN
+NaN
+NaN
+NaN
+NaN
+NaN
+NaN
+}

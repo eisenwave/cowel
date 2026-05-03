@@ -1,0 +1,61 @@
+\test_input{
+\__typeof(1 + 2 * 3)
+\__typeof(1 < 2 && 3 > 0)
+
+\cowel_pos(2 + 3 * 4)
+\cowel_pos(2 * 3 + 4)
+\cowel_pos(10 - 2 * 3)
+\cowel_pos(10 * 2 - 3)
+
+\cowel_pos(10 % 3 + 1)
+\cowel_pos(1 + 10 % 3)
+
+\cowel_pos(2 + 3 + 4)
+\cowel_pos(10 - 3 - 2)
+\cowel_pos(2 * 3 * 4)
+
+\cowel_and(1 < 2 && 3 > 0)
+\cowel_and(1 < 2 || 3 < 0)
+\cowel_and(1 > 2 && 3 > 0)
+\cowel_and(1 > 2 || 3 > 0)
+
+\cowel_and(1 == 1 && 2 == 2)
+\cowel_and(1 == 2 || 2 == 2)
+\cowel_and(1 == 1 && 2 == 3)
+
+\cowel_and(true && true || false)
+\cowel_and(false || true && false)
+\cowel_and(false || false || true)
+\cowel_and(true && false && true)
+}
+
+\test_output{
+int
+bool
+
+14
+10
+4
+17
+
+2
+2
+
+9
+5
+24
+
+true
+true
+false
+true
+
+true
+true
+false
+
+true
+false
+true
+false
+}
