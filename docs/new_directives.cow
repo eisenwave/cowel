@@ -1786,6 +1786,12 @@ the result is that of the IEEE-754 operations
 \left_fold_math_func{addition}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
+\Btip{
+\cowdoc_dir{cowel_add} can also be written with the binary
+\cowdoc_c{+} operator.
+See \ref("#binary-expressions").
+}
+
 \cowdoc_dir_h4("cowel_sub", "Subtraction")
 
 \pre{
@@ -1803,6 +1809,12 @@ the result is that of the IEEE-754 operations
 \left_fold_math_func{subtraction}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
+\Btip{
+\cowdoc_dir{cowel_sub} can also be written with the binary
+\cowdoc_c{-} operator.
+See \ref("#binary-expressions").
+}
+
 \cowdoc_dir_h4("cowel_mul", "Multiplication")
 
 \pre{
@@ -1819,6 +1831,12 @@ If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
 \left_fold_math_func{multiplication}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
+
+\Btip{
+\cowdoc_dir{cowel_mul} can also be written with the binary
+\cowdoc_c{*} operator.
+See \ref("#binary-expressions").
+}
 
 \cowdoc_dir_h4("cowel_div", "Division")
 
@@ -1838,6 +1856,12 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 \Bnote{
 Division by zero does not raise an error.
 Instead, it results in infinity or NaN depending on the dividend.
+}
+
+\Btip{
+\cowdoc_dir{cowel_div} can also be written with the binary
+\cowdoc_c{/} operator.
+See \ref("#binary-expressions").
 }
 
 \cowdoc_dir_h4("cowel_div_to_zero", "Division rounded toward zero")
@@ -1869,6 +1893,12 @@ An error is raised of \cowdoc_attr{y} is zero.
 \Bnote{
 The result is that of the \tt{\N{PERCENT SIGN}} operator in C.
 The sign of the result is the sign of the dividend \cowdoc_attr{x}.
+}
+
+\Btip{
+\cowdoc_dir{cowel_rem_to_zero} can also be written with the binary
+\cowdoc_c{%} operator.
+See \ref("#binary-expressions").
 }
 
 \cowdoc_dir_h4("cowel_div_to_pos_inf", "Division rounded toward positive infinity")
@@ -1964,6 +1994,12 @@ That is because the result of \cowdoc_dir{cowel_and} is already known
 after the first \cowdoc_c{false}.
 }
 
+\Btip{
+\cowdoc_dir{cowel_and} can also be written with the binary
+\cowdoc_c{&&} operator.
+See \ref("#binary-expressions").
+}
+
 \cowdoc_dir_h4("cowel_or", "Logical OR")
 
 \pre{
@@ -1975,6 +2011,12 @@ otherwise \cowdoc_c{false}.
 
 \cowdoc_attr{args} is evaluated from left to right,
 and any remaining elements are ignored once the result is known.
+
+\Btip{
+\cowdoc_dir{cowel_or} can also be written with the binary
+\cowdoc_c{||} operator.
+See \ref("#binary-expressions").
+}
 
 \h3(id="bitwise-operations"){Bitwise operations}
 
@@ -2033,6 +2075,12 @@ If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareQuietEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
 
+\Btip{
+\cowdoc_dir{cowel_eq} can also be written with the binary
+\cowdoc_c{==} operator.
+See \ref("#binary-expressions").
+}
+
 \cowdoc_dir_h4("cowel_ne", "Not equals")
 
 \pre{
@@ -2058,6 +2106,12 @@ the result is that of the IEEE-754 operation
 The result is \cowdoc_c{cowel_not(cowel_eq(x, y))}.
 }
 
+\Btip{
+\cowdoc_dir{cowel_ne} can also be written with the binary
+\cowdoc_c{!=} operator.
+See \ref("#binary-expressions").
+}
+
 \cowdoc_dir_h4("cowel_lt", "Less than")
 
 \pre{
@@ -2072,6 +2126,12 @@ otherwise \cowdoc_c{false}.
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareSignalingLess}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\Btip{
+\cowdoc_dir{cowel_lt} can also be written with the binary
+\cowdoc_c{<} operator.
+See \ref("#binary-expressions").
+}
 
 \cowdoc_dir_h4("cowel_gt", "Greater than")
 
@@ -2088,6 +2148,12 @@ If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareSignalingGreater}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
 
+\Btip{
+\cowdoc_dir{cowel_gt} can also be written with the binary
+\cowdoc_c{>} operator.
+See \ref("#binary-expressions").
+}
+
 \cowdoc_dir_h4("cowel_le", "Less than or equal")
 
 \pre{
@@ -2103,6 +2169,12 @@ If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareSignalingLessEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
 
+\Btip{
+\cowdoc_dir{cowel_le} can also be written with the binary
+\cowdoc_c{<=} operator.
+See \ref("#binary-expressions").
+}
+
 \cowdoc_dir_h4("cowel_ge", "Greater than or equal")
 
 \pre{
@@ -2117,6 +2189,12 @@ otherwise \cowdoc_c{false}.
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
 \math{\mrow{\mi{compareSignalingGreaterEqual}\mo(stretchy=false){(}\mi{x}\mo{,}\mi{y}\mo(stretchy=false){)}}}.
+
+\Btip{
+\cowdoc_dir{cowel_ge} can also be written with the binary
+\cowdoc_c{>=} operator.
+See \ref("#binary-expressions").
+}
 
 \h3(id="string-operations"){String operations}
 

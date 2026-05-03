@@ -1541,6 +1541,8 @@ h1 {
 <a href=#directive-call-expression><h3><g-term>directive-call-expression</g-term></h3></a>
 <div class=toc-num data-level=3>6.3</div>
 <a href=#prefix-expression><h3><g-term>prefix-expression</g-term></h3></a>
+<div class=toc-num data-level=3>6.4</div>
+<a href=#binary-expressions><h3>Binary expressions</h3></a>
 <div class=toc-num data-level=2>7</div>
 <a href=#types-intro><h2>Types</h2></a>
 <div class=toc-num data-level=3>7.1</div>
@@ -2500,13 +2502,24 @@ some of which represents a value of a basic type (<a href=#types-intro>§7. Type
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>HEXADECIMAL-INT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>DECIMAL-FLOAT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>INFINITY-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>EQUALS-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>COMMA-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BITWISE-NOT-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-NOT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-OR-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-AND-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>EQUALS-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>NOT-EQUALS-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LESS-THAN-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>GREATER-THAN-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LESS-EQUAL-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>GREATER-EQUAL-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PLUS-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>MINUS-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ASTERISK-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>SLASH-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PERCENT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BITWISE-NOT-TOKEN</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-NOT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>UNIT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>NULL-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>TRUE-TOKEN</h->
@@ -2851,7 +2864,7 @@ COWEL markup:
     The <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_name</h-></code> selects a specific directive to be processed.
   </li>
   <li>
-    An optional <code><h- data-h=sym_par>(</h-><h- data-h=str>comma_separated</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>positional</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>arguments</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>named</h->-arguments = ...<h- data-h=sym_par>)</h-></code>
+    An optional <code><h- data-h=sym_par>(</h-><h- data-h=str>comma_separated</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>positional</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>arguments</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>named</h-><h- data-h=sym_op>-</h-><h- data-h=mk_attr>arguments</h-> <h- data-h=sym_punc>=</h-> <h- data-h=err>...</h-><h- data-h=sym_par>)</h-></code>
     group provides additional inputs to the directive.
   </li>
   <li>
@@ -3237,7 +3250,8 @@ and returns a value when evaluated.
 <h3 id=primary-expression><a class=para href=#primary-expression></a>6.1. <g-term>primary-expression</g-term></h3>
 
 <code-block><h- data-h=name_nt_decl>primary-expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>UNIT-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parenthesized-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>UNIT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>NULL-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>bool-literal</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>int-literal</h->
@@ -3331,12 +3345,12 @@ to the <g-term>prefix-expression</g-term> <math display=inline><mi>e</mi></math>
 
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block>~1: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->~1<h- data-h=sym_par>)</h->
-+1: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->+1<h- data-h=sym_par>)</h->
+</p><code-block>~1: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>~</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h->
++1: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>+</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h->
 -1: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num_deco>-</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h->
 
-!true:  <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->!true<h- data-h=sym_par>)</h->
-!false: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h->!false<h- data-h=sym_par>)</h-></code-block>
+!true:  <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>!</h-><h- data-h=bool>true</h-><h- data-h=sym_par>)</h->
+!false: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>!</h-><h- data-h=bool>false</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>~1: -2
 +1: 1
@@ -3356,6 +3370,150 @@ using builtin directives:
   <li><code>cowel_neg(x)</code> is equivalent to <code>-x</code>.</li>
 </ul>
 </note-block>
+
+<h3 id=binary-expressions><a class=para href=#binary-expressions></a>6.4. Binary expressions</h3>
+
+<code-block><h- data-h=name_nt_decl>expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-or-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>logical-or-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-and-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>logical-or-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LOGICAL-OR-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>logical-and-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>logical-and-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>equality-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>logical-and-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LOGICAL-AND-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>equality-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>equality-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>relational-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>equality-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>EQUALS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>relational-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>equality-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>NOT-EQUALS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>relational-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>relational-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>additive-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>relational-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LESS-THAN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>additive-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>relational-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>GREATER-THAN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>additive-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>relational-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LESS-EQUAL-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>additive-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>relational-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>GREATER-EQUAL-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>additive-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>additive-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>multiplicative-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>additive-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PLUS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>multiplicative-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>additive-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>MINUS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>multiplicative-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>multiplicative-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>multiplicative-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASTERISK-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>multiplicative-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>SLASH-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>multiplicative-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PERCENT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<p>A <g-term>binary-expression</g-term> combines takes two operands
+and computes are result from these operands.
+Evaluating a <g-term>binary-expression</g-term> is equivalent to
+evaluating a <g-term>directive-call-expression</g-term>
+for a builtin directive specified in the table below.
+</p>
+<table>
+  <tr>
+    <th>Binary expression</th>
+    <th><g-term>directive-call-expression</g-term></th>
+  </tr>
+  <tr>
+    <td><code>a || b</code></td>
+    <td><code>cowel_or(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a &amp;&amp; b</code></td>
+    <td><code>cowel_and(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a == b</code></td>
+    <td><code>cowel_eq(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a != b</code></td>
+    <td><code>cowel_ne(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a &lt; b</code></td>
+    <td><code>cowel_lt(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a &gt; b</code></td>
+    <td><code>cowel_gt(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a &lt;= b</code></td>
+    <td><code>cowel_le(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a &gt;= b</code></td>
+    <td><code>cowel_ge(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a + b</code></td>
+    <td><code>cowel_add(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a - b</code></td>
+    <td><code>cowel_sub(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a * b</code></td>
+    <td><code>cowel_mul(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a / b</code></td>
+    <td><code>cowel_div(a, b)</code></td>
+  </tr>
+  <tr>
+    <td><code>a % b</code></td>
+    <td><code>cowel_rem_to_zero(a, b)</code></td>
+  </tr>
+</table>
+
+<p>Operator precedence and associativity are as follows:
+</p>
+<table>
+  <tr>
+    <th>Precedence (high to low)</th>
+    <th>Operators</th>
+    <th>Associativity</th>
+  </tr>
+  <tr>
+    <td>1 <g-term>multiplicative-expression</g-term></td>
+    <td><code>*</code>, <code>/</code>, <code>%</code></td>
+    <td>left-to-right</td>
+  </tr>
+  <tr>
+    <td>2 <g-term>additive-expression</g-term></td>
+    <td><code>+</code>, <code>-</code></td>
+    <td>left-to-right</td>
+  </tr>
+  <tr>
+    <td>3 <g-term>relational-expression</g-term></td>
+    <td><code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></td>
+    <td>left-to-right</td>
+  </tr>
+  <tr>
+    <td>4 <g-term>equality-expression</g-term></td>
+    <td><code>==</code>, <code>!=</code></td>
+    <td>left-to-right</td>
+  </tr>
+  <tr>
+    <td>5 <g-term>logical-and-expression</g-term></td>
+    <td><code>&amp;&amp;</code></td>
+    <td>left-to-right</td>
+  </tr>
+  <tr>
+    <td>6 <g-term>logical-or-expression</g-term></td>
+    <td><code>||</code></td>
+    <td>left-to-right</td>
+  </tr>
+</table>
+
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_eq</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>3</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>7</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_eq</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>3</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>9</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>true
+true</code-block>
+</example-block>
 <h2 id=types-intro><a class=para href=#types-intro></a>7. Types</h2>
 
 <p>While most of the content a user writes tends to be in a markup context,
@@ -5487,6 +5645,12 @@ the result is that of the IEEE-754 operations
 <mi>addition</mi><mo stretchy=false>(</mo><mo>…</mo><mi>addition</mi><mo stretchy=false>(</mo><mi>addition</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
 <p>for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_add</h-></code> can also be written with the binary
+<code>+</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_sub><a class=para href=#dir-cowel_sub></a>9.11.13. <code><h- data-h=mk_tag>\cowel_sub</h-></code> — Subtraction</h4>
 
 <pre>
@@ -5506,6 +5670,12 @@ the result is that of the IEEE-754 operations
 <mi>subtraction</mi><mo stretchy=false>(</mo><mo>…</mo><mi>subtraction</mi><mo stretchy=false>(</mo><mi>subtraction</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
 <p>for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_sub</h-></code> can also be written with the binary
+<code>-</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_mul><a class=para href=#dir-cowel_mul></a>9.11.14. <code><h- data-h=mk_tag>\cowel_mul</h-></code> — Multiplication</h4>
 
 <pre>
@@ -5525,6 +5695,12 @@ the result is that of the IEEE-754 operations
 <mi>multiplication</mi><mo stretchy=false>(</mo><mo>…</mo><mi>multiplication</mi><mo stretchy=false>(</mo><mi>multiplication</mi><mo stretchy=false>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo separator=true>,</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy=false>)</mo><mo separator=true>,</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy=false>)</mo><mo>…</mo><mo separator=true>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo stretchy=false>)</mo></mrow></math>
 <p>for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_mul</h-></code> can also be written with the binary
+<code>*</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_div><a class=para href=#dir-cowel_div></a>9.11.15. <code><h- data-h=mk_tag>\cowel_div</h-></code> — Division</h4>
 
 <pre>
@@ -5546,6 +5722,12 @@ for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><
 Division by zero does not raise an error.
 Instead, it results in infinity or NaN depending on the dividend.
 </p></note-block>
+
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_div</h-></code> can also be written with the binary
+<code>/</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
 
 <h4 id=dir-cowel_div_to_zero><a class=para href=#dir-cowel_div_to_zero></a>9.11.16. <code><h- data-h=mk_tag>\cowel_div_to_zero</h-></code> — Division rounded toward zero</h4>
 
@@ -5577,6 +5759,12 @@ with rounding toward zero.
 The result is that of the <tt->%</tt-> operator in C.
 The sign of the result is the sign of the dividend <tt-><h- data-h=mk_attr>x</h-></tt->.
 </p></note-block>
+
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_rem_to_zero</h-></code> can also be written with the binary
+<code>%</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
 
 <h4 id=dir-cowel_div_to_pos_inf><a class=para href=#dir-cowel_div_to_pos_inf></a>9.11.18. <code><h- data-h=mk_tag>\cowel_div_to_pos_inf</h-></code> — Division rounded toward positive infinity</h4>
 
@@ -5669,6 +5857,12 @@ no error is raised despite the second argument containing a division by zero.
 after the first <code>false</code>.
 </p></example-block>
 
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_and</h-></code> can also be written with the binary
+<code>&amp;&amp;</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_or><a class=para href=#dir-cowel_or></a>9.12.3. <code><h- data-h=mk_tag>\cowel_or</h-></code> — Logical OR</h4>
 
 <pre>
@@ -5681,6 +5875,12 @@ otherwise <code>false</code>.
 <p><tt-><h- data-h=mk_attr>args</h-></tt-> is evaluated from left to right,
 and any remaining elements are ignored once the result is known.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_or</h-></code> can also be written with the binary
+<code>||</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h3 id=bitwise-operations><a class=para href=#bitwise-operations></a>9.13. Bitwise operations</h3>
 
 <p>Bitwise operations work exclusively on operands of type <tt-><h- data-h=kw_type>int</h-></tt->.
@@ -5738,6 +5938,12 @@ returns <code>true</code>.
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareQuietEqual</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_eq</h-></code> can also be written with the binary
+<code>==</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_ne><a class=para href=#dir-cowel_ne></a>9.14.2. <code><h- data-h=mk_tag>\cowel_ne</h-></code> — Not equals</h4>
 
 <pre>
@@ -5763,6 +5969,12 @@ the result is that of the IEEE-754 operation
 The result is <code>cowel_not(cowel_eq(x, y))</code>.
 </p></note-block>
 
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_ne</h-></code> can also be written with the binary
+<code>!=</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_lt><a class=para href=#dir-cowel_lt></a>9.14.3. <code><h- data-h=mk_tag>\cowel_lt</h-></code> — Less than</h4>
 
 <pre>
@@ -5778,6 +5990,12 @@ otherwise <code>false</code>.
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareSignalingLess</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_lt</h-></code> can also be written with the binary
+<code>&lt;</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_gt><a class=para href=#dir-cowel_gt></a>9.14.4. <code><h- data-h=mk_tag>\cowel_gt</h-></code> — Greater than</h4>
 
 <pre>
@@ -5793,6 +6011,12 @@ otherwise <code>false</code>.
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareSignalingGreater</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_gt</h-></code> can also be written with the binary
+<code>&gt;</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_le><a class=para href=#dir-cowel_le></a>9.14.5. <code><h- data-h=mk_tag>\cowel_le</h-></code> — Less than or equal</h4>
 
 <pre>
@@ -5808,6 +6032,12 @@ otherwise <code>false</code>.
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareSignalingLessEqual</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_le</h-></code> can also be written with the binary
+<code>&lt;=</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_ge><a class=para href=#dir-cowel_ge></a>9.14.6. <code><h- data-h=mk_tag>\cowel_ge</h-></code> — Greater than or equal</h4>
 
 <pre>
@@ -5823,6 +6053,12 @@ otherwise <code>false</code>.
 the result is that of the IEEE-754 operation
 <math display=inline><mrow><mi>compareSignalingGreaterEqual</mi><mo stretchy=false>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy=false>)</mo></mrow></math>.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_ge</h-></code> can also be written with the binary
+<code>&gt;=</code> operator.
+See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+</p></tip-block>
+
 <h3 id=string-operations><a class=para href=#string-operations></a>9.15. String operations</h3>
 
 <h4 id=dir-cowel_str_length><a class=para href=#dir-cowel_str_length></a>9.15.1. <code><h- data-h=mk_tag>\cowel_str_length</h-></code> — Length of string</h4>
