@@ -1,0 +1,68 @@
+{
+  "description": "Test expression splice inside directive block content",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 2,
+      "expected": "punctuation.section.content.begin.cowel",
+      "description": "Block begin has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 3,
+      "expected": "punctuation.definition.template-expression.begin.cowel",
+      "description": "Expression splice begin in block"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 5,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Number literal in splice"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 6,
+      "expected": "punctuation.definition.template-expression.end.cowel",
+      "description": "Expression splice end in block"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 7,
+      "expected": "punctuation.section.content.end.cowel",
+      "description": "Block end has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 10,
+      "expected": "punctuation.definition.template-expression.begin.cowel",
+      "description": "Expression splice begin in mixed block text"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 14,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "Operator in block splice"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 17,
+      "expected": "punctuation.definition.template-expression.end.cowel",
+      "description": "Expression splice end in mixed block text"
+    }
+  ]
+}

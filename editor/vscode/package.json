@@ -64,6 +64,8 @@
           "punctuation.section.arguments.end.cowel": "other",
           "punctuation.section.content.begin.cowel": "other",
           "punctuation.section.content.end.cowel": "other",
+          "punctuation.definition.template-expression.begin.cowel": "other",
+          "punctuation.definition.template-expression.end.cowel": "other",
           "support.function.directive.cowel": "other"
         },
         "balancedBracketScopes": [
@@ -71,7 +73,8 @@
         ],
         "unbalancedBracketScopes": [
           "constant.character.escape.cowel",
-          "invalid.illegal.escape.cowel"
+          "invalid.illegal.escape.cowel",
+          "punctuation.definition.template-expression"
         ]
       }
     ]

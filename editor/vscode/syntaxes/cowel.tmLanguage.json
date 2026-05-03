@@ -5,6 +5,7 @@
   "patterns": [
     { "include": "#comments" },
     { "include": "#escapes" },
+    { "include": "#expression-splice" },
     { "include": "#directives" }
   ],
   "repository": {
@@ -48,7 +49,26 @@
         },
         {
           "name": "invalid.illegal.escape.cowel",
-          "match": "\\\\[^{}\"\\\\a-zA-Z_*:\\r\\n]"
+          "match": "\\\\[^{}(\"\\\\a-zA-Z_*:\\r\\n]"
+        }
+      ]
+    },
+    "expression-splice": {
+      "patterns": [
+        {
+          "name": "meta.expression-splice.cowel",
+          "begin": "\\\\\\(",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.template-expression.begin.cowel" }
+          },
+          "end": "\\)",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.template-expression.end.cowel" }
+          },
+          "patterns": [
+            { "include": "#argument" },
+            { "include": "#comments" }
+          ]
         }
       ]
     },
@@ -119,6 +139,7 @@
           "contentName": "string.quoted.double.cowel meta.object-literal.key.cowel",
           "patterns": [
             { "include": "#escapes" },
+            { "include": "#expression-splice" },
             { "include": "#directives" },
             { "include": "#comments" }
           ]
@@ -153,6 +174,7 @@
         },
         { "include": "#literals" },
         { "include": "#strings" },
+        { "include": "#expression-splice" },
         {
           "begin": "([a-zA-Z_][a-zA-Z0-9_-]*)(?=\\s*(\\\\\\*|\\\\:|\\(|\\{))",
           "beginCaptures": {
@@ -253,6 +275,7 @@
           },
           "patterns": [
             { "include": "#escapes" },
+            { "include": "#expression-splice" },
             { "include": "#directives" },
             { "include": "#comments" }
           ]

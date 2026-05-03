@@ -1,0 +1,33 @@
+{
+  "description": "Test expression splice inside quoted strings",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 9,
+      "expected": "punctuation.definition.template-expression.begin.cowel",
+      "description": "Expression splice inside string"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 11,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Number inside splice in string"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 12,
+      "expected": "punctuation.definition.template-expression.end.cowel",
+      "description": "Splice end inside string"
+    }
+  ]
+}

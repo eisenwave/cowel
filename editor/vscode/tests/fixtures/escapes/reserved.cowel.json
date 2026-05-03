@@ -10,17 +10,234 @@
     },
     {
       "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\# is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\$ is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\% is a reserved escape"
+    },
+    {
+      "type": "top-scope",
       "line": 4,
       "col": 0,
       "expected": "invalid.illegal.escape.cowel",
-      "description": "\\0 (digit) is a reserved escape"
+      "description": "\\& is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\' is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\) is a reserved escape"
     },
     {
       "type": "top-scope",
       "line": 7,
       "col": 0,
       "expected": "invalid.illegal.escape.cowel",
+      "description": "\\+ is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 8,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\, is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 9,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\- is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 10,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\. is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 11,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\/ is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 12,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\0 is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 13,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\1 is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 14,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\2 is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 15,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\3 is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 16,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\4 is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 17,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\5 is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 18,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\6 is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 19,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\7 is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 20,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\8 is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 21,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\9 is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 22,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\; is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 23,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\? is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 24,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\@ is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 25,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
       "description": "\\[ is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 26,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\] is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 27,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\] duplicate line is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 28,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\^ is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 29,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\^ duplicate line is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 30,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\` is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 31,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\~ is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 32,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\ä is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 33,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\🇩🇪 is a reserved escape"
     }
   ]
 }
