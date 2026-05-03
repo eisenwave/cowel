@@ -1,0 +1,82 @@
+{
+  "description": "Binary operators in arguments have operator scopes",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 1,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": "== has comparison scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 1,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": "!= has comparison scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 1,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": "< has comparison scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 1,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": "<= has comparison scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 1,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": "> has comparison scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 1,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": ">= has comparison scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 1,
+      "expected": "keyword.operator.logical.cowel",
+      "description": "&& has logical scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 8,
+      "col": 1,
+      "expected": "keyword.operator.logical.cowel",
+      "description": "|| has logical scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 9,
+      "col": 1,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "* has arithmetic scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 10,
+      "col": 1,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "/ has arithmetic scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 11,
+      "col": 1,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "% has arithmetic scope"
+    }
+  ]
+}
