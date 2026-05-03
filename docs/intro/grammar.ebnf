@@ -11,7 +11,7 @@ common-markup-element
   | expression-splice;
 directive-splice
   = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], [ block ];
-expressions-splice
+expression-splice
   = EXPRESSION-SPLICE-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
 identifier
   = IDENTIFIER-TOKEN;
@@ -64,8 +64,8 @@ prefix-expression
   = postfix-expression
   | BITWISE-NOT-TOKEN, prefix-expression
   | LOGICAL-NOT-TOKEN, prefix-expression
-  | PLUS-NOT-TOKEN, prefix-expression
-  | MINUS-NOT-TOKEN, prefix-expression;
+  | PLUS-TOKEN, prefix-expression
+  | MINUS-TOKEN, prefix-expression;
 postfix-expression
   = primary-expression
   | directive-call-expression;
