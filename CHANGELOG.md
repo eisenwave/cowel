@@ -2,7 +2,7 @@
 
 ## **[v0.9.0](https://github.com/eisenwave/cowel/releases/tag/v0.9.0)** (2026-??-??)
 
-- add binary operators:
+- add binary operators (#261):
   - `+` addition
   - `-` subtraction
   - `*` multiplication

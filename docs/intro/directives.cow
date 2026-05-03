@@ -187,7 +187,8 @@ and returns a value when evaluated.
 
 \codeblock(ebnf){
 primary-expression
-  = UNIT-TOKEN
+  = parenthesized-expression
+  | UNIT-TOKEN
   | NULL-TOKEN
   | bool-literal
   | int-literal
@@ -317,5 +318,155 @@ using builtin directives:
   \li{\cowdoc_c{cowel_not(x)} is equivalent to \cowdoc_c{!x}.}
   \li{\cowdoc_c{cowel_pos(x)} is equivalent to \cowdoc_c{+x}.}
   \li{\cowdoc_c{cowel_neg(x)} is equivalent to \cowdoc_c{-x}.}
+}
+}
+
+\h3(id="binary-expressions"){Binary expressions}
+
+\codeblock(ebnf){
+expression
+  = logical-or-expression;
+logical-or-expression
+  = logical-and-expression
+  | logical-or-expression, LOGICAL-OR-TOKEN, logical-and-expression;
+logical-and-expression
+  = equality-expression
+  | logical-and-expression, LOGICAL-AND-TOKEN, equality-expression;
+equality-expression
+  = relational-expression
+  | equality-expression, EQUALS-TOKEN, relational-expression
+  | equality-expression, NOT-EQUALS-TOKEN, relational-expression;
+relational-expression
+  = additive-expression
+  | relational-expression, LESS-THAN-TOKEN, additive-expression
+  | relational-expression, GREATER-THAN-TOKEN, additive-expression
+  | relational-expression, LESS-EQUAL-TOKEN, additive-expression
+  | relational-expression, GREATER-EQUAL-TOKEN, additive-expression;
+additive-expression
+  = multiplicative-expression
+  | additive-expression, PLUS-TOKEN, multiplicative-expression
+  | additive-expression, MINUS-TOKEN, multiplicative-expression;
+multiplicative-expression
+  = prefix-expression
+  | multiplicative-expression, ASTERISK-TOKEN, prefix-expression
+  | multiplicative-expression, SLASH-TOKEN, prefix-expression
+  | multiplicative-expression, PERCENT-TOKEN, prefix-expression;
+}
+
+A \gterm{binary-expression} combines takes two operands
+and computes are result from these operands.
+Evaluating a \gterm{binary-expression} is equivalent to
+evaluating a \gterm{directive-call-expression}
+for a builtin directive specified in the table below.
+
+\table{
+  \tr{
+    \th{Binary expression}
+    \th{\gterm{directive-call-expression}}
+  }
+  \tr{
+    \td{\cowdoc_c{a || b}}
+    \td{\cowdoc_c{cowel_or(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a && b}}
+    \td{\cowdoc_c{cowel_and(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a == b}}
+    \td{\cowdoc_c{cowel_eq(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a != b}}
+    \td{\cowdoc_c{cowel_ne(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a < b}}
+    \td{\cowdoc_c{cowel_lt(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a > b}}
+    \td{\cowdoc_c{cowel_gt(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a <= b}}
+    \td{\cowdoc_c{cowel_le(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a >= b}}
+    \td{\cowdoc_c{cowel_ge(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a + b}}
+    \td{\cowdoc_c{cowel_add(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a - b}}
+    \td{\cowdoc_c{cowel_sub(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a * b}}
+    \td{\cowdoc_c{cowel_mul(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a / b}}
+    \td{\cowdoc_c{cowel_div(a, b)}}
+  }
+  \tr{
+    \td{\cowdoc_c{a % b}}
+    \td{\cowdoc_c{cowel_rem_to_zero(a, b)}}
+  }
+}
+
+Operator precedence and associativity are as follows:
+
+\table{
+  \tr{
+    \th{Precedence (high to low)}
+    \th{Operators}
+    \th{Associativity}
+  }
+  \tr{
+    \td{1 \gterm{multiplicative-expression}}
+    \td{\cowdoc_c{*}, \cowdoc_c{/}, \cowdoc_c{%}}
+    \td{left-to-right}
+  }
+  \tr{
+    \td{2 \gterm{additive-expression}}
+    \td{\cowdoc_c{+}, \cowdoc_c{-}}
+    \td{left-to-right}
+  }
+  \tr{
+    \td{3 \gterm{relational-expression}}
+    \td{\cowdoc_c{<}, \cowdoc_c{>}, \cowdoc_c{<=}, \cowdoc_c{>=}}
+    \td{left-to-right}
+  }
+  \tr{
+    \td{4 \gterm{equality-expression}}
+    \td{\cowdoc_c{==}, \cowdoc_c{!=}}
+    \td{left-to-right}
+  }
+  \tr{
+    \td{5 \gterm{logical-and-expression}}
+    \td{\cowdoc_c{&&}}
+    \td{left-to-right}
+  }
+  \tr{
+    \td{6 \gterm{logical-or-expression}}
+    \td{\cowdoc_c{||}}
+    \td{left-to-right}
+  }
+}
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_eq(1 + 2 * 3, 7)
+\cowel_eq((1 + 2) * 3, 9)
+}}
+Generated HTML:
+\htmlblock{
+\cowel_eq(1 + 2 * 3, 7)
+\cowel_eq((1 + 2) * 3, 9)
 }
 }
