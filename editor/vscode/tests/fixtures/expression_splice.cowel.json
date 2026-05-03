@@ -1,0 +1,40 @@
+{
+  "description": "Test expression splice highlighting",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "punctuation.definition.template-expression.begin.cowel",
+      "description": "Expression splice \\( has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 2,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Integer literal in splice"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 3,
+      "expected": "punctuation.definition.template-expression.end.cowel",
+      "description": "Expression splice ) has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "punctuation.definition.template-expression.begin.cowel",
+      "description": "Splice with binary operation"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 4,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "Operator in splice"
+    }
+  ]
+}

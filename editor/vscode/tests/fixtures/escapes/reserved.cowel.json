@@ -10,17 +10,31 @@
     },
     {
       "type": "top-scope",
-      "line": 4,
+      "line": 6,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\) is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 12,
       "col": 0,
       "expected": "invalid.illegal.escape.cowel",
       "description": "\\0 (digit) is a reserved escape"
     },
     {
       "type": "top-scope",
-      "line": 7,
+      "line": 25,
       "col": 0,
       "expected": "invalid.illegal.escape.cowel",
       "description": "\\[ is a reserved escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 33,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Unicode flag escape stays invalid"
     }
   ]
 }
