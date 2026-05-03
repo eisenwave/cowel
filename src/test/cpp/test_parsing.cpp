@@ -74,6 +74,7 @@ enum struct Node_Kind : Default_Underlying {
     named_argument,
     positional_argument,
     ellipsis,
+    expression_splice,
 };
 
 struct Node {
@@ -407,12 +408,27 @@ struct Node {
     }
 
     [[nodiscard]]
+    static Node expression_splice(Node&& expression)
+    {
+        return {
+            .kind = Node_Kind::expression_splice,
+            .children = { std::move(expression) },
+        };
+    }
+
+    [[nodiscard]]
     static Node from(const ast::Markup_Element& actual)
     {
-        if (const auto* const d = get_if<ast::Directive>(&actual)) {
+        if (const auto* const d = std::get_if<ast::Directive>(&actual)) {
             return from(*d);
         }
-        return from(std::get<ast::Primary>(actual));
+        if (const auto* const p = std::get_if<ast::Primary>(&actual)) {
+            return from(*p);
+        }
+        if (const auto* const e = std::get_if<ast::Expression>(&actual)) {
+            return expression_splice(from(*e));
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid markup element.");
     }
 
     [[nodiscard]]
@@ -749,6 +765,10 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
 
     case Node_Kind::ellipsis: {
         return out << "Ellipsis(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::expression_splice: {
+        return out << "ExpressionSplice(" << node.children.front() << ')';
     }
     }
     return out;
@@ -1254,6 +1274,61 @@ TEST(Parse_And_Build, group_4)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/group_4.cow");
+}
+
+TEST(Parse_And_Build, expression_splice_contexts)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::expression_splice(Node::integer(u8"3")),
+            Node::text(u8"\n"),
+            Node::directive(
+                u8"d",
+                Node::group(
+                    {
+                        Node::positional({ Node::quoted_string(
+                            {
+                                Node::text(u8"x "),
+                                Node::expression_splice(Node::integer(u8"1")),
+                                Node::text(u8" y"),
+                            }
+                        ) }),
+                    }
+                ),
+                Node::block({ Node::expression_splice(Node::integer(u8"2")) })
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"expression_splice/contexts.cow");
+}
+
+TEST(Parse_And_Build, expression_splice_nesting)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::expression_splice(Node::group({})),
+            Node::text(u8"\n"),
+            Node::expression_splice(
+                Node::group(
+                    {
+                        Node::positional(Node::integer(u8"1")),
+                        Node::positional(Node::integer(u8"2")),
+                    }
+                )
+            ),
+            Node::text(u8"\n"),
+            Node::expression_splice(Node::integer(u8"1")),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"expression_splice/nesting.cow");
 }
 
 TEST(Parse_And_Build, floats)

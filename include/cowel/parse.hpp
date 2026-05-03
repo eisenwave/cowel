@@ -43,6 +43,8 @@ namespace cowel {
     F(pop_document, "pop_document")                                                                \
     F(push_directive_splice, "push_directive_splice")                                              \
     F(pop_directive_splice, "pop_directive_splice")                                                \
+    F(push_expression_splice, "push_expression_splice")                                            \
+    F(pop_expression_splice, "pop_expression_splice")                                              \
     F(push_expr_bitwise_not, "push_expr_bitwise_not")                                              \
     F(pop_expr_bitwise_not, "pop_expr_bitwise_not")                                                \
     F(push_expr_logical_not, "push_expr_logical_not")                                              \

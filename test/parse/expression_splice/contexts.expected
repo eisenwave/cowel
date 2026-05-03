@@ -1,0 +1,25 @@
+push_document 4
+push_expression_splice
+decimal_int
+pop_expression_splice
+text
+push_directive_splice
+push_group 1
+push_positional_member
+push_quoted_string 3
+text
+push_expression_splice
+decimal_int
+pop_expression_splice
+text
+pop_quoted_string
+pop_positional_member
+pop_group
+push_block 1
+push_expression_splice
+decimal_int
+pop_expression_splice
+pop_block
+pop_directive_splice
+text
+pop_document

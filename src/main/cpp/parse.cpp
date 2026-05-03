@@ -326,6 +326,10 @@ private:
             consume_directive_splice();
             return true;
         }
+        case Token_Kind::expression_splice: {
+            consume_expression_splice();
+            return true;
+        }
         case Token_Kind::brace_right: {
             COWEL_DEBUG_ASSERT(context == Content_Context::block);
             return false;
@@ -353,6 +357,25 @@ private:
             consume_block();
         }
         m_out.push_back({ CST_Instruction_Kind::pop_directive_splice });
+    }
+
+    void consume_expression_splice()
+    {
+        const Token* const splice = expect(Token_Kind::expression_splice);
+        COWEL_ASSERT(splice);
+
+        m_out.push_back({ CST_Instruction_Kind::push_expression_splice });
+
+        consume_blank_sequence();
+        if (!expect_expression()) {
+            error(m_tokens[m_pos].location, u8"Invalid expression splice expression."sv);
+        }
+        consume_blank_sequence();
+
+        const bool is_closed = expect(Token_Kind::parenthesis_right);
+        // The lexer should have ensured correct nesting.
+        COWEL_ASSERT(is_closed);
+        m_out.push_back({ CST_Instruction_Kind::pop_expression_splice });
     }
 
     void consume_group()
@@ -827,6 +850,7 @@ private:
         case Token_Kind::comma:
         case Token_Kind::ellipsis:
         case Token_Kind::equals:
+        case Token_Kind::expression_splice:
         case Token_Kind::parenthesis_right:
         case Token_Kind::brace_right:
         case Token_Kind::directive_splice_name:
@@ -1004,6 +1028,8 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_document);
         COWEL_ENUM_STRING_CASE8(push_directive_splice);
         COWEL_ENUM_STRING_CASE8(pop_directive_splice);
+        COWEL_ENUM_STRING_CASE8(push_expression_splice);
+        COWEL_ENUM_STRING_CASE8(pop_expression_splice);
         COWEL_ENUM_STRING_CASE8(push_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(pop_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(push_expr_logical_not);
@@ -1083,6 +1109,8 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case equals: return Token_Kind::equals;
     case comma: return Token_Kind::comma;
     case push_directive_splice: return Token_Kind::directive_splice_name;
+    case push_expression_splice: return Token_Kind::expression_splice;
+    case pop_expression_splice: return Token_Kind::parenthesis_right;
     case push_expr_bitwise_not: return Token_Kind::bitwise_not;
     case push_expr_logical_not: return Token_Kind::logical_not;
     case push_expr_unary_minus: return Token_Kind::minus;
@@ -1171,6 +1199,8 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case equals:
     case comma:
     case push_directive_splice:
+    case push_expression_splice:
+    case pop_expression_splice:
     case push_expr_bitwise_not:
     case push_expr_logical_not:
     case push_expr_unary_minus:

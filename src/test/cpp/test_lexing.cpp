@@ -220,6 +220,7 @@ std::u8string_view token_kind_source(const Token_Kind kind)
     case ellipsis: return u8"..."sv;
     case equals: return u8"="sv;
     case equals_equals: return u8"=="sv;
+    case expression_splice: return u8"\\("sv;
     case less_than: return u8"<"sv;
     case less_equal: return u8"<="sv;
     case greater_than: return u8">"sv;

@@ -36,6 +36,11 @@ struct Ignorant_Content_Policy : virtual Content_Policy {
     {
         return Processing_Status::ok;
     }
+    [[nodiscard]]
+    Processing_Status consume(const ast::Expression&, Frame_Index, Context&) override
+    {
+        return Processing_Status::ok;
+    }
 };
 
 } // namespace cowel
