@@ -1510,7 +1510,7 @@ h1 {
 <div class=toc-num data-level=3>4.2</div>
 <a href=#parsing><h3>Parsing</h3></a>
 <div class=toc-num data-level=3>4.3</div>
-<a href=#directives-splices><h3>Directives splices</h3></a>
+<a href=#directive-splices><h3>Directive splices</h3></a>
 <div class=toc-num data-level=4>4.3.1</div>
 <a href=#directive-names><h4>Directive names</h4></a>
 <div class=toc-num data-level=4>4.3.2</div>
@@ -1525,6 +1525,8 @@ h1 {
 <a href=#groups><h5>Groups</h5></a>
 <div class=toc-num data-level=4>4.3.3</div>
 <a href=#directive-content><h4>Directive content</h4></a>
+<div class=toc-num data-level=3>4.4</div>
+<a href=#expression-splices><h3>Expression splices</h3></a>
 <div class=toc-num data-level=2>5</div>
 <a href=#document-processing><h2>Document processing</h2></a>
 <div class=toc-num data-level=3>5.1</div>
@@ -2000,6 +2002,7 @@ built on top of only a few <dfn>markup elements</dfn>:
   <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> line comments</h-></code></li>
   <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt> block comments </h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt_dlim>\</h-></code></li>
   <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_splices</h-><h- data-h=sym_par>(</h-><h- data-h=str>positional</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>args</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named_args</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
+  <li><code><h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim>(</h-><h- data-h=str>expression</h-><h- data-h=sym_op>-</h-><h- data-h=str>splice</h-><h- data-h=str_intp_dlim>)</h-></code></li>
 </ul>
 
 <p>These are what a user writes most of the time.
@@ -2720,7 +2723,7 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>expression-splice</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>directive-splice</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>expressions-splice</h->
+<h- data-h=name_nt_decl>expression-splice</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>identifier</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
@@ -2773,8 +2776,8 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>postfix-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BITWISE-NOT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-NOT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PLUS-NOT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>MINUS-NOT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PLUS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>MINUS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>postfix-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>primary-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>directive-call-expression</h-><h- data-h=sym_punc>;</h->
@@ -2818,12 +2821,12 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>BLOCK-TEXT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>common-markup-element</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<h3 id=directives-splices><a class=para href=#directives-splices></a>4.3. Directives splices</h3>
+<h3 id=directive-splices><a class=para href=#directive-splices></a>4.3. Directive splices</h3>
 
 <p>A <dfn>directive</dfn> is a way of generating plaintext, HTML, both, or neither.
 You can think of it as a "command" or "function call".
 </p>
-<p><dfn>Splicing</dfn> means to evaluate a directive (or something else, in the future)
+<p><dfn>Splicing</dfn> means to evaluate a directive or expression
 and to insert the result between the surrounding markup elements.
 Splicing consists of three steps:
 </p>
@@ -3076,6 +3079,26 @@ which has a similar syntax,
 but permits multiple blocks. Each block is separated by a pair of braces.
 </p></note-block>
 
+<h3 id=expression-splices><a class=para href=#expression-splices></a>4.4. Expression splices</h3>
+
+<p>An <dfn>expression splice</dfn> evaluates an <g-term>expression</g-term>
+and feeds the resulting value as text into the current content policy.
+Its syntax starts with <code><h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim>(</h-></code>
+and ends at the matching U+0029 (<tt->)</tt->).
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block>1 + 2 = <h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim>(</h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h-><h- data-h=str_intp_dlim>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>1 + 2 = 3</code-block>
+</example-block>
+
+<p>In EBNF grammar, an <g-term>expression-splice</g-term> is constructed as follows:
+</p>
+<code-block><h- data-h=name_nt_decl>expression-splice</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>EXPRESSION-SPLICE-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
 <h2 id=document-processing><a class=para href=#document-processing></a>5. Document processing</h2>
 
 <p>A COWEL document is processed from top to bottom,
@@ -3295,7 +3318,7 @@ an error is raised.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-> <h- data-h=mk_tag>cowel_sqrt</h-><h- data-h=sym_par>(</h-><h- data-h=num>4</h-><h- data-h=num_dlim>.</h-><h- data-h=num>0</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_par>)</h-></code-block>
+</p><code-block>2</code-block>
 
 <p>Generated HTML:
 </p><code-block>2</code-block>
@@ -3305,17 +3328,15 @@ COWEL markup:
 
 <code-block><h- data-h=name_nt_decl>prefix-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>postfix-expression</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>prefix-operator</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>prefix-operator</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>BITWISE-NOT-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-NOT-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PLUS-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>MINUS-TOKEN</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BITWISE-NOT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOGICAL-NOT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>PLUS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>MINUS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p>A <g-term>prefix-expression</g-term> applies an operation
 to the <g-term>prefix-expression</g-term> <math display=inline><mi>e</mi></math> nested within.
 </p>
-<p>The operation is specified by the <g-term>prefix-operator</g-term>:
+<p>The operation is specified by the leading token:
 </p>
 <ul>
   <li>
@@ -3353,12 +3374,12 @@ to the <g-term>prefix-expression</g-term> <math display=inline><mi>e</mi></math>
 
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block>~1: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>~</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h->
-+1: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>+</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h->
--1: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=num_deco>-</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h->
+</p><code-block>~1: -2
++1: 1
+-1: -1
 
-!true:  <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>!</h-><h- data-h=bool>true</h-><h- data-h=sym_par>)</h->
-!false: <h- data-h=mk_tag>\cowel_to_str</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>!</h-><h- data-h=bool>false</h-><h- data-h=sym_par>)</h-></code-block>
+!true:  false
+!false: true</code-block>
 <p>Generated HTML:
 </p><code-block>~1: -2
 +1: 1
@@ -3516,8 +3537,8 @@ for a builtin directive specified in the table below.
 
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=mk_tag>\cowel_eq</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>3</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>7</h-><h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\cowel_eq</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>3</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>9</h-><h- data-h=sym_par>)</h-></code-block>
+</p><code-block><h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim>(</h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>3</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>7</h-><h- data-h=str_intp_dlim>)</h->
+<h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim>(</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>3</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>9</h-><h- data-h=str_intp_dlim>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>true
 true</code-block>

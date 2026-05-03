@@ -9,6 +9,7 @@ built on top of only a few \dfn{markup elements}:
   \li{\cowdoc_c{\\: line comments}}
   \li{\cowdoc_c{\\* block comments *\\}}
   \li{\cowdoc_c{\\directive_splices(positional, args, named_args = 0){and content}}}
+  \li{\cowdoc_c{\\(expression-splice)}}
 }
 
 These are what a user writes most of the time.
@@ -521,12 +522,12 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
 
 \codeblock(ebnf){\cowel_include_text("grammar.ebnf")}
 
-\h3{Directives splices}
+\h3{Directive splices}
 
 A \dfn{directive} is a way of generating plaintext, HTML, both, or neither.
 You can think of it as a "command" or "function call".
 
-\dfn{Splicing} means to evaluate a directive (or something else, in the future)
+\dfn{Splicing} means to evaluate a directive or expression
 and to insert the result between the surrounding markup elements.
 Splicing consists of three steps:
 
@@ -816,3 +817,29 @@ which has a similar syntax,
 but permits multiple blocks. Each block is separated by a pair of braces.
 }
 
+\h3{Expression splices}
+
+An \dfn{expression splice} evaluates an \gterm{expression}
+and feeds the resulting value as text into the current content policy.
+Its syntax starts with \cowdoc_c{\\(}
+and ends at the matching \cowdoc_cp(0x29).
+
+\Bex{
+COWEL markup:
+\cowblock{
+1 + 2 = \\(1 + 2)
+}
+Generated HTML:
+\htmlblock{
+1 + 2 = \(1 + 2)
+}
+}
+
+In EBNF grammar, an \gterm{expression-splice} is constructed as follows:
+
+\codeblock(ebnf){
+expression-splice
+  = EXPRESSION-SPLICE-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
+EXPRESSION-SPLICE-TOKEN
+  = "\\(";
+}

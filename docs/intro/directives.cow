@@ -228,7 +228,7 @@ an error is raised.
 \Bex{
 COWEL markup:
 \cowblock{\literally{
-\cowel_to_str( cowel_sqrt(4.0) )
+\(cowel_sqrt(4.0))
 }}
 
 Generated HTML:
@@ -242,18 +242,16 @@ Generated HTML:
 \codeblock(ebnf){
 prefix-expression
   = postfix-expression
-  | prefix-operator, prefix-expression;
-prefix-operator
-  = BITWISE-NOT-TOKEN
-  | LOGICAL-NOT-TOKEN
-  | PLUS-TOKEN
-  | MINUS-TOKEN;
+  | BITWISE-NOT-TOKEN, prefix-expression
+  | LOGICAL-NOT-TOKEN, prefix-expression
+  | PLUS-TOKEN, prefix-expression
+  | MINUS-TOKEN, prefix-expression;
 }
 
 A \gterm{prefix-expression} applies an operation
 to the \gterm{prefix-expression} \math{\mi{e}} nested within.
 
-The operation is specified by the \gterm{prefix-operator}:
+The operation is specified by the leading token:
 
 \ul{
   \li{
@@ -292,21 +290,21 @@ The operation is specified by the \gterm{prefix-operator}:
 \Bex{
 COWEL markup:
 \cowblock{\literally{
-~1: \cowel_to_str(~1)
-+1: \cowel_to_str(+1)
--1: \cowel_to_str(-1)
+~1: \(~1)
++1: \(+1)
+-1: \(-1)
 
-!true:  \cowel_to_str(!true)
-!false: \cowel_to_str(!false)
+!true:  \(!true)
+!false: \(!false)
 }}
 Generated HTML:
 \htmlblock{
-~1: \cowel_to_str(~1)
-+1: \cowel_to_str(+1)
--1: \cowel_to_str(-1)
+~1: \(~1)
++1: \(+1)
+-1: \(-1)
 
-!true:  \cowel_to_str(!true)
-!false: \cowel_to_str(!false)
+!true:  \(!true)
+!false: \(!false)
 }
 }
 
@@ -460,13 +458,13 @@ Operator precedence and associativity are as follows:
 
 \Bex{
 COWEL markup:
-\cowblock{\literally{
-\cowel_eq(1 + 2 * 3, 7)
-\cowel_eq((1 + 2) * 3, 9)
-}}
+\cowblock{
+\\(1 + 2 * 3 == 7)
+\\((1 + 2) * 3 == 9)
+}
 Generated HTML:
 \htmlblock{
-\cowel_eq(1 + 2 * 3, 7)
-\cowel_eq((1 + 2) * 3, 9)
+\(1 + 2 * 3 == 7)
+\((1 + 2) * 3 == 9)
 }
 }

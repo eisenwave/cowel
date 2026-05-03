@@ -18,6 +18,7 @@ This makes COWEL easy to nest foreign content in.
   The trailing newline is consumed, so it leaves no blank line.
 - **Block comment** — `\* ... *\` (non-nestable).
 - **Directive splice** — `\name(args){content}` (see next section).
+- **Expression splice** — `\(expression)` evaluates an expression and inserts its text result.
 
 ## Directives: the core abstraction
 
@@ -106,8 +107,9 @@ All binary and prefix operators desugar to `cowel_*` builtins
 (e.g. `a + b` ≡ `cowel_add(a, b)`).
 A directive call `name(args)` or `name{block}` is also a valid expression.
 
-Values can be **spliced** into strings and blocks:
-`"Hello, \name!"` or `{Hello, \name!}` evaluates `\name` and inserts its text result.
+Values can be spliced into text using directives and expression splices:
+`"x = \(1 + 2)"` or `{x = \(1 + 2)}` evaluates the expression and inserts `3`.
+Directive splices work the same way: `"Hello, \name!"`.
 
 ## Defining macros
 
