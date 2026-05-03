@@ -30,7 +30,7 @@ namespace cowel {
     F(equals_equals, "EQUALS", '=')                                                                \
     F(error, "ERROR", '\0')                                                                        \
     F(escape, "ESCAPE", '\\')                                                                      \
-    F(expression_splice, "EXPRESSION-SPLICE", '\\')                                               \
+    F(expression_splice, "EXPRESSION-SPLICE", '\\')                                                \
     F(false_, "FALSE", 'f')                                                                        \
     F(greater_equal, "GREATER-EQUAL", '>')                                                         \
     F(greater_than, "GREATER-THAN", '>')                                                           \
