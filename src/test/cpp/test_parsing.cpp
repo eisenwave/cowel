@@ -1287,13 +1287,15 @@ TEST(Parse_And_Build, expression_splice_contexts)
                 u8"d",
                 Node::group(
                     {
-                        Node::positional({ Node::quoted_string(
-                            {
-                                Node::text(u8"x "),
-                                Node::expression_splice(Node::integer(u8"1")),
-                                Node::text(u8" y"),
-                            }
-                        ) }),
+                        Node::positional(
+                            { Node::quoted_string(
+                                {
+                                    Node::text(u8"x "),
+                                    Node::expression_splice(Node::integer(u8"1")),
+                                    Node::text(u8" y"),
+                                }
+                            ) }
+                        ),
                     }
                 ),
                 Node::block({ Node::expression_splice(Node::integer(u8"2")) })
