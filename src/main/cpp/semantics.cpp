@@ -2,11 +2,16 @@
 #include <ranges>
 #include <span>
 #include <string>
+#include <string_view>
 
-#include "cowel/expression_kind.hpp"
 #include "cowel/util/assert.hpp"
+#include "cowel/util/char_sequence.hpp"
+#include "cowel/util/result.hpp"
 
 #include "cowel/ast.hpp"
+#include "cowel/context.hpp"
+#include "cowel/diagnostic.hpp"
+#include "cowel/expression_kind.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/type.hpp"
 #include "cowel/value.hpp"
@@ -271,5 +276,264 @@ consteval bool test_sanitized()
 }
 
 static_assert(test_sanitized());
+
+Result<bool, Processing_Status> evaluate_comparison(
+    const Comparison_Expression_Kind kind,
+    const Value& lhs,
+    const Value& rhs,
+    const File_Source_Span& lhs_location,
+    const File_Source_Span& rhs_location,
+    Context& context
+)
+{
+    using namespace std::string_view_literals;
+
+    static constexpr Type equality_comparable_types[] {
+        Type::unit, Type::null, Type::boolean, Type::integer, Type::floating, Type::str,
+    };
+    static constexpr auto equality_comparable = Type::union_of(equality_comparable_types);
+    static_assert(equality_comparable.is_canonical());
+
+    static constexpr Type relation_comparable_types[] { Type::integer, Type::floating, Type::str };
+    static constexpr auto relation_comparable = Type::union_of(relation_comparable_types);
+    static_assert(relation_comparable.is_canonical());
+
+    const auto& acceptable_type
+        = kind <= Comparison_Expression_Kind::ne ? equality_comparable : relation_comparable;
+
+    bool ok = true;
+    if (!lhs.get_type().analytically_convertible_to(acceptable_type)) {
+        context.try_error(
+            diagnostic::type_mismatch, lhs_location,
+            joined_char_sequence(
+                {
+                    u8"Expected a value of type "sv,
+                    acceptable_type.get_display_name(),
+                    u8", but got "sv,
+                    lhs.get_type().get_display_name(),
+                    u8".",
+                }
+            )
+        );
+        ok = false;
+    }
+    if (!rhs.get_type().analytically_convertible_to(acceptable_type)) {
+        context.try_error(
+            diagnostic::type_mismatch, rhs_location,
+            joined_char_sequence(
+                {
+                    u8"Expected a value of type "sv,
+                    acceptable_type.get_display_name(),
+                    u8", but got "sv,
+                    rhs.get_type().get_display_name(),
+                    u8".",
+                }
+            )
+        );
+        ok = false;
+    }
+    if (!ok) {
+        return Processing_Status::error;
+    }
+    if (lhs.get_type() != rhs.get_type()) {
+        context.try_error(
+            diagnostic::type_mismatch, rhs_location,
+            joined_char_sequence(
+                {
+                    u8"Cannot compare values of different type; that is, cannot compare "sv,
+                    rhs.get_type().get_display_name(),
+                    u8" with left-hand-side type "sv,
+                    lhs.get_type().get_display_name(),
+                    u8".",
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+
+    switch (kind) {
+    case Comparison_Expression_Kind::eq: return compare<Comparison_Expression_Kind::eq>(lhs, rhs);
+    case Comparison_Expression_Kind::ne: return compare<Comparison_Expression_Kind::ne>(lhs, rhs);
+    case Comparison_Expression_Kind::lt: return compare<Comparison_Expression_Kind::lt>(lhs, rhs);
+    case Comparison_Expression_Kind::gt: return compare<Comparison_Expression_Kind::gt>(lhs, rhs);
+    case Comparison_Expression_Kind::le: return compare<Comparison_Expression_Kind::le>(lhs, rhs);
+    case Comparison_Expression_Kind::ge: return compare<Comparison_Expression_Kind::ge>(lhs, rhs);
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid comparison kind.");
+}
+
+Result<Value, Processing_Status> evaluate_binary_numeric(
+    const Binary_Expression_Kind kind,
+    const Value& lhs,
+    const Value& rhs,
+    const File_Source_Span& lhs_location,
+    const File_Source_Span& rhs_location,
+    Context& context
+)
+{
+    using namespace std::string_view_literals;
+
+    // Division: float operands only.
+    if (kind == Binary_Expression_Kind::divide) {
+        bool ok = true;
+        if (!lhs.is_float()) {
+            context.try_error(
+                diagnostic::type_mismatch, lhs_location,
+                joined_char_sequence(
+                    {
+                        u8"Expected a value of type "sv,
+                        Type::floating.get_display_name(),
+                        u8", but got "sv,
+                        lhs.get_type().get_display_name(),
+                        u8".",
+                    }
+                )
+            );
+            ok = false;
+        }
+        if (!rhs.is_float()) {
+            context.try_error(
+                diagnostic::type_mismatch, rhs_location,
+                joined_char_sequence(
+                    {
+                        u8"Expected a value of type "sv,
+                        Type::floating.get_display_name(),
+                        u8", but got "sv,
+                        rhs.get_type().get_display_name(),
+                        u8".",
+                    }
+                )
+            );
+            ok = false;
+        }
+        if (!ok) {
+            return Processing_Status::error;
+        }
+        return Value::floating(lhs.as_float() / rhs.as_float());
+    }
+
+    // Remainder: integer operands only.
+    if (kind == Binary_Expression_Kind::remainder) {
+        bool ok = true;
+        if (!lhs.is_int()) {
+            context.try_error(
+                diagnostic::type_mismatch, lhs_location,
+                joined_char_sequence(
+                    {
+                        u8"Expected a value of type "sv,
+                        Type::integer.get_display_name(),
+                        u8", but got "sv,
+                        lhs.get_type().get_display_name(),
+                        u8".",
+                    }
+                )
+            );
+            ok = false;
+        }
+        if (!rhs.is_int()) {
+            context.try_error(
+                diagnostic::type_mismatch, rhs_location,
+                joined_char_sequence(
+                    {
+                        u8"Expected a value of type "sv,
+                        Type::integer.get_display_name(),
+                        u8", but got "sv,
+                        rhs.get_type().get_display_name(),
+                        u8".",
+                    }
+                )
+            );
+            ok = false;
+        }
+        if (!ok) {
+            return Processing_Status::error;
+        }
+        if (rhs.as_integer().is_zero()) {
+            context.try_error(
+                diagnostic::arithmetic_div_by_zero, rhs_location, u8"Division by zero."sv
+            );
+            return Processing_Status::error;
+        }
+        return Value::integer(lhs.as_integer() % rhs.as_integer());
+    }
+
+    // Addition, subtraction, multiplication: integer or float, same type.
+    static constexpr Type numeric_types[] { Type::integer, Type::floating };
+    static constexpr auto numeric_type = Type::union_of(numeric_types);
+    static_assert(numeric_type.is_canonical());
+
+    bool ok = true;
+    if (!lhs.get_type().analytically_convertible_to(numeric_type)) {
+        context.try_error(
+            diagnostic::type_mismatch, lhs_location,
+            joined_char_sequence(
+                {
+                    u8"Expected a value of type "sv,
+                    numeric_type.get_display_name(),
+                    u8", but got "sv,
+                    lhs.get_type().get_display_name(),
+                    u8".",
+                }
+            )
+        );
+        ok = false;
+    }
+    if (!rhs.get_type().analytically_convertible_to(numeric_type)) {
+        context.try_error(
+            diagnostic::type_mismatch, rhs_location,
+            joined_char_sequence(
+                {
+                    u8"Expected a value of type "sv,
+                    numeric_type.get_display_name(),
+                    u8", but got "sv,
+                    rhs.get_type().get_display_name(),
+                    u8".",
+                }
+            )
+        );
+        ok = false;
+    }
+    if (!ok) {
+        return Processing_Status::error;
+    }
+    if (lhs.get_type() != rhs.get_type()) {
+        context.try_error(
+            diagnostic::type_mismatch, rhs_location,
+            joined_char_sequence(
+                {
+                    u8"Both operands must be of the same type, but left-hand side is "sv,
+                    lhs.get_type().get_display_name(),
+                    u8" and right-hand side is "sv,
+                    rhs.get_type().get_display_name(),
+                    u8".",
+                }
+            )
+        );
+        return Processing_Status::error;
+    }
+
+    switch (kind) {
+    case Binary_Expression_Kind::plus: {
+        if (lhs.is_int()) {
+            return Value::integer(lhs.as_integer() + rhs.as_integer());
+        }
+        return Value::floating(lhs.as_float() + rhs.as_float());
+    }
+    case Binary_Expression_Kind::minus: {
+        if (lhs.is_int()) {
+            return Value::integer(lhs.as_integer() - rhs.as_integer());
+        }
+        return Value::floating(lhs.as_float() - rhs.as_float());
+    }
+    case Binary_Expression_Kind::multiply: {
+        if (lhs.is_int()) {
+            return Value::integer(lhs.as_integer() * rhs.as_integer());
+        }
+        return Value::floating(lhs.as_float() * rhs.as_float());
+    }
+    default: break;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Unexpected binary numeric kind.");
+}
 
 } // namespace cowel

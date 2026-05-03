@@ -1,0 +1,73 @@
+\test_input{
+\__typeof(1 != 2)
+
+\cowel_and(unit != unit)
+
+\cowel_and(null != null)
+
+\cowel_and(false != false)
+\cowel_and(true != false)
+\cowel_and(false != true)
+\cowel_and(true != true)
+
+\cowel_and(0 != 0)
+\cowel_and(0 != 1)
+\cowel_and(1 != 0)
+\cowel_and(1 != 1)
+
+\cowel_and( 0x100000000000000000000000000000000000000000000000000 !=  0)
+\cowel_and(-0x100000000000000000000000000000000000000000000000000 !=  0)
+\cowel_and( 0x100000000000000000000000000000000000000000000000000 !=  0x100000000000000000000000000000000000000000000000000)
+\cowel_and( 0x100000000000000000000000000000000000000000000000000 != -0x100000000000000000000000000000000000000000000000000)
+\cowel_and(-0x100000000000000000000000000000000000000000000000000 !=  0x100000000000000000000000000000000000000000000000000)
+\cowel_and(-0x100000000000000000000000000000000000000000000000000 != -0x100000000000000000000000000000000000000000000000000)
+
+\cowel_and(0.0 != 0.0)
+\cowel_and(1.0 != 0.0)
+\cowel_and(0.0 != 1.0)
+\cowel_and(1.0 != 1.0)
+\cowel_and(-0.0 != 0.0)
+\cowel_and(-0.0 != -0.0)
+
+\cowel_and("" != "")
+\cowel_and("x" != "")
+\cowel_and("" != "x")
+\cowel_and("x" != "x")
+}
+
+\test_output{
+bool
+
+false
+
+false
+
+false
+true
+true
+false
+
+false
+true
+true
+false
+
+true
+true
+false
+true
+true
+false
+
+false
+true
+true
+false
+false
+false
+
+false
+true
+true
+false
+}
