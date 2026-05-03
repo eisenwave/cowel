@@ -1,0 +1,54 @@
+{
+  "description": "Operator munch behavior: multi-char operators win before single-char ones",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": "=== starts with =="
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 2,
+      "expected": "keyword.operator.assignment.cowel",
+      "description": "=== ends with ="
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": "== is comparison"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 0,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": "<= starts with <="
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 2,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": "<=< ends with <"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": ">= starts with >="
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 2,
+      "expected": "keyword.operator.comparison.cowel",
+      "description": ">=> ends with >"
+    }
+  ]
+}

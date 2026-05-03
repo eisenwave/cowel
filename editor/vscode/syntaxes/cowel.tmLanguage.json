@@ -111,7 +111,7 @@
           "beginCaptures": {
             "1": { "name": "string.quoted.double.cowel meta.object-literal.key.cowel punctuation.definition.string.begin.cowel" }
           },
-          "end": "(\")\\s*(=)",
+          "end": "(\")\\s*(=)(?!=)",
           "endCaptures": {
             "1": { "name": "string.quoted.double.cowel meta.object-literal.key.cowel punctuation.definition.string.end.cowel" },
             "2": { "name": "keyword.operator.assignment.cowel" }
@@ -125,7 +125,7 @@
         },
         {
           "name": "variable.parameter.named.cowel",
-          "match": "([a-zA-Z_][a-zA-Z0-9_-]*)\\s*(=)",
+          "match": "([a-zA-Z_][a-zA-Z0-9_-]*)\\s*(=)(?!=)",
           "captures": {
             "1": { "name": "entity.other.attribute-name.cowel" },
             "2": { "name": "keyword.operator.assignment.cowel" }
@@ -134,6 +134,22 @@
         {
           "name": "constant.language.ellipsis.cowel",
           "match": "\\.\\.\\."
+        },
+        {
+          "name": "keyword.operator.logical.cowel",
+          "match": "\\|\\||&&"
+        },
+        {
+          "name": "keyword.operator.comparison.cowel",
+          "match": "==|!=|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.arithmetic.cowel",
+          "match": "\\+|-|\\*|/|%"
+        },
+        {
+          "name": "keyword.operator.assignment.cowel",
+          "match": "="
         },
         { "include": "#literals" },
         { "include": "#strings" },

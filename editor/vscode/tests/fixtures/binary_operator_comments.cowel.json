@@ -1,0 +1,40 @@
+{
+  "description": "Binary operator highlighting with comments around operator",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 1,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive name has directive scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 4,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "Plus operator has arithmetic scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 10,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "Plus operator remains scoped between block comments"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 4,
+      "expected": "comment.line.cowel",
+      "description": "Line comment around operator has comment scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "Operator at next line still has arithmetic scope"
+    }
+  ]
+}
