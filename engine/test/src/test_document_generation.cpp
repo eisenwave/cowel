@@ -88,7 +88,7 @@ struct Parse_Error_Logger {
     operator()(std::u8string_view id, const Source_Span& location, Char_Sequence8 message) const
     {
         const File_Source_Span file_location { location, File_Id::main };
-        const Diagnostic d { Severity::error, id, file_location, message };
+        const Diagnostic d { Severity::error, id, file_location, message, {} };
         logger(d);
     }
 };
