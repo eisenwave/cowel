@@ -1,0 +1,3 @@
+\cowel_macro(a){\not_defined}
+\cowel_macro(b){\a}
+\b

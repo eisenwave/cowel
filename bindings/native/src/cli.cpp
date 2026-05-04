@@ -40,14 +40,14 @@ std::u8string_view severity_highlight(Severity severity)
 }
 
 [[nodiscard]]
-constexpr File_Source_Span as_file_source_span(const cowel_diagnostic_u8& diagnostic)
+constexpr File_Source_Span as_file_source_span(const cowel_diagnostic_location_u8& location)
 {
     return {
         {
-            { .line = diagnostic.line, .column = diagnostic.column, .begin = diagnostic.begin },
-            diagnostic.length,
+            { .line = location.line, .column = location.column, .begin = location.begin },
+            location.length,
         },
-        File_Id(diagnostic.file_id),
+        File_Id(location.file_id),
     };
 }
 
@@ -78,28 +78,37 @@ struct Stderr_Logger {
     // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
     void operator()(const cowel_diagnostic_u8& diagnostic)
     {
-        COWEL_ASSERT(diagnostic.file_id >= -1);
-
         const auto severity = Severity(diagnostic.severity);
         any_errors |= severity >= Severity::error;
 
-        const auto file_entry = [&] -> File_Entry {
-            if (diagnostic.file_id < 0) {
+        const auto get_file_entry
+            = [&](const cowel_diagnostic_location_u8& location) -> File_Entry {
+            COWEL_ASSERT(location.file_id >= -1);
+            if (location.file_id < 0) {
                 return {
-                    .id = File_Id(diagnostic.file_id),
+                    .id = File_Id(location.file_id),
                     .source = main_file_source,
                     .name = main_file_name,
                 };
             }
-            const Owned_File_Entry& result = file_loader.at(File_Id(diagnostic.file_id));
+            const Owned_File_Entry& result = file_loader.at(File_Id(location.file_id));
             return {
-                .id = File_Id(diagnostic.file_id),
+                .id = File_Id(location.file_id),
                 .source = as_u8string_view(result.text),
                 .name = as_u8string_view(result.path_string),
             };
-        }();
+        };
 
-        const File_Source_Span location = as_file_source_span(diagnostic);
+        const cowel_diagnostic_location_u8* const stack = diagnostic.stack;
+        const std::size_t stack_size = diagnostic.stack_size;
+        const bool has_primary = stack_size != 0;
+
+        File_Entry primary_file_entry {};
+        File_Source_Span primary_location {};
+        if (has_primary) {
+            primary_file_entry = get_file_entry(stack[0]);
+            primary_location = as_file_source_span(stack[0]);
+        }
 
         if (colors_enabled) {
             out.append(severity_highlight(severity));
@@ -109,11 +118,13 @@ struct Stderr_Logger {
             out.append(ansi::reset);
         }
         out.append(u8": ");
-        if (diagnostic.length == 0) {
-            print_location_of_file(out, file_entry.name);
-        }
-        else {
-            print_file_position(out, file_entry.name, location);
+        if (has_primary) {
+            if (stack[0].length == 0) {
+                print_location_of_file(out, primary_file_entry.name);
+            }
+            else {
+                print_file_position(out, primary_file_entry.name, primary_location);
+            }
         }
         out.append(u8' ');
         out.append(as_u8string_view(diagnostic.message));
@@ -127,9 +138,35 @@ struct Stderr_Logger {
             out.append(ansi::reset);
         }
         out.append(u8'\n');
-        if (diagnostic.length != 0) {
-            print_affected_line(out, file_entry.source, location);
+        if (has_primary && stack[0].length != 0) {
+            print_affected_line(out, primary_file_entry.source, primary_location);
         }
+
+        for (std::size_t i = 1; i < stack_size; ++i) {
+            const auto& stack_location = stack[i];
+            const File_Entry stack_file_entry = get_file_entry(stack_location);
+            const File_Source_Span stack_span = as_file_source_span(stack_location);
+
+            if (colors_enabled) {
+                out.append(ansi::h_white);
+            }
+            out.append(u8"NOTE");
+            if (colors_enabled) {
+                out.append(ansi::reset);
+            }
+            out.append(u8": ");
+            if (stack_location.length == 0) {
+                print_location_of_file(out, stack_file_entry.name);
+            }
+            else {
+                print_file_position(out, stack_file_entry.name, stack_span);
+            }
+            out.append(u8" Expanded from here.\n");
+            if (stack_location.length != 0) {
+                print_affected_line(out, stack_file_entry.source, stack_span);
+            }
+        }
+
         print_code_string_stderr(out);
         out.clear();
     }

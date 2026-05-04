@@ -121,16 +121,21 @@ void log_assertion_error(const cowel_assertion_error_u8* error)
     const std::u8string_view id
         = error->type == COWEL_ASSERTION_NOT_TRUE ? u8"assert.fail"sv : u8"assert.unreachable"sv;
 
-    const cowel_diagnostic_u8 diagnostic {
-        .severity = COWEL_SEVERITY_FATAL,
-        .id = { id.data(), id.length() },
-        .message = error->message,
+    const cowel_diagnostic_location_u8 location {
         .file_name = error->file_name,
         .file_id = -1,
         .begin = 0,
         .length = 0,
         .line = error->line,
         .column = error->column,
+    };
+
+    const cowel_diagnostic_u8 diagnostic {
+        .severity = COWEL_SEVERITY_FATAL,
+        .id = { id.data(), id.length() },
+        .message = error->message,
+        .stack = &location,
+        .stack_size = 1,
     };
     cowel_import_log_u8(&diagnostic);
 }

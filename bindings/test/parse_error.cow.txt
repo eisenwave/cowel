@@ -1,0 +1,4 @@
+ERROR parse_error.cow:1:16: No matching '}'. This block is unclosed. [parse]
+     1 | \cowel_macro(m){
+       |                ^
+FATAL parse_error.cow: Generation exited with status 2 (error). [status.error]

@@ -1,0 +1,10 @@
+ERROR deep_nested_error.cow:1:17: No directive with the name "not_defined" exists. [directive-lookup.unresolved]
+     1 | \cowel_macro(a){\not_defined}
+       |                 ^~~~~~~~~~~
+NOTE deep_nested_error.cow:2:17: Expanded from here.
+     2 | \cowel_macro(b){\a}
+       |                 ^
+NOTE deep_nested_error.cow:3:1: Expanded from here.
+     3 | \b
+       | ^
+FATAL deep_nested_error.cow: Generation exited with status 2 (error). [status.error]

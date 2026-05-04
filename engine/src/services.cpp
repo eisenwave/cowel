@@ -78,20 +78,35 @@ namespace {
 [[nodiscard]]
 Diagnostic to_diagnostic(const cowel_diagnostic_u8& diagnostic)
 {
-    const File_Source_Span location {
-        Source_Position {
-            .line = diagnostic.line,
-            .column = diagnostic.column,
-            .begin = diagnostic.begin,
-        },
-        diagnostic.length,
-        File_Id(diagnostic.file_id),
-    };
+    const auto location = [&] -> File_Source_Span {
+        if (diagnostic.stack_size != 0) {
+            const cowel_diagnostic_location_u8& first = diagnostic.stack[0];
+            return {
+                Source_Position {
+                    .line = first.line,
+                    .column = first.column,
+                    .begin = first.begin,
+                },
+                first.length,
+                File_Id(first.file_id),
+            };
+        }
+        return {
+            Source_Position {
+                .line = 0,
+                .column = 0,
+                .begin = 0,
+            },
+            0,
+            File_Id::main,
+        };
+    }();
     return {
         .severity = Severity(diagnostic.severity),
         .id = as_u8string_view(diagnostic.id),
         .location = location,
         .message = as_u8string_view(diagnostic.message),
+        .stack = {},
     };
 }
 

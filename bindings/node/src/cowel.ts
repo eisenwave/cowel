@@ -120,23 +120,35 @@ function severityTag(severity: cowel.Severity): string {
 }
 
 function log(diagnostic: cowel.Diagnostic): void {
-    const file = diagnostic.fileId < 0 ? null : files[diagnostic.fileId];
+    const primaryLocation = diagnostic.stack.length !== 0 ? diagnostic.stack[0] : null;
+    const file = primaryLocation && primaryLocation.fileId >= 0
+        ? files[primaryLocation.fileId]
+        : null;
 
     const tag = severityTag(diagnostic.severity);
-    const filePath = diagnostic.fileName.length !== 0 ? diagnostic.fileName
-        : file ? file.path : mainFile.path;
+    const filePath = primaryLocation === null ? ""
+        : primaryLocation.fileName.length !== 0 ? primaryLocation.fileName
+            : file ? file.path : mainFile.path;
 
-    const hasLocation =
-        diagnostic.begin !== 0 || diagnostic.length !== 0 || diagnostic.line !== 0;
-    const location = hasLocation ? `:${diagnostic.line + 1}:${diagnostic.column + 1}` : "";
+    const hasLocation = primaryLocation !== null
+        && (
+            primaryLocation.begin !== 0
+            || primaryLocation.length !== 0
+            || primaryLocation.line !== 0
+        );
+    const location = hasLocation && primaryLocation !== null
+        ? `:${primaryLocation.line + 1}:${primaryLocation.column + 1}`
+        : "";
 
-    const isCitable = diagnostic.length !== 0 && diagnostic.fileName.length === 0;
+    const isCitable = primaryLocation !== null
+        && primaryLocation.length !== 0
+        && primaryLocation.fileName.length === 0;
     const citation = isCitable ? wasm!.generateCodeCitationFor({
         source: file ? file.data : mainFile.data,
-        line: diagnostic.line,
-        column: diagnostic.column,
-        begin: diagnostic.begin,
-        length: diagnostic.length,
+        line: primaryLocation.line,
+        column: primaryLocation.column,
+        begin: primaryLocation.begin,
+        length: primaryLocation.length,
         colors: colorsEnabled,
     }) : null;
 
@@ -152,6 +164,47 @@ function log(diagnostic: cowel.Diagnostic): void {
     if (citation !== null) {
         process.stdout.write(citation);
     }
+
+    for (let i = 1; i < diagnostic.stack.length; ++i) {
+        const stackLocation = diagnostic.stack[i];
+
+        const stackFile = stackLocation.fileId < 0 ? mainFile : files[stackLocation.fileId];
+        const stackFilePath = stackLocation.fileName.length !== 0 ? stackLocation.fileName
+            : stackFile ? stackFile.path : mainFile.path;
+        const hasStackPos =
+            stackLocation.begin !== 0 || stackLocation.length !== 0 || stackLocation.line !== 0;
+        const stackPos = hasStackPos
+            ? `:${stackLocation.line + 1}:${stackLocation.column + 1}`
+            : "";
+
+        const stackFullLocation = stackFilePath.length !== 0 || stackPos.length !== 0
+            ? ` ${colorsEnabled ? AnsiCode.highBlack : ""}${stackFilePath}${stackPos}:`
+            : "";
+
+        if (colorsEnabled) {
+            const noteLine = `${AnsiCode.highWhite}NOTE${stackFullLocation} ${AnsiCode.reset}Expanded from here.${AnsiCode.reset}\n`;
+            process.stdout.write(noteLine);
+        } else {
+            process.stdout.write(`NOTE${stackFullLocation} Expanded from here.\n`);
+        }
+
+        const stackSource = stackLocation.fileName.length === 0
+            ? stackFile ? stackFile.data : mainFile.data
+            : null;
+        const stackCitation = stackSource !== null && stackLocation.length !== 0
+            ? wasm!.generateCodeCitationFor({
+                source: stackSource,
+                line: stackLocation.line,
+                column: stackLocation.column,
+                begin: stackLocation.begin,
+                length: stackLocation.length,
+                colors: colorsEnabled,
+            })
+            : null;
+        if (stackCitation !== null) {
+            process.stdout.write(stackCitation);
+        }
+    }
 }
 
 function logError(
@@ -160,17 +213,15 @@ function logError(
     message: string,
     severity = cowel.Severity.fatal,
 ): void {
-    log({
-        severity,
-        id,
-        message,
+    const stack = fileName.length === 0 ? [] : [{
         fileName,
         fileId: -1,
         begin: 0,
         length: 0,
         line: 0,
         column: 0,
-    });
+    }];
+    log({ severity, id, message, stack });
 }
 
 type RunOptions = {

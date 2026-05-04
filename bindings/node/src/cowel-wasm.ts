@@ -75,11 +75,12 @@ export type Diagnostic = {
     id: string;
     /** A diagnostic message. */
     message: string;
-    /**
-     * A possibly empty string.
-     * If provided, instead of the `fileId`,
-     * this names the file in which the error has occurred.
-     */
+    /** Additional stack locations associated with this diagnostic. */
+    stack: DiagnosticLocation[];
+};
+
+export type DiagnosticLocation = {
+    /** Optional explicit file name for this stack location. */
     fileName: string;
     /** The ID of the file, or `-1`. */
     fileId: number;
@@ -90,7 +91,8 @@ export type Diagnostic = {
     /** Zero-based line number of the start of the code span. */
     line: number;
     /**
-     * The offset from the start of the line of the code span, in code units.
+     * The offset from the start of the line of the code span,
+     * in code units.
      */
     column: number;
 };
@@ -1205,26 +1207,43 @@ export class CowelWasm {
         const idLength = this.heap_u32[address / 4 + 2];
         const messageAddress = this.heap_u32[address / 4 + 3];
         const messageLength = this.heap_u32[address / 4 + 4];
-        const fileNameAddress = this.heap_u32[address / 4 + 5];
-        const fileNameLength = this.heap_u32[address / 4 + 6];
-        const fileId = this.heap_i32[address / 4 + 7];
-        const begin = this.heap_u32[address / 4 + 8];
-        const length = this.heap_u32[address / 4 + 9];
-        const line = this.heap_u32[address / 4 + 10];
-        const column = this.heap_u32[address / 4 + 11];
+        const stackAddress = this.heap_u32[address / 4 + 5];
+        const stackSize = this.heap_u32[address / 4 + 6];
 
         const id = this.decodeUtf8(idAddress, idLength);
         const message = this.decodeUtf8(messageAddress, messageLength);
-        const fileName = this.decodeUtf8(fileNameAddress, fileNameLength);
         const severity: Severity = severityNumber;
+
+        const stack: DiagnosticLocation[] = [];
+        // cowel_diagnostic_location_u8 =
+        // cowel_string_view + file_id + begin + length + line + column.
+        // In wasm32 this is 7 i32/u32 words per entry.
+        const wordsPerStackLocation = 7;
+        for (let i = 0; i < stackSize; ++i) {
+            const locationAddress = stackAddress / 4 + i * wordsPerStackLocation;
+            const stackFileNameAddress = this.heap_u32[locationAddress + 0];
+            const stackFileNameLength = this.heap_u32[locationAddress + 1];
+            const stackFileId = this.heap_i32[locationAddress + 2];
+            const stackBegin = this.heap_u32[locationAddress + 3];
+            const stackLength = this.heap_u32[locationAddress + 4];
+            const stackLine = this.heap_u32[locationAddress + 5];
+            const stackColumn = this.heap_u32[locationAddress + 6];
+
+            stack.push({
+                fileName: this.decodeUtf8(stackFileNameAddress, stackFileNameLength),
+                fileId: stackFileId,
+                begin: stackBegin,
+                length: stackLength,
+                line: stackLine,
+                column: stackColumn,
+            });
+        }
 
         return {
             severity,
             id,
             message,
-            fileName,
-            fileId,
-            begin, length, line, column,
+            stack,
         };
     }
 

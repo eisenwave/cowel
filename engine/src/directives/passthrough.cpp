@@ -358,15 +358,17 @@ Processing_Status Internal_Expect_Diagnostic_Behavior::splice(
                     u8"\"."sv,
                 }
             ),
+            .stack = {},
         });
         result = Processing_Status::error;
     }
     for (const Collected_Diagnostic& violation : expecting_logger.get_violations()) {
         (*old_logger)(Diagnostic {
-            std::max(Severity::error, violation.severity),
-            as_u8string_view(violation.id),
-            violation.location,
-            as_u8string_view(violation.message),
+            .severity = std::max(Severity::error, violation.severity),
+            .id = as_u8string_view(violation.id),
+            .location = violation.location,
+            .message = as_u8string_view(violation.message),
+            .stack = {},
         });
         result = Processing_Status::error;
     }
@@ -392,6 +394,7 @@ Processing_Status Internal_Expect_Diagnostic_Behavior::splice(
             .id = u8"test.diagnostic"sv,
             .location = call.directive.get_source_span(),
             .message = as_u8string_view(message),
+            .stack = {},
         });
         result = Processing_Status::error;
     }
