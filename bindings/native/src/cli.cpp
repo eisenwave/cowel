@@ -81,7 +81,8 @@ struct Stderr_Logger {
         const auto severity = Severity(diagnostic.severity);
         any_errors |= severity >= Severity::error;
 
-        const auto get_file_entry = [&](const cowel_diagnostic_location_u8& location) -> File_Entry {
+        const auto get_file_entry
+            = [&](const cowel_diagnostic_location_u8& location) -> File_Entry {
             COWEL_ASSERT(location.file_id >= -1);
             if (location.file_id < 0) {
                 return {
