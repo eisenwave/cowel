@@ -10,6 +10,7 @@ name: Native LLVM Coverage
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".github/workflows/coverage.yml"
+      - "tools/filter-lcov.py"
   pull_request:
     branches: [ "main" ]
     paths:
@@ -19,6 +20,7 @@ name: Native LLVM Coverage
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".github/workflows/coverage.yml"
+      - "tools/filter-lcov.py"
 
 jobs:
   coverage:

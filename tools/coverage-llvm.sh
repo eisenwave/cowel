@@ -54,7 +54,7 @@ echo "Merging profile data"
 echo "Exporting LCOV"
 "${LLVM_COV_TOOL}" export \
     -format=lcov \
-    -ignore-filename-regex='/(third_party|ulight|build)/' \
+    -ignore-filename-regex='/(third_party|ulight|build|engine/test/src)/' \
     -instr-profile="${PROFDATA_FILE}" \
     "${BUILD_DIR}/cowel-test" > "${LCOV_FILE}"
 

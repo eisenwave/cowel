@@ -1,5 +1,6 @@
 [![CMake build status][badge-cmake]][build-cmake]
 [![clang-format build status][badge-format]][build-format]
+[![codecov][badge-codecov]][codecov]
 
 # Compact Web Language (COWEL)
 
@@ -40,4 +41,6 @@ and stores the LCOV and profdata files as workflow artifacts.
 [badge-cmake]: https://github.com/eisenwave/cowel/actions/workflows/cmake-multi-platform.yml/badge.svg
 [build-format]: https://github.com/eisenwave/cowel/actions/workflows/clang-format.yml/
 [badge-format]: https://github.com/eisenwave/cowel/actions/workflows/clang-format.yml/badge.svg
+[codecov]: https://codecov.io/github/eisenwave/cowel
+[badge-codecov]: https://codecov.io/github/eisenwave/cowel/graph/badge.svg?token=4TGUMSCXYJ
 [discord]: https://discord.gg/fx8r5mP3Y9
