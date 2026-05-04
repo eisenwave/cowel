@@ -3,8 +3,22 @@ name: CMake on multiple platforms
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - "editor/**"
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "CHANGELOG.md"
+      - ".github/copilot-instructions.md"
+      - ".github/lang-summary.md"
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - "editor/**"
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "CHANGELOG.md"
+      - ".github/copilot-instructions.md"
+      - ".github/lang-summary.md"
 
 jobs:
   native:

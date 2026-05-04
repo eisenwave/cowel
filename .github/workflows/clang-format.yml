@@ -3,8 +3,16 @@ name: Clang-format check
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "src/**"
+      - "include/**"
+      - ".github/workflows/clang-format.yml"
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "src/**"
+      - "include/**"
+      - ".github/workflows/clang-format.yml"
 
 jobs:
   clang-format-check:
