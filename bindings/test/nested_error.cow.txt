@@ -1,4 +1,4 @@
-ERROR diagnostics.cow:1:17: No directive with the name "not_defined" exists. [directive-lookup.unresolved]
+ERROR nested_error.cow:1:17: No directive with the name "not_defined" exists. [directive-lookup.unresolved]
      1 | \cowel_macro(m){\not_defined}
        |                 ^~~~~~~~~~~
-FATAL diagnostics.cow: Generation exited with status 2 (error). [status.error]
+FATAL nested_error.cow: Generation exited with status 2 (error). [status.error]
