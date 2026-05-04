@@ -150,6 +150,17 @@
             }
         },
         {
+            "name": "clang20-coverage",
+            "inherits": [
+                "clang-20"
+            ],
+            "binaryDir": "${sourceDir}/build/clang20-coverage",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "COWEL_ENABLE_COVERAGE": "ON"
+            }
+        },
+        {
             "name": "emscripten-debug",
             "inherits": [
                 "emscripten-toolchain"
@@ -216,6 +227,10 @@
         {
             "name": "clang20-relwithdebinfo",
             "configurePreset": "clang20-relwithdebinfo"
+        },
+        {
+            "name": "clang20-coverage",
+            "configurePreset": "clang20-coverage"
         },
         {
             "name": "emscripten-debug",
@@ -290,6 +305,13 @@
         {
             "name": "clang20-relwithdebinfo",
             "configurePreset": "clang20-relwithdebinfo",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "clang20-coverage",
+            "configurePreset": "clang20-coverage",
             "output": {
                 "outputOnFailure": true
             }

@@ -1,5 +1,8 @@
 **/build
 node_modules
+__pycache__
+
+cmake_test_discovery_*.json
 
 .vscode/
 .cache/
