@@ -2,6 +2,10 @@
 
 ## **[v0.9.0](https://github.com/eisenwave/cowel/releases/tag/v0.9.0)** (2026-??-??)
 
+- change the type of `(X)` in expression to be that of `x` (#259):
+  - add *parenthesized-expression* as a construct
+  - disambiguate *group* as *parenthesized-expression* if possible
+  - `(x=X)`, `(X,)`, `()` remain a *group*
 - add binary operators (#261):
   - `+` addition
   - `-` subtraction
@@ -17,10 +21,7 @@
   - `&&` logical AND
   - `||` logical OR
 - add *expression-splice*: `\(...)` (#276)
-- change the type of `(X)` in expression to be that of `x` (#259):
-  - add *parenthesized-expression* as a construct
-  - disambiguate *group* as *parenthesized-expression* if possible
-  - `(x=X)`, `(X,)`, `()` remain a *group*
+- add nested diagnostic locations in node CLI (#51)
 - fix duplicate output for `--no-color` option
 - also add internal `__typeof` directive and test types of directives
 

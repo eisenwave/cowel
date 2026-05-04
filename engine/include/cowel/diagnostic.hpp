@@ -2,6 +2,7 @@
 #define COWEL_DIAGNOSTIC_HPP
 
 #include <compare>
+#include <span>
 #include <string_view>
 
 #include "cowel/util/char_sequence.hpp"
@@ -36,6 +37,9 @@ struct Diagnostic {
     File_Source_Span location;
     /// @brief The diagnostic message parts.
     Char_Sequence8 message;
+    /// @brief Stack of invocation locations from where this diagnostic originates.
+    /// Entries are ordered from top frame to bottom frame.
+    std::span<const File_Source_Span> stack;
 };
 
 namespace diagnostic {

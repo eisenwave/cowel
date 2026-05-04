@@ -76,6 +76,13 @@ namespace {
 
 static_assert(int(File_Id::main) == COWEL_FILE_ID_MAIN);
 
+[[nodiscard]]
+bool has_meaningful_location(const File_Source_Span& location)
+{
+    return location.file != File_Id::main || location.begin != 0 || location.length != 0
+        || location.line != 0 || location.column != 0;
+}
+
 /// If `chars` is contiguous, simply returns the underlying `u8string_view`.
 /// Otherwise, spills the contents of `chars` into `buffer`.
 cowel_string_view_u8 char_sequence_to_sv(Char_Sequence8 chars, std::pmr::vector<char8_t>& buffer)
@@ -174,6 +181,7 @@ private:
     cowel_log_fn_u8* m_log;
     const void* m_log_data;
     std::pmr::vector<char8_t> m_buffer;
+    std::pmr::vector<cowel_diagnostic_location_u8> m_stack_buffer;
 
 public:
     explicit Logger_From_Options(
@@ -186,6 +194,7 @@ public:
         , m_log { log }
         , m_log_data { log_data }
         , m_buffer { memory }
+        , m_stack_buffer { memory }
     {
     }
 
@@ -194,26 +203,59 @@ public:
     {
     }
 
-    void operator()(Diagnostic diagnostic) override
+    void operator()(const Diagnostic diagnostic) override
     {
         if (!m_log) {
             return;
         }
         COWEL_ASSERT(m_buffer.empty());
+        COWEL_ASSERT(m_stack_buffer.empty());
+
+        m_stack_buffer.reserve(diagnostic.stack.size() + 1);
+        if (has_meaningful_location(diagnostic.location)) {
+            m_stack_buffer.push_back(
+                {
+                    .file_name = {},
+                    .file_id = cowel_file_id(diagnostic.location.file),
+                    .begin = diagnostic.location.begin,
+                    .length = diagnostic.location.length,
+                    .line = diagnostic.location.line,
+                    .column = diagnostic.location.column,
+                }
+            );
+        }
+
+        for (const File_Source_Span& stack_location : diagnostic.stack) {
+            if (!m_stack_buffer.empty()) {
+                const auto& first = m_stack_buffer.front();
+                const bool duplicates_primary = first.file_id == cowel_file_id(stack_location.file)
+                    && first.line == stack_location.line && first.column == stack_location.column;
+                if (duplicates_primary) {
+                    continue;
+                }
+            }
+            m_stack_buffer.push_back(
+                {
+                    .file_name = {},
+                    .file_id = cowel_file_id(stack_location.file),
+                    .begin = stack_location.begin,
+                    .length = stack_location.length,
+                    .line = stack_location.line,
+                    .column = stack_location.column,
+                }
+            );
+        }
 
         const cowel_diagnostic_u8 diagnostic_u8 {
             .severity = cowel_severity(diagnostic.severity),
             .id = char_sequence_to_sv(diagnostic.id, m_buffer),
             .message = char_sequence_to_sv(diagnostic.message, m_buffer),
-            .file_name = {},
-            .file_id = cowel_file_id(diagnostic.location.file),
-            .begin = diagnostic.location.begin,
-            .length = diagnostic.location.length,
-            .line = diagnostic.location.line,
-            .column = diagnostic.location.column,
+            .stack = m_stack_buffer.empty() ? nullptr : m_stack_buffer.data(),
+            .stack_size = m_stack_buffer.size(),
         };
         m_log(m_log_data, &diagnostic_u8);
         m_buffer.clear();
+        m_stack_buffer.clear();
     }
 
     [[nodiscard]]
@@ -367,6 +409,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
                       .id = u8"trace"sv,
                       .location = { {}, File_Id::main },
                       .message = message,
+                      .stack = {},
                   }
               );
           };
@@ -400,7 +443,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
     const std::convertible_to<Parse_Error_Consumer> auto on_parse_error
         = [&](std::u8string_view id, const Source_Span& pos, Char_Sequence8 message) {
               const File_Source_Span file_pos { pos, File_Id::main };
-              logger(Diagnostic { Severity::error, id, file_pos, message });
+              logger(Diagnostic { Severity::error, id, file_pos, message, {} });
           };
     ast::Pmr_Vector<ast::Markup_Element> root_content;
     const bool preamble_parse_success = lex_and_parse_and_build(
@@ -496,12 +539,8 @@ void uncaught_exception(const cowel_options& options)
         .severity = COWEL_SEVERITY_MAX,
         .id = as_cowel_string_view(id),
         .message = as_cowel_string_view(message),
-        .file_name = {},
-        .file_id = 0,
-        .begin = 0,
-        .length = 0,
-        .line = 0,
-        .column = 0,
+        .stack = nullptr,
+        .stack_size = 0,
     };
     options.log(options.log_data, &diagnostic);
     std::terminate();
@@ -520,12 +559,8 @@ void uncaught_exception_u8(const cowel_options_u8& options)
         .severity = COWEL_SEVERITY_MAX,
         .id = as_cowel_string_view(id),
         .message = as_cowel_string_view(message),
-        .file_name = {},
-        .file_id = 0,
-        .begin = 0,
-        .length = 0,
-        .line = 0,
-        .column = 0,
+        .stack = nullptr,
+        .stack_size = 0,
     };
     options.log(options.log_data, &diagnostic);
     std::terminate();

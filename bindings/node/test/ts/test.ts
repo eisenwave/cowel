@@ -116,11 +116,17 @@ describe("Document Generation", async () => {
             if (diagnostics.length > 0) {
                 let errorMessage = `Test produced diagnostics: ${relativePath}\n`;
                 for (const d of diagnostics) {
-                    const file = d.fileId < 0 ? mainFile : files[d.fileId];
-                    const filePath = d.fileName.length !== 0 ? d.fileName
-                        : file ? file.path : mainFile.path;
-                    const location = `:${d.line + 1}:${d.column + 1}`;
-                    errorMessage += `  [${cowel.Severity[d.severity]}] ${filePath}${location}: ${d.message} [${d.id}]\n`;
+                    const location = d.stack.length !== 0 ? d.stack[0] : null;
+                    const file = location && location.fileId >= 0
+                        ? files[location.fileId]
+                        : mainFile;
+                    const filePath = location === null ? "<unknown>"
+                        : location.fileName.length !== 0 ? location.fileName
+                            : file ? file.path : mainFile.path;
+                    const line = location ? location.line + 1 : 1;
+                    const column = location ? location.column + 1 : 1;
+                    const locationString = `:${line}:${column}`;
+                    errorMessage += `  [${cowel.Severity[d.severity]}] ${filePath}${locationString}: ${d.message} [${d.id}]\n`;
                 }
                 assert.fail(errorMessage);
             }

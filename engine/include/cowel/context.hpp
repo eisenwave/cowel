@@ -10,6 +10,7 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
+#include "cowel/util/small_vector.hpp"
 #include "cowel/util/transparent_comparison.hpp"
 
 #include "cowel/ast.hpp"
@@ -101,6 +102,7 @@ private:
     Variable_Map m_variables { m_memory };
 
     Call_Stack m_call_stack { m_memory };
+    Small_Vector<File_Source_Span, 8> m_diagnostic_stack;
 
 public:
     /// @brief Constructs a new context.
@@ -274,6 +276,7 @@ public:
     void emit(Diagnostic diagnostic)
     {
         COWEL_ASSERT(emits(diagnostic.severity));
+        diagnostic.stack = collect_diagnostic_stack();
         (*m_logger)(diagnostic);
     }
 
@@ -284,7 +287,7 @@ public:
         Char_Sequence8 message
     )
     {
-        emit({ severity, id, location, message });
+        emit({ severity, id, location, message, {} });
     }
 
     void emit_trace(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
@@ -338,7 +341,7 @@ public:
     )
     {
         if (emits(severity)) {
-            emit({ severity, id, location, message });
+            emit({ severity, id, location, message, {} });
         }
     }
 
@@ -419,6 +422,30 @@ public:
 
     [[nodiscard]]
     bool emplace_macro(std::pmr::u8string&& name, std::span<const ast::Markup_Element> definition);
+
+private:
+    [[nodiscard]]
+    std::span<const File_Source_Span> collect_diagnostic_stack()
+    {
+        m_diagnostic_stack.clear();
+
+        bool has_previous_content_frame = false;
+        Frame_Index previous_content_frame {};
+
+        for (std::size_t i = m_call_stack.size(); i > 0; --i) {
+            const Stack_Frame& frame = m_call_stack[Frame_Index(static_cast<int>(i - 1))];
+            const Frame_Index content_frame = frame.invocation.content_frame;
+            if (has_previous_content_frame && content_frame == previous_content_frame) {
+                continue;
+            }
+
+            m_diagnostic_stack.push_back(frame.invocation.directive.get_name_span());
+            previous_content_frame = content_frame;
+            has_previous_content_frame = true;
+        }
+
+        return m_diagnostic_stack;
+    }
 };
 
 } // namespace cowel

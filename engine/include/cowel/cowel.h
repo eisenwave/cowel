@@ -127,18 +127,12 @@ struct cowel_mutable_string_view_u8 {
 
 typedef int cowel_file_id;
 
-/// @brief Data associated with a diagnostic message.
-struct cowel_diagnostic {
-    /// @brief The level of severity for this diagnostic.
-    cowel_severity severity;
-    /// @brief A unique identifier for the diagnostic.
-    cowel_string_view id;
-    /// @brief The diagnostic message.
-    cowel_string_view message;
+/// @brief Context in which a diagnostic occurred.
+struct cowel_diagnostic_location {
     /// @brief The name of the file in which the diagnostic was raised.
     /// This is often an empty string, since the `file_id` carries information about the
     /// file already, and the user is expected to keep track of which files have which name.
-    /// However, the file name is sometimes overriden by this data member.
+    /// However, the file name is sometimes overridden by this data member.
     cowel_string_view file_name;
     /// @brief The id of the file in which the diagnostic occurred.
     cowel_file_id file_id;
@@ -155,17 +149,38 @@ struct cowel_diagnostic {
     size_t column;
 };
 
-/// @brief See `cowel_diagnostic`.
-struct cowel_diagnostic_u8 {
-    cowel_severity severity;
-    cowel_string_view_u8 id;
-    cowel_string_view_u8 message;
+/// @brief See `cowel_diagnostic_location`.
+struct cowel_diagnostic_location_u8 {
     cowel_string_view_u8 file_name;
     cowel_file_id file_id;
     size_t begin;
     size_t length;
     size_t line;
     size_t column;
+};
+
+/// @brief Data associated with a diagnostic message.
+struct cowel_diagnostic {
+    /// @brief The level of severity for this diagnostic.
+    cowel_severity severity;
+    /// @brief A unique identifier for the diagnostic.
+    cowel_string_view id;
+    /// @brief The diagnostic message.
+    cowel_string_view message;
+    /// @brief Stack of additional source locations associated with this diagnostic.
+    /// Entries are ordered from primary location to expansion notes.
+    const cowel_diagnostic_location* stack;
+    /// @brief Number of entries in `stack`.
+    size_t stack_size;
+};
+
+/// @brief See `cowel_diagnostic`.
+struct cowel_diagnostic_u8 {
+    cowel_severity severity;
+    cowel_string_view_u8 id;
+    cowel_string_view_u8 message;
+    const cowel_diagnostic_location_u8* stack;
+    size_t stack_size;
 };
 
 /// @brief A type which contains result information when a file was loaded.
