@@ -1,9 +1,9 @@
 # Test Fixtures
 
 This directory contains data-driven test fixtures for the COWEL lexer and parser.
-Tests are driven by C++ code in `src/test/cpp/`.
+Tests are driven by C++ code in `engine/test/src/`.
 
-## Lexer Tests (`test/lex/`)
+## Lexer Tests (`engine/test/files/lex/`)
 
 Each lexer test consists of a pair of files:
 
@@ -11,7 +11,7 @@ Each lexer test consists of a pair of files:
 - **`<name>.cow.lextest`** — the expected token sequence.
 
 The test runner (`Lex.file_tests` in `test_lexing.cpp`)
-discovers every `.cow` file recursively under `test/lex/`
+discovers every `.cow` file recursively under `engine/test/files/lex/`
 and runs it against the matching `.cow.lextest`, if one exists.
 Tests run from the repository root.
 
@@ -34,7 +34,7 @@ TOKEN-KIND-NAME "text"
 - Non-printing characters in quoted text use `\uXXXX` / `\UXXXXXXXX` escapes;
   backslash is `\\`.
 
-Example — `test/lex/hello_world.cow.lextest`:
+Example — `engine/test/files/lex/hello_world.cow.lextest`:
 ```
 DOCUMENT-TEXT "Hello world!\u000a"
 ```
@@ -45,7 +45,7 @@ An empty `.cow.lextest` asserts that the source produces no tokens.
 On failure,
 the test prints the expected and actual sequences followed by a unified diff.
 
-## Parser Tests (`test/parse/`)
+## Parser Tests (`engine/test/files/parse/`)
 
 Each file-driven parser test consists of a pair:
 
@@ -54,7 +54,7 @@ Each file-driven parser test consists of a pair:
 
 Tests are registered as `TEST(Parse, …)` macros in `test_parsing.cpp`.
 Each calls `run_parse_test("name.cow", "name.expected")`,
-prepending `test/parse/` to both paths.
+prepending `engine/test/files/parse/` to both paths.
 The test runner must be invoked from the repository root.
 
 ### `.expected` format

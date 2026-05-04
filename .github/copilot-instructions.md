@@ -40,12 +40,13 @@ both this file and `lang-summary.md` must be updated to reflect the change.
 ## High-Value Layout (Start Here)
 
 - Root build system: `CMakeLists.txt`
-- Core C++ headers: `include/cowel/`
-- Core C++ sources: `src/main/cpp/`
-- C++ tests: `src/test/cpp/`
-- TS sources: `src/main/ts/`
-- TS tests: `src/test/ts/`
-- Utility scripts: `src/util/`
+- Core C++ headers: `engine/include/cowel/`
+- Core C++ sources: `engine/src/`
+- C++ tests: `engine/test/src/`
+- Native CLI wrapper: `bindings/native/src/`
+- Node wrapper TS sources: `bindings/node/src/`
+- Node wrapper TS tests: `bindings/node/test/`
+- Utility scripts: `tools/`
 - Docs + golden sample I/O: `docs/index.cow` and `docs/index.html`
 - VS Code extension + TextMate grammar tests: `editor/vscode/`
 - CI workflows:
@@ -56,8 +57,8 @@ both this file and `lang-summary.md` must be updated to reflect the change.
 Important dependency facts not obvious from tree:
 - Native configure requires ICU (`find_package(ICU COMPONENTS data i18n uc REQUIRED)`).
 - Native configure requires Python 3 (`find_package(Python3 REQUIRED)`),
-  used to embed assets (`src/util/file-to-array.py`).
-- If `third_party/boost` is missing, configure auto-clones Boost via `src/util/boost-install.sh`.
+  used to embed assets (`tools/file-to-array.py`).
+- If `third_party/boost` is missing, configure auto-clones Boost via `tools/boost-install.sh`.
 - `ulight` is a git submodule and is built as part of the top-level CMake project.
 
 ## Toolchain Versions Validated Locally
@@ -82,7 +83,7 @@ Run from repo root.
 
 ```bash
 git submodule update --init --recursive
-npm install
+npm install --prefix bindings/node
 ```
 
 2. Configure clean native build
@@ -123,10 +124,10 @@ diff -u docs/index.html build/docs.actual.html
 
 ## Node/TypeScript Validation
 
-From repo root:
+From `bindings/node/`:
 
 ```bash
-npm install
+npm ci
 npm run build
 npm run build:test
 npx eslint src --max-warnings=0 --color
@@ -158,7 +159,8 @@ Validated outcomes/timings:
 CI command (run from repo root):
 
 ```bash
-find include src -name '*.cpp' -o -name '*.c' -o -name '*.hpp' -o -name '*.h' |
+find engine/include engine/src bindings/native/src bindings/node/src/cpp \
+  \( -name '*.cpp' -o -name '*.c' -o -name '*.hpp' -o -name '*.h' \) |
   xargs clang-format-20 --color=1 --dry-run --Werror
 ```
 
@@ -173,26 +175,27 @@ Expected sequence:
 1. Install and activate emsdk.
 2. Configure with Emscripten toolchain file.
 3. Build `cowel-npm` target.
-4. Run `npm test` and CLI smoke test.
+4. Run `npm test` from `bindings/node` and a CLI smoke test using `build/npm/cowel.js`.
 
-Observed failure when emsdk is absent:
-- `Could not find toolchain file: emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake`
+Observed failure when emsdk is absent or not sourced in the shell:
+- `Could not find toolchain file: .../emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake`
 - plus compiler/make-program detection failures
 - fails quickly (~0.14s)
 
 Mitigation:
 - always install/activate emsdk before wasm configure,
+  source `emsdk_env.sh` in configure/build steps,
   and verify toolchain file path exists.
 
 ## Architecture Pointers For Fast Edits
 
-- CLI entrypoint: `src/main/cpp/cli.cpp`
-- Parse/lex pipeline: `src/main/cpp/lex.cpp`, `src/main/cpp/parse.cpp`, `src/main/cpp/build_ast.cpp`
-- Directive implementations: `src/main/cpp/directives/*.cpp`
-- Builtin directive wiring: `src/main/cpp/builtin_directive_set.cpp`, `include/cowel/builtin_directive_set.hpp`
-- Document generation: `src/main/cpp/document_generation.cpp`
-- Services/settings/context: `src/main/cpp/services.cpp`, `include/cowel/settings.hpp`, `include/cowel/context.hpp`
-- C++ tests focused by behavior: `src/test/cpp/test_*.cpp`
+- CLI entrypoint: `bindings/native/src/cli.cpp`
+- Parse/lex pipeline: `engine/src/lex.cpp`, `engine/src/parse.cpp`, `engine/src/build_ast.cpp`
+- Directive implementations: `engine/src/directives/*.cpp`
+- Builtin directive wiring: `engine/src/builtin_directive_set.cpp`, `engine/include/cowel/builtin_directive_set.hpp`
+- Document generation: `engine/src/document_generation.cpp`
+- Services/settings/context: `engine/src/services.cpp`, `engine/include/cowel/settings.hpp`, `engine/include/cowel/context.hpp`
+- C++ tests focused by behavior: `engine/test/src/test_*.cpp`
 - Lexer and parser test fixture format: `test/README.md`
 
 ## Pre-PR Validation Checklist (Replicate CI)
@@ -208,10 +211,11 @@ ctest --test-dir build --output-on-failure
 
 2. If TS/JS touched:
 ```bash
-npm run build
-npm run build:test
-npx eslint src --max-warnings=0 --color
-npm test
+npm ci --prefix bindings/node
+npm run --prefix bindings/node build
+npm run --prefix bindings/node build:test
+npx --prefix bindings/node eslint src --max-warnings=0 --color
+npm test --prefix bindings/node
 ```
 
 3. If grammar/editor files touched:
@@ -221,7 +225,8 @@ cd editor/vscode && npm test
 
 4. Before finalizing C++ changes:
 ```bash
-find include src -name '*.cpp' -o -name '*.c' -o -name '*.hpp' -o -name '*.h' |
+find engine/include engine/src bindings/native/src bindings/node/src/cpp \
+  \( -name '*.cpp' -o -name '*.c' -o -name '*.hpp' -o -name '*.h' \) |
   xargs clang-format-20 --color=1 --dry-run --Werror
 ```
 
@@ -232,17 +237,15 @@ Top-level entries include:
 .github
 .vscode
 assets
+bindings
 docs
+engine
 editor
-include
-src
 test
 third_party
+tools
 ulight
 CMakeLists.txt
-package.json
-eslint.config.js`
-tsconfig*.json
 README.md
 CONTRIBUTING.md
 CHANGELOG.md
@@ -250,9 +253,11 @@ CHANGELOG.md
 
 ## Practical Guardrails
 
-- Always run `npm install` before JS/TS lint/test/build workflows.
+- Always run `npm ci --prefix bindings/node` before JS/TS lint/test/build workflows.
+- Use `bindings/node` as the Node package root (`npm --prefix bindings/node ...`).
 - Always configure CMake before any `cmake --build` or `ctest` on a new build directory.
 - Prefer out-of-tree build dirs (for example `build/`) to avoid polluting tracked files.
 - For native parity with CI, keep warnings clean and run tests with `--output-on-failure`.
+- For WASM parity with CI, source `emsdk_env.sh` in any shell that runs Emscripten CMake configure/build commands.
 - Treat this file as primary operating guidance;
   search only for missing details or when commands here no longer match repository reality.

@@ -24,7 +24,7 @@ if(NOT DEFINED EMSCRIPTEN)
     if(NOT EXISTS "${BOOST_SOURCE_DIR}")
         message(STATUS "Boost not found. Installing boost dependencies...")
         execute_process(
-            COMMAND bash "${CMAKE_SOURCE_DIR}/src/util/boost-install.sh" "${BOOST_SOURCE_DIR}"
+            COMMAND bash "${CMAKE_SOURCE_DIR}/tools/boost-install.sh" "${BOOST_SOURCE_DIR}"
             RESULT_VARIABLE BOOST_INSTALL_RESULT
         )
         if(NOT BOOST_INSTALL_RESULT EQUAL 0)
@@ -82,9 +82,9 @@ function(embed_asset INPUT_FILE VAR_NAME OUT_VAR)
     add_custom_command(
         OUTPUT ${OUTPUT_CPP}
         COMMAND "${CMAKE_COMMAND}" -E make_directory ${ASSET_OUTPUT_DIR}
-        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/src/util/file-to-array.py"
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/tools/file-to-array.py"
                 "${INPUT_FILE}" "${OUTPUT_CPP}" "${VAR_NAME}"
-        DEPENDS "${INPUT_FILE}" ${CMAKE_CURRENT_LIST_DIR}/src/util/file-to-array.py
+        DEPENDS "${INPUT_FILE}" ${CMAKE_CURRENT_LIST_DIR}/tools/file-to-array.py
         COMMENT "Embedding asset ${INPUT_FILE} as ${VAR_NAME}"
     )
 
@@ -131,141 +131,141 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     endif()
 endif()
 
-set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
+set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/engine/include")
 include_directories(${INCLUDE_DIRS})
 
 set(COMMON_LIBRARY_SOURCES
-    include/cowel/policy/content_policy.hpp
-    include/cowel/policy/factory.hpp
-    include/cowel/policy/html.hpp
-    include/cowel/policy/html_literal.hpp
-    include/cowel/policy/ignorant.hpp
-    include/cowel/policy/literally.hpp
-    include/cowel/policy/paragraph_split.hpp
-    include/cowel/policy/phantom.hpp
-    include/cowel/policy/plaintext.hpp
-    include/cowel/policy/syntax_highlight.hpp
-    include/cowel/policy/text_buffer.hpp
-    include/cowel/policy/unprocessed.hpp
+    engine/include/cowel/policy/content_policy.hpp
+    engine/include/cowel/policy/factory.hpp
+    engine/include/cowel/policy/html.hpp
+    engine/include/cowel/policy/html_literal.hpp
+    engine/include/cowel/policy/ignorant.hpp
+    engine/include/cowel/policy/literally.hpp
+    engine/include/cowel/policy/paragraph_split.hpp
+    engine/include/cowel/policy/phantom.hpp
+    engine/include/cowel/policy/plaintext.hpp
+    engine/include/cowel/policy/syntax_highlight.hpp
+    engine/include/cowel/policy/text_buffer.hpp
+    engine/include/cowel/policy/unprocessed.hpp
 
-    include/cowel/util/annotated_string.hpp
-    include/cowel/util/annotation_span.hpp
-    include/cowel/util/ansi.hpp
-    include/cowel/util/ascii_algorithm.hpp
-    include/cowel/util/assert.hpp
-    include/cowel/util/bit_permutations.hpp
-    include/cowel/util/buffer.hpp
-    include/cowel/util/case_transform.hpp
-    include/cowel/util/char_sequence.hpp
-    include/cowel/util/char_sequence_factory.hpp
-    include/cowel/util/char_sequence_ops.hpp
-    include/cowel/util/chars.hpp
-    include/cowel/util/code_point_names.hpp
-    include/cowel/util/draft_uris.hpp
-    include/cowel/util/fixed_string.hpp
-    include/cowel/util/from_chars.hpp
-    include/cowel/util/function_ref.hpp
-    include/cowel/util/html.hpp
-    include/cowel/util/html_entities.hpp
-    include/cowel/util/html_names.hpp
-    include/cowel/util/html_writer.hpp
-    include/cowel/util/io.hpp
-    include/cowel/util/levenshtein.hpp
-    include/cowel/util/levenshtein_utf8.hpp
-    include/cowel/util/meta.hpp
-    include/cowel/util/result.hpp
-    include/cowel/util/severity.hpp
-    include/cowel/util/source_position.hpp
-    include/cowel/util/strings.hpp
-    include/cowel/util/to_chars.hpp
-    include/cowel/util/transparent_comparison.hpp
-    include/cowel/util/tty.hpp
-    include/cowel/util/typo.hpp
-    include/cowel/util/unicode.hpp
-    include/cowel/util/url_encode.hpp
+    engine/include/cowel/util/annotated_string.hpp
+    engine/include/cowel/util/annotation_span.hpp
+    engine/include/cowel/util/ansi.hpp
+    engine/include/cowel/util/ascii_algorithm.hpp
+    engine/include/cowel/util/assert.hpp
+    engine/include/cowel/util/bit_permutations.hpp
+    engine/include/cowel/util/buffer.hpp
+    engine/include/cowel/util/case_transform.hpp
+    engine/include/cowel/util/char_sequence.hpp
+    engine/include/cowel/util/char_sequence_factory.hpp
+    engine/include/cowel/util/char_sequence_ops.hpp
+    engine/include/cowel/util/chars.hpp
+    engine/include/cowel/util/code_point_names.hpp
+    engine/include/cowel/util/draft_uris.hpp
+    engine/include/cowel/util/fixed_string.hpp
+    engine/include/cowel/util/from_chars.hpp
+    engine/include/cowel/util/function_ref.hpp
+    engine/include/cowel/util/html.hpp
+    engine/include/cowel/util/html_entities.hpp
+    engine/include/cowel/util/html_names.hpp
+    engine/include/cowel/util/html_writer.hpp
+    engine/include/cowel/util/io.hpp
+    engine/include/cowel/util/levenshtein.hpp
+    engine/include/cowel/util/levenshtein_utf8.hpp
+    engine/include/cowel/util/meta.hpp
+    engine/include/cowel/util/result.hpp
+    engine/include/cowel/util/severity.hpp
+    engine/include/cowel/util/source_position.hpp
+    engine/include/cowel/util/strings.hpp
+    engine/include/cowel/util/to_chars.hpp
+    engine/include/cowel/util/transparent_comparison.hpp
+    engine/include/cowel/util/tty.hpp
+    engine/include/cowel/util/typo.hpp
+    engine/include/cowel/util/unicode.hpp
+    engine/include/cowel/util/url_encode.hpp
 
-    include/cowel/assets.hpp
-    include/cowel/ast.hpp
-    include/cowel/ast_fwd.hpp
-    include/cowel/big_int.hpp
-    include/cowel/big_int_ops.hpp
-    include/cowel/builtin_directive_set.hpp
-    include/cowel/call_stack.hpp
-    include/cowel/collecting_logger.hpp
-    include/cowel/content_status.hpp
-    include/cowel/context.hpp
-    include/cowel/cowel_lib.hpp
-    include/cowel/cowel.h
-    include/cowel/diagnostic_highlight.hpp
-    include/cowel/diagnostic.hpp
-    include/cowel/directive_behavior.hpp
-    include/cowel/directive_display.hpp
-    include/cowel/directive_processing.hpp
-    include/cowel/document_generation.hpp
-    include/cowel/document_sections.hpp
-    include/cowel/fwd.hpp
-    include/cowel/integration_testing.hpp
-    include/cowel/invocation.hpp
-    include/cowel/json.hpp
-    include/cowel/lex.hpp
-    include/cowel/memory_resources.hpp
-    include/cowel/output_language.hpp
-    include/cowel/parameters.hpp
-    include/cowel/parse_utils.hpp
-    include/cowel/parse.hpp
-    include/cowel/print.hpp
-    include/cowel/regexp.hpp
-    include/cowel/relative_file_loader.hpp
-    include/cowel/services.hpp
-    include/cowel/settings.hpp
-    include/cowel/string_kind.hpp
-    include/cowel/theme_to_css.hpp
-    include/cowel/type.hpp
-    include/cowel/ulight_highlighter.hpp
-    include/cowel/value.hpp
+    engine/include/cowel/assets.hpp
+    engine/include/cowel/ast.hpp
+    engine/include/cowel/ast_fwd.hpp
+    engine/include/cowel/big_int.hpp
+    engine/include/cowel/big_int_ops.hpp
+    engine/include/cowel/builtin_directive_set.hpp
+    engine/include/cowel/call_stack.hpp
+    engine/include/cowel/collecting_logger.hpp
+    engine/include/cowel/content_status.hpp
+    engine/include/cowel/context.hpp
+    engine/include/cowel/cowel_lib.hpp
+    engine/include/cowel/cowel.h
+    engine/include/cowel/diagnostic_highlight.hpp
+    engine/include/cowel/diagnostic.hpp
+    engine/include/cowel/directive_behavior.hpp
+    engine/include/cowel/directive_display.hpp
+    engine/include/cowel/directive_processing.hpp
+    engine/include/cowel/document_generation.hpp
+    engine/include/cowel/document_sections.hpp
+    engine/include/cowel/fwd.hpp
+    engine/include/cowel/integration_testing.hpp
+    engine/include/cowel/invocation.hpp
+    engine/include/cowel/json.hpp
+    engine/include/cowel/lex.hpp
+    engine/include/cowel/memory_resources.hpp
+    engine/include/cowel/output_language.hpp
+    engine/include/cowel/parameters.hpp
+    engine/include/cowel/parse_utils.hpp
+    engine/include/cowel/parse.hpp
+    engine/include/cowel/print.hpp
+    engine/include/cowel/regexp.hpp
+    engine/include/cowel/relative_file_loader.hpp
+    engine/include/cowel/services.hpp
+    engine/include/cowel/settings.hpp
+    engine/include/cowel/string_kind.hpp
+    engine/include/cowel/theme_to_css.hpp
+    engine/include/cowel/type.hpp
+    engine/include/cowel/ulight_highlighter.hpp
+    engine/include/cowel/value.hpp
 
-    src/main/cpp/util/case_transform.cpp
-    src/main/cpp/util/charconv.cpp
-    src/main/cpp/util/code_point_by_name.cpp
-    src/main/cpp/util/draft_uris.cpp
-    src/main/cpp/util/html_entities.cpp
-    src/main/cpp/util/typo.cpp
+    engine/src/util/case_transform.cpp
+    engine/src/util/charconv.cpp
+    engine/src/util/code_point_by_name.cpp
+    engine/src/util/draft_uris.cpp
+    engine/src/util/html_entities.cpp
+    engine/src/util/typo.cpp
 
-    src/main/cpp/directives/alias.cpp
-    src/main/cpp/directives/bibliography.cpp
-    src/main/cpp/directives/code_point.cpp
-    src/main/cpp/directives/files.cpp
-    src/main/cpp/directives/heading.cpp
-    src/main/cpp/directives/html_entity.cpp
-    src/main/cpp/directives/invoke.cpp
-    src/main/cpp/directives/literal.cpp
-    src/main/cpp/directives/macros.cpp
-    src/main/cpp/directives/math.cpp
-    src/main/cpp/directives/paragraph.cpp
-    src/main/cpp/directives/passthrough.cpp
-    src/main/cpp/directives/policies.cpp
-    src/main/cpp/directives/reference.cpp
-    src/main/cpp/directives/str.cpp
-    src/main/cpp/directives/syntax_highlight.cpp
-    src/main/cpp/directives/variables.cpp
-    src/main/cpp/directives/wg21.cpp
+    engine/src/directives/alias.cpp
+    engine/src/directives/bibliography.cpp
+    engine/src/directives/code_point.cpp
+    engine/src/directives/files.cpp
+    engine/src/directives/heading.cpp
+    engine/src/directives/html_entity.cpp
+    engine/src/directives/invoke.cpp
+    engine/src/directives/literal.cpp
+    engine/src/directives/macros.cpp
+    engine/src/directives/math.cpp
+    engine/src/directives/paragraph.cpp
+    engine/src/directives/passthrough.cpp
+    engine/src/directives/policies.cpp
+    engine/src/directives/reference.cpp
+    engine/src/directives/str.cpp
+    engine/src/directives/syntax_highlight.cpp
+    engine/src/directives/variables.cpp
+    engine/src/directives/wg21.cpp
 
-    src/main/cpp/build_ast.cpp
-    src/main/cpp/cli_options.cpp
-    src/main/cpp/content_policies.cpp
-    src/main/cpp/cowel_lib.cpp
-    src/main/cpp/directive_processing.cpp
-    src/main/cpp/builtin_directive_set.cpp
-    src/main/cpp/document_generation.cpp
-    src/main/cpp/json.cpp
-    src/main/cpp/lex.cpp
-    src/main/cpp/parameters.cpp
-    src/main/cpp/parse_utils.cpp
-    src/main/cpp/parse.cpp
-    src/main/cpp/print.cpp
-    src/main/cpp/semantics.cpp
-    src/main/cpp/services.cpp
-    src/main/cpp/theme_to_css.cpp
+    engine/src/build_ast.cpp
+    engine/src/cli_options.cpp
+    engine/src/content_policies.cpp
+    engine/src/cowel_lib.cpp
+    engine/src/directive_processing.cpp
+    engine/src/builtin_directive_set.cpp
+    engine/src/document_generation.cpp
+    engine/src/json.cpp
+    engine/src/lex.cpp
+    engine/src/parameters.cpp
+    engine/src/parse_utils.cpp
+    engine/src/parse.cpp
+    engine/src/print.cpp
+    engine/src/semantics.cpp
+    engine/src/services.cpp
+    engine/src/theme_to_css.cpp
 
     # generated sources
     "${LIGHT_DARK_JS_CPP}"
@@ -276,12 +276,12 @@ set(COMMON_LIBRARY_SOURCES
 
 set(NATIVE_LIBRARY_SOURCES
     ${COMMON_LIBRARY_SOURCES}
-    src/main/cpp/util/io.cpp
-    src/main/cpp/util/tty.cpp
+    engine/src/util/io.cpp
+    engine/src/util/tty.cpp
 
-    src/main/cpp/big_int_boost.cpp
-    src/main/cpp/regexp_boost.cpp
-    src/main/cpp/relative_file_loader.cpp
+    engine/src/big_int_boost.cpp
+    engine/src/regexp_boost.cpp
+    engine/src/relative_file_loader.cpp
 )
 
 if(DEFINED EMSCRIPTEN)
@@ -310,10 +310,10 @@ if(DEFINED EMSCRIPTEN)
 
     add_executable(cowel-wasm
         ${COMMON_LIBRARY_SOURCES}
-        src/main/cpp/big_int_wasm.cpp
-        src/main/cpp/regexp_wasm.cpp
-        src/main/cpp/wasm.cpp
-        src/main/cpp/wasm_stubs.cpp
+        bindings/node/src/cpp/big_int_wasm.cpp
+        bindings/node/src/cpp/regexp_wasm.cpp
+        bindings/node/src/cpp/wasm.cpp
+        bindings/node/src/cpp/wasm_stubs.cpp
     )
     set_target_properties(cowel-wasm PROPERTIES
         OUTPUT_NAME "cowel"
@@ -338,13 +338,21 @@ if(DEFINED EMSCRIPTEN)
     target_link_libraries(cowel-wasm PRIVATE ulight args)
 
     set(NPM_DIR "${CMAKE_BINARY_DIR}/npm")
+    set(NPM_TEST_DIR "${CMAKE_BINARY_DIR}/test")
+    set(NODE_BINDINGS_DIR "${CMAKE_CURRENT_LIST_DIR}/bindings/node")
     find_program(NPX_EXECUTABLE npx REQUIRED)
     find_program(NODE_EXECUTABLE node REQUIRED)
 
     add_custom_target(cowel-npm ALL
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${NPM_DIR}"
-        COMMAND "${NPX_EXECUTABLE}" tsc
-        COMMAND "${NPX_EXECUTABLE}" tsc -p "${CMAKE_CURRENT_LIST_DIR}/tsconfig.test.json"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${NPM_TEST_DIR}"
+        COMMAND "${NPX_EXECUTABLE}" --prefix "${NODE_BINDINGS_DIR}" tsc
+            -p "${NODE_BINDINGS_DIR}/tsconfig.json"
+            --outDir "${NPM_DIR}"
+            --tsBuildInfoFile "${NPM_DIR}/.tsbuildinfo"
+        COMMAND "${NPX_EXECUTABLE}" --prefix "${NODE_BINDINGS_DIR}" tsc
+            -p "${NODE_BINDINGS_DIR}/tsconfig.test.json"
+            --outDir "${NPM_TEST_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_LIST_DIR}/CHANGELOG.md"
             "${CMAKE_CURRENT_BINARY_DIR}/cowel.wasm"
@@ -352,13 +360,14 @@ if(DEFINED EMSCRIPTEN)
         COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
             "${CMAKE_CURRENT_LIST_DIR}/docs/npm"
             "${NPM_DIR}"
-        COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/src/util/transform-package-json.js"
-            "${CMAKE_CURRENT_LIST_DIR}/package.json"
+        COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/tools/transform-package-json.js"
+            "${NODE_BINDINGS_DIR}/package.json"
             "${NPM_DIR}/package.json"
         BYPRODUCTS
             "${NPM_DIR}"
+            "${NPM_TEST_DIR}"
             "${NPM_DIR}/cowel.wasm"
-            "${CMAKE_BINARY_DIR}/.tsbuildinfo"
+            "${CMAKE_BINARY_DIR}/npm/.tsbuildinfo"
         DEPENDS cowel-wasm
         COMMENT "Preparing npm package in ${NPM_DIR}"
     )
@@ -372,30 +381,30 @@ else()
     target_compile_definitions(cowel PUBLIC COWEL_BUILD_NATIVE=1)
 
     add_executable(cowel-cli ${HEADERS}
-        src/main/cpp/cli.cpp
+        bindings/native/src/cli.cpp
     )
     target_link_libraries(cowel-cli cowel ulight args)
 
     add_executable(cowel-test
         ${HEADERS}
-        src/test/cpp/document_file_testing.cpp
-        src/test/cpp/main.cpp
-        src/test/cpp/test_char_sequence.cpp
-        src/test/cpp/test_chars_strings.cpp
-        src/test/cpp/test_diff.cpp
-        src/test/cpp/test_document_generation.cpp
-        src/test/cpp/test_draft_uris.cpp
-        src/test/cpp/test_html_writer.cpp
-        src/test/cpp/test_levenshtein.cpp
-        src/test/cpp/test_lexing.cpp
-        src/test/cpp/test_math.cpp
-        src/test/cpp/test_parsing.cpp
-        src/test/cpp/test_regexp.cpp
-        src/test/cpp/test_small_vector.cpp
-        src/test/cpp/test_to_chars.cpp
-        src/test/cpp/test_typo.cpp
-        src/test/cpp/test_valid.cpp
-        src/test/cpp/test_value.cpp
+        engine/test/src/document_file_testing.cpp
+        engine/test/src/main.cpp
+        engine/test/src/test_char_sequence.cpp
+        engine/test/src/test_chars_strings.cpp
+        engine/test/src/test_diff.cpp
+        engine/test/src/test_document_generation.cpp
+        engine/test/src/test_draft_uris.cpp
+        engine/test/src/test_html_writer.cpp
+        engine/test/src/test_levenshtein.cpp
+        engine/test/src/test_lexing.cpp
+        engine/test/src/test_math.cpp
+        engine/test/src/test_parsing.cpp
+        engine/test/src/test_regexp.cpp
+        engine/test/src/test_small_vector.cpp
+        engine/test/src/test_to_chars.cpp
+        engine/test/src/test_typo.cpp
+        engine/test/src/test_valid.cpp
+        engine/test/src/test_value.cpp
     )
 
     include(GoogleTest)

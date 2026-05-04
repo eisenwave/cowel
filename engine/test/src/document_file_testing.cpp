@@ -35,7 +35,7 @@ bool test_validity(std::u8string_view file, Printing_Diagnostic_Policy& policy)
     }
     std::pmr::monotonic_buffer_resource memory;
 
-    const auto full_path = u8"test/" + std::pmr::u8string { file, &memory };
+    const auto full_path = u8"engine/test/files/" + std::pmr::u8string { file, &memory };
     policy.file = full_path;
 
     std::pmr::vector<char8_t> source_data { &memory };
