@@ -230,6 +230,7 @@ void dump_code_string(std::pmr::vector<char8_t>& out, const Diagnostic_String& s
     const std::u8string_view text = string.get_text();
     if (!colors) {
         append(out, text);
+        return;
     }
 
     Annotation_Span<Diagnostic_Highlight> previous {};

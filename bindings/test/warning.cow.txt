@@ -1,0 +1,3 @@
+WARNING warning.cow:1:1: Some of the code units inside were ignored because only the first given code point is converted. This can happen if you type a glyph that consist of multiple code points, like a country flag. [ignored.input]
+     1 | \cowel_char_get_num("ab")
+       | ^~~~~~~~~~~~~~~~~~~~~~~~~

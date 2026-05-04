@@ -1,0 +1,13 @@
+Usage: cowel run <input> <output> [options]
+
+Commands:
+  run <input> <output>  Processes a COWEL document
+
+Options:
+  -h, --help            Display this help menu
+  -v, --version         Show version
+  -l, --severity        Minimum (>=) severity for log messages
+                        Choices: min, trace, debug, info, soft_warning,
+                                 warning, error, fatal, none
+                        Default: info
+      --no-color        Disable colored output

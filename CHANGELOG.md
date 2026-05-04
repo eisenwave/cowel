@@ -21,6 +21,7 @@
   - add *parenthesized-expression* as a construct
   - disambiguate *group* as *parenthesized-expression* if possible
   - `(x=X)`, `(X,)`, `()` remain a *group*
+- fix duplicate output for `--no-color` option
 - also add internal `__typeof` directive and test types of directives
 
 **Full Changelog**:

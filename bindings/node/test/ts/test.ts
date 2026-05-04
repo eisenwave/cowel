@@ -2,6 +2,8 @@ import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import * as cowel from "../../src/cowel-wasm.js";
@@ -71,8 +73,11 @@ describe("Document Generation", async () => {
             const source = fs.readFileSync(testPath, "utf8");
             const mainFile: LoadedFile = { path: testPath, data: fs.readFileSync(testPath) };
 
-            const loadFile = (unresolvedPath: string, baseFileId: number): cowel.FileResult => {
-                const resolvedPath = (() => {
+            const loadFile = (
+                unresolvedPath: string,
+                baseFileId: number,
+            ): cowel.FileResult => {
+                const resolvedPath = ((): string => {
                     if (baseFileId < 0) {
                         return path.resolve(path.dirname(testPath), unresolvedPath);
                     }
@@ -125,4 +130,61 @@ describe("Document Generation", async () => {
             assert.strictEqual(actual, expected);
         });
     }
+});
+
+describe("CLI Output", () => {
+    const cliTestDir = path.join(projectRoot, "bindings", "test");
+    const testPaths = findFilesRecursively(cliTestDir, /\.cow$/);
+    const cliPath = path.join(projectRoot, "build", "npm", "cowel.js");
+
+    for (const testPath of testPaths) {
+        const relativePath = path.relative(cliTestDir, testPath);
+
+        test(relativePath, () => {
+            const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "cowel-cli-test-"));
+            const outputPath = path.join(outputDir, "output.html");
+
+            try {
+                const expectedPath = `${testPath}.txt`;
+                assert.ok(fs.existsSync(expectedPath), `Missing expected output fixture: ${expectedPath}`);
+                const expected = fs.readFileSync(expectedPath, "utf8");
+
+                const result = spawnSync(
+                    process.execPath,
+                    [cliPath, "run", relativePath, outputPath, "--no-color"],
+                    {
+                        cwd: cliTestDir,
+                        encoding: "utf8",
+                    },
+                );
+
+                assert.notStrictEqual(
+                    result.status,
+                    null,
+                    `CLI process timed out or failed to start for ${relativePath}`,
+                );
+
+                const actual = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+                assert.strictEqual(actual, expected);
+            } finally {
+                fs.rmSync(outputDir, { recursive: true, force: true });
+            }
+        });
+    }
+
+    test("help", () => {
+        const expectedPath = path.join(cliTestDir, "help.txt");
+        assert.ok(fs.existsSync(expectedPath), `Missing expected output fixture: ${expectedPath}`);
+
+        const expected = fs.readFileSync(expectedPath, "utf8");
+        const result = spawnSync(process.execPath, [cliPath, "--help"], {
+            cwd: cliTestDir,
+            encoding: "utf8",
+        });
+
+        assert.strictEqual(result.status, 0);
+
+        const actual = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+        assert.strictEqual(actual, expected);
+    });
 });
