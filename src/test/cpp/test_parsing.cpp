@@ -1333,6 +1333,26 @@ TEST(Parse_And_Build, expression_splice_nesting)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"expression_splice/nesting.cow");
 }
 
+TEST(Parse_And_Build, expression_splice_source_text)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+
+    std::optional<Actual_Document> parsed
+        = parse_and_build_file(u8"expression_splice/source_text.cow", &memory);
+    ASSERT_TRUE(parsed);
+
+    std::vector<std::u8string_view> expression_sources;
+    for (const auto& element : parsed->content) {
+        if (const auto* const expression = element.try_as_expression()) {
+            expression_sources.push_back(expression->get_source());
+        }
+    }
+
+    ASSERT_EQ(expression_sources.size(), 2);
+    EXPECT_EQ(expression_sources[0], u8"\\(~1)");
+    EXPECT_EQ(expression_sources[1], u8"\\(1 + 2)");
+}
+
 TEST(Parse_And_Build, floats)
 {
     static std::pmr::monotonic_buffer_resource memory;

@@ -558,6 +558,7 @@ private:
     {
         const CST_Instruction push = pop_instruction();
         COWEL_ASSERT(push.kind == CST_Instruction_Kind::push_expression_splice);
+        const Source_Span expression_splice_begin = peek_token().location;
         advance_by_tokens(1);
 
         ignore_skips();
@@ -566,9 +567,19 @@ private:
 
         const CST_Instruction pop = pop_instruction();
         COWEL_ASSERT(pop.kind == CST_Instruction_Kind::pop_expression_splice);
+        const Source_Span expression_splice_end = peek_token().location;
         advance_by_tokens(1);
 
-        return expression;
+        // The point here is to attach the leading `\(` and trailing `)`
+        // to the underlying expression,
+        // which does not have these delimiters as part of its source.
+        const File_Source_Span expression_splice_span
+            = make_file_span(expression_splice_begin, expression_splice_end);
+        return ast::Expression {
+            std::move(expression),
+            expression_splice_span,
+            extract(expression_splice_span),
+        };
     }
 
     [[nodiscard]]

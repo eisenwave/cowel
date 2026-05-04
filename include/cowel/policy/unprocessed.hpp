@@ -27,6 +27,12 @@ public:
         write(directive.get_source(), Output_Language::text);
         return Processing_Status::ok;
     }
+    [[nodiscard]]
+    Processing_Status consume(const ast::Expression& expression, Frame_Index, Context&) override
+    {
+        write(expression.get_source(), Output_Language::text);
+        return Processing_Status::ok;
+    }
 };
 
 } // namespace cowel

@@ -583,9 +583,90 @@ static_assert(std::is_move_assignable_v<Binary_Expression>);
 
 using Expression_Variant = std::variant<Directive, Primary, Unary_Expression, Binary_Expression>;
 
-/// @brief Represents an *expression*.
+/// @brief Represents an *expression* or *expression-splice*.
 struct Expression : Expression_Variant {
-    using Expression_Variant::variant;
+private:
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+
+public:
+    // Because we also need the constructors to copy the `m_source_span` member,
+    // we cannot simply inherit all the `Expression_Variant` constructors.
+    // We need additional members for the source and source span because
+    // an expression-splice does not have the same source as the expression nested within.
+
+    [[nodiscard]]
+    Expression(const Directive& value)
+        : Expression_Variant { value }
+        , m_source_span { value.get_source_span() }
+        , m_source { value.get_source() }
+    {
+    }
+    [[nodiscard]]
+    Expression(Directive&& value)
+        : Expression_Variant { std::move(value) }
+        , m_source_span { std::get<Directive>(*this).get_source_span() }
+        , m_source { std::get<Directive>(*this).get_source() }
+    {
+    }
+
+    [[nodiscard]]
+    Expression(const Primary& value)
+        : Expression_Variant { value }
+        , m_source_span { value.get_source_span() }
+        , m_source { value.get_source() }
+    {
+    }
+    [[nodiscard]]
+    Expression(Primary&& value)
+        : Expression_Variant { std::move(value) }
+        , m_source_span { std::get<Primary>(*this).get_source_span() }
+        , m_source { std::get<Primary>(*this).get_source() }
+    {
+    }
+
+    [[nodiscard]]
+    Expression(const Unary_Expression& value)
+        : Expression_Variant { value }
+        , m_source_span { value.get_source_span() }
+        , m_source { value.get_source() }
+    {
+    }
+    [[nodiscard]]
+    Expression(Unary_Expression&& value)
+        : Expression_Variant { std::move(value) }
+        , m_source_span { std::get<Unary_Expression>(*this).get_source_span() }
+        , m_source { std::get<Unary_Expression>(*this).get_source() }
+    {
+    }
+
+    [[nodiscard]]
+    Expression(const Binary_Expression& value)
+        : Expression_Variant { value }
+        , m_source_span { value.get_source_span() }
+        , m_source { value.get_source() }
+    {
+    }
+    [[nodiscard]]
+    Expression(Binary_Expression&& value)
+        : Expression_Variant { std::move(value) }
+        , m_source_span { std::get<Binary_Expression>(*this).get_source_span() }
+        , m_source { std::get<Binary_Expression>(*this).get_source() }
+    {
+    }
+
+    [[nodiscard]]
+    Expression(
+        Expression&& value,
+        const File_Source_Span source_span,
+        const std::u8string_view source
+    )
+        : Expression_Variant { std::move(value) }
+        , m_source_span { source_span }
+        , m_source { source }
+    {
+        COWEL_ASSERT(m_source_span.length == m_source.length());
+    }
 
     [[nodiscard]]
     bool is_directive() const
@@ -665,17 +746,13 @@ struct Expression : Expression_Variant {
     [[nodiscard]]
     const File_Source_Span& get_source_span() const
     {
-        return std::visit(
-            [&](const auto& v) -> const File_Source_Span& { return v.get_source_span(); }, *this
-        );
+        return m_source_span;
     }
 
     [[nodiscard]]
     std::u8string_view get_source() const
     {
-        return std::visit(
-            [&](const auto& v) -> std::u8string_view { return v.get_source(); }, *this
-        );
+        return m_source;
     }
 };
 

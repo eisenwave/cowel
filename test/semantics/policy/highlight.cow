@@ -3,10 +3,12 @@
 Text
 \\
 \cowel_html_element(span){directive}
+\(1 + 2)
 }}
 
 \test_output{
 <h- data-h=name>Text</h->
 \
 <span><h- data-h=name>directive</h-></span>
+<h- data-h=num>3</h->
 }
