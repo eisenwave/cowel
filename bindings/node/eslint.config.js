@@ -18,7 +18,10 @@ export default defineConfig([
         languageOptions: {
             parser,
             parserOptions: {
-                project: './tsconfig.json',
+                project: [
+                    './tsconfig.json',
+                    './tsconfig.test.json',
+                ],
             },
         },
         plugins: {
@@ -27,6 +30,7 @@ export default defineConfig([
         },
         files: [
             "src/**/*.ts",
+            "test/**/*.ts",
         ],
         rules: {
             ...plugin.configs['recommended'].rules,
