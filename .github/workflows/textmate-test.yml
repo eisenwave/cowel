@@ -3,8 +3,14 @@ name: TextMate Grammar Tests
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "editor/**"
+      - ".github/workflows/textmate-test.yml"
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "editor/**"
+      - ".github/workflows/textmate-test.yml"
 
 jobs:
   test:
