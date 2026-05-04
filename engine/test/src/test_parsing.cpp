@@ -863,7 +863,7 @@ Result<Parsed_File, Parse_Error_Stage> parse_file(
 std::optional<Actual_Document>
 parse_and_build_file(const std::u8string_view file_name, std::pmr::memory_resource* const memory)
 {
-    std::pmr::u8string path { u8"test/parse/", memory };
+    std::pmr::u8string path { u8"engine/test/files/parse/", memory };
     path += file_name;
 
     Result<Parsed_File, Parse_Error_Stage> parsed = parse_file(path, memory);
@@ -995,7 +995,7 @@ bool run_parse_test(
     constexpr std::u8string_view indent = u8"    ";
 
     std::pmr::monotonic_buffer_resource memory;
-    std::pmr::u8string path { u8"test/parse/", &memory };
+    std::pmr::u8string path { u8"engine/test/files/parse/", &memory };
     path += file_name;
     Result<Parsed_File, Parse_Error_Stage> actual = parse_file(path, &memory);
     if (!actual) {
@@ -1042,7 +1042,7 @@ bool run_parse_test(
 )
 {
     std::pmr::monotonic_buffer_resource memory;
-    std::pmr::u8string path { u8"test/parse/", &memory };
+    std::pmr::u8string path { u8"engine/test/files/parse/", &memory };
     path += expectations_file;
 
     const std::optional<std::vector<CST_Instruction>> expected = load_parse_expectations(path);
@@ -1052,14 +1052,15 @@ bool run_parse_test(
     return run_parse_test(cow_file_name, *expected);
 }
 
-/// @brief Returns `true` if parsing `test/parse/failures/${file_name}` results in a parser error.
+/// @brief Returns `true` if parsing `engine/test/files/parse/failures/${file_name}`
+/// results in a parser error.
 /// This is primarily useful for verifying that no invalid markup is accepted
 /// and that the parser doesn't run into an infinite loop or crash on invalid input.
 [[nodiscard]]
 bool run_parse_fail_test(const std::u8string_view file_name)
 {
     std::pmr::monotonic_buffer_resource memory;
-    std::pmr::u8string path { u8"test/parse/failures/", &memory };
+    std::pmr::u8string path { u8"engine/test/files/parse/failures/", &memory };
     path += file_name;
 
     constexpr bool silence_parse_error = true;
@@ -1086,10 +1087,10 @@ TEST(Parse, file_tests)
     std::pmr::monotonic_buffer_resource memory;
 
     std::pmr::vector<fs::path> test_paths { &memory };
-    find_files_recursively(test_paths, "test/parse", filter);
+    find_files_recursively(test_paths, "engine/test/files/parse", filter);
     std::ranges::sort(test_paths);
 
-    const fs::path parse_root = "test/parse";
+    const fs::path parse_root = "engine/test/files/parse";
 
     bool overall_success = true;
     for (const fs::path& source_path : test_paths) {

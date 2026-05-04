@@ -4,11 +4,31 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import * as cowel from "../../main/ts/cowel-wasm.js";
+import * as cowel from "../../src/cowel-wasm.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// When running from build/test/test/ts/, projectRoot is 4 levels up.
-const projectRoot = path.resolve(__dirname, "../../../..");
+
+function findProjectRoot(startDir: string): string {
+    let dir = startDir;
+    for (; ;) {
+        const markers = [
+            path.join(dir, "CMakeLists.txt"),
+            path.join(dir, "engine", "test", "files", "semantics"),
+            path.join(dir, "docs", "index.cow"),
+        ];
+        if (markers.every((marker) => fs.existsSync(marker))) {
+            return dir;
+        }
+
+        const parent = path.dirname(dir);
+        if (parent === dir) {
+            throw new Error("Unable to find repository root from test location");
+        }
+        dir = parent;
+    }
+}
+
+const projectRoot = findProjectRoot(__dirname);
 
 function readModuleFileSync(file: string): NonSharedBuffer {
     const resolved = path.resolve(projectRoot, file);
@@ -38,7 +58,7 @@ describe("Document Generation", async () => {
     const moduleBytes = readModuleFileSync("build/npm/cowel.wasm");
     const wasm = await cowel.load(moduleBytes);
 
-    const testDir = path.join(projectRoot, "test/semantics");
+    const testDir = path.join(projectRoot, "engine/test/files/semantics");
     const testPaths = findFilesRecursively(testDir, /\.cow$/);
 
     for (const testPath of testPaths) {

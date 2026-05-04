@@ -118,7 +118,7 @@ TEST(Document_Generation, file_tests)
     const auto alloc_options = Allocator_Options::from_memory_resource(&memory);
 
     std::pmr::vector<fs::path> test_paths { &memory };
-    find_files_recursively(test_paths, "test/semantics");
+    find_files_recursively(test_paths, "engine/test/files/semantics");
     std::erase_if(test_paths, [](const fs::path& p) {
         return !p.generic_u8string().ends_with(u8".cow");
     });

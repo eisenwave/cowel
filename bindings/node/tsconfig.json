@@ -2,12 +2,12 @@
     "extends": "./tsconfig.base.json",
     "compilerOptions": {
         "incremental": true,
-        "tsBuildInfoFile": "build/.tsbuildinfo",
-        "outDir": "build/npm",
-        "rootDir": "src/main/ts",
+        "tsBuildInfoFile": "../../build/npm/.tsbuildinfo",
+        "outDir": "../../build/npm",
+        "rootDir": "src",
         "types": ["node"]
     },
     "include": [
-        "src/main"
+        "src"
     ]
 }

@@ -115,36 +115,42 @@ jobs:
       with:
         submodules: true
 
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
     - name: Install emscripten
       run: |
-        git clone https://github.com/emscripten-core/emsdk.git
-        cd emsdk
+        git clone https://github.com/emscripten-core/emsdk.git "${{ github.workspace }}/emsdk"
+        cd "${{ github.workspace }}/emsdk"
         ./emsdk install latest
         ./emsdk activate latest
 
     - name: Install dependencies
       run: |
-        sudo apt update
-        sudo apt -y install nodejs npm
-        npm install
+        npm ci
+      working-directory: bindings/node
 
     - name: Lint
       run: >
         npx eslint src
         --max-warnings=0
         --color
+      working-directory: bindings/node
 
     - name: Set reusable strings
       id: strings
       shell: bash
       run: |
         echo "build_dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-        echo "workspace_forward=$(echo '${{ github.workspace }}' | sed 's|\\|/|g')" >> "$GITHUB_OUTPUT"
+        echo "emsdk_dir=${{ github.workspace }}/emsdk" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake
       run: |
+        source "${{ steps.strings.outputs.emsdk_dir }}/emsdk_env.sh"
         cmake -B "${{ steps.strings.outputs.build_dir }}" \
-        -DCMAKE_TOOLCHAIN_FILE=emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake \
+        -DCMAKE_TOOLCHAIN_FILE="${{ steps.strings.outputs.emsdk_dir }}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" \
         -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
         -DCMAKE_COLOR_DIAGNOSTICS=ON \
         -DCMAKE_CXX_FLAGS="-fdiagnostics-color=always" \
@@ -152,19 +158,21 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build
-      run: >
-        cmake
-        --build "${{ steps.strings.outputs.build_dir }}"
-        --target cowel-npm
-        --config Release
-        --verbose
+      run: |
+        source "${{ steps.strings.outputs.emsdk_dir }}/emsdk_env.sh"
+        cmake \
+          --build "${{ steps.strings.outputs.build_dir }}" \
+          --target cowel-npm \
+          --config Release \
+          --verbose
 
     - name: Test
       run: npm test
+      working-directory: bindings/node
 
     - name: Test CLI
       run: |
-        node "${{ steps.strings.outputs.build_dir }}/npm/" run \
+        node "${{ steps.strings.outputs.build_dir }}/npm/cowel.js" run \
           docs/index.cow \
           docs/actual.html &&
         diff --color=always -u \

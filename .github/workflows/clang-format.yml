@@ -4,14 +4,18 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - "src/**"
-      - "include/**"
+      - "engine/src/**"
+      - "engine/include/**"
+      - "bindings/native/src/**"
+      - "bindings/node/src/cpp/**"
       - ".github/workflows/clang-format.yml"
   pull_request:
     branches: [ "main" ]
     paths:
-      - "src/**"
-      - "include/**"
+      - "engine/src/**"
+      - "engine/include/**"
+      - "bindings/native/src/**"
+      - "bindings/node/src/cpp/**"
       - ".github/workflows/clang-format.yml"
 
 jobs:
@@ -27,5 +31,7 @@ jobs:
 
       - name: Run clang-format check
         run: >
-          find include src -name '*.cpp' -o -name '*.c' -o -name '*.hpp' -o -name '*.h' |
-          xargs clang-format-20 --color=1 --dry-run --Werror
+          find engine/include engine/src bindings/native/src bindings/node/src/cpp
+          \( -name '*.cpp' -o -name '*.c' -o -name '*.hpp' -o -name '*.h' \)
+          -print0 |
+          xargs -0 -r clang-format-20 --color=1 --dry-run --Werror

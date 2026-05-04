@@ -509,7 +509,7 @@ TEST(Lex, file_tests)
     Global_Memory_Resource memory;
 
     std::pmr::vector<fs::path> test_paths { &memory };
-    find_files_recursively(test_paths, "test/lex", filter);
+    find_files_recursively(test_paths, "engine/test/files/lex", filter);
     std::ranges::sort(test_paths);
 
     bool overall_success = true;

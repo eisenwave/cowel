@@ -26,7 +26,7 @@ export default defineConfig([
             '@stylistic': stylistic
         },
         files: [
-            "src/main/ts/*.ts",
+            "src/**/*.ts",
         ],
         rules: {
             ...plugin.configs['recommended'].rules,
@@ -84,7 +84,7 @@ export default defineConfig([
             }
         },
         files: [
-            "src/main/js/*.js",
+            "src/**/*.js",
         ],
         plugins: {
             js: eslint
