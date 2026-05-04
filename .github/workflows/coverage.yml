@@ -24,6 +24,9 @@ jobs:
   coverage:
     timeout-minutes: 20
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
@@ -39,12 +42,13 @@ jobs:
       run: bash tools/coverage-llvm.sh
 
     - name: Upload Codecov report
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         files: ./build/clang20-coverage/coverage/lcov.info
         flags: native
         name: native-llvm-coverage
-        fail_ci_if_error: false
+        use_oidc: true
+        fail_ci_if_error: true
 
     - name: Upload coverage artifacts
       if: always()
