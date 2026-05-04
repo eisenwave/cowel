@@ -3,6 +3,7 @@ project(cowel)
 
 option(COWEL_ENABLE_ASAN "Enable AddressSanitizer (and UBSan where configured)" OFF)
 option(COWEL_USE_LIBCXX "Use libc++" OFF)
+option(COWEL_ENABLE_COVERAGE "Enable LLVM source-based coverage" OFF)
 
 if(COWEL_ENABLE_ASAN)
     set(ULIGHT_ENABLE_ASAN ON)
@@ -128,6 +129,14 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(WARNING_OPTIONS -W4)
     if(COWEL_ENABLE_ASAN)
         set(SANITIZER_OPTIONS -fsanitize=address,undefined)
+    endif()
+endif()
+
+if(COWEL_ENABLE_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        set(COVERAGE_OPTIONS -fprofile-instr-generate -fcoverage-mapping)
+    else()
+        message(FATAL_ERROR "COWEL_ENABLE_COVERAGE currently requires Clang")
     endif()
 endif()
 
@@ -376,8 +385,8 @@ else()
     target_link_libraries(cowel ulight args)
     target_link_libraries(cowel boost_config boost_multiprecision boost_regex)
     target_link_libraries(cowel ICU::data ICU::i18n ICU::uc)
-    target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
-    target_link_options(cowel PUBLIC ${SANITIZER_OPTIONS})
+    target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS} ${COVERAGE_OPTIONS})
+    target_link_options(cowel PUBLIC ${SANITIZER_OPTIONS} ${COVERAGE_OPTIONS})
     target_compile_definitions(cowel PUBLIC COWEL_BUILD_NATIVE=1)
 
     add_executable(cowel-cli ${HEADERS}
@@ -410,9 +419,12 @@ else()
     include(GoogleTest)
     enable_testing()
 
+    target_compile_options(cowel-test PRIVATE ${COVERAGE_OPTIONS})
+    target_link_options(cowel-test PRIVATE ${COVERAGE_OPTIONS})
     target_link_libraries(cowel-test cowel ulight gtest gtest_main)
     gtest_discover_tests(cowel-test
         WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
         DISCOVERY_TIMEOUT 30
+        PROPERTIES LABELS cowel
     )
 endif()

@@ -1,0 +1,57 @@
+name: Native LLVM Coverage
+
+"on":
+  push:
+    branches: [ "main" ]
+    paths:
+      - "engine/**"
+      - "bindings/native/**"
+      - "tools/coverage-llvm.sh"
+      - "CMakeLists.txt"
+      - "CMakePresets.json"
+      - ".github/workflows/coverage.yml"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "engine/**"
+      - "bindings/native/**"
+      - "tools/coverage-llvm.sh"
+      - "CMakeLists.txt"
+      - "CMakePresets.json"
+      - ".github/workflows/coverage.yml"
+
+jobs:
+  coverage:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y clang-20 llvm-20 libstdc++-13-dev libgtest-dev
+
+    - name: Generate LLVM LCOV
+      run: bash tools/coverage-llvm.sh
+
+    - name: Upload Codecov report
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./build/clang20-coverage/coverage/lcov.info
+        flags: native
+        name: native-llvm-coverage
+        fail_ci_if_error: false
+
+    - name: Upload coverage artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: llvm-coverage-${{ github.sha }}
+        path: |
+          build/clang20-coverage/coverage/lcov.info
+          build/clang20-coverage/coverage/coverage.profdata
+        retention-days: 30

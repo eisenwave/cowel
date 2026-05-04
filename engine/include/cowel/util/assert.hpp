@@ -1,6 +1,8 @@
 #ifndef COWEL_ASSERT_HPP
 #define COWEL_ASSERT_HPP
 
+// LCOV_EXCL_START
+
 #include "ulight/impl/assert.hpp"
 
 namespace cowel {
@@ -18,5 +20,7 @@ using ulight::handle_assertion;
 #define COWEL_DEBUG_ASSERT_UNREACHABLE(...) ULIGHT_DEBUG_ASSERT_UNREACHABLE(__VA_ARGS__)
 
 } // namespace cowel
+
+// LCOV_EXCL_STOP
 
 #endif
