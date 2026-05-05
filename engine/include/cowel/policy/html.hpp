@@ -8,10 +8,11 @@
 
 #include "cowel/policy/content_policy.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/output_language.hpp"
 #include "cowel/settings.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 namespace cowel {
 

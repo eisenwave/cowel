@@ -10,7 +10,8 @@
 
 #include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
-#include "cowel/lex.hpp"
+
+#include "cowel/syntax/lex.hpp"
 
 using namespace std::string_view_literals;
 

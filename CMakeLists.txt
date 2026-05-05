@@ -193,9 +193,14 @@ set(COMMON_LIBRARY_SOURCES
     engine/include/cowel/util/unicode.hpp
     engine/include/cowel/util/url_encode.hpp
 
+    engine/include/cowel/syntax/ast.hpp
+    engine/include/cowel/syntax/ast_fwd.hpp
+    engine/include/cowel/syntax/expression_kind.hpp
+    engine/include/cowel/syntax/lex.hpp
+    engine/include/cowel/syntax/parse_utils.hpp
+    engine/include/cowel/syntax/parse.hpp
+
     engine/include/cowel/assets.hpp
-    engine/include/cowel/ast.hpp
-    engine/include/cowel/ast_fwd.hpp
     engine/include/cowel/big_int.hpp
     engine/include/cowel/big_int_ops.hpp
     engine/include/cowel/builtin_directive_set.hpp
@@ -216,12 +221,9 @@ set(COMMON_LIBRARY_SOURCES
     engine/include/cowel/integration_testing.hpp
     engine/include/cowel/invocation.hpp
     engine/include/cowel/json.hpp
-    engine/include/cowel/lex.hpp
     engine/include/cowel/memory_resources.hpp
     engine/include/cowel/output_language.hpp
     engine/include/cowel/parameters.hpp
-    engine/include/cowel/parse_utils.hpp
-    engine/include/cowel/parse.hpp
     engine/include/cowel/print.hpp
     engine/include/cowel/regexp.hpp
     engine/include/cowel/relative_file_loader.hpp
@@ -259,7 +261,11 @@ set(COMMON_LIBRARY_SOURCES
     engine/src/directives/variables.cpp
     engine/src/directives/wg21.cpp
 
-    engine/src/build_ast.cpp
+    engine/src/syntax/build_ast.cpp
+    engine/src/syntax/lex.cpp
+    engine/src/syntax/parse_utils.cpp
+    engine/src/syntax/parse.cpp
+
     engine/src/cli_options.cpp
     engine/src/content_policies.cpp
     engine/src/cowel_lib.cpp
@@ -267,10 +273,7 @@ set(COMMON_LIBRARY_SOURCES
     engine/src/builtin_directive_set.cpp
     engine/src/document_generation.cpp
     engine/src/json.cpp
-    engine/src/lex.cpp
     engine/src/parameters.cpp
-    engine/src/parse_utils.cpp
-    engine/src/parse.cpp
     engine/src/print.cpp
     engine/src/semantics.cpp
     engine/src/services.cpp

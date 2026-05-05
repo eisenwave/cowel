@@ -12,7 +12,6 @@
 
 #include <gtest/gtest.h>
 
-#include "cowel/lex.hpp"
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/io.hpp"
@@ -20,12 +19,15 @@
 #include "cowel/util/strings.hpp"
 #include "cowel/util/tty.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/diagnostic_highlight.hpp"
 #include "cowel/fwd.hpp"
-#include "cowel/parse.hpp"
 #include "cowel/print.hpp"
+
 #include "diff.hpp"
+
+#include "cowel/syntax/ast.hpp"
+#include "cowel/syntax/lex.hpp"
+#include "cowel/syntax/parse.hpp"
 
 using namespace std::string_view_literals;
 

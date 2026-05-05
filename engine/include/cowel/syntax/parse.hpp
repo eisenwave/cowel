@@ -11,9 +11,10 @@
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/function_ref.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/fwd.hpp"
-#include "cowel/lex.hpp"
+
+#include "cowel/syntax/ast.hpp"
+#include "cowel/syntax/lex.hpp"
 
 namespace cowel {
 

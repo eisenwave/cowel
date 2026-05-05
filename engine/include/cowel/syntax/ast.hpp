@@ -13,13 +13,14 @@
 #include "cowel/util/meta.hpp"
 #include "cowel/util/source_position.hpp"
 
-#include "cowel/ast_fwd.hpp"
 #include "cowel/big_int.hpp"
-#include "cowel/expression_kind.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/gc.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/string_kind.hpp"
+
+#include "cowel/syntax/ast_fwd.hpp"
+#include "cowel/syntax/expression_kind.hpp"
 
 namespace cowel::ast {
 

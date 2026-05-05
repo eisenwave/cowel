@@ -9,8 +9,9 @@
 #include "cowel/util/tty.hpp"
 
 #include "cowel/fwd.hpp"
-#include "cowel/parse.hpp"
 #include "cowel/print.hpp"
+
+#include "cowel/syntax/parse.hpp"
 
 #include "compilation_stage.hpp"
 #include "diagnostic_policy.hpp"

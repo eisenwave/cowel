@@ -27,10 +27,11 @@
 #include "cowel/fwd.hpp"
 #include "cowel/integration_testing.hpp"
 #include "cowel/output_language.hpp"
-#include "cowel/parse.hpp"
 #include "cowel/print.hpp"
 #include "cowel/relative_file_loader.hpp"
 #include "cowel/x_highlighter.hpp"
+
+#include "cowel/syntax/parse.hpp"
 
 #include "diff.hpp"
 #include "io.hpp"

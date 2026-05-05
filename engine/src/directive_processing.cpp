@@ -18,7 +18,6 @@
 #include "cowel/policy/paragraph_split.hpp"
 #include "cowel/policy/plaintext.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
@@ -30,6 +29,8 @@
 #include "cowel/output_language.hpp"
 #include "cowel/parameters.hpp"
 #include "cowel/value.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 using namespace std::string_view_literals;
 

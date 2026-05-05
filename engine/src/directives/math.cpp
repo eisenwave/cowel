@@ -12,7 +12,6 @@
 #include "cowel/policy/factory.hpp"
 #include "cowel/policy/html.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
@@ -20,6 +19,8 @@
 #include "cowel/directive_display.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/invocation.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 using namespace std::string_view_literals;
 
@@ -29,7 +30,7 @@ namespace {
 // clang-format off
 #define COWEL_MATHML_ELEMENT_DATA(F)                                                               \
     F(annotation, 1)                                                                               \
-    F(annotation-xml, 0)                                                                         \
+    F(annotation-xml, 0)                                                                           \
     F(maction, 0)                                                                                  \
     F(menclose, 0)                                                                                 \
     F(merror, 0)                                                                                   \

@@ -21,9 +21,10 @@
 
 #include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
-#include "cowel/parse_utils.hpp"
 #include "cowel/services.hpp"
 #include "cowel/settings.hpp"
+
+#include "cowel/syntax/parse_utils.hpp"
 
 namespace cowel {
 namespace {

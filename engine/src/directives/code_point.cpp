@@ -11,7 +11,6 @@
 #include "cowel/util/result.hpp"
 #include "cowel/util/unicode.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/big_int.hpp"
 #include "cowel/big_int_ops.hpp"
 #include "cowel/builtin_directive_set.hpp"
@@ -21,6 +20,8 @@
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
 #include "cowel/parameters.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 using namespace std::string_view_literals;
 

@@ -12,7 +12,6 @@
 #include "cowel/policy/html.hpp"
 #include "cowel/policy/paragraph_split.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/collecting_logger.hpp"
 #include "cowel/content_status.hpp"
@@ -20,6 +19,8 @@
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/invocation.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 using namespace std::string_view_literals;
 

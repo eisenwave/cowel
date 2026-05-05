@@ -13,13 +13,14 @@
 #include "cowel/util/small_vector.hpp"
 #include "cowel/util/transparent_comparison.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/call_stack.hpp"
 #include "cowel/diagnostic.hpp"
 #include "cowel/directive_behavior.hpp"
 #include "cowel/document_sections.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/services.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 namespace cowel {
 

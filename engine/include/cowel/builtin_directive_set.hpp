@@ -4,7 +4,6 @@
 #include <memory>
 #include <string_view>
 
-#include "cowel/expression_kind.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/html_names.hpp"
 #include "cowel/util/result.hpp"
@@ -16,6 +15,8 @@
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
+
+#include "cowel/syntax/expression_kind.hpp"
 
 namespace cowel {
 

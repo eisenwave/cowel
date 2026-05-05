@@ -22,9 +22,10 @@
 #include "cowel/util/unicode.hpp"
 
 #include "cowel/diagnostic_highlight.hpp"
-#include "cowel/lex.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/print.hpp"
+
+#include "cowel/syntax/lex.hpp"
 
 #include "diff.hpp"
 

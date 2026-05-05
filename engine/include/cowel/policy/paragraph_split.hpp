@@ -11,12 +11,13 @@
 #include "cowel/policy/content_policy.hpp"
 #include "cowel/policy/html.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/context.hpp"
 #include "cowel/directive_processing.hpp"
 #include "cowel/output_language.hpp"
-#include "cowel/parse_utils.hpp"
 #include "cowel/util/char_sequence_ops.hpp"
+
+#include "cowel/syntax/ast.hpp"
+#include "cowel/syntax/parse_utils.hpp"
 
 namespace cowel {
 
