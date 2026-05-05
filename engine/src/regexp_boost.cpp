@@ -25,59 +25,25 @@
 
 namespace cowel {
 
-static_assert(sizeof(Reg_Exp_Impl) == sizeof(boost::u32regex));
+static_assert(sizeof(Unique_Native_Reg_Exp) == sizeof(boost::u32regex));
 
 template <typename T>
-Reg_Exp_Impl::Reg_Exp_Impl(In_Place_Tag, T&& arg) noexcept
+Unique_Native_Reg_Exp::Unique_Native_Reg_Exp(In_Place_Tag, T&& arg) noexcept
 {
     new (m_storage) boost::u32regex(std::forward<T>(arg));
 }
 
-auto& Reg_Exp_Impl::get()
+auto& Unique_Native_Reg_Exp::get()
 {
     return *std::launder(reinterpret_cast<boost::u32regex*>(m_storage));
 }
 
-const auto& Reg_Exp_Impl::get() const
+const auto& Unique_Native_Reg_Exp::get() const
 {
     return *std::launder(reinterpret_cast<const boost::u32regex*>(m_storage));
 }
 
-Reg_Exp_Impl::Reg_Exp_Impl() noexcept
-{
-    new (m_storage) boost::u32regex;
-}
-
-Reg_Exp_Impl::Reg_Exp_Impl(const Reg_Exp_Impl& other) noexcept
-    : Reg_Exp_Impl { In_Place_Tag {}, other.get() }
-{
-}
-
-Reg_Exp_Impl::Reg_Exp_Impl(Reg_Exp_Impl&& other) noexcept
-    : Reg_Exp_Impl { In_Place_Tag {}, std::move(other.get()) }
-{
-}
-
-// We assume that boost::regex handles self-assignment in some reasonable way,
-// which it should because it boils down to std::shared_ptr self-assignment.
-// NOLINTNEXTLINE(bugprone-unhandled-self-assignment)
-Reg_Exp_Impl& Reg_Exp_Impl::operator=(const Reg_Exp_Impl& other) noexcept
-{
-    get() = other.get();
-    return *this;
-}
-
-Reg_Exp_Impl& Reg_Exp_Impl::operator=(Reg_Exp_Impl&& other) noexcept
-{
-    // boost::basic_regex has no move operations,
-    // but maybe this will change in the future, so we try to std::move anyway.
-    // See https://github.com/boostorg/regex/issues/270
-    // NOLINTNEXTLINE(performance-move-const-arg)
-    get() = std::move(other.get());
-    return *this;
-}
-
-Reg_Exp_Impl::~Reg_Exp_Impl()
+Unique_Native_Reg_Exp::~Unique_Native_Reg_Exp()
 {
     get().~basic_regex();
 }
@@ -140,13 +106,14 @@ Result<Reg_Exp, Reg_Exp_Error_Code> Reg_Exp::make(
     if (result.status() != 0) {
         return Reg_Exp_Error_Code::bad_pattern;
     }
-    return Reg_Exp { Reg_Exp_Impl { In_Place_Tag {}, std::move(result) }, flags };
+    return Reg_Exp { gc_ref_make<Unique_Native_Reg_Exp>(In_Place_Tag {}, std::move(result)),
+                     flags };
 }
 
 Reg_Exp_Status Reg_Exp::match(const std::u8string_view string) const
 {
     const bool result
-        = boost::u32regex_match(string.data(), string.data() + string.size(), m_impl.get());
+        = boost::u32regex_match(string.data(), string.data() + string.size(), m_ref->get());
     return result ? Reg_Exp_Status::matched : Reg_Exp_Status::unmatched;
 }
 
@@ -154,7 +121,7 @@ Reg_Exp_Search_Result Reg_Exp::search(const std::u8string_view string) const
 {
     boost::match_results<const char8_t*> match;
     const bool found
-        = boost::u32regex_search(string.data(), string.data() + string.size(), match, m_impl.get());
+        = boost::u32regex_search(string.data(), string.data() + string.size(), match, m_ref->get());
     if (!found) {
         return { Reg_Exp_Status::unmatched, {} };
     }
@@ -174,7 +141,7 @@ Reg_Exp_Status Reg_Exp::replace_all(
 ) const
 {
     const char8_t* const data_end = string.data() + string.size();
-    boost::u32regex_iterator it { string.data(), data_end, m_impl.get() };
+    boost::u32regex_iterator it { string.data(), data_end, m_ref->get() };
     const decltype(it) end;
     if (it == end) {
         return Reg_Exp_Status::unmatched;

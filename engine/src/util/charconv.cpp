@@ -138,11 +138,12 @@ from_chars128(const char* const first, const char* const last, Uint128& out, con
             }
 
             const int added_digits = 64 - std::countl_zero(digits);
-            if (shift + added_digits > 128) {
-                return { last, std::errc::result_out_of_range };
+            if (added_digits != 0) {
+                if (shift >= 128 || shift + added_digits > 128) {
+                    return { last, std::errc::result_out_of_range };
+                }
+                result |= Uint128(digits) << shift;
             }
-
-            result |= Uint128(digits) << shift;
             shift += bits_per_iteration;
 
             if (current_last - first <= max_lower_length || partial_result.ec != std::errc {}) {

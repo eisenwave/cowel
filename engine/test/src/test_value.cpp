@@ -7,6 +7,7 @@
 
 #include "cowel/util/strings.hpp"
 
+#include "cowel/regexp.hpp"
 #include "cowel/type.hpp"
 #include "cowel/value.hpp"
 
@@ -84,6 +85,208 @@ TEST(Value, string)
 
     EXPECT_EQ(static_string, dynamic_string);
 }
+
+// =============================================================================
+// Value::regex — construction and accessors
+// =============================================================================
+
+TEST(Value, regex_construction)
+{
+    const auto re = Reg_Exp::make(u8"abc"sv);
+    ASSERT_TRUE(re.has_value());
+    const Value v = Value::regex(*re);
+    EXPECT_EQ(v.get_type(), Type::regex);
+    EXPECT_TRUE(v.is_regex());
+    EXPECT_EQ(v.as_regex().match(u8"abc"), Reg_Exp_Status::matched);
+}
+
+TEST(Value, regex_move_construction)
+{
+    auto re = Reg_Exp::make(u8"xyz"sv);
+    ASSERT_TRUE(re.has_value());
+    const Value v = Value::regex(std::move(*re));
+    EXPECT_EQ(v.get_type(), Type::regex);
+    EXPECT_EQ(v.as_regex().match(u8"xyz"), Reg_Exp_Status::matched);
+}
+
+TEST(Value, regex_const_ref_access)
+{
+    const auto re = Reg_Exp::make(u8"hello"sv);
+    ASSERT_TRUE(re.has_value());
+    const Value v = Value::regex(*re);
+    const Value& cv = v;
+    EXPECT_EQ(cv.as_regex().match(u8"hello"), Reg_Exp_Status::matched);
+}
+
+TEST(Value, regex_rvalue_access)
+{
+    auto re = Reg_Exp::make(u8"hi"sv);
+    ASSERT_TRUE(re.has_value());
+    Value v = Value::regex(std::move(*re));
+    const Reg_Exp moved_re = std::move(v).as_regex();
+    EXPECT_EQ(moved_re.match(u8"hi"), Reg_Exp_Status::matched);
+}
+
+TEST(Value, regex_copy)
+{
+    const auto re = Reg_Exp::make(u8"abc"sv);
+    ASSERT_TRUE(re.has_value());
+    const Value v1 = Value::regex(*re);
+    const Value v2 = v1; // // NOLINT
+    EXPECT_EQ(v2.as_regex().match(u8"abc"), Reg_Exp_Status::matched);
+}
+
+TEST(Value, regex_move_value)
+{
+    auto re = Reg_Exp::make(u8"abc"sv);
+    ASSERT_TRUE(re.has_value());
+    Value v1 = Value::regex(std::move(*re));
+    const Value v2 = std::move(v1); // move Value
+    EXPECT_EQ(v2.as_regex().match(u8"abc"), Reg_Exp_Status::matched);
+}
+
+// =============================================================================
+// Value — floating point
+// =============================================================================
+
+TEST(Value, floating)
+{
+    const Value v = Value::floating(3.14);
+    EXPECT_EQ(v.get_type(), Type::floating);
+    EXPECT_DOUBLE_EQ(v.as_float(), 3.14);
+}
+
+TEST(Value, floating_equality)
+{
+    const Value a = Value::floating(1.0);
+    const Value b = Value::floating(1.0);
+    const Value c = Value::floating(2.0);
+    EXPECT_EQ(a, b);
+    EXPECT_NE(a, c);
+}
+
+// =============================================================================
+// Value — dynamic string
+// =============================================================================
+
+TEST(Value, dynamic_string_construction)
+{
+    const Value v = Value::dynamic_string_forced(u8"hello world"sv, String_Kind::ascii);
+    EXPECT_EQ(v.get_type(), Type::str);
+    EXPECT_EQ(v.as_string(), u8"hello world"sv);
+    EXPECT_FALSE(v.is_static_string());
+}
+
+TEST(Value, as_string_with_meta)
+{
+    const Value v = Value::static_string(u8"test"sv, String_Kind::ascii);
+    const auto [sv, kind] = v.as_string_with_meta();
+    EXPECT_EQ(sv, u8"test"sv);
+    EXPECT_EQ(kind, String_Kind::ascii);
+}
+
+// =============================================================================
+// Value — as_integer rvalue overloads
+// =============================================================================
+
+TEST(Value, as_integer_rvalue)
+{
+    Value v = Value::integer(42_n);
+    const Big_Int moved_int = std::move(v).as_integer();
+    EXPECT_EQ(moved_int, 42_n);
+}
+
+// =============================================================================
+// Value — copy and move assignment across different types
+// =============================================================================
+
+TEST(Value, copy_assign_same_type_integer)
+{
+    Value a = Value::integer(10_n);
+    const Value b = Value::integer(20_n);
+    a = b;
+    EXPECT_EQ(a.as_integer(), 20_n);
+}
+
+TEST(Value, copy_assign_different_types)
+{
+    Value a = Value::integer(10_n);
+    const Value b = Value::boolean(true);
+    a = b;
+    EXPECT_EQ(a.get_type(), Type::boolean);
+    EXPECT_EQ(a.as_boolean(), true);
+}
+
+TEST(Value, copy_assign_to_dynamic_string)
+{
+    Value a = Value::integer(5_n);
+    const Value b = Value::dynamic_string_forced(u8"hi"sv, String_Kind::ascii);
+    a = b;
+    EXPECT_EQ(a.get_type(), Type::str);
+    EXPECT_EQ(a.as_string(), u8"hi"sv);
+}
+
+TEST(Value, copy_assign_from_dynamic_string_to_dynamic_string)
+{
+    Value a = Value::dynamic_string_forced(u8"aaa"sv, String_Kind::ascii);
+    const Value b = Value::dynamic_string_forced(u8"bbb"sv, String_Kind::ascii);
+    a = b;
+    EXPECT_EQ(a.as_string(), u8"bbb"sv);
+}
+
+TEST(Value, move_assign_integer)
+{
+    Value a = Value::integer(1_n);
+    Value b = Value::integer(99_n);
+    a = std::move(b);
+    EXPECT_EQ(a.as_integer(), 99_n);
+}
+
+TEST(Value, move_assign_regex)
+{
+    const auto re = Reg_Exp::make(u8"abc"sv);
+    ASSERT_TRUE(re.has_value());
+    Value a = Value::integer(0_n);
+    Value b = Value::regex(*re);
+    a = std::move(b);
+    EXPECT_EQ(a.get_type(), Type::regex);
+    EXPECT_EQ(a.as_regex().match(u8"abc"), Reg_Exp_Status::matched);
+}
+
+TEST(Value, copy_assign_regex_to_regex)
+{
+    const auto re = Reg_Exp::make(u8"abc"sv);
+    ASSERT_TRUE(re.has_value());
+    Value a = Value::regex(*re);
+    const auto re2 = Reg_Exp::make(u8"xyz"sv);
+    ASSERT_TRUE(re2.has_value());
+    const Value b = Value::regex(*re2);
+    a = b;
+    EXPECT_EQ(a.as_regex().match(u8"xyz"), Reg_Exp_Status::matched);
+}
+
+TEST(Value, self_copy_assign)
+{
+    Value v = Value::integer(42_n);
+    // NOLINTNEXTLINE(clang-diagnostic-self-assign-overloaded)
+    v = v;
+    EXPECT_EQ(v.as_integer(), 42_n);
+}
+
+// =============================================================================
+// Value — equality across mismatched types
+// =============================================================================
+
+TEST(Value, cross_type_inequality)
+{
+    EXPECT_NE(Value::integer(0_n), Value::boolean(false));
+    EXPECT_NE(Value::null, Value::unit);
+    EXPECT_NE(Value::null, Value::boolean(false));
+}
+
+// =============================================================================
+// Type::canonical_union_of
+// =============================================================================
 
 TEST(Type, canonical_union_of)
 {

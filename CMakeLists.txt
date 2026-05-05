@@ -406,6 +406,7 @@ else()
         engine/test/src/test_diff.cpp
         engine/test/src/test_document_generation.cpp
         engine/test/src/test_draft_uris.cpp
+        engine/test/src/test_gc_ref.cpp
         engine/test/src/test_html_writer.cpp
         engine/test/src/test_levenshtein.cpp
         engine/test/src/test_lexing.cpp
