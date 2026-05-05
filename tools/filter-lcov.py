@@ -32,8 +32,13 @@ def excluded_lines_for_file(file_path: Path) -> set[int]:
             excluded.add(index)
             continue
 
-        # Treat explicit unreachable assertion helpers as excluded coverage lines.
-        if "COWEL_ASSERT_UNREACHABLE(" in line or "COWEL_DEBUG_ASSERT_UNREACHABLE(" in line:
+        # This is a common pattern that immediately leads to unreachable code,
+        # so should treat it like the assertion it jumps into.
+        if "default: break;" in line:
+            excluded.add(index)
+
+        # Treat assertions as ghost code.
+        if "COWEL_ASSERT" in line or "COWEL_DEBUG_ASSERT" in line:
             excluded.add(index)
 
     return excluded
