@@ -8,13 +8,14 @@
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/result.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
-#include "cowel/expression_kind.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/type.hpp"
 #include "cowel/value.hpp"
+
+#include "cowel/syntax/ast.hpp"
+#include "cowel/syntax/expression_kind.hpp"
 
 namespace cowel {
 

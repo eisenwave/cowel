@@ -16,7 +16,6 @@
 #include "cowel/policy/html.hpp"
 #include "cowel/policy/syntax_highlight.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
@@ -26,6 +25,8 @@
 #include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
 #include "cowel/theme_to_css.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 using namespace std::string_view_literals;
 

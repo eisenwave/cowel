@@ -11,7 +11,6 @@
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_entities.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
@@ -20,6 +19,8 @@
 #include "cowel/invocation.hpp"
 #include "cowel/parameters.hpp"
 #include "cowel/value.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 using namespace std::string_view_literals;
 

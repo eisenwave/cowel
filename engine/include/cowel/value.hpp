@@ -7,15 +7,16 @@
 #include "cowel/util/fixed_string.hpp"
 #include "cowel/util/strings.hpp"
 
-#include "cowel/ast_fwd.hpp"
 #include "cowel/big_int.hpp"
 #include "cowel/content_status.hpp"
-#include "cowel/expression_kind.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/gc.hpp"
 #include "cowel/regexp.hpp"
 #include "cowel/string_kind.hpp"
 #include "cowel/type.hpp"
+
+#include "cowel/syntax/ast_fwd.hpp"
+#include "cowel/syntax/expression_kind.hpp"
 
 namespace cowel {
 

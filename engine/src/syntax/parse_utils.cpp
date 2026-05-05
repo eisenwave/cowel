@@ -6,7 +6,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
 
-#include "cowel/parse_utils.hpp"
+#include "cowel/syntax/parse_utils.hpp"
 
 namespace cowel {
 

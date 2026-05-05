@@ -6,8 +6,9 @@
 
 #include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
-#include "cowel/lex.hpp"
-#include "cowel/parse.hpp"
+
+#include "cowel/syntax/lex.hpp"
+#include "cowel/syntax/parse.hpp"
 
 using namespace std::string_view_literals;
 

@@ -17,7 +17,6 @@
 #include "cowel/policy/html.hpp"
 
 #include "cowel/assets.hpp"
-#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/context.hpp"
 #include "cowel/cowel.h"
@@ -28,9 +27,11 @@
 #include "cowel/fwd.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/output_language.hpp"
-#include "cowel/parse.hpp"
 #include "cowel/services.hpp"
 #include "cowel/ulight_highlighter.hpp"
+
+#include "cowel/syntax/ast.hpp"
+#include "cowel/syntax/parse.hpp"
 
 namespace cowel {
 

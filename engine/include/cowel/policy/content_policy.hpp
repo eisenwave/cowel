@@ -5,10 +5,11 @@
 
 #include "cowel/util/char_sequence.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 namespace cowel {
 

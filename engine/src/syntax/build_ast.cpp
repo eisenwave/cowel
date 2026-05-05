@@ -9,15 +9,16 @@
 #include <utility>
 #include <vector>
 
-#include "cowel/lex.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/source_position.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/fwd.hpp"
-#include "cowel/parse.hpp"
 #include "cowel/string_kind.hpp"
+
+#include "cowel/syntax/ast.hpp"
+#include "cowel/syntax/lex.hpp"
+#include "cowel/syntax/parse.hpp"
 
 using namespace std::string_view_literals;
 

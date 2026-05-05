@@ -14,7 +14,6 @@
 
 #include "cowel/policy/content_policy.hpp"
 
-#include "cowel/ast.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
@@ -22,6 +21,8 @@
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 using namespace std::string_view_literals;
 

@@ -4,8 +4,9 @@
 #include <span>
 #include <string_view>
 
-#include "cowel/ast.hpp"
 #include "cowel/fwd.hpp"
+
+#include "cowel/syntax/ast.hpp"
 
 namespace cowel {
 
