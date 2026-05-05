@@ -101,28 +101,6 @@ constexpr bool primary_kind_is_spliceable_value(Primary_Kind kind)
     return primary_kind_is_value(kind) && primary_kind_is_spliceable(kind);
 }
 
-[[nodiscard]]
-constexpr std::u8string_view primary_kind_display_name(Primary_Kind kind)
-{
-    using enum Primary_Kind;
-    switch (kind) {
-    case unit_literal: return u8"unit";
-    case null_literal: return u8"null";
-    case bool_literal: return u8"boolean literal";
-    case int_literal: return u8"integer literal";
-    case decimal_float_literal: return u8"floating-point literal";
-    case infinity: return u8"infinity";
-    case unquoted_string: return u8"unquoted string";
-    case text: return u8"text";
-    case escape: return u8"escape";
-    case comment: return u8"comment";
-    case quoted_string: return u8"quoted string";
-    case block: return u8"block";
-    case group: return u8"group";
-    }
-    COWEL_ASSERT_UNREACHABLE(u8"Invalid kind.");
-}
-
 enum struct Float_Literal_Status : Default_Underlying {
     /// @brief `value` holds the (possibly rounded) value.
     ok,

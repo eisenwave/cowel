@@ -184,32 +184,12 @@ constexpr bool mul_overflow(Int128& out, const Int128 x, const Int128 y) noexcep
     return __builtin_mul_overflow(x, y, &out);
 }
 
-inline float roundeven(float x) noexcept
-{
-#if __has_builtin(__builtin_roundevenf)
-    return __builtin_roundevenf(x);
-#else
-    return ::roundevenf(x);
-#endif
-}
-
 inline double roundeven(double x) noexcept
 {
 #if __has_builtin(__builtin_roundeven)
     return __builtin_roundeven(x);
 #else
     return ::roundeven(x);
-#endif
-}
-
-inline float fminimum(float x, float y) noexcept
-{
-#if __has_builtin(__builtin_wasm_min_f32)
-    return __builtin_wasm_min_f32(x, y);
-#elif __has_builtin(__builtin_fminimumf)
-    return __builtin_fminimumf(x, y);
-#else
-    return ::fminimumf(x, y);
 #endif
 }
 
@@ -221,17 +201,6 @@ inline double fminimum(double x, double y) noexcept
     return __builtin_fminimum(x, y);
 #else
     return ::fminimum(x, y);
-#endif
-}
-
-inline float fmaximum(float x, float y) noexcept
-{
-#if __has_builtin(__builtin_wasm_max_f32)
-    return __builtin_wasm_max_f32(x, y);
-#elif __has_builtin(__builtin_fmaximumf)
-    return __builtin_fmaximumf(x, y);
-#else
-    return ::fmaximumf(x, y);
 #endif
 }
 
