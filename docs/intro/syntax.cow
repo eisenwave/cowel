@@ -5,7 +5,7 @@ COWEL has a minimalistic but powerful syntax,
 built on top of only a few \dfn{markup elements}:
 \ul{
   \li{\cowdoc_c{Text.}}
-  \li{Escape sequences, such as \cowdoc_c{\\\U(0x7B)}, \cowdoc_c{\\\U(0x7D)}, \cowdoc_c{\\\\}, etc.}
+  \li{Escape sequences, such as \cowdoc_c{\\\U(0x7B)}, \cowdoc_c{\\\U(0x7D)}, \cowdoc_c{\\\\}, \cowdoc_c{\\+00A0}, etc.}
   \li{\cowdoc_c{\\: line comments}}
   \li{\cowdoc_c{\\* block comments *\\}}
   \li{\cowdoc_c{\\directive_splices(positional, args, named_args = 0){and content}}}
@@ -132,7 +132,7 @@ Rendered output:
 \h4{Escape sequences}
 
 COWEL supports multiple escape sequences,
-all of which begin with a \cowdoc_c{\\} (like directives),
+all of which begin with a '\tt{\\}' (like directives),
 but are followed by some special character.
 The meaning of the escape sequences is described in the table below.
 
@@ -168,6 +168,22 @@ The meaning of the escape sequences is described in the table below.
   }
   \tr{
     \td{
+      \cowdoc_c{\\+00A0},
+      \cowdoc_c{\\+03C0},
+      \cowdoc_c{\\+0001F600},
+      etc.
+    }
+    \td{
+      Expands to the Unicode scalar value
+      encoded by exactly four or eight hexadecimal digits.
+      If eight digits can be matched,
+      they are preferred over four.
+      Hex letters must be all lowercase or all uppercase.
+      See also \ref("#dir-cowel_char_by_num").
+    }
+  }
+  \tr{
+    \td{
       \nobr{\cowdoc_esc{} U+000A LINE FEED},
       \nobr{\cowdoc_esc{} U+000D CARRIAGE RETURN},
       \nobr{\cowdoc_esc{} U+000A U+000D (CRLF escape)}
@@ -182,10 +198,20 @@ In EBNF grammar, an \gterm{ESCAPE-TOKEN} is constructed like:
 
 \codeblock(ebnf){
 ESCAPE-TOKEN
-  = "\", ESCAPABLE-CHAR
-  | "\", LINE-TERMINATOR;
+  = "\\", ESCAPABLE-CHAR - "+"
+  | "\\+", ? LOWER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
+  | "\\+", ? UPPER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
+  | "\\", LINE-TERMINATOR;
 ESCAPABLE-CHAR
-  = "{" |  "}" | '"' | "\";
+  = "{" |  "}" | "+" | '"' | "\\";
+LOWER-HEX-CHAR
+  = "a" | "b" | "c" | "d" | "e" | "f";
+UPPER-HEX-CHAR
+  = "A" | "B" | "C" | "D" | "E" | "F";
+LOWER-HEX-DIGIT
+  = DIGIT | LOWER-HEX-CHAR;
+UPPER-HEX-DIGIT
+  = DIGIT | UPPER-HEX-CHAR;
 LINE-TERMINATOR
   = LF
   | CR, LF
@@ -196,6 +222,13 @@ LINE-TERMINATOR
 The purpose of most escapes is to prevent a character from having special meaning.
 For example, the \cowdoc_esc{"} escape prevents a quote
 from being interpreted as the end of a \gterm{QUOTED-STRING}.
+
+Numeric character escapes are closely related to
+\ref("#dir-cowel_char_by_num").
+They are most convenient when a fixed character should appear directly in markup.
+By contrast,
+\cowdoc_dir{cowel_char_by_num}
+is a directive that computes a character from an integer expression.
 
 The purpose of the newline escapes is to remove unwanted newlines
 and to join long content that spans multiple lines,

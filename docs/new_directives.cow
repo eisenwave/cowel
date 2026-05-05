@@ -196,7 +196,7 @@ The '\tt{&}' character can be produced in a number of ways:
 \cowel_highlight_as("markup-tag"){cowel_char_by_name}(\cowdoc_param("name", "str")): \cowel_highlight_as("keyword-type"){str}
 }
 
-The input to a \cowdoc_dir{cowel_char_by_num} directive is a \cowdoc_type{str} which should be a
+The input to a \cowdoc_dir{cowel_char_by_name} directive is a \cowdoc_type{str} which should be a
 \ref("https://www.unicode.org/reports/tr34/#Names"){Unicode name}
 for a code point or one of its name aliases (of any category).
 
@@ -218,9 +218,8 @@ In other words, an exact character sequence is expected.
 \cowel_highlight_as("markup-tag"){cowel_char_by_num}(\cowdoc_param("num", "int")): \cowel_highlight_as("keyword-type"){str}
 }
 
-The input to a \cowdoc_dir{cowel_char_by_num} directive is a \cowdoc_type{str}
-which should be a sequence of hexadecimal numbers
-specifying a \ref("https://infra.spec.whatwg.org/#scalar-value"){Unicode scalar value};
+The input to a \cowdoc_dir{cowel_char_by_num} directive is an \cowdoc_type{int}
+which should denote a \ref("https://infra.spec.whatwg.org/#scalar-value"){Unicode scalar value};
 that is, a code point which UTF-8 permits to be encoded.
 All arguments are ignored.
 
@@ -238,6 +237,10 @@ that it is very non-descriptive in source code.
 It simply contains a handful of digits,
 and unless the reader is a Unicode expert who happens to know that sequence,
 they cannot easily tell what the purpose of the character is.
+
+When the desired character can be written directly as a literal numeric escape,
+\cowdoc_c{\\+...}
+is usually easier to spot in surrounding text than a directive call.
 }
 
 \cowdoc_dir_h4("cowel_char_get_num", "Get digits of character")

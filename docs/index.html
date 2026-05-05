@@ -1998,7 +1998,7 @@ COWEL has a minimalistic but powerful syntax,
 built on top of only a few <dfn>markup elements</dfn>:
 </p><ul>
   <li><code>Text.</code></li>
-  <li>Escape sequences, such as <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>{</h-></code>, <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>}</h-></code>, <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>\</h-></code>, etc.</li>
+  <li>Escape sequences, such as <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>{</h-></code>, <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>}</h-></code>, <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>\</h-></code>, <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>+00A0</h-></code>, etc.</li>
   <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>:</h-><h- data-h=cmt> line comments</h-></code></li>
   <li><code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt> block comments </h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt_dlim>\</h-></code></li>
   <li><code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_splices</h-><h- data-h=sym_par>(</h-><h- data-h=str>positional</h-><h- data-h=sym_punc>,</h-> <h- data-h=str>args</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>named_args</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code></li>
@@ -2063,10 +2063,20 @@ a <g-term>DOCUMENT</g-term> is matched as follows:
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>EXPRESSION-SPLICE</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>RESERVED-ESCAPE-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>ESCAPE-TOKEN</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ESCAPABLE-CHAR</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ESCAPABLE-CHAR</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\+</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_mac>? LOWER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\+</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_mac>? UPPER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LINE-TERMINATOR</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>ESCAPABLE-CHAR</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>LOWER-HEX-CHAR</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>c</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>d</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>e</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>f</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>UPPER-HEX-CHAR</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>A</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>B</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>C</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>D</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>E</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>F</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>LOWER-HEX-DIGIT</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIGIT</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOWER-HEX-CHAR</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>UPPER-HEX-DIGIT</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIGIT</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>UPPER-HEX-CHAR</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>RESERVED-ESCAPE-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>RESERVED-ESCAPE-CHAR</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_mac>? end of file ?</h-><h- data-h=sym_punc>;</h->
@@ -2202,15 +2212,13 @@ a <g-term>DOCUMENT</g-term> is matched as follows:
 <h- data-h=name_nt_decl>DECIMAL-INT-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIGIT</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>DIGIT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>HEXADECIMAL-INT-TOKEN</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>HEXADECIMAL-DIGIT</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>HEXADECIMAL-DIGIT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>HEX-DIGIT</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>HEX-DIGIT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>BINARY-DIGIT</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>OCTAL-DIGIT</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>2</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>3</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>4</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>5</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>6</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>7</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>HEXADECIMAL-DIGIT</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIGIT</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>A</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>B</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>C</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>D</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>E</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>F</h-><h- data-h=str_dlim>"</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>c</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>d</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>e</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>f</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>HEX-DIGIT</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>LOWER-HEX-DIGIT</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>UPPER-HEX-DIGIT</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=name_nt_decl>INFINITY-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>infinity</h-><h- data-h=str_dlim>"</h-> <h- data-h=name_mac>? not followed by IDENTIFIER-CHAR ?</h-><h- data-h=sym_punc>;</h->
@@ -2347,7 +2355,7 @@ because line breaks render like spaces.<h- data-h=sym_punc>&lt;/</h-><h- data-h=
 <h4 id=escape-sequences><a class=para href=#escape-sequences></a>4.1.3. Escape sequences</h4>
 
 <p>COWEL supports multiple escape sequences,
-all of which begin with a <code><h- data-h=err>\</h-></code> (like directives),
+all of which begin with a '<tt->\</tt->' (like directives),
 but are followed by some special character.
 The meaning of the escape sequences is described in the table below.
 </p>
@@ -2383,6 +2391,22 @@ The meaning of the escape sequences is described in the table below.
   </tr>
   <tr>
     <td>
+      <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>+00A0</h-></code>,
+      <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>+03C0</h-></code>,
+      <code><h- data-h=str_esc>\</h-><h- data-h=str_esc>+0001F600</h-></code>,
+      etc.
+    </td>
+    <td>
+      Expands to the Unicode scalar value
+      encoded by exactly four or eight hexadecimal digits.
+      If eight digits can be matched,
+      they are preferred over four.
+      Hex letters must be all lowercase or all uppercase.
+      See also <a href=#dir-cowel_char_by_num>§9.2.3. <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> — Character by code point number</a>.
+    </td>
+  </tr>
+  <tr>
+    <td>
       <span class=word><tt-><h- data-h=str_esc>\</h-></tt-> U+000A LINE FEED</span>,
       <span class=word><tt-><h- data-h=str_esc>\</h-></tt-> U+000D CARRIAGE RETURN</span>,
       <span class=word><tt-><h- data-h=str_esc>\</h-></tt-> U+000A U+000D (CRLF escape)</span>
@@ -2396,10 +2420,20 @@ The meaning of the escape sequences is described in the table below.
 <p>In EBNF grammar, an <g-term>ESCAPE-TOKEN</g-term> is constructed like:
 </p>
 <code-block><h- data-h=name_nt_decl>ESCAPE-TOKEN</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ESCAPABLE-CHAR</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LINE-TERMINATOR</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ESCAPABLE-CHAR</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_mac>? LOWER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_mac>? UPPER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LINE-TERMINATOR</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>ESCAPABLE-CHAR</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>LOWER-HEX-CHAR</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>c</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>d</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>e</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>f</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>UPPER-HEX-CHAR</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>A</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>B</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>C</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>D</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>E</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>F</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>LOWER-HEX-DIGIT</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIGIT</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LOWER-HEX-CHAR</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>UPPER-HEX-DIGIT</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIGIT</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>UPPER-HEX-CHAR</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>LINE-TERMINATOR</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>LF</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>CR</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LF</h->
@@ -2409,6 +2443,13 @@ The meaning of the escape sequences is described in the table below.
 The purpose of most escapes is to prevent a character from having special meaning.
 For example, the <tt-><h- data-h=str_esc>\"</h-></tt-> escape prevents a quote
 from being interpreted as the end of a <g-term>QUOTED-STRING</g-term>.
+</p>
+<p>Numeric character escapes are closely related to
+<a href=#dir-cowel_char_by_num>§9.2.3. <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> — Character by code point number</a>.
+They are most convenient when a fixed character should appear directly in markup.
+By contrast,
+<code><h- data-h=mk_tag>\cowel_char_by_num</h-></code>
+is a directive that computes a character from an integer expression.
 </p>
 <p>The purpose of the newline escapes is to remove unwanted newlines
 and to join long content that spans multiple lines,
@@ -4223,7 +4264,7 @@ The '<tt->&amp;</tt->' character can be produced in a number of ways:
 <h- data-h=mk_tag>cowel_char_by_name</h->(<h- data-h=mk_attr>name</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
 </pre>
 
-<p>The input to a <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive is a <tt-><h- data-h=kw_type>str</h-></tt-> which should be a
+<p>The input to a <code><h- data-h=mk_tag>\cowel_char_by_name</h-></code> directive is a <tt-><h- data-h=kw_type>str</h-></tt-> which should be a
 <a href=https://www.unicode.org/reports/tr34/#Names>Unicode name</a>
 for a code point or one of its name aliases (of any category).
 </p>
@@ -4245,9 +4286,8 @@ In other words, an exact character sequence is expected.
 <h- data-h=mk_tag>cowel_char_by_num</h->(<h- data-h=mk_attr>num</h->: <h- data-h=kw_type>int</h->): <h- data-h=kw_type>str</h->
 </pre>
 
-<p>The input to a <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive is a <tt-><h- data-h=kw_type>str</h-></tt->
-which should be a sequence of hexadecimal numbers
-specifying a <a href=https://infra.spec.whatwg.org/#scalar-value>Unicode scalar value</a>;
+<p>The input to a <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> directive is an <tt-><h- data-h=kw_type>int</h-></tt->
+which should denote a <a href=https://infra.spec.whatwg.org/#scalar-value>Unicode scalar value</a>;
 that is, a code point which UTF-8 permits to be encoded.
 All arguments are ignored.
 </p>
@@ -4265,6 +4305,10 @@ that it is very non-descriptive in source code.
 It simply contains a handful of digits,
 and unless the reader is a Unicode expert who happens to know that sequence,
 they cannot easily tell what the purpose of the character is.
+</p>
+<p>When the desired character can be written directly as a literal numeric escape,
+<code><h- data-h=err>\</h-><h- data-h=err>+</h->...</code>
+is usually easier to spot in surrounding text than a directive call.
 </p></tip-block>
 
 <h4 id=dir-cowel_char_get_num><a class=para href=#dir-cowel_char_get_num></a>9.2.4. <code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> — Get digits of character</h4>

@@ -1,0 +1,82 @@
+{
+  "description": "Test numeric character escape sequences",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+00A0 is a valid 4-digit uppercase numeric escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+00a0 is a valid 4-digit lowercase numeric escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+0001F1EA is a valid 8-digit uppercase numeric escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+0001f1ea is a valid 8-digit lowercase numeric escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+00a000: only \\+00a0 is the escape, trailing 00 is literal"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+00a0FFFF: only \\+00a0 is the escape, FFFF is literal (case mismatch)"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+00A0ffff: only \\+00A0 is the escape, ffff is literal (case mismatch)"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+0001f1eA: only \\+0001 matches (A breaks the lowercase run)"
+    },
+    {
+      "type": "top-scope",
+      "line": 8,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+000000a0 is a valid 8-digit lowercase numeric escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 9,
+      "col": 4,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+00A0 inside a directive argument string is a valid numeric escape"
+    },
+    {
+      "type": "top-scope",
+      "line": 10,
+      "col": 3,
+      "expected": "constant.character.escape.cowel",
+      "description": "\\+00A0 inside a directive block is a valid numeric escape"
+    }
+  ]
+}

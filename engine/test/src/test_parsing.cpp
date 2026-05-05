@@ -1711,6 +1711,32 @@ TEST(Parse_And_Build, directive_as_argument)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_as_argument.cow");
 }
 
+TEST(Parse_And_Build, escape_numeric)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::escape(u8"\\+00A0"),
+            Node::text(u8"\n"),
+            Node::escape(u8"\\+00a0"),
+            Node::text(u8"00\n"),
+            Node::directive(
+                u8"d",
+                Node::group(
+                    {
+                        Node::positional({ Node::quoted_string({ Node::escape(u8"\\+00A0") }) }),
+                    }
+                ),
+                Node::block({ Node::escape(u8"\\+00A0") })
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"escape_numeric.cow");
+}
+
 TEST(Parse_And_Build, arguments_balanced_braces)
 {
     static std::pmr::monotonic_buffer_resource memory;

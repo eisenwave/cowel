@@ -64,6 +64,10 @@ struct [[nodiscard]] Lex_Actual {
 struct Expected_Error {
     std::size_t begin;
     std::size_t length;
+
+    [[nodiscard]]
+    friend bool operator==(const Expected_Error&, const Expected_Error&)
+        = default;
 };
 
 struct [[nodiscard]] Lex_Expectations {
@@ -294,8 +298,48 @@ std::optional<Lex_Expectations> load_expectations(
             return {};
         }
         const std::u8string_view instruction_str = line.substr(0, instruction_length);
-
         const std::optional<Token_Kind> kind = token_by_name(instruction_str);
+
+        if (kind == Token_Kind::error) {
+            const std::u8string_view argument = trim_ascii_blank(line.substr(instruction_length));
+            const std::size_t space = argument.find(u8' ');
+            if (space == std::u8string_view::npos) {
+                Diagnostic_String out { memory };
+                print_file_position(out, file, line_index);
+                out.append(u8' ');
+                out.build(Diagnostic_Highlight::error_text)
+                    .append(
+                        u8"Malformed ERROR specification: expected `ERROR <begin> <length>`.\n"sv
+                    );
+                print_code_string_stdout(out);
+                return {};
+            }
+
+            std::size_t begin = 0;
+            std::size_t length = 0;
+            const std::u8string_view begin_str = trim_ascii_blank(argument.substr(0, space));
+            const std::u8string_view length_str = trim_ascii_blank(argument.substr(space + 1));
+            if (from_characters(begin_str, begin).ec != std::errc {}
+                || from_characters(length_str, length).ec != std::errc {}) {
+                Diagnostic_String out { memory };
+                print_file_position(out, file, line_index);
+                out.append(u8' ');
+                out.build(Diagnostic_Highlight::error_text)
+                    .append(u8"Malformed ERROR specification: expected numeric begin/length.\n"sv);
+                print_code_string_stdout(out);
+                return {};
+            }
+
+            result.diagnostics.push_back({ begin, length });
+            result.success = false;
+
+            remainder.remove_prefix(line_length);
+            if (remainder.starts_with(u8'\n')) {
+                remainder.remove_prefix(1);
+            }
+            continue;
+        }
+
         if (!kind) {
             Diagnostic_String out { memory };
             print_file_position(out, file, line_index);
@@ -410,6 +454,23 @@ void dump_tokens(
     }
 }
 
+void dump_diagnostics(
+    Diagnostic_String& out,
+    const std::span<const Expected_Error> diagnostics,
+    const std::u8string_view indent = {}
+)
+{
+    for (const auto& diagnostic : diagnostics) {
+        out.append(indent);
+        out.append(u8"ERROR", Diagnostic_Highlight::tag);
+        out.append(u8' ');
+        out.append_integer(diagnostic.begin);
+        out.append(u8' ');
+        out.append_integer(diagnostic.length);
+        out.append(u8'\n');
+    }
+}
+
 constexpr bool print_expected_and_actual_on_failure = true;
 
 bool run_lex_test(
@@ -495,7 +556,27 @@ bool run_lex_test(
         overall_success = false;
     }
 
-    // TODO: enable testing of emitted diagnostics
+    std::pmr::vector<Expected_Error> actual_diagnostics { &memory };
+    for (const auto& diagnostic : actual->diagnostics) {
+        actual_diagnostics.push_back({ diagnostic.location.begin, diagnostic.location.length });
+    }
+
+    if (!expectations->diagnostics.empty()
+        && !std::ranges::equal(actual_diagnostics, expectations->diagnostics)) {
+        Diagnostic_String error;
+        print_location_of_file(error, source_path);
+        error.append(u8' ');
+        error.append(
+            u8"Test failed because expected lexer diagnostics aren't matched.\n",
+            Diagnostic_Highlight::error_text
+        );
+        error.append(u8"Expected:\n", Diagnostic_Highlight::text);
+        dump_diagnostics(error, expectations->diagnostics, indent);
+        error.append(u8"Actual:\n", Diagnostic_Highlight::text);
+        dump_diagnostics(error, actual_diagnostics, indent);
+        print_code_string_stdout(error);
+        overall_success = false;
+    }
 
     return overall_success;
 }
