@@ -48,6 +48,10 @@
           "match": "\\\\(?:\\r\\n|\\r|\\n)"
         },
         {
+          "name": "constant.character.escape.cowel",
+          "match": "\\\\[+](?:[0-9a-f]{8}|[0-9A-F]{8}|[0-9a-f]{4}|[0-9A-F]{4})"
+        },
+        {
           "name": "invalid.illegal.escape.cowel",
           "match": "\\\\[^{}(\"\\\\a-zA-Z_*:\\r\\n]"
         }

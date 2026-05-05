@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/fixed_string.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
 
@@ -22,19 +23,18 @@
 
 namespace cowel {
 
-/// @brief Returns a string view to containing code units that `escape` corresponds to.
+/// @brief Returns the code units that `escape` corresponds to.
 /// For most escape sequences, this returns `escape`.
-/// For LF and CRLF escapes, this is an empty string view.
+/// For LF and CRLF escapes, this is empty.
 /// @param escape The escaped character(s), not including the initial `\`.
 [[nodiscard]]
-std::u8string_view expand_escape(std::u8string_view escape);
+Fixed_String8<4> expand_escape(std::u8string_view escape);
 
-/// @brief Returns a string view to static storage corresponding to the code units
-/// that `escape` corresponds to.
-/// For most escape sequences, this is simply the character following the initial `\`.
-/// For LF and CRLF escapes, this is an empty string.
+/// @brief Returns the code units corresponding to the given escape primary.
+/// For most escape sequences, this is the character following the initial `\`.
+/// For LF and CRLF escapes, this is empty.
 [[nodiscard]]
-inline std::u8string_view expand_escape(const ast::Primary& escape)
+inline Fixed_String8<4> expand_escape(const ast::Primary& escape)
 {
     return expand_escape(escape.get_escaped());
 }

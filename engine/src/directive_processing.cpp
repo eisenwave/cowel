@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <span>
 #include <string_view>
@@ -8,10 +9,12 @@
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
+#include "cowel/util/from_chars.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
+#include "cowel/util/unicode.hpp"
 
 #include "cowel/policy/capture.hpp"
 #include "cowel/policy/content_policy.hpp"
@@ -190,11 +193,27 @@ const Type& get_type(const ast::Primary& primary)
     COWEL_ASSERT_UNREACHABLE(u8"Invalid primary kind.");
 }
 
-std::u8string_view expand_escape(std::u8string_view escape)
+Fixed_String8<4> expand_escape(const std::u8string_view escape)
 {
     COWEL_ASSERT(!escape.empty());
     COWEL_DEBUG_ASSERT(is_cowel_escapeable(escape[0]));
-    return escape[0] == u8'\r' || escape[0] == u8'\n' ? u8"" : escape;
+    if (escape[0] == u8'\r' || escape[0] == u8'\n') {
+        return {};
+    }
+
+    if (escape[0] == u8'+' && (escape.length() == 5 || escape.length() == 9)) {
+        const std::u8string_view digits = escape.substr(1);
+        std::uint32_t parsed = 0;
+        const auto [ptr, ec] = from_characters(digits, parsed, 16);
+        COWEL_ASSERT(ec == std::errc {});
+        COWEL_ASSERT(ptr == as_string_view(digits).data() + digits.size());
+        const auto code_point = char32_t(parsed);
+        COWEL_ASSERT(is_scalar_value(code_point));
+        const utf8::Code_Units_And_Length encoded = utf8::encode8_unchecked(code_point);
+        return { encoded.code_units, std::size_t(encoded.length) };
+    }
+
+    return { escape };
 }
 
 const Directive_Behavior* Context::find_directive(std::u8string_view name)

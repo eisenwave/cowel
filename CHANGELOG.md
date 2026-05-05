@@ -21,6 +21,7 @@
   - `&&` logical AND
   - `||` logical OR
 - add *expression-splice*: `\(...)` (#276)
+- add numeric character escapes: `\+0030` (#181)
 - add nested diagnostic locations in node CLI (#51)
 - fix duplicate output for `--no-color` option
 - also add internal `__typeof` directive and test types of directives

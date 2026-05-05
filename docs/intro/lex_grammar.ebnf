@@ -16,10 +16,20 @@ COMMON-MARKUP-ELEMENT
   | EXPRESSION-SPLICE
   | RESERVED-ESCAPE-TOKEN;
 ESCAPE-TOKEN
-  = "\", ESCAPABLE-CHAR
+  = "\", ESCAPABLE-CHAR - "+"
+  | "\+", ? LOWER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
+  | "\+", ? UPPER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
   | "\", LINE-TERMINATOR;
 ESCAPABLE-CHAR
-  = "{" |  "}" | '"' | "\";
+  = "{" |  "}" | "+" | '"' | "\";
+LOWER-HEX-CHAR
+  = "a" | "b" | "c" | "d" | "e" | "f";
+UPPER-HEX-CHAR
+  = "A" | "B" | "C" | "D" | "E" | "F";
+LOWER-HEX-DIGIT
+  = DIGIT | LOWER-HEX-CHAR;
+UPPER-HEX-DIGIT
+  = DIGIT | UPPER-HEX-CHAR;
 RESERVED-ESCAPE-TOKEN
   = "\", RESERVED-ESCAPE-CHAR
   | "\", ? end of file ?;
@@ -155,15 +165,13 @@ OCTAL-INT-TOKEN
 DECIMAL-INT-TOKEN
   = DIGIT, { DIGIT };
 HEXADECIMAL-INT-TOKEN
-  = "0x", HEXADECIMAL-DIGIT, { HEXADECIMAL-DIGIT };
+  = "0x", HEX-DIGIT, { HEX-DIGIT };
 BINARY-DIGIT
   = "0" | "1";
 OCTAL-DIGIT
   = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
-HEXADECIMAL-DIGIT
-  = DIGIT
-  | "A" | "B" | "C" | "D" | "E" | "F"
-  | "a" | "b" | "c" | "d" | "e" | "f";
+HEX-DIGIT
+  = LOWER-HEX-DIGIT | UPPER-HEX-DIGIT;
 
 INFINITY-TOKEN
   = "infinity" ? not followed by IDENTIFIER-CHAR ?;

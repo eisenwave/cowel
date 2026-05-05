@@ -1,0 +1,54 @@
+{
+  "description": "Test reserved (invalid) numeric escape sequences",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\+ alone is a reserved escape (no hex digits follow)"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\+0 is a reserved escape (only 1 hex digit, need 4)"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\+00A is a reserved escape (only 3 hex digits, need 4)"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\+00Aa is a reserved escape (mixed case hex digits)"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\+00aA is a reserved escape (mixed case hex digits)"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\+000g1f1eA is a reserved escape (non-hex digit g)"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 4,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "\\+00Aa inside a directive argument string is a reserved escape"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cstdint>
 #include <string_view>
 #include <vector>
 
@@ -7,6 +8,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/chars.hpp"
+#include "cowel/util/from_chars.hpp"
 
 #include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
@@ -63,6 +65,21 @@ std::size_t match_reserved_number(const std::u8string_view str)
         }
     }
     return length;
+}
+
+[[nodiscard]]
+bool numeric_escape_is_nonscalar(const std::u8string_view escape)
+{
+    if (!escape.starts_with(u8"\\+") || (escape.length() != 6 && escape.length() != 10)) {
+        return false;
+    }
+
+    std::uint32_t parsed = 0;
+    const std::u8string_view digits = escape.substr(2);
+    const auto [ptr, ec] = from_characters(digits, parsed, 16);
+    COWEL_DEBUG_ASSERT(ec == std::errc {});
+    COWEL_DEBUG_ASSERT(ptr == as_string_view(digits).data() + digits.size());
+    return !is_scalar_value(char32_t(parsed));
 }
 
 enum struct Content_Context : Default_Underlying {
@@ -262,6 +279,12 @@ private:
                         u8"' following a backslash."sv,
                     }
                 )
+            );
+        }
+        else if (numeric_escape_is_nonscalar(remainder.substr(0, escape.length))) {
+            error(
+                Source_Span { m_pos, escape.length },
+                u8"Numeric escape does not denote a Unicode scalar value."sv
             );
         }
 
