@@ -521,6 +521,10 @@ constexpr Value::Value(
     , m_short_string_length { static_cast<unsigned char>(short_string_length) }
     , m_value { Union::make(std::forward<T>(value), index) }
 {
+    // IMPORTANT: T is a Union, but the destructor is never getting invoked.
+    //            This is fine only because every alternative is movable,
+    //            so its resources are grabbed by `Union::make` and don't get leaked.
+    static_assert(std::is_same_v<std::remove_cvref_t<T>, Union>);
     COWEL_ASSERT(short_string_length <= Short_String_Value::max_size_v);
 }
 

@@ -10,11 +10,8 @@
 #include "cowel/util/result.hpp"
 
 #include "cowel/fwd.hpp"
-#include "cowel/util/unicode.hpp"
-
-#ifdef COWEL_BUILD_WASM
 #include "cowel/gc.hpp"
-#endif
+#include "cowel/util/unicode.hpp"
 
 namespace cowel {
 
@@ -153,24 +150,24 @@ struct In_Place_Tag { };
 struct Reg_Exp;
 
 #ifdef COWEL_BUILD_NATIVE
-struct Reg_Exp_Impl {
+/// @brief Represents unique ownership over a native compiled regular expression.
+struct Unique_Native_Reg_Exp {
 private:
     alignas(8) unsigned char m_storage[16];
 
 public:
-    Reg_Exp_Impl() noexcept;
-    Reg_Exp_Impl(const Reg_Exp_Impl&) noexcept;
-    Reg_Exp_Impl(Reg_Exp_Impl&&) noexcept;
+    template <typename T>
+    explicit Unique_Native_Reg_Exp(In_Place_Tag, T&&) noexcept;
 
-    Reg_Exp_Impl& operator=(const Reg_Exp_Impl&) noexcept;
-    Reg_Exp_Impl& operator=(Reg_Exp_Impl&&) noexcept;
+    Unique_Native_Reg_Exp(const Unique_Native_Reg_Exp&) = delete;
+    Unique_Native_Reg_Exp(Unique_Native_Reg_Exp&&) = delete;
 
-    ~Reg_Exp_Impl();
+    Unique_Native_Reg_Exp& operator=(const Unique_Native_Reg_Exp&) = delete;
+    Unique_Native_Reg_Exp& operator=(Unique_Native_Reg_Exp&&) = delete;
+
+    ~Unique_Native_Reg_Exp();
 
 private:
-    template <typename T>
-    Reg_Exp_Impl(In_Place_Tag, T&&) noexcept;
-
     [[nodiscard]]
     auto& get();
     [[nodiscard]]
@@ -178,6 +175,7 @@ private:
 
     friend Reg_Exp;
 };
+using Reg_Exp_Backend = Unique_Native_Reg_Exp;
 #else
 /// @brief Represents unique ownership over a host-side regular expression,
 /// such as JavaScript's `RegExp`.
@@ -208,6 +206,7 @@ public:
         return m_handle;
     }
 };
+using Reg_Exp_Backend = Unique_Host_Reg_Exp;
 #endif
 
 /// @brief Represents an ECMA-Script-flavored regular expression.
@@ -221,34 +220,15 @@ public:
     make(std::u8string_view pattern, Reg_Exp_Flags flags = {});
 
 private:
-#ifdef COWEL_BUILD_NATIVE
-    Reg_Exp_Impl m_impl;
-#else
-    GC_Ref<Unique_Host_Reg_Exp> m_ref;
-#endif
+    GC_Ref<Reg_Exp_Backend> m_ref;
     Reg_Exp_Flags m_flags;
 
-#ifdef COWEL_BUILD_NATIVE
     [[nodiscard]]
-    Reg_Exp(const Reg_Exp_Impl& impl, const Reg_Exp_Flags flags) noexcept
-        : m_impl { impl }
-        , m_flags { flags }
-    {
-    }
-    [[nodiscard]]
-    Reg_Exp(Reg_Exp_Impl&& impl, const Reg_Exp_Flags flags) noexcept
-        : m_impl { std::move(impl) }
-        , m_flags { flags }
-    {
-    }
-#else
-    [[nodiscard]]
-    Reg_Exp(GC_Ref<Unique_Host_Reg_Exp> ref, const Reg_Exp_Flags flags) noexcept
+    Reg_Exp(GC_Ref<Reg_Exp_Backend> ref, const Reg_Exp_Flags flags) noexcept
         : m_ref { std::move(ref) }
         , m_flags { flags }
     {
     }
-#endif
 
 public:
     /// @brief Returns `true` if `string` matches this regex in its entirety.
