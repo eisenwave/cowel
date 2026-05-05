@@ -47,12 +47,14 @@ both this file and `lang-summary.md` must be updated to reflect the change.
 - Node wrapper TS sources: `bindings/node/src/`
 - Node wrapper TS tests: `bindings/node/test/`
 - Utility scripts: `tools/`
+  - includes `coverage-llvm.sh` for LLVM source-based coverage
 - Docs + golden sample I/O: `docs/index.cow` and `docs/index.html`
 - VS Code extension + TextMate grammar tests: `editor/vscode/`
 - CI workflows:
   - `.github/workflows/cmake-multi-platform.yml`
   - `.github/workflows/clang-format.yml`
   - `.github/workflows/textmate-test.yml`
+  - `.github/workflows/coverage.yml` (LLVM coverage via clang-20, uploads to Codecov)
 
 Important dependency facts not obvious from tree:
 - Native configure requires ICU (`find_package(ICU COMPONENTS data i18n uc REQUIRED)`).
