@@ -192,8 +192,12 @@ TEST(GC_Ref, copy_assign_self)
 {
     int live = 0;
     GC_Ref<Tracked> ref = gc_ref_make<Tracked>(live, 1);
-    // NOLINTNEXTLINE(clang-diagnostic-self-assign-overloaded)
+    ULIGHT_DIAGNOSTIC_PUSH()
+#ifdef COWEL_CLANG
+    ULIGHT_DIAGNOSTIC_IGNORED("-Wself-assign-overloaded")
+#endif
     ref = ref;
+    ULIGHT_DIAGNOSTIC_POP()
     EXPECT_TRUE(ref);
     EXPECT_EQ(live, 1);
     EXPECT_EQ(ref.unsafe_get_node()->reference_count, 1u);
