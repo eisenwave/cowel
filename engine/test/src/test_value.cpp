@@ -268,8 +268,12 @@ TEST(Value, copy_assign_regex_to_regex)
 TEST(Value, self_copy_assign)
 {
     Value v = Value::integer(42_n);
-    // NOLINTNEXTLINE(clang-diagnostic-self-assign-overloaded)
+    ULIGHT_DIAGNOSTIC_PUSH()
+#ifdef COWEL_CLANG
+    ULIGHT_DIAGNOSTIC_IGNORED("-Wself-assign-overloaded")
+#endif
     v = v;
+    ULIGHT_DIAGNOSTIC_POP()
     EXPECT_EQ(v.as_integer(), 42_n);
 }
 
