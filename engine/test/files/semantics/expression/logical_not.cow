@@ -3,6 +3,9 @@
 
 \cowel_to_str(!true)
 \cowel_to_str(!false)
+
+\test_expect_error("type.mismatch"){\cowel_pos(!1)}
+\test_expect_error("type.mismatch"){\cowel_pos(!1.0)}
 }
 
 \test_output{
@@ -10,4 +13,7 @@ bool
 
 false
 true
+
+<error->\cowel_pos(!1)</error->
+<error->\cowel_pos(!1.0)</error->
 }
