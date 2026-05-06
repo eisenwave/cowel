@@ -1,0 +1,75 @@
+{
+  "description": "Test prefix unary operators ! (logical NOT) and ~ (bitwise NOT) in argument context",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "support.function.directive.cowel",
+      "description": "\\d directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 2,
+      "expected": "punctuation.section.arguments.begin.cowel",
+      "description": "Opening parenthesis has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 3,
+      "expected": "keyword.operator.logical.cowel",
+      "description": "! (logical NOT prefix operator) has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 4,
+      "expected": "constant.language.cowel",
+      "description": "true keyword after ! has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 8,
+      "expected": "punctuation.section.arguments.end.cowel",
+      "description": "Closing parenthesis has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "support.function.directive.cowel",
+      "description": "Second \\d directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 2,
+      "expected": "punctuation.section.arguments.begin.cowel",
+      "description": "Opening parenthesis has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 3,
+      "expected": "keyword.operator.bitwise.cowel",
+      "description": "~ (bitwise NOT prefix operator) has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 4,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "0 integer literal after ~ has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 5,
+      "expected": "punctuation.section.arguments.end.cowel",
+      "description": "Closing parenthesis has correct scope"
+    }
+  ]
+}
