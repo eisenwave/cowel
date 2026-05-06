@@ -545,7 +545,7 @@ private:
             case u8' ':
             case u8'\t':
             case u8'\r':
-            case u8'\v':
+            case u8'\f':
             case u8'\n': {
                 const bool whitespace_matched = expect_whitespace();
                 COWEL_ASSERT(whitespace_matched);
