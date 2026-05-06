@@ -2007,7 +2007,7 @@ built on top of only a few <dfn>markup elements</dfn>:
 
 <p>These are what a user writes most of the time.
 </p>
-<p>Formally, COWEL documents is processed in several phases:
+<p>Formally, COWEL documents are processed in several phases:
 </p><ol>
   <li>
     The UTF-8-encoded source code is decoded into a sequence of code points.
@@ -2630,7 +2630,7 @@ and represent a value of type <tt-><h- data-h=kw_type>int</h-></tt->
   <li><math display=inline><mn>10</mn></math> for an <g-term>DECIMAL-INT-TOKEN</g-term>, and</li>
   <li><math display=inline><mn>16</mn></math> for an <g-term>HEXADECIMAL-INT-TOKEN</g-term>.</li>
 </ul>
-<p>The value is of an <g-term>int-literal</g-term> in base <math display=inline><mi>B</mi></math>
+<p>The value of an <g-term>int-literal</g-term> in base <math display=inline><mi>B</mi></math>
 is determined by interpreting each digit from left to right
 as decimal digits of a base-<math display=inline><mi>B</mi></math> integer,
 from most significant to least significant.
@@ -2651,7 +2651,7 @@ all represent the value <math display=inline><mn>255</mn></math>.
 </p></example-block>
 
 <tip-block><p><intro-></intro-> 
-Negative numbers can be be written by prepending a U+002D (<tt->-</tt->),
+Negative numbers can be written by prepending a U+002D (<tt->-</tt->),
 such as in <code>-1.0</code>.
 This is an application of the unary minus operator to a <g-term>float-literal</g-term>;
 the minus sign is not part of it.
@@ -2738,7 +2738,7 @@ the minus sign is not part of it.
 </example-block>
 
 <tip-block><p><intro-></intro-> 
-Negative numbers can be be written by prepending a U+002D (<tt->-</tt->),
+Negative numbers can be written by prepending a U+002D (<tt->-</tt->),
 such as in <code>-1.0</code>.
 This is an application of the unary minus operator to a <g-term>float-literal</g-term>;
 the minus sign is not part of it.
@@ -3151,7 +3151,7 @@ and writes it to the output HTML file.
 </p>
 <h3 id=contexts-and-output><a class=para href=#contexts-and-output></a>5.1. Content policies</h3>
 
-<p>A <dfn>content policy</dfn> dictates how each pice of content
+<p>A <dfn>content policy</dfn> dictates how each piece of content
 (text, comments, escapes, directives)
 is transformed into HTML or consumed in some other way.
 For example, most content policies ignore comments,
@@ -3278,7 +3278,7 @@ the <code><h- data-h=mk_tag>\b</h-></code> directive feeds the current content p
     resulting in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-><i>syntax highlighted x</i><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_punc>&gt;</h-></code>.
   </li>
   <li>
-    A literally content policy would not have processed <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code> in the first place,
+    A literal content policy would not have processed <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>b</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-></code> in the first place,
     but taken its source code interpreted as text,
     and fed that into the surrounding policy.
   </li>
@@ -3471,8 +3471,8 @@ using builtin directives:
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>multiplicative-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>SLASH-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>multiplicative-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PERCENT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>prefix-expression</h-><h- data-h=sym_punc>;</h-></code-block>
 
-<p>A <g-term>binary-expression</g-term> combines takes two operands
-and computes are result from these operands.
+<p>A <g-term>binary-expression</g-term> combines two operands
+and computes a result from these operands.
 Evaluating a <g-term>binary-expression</g-term> is equivalent to
 evaluating a <g-term>directive-call-expression</g-term>
 for a builtin directive specified in the table below.
@@ -3636,7 +3636,7 @@ but should be expanded greatly in the near future.
 
 <p>The commas in a <g-term>type-list</g-term> act as separators and have no impact on the type.
 </p>
-<p>Note that the type <tt-><h- data-h=kw_type>group(int)</h-></tt-> is a unambiguously a <g-term>prefix-type</g-term>
+<p>Note that the type <tt-><h- data-h=kw_type>group(int)</h-></tt-> is unambiguously a <g-term>prefix-type</g-term>
 where <tt-><h- data-h=kw_type>int</h-></tt-> is the only element in the <g-term>type-list</g-term>,
 not a <tt-><h- data-h=kw_type>group</h-></tt-> <g-term>type-prefix</g-term>
 followed by an <tt-><h- data-h=kw_type>(int)</h-></tt-> <g-term>optional-type</g-term>.
@@ -3675,7 +3675,7 @@ i.e. every other type is a subtype of <tt-><h- data-h=kw_type>any</h-></tt->.
 This is also known as a "top type".
 </p>
 <p><tt-><h- data-h=kw_type>any</h-></tt-> may be used as a type for parameters and variables,
-but there are no value of type <tt-><h- data-h=kw_type>any</h-></tt->.
+but there are no values of type <tt-><h- data-h=kw_type>any</h-></tt->.
 </p>
 <h4 id=type-nothing><a class=para href=#type-nothing></a>7.2.2. <tt-><h- data-h=kw_type>nothing</h-></tt-> — Bottom type</h4>
 
@@ -3765,7 +3765,7 @@ called its <dfn>members</dfn>, in sequence.
 This is also known as a product type.
 </p>
 <example-block><p><intro-></intro-> 
-For example <tt-><h- data-h=kw_type>group(int, string)</h-></tt-> is group containing an <code>int</code>
+For example <tt-><h- data-h=kw_type>group(int, string)</h-></tt-> is a group containing an <code>int</code>
 followed by a <tt-><h- data-h=kw_type>string</h-></tt->.
 A value of such a type can be obtained with the literal <code>(0, "x")</code>.
 </p></example-block>
@@ -3936,7 +3936,7 @@ is fed into the current content policy once the block itself is spliced.
     a string representing the value in decimal form
     without leading zeros.
     For example, the <g-term>int-literal</g-term> <code>-015</code>
-    result in '<tt->-15</tt->' when spliced.
+    results in '<tt->-15</tt->' when spliced.
   </li>
   <li>
     Splicing a value of type <tt-><h- data-h=kw_type>float</h-></tt-> produces
@@ -4056,7 +4056,7 @@ The produced output is at most 24 characters long
 <p>COWEL outputs documents that can be viewed in <dfn>light mode</dfn> and <dfn>dark mode</dfn>.
 </p>
 <p>When the document is opened with support for JavaScript,
-there is an button in the top-right that can be used to switch between three modes:
+there is a button in the top-right that can be used to switch between three modes:
 </p><ul>
   <li>Sync the theme with the OS (default)</li>
   <li>Light mode (ignoring system preference)</li>
@@ -4083,8 +4083,8 @@ These builtin directives should rarely be used directly,
 but through macro packages which utilize them.
 </p>
 <p>Even if one wanted to use them,
-builtin directive have long names which make them impractical for direct use in markup.
-However, those long names are self-document, unambiguous,
+builtin directives have long names which make them impractical for direct use in markup.
+However, those long names are self-documenting, unambiguous,
 and guaranteed not to collide with any user directives.
 </p></note-block>
 
@@ -4631,7 +4631,7 @@ such as in the <code>strong</code> positional argument to
 <h- data-h=mk_tag>cowel_text_as_html</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
-<p><code><h- data-h=mk_tag>\cowel_no_invoke</h-></code> processes the provided content
+<p><code><h- data-h=mk_tag>\cowel_text_as_html</h-></code> processes the provided content
 using the text-as-HTML policy.
 </p>
 <example-block><p><intro-></intro-> 
@@ -4699,7 +4699,7 @@ to render the generated HTML (rather than having it go directly into the output 
 <h- data-h=mk_tag>cowel_source_as_text</h->(<h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->): <h- data-h=kw_type>block</h->
 </pre>
 
-<p><code><h- data-h=mk_tag>\cowel_no_invoke</h-></code> processes the provided content
+<p><code><h- data-h=mk_tag>\cowel_source_as_text</h-></code> processes the provided content
 using the source-as-text policy.
 </p>
 <example-block><p><intro-></intro-> 
@@ -4860,7 +4860,7 @@ Certain directives (e.g. <code><h- data-h=mk_tag>\comment</h-></code>) that don'
 <p>The process of paragraph splitting works as follows:
 </p><ul>
   <li>
-    Blank-line-separated blocks of inline content is wrapped in in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
+    Blank-line-separated blocks of inline content is wrapped in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code> tags.
     Meta content is not counted as a blank line, so it "continues" inline content,
     but no effort is made to wrap it in <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h->...<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>p</h-><h- data-h=sym_punc>&gt;</h-></code>.
   </li>
@@ -5048,7 +5048,7 @@ In other words, <code><h- data-h=mk_tag>\cowel_include</h-></code> inherits the 
 or is <em>not</em> a "black box" to paragraph splitting.
 </p>
 <example-block><p><intro-></intro-> 
-Say we have another <tt->test.cow</tt-> files containing:
+Say we have another <tt->test.cow</tt-> file containing:
 </p><code-block>Hello, includes!
 
 Next paragraph.</code-block>
@@ -5486,7 +5486,7 @@ COWEL markup:
 </p><code-block>1.5</code-block>
 </example-block>
 
-<p>Raises an error if <tt-><h- data-h=mk_attr>x</h-></tt-> is is not in the range
+<p>Raises an error if <tt-><h- data-h=mk_attr>x</h-></tt-> is not in the range
 <math display=inline><mrow>
   <mo>[</mo>
   <mn>0</mn><mo>,</mo><msup><mn>2</mn><mn>64</mn></msup>
@@ -5664,7 +5664,7 @@ with ties broken away from zero.
 
 <p>Returns the lowest of the given values.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+<p>An error is raised if <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
 <p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operations
@@ -5686,7 +5686,7 @@ ignoring NaN representations.
 
 <p>Returns the greatest of the given values.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+<p>An error is raised if <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
 <p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operations
@@ -5710,7 +5710,7 @@ ignoring NaN representations.
 <msub><mi>x</mi><mn>0</mn></msub><mo>+</mo><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><mo>…</mo><mo>+</mo><msub><mi>x</mi><mi>n</mi></msub></mrow></math>
 for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+<p>An error is raised if <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
 <p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operations
@@ -5735,7 +5735,7 @@ See <a href=#binary-expressions>§6.4. Binary expressions</a>.
 <msub><mi>x</mi><mn>0</mn></msub><mo>−</mo><msub><mi>x</mi><mn>1</mn></msub><mo>−</mo><mo>…</mo><mo>−</mo><msub><mi>x</mi><mi>n</mi></msub></mrow></math>
 for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+<p>An error is raised if <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
 <p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operations
@@ -5760,7 +5760,7 @@ See <a href=#binary-expressions>§6.4. Binary expressions</a>.
 <msub><mi>x</mi><mn>0</mn></msub><mo>×</mo><msub><mi>x</mi><mn>1</mn></msub><mo>×</mo><mo>…</mo><mo>×</mo><msub><mi>x</mi><mi>n</mi></msub></mrow></math>
 for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+<p>An error is raised if <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
 <p>If <tt-><h- data-h=mk_attr>args</h-></tt-> is a pack of type <tt-><h- data-h=kw_type>float</h-></tt->,
 the result is that of the IEEE-754 operations
@@ -5784,7 +5784,7 @@ See <a href=#binary-expressions>§6.4. Binary expressions</a>.
 <msub><mi>x</mi><mn>0</mn></msub><mo>÷</mo><msub><mi>x</mi><mn>1</mn></msub><mo>÷</mo><mo>…</mo><mo>÷</mo><msub><mi>x</mi><mi>n</mi></msub></mrow></math>
 for each <math display=inline><msub><mi>x</mi><mi>i</mi></msub></math> in <tt-><h- data-h=mk_attr>args</h-></tt->.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
+<p>An error is raised if <tt-><h- data-h=mk_attr>args</h-></tt-> is empty.
 </p>
 <p>The result is that of the IEEE-754 operations
 </p><math display=block><mrow>
@@ -5811,7 +5811,7 @@ See <a href=#binary-expressions>§6.4. Binary expressions</a>.
 <p>Returns the quotient of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
 with rounding toward zero.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+<p>An error is raised if <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
 </p>
 <note-block><p><intro-></intro-> 
 The result is that of the <tt->/</tt-> operator in C.
@@ -5826,7 +5826,7 @@ The result is that of the <tt->/</tt-> operator in C.
 <p>Returns the remainder of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
 with rounding toward zero.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+<p>An error is raised if <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
 </p>
 <note-block><p><intro-></intro-> 
 The result is that of the <tt->%</tt-> operator in C.
@@ -5848,7 +5848,7 @@ See <a href=#binary-expressions>§6.4. Binary expressions</a>.
 <p>Returns the quotient of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
 with rounding toward positive infinity.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+<p>An error is raised if <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
 </p>
 <h4 id=dir-cowel_rem_to_pos_inf><a class=para href=#dir-cowel_rem_to_pos_inf></a>9.11.19. <code><h- data-h=mk_tag>\cowel_rem_to_pos_inf</h-></code> — Remainder rounded toward positive infinity</h4>
 
@@ -5859,7 +5859,7 @@ with rounding toward positive infinity.
 <p>Returns the remainder of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
 with rounding toward positive infinity.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+<p>An error is raised if <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
 </p>
 <h4 id=dir-cowel_div_to_neg_inf><a class=para href=#dir-cowel_div_to_neg_inf></a>9.11.20. <code><h- data-h=mk_tag>\cowel_div_to_neg_inf</h-></code> — Division rounded toward negative infinity</h4>
 
@@ -5870,7 +5870,7 @@ with rounding toward positive infinity.
 <p>Returns the quotient of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
 with rounding toward negative infinity.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+<p>An error is raised if <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
 </p>
 <note-block><p><intro-></intro-> 
 The result is that of the <tt->//</tt-> operator in Python.
@@ -5885,7 +5885,7 @@ The result is that of the <tt->//</tt-> operator in Python.
 <p>Returns the remainder of the division <math display=inline><mrow><mi>x</mi><mo>÷</mo><mi>y</mi></mrow></math>
 with rounding toward negative infinity.
 </p>
-<p>An error is raised of <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
+<p>An error is raised if <tt-><h- data-h=mk_attr>y</h-></tt-> is zero.
 </p>
 <note-block><p><intro-></intro-> 
 The result is that of the <tt->%</tt-> operator in Python.
@@ -6001,7 +6001,7 @@ there is no way to tell apart signaling and quiet operations in COWEL.
 <h- data-h=mk_tag>cowel_eq</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
-<p>Return <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>=</mo><mi>y</mi></mrow></math>,
+<p>Returns <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>=</mo><mi>y</mi></mrow></math>,
 otherwise <code>false</code>.
 </p>
 <p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>unit</h-></tt-> or <tt-><h- data-h=kw_type>null</h-></tt->,
@@ -6028,7 +6028,7 @@ See <a href=#binary-expressions>§6.4. Binary expressions</a>.
 <h- data-h=mk_tag>cowel_ne</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->,  <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
-<p>Return <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>≠</mo><mi>y</mi></mrow></math>,
+<p>Returns <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>≠</mo><mi>y</mi></mrow></math>,
 otherwise <code>false</code>.
 </p>
 <p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>unit</h-></tt-> or <tt-><h- data-h=kw_type>null</h-></tt->,
@@ -6056,7 +6056,7 @@ See <a href=#binary-expressions>§6.4. Binary expressions</a>.
 <h- data-h=mk_tag>cowel_lt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
-<p>Return <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>&lt;</mo><mi>y</mi></mrow></math>,
+<p>Returns <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>&lt;</mo><mi>y</mi></mrow></math>,
 otherwise <code>false</code>.
 </p>
 <p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
@@ -6077,7 +6077,7 @@ See <a href=#binary-expressions>§6.4. Binary expressions</a>.
 <h- data-h=mk_tag>cowel_gt</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
-<p>Return <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>&gt;</mo><mi>y</mi></mrow></math>,
+<p>Returns <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>&gt;</mo><mi>y</mi></mrow></math>,
 otherwise <code>false</code>.
 </p>
 <p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
@@ -6098,7 +6098,7 @@ See <a href=#binary-expressions>§6.4. Binary expressions</a>.
 <h- data-h=mk_tag>cowel_le</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
-<p>Return <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>≤</mo><mi>y</mi></mrow></math>,
+<p>Returns <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>≤</mo><mi>y</mi></mrow></math>,
 otherwise <code>false</code>.
 </p>
 <p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
@@ -6119,7 +6119,7 @@ See <a href=#binary-expressions>§6.4. Binary expressions</a>.
 <h- data-h=mk_tag>cowel_ge</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>y</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>bool</h->
 </pre>
 
-<p>Return <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>≥</mo><mi>y</mi></mrow></math>,
+<p>Returns <code>true</code> if <math display=inline><mrow><mi>x</mi><mo>≥</mo><mi>y</mi></mrow></math>,
 otherwise <code>false</code>.
 </p>
 <p>If <tt-><h- data-h=mk_attr>x</h-></tt-> and <tt-><h- data-h=mk_attr>y</h-></tt-> are of type <tt-><h- data-h=kw_type>float</h-></tt->,
