@@ -173,8 +173,20 @@
           "match": "\\+|-|\\*|/|%"
         },
         {
+          "name": "keyword.operator.logical.cowel",
+          "match": "!(?!=)"
+        },
+        {
+          "name": "keyword.operator.bitwise.cowel",
+          "match": "~"
+        },
+        {
           "name": "keyword.operator.assignment.cowel",
           "match": "="
+        },
+        {
+          "name": "punctuation.separator.arguments.cowel",
+          "match": ","
         },
         { "include": "#literals" },
         { "include": "#strings" },

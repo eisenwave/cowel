@@ -1,0 +1,103 @@
+{
+  "description": "Test comma as argument separator in argument lists",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "support.function.directive.cowel",
+      "description": "\\d directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 2,
+      "expected": "punctuation.section.arguments.begin.cowel",
+      "description": "Opening parenthesis has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 3,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "First argument (1) has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 4,
+      "expected": "punctuation.separator.arguments.cowel",
+      "description": "Comma separator has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 6,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Second argument (2) has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 7,
+      "expected": "punctuation.section.arguments.end.cowel",
+      "description": "Closing parenthesis has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "support.function.directive.cowel",
+      "description": "Second \\d directive name has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 2,
+      "expected": "punctuation.section.arguments.begin.cowel",
+      "description": "Opening parenthesis has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 3,
+      "expected": "string.unquoted.cowel",
+      "description": "First argument (a) is an unquoted string"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 4,
+      "expected": "punctuation.separator.arguments.cowel",
+      "description": "First comma separator has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 6,
+      "expected": "string.unquoted.cowel",
+      "description": "Second argument (b) is an unquoted string"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 7,
+      "expected": "punctuation.separator.arguments.cowel",
+      "description": "Second comma separator has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 9,
+      "expected": "string.unquoted.cowel",
+      "description": "Third argument (c) is an unquoted string"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 10,
+      "expected": "punctuation.section.arguments.end.cowel",
+      "description": "Closing parenthesis has correct scope"
+    }
+  ]
+}
