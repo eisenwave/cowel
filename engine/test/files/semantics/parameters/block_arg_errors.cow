@@ -1,0 +1,9 @@
+\test_input{
+\test_expect_error("type.mismatch"){\cowel_paragraph_enter{foo}}
+\test_expect_error("type.mismatch"){\cowel_html_element("div", (id=foo), "extra"){content}}
+}
+
+\test_output{
+
+<error->\cowel_html_element("div", (id=foo), "extra"){content}</error->
+}

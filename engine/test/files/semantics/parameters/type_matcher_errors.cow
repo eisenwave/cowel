@@ -1,0 +1,11 @@
+\test_input{
+\test_expect_error("type.mismatch"){\cowel_not("hello")}
+\test_expect_error("type.mismatch"){\cowel_reinterpret_as_int("hello")}
+\test_expect_error("type.mismatch"){\codeblock("cpp", false, false, "not-a-block")}
+}
+
+\test_output{
+<error->\cowel_not("hello")</error->
+<error->\cowel_reinterpret_as_int("hello")</error->
+<error->\codeblock("cpp", false, false, "not-a-block")</error->
+}

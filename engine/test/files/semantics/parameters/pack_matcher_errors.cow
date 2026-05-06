@@ -1,0 +1,11 @@
+\test_input{
+\test_expect_error("type.mismatch"){\math("positional"){content}}
+\test_expect_error("type.mismatch"){\cowel_html_element("div", "not-a-group")}
+\test_expect_error("type.mismatch"){\cowel_html_element("div", (id=1)){content}}
+}
+
+\test_output{
+<error->\math("positional"){content}</error->
+<error->\cowel_html_element("div", "not-a-group")</error->
+<error->\cowel_html_element("div", (id=1)){content}</error->
+}
