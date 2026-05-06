@@ -619,5 +619,35 @@ TEST(Lex, file_tests)
     EXPECT_TRUE(overall_success);
 }
 
+TEST(Lex, exhaustive_one_char)
+{
+    std::pmr::vector<Token> tokens;
+    const auto noop = [](std::u8string_view, const Source_Span&, Char_Sequence8) {};
+
+    char8_t source_char = 0;
+    const std::u8string_view source { &source_char, 1 };
+    for (unsigned c = 0; c <= 0x7Fu; ++c) {
+        source_char = char8_t(c);
+        tokens.clear();
+        lex(tokens, source, noop);
+    }
+}
+
+TEST(Lex, exhaustive_three_chars)
+{
+    std::pmr::vector<Token> tokens;
+    const auto noop = [](std::u8string_view, const Source_Span&, Char_Sequence8) {};
+
+    char8_t source_buf[3] = {};
+    const std::u8string_view source { source_buf, 3 };
+    for (std::size_t i = 0; i < (1uz << 21); ++i) {
+        source_buf[0] = char8_t((i >> 0) & 0x7Fu);
+        source_buf[1] = char8_t((i >> 7) & 0x7Fu);
+        source_buf[2] = char8_t((i >> 14) & 0x7Fu);
+        tokens.clear();
+        lex(tokens, source, noop);
+    }
+}
+
 } // namespace
 } // namespace cowel
