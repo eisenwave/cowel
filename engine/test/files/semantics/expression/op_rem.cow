@@ -29,6 +29,8 @@
 \cowel_pos(8 % 2)
 \cowel_pos(2 % 8)
 \test_expect_error("arithmetic.div-by-zero"){\cowel_pos(1 % 0)}
+\test_expect_error("type.mismatch"){\cowel_pos(1.0 % 2)}
+\test_expect_error("type.mismatch"){\cowel_pos(1 % 2.0)}
 }
 
 \test_output{
@@ -62,4 +64,6 @@ int
 0
 2
 <error->\cowel_pos(1 % 0)</error->
+<error->\cowel_pos(1.0 % 2)</error->
+<error->\cowel_pos(1 % 2.0)</error->
 }

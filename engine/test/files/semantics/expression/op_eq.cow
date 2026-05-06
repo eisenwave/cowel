@@ -33,6 +33,9 @@
 \cowel_and("x" == "")
 \cowel_and("" == "x")
 \cowel_and("x" == "x")
+
+\test_expect_error("type.mismatch"){\cowel_pos((0,) == (0,))}
+\test_expect_error("type.mismatch"){\cowel_pos(1 == 1.0)}
 }
 
 \test_output{
@@ -70,4 +73,7 @@ true
 false
 false
 true
+
+<error->\cowel_pos((0,) == (0,))</error->
+<error->\cowel_pos(1 == 1.0)</error->
 }

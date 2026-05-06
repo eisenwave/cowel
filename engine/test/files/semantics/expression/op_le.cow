@@ -27,6 +27,10 @@
 \cowel_and("x" <= "x")
 \cowel_and("x" <= "y")
 \cowel_and("y" <= "x")
+
+\test_expect_error("type.mismatch"){\(true <= false)}
+\test_expect_error("type.mismatch"){\(1 <= true)}
+\test_expect_error("type.mismatch"){\(1 <= 1.0)}
 }
 
 \test_output{
@@ -58,4 +62,8 @@ true
 true
 true
 false
+
+
+
+
 }
