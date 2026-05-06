@@ -18,7 +18,7 @@ but should be expanded greatly in the near future.
 
 The commas in a \gterm{type-list} act as separators and have no impact on the type.
 
-Note that the type \cowdoc_type{group(int)} is a unambiguously a \gterm{prefix-type}
+Note that the type \cowdoc_type{group(int)} is unambiguously a \gterm{prefix-type}
 where \cowdoc_type{int} is the only element in the \gterm{type-list},
 not a \cowdoc_type{group} \gterm{type-prefix}
 followed by an \cowdoc_type{(int)} \gterm{optional-type}.
@@ -57,7 +57,7 @@ i.e. every other type is a subtype of \cowdoc_type{any}.
 This is also known as a "top type".
 
 \cowdoc_type{any} may be used as a type for parameters and variables,
-but there are no value of type \cowdoc_type{any}.
+but there are no values of type \cowdoc_type{any}.
 
 \h4(id="type-nothing"){\cowdoc_type{nothing} \N{EM DASH} Bottom type}
 
@@ -147,7 +147,7 @@ called its \dfn{members}, in sequence.
 This is also known as a product type.
 
 \Bex{
-For example \cowdoc_type{group(int, string)} is group containing an \cowdoc_c{int}
+For example \cowdoc_type{group(int, string)} is a group containing an \cowdoc_c{int}
 followed by a \cowdoc_type{string}.
 A value of such a type can be obtained with the literal \cowdoc_c{(0, "x")}.
 }
@@ -318,7 +318,7 @@ The effect of splicing depends on the type of value:
     a string representing the value in decimal form
     without leading zeros.
     For example, the \gterm{int-literal} \cowdoc_c{-015}
-    result in '\tt{-15}' when spliced.
+    results in '\tt{-15}' when spliced.
   }
   \li{
     Splicing a value of type \cowdoc_type{float} produces

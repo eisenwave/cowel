@@ -27,6 +27,7 @@
 - fix duplicate output for `--no-color` option
 - fix performance and memory leak issues related to `regex`
 - also add internal `__typeof` directive and test types of directives
+- also fix typos and grammatical errors in documentation (#293)
 
 **Full Changelog**:
 [`v0.8.1...main`](https://github.com/eisenwave/cowel/compare/v0.8.1...main)

@@ -14,7 +14,7 @@ built on top of only a few \dfn{markup elements}:
 
 These are what a user writes most of the time.
 
-Formally, COWEL documents is processed in several phases:
+Formally, COWEL documents are processed in several phases:
 \ol{
   \li{
     The UTF-8-encoded source code is decoded into a sequence of code points.
@@ -429,7 +429,7 @@ The \dfn{base} \math{\mi{B}} of a \gterm{int-literal} is
   \li{\math{\mn{10}} for an \gterm{DECIMAL-INT-TOKEN}, and}
   \li{\math{\mn{16}} for an \gterm{HEXADECIMAL-INT-TOKEN}.}
 }
-The value is of an \gterm{int-literal} in base \math{\mi{B}}
+The value of an \gterm{int-literal} in base \math{\mi{B}}
 is determined by interpreting each digit from left to right
 as decimal digits of a base-\math{\mi{B}} integer,
 from most significant to least significant.
@@ -450,7 +450,7 @@ all represent the value \math{\mn{255}}.
 }
 
 \Btip{
-Negative numbers can be be written by prepending a \cowdoc_cp(0x2D),
+Negative numbers can be written by prepending a \cowdoc_cp(0x2D),
 such as in \cowdoc_c{-1.0}.
 This is an application of the unary minus operator to a \gterm{float-literal};
 the minus sign is not part of it.
@@ -539,7 +539,7 @@ The value of a \gterm{DECIMAL-FLOAT-TOKEN} is determined as follows:
 }
 
 \Btip{
-Negative numbers can be be written by prepending a \cowdoc_cp(0x2D),
+Negative numbers can be written by prepending a \cowdoc_cp(0x2D),
 such as in \cowdoc_c{-1.0}.
 This is an application of the unary minus operator to a \gterm{float-literal};
 the minus sign is not part of it.

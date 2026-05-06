@@ -9,7 +9,7 @@ and writes it to the output HTML file.
 
 \h3(id="contexts-and-output"){Content policies}
 
-A \dfn{content policy} dictates how each pice of content
+A \dfn{content policy} dictates how each piece of content
 (text, comments, escapes, directives)
 is transformed into HTML or consumed in some other way.
 For example, most content policies ignore comments,
@@ -136,7 +136,7 @@ Content policies differ in how they treat the content they're fed:
     resulting in \cowdoc_html{<b>\i{syntax highlighted x}</b>}.
   }
   \li{
-    A literally content policy would not have processed \cowdoc_c{\\b{x}} in the first place,
+    A literal content policy would not have processed \cowdoc_c{\\b{x}} in the first place,
     but taken its source code interpreted as text,
     and fed that into the surrounding policy.
   }
@@ -351,8 +351,8 @@ multiplicative-expression
   | multiplicative-expression, PERCENT-TOKEN, prefix-expression;
 }
 
-A \gterm{binary-expression} combines takes two operands
-and computes are result from these operands.
+A \gterm{binary-expression} combines two operands
+and computes a result from these operands.
 Evaluating a \gterm{binary-expression} is equivalent to
 evaluating a \gterm{directive-call-expression}
 for a builtin directive specified in the table below.

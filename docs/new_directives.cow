@@ -9,8 +9,8 @@ These builtin directives should rarely be used directly,
 but through macro packages which utilize them.
 
 Even if one wanted to use them,
-builtin directive have long names which make them impractical for direct use in markup.
-However, those long names are self-document, unambiguous,
+builtin directives have long names which make them impractical for direct use in markup.
+However, those long names are self-documenting, unambiguous,
 and guaranteed not to collide with any user directives.
 }
 
@@ -593,7 +593,7 @@ It is mainly useful in situations where it makes no sense to have non-plaintext 
 \cowel_highlight_as("markup-tag"){cowel_text_as_html}(\cowdoc_param("content", "block")): \cowel_highlight_as("keyword-type"){block}
 }
 
-\cowdoc_dir{cowel_no_invoke} processes the provided content
+\cowdoc_dir{cowel_text_as_html} processes the provided content
 using the text-as-HTML policy.
 
 \Bex{
@@ -669,7 +669,7 @@ to render the generated HTML (rather than having it go directly into the output 
 \cowel_highlight_as("markup-tag"){cowel_source_as_text}(\cowdoc_param("content", "block")): \cowel_highlight_as("keyword-type"){block}
 }
 
-\cowdoc_dir{cowel_no_invoke} processes the provided content
+\cowdoc_dir{cowel_source_as_text} processes the provided content
 using the source-as-text policy.
 
 \Bex{
@@ -842,7 +842,7 @@ Certain directives (e.g. \cowdoc_dir{comment}) that don't generate anything rend
 The process of paragraph splitting works as follows:
 \ul{
   \li{
-    Blank-line-separated blocks of inline content is wrapped in in \cowdoc_html{<p>...</p>} tags.
+    Blank-line-separated blocks of inline content is wrapped in \cowdoc_html{<p>...</p>} tags.
     Meta content is not counted as a blank line, so it "continues" inline content,
     but no effort is made to wrap it in \cowdoc_html{<p>...</p>}.
   }
@@ -1046,7 +1046,7 @@ In other words, \cowdoc_dir{cowel_include} inherits the paragraph context,
 or is \em{not} a "black box" to paragraph splitting.
 
 \Bex{
-Say we have another \tt{test.cow} files containing:
+Say we have another \tt{test.cow} file containing:
 \cowblock{\literally{
 Hello, includes!
 
@@ -1523,7 +1523,7 @@ Generated HTML:
 }
 }
 
-Raises an error if \cowdoc_attr{x} is is not in the range
+Raises an error if \cowdoc_attr{x} is not in the range
 \math{\mrow{
   \mo{[}
   \mn{0}\mo{,}\msup{\mn{2}\mn{64}}
@@ -1739,7 +1739,7 @@ The result is that of the IEEE-754 operation
 
 Returns the lowest of the given values.
 
-An error is raised of \cowdoc_attr{args} is empty.
+An error is raised if \cowdoc_attr{args} is empty.
 
 If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
@@ -1760,7 +1760,7 @@ ignoring NaN representations.
 
 Returns the greatest of the given values.
 
-An error is raised of \cowdoc_attr{args} is empty.
+An error is raised if \cowdoc_attr{args} is empty.
 
 If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
@@ -1782,7 +1782,7 @@ ignoring NaN representations.
 Returns \left_fold_math_op{+}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
-An error is raised of \cowdoc_attr{args} is empty.
+An error is raised if \cowdoc_attr{args} is empty.
 
 If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
@@ -1805,7 +1805,7 @@ See \ref("#binary-expressions").
 Returns \left_fold_math_op{−}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
-An error is raised of \cowdoc_attr{args} is empty.
+An error is raised if \cowdoc_attr{args} is empty.
 
 If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
@@ -1828,7 +1828,7 @@ See \ref("#binary-expressions").
 Returns \left_fold_math_op{×}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
-An error is raised of \cowdoc_attr{args} is empty.
+An error is raised if \cowdoc_attr{args} is empty.
 
 If \cowdoc_attr{args} is a pack of type \cowdoc_type{float},
 the result is that of the IEEE-754 operations
@@ -1850,7 +1850,7 @@ See \ref("#binary-expressions").
 Returns \left_fold_math_op{÷}
 for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 
-An error is raised of \cowdoc_attr{args} is empty.
+An error is raised if \cowdoc_attr{args} is empty.
 
 The result is that of the IEEE-754 operations
 \left_fold_math_func{division}
@@ -1876,7 +1876,7 @@ See \ref("#binary-expressions").
 Returns the quotient of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
 with rounding toward zero.
 
-An error is raised of \cowdoc_attr{y} is zero.
+An error is raised if \cowdoc_attr{y} is zero.
 
 \Bnote{
 The result is that of the \tt{/} operator in C.
@@ -1891,7 +1891,7 @@ The result is that of the \tt{/} operator in C.
 Returns the remainder of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
 with rounding toward zero.
 
-An error is raised of \cowdoc_attr{y} is zero.
+An error is raised if \cowdoc_attr{y} is zero.
 
 \Bnote{
 The result is that of the \tt{\N{PERCENT SIGN}} operator in C.
@@ -1913,7 +1913,7 @@ See \ref("#binary-expressions").
 Returns the quotient of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
 with rounding toward positive infinity.
 
-An error is raised of \cowdoc_attr{y} is zero.
+An error is raised if \cowdoc_attr{y} is zero.
 
 \cowdoc_dir_h4("cowel_rem_to_pos_inf", "Remainder rounded toward positive infinity")
 
@@ -1924,7 +1924,7 @@ An error is raised of \cowdoc_attr{y} is zero.
 Returns the remainder of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
 with rounding toward positive infinity.
 
-An error is raised of \cowdoc_attr{y} is zero.
+An error is raised if \cowdoc_attr{y} is zero.
 
 \cowdoc_dir_h4("cowel_div_to_neg_inf", "Division rounded toward negative infinity")
 
@@ -1935,7 +1935,7 @@ An error is raised of \cowdoc_attr{y} is zero.
 Returns the quotient of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
 with rounding toward negative infinity.
 
-An error is raised of \cowdoc_attr{y} is zero.
+An error is raised if \cowdoc_attr{y} is zero.
 
 \Bnote{
 The result is that of the \tt{//} operator in Python.
@@ -1950,7 +1950,7 @@ The result is that of the \tt{//} operator in Python.
 Returns the remainder of the division \math{\mrow{\mi{x}\mo{÷}\mi{y}}}
 with rounding toward negative infinity.
 
-An error is raised of \cowdoc_attr{y} is zero.
+An error is raised if \cowdoc_attr{y} is zero.
 
 \Bnote{
 The result is that of the \tt{\N{PERCENT SIGN}} operator in Python.
@@ -2068,7 +2068,7 @@ there is no way to tell apart signaling and quiet operations in COWEL.
 \cowel_highlight_as("markup-tag"){cowel_eq}(\cowdoc_param("x", "str"),  \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
-Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{=}\mi{y}}},
+Returns \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{=}\mi{y}}},
 otherwise \cowdoc_c{false}.
 
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{unit} or \cowdoc_type{null},
@@ -2095,7 +2095,7 @@ See \ref("#binary-expressions").
 \cowel_highlight_as("markup-tag"){cowel_ne}(\cowdoc_param("x", "str"),  \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
-Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≠}\mi{y}}},
+Returns \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≠}\mi{y}}},
 otherwise \cowdoc_c{false}.
 
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{unit} or \cowdoc_type{null},
@@ -2123,7 +2123,7 @@ See \ref("#binary-expressions").
 \cowel_highlight_as("markup-tag"){cowel_lt}(\cowdoc_param("x", "str"), \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
-Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{<}\mi{y}}},
+Returns \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{<}\mi{y}}},
 otherwise \cowdoc_c{false}.
 
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
@@ -2144,7 +2144,7 @@ See \ref("#binary-expressions").
 \cowel_highlight_as("markup-tag"){cowel_gt}(\cowdoc_param("x", "str"), \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
-Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{>}\mi{y}}},
+Returns \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{>}\mi{y}}},
 otherwise \cowdoc_c{false}.
 
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
@@ -2165,7 +2165,7 @@ See \ref("#binary-expressions").
 \cowel_highlight_as("markup-tag"){cowel_le}(\cowdoc_param("x", "str"), \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
-Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≤}\mi{y}}},
+Returns \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≤}\mi{y}}},
 otherwise \cowdoc_c{false}.
 
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
@@ -2186,7 +2186,7 @@ See \ref("#binary-expressions").
 \cowel_highlight_as("markup-tag"){cowel_ge}(\cowdoc_param("x", "str"), \cowdoc_param("y", "str")): \cowel_highlight_as("keyword-type"){bool}
 }
 
-Return \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≥}\mi{y}}},
+Returns \cowdoc_c{true} if \math{\mrow{\mi{x}\mo{≥}\mi{y}}},
 otherwise \cowdoc_c{false}.
 
 If \cowdoc_attr{x} and \cowdoc_attr{y} are of type \cowdoc_type{float},
