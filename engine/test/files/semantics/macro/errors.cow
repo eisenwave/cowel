@@ -1,0 +1,12 @@
+\test_input{
+\test_expect_fatal("macro.name.missing"){a\cowel_macro(""){body}}
+\test_expect_fatal("macro.name.invalid"){b\cowel_macro("??"){body}}
+\cowel_macro(dup_m){}\
+\test_expect_fatal("macro.duplicate"){c\cowel_macro(dup_m){body}}
+}
+
+\test_output{
+a
+b
+c
+}
