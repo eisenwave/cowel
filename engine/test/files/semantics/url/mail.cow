@@ -1,0 +1,9 @@
+\test_input{
+\mail{user@example.com}
+\mail{webmaster@cowel.org}
+}
+
+\test_output{
+<a href=mailto:user@example.com class=sans>user@example.com</a>
+<a href=mailto:webmaster@cowel.org class=sans>webmaster@cowel.org</a>
+}

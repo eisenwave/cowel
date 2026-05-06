@@ -1,0 +1,35 @@
+\: \ref without content uses a sans link to the URL, stripping the scheme prefix.
+\test_input{
+\ref(to="https://example.com")
+\ref(to="http://example.com/path")
+\ref(to="//example.com")
+
+\: \ref with content uses the content as the link text.
+\ref(to="https://example.com"){Example Site}
+
+\: \ref to a local anchor uses an id-preview section reference for the link text.
+\ref(to="#section-id")
+
+\: \ref to a local anchor with content uses the content as the link text.
+\ref(to="#section-id"){Custom Text}
+
+\: \ref to a bibliography key wraps in a section reference for the opening tag.
+\bib(id="N5008")\
+\ref(to="N5008")
+\ref(to="N5008"){custom}
+}
+
+\test_output{
+<a href=https://example.com class=sans>example.com</a>
+<a href=http://example.com/path class=sans>example.com/path</a>
+<a href=//example.com class=sans>//example.com</a>
+
+<a href=https://example.com>Example Site</a>
+
+<a href=#section-id>󰀙std.id-preview.section-id</a>
+
+<a href=#section-id>Custom Text</a>
+
+󰀍std.bib.N5008[N5008]</a>
+󰀍std.bib.N5008</a>
+}

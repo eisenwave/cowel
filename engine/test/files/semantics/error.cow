@@ -1,0 +1,9 @@
+\test_input{
+\error{error content}
+\error{\b{nested} content}
+}
+
+\test_output{
+<error->\error{error content}</error->
+<error->\error{\b{nested} content}</error->
+}

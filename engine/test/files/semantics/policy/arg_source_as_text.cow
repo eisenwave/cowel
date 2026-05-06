@@ -1,0 +1,9 @@
+\test_input{
+\__arg_source_as_text{some \b{content} here}
+\__arg_source_as_text(value={"more \i{content}"})
+}
+
+\test_output{
+some \b{content} here
+"more \i{content}"
+}

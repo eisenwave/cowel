@@ -1,0 +1,8 @@
+\test_input{
+\wg21_head(title={My Document},content={document content})
+}
+
+\test_output{
+<div class=wg21-head><h1>My Document</h1>
+document content</div>
+}

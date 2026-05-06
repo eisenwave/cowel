@@ -1,0 +1,9 @@
+\test_input{
+\cowel_actions{\cowel_html_element(div){actions content}}
+\cowel_actions{ignored text\cowel_html_element(span){processed}}
+}
+
+\test_output{
+<div>actions content</div>
+<span>processed</span>
+}

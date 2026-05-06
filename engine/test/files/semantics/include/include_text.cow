@@ -1,0 +1,8 @@
+\test_input{
+\cowel_include_text(path="snippet.txt")
+}
+
+\test_output{
+raw text content
+
+}

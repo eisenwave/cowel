@@ -1,0 +1,33 @@
+\test_input{
+\Babstract{abstract content}
+\Bdecision{decision content}
+\Bdel{deleted content}
+\Bdiff{diff content}
+\Bex{example content}
+\Bimp{important content}
+\Bins{inserted content}
+\Bnote{note content}
+\Btip{tip content}
+\Btodo{todo content}
+\Bug{bug content}
+\Bwarn{warning content}
+\Bindent{indented}
+\Bdetails{details content}
+}
+
+\test_output{
+<abstract-block><p><intro-></intro-> abstract content</p></abstract-block>
+<decision-block><p><intro-></intro-> decision content</p></decision-block>
+<del-block><p>deleted content</p></del-block>
+<diff-block><p>diff content</p></diff-block>
+<example-block><p><intro-></intro-> example content</p></example-block>
+<important-block><p><intro-></intro-> important content</p></important-block>
+<ins-block><p>inserted content</p></ins-block>
+<note-block><p><intro-></intro-> note content</p></note-block>
+<tip-block><p><intro-></intro-> tip content</p></tip-block>
+<todo-block><p><intro-></intro-> todo content</p></todo-block>
+<bug-block><p><intro-></intro-> bug content</p></bug-block>
+<warning-block><p><intro-></intro-> warning content</p></warning-block>
+<div class=indent>indented</div>
+<details>details content</details>
+}
