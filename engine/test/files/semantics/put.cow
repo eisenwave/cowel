@@ -7,6 +7,15 @@
 \nested(X){0}
 
 \test_expect_error("put.outside"){\cowel_put}
+
+\cowel_macro(put_no_block){\cowel_put}\
+\test_expect_error("put.invalid"){\put_no_block(arg)}
+
+\cowel_macro(put_range){\cowel_put{5}}\
+\test_expect_error("put.range"){\put_range(a, b)}
+
+\cowel_macro(put_named_miss){\cowel_put{xyz}}\
+\test_expect_error("put.invalid"){\put_named_miss(a=1)}
 }
 
 \test_output{
@@ -17,4 +26,10 @@ Named
 X
 
 <error->\cowel_put</error->
+
+<error->\cowel_put</error->
+
+<error->\cowel_put{5}</error->
+
+<error->\cowel_put{xyz}</error->
 }
