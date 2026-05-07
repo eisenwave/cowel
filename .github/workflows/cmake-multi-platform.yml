@@ -21,7 +21,40 @@ on:
       - ".github/lang-summary.md"
 
 jobs:
+  prepare-boost:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Restore Boost cache
+      id: boost-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: third_party/boost
+        key: ${{ runner.os }}-boost-1.90.0-${{ hashFiles('tools/boost-install.sh') }}
+
+    - name: Install Boost source tree (cache miss)
+      if: steps.boost-cache.outputs.cache-hit != 'true'
+      run: bash tools/boost-install.sh third_party/boost
+
+    - name: Save Boost cache
+      if: steps.boost-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: third_party/boost
+        key: ${{ runner.os }}-boost-1.90.0-${{ hashFiles('tools/boost-install.sh') }}
+
+    - name: Upload Boost artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: boost-source-${{ github.run_id }}
+        path: third_party/boost
+        if-no-files-found: error
+        retention-days: 1
+
   native:
+    needs: prepare-boost
     timeout-minutes: 15
     runs-on: ${{ matrix.os }}
     strategy:
@@ -65,8 +98,42 @@ jobs:
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
       run: |
-        sudo apt update
-        sudo apt install -y ${{ matrix.c_compiler }} ${{ matrix.stdlib_package }} libgtest-dev
+        missing_packages=()
+        for package in "${{ matrix.c_compiler }}" "${{ matrix.stdlib_package }}"; do
+          if ! dpkg -s "$package" >/dev/null 2>&1; then
+            missing_packages+=("$package")
+          fi
+        done
+
+        if [[ ${#missing_packages[@]} -gt 0 ]]; then
+          sudo apt update
+          sudo apt install -y "${missing_packages[@]}"
+        else
+          echo "All required packages are already installed."
+        fi
+
+    - name: Restore Boost cache
+      if: runner.os == 'Linux'
+      id: boost-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: third_party/boost
+        key: ${{ runner.os }}-boost-1.90.0-${{ hashFiles('tools/boost-install.sh') }}
+
+    - name: Download Boost artifact (cache miss)
+      if: runner.os == 'Linux' && steps.boost-cache.outputs.cache-hit != 'true'
+      uses: actions/download-artifact@v4.1.3
+      with:
+        name: boost-source-${{ github.run_id }}
+        path: ${{ github.workspace }}
+
+    - name: Normalize Boost artifact path (cache miss)
+      if: runner.os == 'Linux' && steps.boost-cache.outputs.cache-hit != 'true'
+      run: |
+        if [[ -d "${{ github.workspace }}/boost" && ! -d "${{ github.workspace }}/third_party/boost" ]]; then
+          mkdir -p "${{ github.workspace }}/third_party"
+          mv "${{ github.workspace }}/boost" "${{ github.workspace }}/third_party/boost"
+        fi
 
     - name: Set reusable strings
       id: strings
