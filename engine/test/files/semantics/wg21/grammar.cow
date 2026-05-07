@@ -1,7 +1,33 @@
 \test_input{
-\wg21_grammar{\gterm{expression}\gterm{statement}}
+\wg21_grammar{
+  \dt{
+    \gterm{expression}
+  }
+  \dd{
+    expression grammar
+  }
+  \dt{
+    \gterm{statement}
+  }
+  \dd{
+    statement grammar
+  }
+}
 }
 
 \test_output{
-<dl class=grammar><g-term>expression</g-term><g-term>statement</g-term></dl>
+<dl class=grammar>
+  <dt>
+    <g-term>expression</g-term>
+  </dt>
+  <dd>
+    expression grammar
+  </dd>
+  <dt>
+    <g-term>statement</g-term>
+  </dt>
+  <dd>
+    statement grammar
+  </dd>
+</dl>
 }

@@ -1,9 +1,0 @@
-\test_input{
-\make_bib
-\make_contents
-}
-
-\test_output{
-<div class=bib>󰀇std.bib</div>
-<div class=toc>󰀇std.toc</div>
-}

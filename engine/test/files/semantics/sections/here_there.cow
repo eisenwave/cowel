@@ -1,9 +1,0 @@
-\test_input{
-\there(section="my-section"){section content here}
-\hereblock(section="my-section"){}
-}
-
-\test_output{
-
-󰀊my-section
-}

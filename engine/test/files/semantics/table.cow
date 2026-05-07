@@ -1,19 +1,65 @@
 \test_input{
 \table{
-\thead{\tr{\th{Header}}}
-\tbody{\tr{\td{Cell}}}
-\tfoot{\tr{\td{Footer}}}
+  \thead{
+    \tr{
+      \th{Header}
+    }
+  }
+  \tbody{
+    \tr{
+      \td{Cell}
+    }
+  }
+  \tfoot{
+    \tr{
+      \td{Footer}
+    }
+  }
 }
 \colgroup{\col}
 \caption{Caption}
+
+\table{
+  \tr{
+    \td{Direct row 1}
+  }
+  \tr{
+    \td{
+      Direct row 2
+    }
+  }
+}
 }
 
 \test_output{
 <table>
-<thead><tr><th>Header</th></tr></thead>
-<tbody><tr><td>Cell</td></tr></tbody>
-<tfoot><tr><td>Footer</td></tr></tfoot>
+  <thead>
+    <tr>
+      <th>Header</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Cell</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td>Footer</td>
+    </tr>
+  </tfoot>
 </table>
 <colgroup><col></col></colgroup>
 <caption>Caption</caption>
+
+<table>
+  <tr>
+    <td>Direct row 1</td>
+  </tr>
+  <tr>
+    <td>
+      Direct row 2
+    </td>
+  </tr>
+</table>
 }
