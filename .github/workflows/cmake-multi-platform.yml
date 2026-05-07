@@ -73,7 +73,6 @@ jobs:
             cpp_compiler: g++-13
             stdlib: libstdc++
             stdlib_package: libstdc++-13-dev
-            extra_packages: ""
             run_coverage: false
           - toolchain: clang-libstdc++
             compiler: clang
@@ -81,7 +80,6 @@ jobs:
             cpp_compiler: clang++-20
             stdlib: libstdc++
             stdlib_package: libstdc++-13-dev
-            extra_packages: ""
             run_coverage: false
           - toolchain: clang-libc++
             compiler: clang
@@ -89,7 +87,6 @@ jobs:
             cpp_compiler: clang++-20
             stdlib: libc++
             stdlib_package: libc++-20-dev
-            extra_packages: ""
             run_coverage: false
           - toolchain: clang-coverage
             compiler: clang
@@ -97,7 +94,7 @@ jobs:
             cpp_compiler: clang++-20
             stdlib: libstdc++
             stdlib_package: libstdc++-13-dev
-            extra_packages: llvm-20
+            extra_package: llvm-20
             run_coverage: true
 
     steps:
@@ -112,15 +109,15 @@ jobs:
         printf "Mode:        %s\n" "${{ matrix.toolchain }}"
         printf "Compilers:   ${{ matrix.compiler }} / ${{ matrix.c_compiler }} / ${{ matrix.cpp_compiler }}\n"
         printf "Library:     ${{ matrix.stdlib }} / ${{ matrix.stdlib_package }}\n"
-        printf "Extra deps:  %s\n" "${{ matrix.extra_packages }}"
+        printf "Extra dep:   %s\n" "${{ matrix.extra_package }}"
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
       run: |
         missing_packages=()
         required_packages=("${{ matrix.c_compiler }}" "${{ matrix.stdlib_package }}")
-        if [[ -n "${{ matrix.extra_packages }}" ]]; then
-          required_packages+=("${{ matrix.extra_packages }}")
+        if [[ -n "${{ matrix.extra_package }}" ]]; then
+          required_packages+=("${{ matrix.extra_package }}")
         fi
         for package in "${required_packages[@]}"; do
           if ! dpkg -s "$package" >/dev/null 2>&1; then
@@ -165,6 +162,39 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "workspace_forward=$(echo '${{ github.workspace }}' | sed 's|\\|/|g')" >> "$GITHUB_OUTPUT"
 
+    - name: Configure CMake (Linux/macOS)
+      if: runner.os != 'Windows' && matrix.run_coverage != true
+      run: |
+        COMPILER_FLAGS=""
+        LINKER_FLAGS=""
+        if [[ "${{ matrix.compiler }}" == "clang" && "${{ matrix.stdlib }}" == "libc++" ]]; then
+          COMPILER_FLAGS="-stdlib=libc++"
+          LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi"
+        fi
+
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+        -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
+        -DCMAKE_COLOR_DIAGNOSTICS=ON \
+        -DCMAKE_CXX_FLAGS="-fdiagnostics-color=always $COMPILER_FLAGS" \
+        -DCMAKE_CXX_LINK_FLAGS="$LINKER_FLAGS" \
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+        -S ${{ github.workspace }}
+
+    - name: Build
+      if: matrix.run_coverage != true
+      run: >
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}
+        --config ${{ matrix.build_type }}
+        --verbose
+
+    - name: Test
+      if: matrix.run_coverage != true
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ctest --output-on-failure --build-config ${{ matrix.build_type }}
+      timeout-minutes: 5
+
     - name: Generate LLVM LCOV (self-contained)
       if: matrix.run_coverage
       run: bash tools/coverage-llvm.sh
@@ -188,39 +218,6 @@ jobs:
           build/clang20-coverage/coverage/lcov.info
           build/clang20-coverage/coverage/coverage.profdata
         retention-days: 30
-
-    - name: Configure CMake (Linux/macOS)
-      if: runner.os != 'Windows' && matrix.run_coverage == false
-      run: |
-        COMPILER_FLAGS=""
-        LINKER_FLAGS=""
-        if [[ "${{ matrix.compiler }}" == "clang" && "${{ matrix.stdlib }}" == "libc++" ]]; then
-          COMPILER_FLAGS="-stdlib=libc++"
-          LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi"
-        fi
-
-        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
-        -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
-        -DCMAKE_COLOR_DIAGNOSTICS=ON \
-        -DCMAKE_CXX_FLAGS="-fdiagnostics-color=always $COMPILER_FLAGS" \
-        -DCMAKE_CXX_LINK_FLAGS="$LINKER_FLAGS" \
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-        -S ${{ github.workspace }}
-
-    - name: Build
-      if: matrix.run_coverage == false
-      run: >
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}
-        --config ${{ matrix.build_type }}
-        --verbose
-
-    - name: Test
-      if: matrix.run_coverage == false
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --output-on-failure --build-config ${{ matrix.build_type }}
-      timeout-minutes: 5
 
   node:
     timeout-minutes: 15
