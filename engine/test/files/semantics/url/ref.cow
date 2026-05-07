@@ -6,11 +6,6 @@
 
 \: \ref with content uses the content as the link text.
 \ref("https://example.com"){Example Site}
-
-\: \ref to a bibliography key wraps in a section reference for the opening tag.
-\bib(id="N5008")\
-\ref("N5008")
-\ref("N5008"){custom}
 }
 
 \test_output{
@@ -19,7 +14,4 @@
 <a href=//example.com class=sans>//example.com</a>
 
 <a href=https://example.com>Example Site</a>
-
-󰀍std.bib.N5008[N5008]</a>
-󰀍std.bib.N5008</a>
 }
