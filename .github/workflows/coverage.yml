@@ -23,7 +23,40 @@ name: Native LLVM Coverage
       - "tools/filter-lcov.py"
 
 jobs:
+  prepare-boost:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Restore Boost cache
+      id: boost-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: third_party/boost
+        key: ${{ runner.os }}-boost-1.90.0-${{ hashFiles('tools/boost-install.sh') }}
+
+    - name: Install Boost source tree (cache miss)
+      if: steps.boost-cache.outputs.cache-hit != 'true'
+      run: bash tools/boost-install.sh third_party/boost
+
+    - name: Save Boost cache
+      if: steps.boost-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: third_party/boost
+        key: ${{ runner.os }}-boost-1.90.0-${{ hashFiles('tools/boost-install.sh') }}
+
+    - name: Upload Boost artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: boost-source-${{ github.run_id }}
+        path: third_party/boost
+        if-no-files-found: error
+        retention-days: 1
+
   coverage:
+    needs: prepare-boost
     timeout-minutes: 20
     runs-on: ubuntu-latest
     permissions:
@@ -37,8 +70,33 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt update
-        sudo apt install -y clang-20 llvm-20 libstdc++-13-dev libgtest-dev
+        missing_packages=()
+        for package in clang-20 llvm-20 libstdc++-13-dev; do
+          if ! dpkg -s "$package" >/dev/null 2>&1; then
+            missing_packages+=("$package")
+          fi
+        done
+
+        if ((${#missing_packages[@]} > 0)); then
+          sudo apt update
+          sudo apt install -y "${missing_packages[@]}"
+        else
+          echo "All required packages are already installed."
+        fi
+
+    - name: Restore Boost cache
+      id: boost-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: third_party/boost
+        key: ${{ runner.os }}-boost-1.90.0-${{ hashFiles('tools/boost-install.sh') }}
+
+    - name: Download Boost artifact (cache miss)
+      if: steps.boost-cache.outputs.cache-hit != 'true'
+      uses: actions/download-artifact@v4
+      with:
+        name: boost-source-${{ github.run_id }}
+        path: ${{ github.workspace }}
 
     - name: Generate LLVM LCOV
       run: bash tools/coverage-llvm.sh
