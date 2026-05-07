@@ -1,0 +1,9 @@
+\test_input{
+\mathblock{\mi{x}}
+\mathblock{\mi{x}\mo{+}\mn{1}}
+}
+
+\test_output{
+<math display=block><mi>x</mi></math>
+<math display=block><mi>x</mi><mo>+</mo><mn>1</mn></math>
+}

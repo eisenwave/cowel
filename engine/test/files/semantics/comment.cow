@@ -1,0 +1,9 @@
+\test_input{
+\comment{this is a comment}
+before\comment{inline comment}after
+}
+
+\test_output{
+
+beforeafter
+}

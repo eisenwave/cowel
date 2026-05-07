@@ -1,0 +1,27 @@
+\test_input{
+\hr
+\pre{preformatted}
+\blockquote{quoted}
+\Bquote{block quoted}
+\div{div content}
+\p{paragraph}
+\ol{\li{item}}
+\ul{\li{item}}
+\dl{\dt{term}\dd{desc}}
+\details{\summary{summary}details}
+\noscript{noscript}
+}
+
+\test_output{
+<hr/>
+<pre>preformatted</pre>
+<blockquote><p>quoted</p></blockquote>
+<blockquote><p>block quoted</p></blockquote>
+<div>div content</div>
+<p>paragraph</p>
+<ol><li>item</li></ol>
+<ul><li>item</li></ul>
+<dl><dt>term</dt><dd>desc</dd></dl>
+<details><summary>summary</summary>details</details>
+<noscript>noscript</noscript>
+}

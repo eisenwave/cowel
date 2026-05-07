@@ -1,0 +1,53 @@
+\test_input{
+\ref("//eel.is/c++draft/dcl.spec")
+\ref("https://eel.is/c++draft/dcl.spec")
+\ref("//eel.is/c++draft/dcl.spec#5")
+\ref("//eel.is/c++draft/dcl.spec#.1")
+\ref("//eel.is/c++draft/dcl.spec#sentence-3")
+\ref("//eel.is/c++draft/dcl.spec#example-2")
+\ref("//eel.is/c++draft/dcl.spec#footnote-4")
+\ref("//eel.is/c++draft/dcl.spec#note-1")
+\ref("//eel.is/c++draft/dcl.spec#row-2")
+\ref("//eel.is/c++draft/dcl.spec#:text,here")
+\ref("//eel.is/c++draft/dcl.spec#concept:MyConcept")
+\ref("//eel.is/c++draft/dcl.spec#conceptref:MyConcept")
+\ref("//eel.is/c++draft/dcl.spec#def:my_def")
+\ref("//eel.is/c++draft/dcl.spec#nt:grammar-name")
+\ref("//eel.is/c++draft/dcl.spec#ntref:grammar-name")
+\ref("//eel.is/c++draft/dcl.spec#eq:formula-name")
+\ref("//eel.is/c++draft/dcl.spec#lib:func,other")
+\ref("//eel.is/c++draft/dcl.spec#lib:constructor")
+\ref("//eel.is/c++draft/dcl.spec#lib:constructor_")
+\ref("//eel.is/c++draft/dcl.spec#lib:constructor___")
+\ref("//eel.is/c++draft/dcl.spec#bib:ISO4217")
+\ref("//eel.is/c++draft/dcl.spec#header:vector")
+\ref("//eel.is/c++draft/dcl.spec#headerref:vector")
+\ref("//eel.is/c++draft/dcl.spec#5-note-1")
+}
+
+\test_output{
+<a href=//eel.is/c++draft/dcl.spec>[dcl.spec]</a>
+<a href=https://eel.is/c++draft/dcl.spec>[dcl.spec]</a>
+<a href=//eel.is/c++draft/dcl.spec#5>[dcl.spec] paragraph 5</a>
+<a href=//eel.is/c++draft/dcl.spec#.1>[dcl.spec] bullet 1</a>
+<a href=//eel.is/c++draft/dcl.spec#sentence-3>[dcl.spec] sentence 3</a>
+<a href=//eel.is/c++draft/dcl.spec#example-2>[dcl.spec] example 2</a>
+<a href=//eel.is/c++draft/dcl.spec#footnote-4>[dcl.spec] footnote 4</a>
+<a href=//eel.is/c++draft/dcl.spec#note-1>[dcl.spec] note 1</a>
+<a href=//eel.is/c++draft/dcl.spec#row-2>[dcl.spec] row 2</a>
+<a href=//eel.is/c++draft/dcl.spec#:text,here>[dcl.spec] "text, here"</a>
+<a href=//eel.is/c++draft/dcl.spec#concept:MyConcept>[dcl.spec] concept <tt->MyConcept</tt-></a>
+<a href=//eel.is/c++draft/dcl.spec#conceptref:MyConcept>[dcl.spec] reference to concept <tt->MyConcept</tt-></a>
+<a href=//eel.is/c++draft/dcl.spec#def:my_def>[dcl.spec] definition of "my def"</a>
+<a href=//eel.is/c++draft/dcl.spec#nt:grammar-name>[dcl.spec] <g-term>grammar-name</g-term></a>
+<a href=//eel.is/c++draft/dcl.spec#ntref:grammar-name>[dcl.spec] reference to <g-term>grammar-name</g-term></a>
+<a href=//eel.is/c++draft/dcl.spec#eq:formula-name>[dcl.spec] formula [formula-name]</a>
+<a href=//eel.is/c++draft/dcl.spec#lib:func,other>[dcl.spec] <tt->func</tt->, <tt->other</tt-></a>
+<a href=//eel.is/c++draft/dcl.spec#lib:constructor>[dcl.spec] constructor</a>
+<a href=//eel.is/c++draft/dcl.spec#lib:constructor_>[dcl.spec] constructor (2)</a>
+<a href=//eel.is/c++draft/dcl.spec#lib:constructor___>[dcl.spec] constructor (4)</a>
+<a href=//eel.is/c++draft/dcl.spec#bib:ISO4217>[dcl.spec] bibliography ISO4217</a>
+<a href=//eel.is/c++draft/dcl.spec#header:vector>[dcl.spec] header vector</a>
+<a href=//eel.is/c++draft/dcl.spec#headerref:vector>[dcl.spec] reference to header vector</a>
+<a href=//eel.is/c++draft/dcl.spec#5-note-1>[dcl.spec] paragraph 5, note 1</a>
+}

@@ -1,0 +1,17 @@
+\: \ref without content uses a sans link to the URL, stripping the scheme prefix.
+\test_input{
+\ref("https://example.com")
+\ref("http://example.com/path")
+\ref("//example.com")
+
+\: \ref with content uses the content as the link text.
+\ref("https://example.com"){Example Site}
+}
+
+\test_output{
+<a href=https://example.com class=sans>example.com</a>
+<a href=http://example.com/path class=sans>example.com/path</a>
+<a href=//example.com class=sans>//example.com</a>
+
+<a href=https://example.com>Example Site</a>
+}

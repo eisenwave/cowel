@@ -1,0 +1,11 @@
+\test_input{
+\h5{Heading Five}
+\h6{Heading Six}
+\h6(listed=false){No Number}
+}
+
+\test_output{
+<h5 id=heading-five><a class=para href=#heading-five></a>0.0.0.1. Heading Five</h5>
+<h6 id=heading-six><a class=para href=#heading-six></a>0.0.0.1.1. Heading Six</h6>
+<h6 id=no-number><a class=para href=#no-number></a>No Number</h6>
+}

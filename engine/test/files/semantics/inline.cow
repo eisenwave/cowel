@@ -1,0 +1,55 @@
+\test_input{
+\i{italic}
+\u{underline}
+\em{emphasis}
+\strong{strong}
+\s{strikethrough}
+\mark{marked}
+\small{small}
+\cite{citation}
+\q{quotation}
+\samp{sample}
+\kbd{keyboard}
+\var{variable}
+\sub{subscript}
+\sup{superscript}
+\span{span content}
+\ins{inserted}
+\del{deleted}
+\gterm{grammar term}
+\tt{typewriter}
+\sans{sans-serif}
+\serif{serif}
+\nobr{no break}
+\o{oblique}
+\br
+\wbr
+}
+
+\test_output{
+<i>italic</i>
+<u>underline</u>
+<em>emphasis</em>
+<strong>strong</strong>
+<s>strikethrough</s>
+<mark>marked</mark>
+<small>small</small>
+<cite>citation</cite>
+<q>quotation</q>
+<samp>sample</samp>
+<kbd>keyboard</kbd>
+<var>variable</var>
+<sub>subscript</sub>
+<sup>superscript</sup>
+<span>span content</span>
+<ins>inserted</ins>
+<del>deleted</del>
+<g-term>grammar term</g-term>
+<tt->typewriter</tt->
+<f-sans>sans-serif</f-sans>
+<f-serif>serif</f-serif>
+<span class=word>no break</span>
+<span class=oblique>oblique</span>
+<br/>
+<wbr/>
+}

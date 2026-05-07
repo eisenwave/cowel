@@ -1,0 +1,8 @@
+\test_input{
+\cowel_include(path="snippet.cowel")
+}
+
+\test_output{
+included <b>text</b>
+
+}
