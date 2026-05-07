@@ -1,0 +1,11 @@
+\test_input{
+\test_expect_error("type.mismatch"){\cowel_str_contains(text="hello", "world")}
+\test_expect_error("type.mismatch"){\cowel_str_contains(text="hello", text="world")}
+\test_expect_error("type.mismatch"){\cowel_str_length(nosuchparam="hello")}
+}
+
+\test_output{
+<error->\cowel_str_contains(text="hello", "world")</error->
+<error->\cowel_str_contains(text="hello", text="world")</error->
+<error->\cowel_str_length(nosuchparam="hello")</error->
+}
