@@ -55,14 +55,17 @@ jobs:
 
   native:
     needs: prepare-boost
-    timeout-minutes: 15
+    timeout-minutes: 20
     runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       fail-fast: true
       matrix:
         os: [ubuntu-latest]
         build_type: [Debug]
-        toolchain: [gcc, clang-libstdc++, clang-libc++]
+        toolchain: [gcc, clang-libstdc++, clang-libc++, clang-coverage]
         include:
           - toolchain: gcc
             compiler: gcc
@@ -70,18 +73,32 @@ jobs:
             cpp_compiler: g++-13
             stdlib: libstdc++
             stdlib_package: libstdc++-13-dev
+            extra_packages: ""
+            run_coverage: false
           - toolchain: clang-libstdc++
             compiler: clang
             c_compiler: clang-20
             cpp_compiler: clang++-20
             stdlib: libstdc++
             stdlib_package: libstdc++-13-dev
+            extra_packages: ""
+            run_coverage: false
           - toolchain: clang-libc++
             compiler: clang
             c_compiler: clang-20
             cpp_compiler: clang++-20
             stdlib: libc++
             stdlib_package: libc++-20-dev
+            extra_packages: ""
+            run_coverage: false
+          - toolchain: clang-coverage
+            compiler: clang
+            c_compiler: clang-20
+            cpp_compiler: clang++-20
+            stdlib: libstdc++
+            stdlib_package: libstdc++-13-dev
+            extra_packages: llvm-20
+            run_coverage: true
 
     steps:
     - uses: actions/checkout@v4
@@ -92,14 +109,19 @@ jobs:
       run: |
         printf "Workspace:   ${{ github.workspace }}\n"
         printf "Running on:  ${{ runner.os }}\n"
+        printf "Mode:        %s\n" "${{ matrix.toolchain }}"
         printf "Compilers:   ${{ matrix.compiler }} / ${{ matrix.c_compiler }} / ${{ matrix.cpp_compiler }}\n"
-        printf "Library:     ${{ matrix.stdlib }} / ${{ matrix.stdlib_package }}"
+        printf "Library:     ${{ matrix.stdlib }} / ${{ matrix.stdlib_package }}\n"
+        printf "Extra deps:  %s\n" "${{ matrix.extra_packages }}"
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
       run: |
         missing_packages=()
-        for package in "${{ matrix.c_compiler }}" "${{ matrix.stdlib_package }}"; do
+        for package in "${{ matrix.c_compiler }}" "${{ matrix.stdlib_package }}" "${{ matrix.extra_packages }}"; do
+          if [[ -z "$package" ]]; then
+            continue
+          fi
           if ! dpkg -s "$package" >/dev/null 2>&1; then
             missing_packages+=("$package")
           fi
@@ -142,8 +164,32 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "workspace_forward=$(echo '${{ github.workspace }}' | sed 's|\\|/|g')" >> "$GITHUB_OUTPUT"
 
+    - name: Generate LLVM LCOV
+      if: matrix.run_coverage
+      run: bash tools/coverage-llvm.sh
+
+    - name: Upload Codecov report
+      if: matrix.run_coverage
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./build/clang20-coverage/coverage/lcov.info
+        flags: native
+        name: native-llvm-coverage
+        use_oidc: true
+        fail_ci_if_error: true
+
+    - name: Upload coverage artifacts
+      if: always() && matrix.run_coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: llvm-coverage-${{ github.sha }}
+        path: |
+          build/clang20-coverage/coverage/lcov.info
+          build/clang20-coverage/coverage/coverage.profdata
+        retention-days: 30
+
     - name: Configure CMake (Linux/macOS)
-      if: runner.os != 'Windows'
+      if: runner.os != 'Windows' && !matrix.run_coverage
       run: |
         COMPILER_FLAGS=""
         LINKER_FLAGS=""
@@ -163,12 +209,14 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build
+      if: ${{ !matrix.run_coverage }}
       run: >
         cmake --build ${{ steps.strings.outputs.build-output-dir }}
         --config ${{ matrix.build_type }}
         --verbose
 
     - name: Test
+      if: ${{ !matrix.run_coverage }}
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: ctest --output-on-failure --build-config ${{ matrix.build_type }}
       timeout-minutes: 5
