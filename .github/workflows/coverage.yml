@@ -77,7 +77,7 @@ jobs:
           fi
         done
 
-        if ((${#missing_packages[@]} > 0)); then
+        if [[ ${#missing_packages[@]} -gt 0 ]]; then
           sudo apt update
           sudo apt install -y "${missing_packages[@]}"
         else
@@ -97,6 +97,14 @@ jobs:
       with:
         name: boost-source-${{ github.run_id }}
         path: ${{ github.workspace }}
+
+    - name: Normalize Boost artifact path (cache miss)
+      if: steps.boost-cache.outputs.cache-hit != 'true'
+      run: |
+        if [[ -d "${{ github.workspace }}/boost" && ! -d "${{ github.workspace }}/third_party/boost" ]]; then
+          mkdir -p "${{ github.workspace }}/third_party"
+          mv "${{ github.workspace }}/boost" "${{ github.workspace }}/third_party/boost"
+        fi
 
     - name: Generate LLVM LCOV
       run: bash tools/coverage-llvm.sh
