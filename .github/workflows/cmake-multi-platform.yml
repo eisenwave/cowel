@@ -113,6 +113,7 @@ jobs:
         fi
 
     - name: Restore Boost cache
+      if: runner.os == 'Linux'
       id: boost-cache
       uses: actions/cache/restore@v4
       with:
@@ -120,7 +121,7 @@ jobs:
         key: ${{ runner.os }}-boost-1.90.0-${{ hashFiles('tools/boost-install.sh') }}
 
     - name: Download Boost artifact (cache miss)
-      if: steps.boost-cache.outputs.cache-hit != 'true'
+      if: runner.os == 'Linux' && steps.boost-cache.outputs.cache-hit != 'true'
       uses: actions/download-artifact@v4
       with:
         name: boost-source-${{ github.run_id }}
