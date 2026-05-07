@@ -124,22 +124,6 @@ constexpr bool cst_instruction_kind_has_operand(CST_Instruction_Kind type)
 }
 
 [[nodiscard]]
-constexpr bool cst_instruction_kind_is_push_argument(CST_Instruction_Kind type)
-{
-    return type == CST_Instruction_Kind::push_named_member
-        || type == CST_Instruction_Kind::push_positional_member
-        || type == CST_Instruction_Kind::push_ellipsis_argument;
-}
-
-[[nodiscard]]
-constexpr bool cst_instruction_kind_is_pop_argument(CST_Instruction_Kind type)
-{
-    return type == CST_Instruction_Kind::pop_named_member
-        || type == CST_Instruction_Kind::pop_positional_member
-        || type == CST_Instruction_Kind::pop_ellipsis_argument;
-}
-
-[[nodiscard]]
 std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type);
 
 struct CST_Instruction {
