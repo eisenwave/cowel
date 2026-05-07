@@ -118,10 +118,11 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         missing_packages=()
-        for package in "${{ matrix.c_compiler }}" "${{ matrix.stdlib_package }}" "${{ matrix.extra_packages }}"; do
-          if [[ -z "$package" ]]; then
-            continue
-          fi
+        required_packages=("${{ matrix.c_compiler }}" "${{ matrix.stdlib_package }}")
+        if [[ -n "${{ matrix.extra_packages }}" ]]; then
+          required_packages+=("${{ matrix.extra_packages }}")
+        fi
+        for package in "${required_packages[@]}"; do
           if ! dpkg -s "$package" >/dev/null 2>&1; then
             missing_packages+=("$package")
           fi
@@ -164,7 +165,7 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "workspace_forward=$(echo '${{ github.workspace }}' | sed 's|\\|/|g')" >> "$GITHUB_OUTPUT"
 
-    - name: Generate LLVM LCOV
+    - name: Generate LLVM LCOV (self-contained)
       if: matrix.run_coverage
       run: bash tools/coverage-llvm.sh
 
@@ -189,7 +190,7 @@ jobs:
         retention-days: 30
 
     - name: Configure CMake (Linux/macOS)
-      if: runner.os != 'Windows' && !matrix.run_coverage
+      if: runner.os != 'Windows' && matrix.run_coverage == false
       run: |
         COMPILER_FLAGS=""
         LINKER_FLAGS=""
@@ -209,14 +210,14 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build
-      if: ${{ !matrix.run_coverage }}
+      if: matrix.run_coverage == false
       run: >
         cmake --build ${{ steps.strings.outputs.build-output-dir }}
         --config ${{ matrix.build_type }}
         --verbose
 
     - name: Test
-      if: ${{ !matrix.run_coverage }}
+      if: matrix.run_coverage == false
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: ctest --output-on-failure --build-config ${{ matrix.build_type }}
       timeout-minutes: 5
