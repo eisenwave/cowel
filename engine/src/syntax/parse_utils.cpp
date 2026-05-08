@@ -1,10 +1,14 @@
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <string_view>
 
-#include "cowel/fwd.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
+#include "cowel/util/code_point_names.hpp"
+#include "cowel/util/from_chars.hpp"
+
+#include "cowel/fwd.hpp"
 
 #include "cowel/syntax/parse_utils.hpp"
 
@@ -80,6 +84,45 @@ std::size_t match_digits(std::u8string_view str, int base)
 
     // std::min covers the case of std::u8string_view::npos
     return std::min(str.find_first_not_of(digits), str.size());
+}
+
+Result<char32_t, Expand_Escape_Error_Code> unsafe_expand_escape(const std::u8string_view escape)
+{
+    COWEL_ASSERT(!escape.empty());
+    COWEL_DEBUG_ASSERT(is_cowel_escapeable(escape[0]));
+    COWEL_DEBUG_ASSERT(escape[0] != u8'\\' || escape == u8"\\");
+
+    switch (escape[0]) {
+    case u8'\r':
+    case u8'\n': {
+        return Expand_Escape_Error_Code::empty;
+    }
+    case u8'+': {
+        const std::u8string_view digits = escape.substr(1);
+        std::uint32_t parsed = 0;
+        const auto [ptr, ec] = from_characters(digits, parsed, 16);
+        COWEL_ASSERT(ec == std::errc {});
+        COWEL_ASSERT(ptr == as_string_view(digits).data() + digits.size());
+        const char32_t code_point = parsed;
+        if (!is_scalar_value(char32_t(code_point))) {
+            return Expand_Escape_Error_Code::nonscalar;
+        }
+        return parsed;
+    }
+    case u8'\'': {
+        const std::u8string_view name = escape.substr(1, escape.length() - 2);
+        const char32_t code_point = code_point_by_name(name);
+        if (code_point == char32_t(-1)) {
+            return Expand_Escape_Error_Code::bad_name;
+        }
+        // Nonscalars don't have code point names.
+        COWEL_DEBUG_ASSERT(is_scalar_value(code_point));
+        return code_point;
+    }
+    default: break;
+    }
+    COWEL_DEBUG_ASSERT(is_ascii(escape[0]));
+    return char32_t(escape[0]);
 }
 
 } // namespace cowel

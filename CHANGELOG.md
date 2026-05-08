@@ -1,6 +1,6 @@
 # Changelog
 
-## **[v0.9.0](https://github.com/eisenwave/cowel/releases/tag/v0.9.0)** (2026-??-??)
+## **[v0.9.0](https://github.com/eisenwave/cowel/releases/tag/v0.9.0)** (2026-05-??)
 
 - change the type of `(X)` in expression to be that of `x` (#259):
   - add *parenthesized-expression* as a construct
@@ -21,13 +21,17 @@
   - `&&` logical AND
   - `||` logical OR
 - add *expression-splice*: `\(...)` (#276)
+- add named character escapes: `\'DIGIT ZERO'` (#180)
 - add numeric character escapes: `\+0030` (#181)
 - add nested diagnostic locations in node CLI (#51)
 - fix lexer crash on certain ASCII control characters (#294)
 - fix duplicate output for `--no-color` option
 - fix performance and memory leak issues related to `regex`
+- fix various code block syntax highlighting issues by updating µlight
+- fix various VSCode plugin highlighting issues (#292)
 - also add internal `__typeof` directive and test types of directives
 - also fix typos and grammatical errors in documentation (#293)
+- also greatly improve testing infrastructure and code coverage
 
 **Full Changelog**:
 [`v0.8.1...main`](https://github.com/eisenwave/cowel/compare/v0.8.1...main)

@@ -120,7 +120,7 @@ public:
             && (kind == ast::Primary_Kind::text || kind == ast::Primary_Kind::escape);
         if (attempt_diagnose_text) {
             const bool is_non_blank_escape
-                = kind == ast::Primary_Kind::escape && !expand_escape(node).empty();
+                = kind == ast::Primary_Kind::escape && !node.get_escaped_code_units().empty();
             const bool is_non_blank_text = kind == ast::Primary_Kind::text
                 && !std::ranges::all_of(node.get_source(),
                                         [](const char8_t c) { return is_ascii_blank(c); });

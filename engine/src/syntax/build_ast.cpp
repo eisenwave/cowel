@@ -10,8 +10,10 @@
 #include <vector>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/chars.hpp"
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/source_position.hpp"
+#include "cowel/util/unicode.hpp"
 
 #include "cowel/fwd.hpp"
 #include "cowel/string_kind.hpp"
@@ -49,19 +51,42 @@ Primary Primary::basic(Primary_Kind kind, File_Source_Span source_span, std::u8s
                          Parsed_Float { value, Float_Literal_Status::ok } };
     }
 
-    case comment:
-    case escape: {
+    case comment: {
         const std::size_t length = source.ends_with(u8"\r\n") ? 2uz
             : source.ends_with(u8'\n')                        ? 1uz
                                                               : 0uz;
         return Primary { kind, source_span, source, length };
     }
 
+    case escape:
     case quoted_string:
     case block:
     case group: break;
     }
     COWEL_ASSERT_UNREACHABLE(u8"Kind is not basic basic.");
+}
+
+Primary Primary::escape(
+    const File_Source_Span source_span,
+    const std::u8string_view source,
+    const char32_t code_point
+)
+{
+    COWEL_ASSERT(!source.empty());
+    COWEL_ASSERT(source.starts_with(u8'\\'));
+
+    if (code_point == char32_t(-1)) {
+        return Primary { Primary_Kind::escape, source_span, source, Fixed_String8<4> {} };
+    }
+
+    COWEL_ASSERT(is_scalar_value(code_point));
+    const auto [code_units, length] = utf8::encode8_unchecked(code_point);
+    return Primary {
+        Primary_Kind::escape,
+        source_span,
+        source,
+        Fixed_String8<4> { code_units, std::size_t(length) },
+    };
 }
 
 Primary Primary::integer(const File_Source_Span source_span, const std::u8string_view source)
@@ -591,8 +616,13 @@ private:
             = instruction_type_primary_kind(instruction.kind);
         COWEL_ASSERT(kind);
 
-        const File_Source_Span span { peek_token().location, m_file };
-        auto result = ast::Primary::basic(*kind, span, extract(span));
+        const Token token = peek_token();
+        const File_Source_Span span { token.location, m_file };
+        const std::u8string_view source = extract(span);
+
+        auto result = *kind == ast::Primary_Kind::escape
+            ? ast::Primary::escape(span, source, token.code_point)
+            : ast::Primary::basic(*kind, span, source);
         COWEL_DEBUG_ASSERT(cst_instruction_kind_advances(instruction.kind));
         advance_by_tokens(1);
         return result;

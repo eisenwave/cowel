@@ -1,0 +1,13 @@
+\test_input{
+\'DIGIT ZERO'
+\'LATIN SMALL LETTER A'ffff
+\'PILCROW SIGN'
+\'LATIN CAPITAL LETTER GHA'
+}
+
+\test_output{
+0
+affff
+¶
+Ƣ
+}

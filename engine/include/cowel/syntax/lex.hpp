@@ -67,7 +67,14 @@ enum struct Token_Kind : Default_Underlying {
 };
 
 struct Token {
+    static constexpr auto no_code_point = char32_t(-1);
+    /// @brief The kind of token.
     Token_Kind kind;
+    /// @brief For `ESCAPE-TOKEN`, the encoded code point,
+    /// or `no_code_point` to indicate that there is no code point
+    /// (in the case of whitespace escapes).
+    char32_t code_point;
+    /// @brief The location of the token in the lexed source.
     Source_Span location;
 };
 

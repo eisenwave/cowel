@@ -1737,6 +1737,34 @@ TEST(Parse_And_Build, escape_numeric)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"escape_numeric.cow");
 }
 
+TEST(Parse_And_Build, escape_named)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::escape(u8"\\'DIGIT ZERO'"),
+            Node::text(u8"\n"),
+            Node::escape(u8"\\'LATIN SMALL LETTER A'"),
+            Node::text(u8"\n"),
+            Node::directive(
+                u8"d",
+                Node::group(
+                    {
+                        Node::positional(
+                            { Node::quoted_string({ Node::escape(u8"\\'DIGIT ZERO'") }) }
+                        ),
+                    }
+                ),
+                Node::block({ Node::escape(u8"\\'DIGIT ZERO'") })
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"escape_named.cow");
+}
+
 TEST(Parse_And_Build, arguments_balanced_braces)
 {
     static std::pmr::monotonic_buffer_resource memory;

@@ -1,7 +1,4 @@
 ERROR lex_error.cow:1:1: Backslash at the end of the file is not valid. [parse]
      1 | \
        | ^
-ERROR lex_error.cow:1:1: Expected comment or escape sequence, but got '\' following a backslash. [parse]
-     1 | \
-       | ^
 FATAL lex_error.cow: Generation exited with status 2 (error). [status.error]

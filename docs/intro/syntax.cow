@@ -5,11 +5,28 @@ COWEL has a minimalistic but powerful syntax,
 built on top of only a few \dfn{markup elements}:
 \ul{
   \li{\cowdoc_c{Text.}}
-  \li{Escape sequences, such as \cowdoc_c{\\\U(0x7B)}, \cowdoc_c{\\\U(0x7D)}, \cowdoc_c{\\\\}, \cowdoc_c{\\+00A0}, etc.}
-  \li{\cowdoc_c{\\: line comments}}
-  \li{\cowdoc_c{\\* block comments *\\}}
-  \li{\cowdoc_c{\\directive_splices(positional, args, named_args = 0){and content}}}
-  \li{\cowdoc_c{\\(expression-splice)}}
+  \li{
+    Escape sequences, such as
+    \cowdoc_c{\\\U(0x7B)},
+    \cowdoc_c{\\\U(0x7D)},
+    \cowdoc_c{\\\\},
+    \cowdoc_c{\\+00A0},
+    \cowdoc_c{\\'DIGIT ZERO'},
+    etc.
+  }
+  \li{
+    \cowdoc_c{\\: line comments}
+  }
+  \li{
+    \cowdoc_c{\\* block comments *\\}
+  }
+  \li{
+    \cowdoc_c{\\directive_splices(positional, args, named_args = 0){and content}}
+  }
+  \li{
+    Expression splices, such as
+    \cowdoc_c{\\(1 + 1)}
+  }
 }
 
 These are what a user writes most of the time.
@@ -184,6 +201,18 @@ The meaning of the escape sequences is described in the table below.
   }
   \tr{
     \td{
+      \cowdoc_c{\\'DIGIT ZERO'},
+      \cowdoc_c{\\'NBSP'},
+      etc.
+    }
+    \td{
+      Expands to the Unicode scalar value
+      identified by the given Unicode character name or one of its aliases.
+      See also \ref("#dir-cowel_char_by_name").
+    }
+  }
+  \tr{
+    \td{
       \nobr{\cowdoc_esc{} U+000A LINE FEED},
       \nobr{\cowdoc_esc{} U+000D CARRIAGE RETURN},
       \nobr{\cowdoc_esc{} U+000A U+000D (CRLF escape)}
@@ -201,17 +230,22 @@ ESCAPE-TOKEN
   = "\\", ESCAPABLE-CHAR - "+"
   | "\\+", ? LOWER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
   | "\\+", ? UPPER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
-  | "\\", LINE-TERMINATOR;
+  | "\\", LINE-TERMINATOR
+  | "\\'", CHARACTER-NAME-CHAR, { CHARACTER-NAME-CHAR }, "'";
 ESCAPABLE-CHAR
   = "{" |  "}" | "+" | '"' | "\\";
 LOWER-HEX-CHAR
   = "a" | "b" | "c" | "d" | "e" | "f";
 UPPER-HEX-CHAR
   = "A" | "B" | "C" | "D" | "E" | "F";
+CHARACTER-NAME-CHAR
+  = UPPER-LETTER | DIGIT | " " | "-";
 LOWER-HEX-DIGIT
   = DIGIT | LOWER-HEX-CHAR;
 UPPER-HEX-DIGIT
   = DIGIT | UPPER-HEX-CHAR;
+UPPER-LETTER
+  = ? upper-case ASCII alphabetic characters ?;
 LINE-TERMINATOR
   = LF
   | CR, LF
@@ -229,6 +263,14 @@ They are most convenient when a fixed character should appear directly in markup
 By contrast,
 \cowdoc_dir{cowel_char_by_num}
 is a directive that computes a character from an integer expression.
+
+Named character escapes are closely related to
+\ref("#dir-cowel_char_by_name").
+They are most convenient when a character with a well-known Unicode name
+should appear directly in markup.
+By contrast,
+\cowdoc_dir{cowel_char_by_name}
+is a directive that computes a character from a string expression.
 
 The purpose of the newline escapes is to remove unwanted newlines
 and to join long content that spans multiple lines,

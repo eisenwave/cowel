@@ -1,0 +1,54 @@
+{
+  "description": "Named escape sequences are highlighted like regular escapes",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "DIGIT ZERO named escape is highlighted"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "LATIN SMALL LETTER A named escape is highlighted"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "REGIONAL INDICATOR named escape is highlighted"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "CJK compatibility ideograph named escape is highlighted"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "constant.character.escape.cowel",
+      "description": "ARABIC-INDIC named escape is highlighted"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 4,
+      "expected": "constant.character.escape.cowel",
+      "description": "Named escape in directive argument string is highlighted"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 3,
+      "expected": "constant.character.escape.cowel",
+      "description": "Named escape in directive content is highlighted"
+    }
+  ]
+}

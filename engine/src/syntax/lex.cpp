@@ -8,12 +8,12 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/chars.hpp"
-#include "cowel/util/from_chars.hpp"
 
 #include "cowel/diagnostic.hpp"
 #include "cowel/fwd.hpp"
 
 #include "cowel/syntax/lex.hpp"
+#include "cowel/syntax/parse_utils.hpp"
 
 using namespace std::string_view_literals;
 
@@ -67,21 +67,6 @@ std::size_t match_reserved_number(const std::u8string_view str)
     return length;
 }
 
-[[nodiscard]]
-bool numeric_escape_is_nonscalar(const std::u8string_view escape)
-{
-    if (!escape.starts_with(u8"\\+") || (escape.length() != 6 && escape.length() != 10)) {
-        return false;
-    }
-
-    std::uint32_t parsed = 0;
-    const std::u8string_view digits = escape.substr(2);
-    const auto [ptr, ec] = from_characters(digits, parsed, 16);
-    COWEL_DEBUG_ASSERT(ec == std::errc {});
-    COWEL_DEBUG_ASSERT(ptr == as_string_view(digits).data() + digits.size());
-    return !is_scalar_value(char32_t(parsed));
-}
-
 enum struct Content_Context : Default_Underlying {
     document,
     block,
@@ -113,7 +98,11 @@ public:
     }
 
 private:
-    void emit(const Token_Kind kind, const std::size_t length)
+    void emit(
+        const Token_Kind kind,
+        const std::size_t length,
+        char32_t code_point = Token::no_code_point
+    )
     {
         if constexpr (is_debug_build) {
             COWEL_ASSERT(length == std::uint32_t(length));
@@ -123,7 +112,7 @@ private:
             }
             COWEL_ASSERT(m_pos.begin + length <= m_source.length());
         }
-        m_out.push_back({ kind, Source_Span { m_pos, length } });
+        m_out.push_back({ kind, code_point, Source_Span { m_pos, length } });
     }
 
     void error(const Source_Span& pos, Char_Sequence8 message)
@@ -266,10 +255,11 @@ private:
         COWEL_ASSERT(escape);
 
         if (escape.length == 1) {
+            COWEL_DEBUG_ASSERT(escape.is_reserved);
             error(Source_Span { m_pos, 1 }, u8"Backslash at the end of the file is not valid."sv);
+            emit(Token_Kind::reserved_escape, escape.length);
         }
-
-        if (escape.is_reserved) {
+        else if (escape.is_reserved) {
             error(
                 Source_Span { m_pos, escape.length },
                 joined_char_sequence(
@@ -280,16 +270,37 @@ private:
                     }
                 )
             );
+            emit(Token_Kind::reserved_escape, escape.length);
         }
-        else if (numeric_escape_is_nonscalar(remainder.substr(0, escape.length))) {
-            error(
-                Source_Span { m_pos, escape.length },
-                u8"Numeric escape does not denote a Unicode scalar value."sv
-            );
+        else {
+            const Result<char32_t, Expand_Escape_Error_Code> code_point
+                = unsafe_expand_escape(remainder.substr(1, escape.length - 1));
+            if (code_point) {
+                emit(Token_Kind::escape, escape.length, *code_point);
+            }
+            else {
+                switch (code_point.error()) {
+                case Expand_Escape_Error_Code::empty: {
+                    break;
+                }
+                case Expand_Escape_Error_Code::nonscalar: {
+                    error(
+                        Source_Span { m_pos, escape.length },
+                        u8"Numeric escape does not denote a Unicode scalar value."sv
+                    );
+                    break;
+                }
+                case Expand_Escape_Error_Code::bad_name: {
+                    error(
+                        Source_Span { m_pos, escape.length },
+                        u8"Named escape does not refer to a known Unicode character."sv
+                    );
+                    break;
+                }
+                }
+                emit(Token_Kind::escape, escape.length);
+            }
         }
-
-        const auto kind = escape.is_reserved ? Token_Kind::reserved_escape : Token_Kind::escape;
-        emit(kind, escape.length);
         advance_by(escape.length);
     }
 

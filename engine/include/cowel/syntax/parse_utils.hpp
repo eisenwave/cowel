@@ -4,6 +4,10 @@
 #include <cstddef>
 #include <string_view>
 
+#include "cowel/util/result.hpp"
+
+#include "cowel/fwd.hpp"
+
 namespace cowel {
 
 struct Blank_Line {
@@ -53,6 +57,26 @@ Blank_Line find_blank_line_sequence(
 /// @return The number of digits that belong to a numeric literal of the given base.
 [[nodiscard]]
 std::size_t match_digits(std::u8string_view str, int base);
+
+enum struct Expand_Escape_Error_Code : Default_Underlying {
+    /// @brief The escape expands to an empty string instead of any code points.
+    empty,
+    /// @brief The escape expands to a code point that is not a scalar value.
+    /// For example, `\+FFFFFFFF` and any other numeric escape outside the valid ranges
+    /// specified by `is_scalar_value`.
+    nonscalar,
+    /// @brief The named escape has a name that does not denote any code point.
+    /// For example, `\'XYZ'`.
+    bad_name,
+};
+
+/// @brief Returns the code point that `escape` corresponds to.
+/// @param escape The escaped character(s),
+/// not including the initial `\`.
+/// Together with a leading `\`,
+/// these characters shall form a valid `ESCAPE-TOKEN`.
+[[nodiscard]]
+Result<char32_t, Expand_Escape_Error_Code> unsafe_expand_escape(std::u8string_view escape);
 
 } // namespace cowel
 

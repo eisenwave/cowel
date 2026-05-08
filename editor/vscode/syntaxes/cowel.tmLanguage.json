@@ -52,6 +52,14 @@
           "match": "\\\\[+](?:[0-9a-f]{8}|[0-9A-F]{8}|[0-9a-f]{4}|[0-9A-F]{4})"
         },
         {
+          "name": "constant.character.escape.cowel",
+          "match": "\\\\'[A-Z0-9](?:[A-Z0-9 -]*[A-Z0-9])?'"
+        },
+        {
+          "name": "invalid.illegal.escape.cowel",
+          "match": "\\\\'(?:[^'\\r\\n]*'?)"
+        },
+        {
           "name": "invalid.illegal.escape.cowel",
           "match": "\\\\[^{}(\"\\\\a-zA-Z_*:\\r\\n]"
         }
