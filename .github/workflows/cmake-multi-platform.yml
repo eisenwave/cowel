@@ -233,12 +233,31 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Restore Emscripten cache
+      id: emsdk-cache
+      uses: actions/cache/restore@v4
+      with:
+        # Cache the full emsdk directory, which holds the installed toolchain,
+        # emsdk_env.sh, and all activation state needed by later steps.
+        # The key includes the OS and a hash of this workflow file so the cache
+        # is invalidated whenever the Emscripten install command or version changes.
+        path: ${{ github.workspace }}/emsdk
+        key: ${{ runner.os }}-emsdk-latest-${{ hashFiles('.github/workflows/cmake-multi-platform.yml') }}
+
     - name: Install emscripten
+      if: steps.emsdk-cache.outputs.cache-hit != 'true'
       run: |
         git clone https://github.com/emscripten-core/emsdk.git "${{ github.workspace }}/emsdk"
         cd "${{ github.workspace }}/emsdk"
         ./emsdk install latest
         ./emsdk activate latest
+
+    - name: Save Emscripten cache
+      if: steps.emsdk-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ github.workspace }}/emsdk
+        key: ${{ runner.os }}-emsdk-latest-${{ hashFiles('.github/workflows/cmake-multi-platform.yml') }}
 
     - name: Install dependencies
       run: |
