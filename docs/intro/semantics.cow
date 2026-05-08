@@ -50,7 +50,7 @@ They cannot be broken down any further, although some basic types
 Canonicalization has no effect for basic types;
 they are always in their canonical form.
 
-\h4(id="type-any"){\cowdoc_type{any} \N{EM DASH} Top type}
+\h4(id="type-any"){\cowdoc_type{any} \'EM DASH' Top type}
 
 \cowdoc_type{any} is the root of the type hierarchy,
 i.e. every other type is a subtype of \cowdoc_type{any}.
@@ -59,21 +59,21 @@ This is also known as a "top type".
 \cowdoc_type{any} may be used as a type for parameters and variables,
 but there are no values of type \cowdoc_type{any}.
 
-\h4(id="type-nothing"){\cowdoc_type{nothing} \N{EM DASH} Bottom type}
+\h4(id="type-nothing"){\cowdoc_type{nothing} \'EM DASH' Bottom type}
 
 \cowdoc_type{nothing} is a type of which there are no values.
 This is also known as a "bottom type".
 
 It is the type of expressions that terminate, i.e. don't return.
 
-\h4(id="type-unit"){\cowdoc_type{unit} \N{EM DASH} Unit type}
+\h4(id="type-unit"){\cowdoc_type{unit} \'EM DASH' Unit type}
 
 \cowdoc_type{unit} is a unit type, i.e. a type with only one possible value
 also spelled \cowdoc_type{unit}.
 
 This is used as a result for directives that don't produce any other result.
 
-\h4(id="type-null"){\cowdoc_type{null} \N{EM DASH} Null type}
+\h4(id="type-null"){\cowdoc_type{null} \'EM DASH' Null type}
 
 \cowdoc_type{null} is a unit type with only one possible value
 also spelled \cowdoc_type{null}.
@@ -82,12 +82,12 @@ also spelled \cowdoc_type{null}.
 Unlike \cowdoc_type{unit}, \cowdoc_type{null} is used to indicate errors.
 }
 
-\h4(id="type-bool"){\cowdoc_type{bool} \N{EM DASH} Boolean type}
+\h4(id="type-bool"){\cowdoc_type{bool} \'EM DASH' Boolean type}
 
 \cowdoc_type{bool} is a boolean type.
 It can represent two values: \cowdoc_type{true} and \cowdoc_type{false}.
 
-\h4(id="type-int"){\cowdoc_type{int} \N{EM DASH} Integer}
+\h4(id="type-int"){\cowdoc_type{int} \'EM DASH' Integer}
 
 \cowdoc_type{int} is an integer.
 It can represent any integer value (although in practice, there is an implementation limit);
@@ -98,7 +98,7 @@ An \cowdoc_type{int} can be obtained using integer literals
 such as \cowdoc_c{123} or \cowdoc_c{0xff}.
 }
 
-\h4(id="type-float"){\cowdoc_type{float} \N{EM DASH} 64-bit floating-point number}
+\h4(id="type-float"){\cowdoc_type{float} \'EM DASH' 64-bit floating-point number}
 
 \cowdoc_type{float} is a double-precision floating-point number.
 That is, a number in \em{binary64} format, as specified in IEEE-754.
@@ -108,7 +108,7 @@ An \cowdoc_type{float} can be obtained using \gterm{float-literal}s
 such as \cowdoc_c{1.0} or \cowdoc_c{10e+5}.
 }
 
-\h4(id="type-str"){\cowdoc_type{str} \N{EM DASH} String}
+\h4(id="type-str"){\cowdoc_type{str} \'EM DASH' String}
 
 \cowdoc_type{str} is a UTF-8 encoded string.
 
@@ -117,7 +117,7 @@ A value of type \cowdoc_type{str} can be obtained using string literals
 such as \cowdoc_c{"abc"}.
 }
 
-\h4(id="type-regex"){\cowdoc_type{regex} \N{EM DASH} Regular expression}
+\h4(id="type-regex"){\cowdoc_type{regex} \'EM DASH' Regular expression}
 
 \cowdoc_type{regex} is a regular expression.
 
@@ -125,7 +125,7 @@ such as \cowdoc_c{"abc"}.
 A value of type \cowdoc_type{regex} can be obtained using \ref("#dir-cowel_regex").
 }
 
-\h4(id="type-block"){\cowdoc_type{block} \N{EM DASH} Block}
+\h4(id="type-block"){\cowdoc_type{block} \'EM DASH' Block}
 
 \cowdoc_type{block} stores markup elements.
 It is very similar to \cowdoc_type{str},
@@ -140,7 +140,7 @@ such as \cowdoc_c{{abc}}.
 
 Compound types are formed from other types, possibly from other compound types.
 
-\h4(id="type-group"){\cowdoc_type{group} \N{EM DASH} Product type}
+\h4(id="type-group"){\cowdoc_type{group} \'EM DASH' Product type}
 
 \cowdoc_type{group} combines other types,
 called its \dfn{members}, in sequence.
@@ -164,7 +164,7 @@ Canonicalization of a \cowdoc_type{group} \math{\mi{G}} is performed as follows:
   }
 }
 
-\h4(id="type-named"){\cowdoc_type{named} \N{EM DASH} Named group member}
+\h4(id="type-named"){\cowdoc_type{named} \'EM DASH' Named group member}
 
 \cowdoc_type{named} is a compound type only nestable
 in a \cowdoc_type{group} or \cowdoc_type{pack}.
@@ -185,7 +185,7 @@ Canonicalization of a \cowdoc_type{named} \math{\mi{N}} is performed as follows:
   }
 }
 
-\h4(id="type-pack"){\cowdoc_type{pack} \N{EM DASH} Variadic pack of group members}
+\h4(id="type-pack"){\cowdoc_type{pack} \'EM DASH' Variadic pack of group members}
 
 \cowdoc_type{pack} is a compound type only nestable in a \cowdoc_type{group}.
 It indicates a variadic repetition of the same type.
