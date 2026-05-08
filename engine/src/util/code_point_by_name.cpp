@@ -540,10 +540,8 @@ std::optional<LooseMatchingResult> nameToCodepointLooseMatching(StringRef Name)
 // Find the unicode character whose editing distance to Pattern
 // is shortest, using the Wagner–Fischer algorithm.
 [[nodiscard]]
-std::size_t nearest_matches_for_codepoint_name_impl(
-    StringRef Pattern,
-    std::span<Code_Point_Name_Match> Matches
-)
+std::size_t
+nearest_matches_for_codepoint_name_impl(StringRef Pattern, std::span<Code_Point_Name_Match> Matches)
 {
     if (Matches.empty()) {
         return 0;
@@ -574,9 +572,7 @@ std::size_t nearest_matches_for_codepoint_name_impl(
         };
 
         auto It = std::lower_bound(
-            Matches.begin(),
-            Matches.begin() + std::ptrdiff_t(MatchesCount),
-            Distance,
+            Matches.begin(), Matches.begin() + std::ptrdiff_t(MatchesCount), Distance,
             [&](const Code_Point_Name_Match& a, std::size_t ProbeDistance) {
                 if (ProbeDistance == a.distance) {
                     return a.name < GetName();
@@ -584,7 +580,8 @@ std::size_t nearest_matches_for_codepoint_name_impl(
                 return a.distance < ProbeDistance;
             }
         );
-        if (It == Matches.begin() + std::ptrdiff_t(MatchesCount) && MatchesCount == Matches.size()) {
+        if (It == Matches.begin() + std::ptrdiff_t(MatchesCount)
+            && MatchesCount == Matches.size()) {
             return false;
         }
 
