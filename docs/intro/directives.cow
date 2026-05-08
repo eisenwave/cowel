@@ -152,14 +152,14 @@ are passed into the function,
 COWEL directives have \em{absolute} control over their inputs and how they are processed.
 
 Say you have a JavaScript function:
-\codeblock(js){
+\codeblock("js"){
 function f(x) {
     console.log(x);
 }
 f(2 + 2);
 }
-\code(js){f} has no idea that its input was originally \code(js){2 + 2}.
-It only sees the value \code(js){4} and prints it, "oblivious to the outside".
+\code("js"){f} has no idea that its input was originally \code("js"){2 + 2}.
+It only sees the value \code("js"){4} and prints it, "oblivious to the outside".
 
 COWEL follows a different model:
 \cowblock{
@@ -173,7 +173,7 @@ and it can choose not to process them.
 You can even make a \cowdoc_dir{comment2} directive that works
 just like \cowdoc_dir{comment} yourself:
 \cowblock{
-\\cowel_macro(comment2){}
+\\cowel_macro("comment2"){}
 }
 
 \h2{Expressions}
@@ -185,7 +185,7 @@ and returns a value when evaluated.
 
 \h3{\gterm{primary-expression}}
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 primary-expression
   = parenthesized-expression
   | UNIT-TOKEN
@@ -193,8 +193,8 @@ primary-expression
   | bool-literal
   | int-literal
   | float-literal
-  | unquoted-string
-  | quoted-string
+  | id-expression
+  | string-literal
   | block
   | group;
 }
@@ -214,7 +214,7 @@ the \cowdoc_type{int} value specified by the literal.
 
 \h3{\gterm{directive-call-expression}}
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 directive-call-expression
   = identifier, group, [ block ]
   | identifier, block;
@@ -239,7 +239,7 @@ Generated HTML:
 
 \h3{\gterm{prefix-expression}}
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 prefix-expression
   = postfix-expression
   | BITWISE-NOT-TOKEN, prefix-expression
@@ -260,7 +260,7 @@ The operation is specified by the leading token:
     otherwise an error is raised.
     The type of the expression is \cowdoc_type{int},
     and the result of the expression is
-    \math{\mrow{\mo(form=prefix){−}\mi{e}\mo{−}\mn{1}}}.
+    \math{\mrow{\mo(form="prefix"){−}\mi{e}\mo{−}\mn{1}}}.
   }
   \li{
     If the operator is a \gterm{LOGICAL-NOT-TOKEN},
@@ -283,7 +283,7 @@ The operation is specified by the leading token:
     otherwise an error is raised.
     The type of the expression is that of \math{\mi{e}},
     and the result of the expression is
-    \math{\mrow{\mo(form=prefix){−}\mi{e}}}.
+    \math{\mrow{\mo(form="prefix"){−}\mi{e}}}.
   }
 }
 
@@ -321,7 +321,7 @@ using builtin directives:
 
 \h3(id="binary-expressions"){Binary expressions}
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 expression
   = logical-or-expression;
 logical-or-expression

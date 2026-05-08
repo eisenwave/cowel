@@ -35,7 +35,8 @@ enum struct Primary_Kind : Default_Underlying {
     int_literal,
     decimal_float_literal,
     infinity,
-    unquoted_string,
+    unquoted_member_name,
+    id_expression,
     quoted_string,
     block,
     group,
@@ -60,7 +61,8 @@ constexpr bool primary_kind_is_value(Primary_Kind kind)
     case int_literal:
     case decimal_float_literal:
     case infinity:
-    case unquoted_string:
+    case unquoted_member_name:
+    case id_expression:
     case block:
     case quoted_string:
     case group: return true;
@@ -84,7 +86,8 @@ constexpr bool primary_kind_is_spliceable(Primary_Kind kind)
     case int_literal:
     case decimal_float_literal:
     case infinity:
-    case unquoted_string:
+    case unquoted_member_name:
+    case id_expression:
     case quoted_string:
     case block:
     case text:

@@ -1,60 +1,59 @@
 \cowel_actions{
 
-\cowel_macro(cowdoc_c){\
-\code(cowel, ...){\cowel_put}\
+\cowel_macro("cowdoc_c"){\
+\code("cowel", ...){\cowel_put}\
 }
 
-\cowel_macro(ellipsis){\
-\code(cowel){\cowel_highlight_phantom{\\d(}...}\
+\cowel_macro("ellipsis"){\
+\code("cowel"){\cowel_highlight_phantom{\\d(}...}\
 }
 
-\cowel_macro(cowdoc_html){\
-\code(html){\cowel_put}\
+\cowel_macro("cowdoc_html"){\
+\code("html"){\cowel_put}\
 }
 
-\cowel_macro(cowdoc_dir){\
+\cowel_macro("cowdoc_dir"){\
 \cowdoc_c{\cowel_highlight_as("markup-tag"){\\\cowel_put}}\
 }
 
-\cowel_macro(cowdoc_cp){\
+\cowel_macro("cowdoc_cp"){\
 U+\cowel_str_to_upper(cowel_to_str(..., base=16, zpad=4))\c{nbsp}(\tt{\cowel_char_by_num(...)})\
 }
 
-\cowel_macro(cowdoc_attr){\
+\cowel_macro("cowdoc_attr"){\
 \tt{\cowel_highlight_as("markup-attr"){\cowel_put}}\
 }
 
-\cowel_macro(cowdoc_esc){\
+\cowel_macro("cowdoc_esc"){\
 \tt{\cowel_highlight_as("string-escape"){\\\cowel_put}}\
 }
 
-\cowel_macro(cowdoc_type){\
+\cowel_macro("cowdoc_type"){\
 \tt{\cowel_highlight_as("keyword-type"){\cowel_put}}\
 }
 
-\cowel_macro(cowdoc_param){\
+\cowel_macro("cowdoc_param"){\
 \cowel_highlight_as("markup-attr"){\cowel_put{0}}: \cowel_highlight_as("keyword-type"){\cowel_put{1}}\
 }
 
-\cowel_macro(cowdoc_dir_h4){\h4(id = "dir-\cowel_put{0}"
-){\cowdoc_dir{\cowel_put{0}} \cowel_char_by_name("EM DASH") \cowel_put{1}}}
+\cowel_macro("cowdoc_dir_h4"){\h4(id = "dir-\cowel_put{0}"){\cowdoc_dir{\cowel_put{0}} \cowel_char_by_name("EM DASH") \cowel_put{1}}}
 
-\cowel_macro(cowblock){\
-\codeblock(cowel){\cowel_put}\
+\cowel_macro("cowblock"){\
+\codeblock("cowel"){\cowel_put}\
 }
 
-\cowel_macro(htmlblock){\
-\codeblock(html){\cowel_put}\
+\cowel_macro("htmlblock"){\
+\codeblock("html"){\cowel_put}\
 }
 
-\cowel_macro(c){\
+\cowel_macro("c"){\
 \cowel_paragraph_enter\
 \cowel_char_by_entity("\cowel_put")\
 }
 
-\cowel_macro(cowdoc_og_property){\
+\cowel_macro("cowdoc_og_property"){\
 \cowel_html_element(
-  meta,
+  "meta",
   (
     property = "og:\cowel_put{0}",
     content = "\cowel_put{}",
@@ -63,25 +62,25 @@ U+\cowel_str_to_upper(cowel_to_str(..., base=16, zpad=4))\c{nbsp}(\tt{\cowel_cha
 }
 
 \there("std.head"){
-\cowel_html_element(title){COWEL - Compact Web Language Documentation}
-\cowdoc_og_property(title){Compact Web Language (COWEL)}
-\cowdoc_og_property(description){\
+\cowel_html_element("title"){COWEL - Compact Web Language Documentation}
+\cowdoc_og_property("title"){Compact Web Language (COWEL)}
+\cowdoc_og_property("description"){\
 COWEL is a markup language with TeX-like syntax, \
 intended to generate HTML documents.\
 }
-\cowdoc_og_property(locale){en_US}
-\cowdoc_og_property(url){https://cowel.org/}
-\cowdoc_og_property(type){website}
+\cowdoc_og_property("locale"){en_US}
+\cowdoc_og_property("url"){https://cowel.org/}
+\cowdoc_og_property("type"){website}
 }
 
-\cowel_alias(literally){cowel_source_as_text}
-\cowel_alias(unprocessed){cowel_no_invoke}
+\cowel_alias("literally"){cowel_source_as_text}
+\cowel_alias("unprocessed"){cowel_no_invoke}
 
 }\: cowel_actions
 
 \h1(id="compact-web-language"){Compact Web Language (COWEL)}
 
-\div(id=github){
+\div(id="github"){
 \style{
 h1 {
     margin-bottom: 0;
@@ -146,7 +145,7 @@ To use and install COWEL,
 you need to \ref("https://docs.npmjs.com/downloading-and-installing-node-js-and-npm"){install Node.js and \tt{npm}}.
 With \tt{npm} installed, open a terminal and run:
 
-\codeblock(sh){
+\codeblock("sh"){
 npm i -g cowel
 # or
 npm install --global cowel
@@ -156,17 +155,17 @@ See also \url{https://www.npmjs.com/package/cowel}.
 With COWEL installed,
 you can convert COWEL documents to HTML by using:
 
-\codeblock(sh){
+\codeblock("sh"){
 cowel run input.cow output.html
 }
 
 To see a list of available options and commands,
-run \code(sh){cowel} by itself or \code(sh){cowel --help}.
+run \code("sh"){cowel} by itself or \code("sh"){cowel --help}.
 
 \Btip{
-You may need to use \code(sh){sudo} or otherwise elevate your permissions
-because \code(sh){\cowel_highlight_phantom{npm }-g} performs a "global"/system-wide installation.
-This is necessary to make the \code(sh){cowel} command available everywhere.
+You may need to use \code("sh"){sudo} or otherwise elevate your permissions
+because \code("sh"){\cowel_highlight_phantom{npm }-g} performs a "global"/system-wide installation.
+This is necessary to make the \code("sh"){cowel} command available everywhere.
 
 It is recommended to use a \tt{.cow} or \tt{.cowel} file extension for COWEL documents.
 
@@ -181,7 +180,7 @@ A VSCode plugin for proper highlighting is planned, among other features.
 There also exists a more limited native CLI for development purposes.
 To install it and run COWEL:
 
-\codeblock(sh){
+\codeblock("sh"){
 git clone https://github.com/Eisenwave/cowel.git --recursive
 cd cowel
 cmake -B build
@@ -191,9 +190,9 @@ cmake --build build
 
 The \tt{npm} CLI is slightly different from the native CLI,
 but they share some options,
-such as \code(sh){\cowel_highlight_phantom{c }--severity}
-and \code(sh){\cowel_highlight_phantom{c }--help}.
-Running \code(sh){./build/cowel-cli} without extra arguments also brings up the help menu.
+such as \code("sh"){\cowel_highlight_phantom{c }--severity}
+and \code("sh"){\cowel_highlight_phantom{c }--help}.
+Running \code("sh"){./build/cowel-cli} without extra arguments also brings up the help menu.
 
 \cowel_include("intro/syntax.cow")\
 \cowel_include("intro/directives.cow")\

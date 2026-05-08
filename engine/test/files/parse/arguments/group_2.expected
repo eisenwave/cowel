@@ -8,12 +8,12 @@ equals
 skip
 push_group 2
 push_positional_member
-unquoted_string
+id_expression
 pop_positional_member
 comma
 skip
 push_positional_member
-unquoted_string
+id_expression
 pop_positional_member
 pop_group
 pop_named_member

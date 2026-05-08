@@ -1,5 +1,5 @@
 \test_input{
-\math{\mi(id=Z){x}}
+\math{\mi(id="Z"){x}}
 }
 
 \test_output{

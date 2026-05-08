@@ -1,16 +1,16 @@
 \test_input{
-\code(x){}
-\code(x){ }
-\code(x){xxx}
-\code(x){xxx123}
-\code(x){ 123 }
+\code("x"){}
+\code("x"){ }
+\code("x"){xxx}
+\code("x"){xxx123}
+\code("x"){ 123 }
 
-\code(x){ \b{123} }
-\code(x){ \b{xxx} }
-\code(x){ \b{x}xx }
+\code("x"){ \b{123} }
+\code("x"){ \b{xxx} }
+\code("x"){ \b{x}xx }
 
-\code(c){int \cowel_highlight_as(number){x}}
-\cowel_highlight_as(keyword){awoo}
+\code("c"){int \cowel_highlight_as("number"){x}}
+\cowel_highlight_as("keyword"){awoo}
 
 \test_expect_error("type.mismatch"){\code{}}
 }

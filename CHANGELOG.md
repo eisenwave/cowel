@@ -6,6 +6,9 @@
   - add *parenthesized-expression* as a construct
   - disambiguate *group* as *parenthesized-expression* if possible
   - `(x=X)`, `(X,)`, `()` remain a *group*
+- change plain identifiers in splices like `\d(x)` to perform variable lookup (#313)
+  - the old behavior was to treat `x` was an *unquoted-string*
+  - to keep the old behavior, add quotes like `\d("x")`
 - add binary operators (#261):
   - `+` addition
   - `-` subtraction

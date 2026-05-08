@@ -176,8 +176,9 @@ const Type& get_type(const ast::Primary& primary)
     case ast::Primary_Kind::int_literal: return Type::integer;
     case ast::Primary_Kind::decimal_float_literal:
     case ast::Primary_Kind::infinity: return Type::floating;
-    case ast::Primary_Kind::unquoted_string:
+    case ast::Primary_Kind::unquoted_member_name:
     case ast::Primary_Kind::quoted_string: return Type::str;
+    case ast::Primary_Kind::id_expression: return Type::any;
     case ast::Primary_Kind::block: return Type::block;
     case ast::Primary_Kind::group: return group_anything;
 
@@ -324,9 +325,26 @@ Processing_Status splice_primary(
     case ast::Primary_Kind::unit_literal:
     case ast::Primary_Kind::null_literal:
     case ast::Primary_Kind::bool_literal:
-    case ast::Primary_Kind::unquoted_string: {
+    case ast::Primary_Kind::unquoted_member_name: {
         out.write(primary.get_source(), Output_Language::text);
         return Processing_Status::ok;
+    }
+    case ast::Primary_Kind::id_expression: {
+        const Value* const var = context.get_variable(primary.get_source());
+        if (!var) {
+            context.try_error(
+                diagnostic::id_lookup, primary.get_source_span(),
+                joined_char_sequence(
+                    {
+                        u8"No variable with the name \""sv,
+                        primary.get_source(),
+                        u8"\" was found."sv,
+                    }
+                )
+            );
+            return Processing_Status::error;
+        }
+        return splice_value(out, *var, primary.get_source_span(), context);
     }
     case ast::Primary_Kind::int_literal:
     case ast::Primary_Kind::decimal_float_literal: {
@@ -923,8 +941,25 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         COWEL_ASSERT(parsed.status == ast::Float_Literal_Status::ok);
         return Value::floating(parsed.value);
     }
-    case ast::Primary_Kind::unquoted_string: {
+    case ast::Primary_Kind::unquoted_member_name: {
         return Value::static_string(value.get_source(), value.get_string_kind());
+    }
+    case ast::Primary_Kind::id_expression: {
+        const Value* const var = context.get_variable(value.get_source());
+        if (!var) {
+            context.try_error(
+                diagnostic::id_lookup, value.get_source_span(),
+                joined_char_sequence(
+                    {
+                        u8"No variable with the name \""sv,
+                        value.get_source(),
+                        u8"\" was found."sv,
+                    }
+                )
+            );
+            return Processing_Status::error;
+        }
+        return *var;
     }
     case ast::Primary_Kind::quoted_string: {
         Vector_Text_Sink text { Output_Language::text, context.get_transient_memory() };

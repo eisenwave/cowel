@@ -61,7 +61,7 @@
       "type": "top-scope",
       "line": 1,
       "col": 3,
-      "expected": "string.unquoted.cowel",
+      "expected": "variable.other.cowel",
       "description": "First argument (a) is an unquoted string"
     },
     {
@@ -75,7 +75,7 @@
       "type": "top-scope",
       "line": 1,
       "col": 6,
-      "expected": "string.unquoted.cowel",
+      "expected": "variable.other.cowel",
       "description": "Second argument (b) is an unquoted string"
     },
     {
@@ -89,7 +89,7 @@
       "type": "top-scope",
       "line": 1,
       "col": 9,
-      "expected": "string.unquoted.cowel",
+      "expected": "variable.other.cowel",
       "description": "Third argument (c) is an unquoted string"
     },
     {

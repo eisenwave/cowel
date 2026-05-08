@@ -787,7 +787,7 @@ private:
             if (expect_directive_call_expression()) {
                 return true;
             }
-            emit_and_advance_by_one(CST_Instruction_Kind::unquoted_string);
+            emit_and_advance_by_one(CST_Instruction_Kind::id_expression);
             return true;
         }
 
@@ -1009,7 +1009,7 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(escape);
         COWEL_ENUM_STRING_CASE8(text);
         COWEL_ENUM_STRING_CASE8(unquoted_member_name);
-        COWEL_ENUM_STRING_CASE8(unquoted_string);
+        COWEL_ENUM_STRING_CASE8(id_expression);
         COWEL_ENUM_STRING_CASE8(binary_int);
         COWEL_ENUM_STRING_CASE8(octal_int);
         COWEL_ENUM_STRING_CASE8(decimal_int);
@@ -1093,7 +1093,7 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     switch (type) {
     case escape: return Token_Kind::escape;
     case unquoted_member_name:
-    case unquoted_string: return Token_Kind::identifier;
+    case id_expression: return Token_Kind::identifier;
     case binary_int: return Token_Kind::binary_int;
     case octal_int: return Token_Kind::octal_int;
     case decimal_int: return Token_Kind::decimal_int;
@@ -1183,7 +1183,7 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case skip:
     case escape:
     case unquoted_member_name:
-    case unquoted_string:
+    case id_expression:
     case binary_int:
     case octal_int:
     case decimal_int:

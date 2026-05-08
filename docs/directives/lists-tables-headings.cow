@@ -101,7 +101,7 @@ If none is provided, an \cowdoc_attr{id} is synthesized from the content within 
 Headings can be referenced using the \cowdoc_dir{ref} directive:
 \cowblock{
 \\h2{Heading with synthesized id}
-\\h2(id=xyz){Heading with manual id}
+\\h2(id="xyz"){Heading with manual id}
 \\comment{These can be referenced as follows}
 \\ref(#heading-with-synthesized-id)
 \\ref(#xzy)
@@ -122,7 +122,7 @@ as the document is processed.
 Since the table of contents should usually not be listed within itself,
 an unlisted heading may be used:
 \cowblock{
-\\h2(listed=no){Contents}
+\\h2(listed="no"){Contents}
 \\make_contents
 }
 A similar effect can be achieved using
@@ -159,7 +159,7 @@ each of which is a plaintext context:
 \dt{\cowdoc_attr{id}}
 \dd{
 The identifier of the bibliography entry.
-This can later be referenced using \cowdoc_c{\\ref(id)}.
+This can later be referenced using \cowdoc_c{\\ref("id")}.
 }
 
 \dt{\cowdoc_attr{author}}

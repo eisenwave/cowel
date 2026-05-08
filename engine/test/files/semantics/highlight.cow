@@ -1,8 +1,8 @@
 \test_input{
-\cowel_highlight(html){div}
-\cowel_highlight(lang=html){\cowel_highlight_phantom{<}div}
-\cowel_highlight(nasm){mov}
-\cowel_highlight(nasm){mov\cowel_highlight_phantom{:}}
+\cowel_highlight("html"){div}
+\cowel_highlight(lang="html"){\cowel_highlight_phantom{<}div}
+\cowel_highlight("nasm"){mov}
+\cowel_highlight("nasm"){mov\cowel_highlight_phantom{:}}
 }
 
 \test_output{

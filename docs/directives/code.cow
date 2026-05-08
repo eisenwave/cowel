@@ -50,7 +50,7 @@ The \cowdoc_dir{code} directive produced syntax-highlighted text in code font.
 \Bex{
 COWEL markup:
 \cowblock{
-\\code(cpp){123}
+\\code("cpp"){123}
 }
 This applies C++ syntax highlighting, and generates HTML.
 The \cowdoc_html{<h->} tags are an implementation detail and may be subject to change.
@@ -70,11 +70,11 @@ within other \cowdoc_dir{code} or \cowdoc_dir{codeblock} directives.
 \Bex{
 You can nest JSON inside of a C++ string literal as follows:
 \cowblock{\unprocessed{
-Call: \code(cpp){out.write_json("\code(json,nested=true){{"x":123,"y":true,"z":null}}")}
+Call: \code("cpp"){out.write_json("\code("json",nested=true){{"x":123,"y":true,"z":null}}")}
 }}
 This renders as follows:
 \Bindent{
-Call: \code(cpp){out.write_json("\code(json,nested=true){{"x":123,"y":true,"z":null}}")}
+Call: \code("cpp"){out.write_json("\code("json",nested=true){{"x":123,"y":true,"z":null}}")}
 }
 }
 
@@ -92,8 +92,8 @@ which is more composable.
 Writing \cowdoc_dir{code} directives directly is often too tedious,
 so you'll likely want to define a macro to make this easier:
 \cowblock{
-\\: Defines a \\js directive that can be used in place of \\code(js) from now on:
-\\macro(\\js){\\code(js){\\put}}
+\\: Defines a \\js directive that can be used in place of \\code("js") from now on:
+\\macro(\\js){\\code("js"){\\put}}
 Let's highlight \\js{var} in JavaScript.
 }
 }
@@ -108,21 +108,21 @@ This can be controlled using the \tt{borders}.
 
 \Bex{
 \cowblock{
-\\codeblock(js){
+\\codeblock("js"){
 // Borders enabled
 let x = 0;
 }
-\\codeblock(js, borders = false){
+\\codeblock("js",borders = false){
 // Borders disabled
 let x = 0;
 }
 }
 This renders as:
-\codeblock(js){
+\codeblock("js"){
 // Borders enabled
 let x = 0;
 }
-\codeblock(js, borders = false){
+\codeblock("js",borders = false){
 // Borders disabled
 let x = 0;
 }
@@ -138,7 +138,7 @@ in the appropriate syntax highlighting tags.
 It has a single \tt{name} argument, which is the µlight \dfn{long name} for a highlight type.
 You can obtain a list of possible long names at
 \ref("https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h"){\tt{ulight.h}}
-from the definition of \code(cpp){enum ulight_highlight_type}.
+from the definition of \code("cpp"){enum ulight_highlight_type}.
 The long name is the enumerator name without the \tt{ULIGHT_HL} prefix,
 all lowercase, and with hyphens instead of underscores.
 
@@ -147,13 +147,13 @@ It is possible to mix automatic syntax highlighting with manual overrides:
 \cowblock{\literally{
 \: _Int128 is manually highlighted as a type keyword,
 \: and x is automatically highlighted as an identifier.
-\code(c){\hl("keyword-type"){_Int128} x}
+\code("c"){\hl("keyword-type"){_Int128} x}
 }}
 This generates the HTML (subject to change):
 \htmlblock{
 <code><h- data=h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>
 }
-It renders as \code(c){\cowel_highlight_as("keyword-type"){_Int128} x}.
+It renders as \code("c"){\cowel_highlight_as("keyword-type"){_Int128} x}.
 }
 
 \Bnote{

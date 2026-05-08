@@ -3,7 +3,7 @@ push_directive_splice
 push_group 2
 push_positional_member
 push_expr_parenthesized
-unquoted_string
+id_expression
 pop_expr_parenthesized
 pop_positional_member
 comma

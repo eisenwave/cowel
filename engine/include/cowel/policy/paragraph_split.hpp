@@ -139,7 +139,8 @@ public:
         case ast::Primary_Kind::int_literal:
         case ast::Primary_Kind::decimal_float_literal:
         case ast::Primary_Kind::infinity:
-        case ast::Primary_Kind::unquoted_string:
+        case ast::Primary_Kind::unquoted_member_name:
+        case ast::Primary_Kind::id_expression:
         case ast::Primary_Kind::quoted_string:
         case ast::Primary_Kind::block:
         case ast::Primary_Kind::group: {

@@ -52,9 +52,9 @@ which allows forward-references.
 \Bex{
 COWEL markup:
 \cowblock{
-\\there(sec){before/}
-(\\here(sec))
-\\there(sec){/after}
+\\there("sec"){before/}
+(\\here("sec"))
+\\there("sec"){/after}
 }
 Generated HTML:
 \htmlblock{

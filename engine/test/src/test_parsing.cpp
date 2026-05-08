@@ -47,7 +47,7 @@ enum struct Node_Kind : Default_Underlying {
     decimal_float_literal,
     infinity,
     unquoted_member_name,
-    unquoted_string,
+    id_expression,
     bitwise_not,
     logical_not,
     unary_plus,
@@ -109,9 +109,9 @@ struct Node {
     }
 
     [[nodiscard]]
-    static Node unquoted_string(std::u8string_view text)
+    static Node id_expression(std::u8string_view text)
     {
-        return { .kind = Node_Kind::unquoted_string, .name_or_text = text };
+        return { .kind = Node_Kind::id_expression, .name_or_text = text };
     }
 
     [[nodiscard]]
@@ -450,8 +450,12 @@ struct Node {
             return boolean(actual.get_source());
         }
 
-        case ast::Primary_Kind::unquoted_string: {
-            return unquoted_string(actual.get_source());
+        case ast::Primary_Kind::id_expression: {
+            return id_expression(actual.get_source());
+        }
+
+        case ast::Primary_Kind::unquoted_member_name: {
+            return unquoted_member_name(actual.get_source());
         }
 
         case ast::Primary_Kind::int_literal: {
@@ -586,7 +590,7 @@ struct Node {
     [[nodiscard]]
     static Node from_member_name(const ast::Primary& arg)
     {
-        if (arg.get_kind() == ast::Primary_Kind::unquoted_string) {
+        if (arg.get_kind() == ast::Primary_Kind::unquoted_member_name) {
             return unquoted_member_name(arg.get_source());
         }
         COWEL_ASSERT(arg.get_kind() == ast::Primary_Kind::quoted_string);
@@ -658,8 +662,8 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
         return out << "UnqMemberName(" << node.name_or_text << ')';
     }
 
-    case Node_Kind::unquoted_string: {
-        return out << "UnqString(" << node.name_or_text << ')';
+    case Node_Kind::id_expression: {
+        return out << "IdExpr(" << node.name_or_text << ')';
     }
 
     case Node_Kind::bitwise_not: {
@@ -1158,8 +1162,8 @@ TEST(Parse_And_Build, arguments_comments_2)
                 u8"b",
                 Node::group(
                     {
-                        Node::positional({ Node::unquoted_string(u8"text") }),
-                        Node::named(u8"named", Node::unquoted_string(u8"arg")),
+                        Node::positional({ Node::id_expression(u8"text") }),
+                        Node::named(u8"named", Node::id_expression(u8"arg")),
                     }
                 )
             ),
@@ -1195,7 +1199,7 @@ TEST(Parse_And_Build, group_1)
                 u8"d",
                 Node::group(
                     {
-                        Node::positional({ Node::unquoted_string(u8"x") }),
+                        Node::positional({ Node::id_expression(u8"x") }),
                         Node::positional({ Node::group({}) }),
                     }
                 )
@@ -1220,8 +1224,8 @@ TEST(Parse_And_Build, group_2)
                         u8"n",
                         Node::group(
                             {
-                                Node::positional({ Node::unquoted_string(u8"x") }),
-                                Node::positional({ Node::unquoted_string(u8"y") }),
+                                Node::positional({ Node::id_expression(u8"x") }),
+                                Node::positional({ Node::id_expression(u8"y") }),
                             }
                         )
                     ) }
@@ -1260,14 +1264,14 @@ TEST(Parse_And_Build, group_4)
                 u8"d",
                 Node::group(
                     {
-                        Node::positional({ Node::unquoted_string(u8"x") }),
+                        Node::positional({ Node::id_expression(u8"x") }),
                         Node::positional(
-                            { Node::group({ Node::positional({ Node::unquoted_string(u8"x") }) }) }
+                            { Node::group({ Node::positional({ Node::id_expression(u8"x") }) }) }
                         ),
                         Node::positional(
                             { Node::group({ Node::named(u8"x", Node::integer(u8"0")) }) }
                         ),
-                        Node::positional({ Node::unquoted_string(u8"x") }),
+                        Node::positional({ Node::id_expression(u8"x") }),
                     }
                 )
             ),
@@ -1654,7 +1658,7 @@ TEST(Parse_And_Build, hello_directive)
                 u8"b",
                 Node::group(
                     {
-                        Node::named(u8"hello", { Node::unquoted_string(u8"world") }),
+                        Node::named(u8"hello", { Node::id_expression(u8"world") }),
                         Node::named(u8"x", { Node::integer(u8"0") }),
                     }
                 ),
