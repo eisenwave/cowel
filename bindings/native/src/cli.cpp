@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <memory_resource>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -49,6 +50,19 @@ constexpr File_Source_Span as_file_source_span(const cowel_diagnostic_location_u
         },
         File_Id(location.file_id),
     };
+}
+
+[[nodiscard]]
+constexpr std::u8string_view processing_status_name(cowel_processing_status status)
+{
+    switch (status) {
+    case COWEL_PROCESSING_OK: return u8"ok";
+    case COWEL_PROCESSING_BREAK: return u8"break";
+    case COWEL_PROCESSING_ERROR: return u8"error";
+    case COWEL_PROCESSING_ERROR_BREAK: return u8"error_break";
+    case COWEL_PROCESSING_FATAL: return u8"fatal";
+    }
+    return u8"unknown";
 }
 
 struct Stderr_Logger {
@@ -276,6 +290,41 @@ int main(int argc, const char* const* const argv)
     };
 
     const cowel_gen_result_u8 result = cowel_generate_html_u8(&options);
+
+    if (result.status != COWEL_PROCESSING_OK) {
+        if (result.output.text != nullptr) {
+            memory.deallocate(result.output.text, result.output.length, alignof(char8_t));
+        }
+
+        const auto status_name = processing_status_name(result.status);
+        Diagnostic_String error { &memory };
+        if (colors_enabled) {
+            error.append(ansi::red);
+        }
+        error.append(u8"FATAL");
+        if (colors_enabled) {
+            error.append(ansi::reset);
+        }
+        error.append(u8" ");
+        print_location_of_file(error, in_path_u8);
+        error.append(u8" Generation exited with status ");
+        error.append(result.status);
+        error.append(u8" (");
+        error.append(status_name);
+        error.append(u8").");
+        if (colors_enabled) {
+            error.append(ansi::h_black);
+        }
+        error.append(u8" [status.");
+        error.append(status_name);
+        error.append(u8"]");
+        if (colors_enabled) {
+            error.append(ansi::reset);
+        }
+        error.append(u8'\n');
+        print_code_string_stderr(error);
+        return EXIT_FAILURE;
+    }
 
     const std::string out_path = std::string(as_string_view(out_path_u8));
     const auto out_file = fopen_unique(out_path.c_str(), "wb");
