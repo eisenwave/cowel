@@ -23,7 +23,7 @@ namespace cowel {
     F(escape, "escape")                                                                            \
     F(text, "text")                                                                                \
     F(unquoted_member_name, "unquoted_member_name")                                                \
-    F(unquoted_string, "unquoted_string")                                                          \
+    F(id_expression, "id_expression")                                                              \
     F(binary_int, "binary_int")                                                                    \
     F(octal_int, "octal_int")                                                                      \
     F(decimal_int, "decimal_int")                                                                  \

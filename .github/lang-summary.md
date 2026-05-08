@@ -98,7 +98,7 @@ Inside a group `(...)`, COWEL switches to a **scripting context** with typed val
 | `bool` | `true` / `false`. |
 | `int` | Arbitrary integer. Literals: `123`, `0xff`, `0b101`, `0o17`. |
 | `float` | IEEE-754 binary64. Literals: `1.0`, `10e+5`. |
-| `str` | UTF-8 string. Quoted: `"hello"`. Unquoted identifier: `hello`. |
+| `str` | UTF-8 string literal, such as `"hello"`. |
 | `block` | Lazily evaluated markup snippet. Literal: `{content}`. |
 | `group(T...)` | Product/tuple type. Literal: `(a, b)` or `(x=a, y=b)`. |
 | `pack T` | Variadic repetition inside a `group`. |

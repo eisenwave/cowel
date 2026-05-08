@@ -77,13 +77,13 @@ Or equivalently:
 This describes that \cowdoc_dir{cowel_html_element} can be invoked as follows,
 among various options:
 \cowblock{\literally{
-\cowel_html_element(name = div, attr = (id = abc))
+\cowel_html_element(name ="div",attr = (id = "abc"))
 }}
 
 \tt{div} matches the \cowdoc_attr{name} parameter,
 and the content \tt{div} is treated as a \tt{string} value.
 
-\cowdoc_c{\cowel_highlight_phantom{\\d}(id = abc)}
+\cowdoc_c{\cowel_highlight_phantom{\\d}(id = "abc")}
 matches the \cowdoc_attr{attr} parameter,
 and within that group,
 there is a single-element \tt{pack} of \tt{named} arguments
@@ -103,13 +103,13 @@ unless all positional arguments appear contiguously at the start of the argument
 \Bex{
 \cowblock{\literally{
 \: OK, two positional arguments
-\cowel_html_element(div, (id = abc))
+\cowel_html_element("div",(id = "abc"))
 \: OK, two named arguments
-\cowel_html_element(name = div, attr = (id = abc))
+\cowel_html_element(name ="div",attr = (id = "abc"))
 \: OK, all positional arguments appear at the start
-\cowel_html_element(name = div, (id = abc))
+\cowel_html_element(name ="div",(id = "abc"))
 \: error: positional argument following named arguments
-\cowel_html_element(name = div, (id = abc))
+\cowel_html_element(name ="div",(id = "abc"))
 }}
 }
 
@@ -120,7 +120,7 @@ The usual argument matching is performed as follows:
     If a block argument is provided,
     that argument matches the last parameter of the directive.
     \Bex{
-    The syntax \cowdoc_c{\\d(a, b){xzy}} is equivalent to \cowdoc_c{\\d(a, b, {xzy})}.
+    The syntax \cowdoc_c{\\d("a", "b"){xzy}} is equivalent to \cowdoc_c{\\d("a", "b", {xzy})}.
     }
   }
   \li{
@@ -147,9 +147,9 @@ Let \cowdoc_dir{d} be a directive with parameters
 \: In each of these calls,
 \: a, b, and c match x, y, and z, respectively:
 
-\d(z = c, y = b, x = a)  \: OK, all named arguments
-\d(a, b, c)              \: OK, all positional arguments
-\d(a, z = c, y = b)      \: OK, positional arguments followed by named arguments
+\d(z ="c",y ="b",x ="a")  \: OK, all named arguments
+\d("a", "b", "c")              \: OK, all positional arguments
+\d("a",z ="c",y ="b")      \: OK, positional arguments followed by named arguments
 }}
 }
 
@@ -275,9 +275,9 @@ Note that U+006A is the usual way in which Unicode code points are represented.
 That is, \tt{U+}, followed by at least four uppercase hexadecimal digits.
 It is also possible to define a macro if we need this frequently:
 \cowblock{\literally{
-\cowel_macro(code_point){\
+\cowel_macro("code_point"){\
 U+\cowel_str_to_upper(cowel_to_str(cowel_char_get_num(...), base=16, zpad=4))}
-\code_point(j)
+\code_point("j")
 }}
 }
 
@@ -285,11 +285,11 @@ U+\cowel_str_to_upper(cowel_to_str(cowel_char_get_num(...), base=16, zpad=4))}
 If more than one code point is provided,
 some input is discarded:
 \cowblock{
-\\cowel_char_get_num(abc)
+\\cowel_char_get_num("abc")
 }
 This renders as
 \Bindent{
-\cowel_char_get_num(a)
+\cowel_char_get_num("a")
 }
 ... which corresponds to '\tt{a}',
 whereas '\tt{b}' and '\tt{c}' are discarded.
@@ -331,7 +331,7 @@ are contained within the \cowdoc_attr{attr} parameter.
 \Bex{
 COWEL markup:
 \cowblock{\literally{
-This is \cowel_html_element(span, (id = abc)){a span}.
+This is \cowel_html_element("span",(id = "abc")){a span}.
 }}
 Generated HTML:
 \htmlblock{
@@ -365,7 +365,7 @@ are contained within the \cowdoc_attr{attr} parameter.
 COWEL markup:
 \cowblock{\literally{
 Horizontal rule:
-\cowel_html_self_closing_element(hr, (id = abc)){ignored}
+\cowel_html_self_closing_element("hr",(id = "abc")){ignored}
 }}
 Generated HTML:
 \htmlblock{
@@ -450,8 +450,8 @@ we can insert special characters like U+00AD SOFT HYPHEN
 into code snippets, without interfering with syntax highlighting:
 \cowblock{\literally{
 Use of
-\cowel_html_element(code){
-\cowel_highlight(cpp){reinterpret_\
+\cowel_html_element("code"){
+\cowel_highlight("cpp"){reinterpret_\
 \cowel_to_html{\cowel_char_by_name{SOFT HYPHEN}}\
 cast}
 }
@@ -461,14 +461,14 @@ is discouraged.
 This renders as:
 \Bindent{
 Use of
-\code(cpp){reinterpret_cast} is discouraged.
+\code("cpp"){reinterpret_cast} is discouraged.
 }
 Or, if line wrapping takes place in the middle of the highlighted keyword,
 it renders as:
 \Bindent{
 Use of
-\tt{\cowel_highlight_as(keyword){reinterpret_}-\br{}
-\cowel_highlight_as(keyword){cast}} is discouraged.
+\tt{\cowel_highlight_as("keyword"){reinterpret_}-\br{}
+\cowel_highlight_as("keyword"){cast}} is discouraged.
 }
 }
 
@@ -494,7 +494,7 @@ Under the no-invoke policy selected by \cowdoc_c{no_invoke},
 \cowdoc_c{\\awoo} is not invoked,
 but its source code is fed into the current policy as plaintext.
 This is particularly useful when writing code blocks
-which contain character escapes (e.g. containing \code(cpp){"\\n"} in C++)
+which contain character escapes (e.g. containing \code("cpp"){"\\n"} in C++)
 because such escapes should not treated as COWEL directives.
 }
 
@@ -521,28 +521,28 @@ unless explicitly eliminated (e.g. with newline escapes or commas).
 COWEL markup:
 \cowblock{\literally{
 no escapes:
-\cowel_macro(a)
-\cowel_macro(b)
-\cowel_macro(c)
+\cowel_macro("a")
+\cowel_macro("b")
+\cowel_macro("c")
 end.
 newline escapes:
-\cowel_macro(h)\
-\cowel_macro(j)\
-\cowel_macro(k)\
+\cowel_macro("h")\
+\cowel_macro("j")\
+\cowel_macro("k")\
 end.
 actions:
 \cowel_actions{
 \: Documentation for x:
-\cowel_macro(x)
+\cowel_macro("x")
 
 \: In here, we can add as much whitespace as we want.
 \: It won't add anything to the generated HTML 😃
-\cowel_macro(y)
+\cowel_macro("y")
 
 Text is also ignored, just like whitespace,
 but it is recommended to use comments even in actions
 because it expresses intent more clearly.
-\cowel_macro(z)
+\cowel_macro("z")
 }\
 end.
 }}
@@ -574,8 +574,8 @@ using the text-only policy.
 \Bex{
 COWEL markup:
 \cowblock{\literally{
-Hello, \cowel_html_element(strong){strong} world!
-\cowel_text_only{Hello, \cowel_html_element(strong){strong} world!}
+Hello, \cowel_html_element("strong"){strong} world!
+\cowel_text_only{Hello, \cowel_html_element("strong"){strong} world!}
 }}
 Generated HTML:
 \htmlblock{
@@ -646,16 +646,16 @@ x &amp;lt; y
 }
 As can be seen \cowdoc_dir{cowel_as_text} has no effect
 on a literal '\tt{<}' because the character is already plaintext.
-When converted to HTML, '\tt{<}' is replaced with a \code(html){&lt;} character reference
+When converted to HTML, '\tt{<}' is replaced with a \code("html"){&lt;} character reference
 so that it is not interpreted as the start of an HTML tag.
 Note that this transformation is not visible to the reader;
-the browser renders \code(html){&lt;} as a less-than sign.
+the browser renders \code("html"){&lt;} as a less-than sign.
 
 When converting to HTML via \cowdoc_dir{cowel_to_html},
-this feeds the HTML text \code(html){&lt;} into the surrounding content policy.
+this feeds the HTML text \code("html"){&lt;} into the surrounding content policy.
 \cowdoc_dir{cowel_as_text} reinterprets that HTML as plaintext again,
 and when the HTML document is generated,
-the plain '\tt{&}' is replaced with \code(html){&amp;}
+the plain '\tt{&}' is replaced with \code("html"){&amp;}
 so that it is not interpreted as the start of a character reference;
 '\tt{lt;}' is preserved.
 }
@@ -751,7 +751,7 @@ which is the µlight \dfn{long name} for a highlight type.
 \Btip{
 You can obtain a list of possible long names at
 \ref("https://github.com/Eisenwave/ulight/blob/main/include/ulight/ulight.h"){\tt{ulight.h}}
-from the definition of \code(cpp){enum ulight_highlight_type}.
+from the definition of \code("cpp"){enum ulight_highlight_type}.
 The long name is the enumerator name without the \tt{ULIGHT_HL} prefix,
 all lowercase, and with hyphens instead of underscores.
 }
@@ -761,20 +761,20 @@ It is possible to mix automatic syntax highlighting with manual overrides:
 \cowblock{\literally{
 \: _Int128 is manually highlighted as a type keyword,
 \: and x is automatically highlighted as an identifier.
-\cowel_html_element(code){\
-\cowel_highlight(c){\cowel_highlight_as("keyword-type"){_Int128} x}\
+\cowel_html_element("code"){\
+\cowel_highlight("c"){\cowel_highlight_as("keyword-type"){_Int128} x}\
 }
 }}
 This generates the HTML (subject to change):
 \htmlblock{
 <code><h- data-h=kw_type>_Int128</h-> <h- data-h=id>x</h-></code>
 }
-It renders as \code(c){\cowel_highlight_as("keyword-type"){_Int128} x}.
+It renders as \code("c"){\cowel_highlight_as("keyword-type"){_Int128} x}.
 }
 
 \Bnote{
 While it is also possible to produce the highlighting tags using
-\cowdoc_c{\\cowel_html_element("h-","data-h"=kw_type){_Int128}},
+\cowdoc_c{\\cowel_html_element("h-","data-h"="kw_type"){_Int128}},
 the "short names" (e.g. \cowdoc_c{kw_type}) are not stable,
 i.e. they are more likely to change.
 Only µlight long names should be used directly.
@@ -803,19 +803,19 @@ we can control whether a JSON string is interpreted as a markup key,
 or as a string value:
 \cowblock{
 In JSON, there are
-\\cowel_html_element(code){\\cowel_highlight(json){\\cowel_highlight_phantom{\\\'LEFT CURLY BRACKET'}"keys"}}
+\\cowel_html_element("code"){\\cowel_highlight("json"){\\cowel_highlight_phantom{\\\'LEFT CURLY BRACKET'}"keys"}}
 and
-\\cowel_html_element(code){\\cowel_highlight(json){"values"}}.
+\\cowel_html_element("code"){\\cowel_highlight("json"){"values"}}.
 }
 Using the highlight theme of this document, this renders as:
 \Bindent{
 In JSON, there are
-\code(json){\cowel_highlight_phantom{\'LEFT CURLY BRACKET'}"keys"}
-and \code(json){"values"}.
+\code("json"){\cowel_highlight_phantom{\'LEFT CURLY BRACKET'}"keys"}
+and \code("json"){"values"}.
 }
-Notice that the color of \code(json){\cowel_highlight_phantom{\'LEFT CURLY BRACKET'}"keys"} is different
+Notice that the color of \code("json"){\cowel_highlight_phantom{\'LEFT CURLY BRACKET'}"keys"} is different
 because it is highlighted as if it was positioned like:
-\codeblock(json){
+\codeblock("json"){
 \'LEFT CURLY BRACKET'"keys"
 }
 }
@@ -973,10 +973,10 @@ Otherwise, has no effect.
 COWEL markup, assuming a surrounding paragraphs policy:
 \cowblock{\literally{
 Paragraph 1:
-\cowel_html_self_closing_element(hr)
+\cowel_html_self_closing_element("hr")
 
 Paragraph 2:
-\cowel_paragraph_leave\cowel_html_self_closing_element(hr)
+\cowel_paragraph_leave\cowel_html_self_closing_element("hr")
 }}
 
 Generated HTML:
@@ -1102,7 +1102,7 @@ Say we have a JavaScript file \tt{example.js} which we want to keep separate fro
 We can then include it into a \cowdoc_dir{script} block to use it as a script,
 or we can include it into a \cowdoc_dir{codeblock} to display its contents.
 \cowblock{\literally{
-\codeblock(js){
+\codeblock("js"){
 // code included from example.js:
 \cowel_include_text{example.js}
 }
@@ -1110,7 +1110,7 @@ or we can include it into a \cowdoc_dir{codeblock} to display its contents.
 Assuming that \tt{example.js} is located in the same directory as the document
 and that loading the file succeeds,
 this renders as: 
-\codeblock(js){
+\codeblock("js"){
 // code included from example.js:
 \cowel_include_text("example.js")
 }
@@ -1147,10 +1147,10 @@ A fatal error is raised if
 \Bex{
 One or multiple aliases can be defined as follows:
 \cowblock{\literally{
-\cowel_alias(N){cowel_char_by_name}
+\cowel_alias("N"){cowel_char_by_name}
 \N("DIGIT ZERO")               \: OK, equivalent to \cowel_char_by_name("DIGIT ZERO")
 
-\cowel_alias(incl, include){cowel_include}
+\cowel_alias("incl", "include"){cowel_include}
 \incl("file.cow")              \: OK, equivalent to \cowel_include("file.cow")
 \include("file.cow")           \: OK, same
 
@@ -1160,7 +1160,7 @@ One or multiple aliases can be defined as follows:
 \cowel_alias{??}               \: error: invalid target name
 \cowel_alias{undefined}        \: error: target not found
 \cowel_alias("?"){cowel_alias} \: error: invalid alias name
-\cowel_alias(N){N}             \: error: redefinition of N
+\cowel_alias("N"){N}             \: error: redefinition of N
 }}
 }
 
@@ -1192,7 +1192,7 @@ A fatal error occurs if
 \Bex{
 COWEL markup:
 \cowblock{\literally{
-\cowel_macro(m,x){Hello, macros!}\
+\cowel_macro("m","x"){Hello, macros!}\
 \m
 \x
 }}
@@ -1260,25 +1260,25 @@ and \dfn{designates}
 COWEL markup:
 \cowblock{\literally{
 \: \cowel_put designates content
-\cowel_macro(content){\cowel_put}\
+\cowel_macro("content"){\cowel_put}\
 \content{Content}
 
 \: \cowel_put designates first positional argument
-\cowel_macro(pos){\cowel_put{0}}\
-\pos(Positional)
+\cowel_macro("pos"){\cowel_put{0}}\
+\pos("Positional")
 
 \: \cowel_put designates named argument with name "n"
-\cowel_macro(named){\cowel_put{n}}\
-\named(n = Named)
+\cowel_macro("named"){\cowel_put{n}}\
+\named(n ="Named")
 
 \: \cowel_put designates the first positional argument and has a fallback
 \: Note that equivalently, we could use \cowel_put(Failure){0}.
-\cowel_macro(try){\cowel_put(else=Failure){0}}\
-\try(Success)
+\cowel_macro("try"){\cowel_put(else="Failure"){0}}\
+\try("Success")
 \try
 
 \: All together:
-\cowel_macro(m){\cowel_put{greeting}, \cowel_put\cowel_put{0}}\
+\cowel_macro("m"){\cowel_put{greeting}, \cowel_put\cowel_put{0}}\
 \m(greeting = "Hello, !"){macros}
 }}
 Generated HTML:
@@ -1303,7 +1303,7 @@ such as when \cowdoc_dir{cowel_put} appears at a top-level in the document.
 \cowdoc_dir{cowel_macro} is not processed in any special way,
 meaning that it cannot be used for "macro substitution" directly:
 \cowblock{\literally{
-\cowel_macro(m){\cowel_source_as_text{\cowel_put}}\
+\cowel_macro("m"){\cowel_source_as_text{\cowel_put}}\
 \m
 }}
 Generated HTML:
@@ -1313,7 +1313,7 @@ Generated HTML:
 However, \cowdoc_dir{cowel_put} accesses the inputs to the macro invocation
 which expands \cowdoc_dir{cowel_put}:
 \cowblock{\literally{
-\cowel_macro(m){\cowel_put}\
+\cowel_macro("m"){\cowel_put}\
 \m{\cowel_put}
 }}
 This results in a fatal error because when \cowdoc_dir{m} is processed,
@@ -1326,7 +1326,7 @@ where content was expanded from (or none, in the case of the document top level)
 This also makes it possible to deeply nest \cowdoc_dir{cowel_put}
 within other directives while still referring to parameters of the macro invocation:
 \cowblock{\literally{
-\cowel_macro(m){\cowel_to_html{\cowel_put}}\
+\cowel_macro("m"){\cowel_to_html{\cowel_put}}\
 \: OK, equivalent to \cowel_to_html{...}
 \: Notably, the expanded \cowel_put refers to the content provided to \m,
 \: not to the content provided to \cowel_to_html (which would be \cowel_put).
@@ -1340,9 +1340,9 @@ results in multiple processing of the same provided content.
 Sometimes this is useful,
 but it can have unintended side effects:
 \cowblock{\literally{
-\cowel_macro(twice){\cowel_put\cowel_put}\
+\cowel_macro("twice"){\cowel_put\cowel_put}\
 \: error: multiple definitions of alias "\N" for "\cowel_char_by_name"
-\twice{\cowel_alias(N){cowel_char_by_name}}
+\twice{\cowel_alias("N"){cowel_char_by_name}}
 }}
 }
 
@@ -1368,12 +1368,12 @@ is the content provided to the invoked directive.
 
 \Bex{
 Any directive \cowdoc_dir{abc} can be invoked statically or dynamically:
-\cowblock{\cowel_invoke(literally){
+\cowblock{\cowel_invoke("literally"){
 \: Static invocation of directive named "abc".
 \abc{...}
 \: Static invocation of directive named "cowel_invoke",
 \: which performs an equivalent dynamic invocation of "abc".
-\cowel_invoke(abc){...}
+\cowel_invoke("abc"){...}
 }}
 }
 
@@ -1417,11 +1417,11 @@ The output resulting string depends on the input as follows:
         Otherwise, the \cowdoc_cp(0x30) character is prepended
         \math{\mrow{
           \mi{max}
-          \mo(form=prefix, stretchy=false){(}
+          \mo(form="prefix",stretchy=false){(}
           \mi{z}\mo{−}\mi{d}
           \mo{,}
           \mn{0}
-          \mo(form=prefix, stretchy=false){)}
+          \mo(form="prefix",stretchy=false){)}
         }}
         times, where
         \math{\mi{z}} is \cowdoc_attr{zpad} and
@@ -1434,7 +1434,7 @@ The output resulting string depends on the input as follows:
     \ul{
       \li{
         if \cowdoc_attr{format} equals \cowdoc_c{"splice"},
-        the result is the same as splicing \cowdoc_attr{x} into a \gterm{quoted-string};
+        the result is the same as splicing \cowdoc_attr{x} into a \gterm{string-literal};
       }
       \li{
         otherwise, if \cowdoc_attr{format} equals \cowdoc_c{"fixed"},
@@ -1452,26 +1452,26 @@ The output resulting string depends on the input as follows:
     }
   }
   \li{
-    Otherwise, the result is the same as splicing \cowdoc_attr{x} into a \gterm{quoted-string}.
+    Otherwise, the result is the same as splicing \cowdoc_attr{x} into a \gterm{string-literal}.
   }
 }
 
 \Bex{
 COWEL markup:
 \cowblock{\literally{
-\cowel_to_str(unit)
+\cowel_to_str("unit")
 
-\cowel_to_str(true)
-\cowel_to_str(false)
+\cowel_to_str("true")
+\cowel_to_str("false")
 
 \cowel_to_str(255)
-\cowel_to_str(255, base=16)
-\cowel_to_str(-255, zpad=5)
+\cowel_to_str(255,base=16)
+\cowel_to_str(-255,zpad=5)
 
 \cowel_to_str(1e10)
-\cowel_to_str(1e10, format=splice)
-\cowel_to_str(1e10, format=fixed)
-\cowel_to_str(1e10, format=scientific)
+\cowel_to_str(1e10,format="splice")
+\cowel_to_str(1e10,format="fixed")
+\cowel_to_str(1e10,format="scientific")
 
 \cowel_to_str("awoo")
 \cowel_to_str({awoo})
@@ -1479,19 +1479,19 @@ COWEL markup:
 
 Generated HTML:
 \htmlblock{
-\cowel_to_str(unit)
+\cowel_to_str("unit")
 
-\cowel_to_str(true)
-\cowel_to_str(false)
+\cowel_to_str("true")
+\cowel_to_str("false")
 
 \cowel_to_str(255)
-\cowel_to_str(255, base=16)
-\cowel_to_str(-255, zpad=5)
+\cowel_to_str(255,base=16)
+\cowel_to_str(-255,zpad=5)
 
 \cowel_to_str(1e10)
-\cowel_to_str(1e10, format=splice)
-\cowel_to_str(1e10, format=fixed)
-\cowel_to_str(1e10, format=scientific)
+\cowel_to_str(1e10,format="splice")
+\cowel_to_str(1e10,format="fixed")
+\cowel_to_str(1e10,format="scientific")
 
 \cowel_to_str("awoo")
 \cowel_to_str({awoo})
@@ -1577,7 +1577,7 @@ The result is in the range \math{\mrow{
 
 \h3(id="basic-arithmetic-operations"){Basic arithmetic operations}
 
-\cowel_macro(left_fold_math_func){\
+\cowel_macro("left_fold_math_func"){\
 \mathblock{\mrow{
 \mi{\cowel_put}\
 \mo(stretchy=false){(}\
@@ -1600,7 +1600,7 @@ The result is in the range \math{\mrow{
 }}\
 }\
 \
-\cowel_macro(left_fold_math_op){\
+\cowel_macro("left_fold_math_op"){\
 \math{\mrow{
 \msub{\mi{x}\mn{0}}\
 \mo{\cowel_put}\
@@ -1619,7 +1619,7 @@ The result is in the range \math{\mrow{
 \cowel_highlight_as("markup-tag"){cowel_pos}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
-Returns \math{\mrow{\mo(form=prefix){+}\mi{x}}}.
+Returns \math{\mrow{\mo(form="prefix"){+}\mi{x}}}.
 
 If \cowdoc_attr{x} is of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
@@ -1636,7 +1636,7 @@ The result is bitwise identical to \cowdoc_attr{x}.
 \cowel_highlight_as("markup-tag"){cowel_neg}(\cowdoc_param("x", "float")): \cowel_highlight_as("keyword-type"){float}
 }
 
-Returns \math{\mrow{\mo(form=prefix){−}\mi{x}}}.
+Returns \math{\mrow{\mo(form="prefix"){−}\mi{x}}}.
 
 If \cowdoc_attr{x} is of type \cowdoc_type{float},
 the result is that of the IEEE-754 operation
@@ -2038,7 +2038,7 @@ Bitwise operations work exclusively on operands of type \cowdoc_type{int}.
 \cowel_highlight_as("markup-tag"){cowel_bit_not}(\cowdoc_param("x", "int")): \cowel_highlight_as("keyword-type"){int}
 }
 
-Returns \math{\mrow{\mo(form=prefix){−}\mi{x}\mo{−}\mn{1}}}.
+Returns \math{\mrow{\mo(form="prefix"){−}\mi{x}\mo{−}\mn{1}}}.
 
 \Bnote{
 This has the effect of flipping each bit

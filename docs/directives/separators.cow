@@ -43,7 +43,7 @@ The \cowdoc_dir{nobr} directive is a formatting directive
 which prevents word breaks within its content.
 Its content is an HTML context.
 This is done by applying a
-\code(css){\cowel_highlight_phantom{x\{}white-space: nowrap;}
+\code("css"){\cowel_highlight_phantom{x\{}white-space: nowrap;}
 style its content.
 
 \Btip{

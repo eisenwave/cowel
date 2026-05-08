@@ -32,7 +32,7 @@ positional-group-member
   = expression;
 member-name
   = identifier
-  | quoted-string;
+  | string-literal;
 expression
   = logical-or-expression;
 logical-or-expression
@@ -79,8 +79,8 @@ primary-expression
   | bool-literal
   | int-literal
   | float-literal
-  | unquoted-string
-  | quoted-string
+  | id-expression
+  | string-literal
   | block
   | group;
 parenthesized-expression
@@ -96,12 +96,12 @@ int-literal
 float-literal
   = INFINITY-TOKEN
   | DECIMAL-FLOAT-TOKEN;
-unquoted-string
+id-expression
   = IDENTIFIER-TOKEN ? not followed by group or block ?;
-quoted-string
-  = STRING-QUOTE-TOKEN, { quoted-string-markup-element }, STRING-QUOTE-TOKEN;
-quoted-string-markup-element
-  = QUOTED-STRING-TEXT-TOKEN
+string-literal
+  = QUOTE-TOKEN, { string-literal-markup-element }, QUOTE-TOKEN;
+string-literal-markup-element
+  = STRING-LITERAL-TEXT-TOKEN
   | common-markup-element;
 block
   = BRACE-LEFT-TOKEN, { block-markup-element }, BRACE-RIGHT-TOKEN;

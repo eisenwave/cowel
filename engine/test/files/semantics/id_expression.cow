@@ -1,0 +1,9 @@
+\test_input{
+\cowel_var_let("x", 100)\
+\cowel_var_let("y", 23)\
+\(x + y)
+}
+
+\test_output{
+123
+}

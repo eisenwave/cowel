@@ -26,7 +26,7 @@ text
 push_directive_splice
 push_group 1
 push_positional_member
-unquoted_string
+id_expression
 pop_positional_member
 pop_group
 pop_directive_splice
@@ -34,7 +34,7 @@ text
 push_directive_splice
 push_group 1
 push_positional_member
-unquoted_string
+id_expression
 pop_positional_member
 pop_group
 pop_directive_splice

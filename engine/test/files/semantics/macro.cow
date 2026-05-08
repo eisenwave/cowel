@@ -1,10 +1,10 @@
 \test_input{
-\cowel_macro(try){\cowel_put(else=Failure){0}}\
-\try(Success)
+\cowel_macro("try"){\cowel_put(else="Failure"){0}}\
+\try("Success")
 \try
 
-\cowel_macro(m){\cowel_put{greeting}, \cowel_put\cowel_put{0}}\
-\m(greeting=Hello, "!"){macros}
+\cowel_macro("m"){\cowel_put{greeting}, \cowel_put\cowel_put{0}}\
+\m(greeting="Hello", "!"){macros}
 }
 
 \test_output{

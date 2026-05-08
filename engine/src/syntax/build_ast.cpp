@@ -37,7 +37,8 @@ Primary Primary::basic(Primary_Kind kind, File_Source_Span source_span, std::u8s
     case bool_literal:
     case text: return Primary { kind, source_span, source, std::monostate {} };
 
-    case unquoted_string: {
+    case unquoted_member_name:
+    case id_expression: {
         return Primary { kind, source_span, source, std::monostate {}, String_Kind::ascii };
     }
 
@@ -206,7 +207,7 @@ Group_Member Group_Member::ellipsis(File_Source_Span source_span, std::u8string_
 Group_Member Group_Member::named(Primary&& name, Expression&& value)
 {
     COWEL_DEBUG_ASSERT(
-        name.get_kind() == ast::Primary_Kind::unquoted_string
+        name.get_kind() == ast::Primary_Kind::unquoted_member_name
         || name.get_kind() == ast::Primary_Kind::quoted_string
     );
     // clang-format off
@@ -341,7 +342,8 @@ void Primary::assert_validity() const
         break;
     }
     case Primary_Kind::decimal_float_literal:
-    case Primary_Kind::unquoted_string:
+    case Primary_Kind::unquoted_member_name:
+    case Primary_Kind::id_expression:
     case Primary_Kind::text: {
         break;
     }
@@ -403,7 +405,7 @@ constexpr std::optional<ast::Primary_Kind> instruction_type_primary_kind(CST_Ins
     switch (type) {
     case escape: return ast::Primary_Kind::escape;
     case text: return ast::Primary_Kind::text;
-    case unquoted_string: return ast::Primary_Kind::unquoted_string;
+    case id_expression: return ast::Primary_Kind::id_expression;
     case binary_int:
     case octal_int:
     case decimal_int:
@@ -759,7 +761,7 @@ private:
                     advance_by_tokens(1);
                     const File_Source_Span span { initial_pos, m_file };
                     return ast::Primary::basic(
-                        ast::Primary_Kind::unquoted_string, span, extract(span)
+                        ast::Primary_Kind::unquoted_member_name, span, extract(span)
                     );
                 }
                 if (name_instruction.kind == CST_Instruction_Kind::push_quoted_member_name) {
@@ -957,7 +959,7 @@ private:
         case CST_Instruction_Kind::keyword_true:
         case CST_Instruction_Kind::keyword_false:
         case CST_Instruction_Kind::keyword_infinity:
-        case CST_Instruction_Kind::unquoted_string:
+        case CST_Instruction_Kind::id_expression:
         case CST_Instruction_Kind::binary_int:
         case CST_Instruction_Kind::octal_int:
         case CST_Instruction_Kind::decimal_int:

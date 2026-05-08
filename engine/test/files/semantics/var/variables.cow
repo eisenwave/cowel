@@ -1,40 +1,40 @@
 \test_input{
-\__typeof(cowel_var_exists(type_probe))
-\__typeof(cowel_var_let(type_probe, 1))
-\__typeof(cowel_var_set(type_probe, 2))
-\__typeof(cowel_var_get(type_probe))
-\__typeof(cowel_var_delete(type_probe))
+\__typeof(cowel_var_exists("type_probe"))
+\__typeof(cowel_var_let("type_probe", 1))
+\__typeof(cowel_var_set("type_probe", 2))
+\__typeof(cowel_var_get("type_probe"))
+\__typeof(cowel_var_delete("type_probe"))
 
-\cowel_var_exists(x)
-\cowel_var_exists(y)
-\cowel_var_exists(z)
+\cowel_var_exists("x")
+\cowel_var_exists("y")
+\cowel_var_exists("z")
 
-\cowel_var_let(x, 1)\
-\cowel_var_let(name=y, value=2)\
-\cowel_var_let(z, cowel_add(cowel_var_get(x), cowel_var_get(y)))\
+\cowel_var_let("x", 1)\
+\cowel_var_let(name="y", value=2)\
+\cowel_var_let("z", cowel_add(cowel_var_get("x"), cowel_var_get("y")))\
 \
-\cowel_var_get(x)
-\cowel_var_get(y)
-\cowel_var_get(z)
+\cowel_var_get("x")
+\cowel_var_get("y")
+\cowel_var_get("z")
 
-\cowel_var_set(x, 1.5)\
-\cowel_var_set(name=y, value=2.5)\
-\cowel_var_set(z, awoo)\
-\cowel_var_set(z, chan)\
-\cowel_var_get(x)
-\cowel_var_get(y)
-\cowel_var_get(z)
+\cowel_var_set("x", 1.5)\
+\cowel_var_set(name="y", value=2.5)\
+\cowel_var_set("z", "awoo")\
+\cowel_var_set("z", "chan")\
+\cowel_var_get("x")
+\cowel_var_get("y")
+\cowel_var_get("z")
 
-\cowel_var_exists(x)
-\cowel_var_exists(y)
-\cowel_var_exists(z)
+\cowel_var_exists("x")
+\cowel_var_exists("y")
+\cowel_var_exists("z")
 
-\cowel_var_delete(x)\
-\cowel_var_delete(y)\
-\cowel_var_delete(z)\
-\cowel_var_exists(x)
-\cowel_var_exists(y)
-\cowel_var_exists(z)
+\cowel_var_delete("x")\
+\cowel_var_delete("y")\
+\cowel_var_delete("z")\
+\cowel_var_exists("x")
+\cowel_var_exists("y")
+\cowel_var_exists("z")
 }
 
 \test_output{

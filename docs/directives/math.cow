@@ -1,4 +1,4 @@
-\h3(id=math){Math}
+\h3(id="math"){Math}
 
 In recent years, browser support for
 \ref("https://developer.mozilla.org/en-US/docs/Web/MathML"){MathML}
@@ -13,7 +13,7 @@ you can embed their content using \cowdoc_dir{cowel_text_as_html}:
 \cowblock{
 Math
 \\cowel_text_as_html{
-\code(xml,nested=true){<math display=inline>
+\code("xml",nested=true){<math display=inline>
   <mfrac>
     <mi>x</mi>
     <mn>2</mn>

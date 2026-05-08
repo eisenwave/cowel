@@ -21,7 +21,7 @@ built on top of only a few \dfn{markup elements}:
     \cowdoc_c{\\* block comments *\\}
   }
   \li{
-    \cowdoc_c{\\directive_splices(positional, args, named_args = 0){and content}}
+    \cowdoc_c{\\directive_splices("positional", "args",named_args = 0){and content}}
   }
   \li{
     Expression splices, such as
@@ -69,7 +69,7 @@ Formally, in \ref("https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_fo
 grammar format,
 a \gterm{DOCUMENT} is matched as follows:
 
-\codeblock(ebnf){\cowel_include_text("lex_grammar.ebnf")}
+\codeblock("ebnf"){\cowel_include_text("lex_grammar.ebnf")}
 
 Let the \dfn{tokens} of the document be any matched nonterminals
 whose name ends with \gterm{TOKEN}.
@@ -104,7 +104,7 @@ and any software processing COWEL should attempt to form these tokens.
 is a markup element which consists of as many characters as possible,
 excluding \cowdoc_cp(0x5C).
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 DOCUMENT-TEXT-TOKEN
   = DOCUMENT-TEXT-CHAR, { DOCUMENT-TEXT-CHAR };
 DOCUMENT-TEXT-CHAR
@@ -225,7 +225,7 @@ The meaning of the escape sequences is described in the table below.
 
 In EBNF grammar, an \gterm{ESCAPE-TOKEN} is constructed like:
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 ESCAPE-TOKEN
   = "\\", ESCAPABLE-CHAR - "+"
   | "\\+", ? LOWER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
@@ -308,7 +308,7 @@ B}
 
 In EBNF grammar, a \gterm{LINE-COMMENT-TOKEN} is constructed as follows:
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 LINE-COMMENT-TOKEN
   = "\\:", { LINE-COMMENT-CHAR }, LINE-TERMINATOR;
 LINE-COMMENT-CHAR
@@ -355,7 +355,7 @@ AB
 
 In EBNF grammar, a \gterm{BLOCK-COMMENT-TOKEN} is constructed as follows:
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 BLOCK-COMMENT-TOKEN
   = "\\*", { BLOCK-COMMENT-CHAR }, "*\\";
 BLOCK-COMMENT-CHAR
@@ -377,7 +377,7 @@ Inside scripting contexts such as in directive arguments,
 \gterm{GROUP-CONTENT} may appear,
 some of which represents a value of a basic type (\ref("#types-intro")).
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 GROUP-CONTENT
   = GROUP
   | BLOCK
@@ -436,7 +436,7 @@ Some literals are simply keywords:
 
 \h4(id="int-literal"){\gterm{int-literal} \'EM DASH' Integer literal}
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 int-literal
   = BINARY-INT-TOKEN
   | OCTAL-INT-TOKEN
@@ -500,7 +500,7 @@ the minus sign is not part of it.
 
 \h4(id="float-literal"){\gterm{float-literal} \'EM DASH' Floating-point literal}
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 float-literal
   = INFINITY-TOKEN
   | DECIMAL-FLOAT-TOKEN;
@@ -595,7 +595,7 @@ After lexical analysis,
 the produced tokens are used as the input to the parsing stage.
 The tokens from lexical analysis are matched by a context-free grammar as follows:
 
-\codeblock(ebnf){\cowel_include_text("grammar.ebnf")}
+\codeblock("ebnf"){\cowel_include_text("grammar.ebnf")}
 
 \h3{Directive splices}
 
@@ -667,7 +667,7 @@ Every directive has three parts:
 
 In EBNF grammar, a \gterm{directive-splice} is constructed as follows:
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 directive-splice
   = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], [ block ];
 DIRECTIVE-SPLICE-NAME-TOKEN
@@ -695,7 +695,7 @@ Doing so is equivalent to writing
 Grammatically, the arguments are a \gterm{group},
 which is constructed as follows:
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 group
   = PARENTHESIS-LEFT-TOKEN, PARENTHESIS-RIGHT-TOKEN
   | PARENTHESIS-LEFT-TOKEN, named-group-member, [ COMMA-TOKEN, [ group-member-list ] ], PARENTHESIS-RIGHT-TOKEN
@@ -713,7 +713,7 @@ positional-group-member
   = expression;
 member-name
   = identifier
-  | quoted-string;
+  | string-literal;
 }
 
 \dfn{Directive arguments} can be
@@ -725,7 +725,7 @@ Arguments are separated by commas.
 \Bex{
 Often, arguments are converted to HTML attributes.
 \cowblock{
-\\b(id = abc){Bold text.}
+\\b(id ="abc"){Bold text.}
 }
 Generated HTML:
 \htmlblock{
@@ -764,7 +764,7 @@ you can do so by writing:
 \: "name = value" as a positional argument
 \xyz("name = value")
 \: named argument with name "name" and value "value"
-\xyz(name = value)
+\xyz(name ="value")
 }}
 Only the literal \cowdoc_c{=} character can be used for named arguments,
 not its escaped variant \cowdoc_c{\\=}.
@@ -790,9 +790,9 @@ See also \ref("#dir-cowel_macro") and \ref("#dir-cowel_put").
 COWEL markup:
 \cowblock{\literally{
 \: Define a macro for generating <div> elements
-\cowel_macro(div){\cowel_html_element(div, attr = (...)){\cowel_put}}
+\cowel_macro("div"){\cowel_html_element("div",attr = (...)){\cowel_put}}
 
-\div(id = abc){inner text}
+\div(id ="abc"){inner text}
 }}
 Generated HTML:
 \htmlblock{
@@ -818,12 +818,12 @@ An error is raised if an ellipsis is used as an argument outside of a macro expa
 \h5{Groups}
 
 Groups make it possible to group any of the aforementioned constructs.
-Groups begin with \code(cowel){\cowel_highlight_phantom{\\d}\'LEFT PARENTHESIS'}
-and end with \code(cowel){\cowel_highlight_phantom{\\d\'LEFT PARENTHESIS'}\'RIGHT PARENTHESIS'}.
+Groups begin with \code("cowel"){\cowel_highlight_phantom{\\d}\'LEFT PARENTHESIS'}
+and end with \code("cowel"){\cowel_highlight_phantom{\\d\'LEFT PARENTHESIS'}\'RIGHT PARENTHESIS'}.
 They can appear both in positional and in named arguments.
 
 \Bex{
-\codeblock(cowel){\literally{
+\codeblock("cowel"){\literally{
 \d((x,), (), (y,))   \: groups as positional arguments
 \d(n = (x, y))       \: group as named argument
 \d(((())))           \: nested empty groups
@@ -912,7 +912,7 @@ Generated HTML:
 
 In EBNF grammar, an \gterm{expression-splice} is constructed as follows:
 
-\codeblock(ebnf){
+\codeblock("ebnf"){
 expression-splice
   = EXPRESSION-SPLICE-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
 EXPRESSION-SPLICE-TOKEN

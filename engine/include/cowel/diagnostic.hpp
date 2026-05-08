@@ -130,6 +130,10 @@ inline constexpr std::u8string_view regex_execution = u8"regex.execution";
 /// @brief Attempted splice is not valid.
 inline constexpr std::u8string_view splice = u8"splice";
 
+/// @brief For an id-expression (plain identifier),
+/// no variable with that name was found.
+inline constexpr std::u8string_view id_lookup = u8"id.lookup";
+
 // DIRECTIVE-SPECIFIC DIAGNOSTICS ==================================================================
 
 /// @brief In an HTML element directive,

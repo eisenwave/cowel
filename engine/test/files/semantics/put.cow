@@ -1,20 +1,20 @@
 \test_input{
-\cowel_macro(content){\cowel_put}\content{Content}
-\cowel_macro(pos){\cowel_put{0}}\pos(Positional)
-\cowel_macro(named){\cowel_put{n}}\named(n = Named)
+\cowel_macro("content"){\cowel_put}\content{Content}
+\cowel_macro("pos"){\cowel_put{0}}\pos("Positional")
+\cowel_macro("named"){\cowel_put{n}}\named(n = "Named")
 
-\cowel_macro(nested){\cowel_put{\cowel_put}}\
-\nested(X){0}
+\cowel_macro("nested"){\cowel_put{\cowel_put}}\
+\nested("X"){0}
 
 \test_expect_error("put.outside"){\cowel_put}
 
-\cowel_macro(put_no_block){\cowel_put}\
-\test_expect_error("put.invalid"){\put_no_block(arg)}
+\cowel_macro("put_no_block"){\cowel_put}\
+\test_expect_error("put.invalid"){\put_no_block("arg")}
 
-\cowel_macro(put_range){\cowel_put{5}}\
-\test_expect_error("put.range"){\put_range(a, b)}
+\cowel_macro("put_range"){\cowel_put{5}}\
+\test_expect_error("put.range"){\put_range("a", "b")}
 
-\cowel_macro(put_named_miss){\cowel_put{xyz}}\
+\cowel_macro("put_named_miss"){\cowel_put{xyz}}\
 \test_expect_error("put.invalid"){\put_named_miss(a=1)}
 }
 

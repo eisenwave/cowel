@@ -72,7 +72,7 @@ unquoted_member_name
 skip
 equals
 skip
-unquoted_string
+id_expression
 pop_named_member
 pop_group
 pop_directive_splice
