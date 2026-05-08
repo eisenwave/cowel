@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 # This script converts from the input data given in
-# https://www.unicode.org/Public/17.0.0/ucd/DerivedCoreProperties.txt
+# https://www.unicode.org/Public/ucd/latest/ucd/DerivedCoreProperties.txt
+# (e.g. the Unicode 17.0.0 version at
+# https://www.unicode.org/Public/17.0.0/ucd/DerivedCoreProperties.txt)
 # to brace-enclosed range literals suitable for use in C++.
 #
 # Usage: generate-unicode-case-properties-cpp.py <DerivedCoreProperties.txt> (cased|case_ignorable)

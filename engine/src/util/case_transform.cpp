@@ -114,8 +114,9 @@ namespace {
 
 // U+03A3 GREEK CAPITAL LETTER SIGMA
 constexpr char32_t greek_capital_sigma = U'\u03A3';
-// U+03C2 GREEK SMALL LETTER FINAL SIGMA
-constexpr char32_t greek_small_final_sigma = U'\u03C2';
+// Storage for the Final_Sigma result view (U+03C2 GREEK SMALL LETTER FINAL SIGMA).
+// Must be at namespace scope so that the returned string_view remains valid.
+constexpr char32_t greek_small_final_sigma_storage = U'\u03C2';
 
 } // namespace
 
@@ -165,8 +166,7 @@ std::u32string_view contextual_to_lower(const std::u32string_view str, const std
     }();
 
     if (!after_cased) {
-        static constexpr char32_t final_sigma_storage = greek_small_final_sigma;
-        return std::u32string_view { &final_sigma_storage, 1 };
+        return std::u32string_view { &greek_small_final_sigma_storage, 1 };
     }
     return unconditional_to_lower(greek_capital_sigma);
 }
