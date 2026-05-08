@@ -17,27 +17,33 @@ COMMON-MARKUP-ELEMENT
   | RESERVED-ESCAPE-TOKEN;
 ESCAPE-TOKEN
   = "\", ESCAPABLE-CHAR - "+"
+  | "\", LINE-TERMINATOR
   | "\+", ? LOWER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
   | "\+", ? UPPER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
-  | "\", LINE-TERMINATOR;
+  | "\'", CHARACTER-NAME-CHAR, { CHARACTER-NAME-CHAR }, "\'";
 ESCAPABLE-CHAR
   = "{" |  "}" | "+" | '"' | "\";
 LOWER-HEX-CHAR
   = "a" | "b" | "c" | "d" | "e" | "f";
 UPPER-HEX-CHAR
   = "A" | "B" | "C" | "D" | "E" | "F";
+CHARACTER-NAME-CHAR
+  = UPPER-LETTER | DIGIT | " " | "-";
 LOWER-HEX-DIGIT
   = DIGIT | LOWER-HEX-CHAR;
 UPPER-HEX-DIGIT
   = DIGIT | UPPER-HEX-CHAR;
 RESERVED-ESCAPE-TOKEN
   = "\", RESERVED-ESCAPE-CHAR
-  | "\", ? end of file ?;
+  | "\", ? end of file ?
+  | "\'", { RESERVED-CHARACTER-NAME-CHAR }, "'";
 RESERVED-ESCAPE-CHAR
   = CHAR
   - ESCAPABLE-CHAR
   - IDENTIFIER-START-CHAR
   - "*" - ":" - LF - CR;
+RESERVED-CHARACTER-NAME-CHAR
+  = CHAR - CR - LF - "'";
 LINE-COMMENT-TOKEN
   = "\:", { LINE-COMMENT-CHAR }, LINE-TERMINATOR;
 LINE-COMMENT-CHAR
@@ -69,6 +75,8 @@ DIGIT
   = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 LETTER
   = ? ASCII alphabetic character ?;
+UPPER-LETTER
+  = ? upper-case ASCII alphabetic characters ?;
 
 GROUP
   = PARENTHESIS-LEFT-TOKEN, { GROUP-CONTENT }, PARENTHESIS-RIGHT-TOKEN;

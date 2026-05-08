@@ -212,6 +212,13 @@ and so do any trailing spaces or duplicate spaces in the input.
 In other words, an exact character sequence is expected.
 }
 
+\Btip{
+Named character escapes (\ref("#escape-sequences")) provide
+a compact literal syntax for the same purpose.
+\cowdoc_c{\\'DIGIT ZERO'} is equivalent to
+\cowdoc_c{\\cowel_char_by_name("DIGIT ZERO")}.
+}
+
 \cowdoc_dir_h4("cowel_char_by_num", "Character by code point number")
 
 \pre{

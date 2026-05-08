@@ -126,10 +126,10 @@ public:
         }
         case ast::Primary_Kind::escape: {
             m_line_state = Blank_Line_Initial_State::middle;
-            const Fixed_String8<4> text = expand_escape(node);
+            const std::u8string_view text = node.get_escaped_code_units();
             if (!text.empty()) {
                 enter_paragraph();
-                HTML_Content_Policy::write(text.as_string(), Output_Language::text);
+                HTML_Content_Policy::write(text, Output_Language::text);
             }
             break;
         }

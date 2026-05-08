@@ -42,9 +42,9 @@ public:
             break;
         }
         case ast::Primary_Kind::escape: {
-            const Fixed_String8<4> text = expand_escape(node);
+            const std::u8string_view text = node.get_escaped_code_units();
             if (!text.empty()) {
-                write(text.as_string(), Output_Language::text);
+                write(text, Output_Language::text);
             }
             return Processing_Status::ok;
         }

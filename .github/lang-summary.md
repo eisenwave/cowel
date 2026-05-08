@@ -16,6 +16,8 @@ This makes COWEL easy to nest foreign content in.
   `\+` followed by exactly 4 or 8 hexadecimal digits encodes a Unicode scalar value.
   If 8 digits can be matched, they win over 4.
   Hex letters must be all lowercase or all uppercase.
+  `\'NAME'` (apostrophe, uppercase letters/digits/spaces/hyphens, closing apostrophe)
+  encodes the Unicode scalar value by character name (e.g. `\'DIGIT ZERO'`).
   `\` followed by a newline → nothing (joins lines without whitespace).
 - **Line comment** — `\: comment text` extends to end of line.
   The trailing newline is consumed, so it leaves no blank line.

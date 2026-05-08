@@ -165,17 +165,11 @@ TEST(Json, simple_string)
 TEST(Json, string_with_backslash_escape)
 {
     std::pmr::monotonic_buffer_resource memory;
-    // The ulight JSON parser is configured in engine/src/json.cpp with
-    // escapes = ulight::Escape_Parsing::parse_encode.
-    // In this mode the escape callback receives the raw escape letter as
-    // code_units rather than the decoded control character,
-    // so \n yields 'n', \t yields 't', while \\ yields '\' and \" yields '"'.
-    // Unicode escapes (\uXXXX) are fully decoded (see string_with_unicode_escape).
     const auto result = parse(R"("line1\nline2\ttab\\back")", &memory);
     ASSERT_TRUE(result.has_value());
     const String* const s = result->as_string();
     ASSERT_NE(s, nullptr);
-    EXPECT_EQ(*s, u8"line1nline2ttab\\back"sv);
+    EXPECT_EQ(*s, u8"line1\nline2\ttab\\back"sv);
 }
 
 TEST(Json, string_with_unicode_escape)

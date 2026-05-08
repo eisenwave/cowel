@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/fixed_string.hpp"
 #include "cowel/util/meta.hpp"
 #include "cowel/util/source_position.hpp"
 
@@ -124,7 +125,8 @@ struct Primary {
 private:
     using Extra_Variant = std::variant<
         std::monostate, // No extra.
-        std::size_t, // Length of escape sequence.
+        std::size_t, // Length of comment suffix.
+        Fixed_String8<4>, // UTF-8 code units for escape sequences.
         Big_Int, // Parsed int value.
         Parsed_Float, // Parsed float value.
         Pmr_Vector<Markup_Element>, // Markup elements of block or quoted string.
@@ -141,6 +143,12 @@ public:
     [[nodiscard]]
     static Primary
     basic(Primary_Kind kind, File_Source_Span source_span, std::u8string_view source);
+
+    /// @brief Constructs an escape primary with pre-encoded UTF-8 code units.
+    /// @param code_point The code point from lexing, or `char32_t(-1)` for whitespace escapes.
+    [[nodiscard]]
+    static Primary
+    escape(File_Source_Span source_span, std::u8string_view source, char32_t code_point);
 
     [[nodiscard]]
     static Primary quoted_string(
@@ -265,6 +273,15 @@ public:
         COWEL_ASSERT(m_kind == Primary_Kind::escape);
         COWEL_DEBUG_ASSERT(m_source.size() >= 2);
         return m_source.substr(1);
+    }
+
+    /// @brief Returns the pre-encoded UTF-8 code units corresponding to this escape.
+    /// For LF and CRLF escapes, this is empty.
+    [[nodiscard]]
+    std::u8string_view get_escaped_code_units() const
+    {
+        COWEL_ASSERT(m_kind == Primary_Kind::escape);
+        return std::get<Fixed_String8<4>>(m_extra).as_string();
     }
 
     [[nodiscard]]

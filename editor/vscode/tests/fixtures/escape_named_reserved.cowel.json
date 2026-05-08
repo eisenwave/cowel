@@ -1,0 +1,89 @@
+{
+  "description": "Malformed named escapes are highlighted as invalid escapes",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Bare apostrophe escape prefix is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Empty named escape is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Malformed quoted named escape is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Unterminated named escape is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Named escape with dot is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Named escape with underscore is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Named escape with dollar sign is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 7,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Named escape with leading space is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 8,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Named escape with trailing space is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 9,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Named escape with leading space and hyphenated name is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 10,
+      "col": 0,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Named escape with trailing space and hyphenated name is invalid"
+    },
+    {
+      "type": "top-scope",
+      "line": 11,
+      "col": 4,
+      "expected": "invalid.illegal.escape.cowel",
+      "description": "Unterminated named escape inside a directive argument string is invalid"
+    }
+  ]
+}
