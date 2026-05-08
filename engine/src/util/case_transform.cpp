@@ -162,14 +162,13 @@ bool is_case_ignorable(const char32_t c)
 
 std::u32string_view contextual_to_lower(const std::u32string_view str, const std::size_t pos)
 {
-    static constexpr auto final_sigma = U'\N{GREEK SMALL LETTER FINAL SIGMA}';
-
     const char32_t c = str[pos];
-    if (c != final_sigma) {
+    if (c != U'\N{GREEK CAPITAL LETTER SIGMA}') {
         return unconditional_to_lower(c);
     }
 
-    // Apply the Unicode Final_Sigma condition (Unicode Standard, section 3.13):
+    // Apply the Unicode Final_Sigma condition
+    // (see https://www.unicode.org/reports/tr44/#Case):
     //   Before(C): there is a Cased character before C,
     //              with only Case_Ignorable characters intervening.
     //   After(C):  there is a Cased character after C,
@@ -192,7 +191,7 @@ std::u32string_view contextual_to_lower(const std::u32string_view str, const std
     }();
 
     if (!before_cased) {
-        return unconditional_to_lower(U'\N{GREEK CAPITAL LETTER SIGMA}');
+        return U"\N{GREEK SMALL LETTER SIGMA}"sv;
     }
 
     // Scan forward, skipping Case_Ignorable characters.
@@ -207,10 +206,8 @@ std::u32string_view contextual_to_lower(const std::u32string_view str, const std
         return false;
     }();
 
-    if (!after_cased) {
-        return std::u32string_view { &final_sigma, 1 };
-    }
-    return unconditional_to_lower(U'\N{GREEK CAPITAL LETTER SIGMA}');
+    return after_cased ? U"\N{GREEK SMALL LETTER SIGMA}"sv
+                       : U"\N{GREEK SMALL LETTER FINAL SIGMA}"sv;
 }
 
 } // namespace cowel
