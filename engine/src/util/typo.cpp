@@ -64,9 +64,9 @@ Distant<std::size_t> closest_match(
     std::pmr::memory_resource* memory
 )
 {
-    if (is_all_ascii(needle)) {
-        return closest_match_ascii(haystack, needle, memory);
-    }
+    if( is_all_ascii(needle) ){
+        return  closest_match_ascii(haystack, needle, memory);
+    }   
 
     const std::pmr::u32string needle32 = detail::to_utf32(needle, memory);
     std::pmr::u32string hay32 { memory };

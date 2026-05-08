@@ -18,6 +18,12 @@ on:
       - "bindings/node/src/cpp/**"
       - ".github/workflows/clang-format.yml"
 
+permissions:
+  contents: read
+  checks: write
+  issues: write
+  pull-requests: write
+
 jobs:
   clang-format-check:
     runs-on: ubuntu-latest
@@ -29,9 +35,20 @@ jobs:
       - name: Install clang-format
         run: sudo apt-get install -y clang-format-20
 
-      - name: Run clang-format check
+      - name: Run clang-format
         run: >
           find engine/include engine/src bindings/native/src bindings/node/src/cpp
           \( -name '*.cpp' -o -name '*.c' -o -name '*.hpp' -o -name '*.h' \)
           -print0 |
-          xargs -0 -r clang-format-20 --color=1 --dry-run --Werror
+          xargs -0 -r clang-format-20 -i
+
+      - name: Suggest clang-format fixes
+        if: github.event_name == 'pull_request'
+        uses: reviewdog/action-suggester@v1
+        with:
+          tool_name: clang-format-20
+          fail_level: any
+          level: warning
+
+      - name: Verify no formatting changes are needed
+        run: git --no-pager diff --exit-code -- .
