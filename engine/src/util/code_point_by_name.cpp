@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "cowel/util/ascii_algorithm.hpp"
 #include "cowel/util/assert.hpp"
@@ -516,12 +515,6 @@ struct LooseMatchingResult {
     std::string Name;
 };
 
-struct MatchForCodepointName {
-    std::string Name;
-    uint32_t Distance = 0;
-    char32_t Value = 0;
-};
-
 namespace {
 
 [[nodiscard]] [[maybe_unused]]
@@ -546,21 +539,24 @@ std::optional<LooseMatchingResult> nameToCodepointLooseMatching(StringRef Name)
 
 // Find the unicode character whose editing distance to Pattern
 // is shortest, using the Wagner–Fischer algorithm.
-[[nodiscard]] [[maybe_unused]]
-std::vector<MatchForCodepointName>
-nearestMatchesForCodepointName(StringRef Pattern, std::size_t MaxMatchesCount)
+[[nodiscard]]
+std::size_t
+nearest_matches_for_codepoint_name_impl(StringRef Pattern, std::span<Code_Point_Name_Match> Matches)
 {
-    // We maintain a fixed size vector of matches,
+    if (Matches.empty()) {
+        return 0;
+    }
+
+    // We maintain a fixed-size span of matches,
     // sorted by distance
     // The worst match (with the biggest distance) are discarded when new elements
     // are added.
+    std::size_t MatchesCount = 0;
     std::size_t LargestEditDistance = 0;
-    std::vector<MatchForCodepointName> Matches;
-    Matches.reserve(MaxMatchesCount + 1);
 
-    auto Insert = [&](const Node& Node, uint32_t Distance, char32_t Value) -> bool {
+    auto Insert = [&](const Node& Node, std::size_t Distance, char32_t Value) -> bool {
         if (Distance > LargestEditDistance) {
-            if (Matches.size() == MaxMatchesCount) {
+            if (MatchesCount == Matches.size()) {
                 return false;
             }
             LargestEditDistance = Distance;
@@ -575,24 +571,36 @@ nearestMatchesForCodepointName(StringRef Pattern, std::size_t MaxMatchesCount)
             return Name;
         };
 
-        auto It = std::lower_bound( // NOLINT(modernize-use-ranges)
-            Matches.begin(), Matches.end(), Distance,
-            [&](const MatchForCodepointName& a, std::size_t Distance) {
-                if (Distance == a.Distance) {
-                    return a.Name < GetName();
+        auto It = std::lower_bound(
+            Matches.begin(), Matches.begin() + std::ptrdiff_t(MatchesCount), Distance,
+            [&](const Code_Point_Name_Match& a, std::size_t ProbeDistance) {
+                if (ProbeDistance == a.distance) {
+                    return a.name < GetName();
                 }
-                return a.Distance < Distance;
+                return a.distance < ProbeDistance;
             }
         );
-        if (It == Matches.end() && Matches.size() == MaxMatchesCount) {
+        if (It == Matches.begin() + std::ptrdiff_t(MatchesCount)
+            && MatchesCount == Matches.size()) {
             return false;
         }
 
-        MatchForCodepointName M { GetName(), Distance, Value };
-        Matches.insert(It, std::move(M));
-        if (Matches.size() > MaxMatchesCount) {
-            Matches.pop_back();
+        const std::size_t ItIndex = std::size_t(std::distance(Matches.begin(), It));
+        if (MatchesCount < Matches.size()) {
+            MatchesCount++;
         }
+        std::move_backward(
+            Matches.begin() + std::ptrdiff_t(ItIndex),
+            Matches.begin() + std::ptrdiff_t(MatchesCount - 1),
+            Matches.begin() + std::ptrdiff_t(MatchesCount)
+        );
+
+        Matches[ItIndex] = Code_Point_Name_Match {
+            .name = GetName(),
+            .distance = Distance,
+            .value = Value,
+        };
+        LargestEditDistance = Matches[MatchesCount - 1].distance;
         return true;
     };
 
@@ -618,7 +626,7 @@ nearestMatchesForCodepointName(StringRef Pattern, std::size_t MaxMatchesCount)
     static std::size_t Rows
         = UnicodeNameToCodepointLargestNameSize + 1;
 
-    std::vector<char> Distances(Columns * (UnicodeNameToCodepointLargestNameSize + 1), 0);
+    std::string Distances(Columns * (UnicodeNameToCodepointLargestNameSize + 1), char(0));
 
     auto Get = [&Distances, Columns](size_t Column, std::size_t Row) -> char& {
         COWEL_ASSERT(Column < Columns);
@@ -679,7 +687,7 @@ nearestMatchesForCodepointName(StringRef Pattern, std::size_t MaxMatchesCount)
 
     Node Root = createRoot();
     VisitNode(Root, 1, VisitNode);
-    return Matches;
+    return MatchesCount;
 }
 
 } // namespace
@@ -688,6 +696,14 @@ char32_t code_point_by_name(std::u8string_view name) noexcept
 {
     const std::optional<char32_t> result = nameToCodepointStrict(as_string_view(name));
     return result ? *result : char32_t(-1);
+}
+
+std::size_t nearest_matches_for_codepoint_name(
+    std::u8string_view pattern,
+    std::span<Code_Point_Name_Match> out_matches
+)
+{
+    return nearest_matches_for_codepoint_name_impl(as_string_view(pattern), out_matches);
 }
 
 } // namespace cowel

@@ -403,6 +403,7 @@ else()
         engine/test/src/main.cpp
         engine/test/src/test_char_sequence.cpp
         engine/test/src/test_chars_strings.cpp
+        engine/test/src/test_code_point_names.cpp
         engine/test/src/test_diff.cpp
         engine/test/src/test_document_generation.cpp
         engine/test/src/test_draft_uris.cpp
