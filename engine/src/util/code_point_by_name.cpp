@@ -603,9 +603,7 @@ std::size_t nearest_matches_for_codepoint_name_impl(
             .distance = Distance,
             .value = Value,
         };
-        if (MatchesCount != 0) {
-            LargestEditDistance = Matches[MatchesCount - 1].distance;
-        }
+        LargestEditDistance = Matches[MatchesCount - 1].distance;
         return true;
     };
 
