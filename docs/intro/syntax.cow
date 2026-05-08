@@ -7,8 +7,8 @@ built on top of only a few \dfn{markup elements}:
   \li{\cowdoc_c{Text.}}
   \li{
     Escape sequences, such as
-    \cowdoc_c{\\\U(0x7B)},
-    \cowdoc_c{\\\U(0x7D)},
+    \cowdoc_c{\\\+007B},
+    \cowdoc_c{\\\+007D},
     \cowdoc_c{\\\\},
     \cowdoc_c{\\+00A0},
     \cowdoc_c{\\'DIGIT ZERO'},
@@ -174,8 +174,8 @@ The meaning of the escape sequences is described in the table below.
   }
   \tr{
     \td{
-      \cowdoc_esc{\N{LEFT CURLY BRACKET}},
-      \cowdoc_esc{\N{RIGHT CURLY BRACKET}},
+      \cowdoc_esc{\'LEFT CURLY BRACKET'},
+      \cowdoc_esc{\'RIGHT CURLY BRACKET'},
       \cowdoc_esc{\\},
       \cowdoc_esc{"},
     }
@@ -434,7 +434,7 @@ Some literals are simply keywords:
   }
 }
 
-\h4(id="int-literal"){\gterm{int-literal} \N{EM DASH} Integer literal}
+\h4(id="int-literal"){\gterm{int-literal} \'EM DASH' Integer literal}
 
 \codeblock(ebnf){
 int-literal
@@ -498,7 +498,7 @@ This is an application of the unary minus operator to a \gterm{float-literal};
 the minus sign is not part of it.
 }
 
-\h4(id="float-literal"){\gterm{float-literal} \N{EM DASH} Floating-point literal}
+\h4(id="float-literal"){\gterm{float-literal} \'EM DASH' Floating-point literal}
 
 \codeblock(ebnf){
 float-literal
@@ -553,11 +553,11 @@ The value of a \gterm{DECIMAL-FLOAT-TOKEN} is determined as follows:
   \li{
     Let the \dfn{scaled value} of the \gterm{DECIMAL-FLOAT-TOKEN} be
     \mathblock{\mrow{
-      \mo{\N{LEFT PARENTHESIS}}
+      \mo{\'LEFT PARENTHESIS'}
       \mi{k}
       \mo{+}
       \mfrac{\mi{f}\msup{\mn{10}\mi{p}}}
-      \mo{\N{RIGHT PARENTHESIS}}
+      \mo{\'RIGHT PARENTHESIS'}
       \mo{×}
       \msup{\mn{10}\mi{e}}
     }}
@@ -736,7 +736,7 @@ Generated HTML:
 \h5{Named arguments}
 
 A \dfn{named argument} is a \gterm{group-member} of the form
-\cowdoc_c{\cowel_highlight_phantom{\\d\N{LEFT PARENTHESIS}}name = value},
+\cowdoc_c{\cowel_highlight_phantom{\\d\'LEFT PARENTHESIS'}name = value},
 where spaces anywhere around \cowdoc_attr{name} and \cowdoc_c{value} are ignored.
 Named arguments are matched to directive parameters before any positional arguments,
 meaning that positional arguments fill the remaining unmatched arguments.
@@ -818,8 +818,8 @@ An error is raised if an ellipsis is used as an argument outside of a macro expa
 \h5{Groups}
 
 Groups make it possible to group any of the aforementioned constructs.
-Groups begin with \code(cowel){\cowel_highlight_phantom{\\d}\N{LEFT PARENTHESIS}}
-and end with \code(cowel){\cowel_highlight_phantom{\\d\N{LEFT PARENTHESIS}}\N{RIGHT PARENTHESIS}}.
+Groups begin with \code(cowel){\cowel_highlight_phantom{\\d}\'LEFT PARENTHESIS'}
+and end with \code(cowel){\cowel_highlight_phantom{\\d\'LEFT PARENTHESIS'}\'RIGHT PARENTHESIS'}.
 They can appear both in positional and in named arguments.
 
 \Bex{
@@ -865,11 +865,11 @@ so they can be used to literally produce a brace character.
 \Bex{
 COWEL markup:
 \cowblock{
-\\b{Bold text \\\U(0x7B) with brace.}
+\\b{Bold text \\\+007B with brace.}
 }
 Generated HTML:
 \htmlblock{
-<b>Bold text \U(0x7B) with brace.</b>
+<b>Bold text \+007B with brace.</b>
 }
 }
 

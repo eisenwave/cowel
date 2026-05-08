@@ -803,20 +803,20 @@ we can control whether a JSON string is interpreted as a markup key,
 or as a string value:
 \cowblock{
 In JSON, there are
-\\cowel_html_element(code){\\cowel_highlight(json){\\cowel_highlight_phantom{\\\N{LEFT CURLY BRACKET}}"keys"}}
+\\cowel_html_element(code){\\cowel_highlight(json){\\cowel_highlight_phantom{\\\'LEFT CURLY BRACKET'}"keys"}}
 and
 \\cowel_html_element(code){\\cowel_highlight(json){"values"}}.
 }
 Using the highlight theme of this document, this renders as:
 \Bindent{
 In JSON, there are
-\code(json){\cowel_highlight_phantom{\N{LEFT CURLY BRACKET}}"keys"}
+\code(json){\cowel_highlight_phantom{\'LEFT CURLY BRACKET'}"keys"}
 and \code(json){"values"}.
 }
-Notice that the color of \code(json){\cowel_highlight_phantom{\N{LEFT CURLY BRACKET}}"keys"} is different
+Notice that the color of \code(json){\cowel_highlight_phantom{\'LEFT CURLY BRACKET'}"keys"} is different
 because it is highlighted as if it was positioned like:
 \codeblock(json){
-\N{LEFT CURLY BRACKET}"keys"
+\'LEFT CURLY BRACKET'"keys"
 }
 }
 
@@ -1901,7 +1901,7 @@ with rounding toward zero.
 An error is raised if \cowdoc_attr{y} is zero.
 
 \Bnote{
-The result is that of the \tt{\N{PERCENT SIGN}} operator in C.
+The result is that of the \tt{\'PERCENT SIGN'} operator in C.
 The sign of the result is the sign of the dividend \cowdoc_attr{x}.
 }
 
@@ -1960,7 +1960,7 @@ with rounding toward negative infinity.
 An error is raised if \cowdoc_attr{y} is zero.
 
 \Bnote{
-The result is that of the \tt{\N{PERCENT SIGN}} operator in Python.
+The result is that of the \tt{\'PERCENT SIGN'} operator in Python.
 The sign of the result is the sign of the divisor \cowdoc_attr{y}.
 }
 
