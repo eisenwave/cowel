@@ -120,7 +120,8 @@ Result<char32_t, Expand_Escape_Error_Code> unsafe_expand_escape(const std::u8str
     }
     default: break;
     }
-    return escape[0];
+    COWEL_DEBUG_ASSERT(is_ascii(escape[0]));
+    return char32_t(escape[0]);
 }
 
 } // namespace cowel
