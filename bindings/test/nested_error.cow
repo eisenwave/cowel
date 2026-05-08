@@ -1,2 +1,2 @@
-\cowel_macro(m){\not_defined}
+\cowel_macro("m"){\not_defined}
 \m
