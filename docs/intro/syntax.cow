@@ -228,10 +228,10 @@ In EBNF grammar, an \gterm{ESCAPE-TOKEN} is constructed like:
 \codeblock("ebnf"){
 ESCAPE-TOKEN
   = "\\", ESCAPABLE-CHAR - "+"
+  | "\\", LINE-TERMINATOR
   | "\\+", ? LOWER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
   | "\\+", ? UPPER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?
-  | "\\", LINE-TERMINATOR
-  | "\\'", CHARACTER-NAME-CHAR, { CHARACTER-NAME-CHAR }, "'";
+  | "\\'", CHARACTER-NAME-CHAR, { CHARACTER-NAME-CHAR }, "\\'";
 ESCAPABLE-CHAR
   = "{" |  "}" | "+" | '"' | "\\";
 LOWER-HEX-CHAR
@@ -255,7 +255,7 @@ LINE-TERMINATOR
 \Bnote{
 The purpose of most escapes is to prevent a character from having special meaning.
 For example, the \cowdoc_esc{"} escape prevents a quote
-from being interpreted as the end of a \gterm{QUOTED-STRING}.
+from being interpreted as the end of a \gterm{STRING-LITERAL}.
 
 Numeric character escapes are closely related to
 \ref("#dir-cowel_char_by_num").
@@ -382,7 +382,7 @@ GROUP-CONTENT
   = GROUP
   | BLOCK
   | IDENTIFIER-TOKEN
-  | QUOTED-STRING
+  | STRING-LITERAL
   | BINARY-INT-TOKEN
   | OCTAL-INT-TOKEN
   | DECIMAL-INT-TOKEN

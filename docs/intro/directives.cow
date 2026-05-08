@@ -212,6 +212,24 @@ that is a \gterm{int-literal} is always the same:
 the \cowdoc_type{int} value specified by the literal.
 }
 
+\h3{\gterm{id-expression}}
+
+\codeblock("ebnf"){
+id-expression
+  = IDENTIFIER-TOKEN ? not followed by group or block ?;
+}
+
+An \gterm{id-expression} is a bare \gterm{IDENTIFIER-TOKEN} in expression position
+that is not followed by a \gterm{group} or \gterm{block}.
+It performs a \dfn{variable lookup},
+retrieving the value of the variable with that name from the current scope.
+An \gterm{id-expression} has the type of the variable that it denotes.
+
+If no variable with the given name is in scope,
+an error is raised.
+
+Variables are introduced using \cowdoc_dir{cowel_var_let} and \cowdoc_dir{cowel_var_set}.
+
 \h3{\gterm{directive-call-expression}}
 
 \codeblock("ebnf"){

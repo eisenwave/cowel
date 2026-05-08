@@ -1540,10 +1540,12 @@ h1 {
 <div class=toc-num data-level=3>6.1</div>
 <a href=#primary-expression><h3><g-term>primary-expression</g-term></h3></a>
 <div class=toc-num data-level=3>6.2</div>
-<a href=#directive-call-expression><h3><g-term>directive-call-expression</g-term></h3></a>
+<a href=#id-expression><h3><g-term>id-expression</g-term></h3></a>
 <div class=toc-num data-level=3>6.3</div>
-<a href=#prefix-expression><h3><g-term>prefix-expression</g-term></h3></a>
+<a href=#directive-call-expression><h3><g-term>directive-call-expression</g-term></h3></a>
 <div class=toc-num data-level=3>6.4</div>
+<a href=#prefix-expression><h3><g-term>prefix-expression</g-term></h3></a>
+<div class=toc-num data-level=3>6.5</div>
 <a href=#binary-expressions><h3>Binary expressions</h3></a>
 <div class=toc-num data-level=2>7</div>
 <a href=#types-intro><h2>Types</h2></a>
@@ -2458,10 +2460,10 @@ The meaning of the escape sequences is described in the table below.
 </p>
 <code-block><h- data-h=name_nt_decl>ESCAPE-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ESCAPABLE-CHAR</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LINE-TERMINATOR</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_mac>? LOWER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?</h->
   <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_mac>? UPPER-HEX-DIGIT repeated exactly 8 or 4 times, preferring longer ?</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LINE-TERMINATOR</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>CHARACTER-NAME-CHAR</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>CHARACTER-NAME-CHAR</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>CHARACTER-NAME-CHAR</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>CHARACTER-NAME-CHAR</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>'</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>ESCAPABLE-CHAR</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>{</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h->  <h- data-h=str_dlim>"</h-><h- data-h=str>}</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>"</h-><h- data-h=str_dlim>'</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>LOWER-HEX-CHAR</h->
@@ -2484,7 +2486,7 @@ The meaning of the escape sequences is described in the table below.
 <note-block><p><intro-></intro-> 
 The purpose of most escapes is to prevent a character from having special meaning.
 For example, the <tt-><h- data-h=str_esc>\"</h-></tt-> escape prevents a quote
-from being interpreted as the end of a <g-term>QUOTED-STRING</g-term>.
+from being interpreted as the end of a <g-term>STRING-LITERAL</g-term>.
 </p>
 <p>Numeric character escapes are closely related to
 <a href=#dir-cowel_char_by_num>§9.2.3. <code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> — Character by code point number</a>.
@@ -2594,7 +2596,7 @@ some of which represents a value of a basic type (<a href=#types-intro>§7. Type
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>GROUP</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BLOCK</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>QUOTED-STRING</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>STRING-LITERAL</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BINARY-INT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>OCTAL-INT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>DECIMAL-INT-TOKEN</h->
@@ -3396,7 +3398,23 @@ that is a <g-term>int-literal</g-term> is always the same:
 the <tt-><h- data-h=kw_type>int</h-></tt-> value specified by the literal.
 </p></example-block>
 
-<h3 id=directive-call-expression><a class=para href=#directive-call-expression></a>6.2. <g-term>directive-call-expression</g-term></h3>
+<h3 id=id-expression><a class=para href=#id-expression></a>6.2. <g-term>id-expression</g-term></h3>
+
+<code-block><h- data-h=name_nt_decl>id-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-> <h- data-h=name_mac>? not followed by group or block ?</h-><h- data-h=sym_punc>;</h-></code-block>
+
+<p>An <g-term>id-expression</g-term> is a bare <g-term>IDENTIFIER-TOKEN</g-term> in expression position
+that is not followed by a <g-term>group</g-term> or <g-term>block</g-term>.
+It performs a <dfn>variable lookup</dfn>,
+retrieving the value of the variable with that name from the current scope.
+An <g-term>id-expression</g-term> has the type of the variable that it denotes.
+</p>
+<p>If no variable with the given name is in scope,
+an error is raised.
+</p>
+<p>Variables are introduced using <code><h- data-h=mk_tag>\cowel_var_let</h-></code> and <code><h- data-h=mk_tag>\cowel_var_set</h-></code>.
+</p>
+<h3 id=directive-call-expression><a class=para href=#directive-call-expression></a>6.3. <g-term>directive-call-expression</g-term></h3>
 
 <code-block><h- data-h=name_nt_decl>directive-call-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_sqr>]</h->
@@ -3415,7 +3433,7 @@ COWEL markup:
 </p><code-block>2</code-block>
 </example-block>
 
-<h3 id=prefix-expression><a class=para href=#prefix-expression></a>6.3. <g-term>prefix-expression</g-term></h3>
+<h3 id=prefix-expression><a class=para href=#prefix-expression></a>6.4. <g-term>prefix-expression</g-term></h3>
 
 <code-block><h- data-h=name_nt_decl>prefix-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>postfix-expression</h->
@@ -3491,7 +3509,7 @@ using builtin directives:
 </ul>
 </note-block>
 
-<h3 id=binary-expressions><a class=para href=#binary-expressions></a>6.4. Binary expressions</h3>
+<h3 id=binary-expressions><a class=para href=#binary-expressions></a>6.5. Binary expressions</h3>
 
 <code-block><h- data-h=name_nt_decl>expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-or-expression</h-><h- data-h=sym_punc>;</h->
@@ -5778,7 +5796,7 @@ the result is that of the IEEE-754 operations
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_add</h-></code> can also be written with the binary
 <code>+</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_sub><a class=para href=#dir-cowel_sub></a>9.11.13. <code><h- data-h=mk_tag>\cowel_sub</h-></code> — Subtraction</h4>
@@ -5803,7 +5821,7 @@ the result is that of the IEEE-754 operations
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_sub</h-></code> can also be written with the binary
 <code>-</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_mul><a class=para href=#dir-cowel_mul></a>9.11.14. <code><h- data-h=mk_tag>\cowel_mul</h-></code> — Multiplication</h4>
@@ -5828,7 +5846,7 @@ the result is that of the IEEE-754 operations
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_mul</h-></code> can also be written with the binary
 <code>*</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_div><a class=para href=#dir-cowel_div></a>9.11.15. <code><h- data-h=mk_tag>\cowel_div</h-></code> — Division</h4>
@@ -5856,7 +5874,7 @@ Instead, it results in infinity or NaN depending on the dividend.
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_div</h-></code> can also be written with the binary
 <code>/</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_div_to_zero><a class=para href=#dir-cowel_div_to_zero></a>9.11.16. <code><h- data-h=mk_tag>\cowel_div_to_zero</h-></code> — Division rounded toward zero</h4>
@@ -5893,7 +5911,7 @@ The sign of the result is the sign of the dividend <tt-><h- data-h=mk_attr>x</h-
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_rem_to_zero</h-></code> can also be written with the binary
 <code>%</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_div_to_pos_inf><a class=para href=#dir-cowel_div_to_pos_inf></a>9.11.18. <code><h- data-h=mk_tag>\cowel_div_to_pos_inf</h-></code> — Division rounded toward positive infinity</h4>
@@ -5990,7 +6008,7 @@ after the first <code>false</code>.
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_and</h-></code> can also be written with the binary
 <code>&amp;&amp;</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_or><a class=para href=#dir-cowel_or></a>9.12.3. <code><h- data-h=mk_tag>\cowel_or</h-></code> — Logical OR</h4>
@@ -6008,7 +6026,7 @@ and any remaining elements are ignored once the result is known.
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_or</h-></code> can also be written with the binary
 <code>||</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h3 id=bitwise-operations><a class=para href=#bitwise-operations></a>9.13. Bitwise operations</h3>
@@ -6071,7 +6089,7 @@ the result is that of the IEEE-754 operation
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_eq</h-></code> can also be written with the binary
 <code>==</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_ne><a class=para href=#dir-cowel_ne></a>9.14.2. <code><h- data-h=mk_tag>\cowel_ne</h-></code> — Not equals</h4>
@@ -6102,7 +6120,7 @@ The result is <code>cowel_not(cowel_eq(x, y))</code>.
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_ne</h-></code> can also be written with the binary
 <code>!=</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_lt><a class=para href=#dir-cowel_lt></a>9.14.3. <code><h- data-h=mk_tag>\cowel_lt</h-></code> — Less than</h4>
@@ -6123,7 +6141,7 @@ the result is that of the IEEE-754 operation
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_lt</h-></code> can also be written with the binary
 <code>&lt;</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_gt><a class=para href=#dir-cowel_gt></a>9.14.4. <code><h- data-h=mk_tag>\cowel_gt</h-></code> — Greater than</h4>
@@ -6144,7 +6162,7 @@ the result is that of the IEEE-754 operation
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_gt</h-></code> can also be written with the binary
 <code>&gt;</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_le><a class=para href=#dir-cowel_le></a>9.14.5. <code><h- data-h=mk_tag>\cowel_le</h-></code> — Less than or equal</h4>
@@ -6165,7 +6183,7 @@ the result is that of the IEEE-754 operation
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_le</h-></code> can also be written with the binary
 <code>&lt;=</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h4 id=dir-cowel_ge><a class=para href=#dir-cowel_ge></a>9.14.6. <code><h- data-h=mk_tag>\cowel_ge</h-></code> — Greater than or equal</h4>
@@ -6186,7 +6204,7 @@ the result is that of the IEEE-754 operation
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_ge</h-></code> can also be written with the binary
 <code>&gt;=</code> operator.
-See <a href=#binary-expressions>§6.4. Binary expressions</a>.
+See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
 <h3 id=string-operations><a class=para href=#string-operations></a>9.15. String operations</h3>
