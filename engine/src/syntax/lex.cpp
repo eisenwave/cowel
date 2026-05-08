@@ -257,6 +257,7 @@ private:
         if (escape.length == 1) {
             COWEL_DEBUG_ASSERT(escape.is_reserved);
             error(Source_Span { m_pos, 1 }, u8"Backslash at the end of the file is not valid."sv);
+            emit(Token_Kind::reserved_escape, escape.length);
         }
         else if (escape.is_reserved) {
             error(

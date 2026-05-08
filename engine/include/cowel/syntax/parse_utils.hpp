@@ -66,7 +66,7 @@ enum struct Expand_Escape_Error_Code : Default_Underlying {
     /// specified by `is_scalar_value`.
     nonscalar,
     /// @brief The named escape has a name that does not denote any code point.
-    /// For example, `\'XYZ'.
+    /// For example, `\'XYZ'`.
     bad_name,
 };
 
