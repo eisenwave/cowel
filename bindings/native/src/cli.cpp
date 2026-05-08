@@ -308,8 +308,7 @@ int main(int argc, const char* const* const argv)
         error.append(u8" ");
         print_location_of_file(error, in_path_u8);
         error.append(u8" Generation exited with status ");
-        const std::string status_value = std::to_string(static_cast<int>(result.status));
-        error.append(as_u8string_view(status_value));
+        error.append(result.status);
         error.append(u8" (");
         error.append(status_name);
         error.append(u8").");
