@@ -27,6 +27,7 @@
 - fix lexer crash on certain ASCII control characters (#294)
 - fix duplicate output for `--no-color` option
 - fix performance and memory leak issues related to `regex`
+- fix incorrect handling of final sigma characters in `cowel_to_lower` (#169)
 - fix various code block syntax highlighting issues by updating µlight
 - fix various VSCode plugin highlighting issues (#292)
 - also add internal `__typeof` directive and test types of directives
