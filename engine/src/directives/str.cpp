@@ -1,3 +1,6 @@
+#include <cstddef>
+#include <iterator>
+#include <ranges>
 #include <string_view>
 
 #include "cowel/util/case_transform.hpp"
@@ -180,19 +183,26 @@ Processing_Status Str_Transform_Behavior::do_evaluate(
     }
 
     const std::u8string_view input = x_matcher.get();
+
+    // Decode the UTF-8 input to UTF-32 first.
+    // This is required for context-sensitive lowercasing (e.g. Final_Sigma),
+    // which needs to inspect surrounding characters.
+    std::pmr::vector<char32_t> input32 { context.get_transient_memory() };
+    input32.reserve(input.length());
+    std::ranges::copy(utf8::Code_Point_View { input }, std::back_inserter(input32));
+    const std::u32string_view input32_view { input32.data(), input32.size() };
+
     std::pmr::vector<char8_t> result { context.get_transient_memory() };
     result.reserve(input.length() * 3 / 2);
 
-    for (std::size_t i = 0; i < input.length();) {
-        const auto [input_point, input_length]
-            = utf8::decode_and_length_or_replacement(input.substr(i));
-        COWEL_ASSERT(input_length != 0);
-
+    for (std::size_t i = 0; i < input32.size(); ++i) {
+        const char32_t input_point = input32[i];
         const std::u32string_view transformed = m_transform == Text_Transformation::uppercase
             ? unconditional_to_upper(input_point)
-            : unconditional_to_lower(input_point);
+            : contextual_to_lower(input32_view, i);
         if (transformed.empty()) {
-            append(result, input.substr(i, std::size_t(input_length)));
+            const utf8::Code_Units_And_Length encoded = utf8::encode8_unchecked(input_point);
+            append(result, encoded.as_string());
         }
         else {
             for (const char32_t t : transformed) {
@@ -200,8 +210,6 @@ Processing_Status Str_Transform_Behavior::do_evaluate(
                 append(result, output.as_string());
             }
         }
-
-        i += std::size_t(input_length);
     }
 
     if (!result.empty()) {

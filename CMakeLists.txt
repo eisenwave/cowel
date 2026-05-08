@@ -165,6 +165,7 @@ set(COMMON_LIBRARY_SOURCES
     engine/include/cowel/util/bit_permutations.hpp
     engine/include/cowel/util/buffer.hpp
     engine/include/cowel/util/case_transform.hpp
+    engine/include/cowel/util/unicode_case_props.hpp
     engine/include/cowel/util/char_sequence.hpp
     engine/include/cowel/util/char_sequence_factory.hpp
     engine/include/cowel/util/char_sequence_ops.hpp
@@ -236,6 +237,7 @@ set(COMMON_LIBRARY_SOURCES
     engine/include/cowel/value.hpp
 
     engine/src/util/case_transform.cpp
+    engine/src/util/unicode_case_props.cpp
     engine/src/util/charconv.cpp
     engine/src/util/code_point_by_name.cpp
     engine/src/util/draft_uris.cpp

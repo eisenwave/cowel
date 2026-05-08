@@ -1,0 +1,46 @@
+\test_input{
+\: U+03A3 GREEK CAPITAL LETTER SIGMA maps to
+\: U+03C2 GREEK SMALL LETTER FINAL SIGMA when preceded by a Cased character
+\: and not followed by a Cased character (Unicode Final_Sigma, section 3.13).
+\: Otherwise it maps to U+03C3 GREEK SMALL LETTER SIGMA (non-final form).
+
+\: Sigma at end of string, preceded by a Cased character -> final sigma (U+03C2)
+\cowel_str_to_lower("ΑΣ")
+
+\: Lone sigma with nothing cased before it -> non-final sigma (U+03C3)
+\cowel_str_to_lower("Σ")
+
+\: Sigma followed by a Cased character -> non-final sigma (U+03C3)
+\cowel_str_to_lower("ΣΑ")
+
+\: Sigma at end of a longer word (multiple Cased before) -> final sigma
+\cowel_str_to_lower("ΑΒΓΣ")
+
+\: Sigma in the middle of Cased characters (Cased both sides) -> non-final sigma
+\cowel_str_to_lower("ΑΒΓΣΔΕΖ")
+
+\: Two consecutive sigmas at the end:
+\: first Σ is non-final (followed by another Cased Σ),
+\: second Σ is final (nothing Cased after it)
+\cowel_str_to_lower("ΑΒΓΣΣ")
+
+\: All sigmas surrounded by Cased characters on both sides -> non-final
+\cowel_str_to_lower("ΩΣΣΩ")
+}
+
+\test_output{
+
+ας
+
+σ
+
+σα
+
+αβγς
+
+αβγσδεζ
+
+αβγσς
+
+ωσσω
+}

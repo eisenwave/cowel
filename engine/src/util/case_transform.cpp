@@ -1,6 +1,8 @@
 #include <algorithm>
+#include <cstddef>
 
 #include "cowel/util/case_transform.hpp"
+#include "cowel/util/unicode_case_props.hpp"
 
 using namespace std::string_view_literals;
 
@@ -106,6 +108,67 @@ std::u32string_view unconditional_to_lower(char32_t c)
         return std::u32string_view { &simple->value, 1 };
     }
     return U""sv;
+}
+
+namespace {
+
+// U+03A3 GREEK CAPITAL LETTER SIGMA
+constexpr char32_t greek_capital_sigma = U'\u03A3';
+// U+03C2 GREEK SMALL LETTER FINAL SIGMA
+constexpr char32_t greek_small_final_sigma = U'\u03C2';
+
+} // namespace
+
+std::u32string_view contextual_to_lower(const std::u32string_view str, const std::size_t pos)
+{
+    const char32_t c = str[pos];
+    if (c != greek_capital_sigma) {
+        return unconditional_to_lower(c);
+    }
+
+    // Apply the Unicode Final_Sigma condition (Unicode Standard, section 3.13):
+    //   Before(C): there is a Cased character before C,
+    //              with only Case_Ignorable characters intervening.
+    //   After(C):  there is a Cased character after C,
+    //              with only Case_Ignorable characters intervening.
+    // If Before(C) and not After(C), map to U+03C2 GREEK SMALL LETTER FINAL SIGMA.
+    // Otherwise, map to U+03C3 GREEK SMALL LETTER SIGMA (the unconditional mapping).
+
+    // Scan backward, skipping Case_Ignorable characters.
+    const bool before_cased = [&] {
+        std::size_t i = pos;
+        while (i > 0) {
+            --i;
+            const char32_t prev = str[i];
+            if (is_case_ignorable(prev)) {
+                continue;
+            }
+            return is_cased(prev);
+        }
+        return false;
+    }();
+
+    if (!before_cased) {
+        return unconditional_to_lower(greek_capital_sigma);
+    }
+
+    // Scan forward, skipping Case_Ignorable characters.
+    const bool after_cased = [&] {
+        for (std::size_t i = pos + 1; i < str.size(); ++i) {
+            const char32_t next = str[i];
+            if (is_case_ignorable(next)) {
+                continue;
+            }
+            return is_cased(next);
+        }
+        return false;
+    }();
+
+    if (!after_cased) {
+        static constexpr char32_t final_sigma_storage = greek_small_final_sigma;
+        return std::u32string_view { &final_sigma_storage, 1 };
+    }
+    return unconditional_to_lower(greek_capital_sigma);
 }
 
 } // namespace cowel
