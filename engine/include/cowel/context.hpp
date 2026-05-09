@@ -82,6 +82,35 @@ public:
         Transparent_String_View_Equals8>;
 
 private:
+    struct Scoped_Diagnostic_Frame {
+    private:
+        Small_Vector<Frame_Index, 8>* m_frames = nullptr;
+
+    public:
+        explicit Scoped_Diagnostic_Frame(Small_Vector<Frame_Index, 8>& frames, Frame_Index frame)
+            : m_frames { &frames }
+        {
+            m_frames->push_back(frame);
+        }
+
+        Scoped_Diagnostic_Frame(const Scoped_Diagnostic_Frame&) = delete;
+        Scoped_Diagnostic_Frame& operator=(const Scoped_Diagnostic_Frame&) = delete;
+
+        Scoped_Diagnostic_Frame(Scoped_Diagnostic_Frame&& other) noexcept
+            : m_frames { std::exchange(other.m_frames, nullptr) }
+        {
+        }
+
+        Scoped_Diagnostic_Frame& operator=(Scoped_Diagnostic_Frame&&) = delete;
+
+        ~Scoped_Diagnostic_Frame()
+        {
+            if (m_frames) {
+                m_frames->pop_back();
+            }
+        }
+    };
+
     /// @brief Additional memory used during processing.
     std::pmr::memory_resource* m_memory;
     std::pmr::memory_resource* m_transient_memory;
@@ -103,6 +132,7 @@ private:
     Variable_Map m_variables { m_memory };
 
     Call_Stack m_call_stack { m_memory };
+    Small_Vector<Frame_Index, 8> m_active_diagnostic_frames;
     Small_Vector<File_Source_Span, 8> m_diagnostic_stack;
 
 public:
@@ -200,6 +230,12 @@ public:
     const Call_Stack& get_call_stack() const
     {
         return m_call_stack;
+    }
+
+    [[nodiscard]]
+    Scoped_Diagnostic_Frame push_diagnostic_frame(Frame_Index frame)
+    {
+        return Scoped_Diagnostic_Frame { m_active_diagnostic_frames, frame };
     }
 
     [[nodiscard]]
@@ -429,6 +465,9 @@ private:
     std::span<const File_Source_Span> collect_diagnostic_stack()
     {
         m_diagnostic_stack.clear();
+        const Frame_Index diagnostic_frame = m_active_diagnostic_frames.empty()
+            ? Frame_Index::root
+            : m_active_diagnostic_frames.back();
 
         bool has_previous_content_frame = false;
         Frame_Index previous_content_frame {};
@@ -436,6 +475,9 @@ private:
         for (std::size_t i = m_call_stack.size(); i > 0; --i) {
             const Stack_Frame& frame = m_call_stack[Frame_Index(static_cast<int>(i - 1))];
             const Frame_Index content_frame = frame.invocation.content_frame;
+            if (content_frame == diagnostic_frame) {
+                continue;
+            }
             if (has_previous_content_frame && content_frame == previous_content_frame) {
                 continue;
             }

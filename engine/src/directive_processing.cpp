@@ -279,6 +279,7 @@ Processing_Status splice_to_plaintext(
     Context& context
 )
 {
+    const auto diagnostic_frame = context.push_diagnostic_frame(frame);
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
     Text_Only_Policy policy { sink };
     return splice_all(policy, content, frame, context);
@@ -292,6 +293,7 @@ Processing_Status splice_expression(
     Context& context
 )
 {
+    const auto diagnostic_frame = context.push_diagnostic_frame(frame);
     // Fast path for directives.
     // Can bypass forming a `Value` when splicing directives that return blocks.
     if (const auto* const directive = value.try_as_directive()) {
@@ -562,6 +564,7 @@ Processing_Status splice_expression_to_plaintext(
 Result<Value, Processing_Status>
 evaluate_expression(const ast::Expression& value, Frame_Index frame, Context& context)
 {
+    const auto diagnostic_frame = context.push_diagnostic_frame(frame);
     const auto visitor = [&](const auto& v) { return evaluate(v, frame, context); };
     return std::visit(visitor, value);
 }
@@ -837,6 +840,7 @@ struct Evaluate_Member_Values {
 Result<Value, Processing_Status>
 evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
 {
+    const auto diagnostic_frame = context.push_diagnostic_frame(frame);
     COWEL_ASSERT(value.is_value());
 
     switch (value.get_kind()) {

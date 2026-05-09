@@ -228,10 +228,10 @@ public:
 
         for (const File_Source_Span& stack_location : diagnostic.stack) {
             if (!m_stack_buffer.empty()) {
-                const auto& prev = m_stack_buffer.back();
-                const bool same_line_as_previous = prev.file_id == cowel_file_id(stack_location.file)
-                    && prev.line == stack_location.line;
-                if (same_line_as_previous) {
+                const auto& first = m_stack_buffer.front();
+                const bool duplicates_primary = first.file_id == cowel_file_id(stack_location.file)
+                    && first.line == stack_location.line && first.column == stack_location.column;
+                if (duplicates_primary) {
                     continue;
                 }
             }
