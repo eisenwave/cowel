@@ -1,0 +1,4 @@
+ERROR directive_splice_error_span.cow:1:1: No directive with the name "directive" exists. [directive-lookup.unresolved]
+     1 | \directive
+       | ^~~~~~~~~~
+FATAL directive_splice_error_span.cow: Generation exited with status 2 (error). [status.error]
