@@ -403,12 +403,12 @@ public:
         return *this == other;
     }
 
-    /// @brief Returns `true` if this type is analytically convertible to `other`.
+    /// @brief Returns `true` if this type is an instance of `other`.
     /// That is, if this type is equivalent to `other` or if an expression of this type
     /// could be stored in a variable of type `other` without any change to that value.
     ///
-    /// For example, `int` is analytically convertible to `int | null`,
-    /// and `nothing` is analytically convertible to any other type.
+    /// For example, `int` is an instance of `int | null`,
+    /// and `nothing` is an instance of any other type.
     [[nodiscard]]
     constexpr bool instance_of(const Type& other) const
     {

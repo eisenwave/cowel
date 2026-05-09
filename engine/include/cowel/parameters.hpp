@@ -326,7 +326,7 @@ public:
     ) = 0;
 
     /// @brief Returns the type of value that is accepted by this matcher.
-    /// This i possibly a union in the case of several types.
+    /// This is possibly a union in the case of several types.
     [[nodiscard]]
     const Type& get_matchable_type() const
     {

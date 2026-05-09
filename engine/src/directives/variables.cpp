@@ -257,11 +257,15 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
         m_binary_kind, x.get_type(), y.get_type(), x_value.get_location(), y_value.get_location(),
         context
     );
-    // Checks on the directive should have prevented a failure here.
-    COWEL_ASSERT(operation);
+    if (!operation) {
+        return operation.error();
+    }
     const Result<Value, Processing_Status> result = evaluate_builtin(
         *operation, x, y, x_value.get_location(), y_value.get_location(), context
     );
+    // The operation is a comparison,
+    // so there's no way it could have failed,
+    // e.g. through division by zero.
     return result->as_boolean();
 }
 

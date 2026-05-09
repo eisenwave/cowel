@@ -320,7 +320,7 @@ TEST(Type, canonical_union_of)
     EXPECT_EQ(Type::canonical_union_of(types), Type::union_of(unit_and_integer_types));
 }
 
-TEST(Type, analytically_convertible_to)
+TEST(Type, instance_of)
 {
     static constexpr Type int_float_types[] { Type::integer, Type::floating };
     static constexpr auto int_or_float = Type::union_of(int_float_types);
