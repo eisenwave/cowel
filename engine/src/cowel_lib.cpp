@@ -229,9 +229,9 @@ public:
         for (const File_Source_Span& stack_location : diagnostic.stack) {
             if (!m_stack_buffer.empty()) {
                 const auto& prev = m_stack_buffer.back();
-                const bool same_line = prev.file_id == cowel_file_id(stack_location.file)
+                const bool same_line_as_previous = prev.file_id == cowel_file_id(stack_location.file)
                     && prev.line == stack_location.line;
-                if (same_line) {
+                if (same_line_as_previous) {
                     continue;
                 }
             }
