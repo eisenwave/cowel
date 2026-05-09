@@ -99,13 +99,13 @@ Processing_Status Lazy_Value_Of_Type_Matcher::match_value(
     const Type& actual_type = argument.get_static_type(context);
     COWEL_DEBUG_ASSERT(actual_type.is_canonical());
 
-    if (actual_type != Type::any && !actual_type.analytically_convertible_to(get_type())) {
+    if (actual_type != Type::any && !actual_type.instance_of(get_matchable_type())) {
         on_fail.emit(
             argument.get_value_location(),
             joined_char_sequence(
                 {
                     u8"Expected a value of type "sv,
-                    get_type().get_display_name(),
+                    get_matchable_type().get_display_name(),
                     u8", but got "sv,
                     actual_type.get_display_name(),
                     u8".",
@@ -131,13 +131,13 @@ Processing_Status Value_Of_Type_Matcher::match_value(
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
-    if (!val->get_type().analytically_convertible_to(get_type())) {
+    if (!val->get_type().instance_of(get_matchable_type())) {
         on_fail.emit(
             argument.get_value_location(),
             joined_char_sequence(
                 {
                     u8"Expected a value of type "sv,
-                    get_type().get_display_name(),
+                    get_matchable_type().get_display_name(),
                     u8", but got "sv,
                     val->get_type().get_display_name(),
                     u8".",
@@ -344,9 +344,9 @@ Processing_Status Pack_Of_Type_Matcher::match_value(
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
-    COWEL_DEBUG_ASSERT(get_type().is_pack());
-    const Type& element_type = get_type().get_members().front();
-    if (!val->get_type().analytically_convertible_to(element_type)) {
+    COWEL_DEBUG_ASSERT(get_matchable_type().is_pack());
+    const Type& element_type = get_matchable_type().get_members().front();
+    if (!val->get_type().instance_of(element_type)) {
         on_fail.emit(
             argument.get_value_location(),
             joined_char_sequence(
@@ -373,7 +373,7 @@ Processing_Status Pack_Named_Of_Type_Matcher::match_value(
     const Match_Fail_Options& on_fail
 )
 {
-    COWEL_DEBUG_ASSERT(get_type().is_pack());
+    COWEL_DEBUG_ASSERT(get_matchable_type().is_pack());
 
     if (!argument.is_named()) {
         on_fail.emit(
@@ -389,7 +389,7 @@ Processing_Status Pack_Named_Of_Type_Matcher::match_value(
         return status_max(val.error(), on_fail.status);
     }
 
-    if (!val->get_type().analytically_convertible_to(m_element_type)) {
+    if (!val->get_type().instance_of(m_element_type)) {
         on_fail.emit(
             argument.get_value_location(),
             joined_char_sequence(
@@ -587,7 +587,7 @@ Processing_Status Match_Call::operator()(
                 if (arg_status != Processing_Status::ok) {
                     return arg_status;
                 }
-                if (value_matcher.get_type().is_pack()) {
+                if (value_matcher.get_matchable_type().is_pack()) {
                     mode = Argument_Mode::pack_positional;
                     current_pack_param_index = parameter_index;
                     current_pack_value_matcher = &value_matcher;

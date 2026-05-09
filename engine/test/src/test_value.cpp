@@ -329,42 +329,42 @@ TEST(Type, analytically_convertible_to)
     static_assert(int_and_float.is_canonical());
     static constexpr auto lazy_int = Type::lazy(&Type::integer);
 
-    EXPECT_TRUE(Type::any.analytically_convertible_to(Type::any));
-    EXPECT_TRUE(Type::nothing.analytically_convertible_to(Type::nothing));
-    EXPECT_TRUE(Type::unit.analytically_convertible_to(Type::unit));
-    EXPECT_TRUE(Type::null.analytically_convertible_to(Type::null));
-    EXPECT_TRUE(Type::integer.analytically_convertible_to(Type::integer));
-    EXPECT_TRUE(Type::floating.analytically_convertible_to(Type::floating));
+    EXPECT_TRUE(Type::any.instance_of(Type::any));
+    EXPECT_TRUE(Type::nothing.instance_of(Type::nothing));
+    EXPECT_TRUE(Type::unit.instance_of(Type::unit));
+    EXPECT_TRUE(Type::null.instance_of(Type::null));
+    EXPECT_TRUE(Type::integer.instance_of(Type::integer));
+    EXPECT_TRUE(Type::floating.instance_of(Type::floating));
 
-    EXPECT_TRUE(int_or_float.analytically_convertible_to(Type::any));
-    EXPECT_FALSE(Type::any.analytically_convertible_to(int_or_float));
-    EXPECT_TRUE(Type::nothing.analytically_convertible_to(int_or_float));
-    EXPECT_TRUE(Type::integer.analytically_convertible_to(int_or_float));
-    EXPECT_TRUE(Type::floating.analytically_convertible_to(int_or_float));
-    EXPECT_FALSE(int_or_float.analytically_convertible_to(Type::integer));
-    EXPECT_FALSE(int_or_float.analytically_convertible_to(Type::floating));
+    EXPECT_TRUE(int_or_float.instance_of(Type::any));
+    EXPECT_FALSE(Type::any.instance_of(int_or_float));
+    EXPECT_TRUE(Type::nothing.instance_of(int_or_float));
+    EXPECT_TRUE(Type::integer.instance_of(int_or_float));
+    EXPECT_TRUE(Type::floating.instance_of(int_or_float));
+    EXPECT_FALSE(int_or_float.instance_of(Type::integer));
+    EXPECT_FALSE(int_or_float.instance_of(Type::floating));
 
-    EXPECT_TRUE(Type::integer.analytically_convertible_to(lazy_int));
-    EXPECT_FALSE(lazy_int.analytically_convertible_to(Type::integer));
+    EXPECT_TRUE(Type::integer.instance_of(lazy_int));
+    EXPECT_FALSE(lazy_int.instance_of(Type::integer));
 
-    EXPECT_TRUE(Type::group.analytically_convertible_to(Type::group));
+    EXPECT_TRUE(Type::group.instance_of(Type::group));
 
-    EXPECT_TRUE(Type::empty_group.analytically_convertible_to(Type::group));
-    EXPECT_TRUE(Type::empty_group.analytically_convertible_to(Type::empty_group));
-    EXPECT_FALSE(Type::empty_group.analytically_convertible_to(int_and_float));
+    EXPECT_TRUE(Type::empty_group.instance_of(Type::group));
+    EXPECT_TRUE(Type::empty_group.instance_of(Type::empty_group));
+    EXPECT_FALSE(Type::empty_group.instance_of(int_and_float));
 
-    EXPECT_TRUE(int_and_float.analytically_convertible_to(int_and_float));
-    EXPECT_TRUE(int_and_float.analytically_convertible_to(Type::group));
-    EXPECT_FALSE(int_and_float.analytically_convertible_to(Type::empty_group));
+    EXPECT_TRUE(int_and_float.instance_of(int_and_float));
+    EXPECT_TRUE(int_and_float.instance_of(Type::group));
+    EXPECT_FALSE(int_and_float.instance_of(Type::empty_group));
 
     static constexpr Type some_union_types[] { Type::integer, int_and_float };
     static constexpr auto some_union = Type::union_of(some_union_types);
     static_assert(some_union.is_canonical());
-    EXPECT_TRUE(int_and_float.analytically_convertible_to(some_union));
+    EXPECT_TRUE(int_and_float.instance_of(some_union));
 
-    EXPECT_FALSE(int_and_float.analytically_convertible_to(int_or_float));
-    EXPECT_FALSE(Type::integer.analytically_convertible_to(int_and_float));
-    EXPECT_FALSE(Type::floating.analytically_convertible_to(int_and_float));
+    EXPECT_FALSE(int_and_float.instance_of(int_or_float));
+    EXPECT_FALSE(Type::integer.instance_of(int_and_float));
+    EXPECT_FALSE(Type::floating.instance_of(int_and_float));
 }
 
 } // namespace

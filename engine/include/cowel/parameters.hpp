@@ -325,8 +325,10 @@ public:
         const Match_Fail_Options& on_fail
     ) = 0;
 
+    /// @brief Returns the type of value that is accepted by this matcher.
+    /// This i possibly a union in the case of several types.
     [[nodiscard]]
-    const Type& get_type() const
+    const Type& get_matchable_type() const
     {
         return m_type;
     }
@@ -819,7 +821,7 @@ public:
     [[nodiscard]]
     const Type& get_type() const
     {
-        return m_value_matcher.get_type();
+        return m_value_matcher.get_matchable_type();
     }
 };
 

@@ -225,19 +225,22 @@ Result<Value, Processing_Status> evaluate_unary(
     Context& context
 );
 
+/// @brief Checks whether `lhs` and `rhs` are correct types for the given `kind` of expression,
+/// and returns the concrete `Builtin_Operation_Kind` if so.
+/// Otherwise, returns `Processing_Status::error` and outputs a diagnostic.
 [[nodiscard]]
-Result<bool, Processing_Status> evaluate_comparison(
-    Comparison_Expression_Kind kind,
-    const Value& lhs,
-    const Value& rhs,
+Result<Builtin_Operation_Kind, Processing_Status> check_operation(
+    Binary_Expression_Kind kind,
+    const Type& lhs,
+    const Type& rhs,
     const File_Source_Span& lhs_location,
     const File_Source_Span& rhs_location,
     Context& context
 );
 
 [[nodiscard]]
-Result<Value, Processing_Status> evaluate_binary_numeric(
-    Binary_Expression_Kind kind,
+Result<Value, Processing_Status> evaluate_builtin(
+    Builtin_Operation_Kind kind,
     const Value& lhs,
     const Value& rhs,
     const File_Source_Span& lhs_location,

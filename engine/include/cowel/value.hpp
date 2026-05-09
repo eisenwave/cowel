@@ -16,14 +16,10 @@
 #include "cowel/type.hpp"
 
 #include "cowel/syntax/ast_fwd.hpp"
-#include "cowel/syntax/expression_kind.hpp"
 
 namespace cowel {
 
 struct Value;
-
-template <Comparison_Expression_Kind kind>
-bool compare(const Value&, const Value&);
 
 /// @brief A symbolic empty class indicating a `null` value or type in COWEL.
 struct Null {
@@ -482,9 +478,6 @@ public:
 
     [[nodiscard]]
     Processing_Status splice_block(Content_Policy& out, Context& context) const;
-
-    template <Comparison_Expression_Kind kind>
-    friend bool compare(const Value&, const Value&);
 };
 
 struct Group_Member_Value {
@@ -720,38 +713,6 @@ inline constexpr Value Value::empty_string = Value::static_string({}, String_Kin
 inline constexpr Value Value::unit_string = Value::static_string(u8"unit", String_Kind::ascii);
 inline constexpr Value Value::true_string = Value::static_string(u8"true", String_Kind::ascii);
 inline constexpr Value Value::false_string = Value::static_string(u8"false", String_Kind::ascii);
-
-extern template bool compare<Comparison_Expression_Kind::eq>(const Value&, const Value&);
-extern template bool compare<Comparison_Expression_Kind::ne>(const Value&, const Value&);
-extern template bool compare<Comparison_Expression_Kind::lt>(const Value&, const Value&);
-extern template bool compare<Comparison_Expression_Kind::gt>(const Value&, const Value&);
-extern template bool compare<Comparison_Expression_Kind::le>(const Value&, const Value&);
-extern template bool compare<Comparison_Expression_Kind::ge>(const Value&, const Value&);
-
-inline bool compare_eq(const Value& x, const Value& y)
-{
-    return compare<Comparison_Expression_Kind::eq>(x, y);
-}
-inline bool compare_ne(const Value& x, const Value& y)
-{
-    return compare<Comparison_Expression_Kind::ne>(x, y);
-}
-inline bool compare_lt(const Value& x, const Value& y)
-{
-    return compare<Comparison_Expression_Kind::lt>(x, y);
-}
-inline bool compare_gt(const Value& x, const Value& y)
-{
-    return compare<Comparison_Expression_Kind::gt>(x, y);
-}
-inline bool compare_le(const Value& x, const Value& y)
-{
-    return compare<Comparison_Expression_Kind::le>(x, y);
-}
-inline bool compare_ge(const Value& x, const Value& y)
-{
-    return compare<Comparison_Expression_Kind::ge>(x, y);
-}
 
 } // namespace cowel
 

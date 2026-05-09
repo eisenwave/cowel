@@ -448,12 +448,14 @@ public:
 
 struct Comparison_Expression_Behavior final : Bool_Directive_Behavior {
 private:
-    const Comparison_Expression_Kind m_expression_kind;
+    const Comparison_Expression_Kind m_comparison_kind;
+    const Binary_Expression_Kind m_binary_kind
+        = comparison_kind_binary_expression_kind(m_comparison_kind);
 
 public:
     [[nodiscard]]
     constexpr explicit Comparison_Expression_Behavior(Comparison_Expression_Kind kind)
-        : m_expression_kind { kind }
+        : m_comparison_kind { kind }
     {
     }
 

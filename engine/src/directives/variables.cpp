@@ -187,8 +187,7 @@ struct Logical_Expression_Evaluator {
         for (const Argument& member : arguments) {
             COWEL_ASSERT(member.is_positional());
             const Type& static_type = member.get_static_type(context);
-            if (static_type != Type::any
-                && !static_type.analytically_convertible_to(Type::boolean)) {
+            if (static_type != Type::any && !static_type.instance_of(Type::boolean)) {
                 return type_error(static_type, member.get_value_location());
             }
             const Result<Value, Processing_Status> member_result = member.evaluate(frame, context);
@@ -236,7 +235,7 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
     static constexpr Type relation_comparable_types[] { Type::integer, Type::floating, Type::str };
     static constexpr auto relation_comparable = Type::union_of(relation_comparable_types);
     static_assert(relation_comparable.is_canonical());
-    const auto& parameter_type = m_expression_kind <= Comparison_Expression_Kind::ne
+    const auto& parameter_type = m_comparison_kind <= Comparison_Expression_Kind::ne
         ? equality_comparable
         : relation_comparable;
 
@@ -251,10 +250,19 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
         return match_status;
     }
 
-    return evaluate_comparison(
-        m_expression_kind, x_value.get(), y_value.get(), x_value.get_location(),
-        y_value.get_location(), context
+    const Value& x = x_value.get();
+    const Value& y = y_value.get();
+
+    const Result<Builtin_Operation_Kind, Processing_Status> operation = check_operation(
+        m_binary_kind, x.get_type(), y.get_type(), x_value.get_location(), y_value.get_location(),
+        context
     );
+    // Checks on the directive should have prevented a failure here.
+    COWEL_ASSERT(operation);
+    const Result<Value, Processing_Status> result = evaluate_builtin(
+        *operation, x, y, x_value.get_location(), y_value.get_location(), context
+    );
+    return result->as_boolean();
 }
 
 Result<bool, Processing_Status>
@@ -299,7 +307,32 @@ Internal_Eq_Behavior::do_evaluate(const Invocation& call, Context& context) cons
         return Processing_Status::error;
     }
 
-    return compare<Comparison_Expression_Kind::eq>(x, y);
+    if (x.get_type_kind() == Type_Kind::group) {
+        const auto result = evaluate_builtin(
+            Builtin_Operation_Kind::eq_dynamic_groups, x, y, x_value.get_location(),
+            y_value.get_location(), context
+        );
+        if (!result) {
+            return result.error();
+        }
+        return result->as_boolean();
+    }
+
+    const auto operation = check_operation(
+        Binary_Expression_Kind::eq, x.get_type(), y.get_type(), x_value.get_location(),
+        y_value.get_location(), context
+    );
+    if (!operation) {
+        return operation.error();
+    }
+
+    const auto result = evaluate_builtin(
+        *operation, x, y, x_value.get_location(), y_value.get_location(), context
+    );
+    if (!result) {
+        return result.error();
+    }
+    return result->as_boolean();
 }
 
 Result<Value, Processing_Status>
@@ -396,7 +429,7 @@ N_Ary_Numeric_Expression_Behavior::evaluate(const Invocation& call, Context& con
             }
         }
         else {
-            if (!value.get_type().analytically_convertible_to(numeric_type)) {
+            if (!value.get_type().instance_of(numeric_type)) {
                 context.try_error(
                     diagnostic::type_mismatch, location,
                     joined_char_sequence(
