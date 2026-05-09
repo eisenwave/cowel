@@ -1,7 +1,7 @@
 ERROR nested_error.cow:1:19: No directive with the name "not_defined" exists. [directive-lookup.unresolved]
      1 | \cowel_macro("m"){\not_defined}
-       |                   ^~~~~~~~~~~
+       |                   ^~~~~~~~~~~~
 NOTE nested_error.cow:2:1: Expanded from here.
      2 | \m
-       | ^
+       | ^~
 FATAL nested_error.cow: Generation exited with status 2 (error). [status.error]

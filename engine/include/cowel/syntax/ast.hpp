@@ -420,7 +420,11 @@ public:
     [[nodiscard]]
     File_Source_Span get_name_span() const
     {
-        return m_source_span.with_length(m_name.length());
+        // For a directive-splice, the source includes a leading backslash
+        // that is not part of m_name. Include it in the name span
+        // so that the span covers the full directive-splice token.
+        const std::size_t prefix = !m_source.empty() && m_source[0] == u8'\\' ? 1 : 0;
+        return m_source_span.with_length(prefix + m_name.length());
     }
 
     /// @brief Returns the name of the directive,
