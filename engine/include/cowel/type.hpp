@@ -403,14 +403,14 @@ public:
         return *this == other;
     }
 
-    /// @brief Returns `true` if this type is analytically convertible to `other`.
+    /// @brief Returns `true` if this type is an instance of `other`.
     /// That is, if this type is equivalent to `other` or if an expression of this type
     /// could be stored in a variable of type `other` without any change to that value.
     ///
-    /// For example, `int` is analytically convertible to `int | null`,
-    /// and `nothing` is analytically convertible to any other type.
+    /// For example, `int` is an instance of `int | null`,
+    /// and `nothing` is an instance of any other type.
     [[nodiscard]]
-    constexpr bool analytically_convertible_to(const Type& other) const
+    constexpr bool instance_of(const Type& other) const
     {
         COWEL_ASSERT(is_canonical());
         COWEL_ASSERT(other.is_canonical());
@@ -425,15 +425,15 @@ public:
         }
         case Type_Kind::pack: {
             return other.m_kind == Type_Kind::pack
-                && m_members.front().analytically_convertible_to(other.m_members.front());
+                && m_members.front().instance_of(other.m_members.front());
         }
         case Type_Kind::named: {
             return other.m_kind == Type_Kind::named
-                && m_members.front().analytically_convertible_to(other.m_members.front());
+                && m_members.front().instance_of(other.m_members.front());
         }
         case Type_Kind::union_: {
             return std::ranges::all_of(m_members, [&](const Type& type) {
-                return type.analytically_convertible_to(other);
+                return type.instance_of(other);
             });
         }
         case Type_Kind::group: {
@@ -448,7 +448,7 @@ public:
             }
             const bool all_members_convertible = [&] {
                 for (std::size_t i = 0; i < m_members.size(); ++i) {
-                    if (!m_members[i].analytically_convertible_to(other.m_members[i])) {
+                    if (!m_members[i].instance_of(other.m_members[i])) {
                         return false;
                     }
                 }
@@ -468,11 +468,11 @@ public:
         }
         case Type_Kind::lazy: {
             COWEL_ASSERT(other.m_members.size() == 1);
-            return analytically_convertible_to(other.m_members.front());
+            return instance_of(other.m_members.front());
         }
         case Type_Kind::union_: {
             return std::ranges::any_of(other.m_members, [&](const Type& type) {
-                return analytically_convertible_to(type);
+                return instance_of(type);
             });
         }
         default: break;

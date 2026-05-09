@@ -675,64 +675,17 @@ evaluate(const ast::Binary_Expression& expression, const Frame_Index frame, Cont
     const Value& lhs = *lhs_result;
     const Value& rhs = *rhs_result;
 
-    switch (kind) {
-    case Binary_Expression_Kind::eq: {
-        const auto r
-            = evaluate_comparison(Comparison_Expression_Kind::eq, lhs, rhs, span, span, context);
-        if (!r) {
-            return r.error();
-        }
-        return Value::boolean(*r);
+    const Result<Builtin_Operation_Kind, Processing_Status> operation = check_operation(
+        kind, lhs.get_type(), rhs.get_type(), expression.get_lhs().get_source_span(),
+        expression.get_rhs().get_source_span(), context
+    );
+    if (!operation) {
+        return operation.error();
     }
-    case Binary_Expression_Kind::ne: {
-        const auto r
-            = evaluate_comparison(Comparison_Expression_Kind::ne, lhs, rhs, span, span, context);
-        if (!r) {
-            return r.error();
-        }
-        return Value::boolean(*r);
-    }
-    case Binary_Expression_Kind::lt: {
-        const auto r
-            = evaluate_comparison(Comparison_Expression_Kind::lt, lhs, rhs, span, span, context);
-        if (!r) {
-            return r.error();
-        }
-        return Value::boolean(*r);
-    }
-    case Binary_Expression_Kind::gt: {
-        const auto r
-            = evaluate_comparison(Comparison_Expression_Kind::gt, lhs, rhs, span, span, context);
-        if (!r) {
-            return r.error();
-        }
-        return Value::boolean(*r);
-    }
-    case Binary_Expression_Kind::le: {
-        const auto r
-            = evaluate_comparison(Comparison_Expression_Kind::le, lhs, rhs, span, span, context);
-        if (!r) {
-            return r.error();
-        }
-        return Value::boolean(*r);
-    }
-    case Binary_Expression_Kind::ge: {
-        const auto r
-            = evaluate_comparison(Comparison_Expression_Kind::ge, lhs, rhs, span, span, context);
-        if (!r) {
-            return r.error();
-        }
-        return Value::boolean(*r);
-    }
-    case Binary_Expression_Kind::plus:
-    case Binary_Expression_Kind::minus:
-    case Binary_Expression_Kind::multiply:
-    case Binary_Expression_Kind::divide:
-    case Binary_Expression_Kind::remainder:
-        return evaluate_binary_numeric(kind, lhs, rhs, span, span, context);
-    default: break;
-    }
-    COWEL_ASSERT_UNREACHABLE(u8"Unhandled binary expression kind.");
+    return evaluate_builtin(
+        *operation, lhs, rhs, expression.get_lhs().get_source_span(),
+        expression.get_rhs().get_source_span(), context
+    );
 }
 
 Result<Value, Processing_Status> evaluate_unary(
