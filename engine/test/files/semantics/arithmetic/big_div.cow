@@ -1,0 +1,24 @@
+\test_input{
+\: Division and remainder with non-zero remainders for big/big operands.
+\: These cover the adjustment branches in div_rem_to_pos_inf, rem_to_pos_inf,
+\: div_rem_to_neg_inf, and rem_to_neg_inf.
+
+\: div_to_pos_inf(big+3, big): quotient rounds up from 1 to 2
+\cowel_div_to_pos_inf(cowel_add(0x100000000000000000000000000000000000000000000000000, 3), 0x100000000000000000000000000000000000000000000000000)
+
+\: rem_to_pos_inf(big+3, big): remainder = 3 - big (negative, rounds toward +inf)
+\cowel_rem_to_pos_inf(cowel_add(0x100000000000000000000000000000000000000000000000000, 3), 0x100000000000000000000000000000000000000000000000000)
+
+\: div_to_neg_inf(-(big+3), big): quotient rounds down from -1 to -2
+\cowel_div_to_neg_inf(cowel_neg(cowel_add(0x100000000000000000000000000000000000000000000000000, 3)), 0x100000000000000000000000000000000000000000000000000)
+
+\: rem_to_neg_inf(-(big+3), big): remainder = big - 3 (positive, rounds toward -inf)
+\cowel_rem_to_neg_inf(cowel_neg(cowel_add(0x100000000000000000000000000000000000000000000000000, 3)), 0x100000000000000000000000000000000000000000000000000)
+}
+
+\test_output{
+2
+-1606938044258990275541962092341162602522202993782792835301373
+-2
+1606938044258990275541962092341162602522202993782792835301373
+}

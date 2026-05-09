@@ -896,8 +896,8 @@ public:
                 }
                 return Big_Int { diff };
             }
-            const auto result = cowel_big_int_sub_i128(y.get_host_handle(), x.get_i128());
-            return from_host_result(result);
+            // x - y = -(y - x)
+            return -from_host_result(cowel_big_int_sub_i128(y.get_host_handle(), x.get_i128()));
         }
         if (y.is_small()) {
             const auto result = cowel_big_int_sub_i128(x.get_host_handle(), y.get_i128());
