@@ -528,129 +528,98 @@ Result<Value, Processing_Status> evaluate_builtin(
         return Value::false_;
     }
     case logical_or_bool_bool: {
-        COWEL_ASSERT(lhs.is_bool() && rhs.is_bool());
         return Value::boolean(lhs.as_boolean() || rhs.as_boolean());
     }
     case logical_and_bool_bool: {
-        COWEL_ASSERT(lhs.is_bool() && rhs.is_bool());
         return Value::boolean(lhs.as_boolean() && rhs.as_boolean());
     }
     case eq_bool_bool: {
-        COWEL_ASSERT(lhs.is_bool() && rhs.is_bool());
         return Value::boolean(lhs.as_boolean() == rhs.as_boolean());
     }
     case eq_int_int: {
-        COWEL_ASSERT(lhs.is_int() && rhs.is_int());
         return Value::boolean(lhs.as_integer() == rhs.as_integer());
     }
     case eq_float_float: {
-        COWEL_ASSERT(lhs.is_float() && rhs.is_float());
         return Value::boolean(lhs.as_float() == rhs.as_float());
     }
     case eq_dynamic_groups: {
-        COWEL_ASSERT(lhs.is_group() && rhs.is_group());
         return Value::boolean(members_equal(
             lhs.get_group_members(), rhs.get_group_members(), lhs_location, rhs_location, context
         ));
     }
     case eq_str_str: {
-        COWEL_ASSERT(lhs.is_str() && rhs.is_str());
         return Value::boolean(lhs.as_string() == rhs.as_string());
     }
     case ne_bool_bool: {
-        COWEL_ASSERT(lhs.is_bool() && rhs.is_bool());
         return Value::boolean(lhs.as_boolean() != rhs.as_boolean());
     }
     case ne_int_int: {
-        COWEL_ASSERT(lhs.is_int() && rhs.is_int());
         return Value::boolean(lhs.as_integer() != rhs.as_integer());
     }
     case ne_float_float: {
-        COWEL_ASSERT(lhs.is_float() && rhs.is_float());
         return Value::boolean(lhs.as_float() != rhs.as_float());
     }
     case ne_str_str: {
-        COWEL_ASSERT(lhs.is_str() && rhs.is_str());
         return Value::boolean(lhs.as_string() != rhs.as_string());
     }
     case lt_int_int: {
-        COWEL_ASSERT(lhs.is_int() && rhs.is_int());
         return Value::boolean(lhs.as_integer() < rhs.as_integer());
     }
     case lt_float_float: {
-        COWEL_ASSERT(lhs.is_float() && rhs.is_float());
         return Value::boolean(lhs.as_float() < rhs.as_float());
     }
     case lt_str_str: {
-        COWEL_ASSERT(lhs.is_str() && rhs.is_str());
         return Value::boolean(lhs.as_string() < rhs.as_string());
     }
     case gt_int_int: {
-        COWEL_ASSERT(lhs.is_int() && rhs.is_int());
         return Value::boolean(lhs.as_integer() > rhs.as_integer());
     }
     case gt_float_float: {
-        COWEL_ASSERT(lhs.is_float() && rhs.is_float());
         return Value::boolean(lhs.as_float() > rhs.as_float());
     }
     case gt_str_str: {
-        COWEL_ASSERT(lhs.is_str() && rhs.is_str());
         return Value::boolean(lhs.as_string() > rhs.as_string());
     }
     case le_int_int: {
-        COWEL_ASSERT(lhs.is_int() && rhs.is_int());
         return Value::boolean(lhs.as_integer() <= rhs.as_integer());
     }
     case le_float_float: {
-        COWEL_ASSERT(lhs.is_float() && rhs.is_float());
         return Value::boolean(lhs.as_float() <= rhs.as_float());
     }
     case le_str_str: {
-        COWEL_ASSERT(lhs.is_str() && rhs.is_str());
         return Value::boolean(lhs.as_string() <= rhs.as_string());
     }
     case ge_int_int: {
-        COWEL_ASSERT(lhs.is_int() && rhs.is_int());
         return Value::boolean(lhs.as_integer() >= rhs.as_integer());
     }
     case ge_float_float: {
-        COWEL_ASSERT(lhs.is_float() && rhs.is_float());
         return Value::boolean(lhs.as_float() >= rhs.as_float());
     }
     case ge_str_str: {
-        COWEL_ASSERT(lhs.is_str() && rhs.is_str());
         return Value::boolean(lhs.as_string() >= rhs.as_string());
     }
     case plus_int_int: {
-        COWEL_ASSERT(lhs.is_int() && rhs.is_int());
         return Value::integer(lhs.as_integer() + rhs.as_integer());
     }
     case plus_float_float: {
-        COWEL_ASSERT(lhs.is_float() && rhs.is_float());
         return Value::floating(lhs.as_float() + rhs.as_float());
     }
     case minus_int_int: {
-        COWEL_ASSERT(lhs.is_int() && rhs.is_int());
         return Value::integer(lhs.as_integer() - rhs.as_integer());
     }
     case minus_float_float: {
-        COWEL_ASSERT(lhs.is_float() && rhs.is_float());
         return Value::floating(lhs.as_float() - rhs.as_float());
     }
     case multiply_int_int: {
-        COWEL_ASSERT(lhs.is_int() && rhs.is_int());
         return Value::integer(lhs.as_integer() * rhs.as_integer());
     }
     case multiply_float_float: {
-        COWEL_ASSERT(lhs.is_float() && rhs.is_float());
         return Value::floating(lhs.as_float() * rhs.as_float());
     }
     case div_float_float: {
-        COWEL_ASSERT(lhs.is_float() && rhs.is_float());
         return Value::floating(lhs.as_float() / rhs.as_float());
     }
     case rem_to_zero_int_int: {
-        COWEL_ASSERT(lhs.is_int() && rhs.is_int());
         if (rhs.as_integer().is_zero()) {
             context.try_error(
                 diagnostic::arithmetic_div_by_zero, rhs_location, u8"Division by zero."sv
