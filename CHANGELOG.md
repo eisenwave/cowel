@@ -32,11 +32,13 @@
 - fix inconsistencies between native and node CLI output (#307)
 - fix performance and memory leak issues related to `regex`
 - fix incorrect handling of final sigma characters in `cowel_to_lower` (#169)
-- fix various code block syntax highlighting issues by updating µlight
 - fix various VSCode plugin highlighting issues (#292)
 - also add internal `__typeof` directive and test types of directives
 - also fix typos and grammatical errors in documentation (#293)
 - also greatly improve testing infrastructure and code coverage
+- also update µlight:
+  - this fixes major syntax highlighting bugs, including potentially corrupt HTML output
+  - highlighting of Markdown files is now supported
 
 **Full Changelog**:
 [`v0.8.1...main`](https://github.com/eisenwave/cowel/compare/v0.8.1...main)
