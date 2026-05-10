@@ -26,7 +26,7 @@
 - add *expression-splice*: `\(...)` (#276)
 - add named character escapes: `\'DIGIT ZERO'` (#180)
 - add numeric character escapes: `\+0030` (#181)
-- add nested diagnostic locations in node CLI (#51)
+- add nested diagnostic locations in node CLI (#51, #323)
 - fix lexer crash on certain ASCII control characters (#294)
 - fix duplicate output for `--no-color` option
 - fix inconsistencies between native and node CLI output (#307)
