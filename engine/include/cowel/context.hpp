@@ -464,6 +464,19 @@ private:
     [[nodiscard]]
     std::span<const File_Source_Span> collect_diagnostic_stack()
     {
+        // TODO: This technically gets us what we want,
+        //       but is a bit backwards.
+        //       We push diagnostic frames to `m_active_diagnostic_frames`
+        //       whenever some invocation happens,
+        //       and filter ones we don't want in here.
+        //       This seems preventable if we only push diagnostic frames
+        //       in this places we would keep them.
+        //       For example, we want to keep macro expansions in the diagnostic stack,
+        //       but not invocations of builtin directives.
+        //
+        //       However, in the future the number of builtin directives in active use goes down,
+        //       so maybe this doesn't matter and we should just expand the whole call stack
+        //       unfiltered.
         m_diagnostic_stack.clear();
         const Frame_Index diagnostic_frame = m_active_diagnostic_frames.empty()
             ? Frame_Index::root

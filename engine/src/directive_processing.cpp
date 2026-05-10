@@ -956,6 +956,7 @@ Processing_Status splice_invocation( //
     Context& context
 )
 {
+    const auto diagnostic_frame = context.push_diagnostic_frame(content_frame);
     Invocation call {
         .name = name,
         .directive = directive,
