@@ -455,7 +455,7 @@ class BigIntApi {
             case DivRounding.to_pos_inf:
                 quotient = xVal / yVal;
                 remainder = xVal % yVal;
-                if (remainder !== 0n && (remainder > 0n) !== (yVal > 0n)) {
+                if (remainder !== 0n && (xVal >= 0n) === (yVal >= 0n)) {
                     quotient += 1n;
                     remainder -= yVal;
                 }
@@ -463,7 +463,7 @@ class BigIntApi {
             case DivRounding.to_neg_inf:
                 quotient = xVal / yVal;
                 remainder = xVal % yVal;
-                if (remainder !== 0n && (remainder > 0n) === (yVal > 0n)) {
+                if (remainder !== 0n && (xVal >= 0n) !== (yVal >= 0n)) {
                     quotient -= 1n;
                     remainder += yVal;
                 }
@@ -507,14 +507,14 @@ class BigIntApi {
             case DivRounding.to_pos_inf:
                 quotient = xVal / yVal;
                 const rem1 = xVal % yVal;
-                if (rem1 !== 0n && (rem1 > 0n) !== (yVal > 0n)) {
+                if (rem1 !== 0n && (xVal >= 0n) === (yVal >= 0n)) {
                     quotient += 1n;
                 }
                 break;
             case DivRounding.to_neg_inf:
                 quotient = xVal / yVal;
                 const rem2 = xVal % yVal;
-                if (rem2 !== 0n && (rem2 > 0n) === (yVal > 0n)) {
+                if (rem2 !== 0n && (xVal >= 0n) !== (yVal >= 0n)) {
                     quotient -= 1n;
                 }
                 break;
@@ -542,14 +542,14 @@ class BigIntApi {
             }
             case DivRounding.to_pos_inf: {
                 remainder = xVal % yVal;
-                if (remainder !== 0n && (remainder > 0n) !== (yVal > 0n)) {
+                if (remainder !== 0n && (xVal >= 0n) === (yVal >= 0n)) {
                     remainder -= yVal;
                 }
                 break;
             }
             case DivRounding.to_neg_inf: {
                 remainder = xVal % yVal;
-                if (remainder !== 0n && (remainder > 0n) === (yVal > 0n)) {
+                if (remainder !== 0n && (xVal >= 0n) !== (yVal >= 0n)) {
                     remainder += yVal;
                 }
                 break;
