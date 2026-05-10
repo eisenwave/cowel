@@ -288,20 +288,23 @@
     "strings": {
       "patterns": [
         {
-          "name": "string.quoted.double.cowel",
           "begin": "\"",
           "beginCaptures": {
-            "0": { "name": "punctuation.definition.string.begin.cowel" }
+            "0": { "name": "string.quoted.double.cowel punctuation.definition.string.begin.cowel" }
           },
           "end": "\"",
           "endCaptures": {
-            "0": { "name": "punctuation.definition.string.end.cowel" }
+            "0": { "name": "string.quoted.double.cowel punctuation.definition.string.end.cowel" }
           },
           "patterns": [
             { "include": "#escapes" },
             { "include": "#expression-splice" },
             { "include": "#directives" },
-            { "include": "#comments" }
+            { "include": "#comments" },
+            {
+              "name": "string.quoted.double.cowel",
+              "match": "[^\"\\\\]+"
+            }
           ]
         }
       ]
