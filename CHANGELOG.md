@@ -34,6 +34,7 @@
 - fix incorrect handling of final sigma characters in `cowel_to_lower` (#169)
 - fix various VSCode plugin highlighting issues (#292)
 - fix incorrect integer subtraction (#325)
+- fix incorrect integer division (#327)
 - also add internal `__typeof` directive and test types of directives
 - also fix typos and grammatical errors in documentation (#293)
 - also greatly improve testing infrastructure and code coverage
