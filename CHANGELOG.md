@@ -1,6 +1,6 @@
 # Changelog
 
-## **[v0.9.0](https://github.com/eisenwave/cowel/releases/tag/v0.9.0)** (2026-05-??)
+## **[v0.9.0](https://github.com/eisenwave/cowel/releases/tag/v0.9.0)** (2026-05-10)
 
 - change the type of `(X)` in expression to be that of `x` (#259):
   - add *parenthesized-expression* as a construct
@@ -43,7 +43,7 @@
   - highlighting of Markdown files is now supported
 
 **Full Changelog**:
-[`v0.8.1...main`](https://github.com/eisenwave/cowel/compare/v0.8.1...main)
+[`v0.8.1...v0.9.0`](https://github.com/eisenwave/cowel/compare/v0.8.1...v0.9.0)
 
 ## **[v0.8.1](https://github.com/eisenwave/cowel/releases/tag/v0.8.1)** (2026-05-01)
 
