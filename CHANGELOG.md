@@ -1,5 +1,12 @@
 # Changelog
 
+## **[v0.9.1](https://github.com/eisenwave/cowel/releases/tag/v0.9.1)** (2026-05-10)
+
+- hotfix broken release upload
+
+**Full Changelog**:
+[`v0.9.0...v0.9.1`](https://github.com/eisenwave/cowel/compare/v0.9.0...v0.9.1)
+
 ## **[v0.9.0](https://github.com/eisenwave/cowel/releases/tag/v0.9.0)** (2026-05-10)
 
 - change the type of `(X)` in expression to be that of `x` (#259):
