@@ -1,0 +1,4 @@
+ERROR multiline_same_expansion_arg_error.cow:2:3: No variable with the name "md" was found. [id.lookup]
+     2 |   md
+       |   ^~
+FATAL multiline_same_expansion_arg_error.cow: Generation exited with status 2 (error). [status.error]

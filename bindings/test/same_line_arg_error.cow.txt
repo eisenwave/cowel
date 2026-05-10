@@ -1,0 +1,4 @@
+ERROR same_line_arg_error.cow:1:12: No variable with the name "md" was found. [id.lookup]
+     1 | \codeblock(md){Hello world}
+       |            ^~
+FATAL same_line_arg_error.cow: Generation exited with status 2 (error). [status.error]
