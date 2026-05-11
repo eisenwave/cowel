@@ -123,6 +123,23 @@ std::size_t replace_all(
     return replacements;
 }
 
+[[nodiscard]]
+std::size_t code_point_index_to_code_unit_index(
+    const std::u8string_view str,
+    const std::size_t code_point_index
+)
+{
+    std::size_t code_unit_index = 0;
+    std::u8string_view remainder = str;
+    for (std::size_t i = 0; i < code_point_index; ++i) {
+        const auto [_, length] = utf8::decode_and_length_or_replacement(remainder);
+        const auto code_unit_length = std::size_t(length);
+        code_unit_index += code_unit_length;
+        remainder.remove_prefix(code_unit_length);
+    }
+    return code_unit_index;
+}
+
 } // namespace
 
 [[nodiscard]]
@@ -351,6 +368,86 @@ Str_Find_Behavior::evaluate(const Invocation& call, Context& context) const
     }
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid status.");
+}
+
+Result<Value, Processing_Status>
+Str_Substr_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    static constexpr Type length_alternatives[] { Type::null, Type::integer };
+    static constexpr Type length_type = Type::union_of(length_alternatives);
+    static_assert(length_type.is_canonical());
+
+    String_Matcher text_matcher { context.get_transient_memory() };
+    Parameter text_param { u8"text", Optionality::mandatory, text_matcher };
+    Integer_Matcher start_matcher;
+    Parameter start_param { u8"start", Optionality::mandatory, start_matcher };
+    Value_Of_Type_Matcher length_matcher { length_type };
+    Parameter length_param { u8"length", Optionality::optional, length_matcher };
+    Parameter* const parameters[] { &text_param, &start_param, &length_param };
+
+    const auto args_status = match_call(parameters, call, context);
+    if (args_status != Processing_Status::ok) {
+        return args_status;
+    }
+
+    const auto emit_range_error = [&](const File_Source_Span location, const Char_Sequence8 message) {
+        context.try_error(diagnostic::str_substr_range, location, message);
+        return Processing_Status::error;
+    };
+
+    const std::u8string_view text = text_matcher.get();
+    const String_Kind text_kind = text_matcher.get_string_kind();
+    const std::size_t text_code_point_length = text_kind == String_Kind::ascii
+        ? text.length()
+        : utf8::count_code_points_or_replacement(text);
+
+    const auto [start_i128, start_lossy] = start_matcher.get().as_i128();
+    if (start_lossy || start_i128 < 0) {
+        return emit_range_error(
+            start_matcher.get_location(),
+            u8"The given start must be a non-negative integer."sv
+        );
+    }
+    if (start_i128 > Int128(text_code_point_length)) {
+        return emit_range_error(
+            start_matcher.get_location(),
+            u8"The given start exceeds the string length."sv
+        );
+    }
+    const auto start = std::size_t(start_i128);
+
+    std::size_t length = text_code_point_length - start;
+    if (length_matcher.was_matched()) {
+        const Value& value = length_matcher.get();
+        if (value.is_int()) {
+            const Big_Int& length_big_int = value.as_integer();
+            const auto [length_i128, length_lossy] = length_big_int.as_i128();
+            if (length_lossy || length_i128 < 0) {
+                return emit_range_error(
+                    length_matcher.get_location(),
+                    u8"The given length must be a non-negative integer."sv
+                );
+            }
+            if (length_i128 > Int128(text_code_point_length - start)) {
+                return emit_range_error(
+                    length_matcher.get_location(),
+                    u8"The given start+length exceeds the string length."sv
+                );
+            }
+            length = std::size_t(length_i128);
+        }
+        else {
+            COWEL_ASSERT(value.is_null());
+        }
+    }
+
+    if (text_kind == String_Kind::ascii) {
+        return Value::string(text.substr(start, length), text_kind);
+    }
+
+    const std::size_t begin = code_point_index_to_code_unit_index(text, start);
+    const std::size_t end = code_point_index_to_code_unit_index(text, start + length);
+    return Value::string(text.substr(begin, end - begin), text_kind);
 }
 
 Result<Value, Processing_Status>

@@ -152,6 +152,8 @@ without emitting any HTML.
 \cowel_char_by_entity("amp")      \: HTML entity without & and ;
 \cowel_char_by_num(0x2014)        \: by scalar value
 \cowel_char_get_num("A")          \: returns int code point of first char
+\cowel_str_substr(text, start, length = null)
+                                  \: substring by code-point range (errors on invalid range)
 ```
 
 ## Naming conventions

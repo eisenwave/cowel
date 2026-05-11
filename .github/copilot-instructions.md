@@ -14,6 +14,11 @@ new or removed builtin directives that are documented in these Markdown files,
 type system changes, etc.),
 both this file and `lang-summary.md` must be updated to reflect the change.
 
+Recent language update:
+- Added `\cowel_str_substr(text: str, start: int, length: int | null = null): str`.
+  The directive uses code point indexing and raises `str.substr.range`
+  for invalid ranges.
+
 ## Repository Summary
 
 - `cowel` is a C++23 + Node.js project for **Compact Web Language (COWEL)**,
