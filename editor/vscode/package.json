@@ -1,5 +1,6 @@
 {
-  "name": "cowel-language-support",
+  "name": "cowel",
+  "displayName": "COWEL",
   "version": "0.9.1",
   "description": "Syntax highlighting and language support for Compact Web Language (COWEL)",
   "scripts": {
@@ -13,10 +14,19 @@
     "cowel",
     "markup"
   ],
-  "author": "",
+  "categories": [
+    "Programming Languages"
+  ],
+  "author": {
+    "name": "Jan Schultke",
+    "email": "me@eisenwave.net",
+    "url": "https://github.com/eisenwave/"
+  },
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/eisenwave/cowel/issues"
+  },
   "type": "commonjs",
-  "displayName": "COWEL Language Support",
   "publisher": "cowel",
   "devDependencies": {
     "@types/node": "^25.0.3",
@@ -27,7 +37,9 @@
     "vscode-textmate": "^9.3.1"
   },
   "engines": {
-    "vscode": "^1.80.0",
+    "vscode": "^1.80.0"
+  },
+  "devEngines": {
     "node": "^20.0.0"
   },
   "repository": {
