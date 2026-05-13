@@ -1,11 +1,23 @@
 # Changelog
 
+## **[v0.x.x](https://github.com/eisenwave/cowel/releases/tag/v0.x.x)** (2026-??-??)
+
+### VSCode extension
+
+- The VSCode extension is now available on the marketplace at
+  <https://marketplace.visualstudio.com/items?itemName=cowel.cowel>
+
+**Full Changelog**:
+[`v0.9.0...main`](https://github.com/eisenwave/cowel/compare/v0.9.0...main)
+
+
 ## **[v0.9.1](https://github.com/eisenwave/cowel/releases/tag/v0.9.1)** (2026-05-10)
 
 - hotfix broken release upload
 
 **Full Changelog**:
 [`v0.9.0...v0.9.1`](https://github.com/eisenwave/cowel/compare/v0.9.0...v0.9.1)
+
 
 ## **[v0.9.0](https://github.com/eisenwave/cowel/releases/tag/v0.9.0)** (2026-05-10)
 
@@ -52,6 +64,7 @@
 **Full Changelog**:
 [`v0.8.1...v0.9.0`](https://github.com/eisenwave/cowel/compare/v0.8.1...v0.9.0)
 
+
 ## **[v0.8.1](https://github.com/eisenwave/cowel/releases/tag/v0.8.1)** (2026-05-01)
 
 - fix lexer crash on *DIRECTIVE-SPLICE-NAME-TOKEN* in *GROUP* (#249)
@@ -62,6 +75,7 @@
 
 **Full Changelog**:
 [`v0.8.0...v0.8.1`](https://github.com/eisenwave/cowel/compare/v0.8.0...v0.8.1)
+
 
 ## **[v0.8.0](https://github.com/eisenwave/cowel/releases/tag/v0.8.0)** (2026-04-30)
 
@@ -92,6 +106,7 @@
 
 **Full Changelog**:
 [`v0.7.0...v0.8.0`](https://github.com/eisenwave/cowel/compare/v0.7.0...v0.8.0)
+
 
 ## **[v0.7.0](https://github.com/eisenwave/cowel/releases/tag/v0.7.0)** (2026-02-05)
 
@@ -190,6 +205,7 @@
 **Full Changelog**:
 [`v0.6.0...v0.7.0`](https://github.com/eisenwave/cowel/compare/v0.6.0...v0.7.0)
 
+
 ## **[v0.6.0](https://github.com/eisenwave/cowel/releases/tag/v0.6.0)** (2025-08-23)
 
 - remove support for `-` in directive names
@@ -244,6 +260,7 @@
 **Full Changelog**:
 [`v0.5.1...v0.6.0`](https://github.com/eisenwave/cowel/compare/v0.5.1...v0.6.0)
 
+
 ## **[v0.5.1](https://github.com/eisenwave/cowel/releases/tag/v0.5.1)** (2025-08-14)
 
 - fix `\cowel_put` not inheriting paragraph,
@@ -251,6 +268,7 @@
 
 **Full Changelog**:
 [`v0.5.0...v0.5.1`](https://github.com/eisenwave/cowel/compare/v0.5.0...v0.5.1)
+
 
 ## **[v0.5.0](https://github.com/eisenwave/cowel/releases/tag/v0.5.0)** (2025-08-12)
 
@@ -264,6 +282,7 @@
 
 **Full Changelog**:
 [`v0.4.0...v0.5.0`](https://github.com/eisenwave/cowel/compare/v0.4.0...v0.5.0)
+
 
 ## **[v0.4.0](https://github.com/eisenwave/cowel/releases/tag/v0.4.0)** (2025-08-09)
 
@@ -284,6 +303,7 @@
 **Full Changelog**:
 [`v0.3.1...v0.4.0`](https://github.com/eisenwave/cowel/compare/v0.3.1...v0.4.0)
 
+
 ## **[v0.3.1](https://github.com/eisenwave/cowel/releases/tag/v0.3.1)** (2025-08-02)
 
 - add Node.js + WASM wrapper as an alternative to native CLI (#53, #54, #56)
@@ -294,9 +314,11 @@
 **Full Changelog**:
 [`v0.2.2...v0.3.1`](https://github.com/eisenwave/cowel/compare/v0.2.2...v0.3.1)
 
+
 ## v0.3.0 (2025-08-01)
 
 Never properly published.
+
 
 ## **[v0.2.2](https://github.com/eisenwave/cowel/releases/tag/v0.2.2)** (2025-07-26)
 
@@ -309,6 +331,7 @@ Never properly published.
 **Full Changelog**:
 [`v0.2.1...v0.2.2`](https://github.com/eisenwave/cowel/compare/v0.2.1...v0.2.2)
 
+
 ## **[v0.2.1](https://github.com/eisenwave/cowel/releases/tag/v0.2.1)** (2025-07-24)
 
 - fix paragraph splitting following a comment (#17)
@@ -320,12 +343,14 @@ Never properly published.
 **Full Changelog**:
 [`v0.2.0...v0.2.1`](https://github.com/eisenwave/cowel/compare/v0.2.0...v0.2.1)
 
+
 ## **[v0.2.0](https://github.com/eisenwave/cowel/releases/tag/v0.2.0)** (2025-07-24)
 
 - mega refactor (#5, @eisenwave)
 
 **Full changelog**:
 [`v0.1.0...v0.2.0`](https://github.com/eisenwave/cowel/compare/v0.1.0...v0.2.0)
+
 
 ## **[v0.1.0](https://github.com/eisenwave/cowel/releases/tag/v0.1.0)** (2025-07-21)
 
