@@ -127,10 +127,6 @@ inline constexpr std::u8string_view regex_flags = u8"regex.flags";
 /// @brief Execution of a regular expression could not succeed (possibly too expensive).
 inline constexpr std::u8string_view regex_execution = u8"regex.execution";
 
-/// @brief In `\cowel_str_substr`,
-/// the provided start/length range is invalid.
-inline constexpr std::u8string_view str_substr_range = u8"str.substr.range";
-
 /// @brief Attempted splice is not valid.
 inline constexpr std::u8string_view splice = u8"splice";
 
@@ -231,6 +227,10 @@ inline constexpr std::u8string_view to_str_zpad = u8"to_str.zpad";
 /// @brief In `\cowel_to_str`,
 /// the given format is invalid.
 inline constexpr std::u8string_view to_str_format = u8"to_str.format";
+
+/// @brief In `\cowel_str_substr`,
+/// the provided start/length range is invalid.
+inline constexpr std::u8string_view str_substr_range = u8"str.substr.range";
 
 /// @brief In `\cowel_var_delete`,
 /// the variable was not found.
