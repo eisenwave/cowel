@@ -6,9 +6,11 @@
 
 - The VSCode extension is now available on the marketplace at
   <https://marketplace.visualstudio.com/items?itemName=cowel.cowel>
+- Fixed *BLOCK-TEXT-TOKEN* being highlighted like a string
+  when a *directive-escape* appears in a *string-literal* (#329)
 
 **Full Changelog**:
-[`v0.9.0...main`](https://github.com/eisenwave/cowel/compare/v0.9.0...main)
+[`v0.9.1...main`](https://github.com/eisenwave/cowel/compare/v0.9.1...main)
 
 
 ## **[v0.9.1](https://github.com/eisenwave/cowel/releases/tag/v0.9.1)** (2026-05-10)
