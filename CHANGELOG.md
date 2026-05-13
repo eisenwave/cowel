@@ -7,7 +7,7 @@
 - The VSCode extension is now available on the marketplace at
   <https://marketplace.visualstudio.com/items?itemName=cowel.cowel>
 - Fixed *BLOCK-TEXT-TOKEN* being highlighted like a string
-  when a *directive-escape* appears in a *string-literal* (#329)
+  when a *directive-splice* appears in a *string-literal* (#329)
 
 **Full Changelog**:
 [`v0.9.1...main`](https://github.com/eisenwave/cowel/compare/v0.9.1...main)
