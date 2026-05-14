@@ -6356,7 +6356,7 @@ o+: 2
 <h- data-h=mk_tag>cowel_str_substr</h->(
   <h- data-h=mk_attr>text</h->: <h- data-h=kw_type>str</h->,
   <h- data-h=mk_attr>start</h->: <h- data-h=kw_type>int</h->,
-  <h- data-h=mk_attr>length</h->: <h- data-h=kw_type>int | null = null</h->,
+  <h- data-h=mk_attr>length</h->: <h- data-h=kw_type>int | null</h-> = null,
 ): <h- data-h=kw_type>str</h->
 </pre>
 
@@ -6367,13 +6367,14 @@ the remainder of the string is returned.
 If <tt-><h- data-h=mk_attr>length</h-></tt-> is an integer,
 exactly that many code points are returned.
 </p>
-<p>This directive raises an error
-if <tt-><h- data-h=mk_attr>start</h-></tt-> is negative,
-if <tt-><h- data-h=mk_attr>start</h-></tt-> exceeds the string length,
-if <tt-><h- data-h=mk_attr>length</h-></tt-> is negative,
-or if <tt-><h- data-h=mk_attr>start</h-></tt->+<tt-><h- data-h=mk_attr>length</h-></tt->
-exceeds the string length.
-</p>
+<p>Raises an error if
+</p><ul>
+  <li><tt-><h- data-h=mk_attr>start</h-></tt-> is negative,</li>
+  <li><tt-><h- data-h=mk_attr>start</h-></tt-> is greater than the length of <tt-><h- data-h=mk_attr>text</h-></tt->,</li>
+  <li><tt-><h- data-h=mk_attr>length</h-></tt-> is negative, or</li>
+  <li><tt-><h- data-h=mk_attr>start</h-></tt->+<tt-><h- data-h=mk_attr>length</h-></tt-> is greater than the length of <tt-><h- data-h=mk_attr>text</h-></tt->.</li>
+</ul>
+
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block><h- data-h=mk_tag>\cowel_str_substr</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h->

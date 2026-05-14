@@ -2353,7 +2353,7 @@ o+: 2
 \cowel_highlight_as("markup-tag"){cowel_str_substr}(
   \cowdoc_param("text", "str"),
   \cowdoc_param("start", "int"),
-  \cowdoc_param("length", "int | null = null"),
+  \cowdoc_param("length", "int | null") = null,
 ): \cowel_highlight_as("keyword-type"){str}
 }
 
@@ -2364,12 +2364,13 @@ the remainder of the string is returned.
 If \cowdoc_attr{length} is an integer,
 exactly that many code points are returned.
 
-This directive raises an error
-if \cowdoc_attr{start} is negative,
-if \cowdoc_attr{start} exceeds the string length,
-if \cowdoc_attr{length} is negative,
-or if \cowdoc_attr{start}+\cowdoc_attr{length}
-exceeds the string length.
+Raises an error if
+\ul{
+  \li{\cowdoc_attr{start} is negative,}
+  \li{\cowdoc_attr{start} is greater than the length of \cowdoc_attr{text},}
+  \li{\cowdoc_attr{length} is negative, or}
+  \li{\cowdoc_attr{start}+\cowdoc_attr{length} is greater than the length of \cowdoc_attr{text}.}
+}
 
 \Bex{
 COWEL markup:
