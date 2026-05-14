@@ -390,10 +390,11 @@ Str_Substr_Behavior::evaluate(const Invocation& call, Context& context) const
         return args_status;
     }
 
-    const auto emit_range_error = [&](const File_Source_Span location, const Char_Sequence8 message) {
-        context.try_error(diagnostic::str_substr_range, location, message);
-        return Processing_Status::error;
-    };
+    const auto emit_range_error
+        = [&](const File_Source_Span location, const Char_Sequence8 message) {
+              context.try_error(diagnostic::str_substr_range, location, message);
+              return Processing_Status::error;
+          };
 
     const std::u8string_view text = text_matcher.get();
     const String_Kind text_kind = text_matcher.get_string_kind();
@@ -404,14 +405,12 @@ Str_Substr_Behavior::evaluate(const Invocation& call, Context& context) const
     const auto [start_i128, start_lossy] = start_matcher.get().as_i128();
     if (start_lossy || start_i128 < 0) {
         return emit_range_error(
-            start_matcher.get_location(),
-            u8"The given start must be a non-negative integer."sv
+            start_matcher.get_location(), u8"The given start must be a non-negative integer."sv
         );
     }
     if (start_i128 > Int128(text_code_point_length)) {
         return emit_range_error(
-            start_matcher.get_location(),
-            u8"The given start exceeds the string length."sv
+            start_matcher.get_location(), u8"The given start exceeds the string length."sv
         );
     }
     const auto start = std::size_t(start_i128);
