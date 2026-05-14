@@ -34,8 +34,12 @@ Primary Primary::basic(Primary_Kind kind, File_Source_Span source_span, std::u8s
     switch (kind) {
     case unit_literal:
     case null_literal:
-    case bool_literal:
-    case text: return Primary { kind, source_span, source, std::monostate {} };
+    case bool_literal: return Primary { kind, source_span, source, std::monostate {} };
+
+    case text: {
+        const auto string_kind = is_all_ascii(source) ? String_Kind::ascii : String_Kind::unicode;
+        return Primary { kind, source_span, source, std::monostate {}, string_kind };
+    }
 
     case unquoted_member_name:
     case id_expression: {
