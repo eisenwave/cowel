@@ -1,6 +1,6 @@
+#include <algorithm>
 #include <cstddef>
 #include <iterator>
-#include <ranges>
 #include <string_view>
 
 #include "cowel/util/case_transform.hpp"
@@ -10,6 +10,7 @@
 #include "cowel/util/strings.hpp"
 #include "cowel/util/unicode.hpp"
 
+#include "cowel/big_int.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
@@ -17,6 +18,37 @@
 #include "cowel/parameters.hpp"
 
 namespace cowel {
+
+[[nodiscard]]
+Result<std::size_t, Code_Point_Index_To_Code_Unit_Index_Error> code_point_index_to_code_unit_index(
+    const std::u8string_view str,
+    const std::size_t code_point_index
+) noexcept
+{
+    std::size_t result = 0;
+    std::size_t i = 0;
+    for (; i < code_point_index; ++i) {
+        if (result >= str.length()) {
+            return Code_Point_Index_To_Code_Unit_Index_Error {
+                .kind = Code_Point_Index_To_Code_Unit_Index_Error_Kind::index_out_of_range,
+                .code_unit_index = str.length(),
+                .code_point_index = i
+            };
+        }
+        const std::expected<utf8::Code_Point_And_Length, utf8::Error_Code> point_and_length
+            = utf8::decode_and_length(str.substr(result));
+        if (!point_and_length) {
+            return Code_Point_Index_To_Code_Unit_Index_Error {
+                .kind = Code_Point_Index_To_Code_Unit_Index_Error_Kind::decode_error,
+                .code_unit_index = result,
+                .code_point_index = i
+            };
+        }
+        result += std::size_t(point_and_length->length);
+    }
+    return result;
+}
+
 namespace {
 
 struct Sink_For_Evaluation final : String_Sink {
@@ -121,23 +153,6 @@ std::size_t replace_all(
 
     COWEL_ASSERT(replacements <= max_replacements);
     return replacements;
-}
-
-[[nodiscard]]
-std::size_t code_point_index_to_code_unit_index(
-    const std::u8string_view str,
-    const std::size_t code_point_index
-)
-{
-    std::size_t code_unit_index = 0;
-    std::u8string_view remainder = str;
-    for (std::size_t i = 0; i < code_point_index; ++i) {
-        const auto [_, length] = utf8::decode_and_length_or_replacement(remainder);
-        const auto code_unit_length = std::size_t(length);
-        code_unit_index += code_unit_length;
-        remainder.remove_prefix(code_unit_length);
-    }
-    return code_unit_index;
 }
 
 } // namespace
@@ -390,63 +405,117 @@ Str_Substr_Behavior::evaluate(const Invocation& call, Context& context) const
         return args_status;
     }
 
-    const auto emit_range_error
-        = [&](const File_Source_Span location, const Char_Sequence8 message) {
-              context.try_error(diagnostic::str_substr_range, location, message);
-              return Processing_Status::error;
-          };
+    const bool has_length = length_matcher.was_matched() && !length_matcher.get().is_null();
 
     const std::u8string_view text = text_matcher.get();
     const String_Kind text_kind = text_matcher.get_string_kind();
-    const std::size_t text_code_point_length = text_kind == String_Kind::ascii
-        ? text.length()
-        : utf8::count_code_points_or_replacement(text);
 
-    const auto [start_i128, start_lossy] = start_matcher.get().as_i128();
-    if (start_lossy || start_i128 < 0) {
-        return emit_range_error(
-            start_matcher.get_location(), u8"The given start must be a non-negative integer."sv
+    const Big_Int& start_big = start_matcher.get();
+    if (start_big < 0) {
+        context.try_error_f(
+            diagnostic::str_substr_range, start_matcher.get_location(),
+            u8"The given start {} must be a non-negative integer."sv, start_big
         );
+        return Processing_Status::error;
     }
-    if (start_i128 > Int128(text_code_point_length)) {
-        return emit_range_error(
-            start_matcher.get_location(), u8"The given start exceeds the string length."sv
+    if (start_big > Int128 { text.length() }) {
+        context.try_error_f(
+            diagnostic::str_substr_range, start_matcher.get_location(),
+            u8"The given start {} exceeds the string length {}."sv, //
+            start_big, utf8::count_code_points_or_replacement(text)
         );
+        return Processing_Status::error;
     }
-    const auto start = std::size_t(start_i128);
-
-    std::size_t length = text_code_point_length - start;
-    if (length_matcher.was_matched()) {
-        const Value& value = length_matcher.get();
-        if (value.is_int()) {
-            const Big_Int& length_big_int = value.as_integer();
-            const auto [length_i128, length_lossy] = length_big_int.as_i128();
-            if (length_lossy || length_i128 < 0) {
-                return emit_range_error(
-                    length_matcher.get_location(),
-                    u8"The given length must be a non-negative integer."sv
-                );
-            }
-            if (length_i128 > Int128(text_code_point_length - start)) {
-                return emit_range_error(
-                    length_matcher.get_location(),
-                    u8"The given start+length exceeds the string length."sv
-                );
-            }
-            length = std::size_t(length_i128);
-        }
-        else {
-            COWEL_ASSERT(value.is_null());
-        }
-    }
+    const auto start = std::size_t(Int128(start_big));
 
     if (text_kind == String_Kind::ascii) {
-        return Value::string(text.substr(start, length), text_kind);
+        if (!has_length) {
+            return Value::string(text.substr(start), String_Kind::ascii);
+        }
+
+        const Value& value = length_matcher.get();
+        const Big_Int& length_big = value.as_integer();
+        if (length_big < 0) {
+            context.try_error_f(
+                diagnostic::str_substr_range, length_matcher.get_location(),
+                u8"The given length {} must be a non-negative integer."sv, length_big
+            );
+            return Processing_Status::error;
+        }
+        if (length_big.as_i64().lossy
+            || std::size_t(length_big.as_i64().value) + start > text.length()) {
+            context.try_error_f(
+                diagnostic::str_substr_range, length_matcher.get_location(),
+                u8"The given start+length {}+{}={} exceeds the string length {}."sv, //
+                start_big, length_big, start_big + length_big, text.length()
+            );
+            return Processing_Status::error;
+        }
+        const auto length = std::size_t(Int128(length_big));
+
+        return Value::string(text.substr(start, length), String_Kind::ascii);
     }
 
-    const std::size_t begin = code_point_index_to_code_unit_index(text, start);
-    const std::size_t end = code_point_index_to_code_unit_index(text, start + length);
-    return Value::string(text.substr(begin, end - begin), text_kind);
+    const auto begin_result = code_point_index_to_code_unit_index(text, start);
+    if (!begin_result) {
+        const auto& err = begin_result.error();
+        if (err.kind == Code_Point_Index_To_Code_Unit_Index_Error_Kind::index_out_of_range) {
+            context.try_error_f(
+                diagnostic::str_substr_range, start_matcher.get_location(),
+                u8"The given start index {} exceeds the string length {}."sv, start,
+                err.code_point_index
+            );
+            return Processing_Status::error;
+        }
+        context.try_error(
+            diagnostic::str_substr_range, start_matcher.get_location(),
+            u8"The string contains invalid UTF-8."sv
+        );
+        return Processing_Status::error;
+    }
+    const std::u8string_view tail = text.substr(*begin_result);
+    if (!has_length) {
+        return Value::string(tail, text_kind);
+    }
+
+    const Big_Int& length_big = length_matcher.get().as_integer();
+    if (length_big < 0) {
+        context.try_error_f(
+            diagnostic::str_substr_range, length_matcher.get_location(),
+            u8"The given length {} must be a non-negative integer."sv, length_big
+        );
+        return Processing_Status::error;
+    }
+    if (length_big.as_i64().lossy
+        || std::size_t(length_big.as_i64().value) + start > text.length()) {
+        context.try_error_f(
+            diagnostic::str_substr_range, length_matcher.get_location(),
+            u8"The given start+length {}+{}={} exceeds the string length {}."sv, //
+            start_big, length_big, start_big + length_big,
+            utf8::count_code_points_or_replacement(text)
+        );
+        return Processing_Status::error;
+    }
+    const auto length = std::size_t(Int128(length_big));
+
+    const auto end_result = code_point_index_to_code_unit_index(tail, length);
+    if (!end_result) {
+        const auto& err = end_result.error();
+        if (err.kind == Code_Point_Index_To_Code_Unit_Index_Error_Kind::index_out_of_range) {
+            context.try_error_f(
+                diagnostic::str_substr_range, length_matcher.get_location(),
+                u8"The given start+length {}+{}={} exceed the string length {}."sv, //
+                start, length, start + length, err.code_point_index
+            );
+            return Processing_Status::error;
+        }
+        context.try_error(
+            diagnostic::str_substr_range, length_matcher.get_location(),
+            u8"The string contains invalid UTF-8."sv
+        );
+        return Processing_Status::error;
+    }
+    return Value::string(tail.substr(0, *end_result), text_kind);
 }
 
 Result<Value, Processing_Status>

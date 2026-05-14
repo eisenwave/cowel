@@ -17,6 +17,16 @@
 \test_expect_error("str.substr.range"){\cowel_str_substr("awoo", 5)}
 \test_expect_error("str.substr.range"){\cowel_str_substr("awoo", 3, 2)}
 \test_expect_error("str.substr.range"){\cowel_str_substr("awoo", 0, -1)}
+
+\test_expect_error("str.substr.range"){\cowel_str_substr("αβγ", -1)}
+\test_expect_error("str.substr.range"){\cowel_str_substr("αβγ", 4)}
+\test_expect_error("str.substr.range"){\cowel_str_substr("αβγ", 2, 2)}
+\test_expect_error("str.substr.range"){\cowel_str_substr("αβγ", 0, -1)}
+
+\test_expect_error("str.substr.range"){\cowel_str_substr("🇩🇪x", -1)}
+\test_expect_error("str.substr.range"){\cowel_str_substr("🇩🇪x", 4)}
+\test_expect_error("str.substr.range"){\cowel_str_substr("🇩🇪x", 2, 2)}
+\test_expect_error("str.substr.range"){\cowel_str_substr("🇩🇪x", 0, -1)}
 }
 
 \test_output{
@@ -38,4 +48,14 @@ x
 <error->\cowel_str_substr("awoo", 5)</error->
 <error->\cowel_str_substr("awoo", 3, 2)</error->
 <error->\cowel_str_substr("awoo", 0, -1)</error->
+
+<error->\cowel_str_substr("αβγ", -1)</error->
+<error->\cowel_str_substr("αβγ", 4)</error->
+<error->\cowel_str_substr("αβγ", 2, 2)</error->
+<error->\cowel_str_substr("αβγ", 0, -1)</error->
+
+<error->\cowel_str_substr("🇩🇪x", -1)</error->
+<error->\cowel_str_substr("🇩🇪x", 4)</error->
+<error->\cowel_str_substr("🇩🇪x", 2, 2)</error->
+<error->\cowel_str_substr("🇩🇪x", 0, -1)</error->
 }

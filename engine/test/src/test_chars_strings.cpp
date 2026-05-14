@@ -222,6 +222,58 @@ TEST(Strings, trim_ascii_blank)
     EXPECT_EQ(u8"awoo"sv, trim_ascii_blank(u8"\n\t\v\f\r awoo\n\t\v\f\r "));
 }
 
+TEST(Strings, code_point_index_to_code_unit_index)
+{
+    {
+        const std::u8string_view text;
+        auto res0 = code_point_index_to_code_unit_index(text, 0);
+        ASSERT_TRUE(res0);
+        EXPECT_EQ(*res0, 0uz);
+        auto res1 = code_point_index_to_code_unit_index(text, 1);
+        ASSERT_FALSE(res1);
+        auto err1 = res1.error();
+        EXPECT_EQ(err1.kind, Code_Point_Index_To_Code_Unit_Index_Error_Kind::index_out_of_range);
+        EXPECT_EQ(err1.code_unit_index, 0uz);
+        EXPECT_EQ(err1.code_point_index, 0uz);
+    }
+
+    {
+        const std::u8string_view text = u8"a\u20ACb";
+        auto res0 = code_point_index_to_code_unit_index(text, 0);
+        ASSERT_TRUE(res0);
+        EXPECT_EQ(*res0, 0uz);
+        auto res1 = code_point_index_to_code_unit_index(text, 1);
+        ASSERT_TRUE(res1);
+        EXPECT_EQ(*res1, 1uz);
+        auto res2 = code_point_index_to_code_unit_index(text, 2);
+        ASSERT_TRUE(res2);
+        EXPECT_EQ(*res2, 4uz);
+        auto res3 = code_point_index_to_code_unit_index(text, 3);
+        ASSERT_TRUE(res3);
+        EXPECT_EQ(*res3, 5uz);
+        auto res4 = code_point_index_to_code_unit_index(text, 4);
+        ASSERT_FALSE(res4);
+        auto err4 = res4.error();
+        EXPECT_EQ(err4.kind, Code_Point_Index_To_Code_Unit_Index_Error_Kind::index_out_of_range);
+        EXPECT_EQ(err4.code_unit_index, 5uz);
+        EXPECT_EQ(err4.code_point_index, 3uz);
+    }
+
+    {
+        const char8_t invalid_utf8[] { char8_t(0xC3), char8_t('('), char8_t('x') };
+        const std::u8string_view text { invalid_utf8, 3 };
+        auto res0 = code_point_index_to_code_unit_index(text, 0);
+        ASSERT_TRUE(res0);
+        EXPECT_EQ(*res0, 0uz);
+        auto res1 = code_point_index_to_code_unit_index(text, 1);
+        ASSERT_FALSE(res1);
+        auto err1 = res1.error();
+        EXPECT_EQ(err1.kind, Code_Point_Index_To_Code_Unit_Index_Error_Kind::decode_error);
+        EXPECT_EQ(err1.code_unit_index, 0uz);
+        EXPECT_EQ(err1.code_point_index, 0uz);
+    }
+}
+
 TEST(Strings, is_html_tag_name)
 {
     EXPECT_TRUE(is_html_tag_name(u8"tag"));

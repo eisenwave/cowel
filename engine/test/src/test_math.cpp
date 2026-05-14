@@ -6,7 +6,6 @@
 #include "cowel/util/math.hpp"
 
 #include "cowel/big_int.hpp"
-#include "cowel/big_int_ops.hpp"
 
 namespace cowel {
 

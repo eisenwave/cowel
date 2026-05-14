@@ -11,6 +11,7 @@
 #include "cowel/util/from_chars.hpp"
 #include "cowel/util/function_ref.hpp"
 #include "cowel/util/math.hpp"
+#include "cowel/util/stringify.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
 
@@ -1427,6 +1428,34 @@ constexpr Big_Int operator""_n(const unsigned long long digits) noexcept
 
 static_assert(sizeof(Big_Int) <= 32);
 static_assert(alignof(Big_Int) == alignof(unsigned long long));
+
+[[nodiscard]]
+inline std::string to_string(const Big_Int& x, const int base = 10, const bool to_upper = false)
+{
+    std::string result;
+    x.print_to([&](const std::string_view str) { result += str; }, base, to_upper);
+    return result;
+}
+
+[[nodiscard]]
+inline std::u8string to_u8string(const Big_Int& x, const int base = 10, const bool to_upper = false)
+{
+    std::u8string result;
+    x.print_to([&](const std::u8string_view str) { result += str; }, base, to_upper);
+    return result;
+}
+
+template <>
+struct Stringify<Big_Int> {
+    void append(std::u8string& out, const Big_Int& value) const
+    {
+        out += to_u8string(value);
+    }
+    void append(std::pmr::u8string& out, const Big_Int& value) const
+    {
+        out += to_u8string(value);
+    }
+};
 
 } // namespace cowel
 
