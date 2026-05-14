@@ -11,6 +11,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/small_vector.hpp"
+#include "cowel/util/stringify.hpp"
 #include "cowel/util/transparent_comparison.hpp"
 
 #include "cowel/call_stack.hpp"
@@ -324,7 +325,29 @@ public:
         Char_Sequence8 message
     )
     {
+        COWEL_ASSERT(emits(severity));
         emit({ severity, id, location, message, {} });
+    }
+
+    template <formattable... Args>
+    void emit_f(
+        const Severity severity,
+        const string_view_type id,
+        const File_Source_Span& location,
+        const string_view_type format,
+        const Args&... args
+    )
+    {
+        COWEL_ASSERT(emits(severity));
+        emit_f_impl(
+            severity, id, location, format, //
+            // This looks really scary,
+            // and it all needs to be in one expression to avoid lifetime issues
+            // as well as object slicing.
+            std::initializer_list<const Format_To*> {
+                &static_cast<const Format_To&>(Format_Stringify_To<Args> { args })...,
+            }
+        );
     }
 
     void emit_trace(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
@@ -371,8 +394,8 @@ public:
     }
 
     void try_emit(
-        Severity severity,
-        string_view_type id,
+        const Severity severity,
+        const string_view_type id,
         const File_Source_Span& location,
         Char_Sequence8 message
     )
@@ -382,9 +405,34 @@ public:
         }
     }
 
+    template <formattable... Args>
+    void try_emit_f(
+        const Severity severity,
+        const string_view_type id,
+        const File_Source_Span& location,
+        const string_view_type format,
+        const Args&... args
+    )
+    {
+        if (emits(severity)) {
+            emit_f(severity, id, location, format, args...);
+        }
+    }
+
     void try_trace(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
     {
         try_emit(Severity::trace, id, location, message);
+    }
+
+    template <formattable... Args>
+    void try_trace_f(
+        const string_view_type id,
+        const File_Source_Span& location,
+        const string_view_type format,
+        const Args&... args
+    )
+    {
+        try_emit_f(Severity::trace, id, location, format, args...);
     }
 
     void try_debug(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
@@ -392,9 +440,31 @@ public:
         try_emit(Severity::debug, id, location, message);
     }
 
+    template <formattable... Args>
+    void try_debug_f(
+        const string_view_type id,
+        const File_Source_Span& location,
+        const string_view_type format,
+        const Args&... args
+    )
+    {
+        try_debug_f(Severity::debug, id, location, format, args...);
+    }
+
     void try_info(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
     {
         try_emit(Severity::info, id, location, message);
+    }
+
+    template <formattable... Args>
+    void try_info_f(
+        const string_view_type id,
+        const File_Source_Span& location,
+        const string_view_type format,
+        const Args&... args
+    )
+    {
+        try_emit_f(Severity::info, id, location, format, args...);
     }
 
     void
@@ -403,9 +473,31 @@ public:
         try_emit(Severity::soft_warning, id, location, message);
     }
 
+    template <formattable... Args>
+    void try_soft_warning_f(
+        const string_view_type id,
+        const File_Source_Span& location,
+        const string_view_type format,
+        const Args&... args
+    )
+    {
+        try_emit_f(Severity::soft_warning, id, location, format, args...);
+    }
+
     void try_warning(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
     {
         try_emit(Severity::warning, id, location, message);
+    }
+
+    template <formattable... Args>
+    void try_warning_f(
+        const string_view_type id,
+        const File_Source_Span& location,
+        const string_view_type format,
+        const Args&... args
+    )
+    {
+        try_emit_f(Severity::warning, id, location, format, args...);
     }
 
     void try_error(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
@@ -413,9 +505,31 @@ public:
         try_emit(Severity::error, id, location, message);
     }
 
+    template <formattable... Args>
+    void try_error_f(
+        const string_view_type id,
+        const File_Source_Span& location,
+        const string_view_type format,
+        const Args&... args
+    )
+    {
+        try_emit_f(Severity::error, id, location, format, args...);
+    }
+
     void try_fatal(string_view_type id, const File_Source_Span& location, Char_Sequence8 message)
     {
         try_emit(Severity::fatal, id, location, message);
+    }
+
+    template <formattable... Args>
+    void try_fatal_f(
+        const string_view_type id,
+        const File_Source_Span& location,
+        const string_view_type format,
+        const Args&... args
+    )
+    {
+        try_emit_f(Severity::fatal, id, location, format, args...);
     }
 
     [[nodiscard]]
@@ -501,6 +615,65 @@ private:
         }
 
         return m_diagnostic_stack;
+    }
+
+    struct Format_To {
+        virtual void operator()(std::pmr::u8string& out) const = 0;
+    };
+
+    /// @brief Adaptor which uses `Stringify` for the given type `T` to implement `Format_To`.
+    template <class T>
+    struct Format_Stringify_To final : Format_To {
+        const T& value;
+        [[nodiscard]]
+        Format_Stringify_To(const T& value) noexcept
+            : value { value }
+        {
+        }
+        void operator()(std::pmr::u8string& out) const override
+        {
+            Stringify<T> {}.append(out, value);
+        }
+    };
+
+    void emit_f_impl(
+        const Severity severity,
+        const string_view_type id,
+        const File_Source_Span& location,
+        const string_view_type format,
+        const std::span<const Format_To* const> args
+    )
+    {
+        std::pmr::u8string result { m_transient_memory };
+        result.reserve(format.size() * 2);
+
+        std::size_t arg_index = 0;
+        for (std::size_t i = 0; i < format.size();) {
+            if (format[i] == u8'{') {
+                COWEL_ASSERT(i + 1 < format.length());
+                if (format[i + 1] == u8'{') {
+                    result += u8'{';
+                    i += 2;
+                }
+                else if (format[i + 1] == u8'}') {
+                    (*args[arg_index++])(result);
+                    i += 2;
+                }
+                else {
+                    COWEL_ASSERT_UNREACHABLE(u8"Only {{ and {} are supported for now.");
+                }
+            }
+            else if (format[i] == u8'}') {
+                COWEL_ASSERT(i + 1 < format.length() && format[i + 1] == u8'}');
+                result += u8'}';
+                i += 2;
+            }
+            else {
+                result += format[i];
+                ++i;
+            }
+        }
+        emit(severity, id, location, std::u8string_view { result });
     }
 };
 

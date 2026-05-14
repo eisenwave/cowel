@@ -6,11 +6,14 @@
 #include <string_view>
 #include <vector>
 
+#include "cowel/util/result.hpp"
 #include "ulight/impl/lang/cowel.hpp"
 #include "ulight/impl/strings.hpp"
 
 #include "cowel/util/assert.hpp"
 #include "cowel/util/chars.hpp"
+
+#include "cowel/fwd.hpp"
 
 namespace cowel {
 
@@ -197,6 +200,38 @@ void sanitize_html_id(std::vector<char8_t, Alloc>& id)
         return !detail::sanitized_id_set(c);
     });
 }
+
+enum struct Code_Point_Index_To_Code_Unit_Index_Error_Kind : Default_Underlying {
+    /// @brief Failure because UTF-8 decoding failed.
+    decode_error,
+    /// @brief Failure because the given code point index is out of range.
+    index_out_of_range,
+};
+
+struct Code_Point_Index_To_Code_Unit_Index_Error {
+    /// @brief The error kind.
+    Code_Point_Index_To_Code_Unit_Index_Error_Kind kind;
+    /// @brief If `kind` is `decode_error`,
+    /// the index of the UTF-8 code unit where decoding failed.
+    /// If `kind` is `index_out_of_range`,
+    /// the length of the string in code units.
+    std::size_t code_unit_index;
+    /// @brief If `kind` is `decode_error`,
+    /// the index of the code point where decoding failed.
+    /// If `kind` is `index_out_of_range`,
+    /// the length of the string in code points (which was exceeded).
+    std::size_t code_point_index;
+
+    friend bool
+    operator==(Code_Point_Index_To_Code_Unit_Index_Error, Code_Point_Index_To_Code_Unit_Index_Error)
+        = default;
+};
+
+/// @brief Returns the index of the code unit in `str` with the given `code_point_index`,
+/// or a detailed error if a decoding error occurred or the given index lies outside the string.
+[[nodiscard]]
+Result<std::size_t, Code_Point_Index_To_Code_Unit_Index_Error>
+code_point_index_to_code_unit_index(std::u8string_view str, std::size_t code_point_index) noexcept;
 
 } // namespace cowel
 

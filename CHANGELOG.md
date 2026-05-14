@@ -4,7 +4,8 @@
 
 ### Engine
 
-- Updated µlight for various syntax highlighting fixes
+- Added `cowel_str_substr` directive for taking substrings (#333)
+- Updated µlight for various syntax highlighting fixes (#336)
 
 ### VSCode extension
 

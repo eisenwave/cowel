@@ -2347,6 +2347,46 @@ o+: 2
 }
 }
 
+\cowdoc_dir_h4("cowel_str_substr", "Extract a substring")
+
+\pre{
+\cowel_highlight_as("markup-tag"){cowel_str_substr}(
+  \cowdoc_param("text", "str"),
+  \cowdoc_param("start", "int"),
+  \cowdoc_param("length", "int | null") = null,
+): \cowel_highlight_as("keyword-type"){str}
+}
+
+Returns the substring of \cowdoc_attr{text}
+starting at code point index \cowdoc_attr{start}.
+If \cowdoc_attr{length} is \cowdoc_c{null},
+the remainder of the string is returned.
+If \cowdoc_attr{length} is an integer,
+exactly that many code points are returned.
+
+Raises an error if
+\ul{
+  \li{\cowdoc_attr{start} is negative,}
+  \li{\cowdoc_attr{start} is greater than the length of \cowdoc_attr{text},}
+  \li{\cowdoc_attr{length} is negative, or}
+  \li{\cowdoc_attr{start}+\cowdoc_attr{length} is greater than the length of \cowdoc_attr{text}.}
+}
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_str_substr("awoo", 1, 2)
+\cowel_str_substr("αβγ", 1)
+\cowel_str_substr("awoo", 2, null)
+}}
+Generated HTML:
+\htmlblock{
+wo
+βγ
+oo
+}
+}
+
 \cowdoc_dir_h4("cowel_str_match", "Test if a string matches a regular expression")
 
 \pre{

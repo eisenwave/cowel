@@ -258,6 +258,18 @@ public:
     Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const override;
 };
 
+struct [[nodiscard]]
+Str_Substr_Behavior final : Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Str_Substr_Behavior()
+        : Directive_Behavior { Type::str }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const override;
+};
+
 enum struct Str_Replacement_Kind : bool {
     first,
     all,

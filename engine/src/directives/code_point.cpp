@@ -12,7 +12,6 @@
 #include "cowel/util/unicode.hpp"
 
 #include "cowel/big_int.hpp"
-#include "cowel/big_int_ops.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"

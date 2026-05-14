@@ -185,6 +185,7 @@ set(COMMON_LIBRARY_SOURCES
     engine/include/cowel/util/result.hpp
     engine/include/cowel/util/severity.hpp
     engine/include/cowel/util/source_position.hpp
+    engine/include/cowel/util/stringify.hpp
     engine/include/cowel/util/strings.hpp
     engine/include/cowel/util/to_chars.hpp
     engine/include/cowel/util/transparent_comparison.hpp
@@ -202,7 +203,6 @@ set(COMMON_LIBRARY_SOURCES
 
     engine/include/cowel/assets.hpp
     engine/include/cowel/big_int.hpp
-    engine/include/cowel/big_int_ops.hpp
     engine/include/cowel/builtin_directive_set.hpp
     engine/include/cowel/call_stack.hpp
     engine/include/cowel/collecting_logger.hpp
