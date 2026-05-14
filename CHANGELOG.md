@@ -2,6 +2,10 @@
 
 ## **[v0.x.x](https://github.com/eisenwave/cowel/releases/tag/v0.x.x)** (2026-??-??)
 
+### Engine
+
+- Updated µlight for various syntax highlighting fixes
+
 ### VSCode extension
 
 - The VSCode extension is now available on the marketplace at
