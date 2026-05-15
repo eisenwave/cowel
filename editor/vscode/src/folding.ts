@@ -44,7 +44,8 @@ function skipString(s: string, i: number): number {
     return i;
 }
 
-export function computeFoldingRanges(text: string): FoldRange[] {
+export function computeFoldingRanges(raw_text: string): FoldRange[] {
+    const text = raw_text.replace(/\r\n?/g, '\n');
     const ranges: FoldRange[] = [];
     const stack: Array<[line: number, isDirective: boolean]> = [];
 
@@ -67,15 +68,15 @@ export function computeFoldingRanges(text: string): FoldRange[] {
 
             if (next === ':') {
                 i++;
-                while (i < text.length && text[i] !== '\n' && text[i] !== '\r') i++;
+                while (i < text.length && text[i] !== '\n') i++;
             } else if (next === '*') {
                 i++;
                 while (i < text.length) {
-                    if (text[i] === '\n') line++;
                     if (text[i] === '*' && i + 1 < text.length && text[i + 1] === '\\') {
                         i += 2;
                         break;
                     }
+                    if (text[i] === '\n') line++;
                     i++;
                 }
             } else if (next === '(') {
@@ -91,6 +92,7 @@ export function computeFoldingRanges(text: string): FoldRange[] {
                     i++;
                 }
             } else {
+                if (next === '\n') line++;
                 i++;
             }
         } else if (c === '{') {
@@ -100,8 +102,8 @@ export function computeFoldingRanges(text: string): FoldRange[] {
             const entry = stack.pop();
             if (entry) {
                 const [startLine, isDirective] = entry;
-                if (isDirective && line > startLine) {
-                    ranges.push([startLine, line]);
+                if (isDirective && line > startLine + 1) {
+                    ranges.push([startLine, line - 1]);
                 }
             }
             i++;
