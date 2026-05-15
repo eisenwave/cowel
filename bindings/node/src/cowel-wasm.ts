@@ -1255,6 +1255,7 @@ export class CowelWasm {
         const outputAddress = this.heap_u32[address / 4 + 1];
         const outputSize = this.heap_u32[address / 4 + 2];
         const output = this.decodeUtf8(outputAddress, outputSize);
+        this.free(outputAddress, outputSize, 1);
 
         const variables: Record<string, string> = {};
         for (let i = 0; i < this.preservedVariableNames.length; ++i) {
