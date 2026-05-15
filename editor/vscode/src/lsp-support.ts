@@ -147,7 +147,7 @@ export async function collectDiagnosticsForDocument(
             continue;
         }
 
-        const primaryLocation = diagnostic.stack[0];
+        const primaryLocation = diagnostic.stack.length === 0 ? undefined : diagnostic.stack[0];
         const uri = resolveDiagnosticUri(
             request.document.uri,
             documentPath,

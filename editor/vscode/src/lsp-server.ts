@@ -50,7 +50,7 @@ interface CowelWasmModuleLike {
     Severity: CowelSeverityLike;
     SyntaxHighlightPolicy: CowelSyntaxHighlightPolicyLike;
     IoStatus: IoStatusLike;
-    load(module: BufferSource): Promise<CowelWasmInstanceLike>;
+    load(module: ArrayBufferLike | ArrayBufferView): Promise<CowelWasmInstanceLike>;
 }
 
 type LoadedWasm = {
@@ -154,7 +154,8 @@ async function loadWasm(): Promise<LoadedWasm> {
         wasmPromise = (async () => {
             const runtimePaths = resolveRuntimePaths();
             // prepare-lsp-assets.mjs transpiles bindings/node/src/cowel-wasm.ts into CommonJS
-            // so the server can reuse the existing WASM wrapper without copying its source.
+            // because this server runs under Node's CommonJS loader and still wants to reuse
+            // the existing WASM wrapper without copying its source.
             const api = require(runtimePaths.modulePath) as CowelWasmModuleLike;
             const moduleBytes = fs.readFileSync(runtimePaths.wasmPath);
             const wasm = await api.load(moduleBytes);

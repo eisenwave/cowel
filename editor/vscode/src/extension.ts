@@ -46,7 +46,7 @@ export function activate(context: vscode.ExtensionContext): void {
         serverOptions,
         clientOptions,
     );
-    context.subscriptions.push(client.start());
+    void client.start();
 }
 
 export async function deactivate(): Promise<void> {
