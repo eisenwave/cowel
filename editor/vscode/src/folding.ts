@@ -8,30 +8,32 @@ function isIdentChar(c: string): boolean {
     return isIdentStart(c) || (c >= '0' && c <= '9');
 }
 
-function skipGroup(s: string, i: number): number {
+function skipGroup(s: string, i: number, line: number): [number, number] {
     i++;
     while (i < s.length) {
         const c = s[i];
-        if (c === ')') return i + 1;
-        if (c === '(') { i = skipGroup(s, i); continue; }
-        if (c === '{') { i = skipRawBlock(s, i); continue; }
+        if (c === ')') return [i + 1, line];
+        if (c === '\n') { line++; i++; continue; }
+        if (c === '(') { [i, line] = skipGroup(s, i, line); continue; }
+        if (c === '{') { [i, line] = skipRawBlock(s, i, line); continue; }
         if (c === '"') { i = skipString(s, i); continue; }
-        if (c === '\\') { i += 2; continue; }
+        if (c === '\\') { i++; if (i < s.length && s[i] === '\n') line++; i++; continue; }
         i++;
     }
-    return i;
+    return [i, line];
 }
 
-function skipRawBlock(s: string, i: number): number {
+function skipRawBlock(s: string, i: number, line: number): [number, number] {
     i++;
     while (i < s.length) {
         const c = s[i];
-        if (c === '}') return i + 1;
-        if (c === '{') { i = skipRawBlock(s, i); continue; }
-        if (c === '\\') { i += 2; continue; }
+        if (c === '}') return [i + 1, line];
+        if (c === '\n') { line++; i++; continue; }
+        if (c === '{') { [i, line] = skipRawBlock(s, i, line); continue; }
+        if (c === '\\') { i++; if (i < s.length && s[i] === '\n') line++; i++; continue; }
         i++;
     }
-    return i;
+    return [i, line];
 }
 
 function skipString(s: string, i: number): number {
@@ -80,12 +82,16 @@ export function computeFoldingRanges(raw_text: string): FoldRange[] {
                     i++;
                 }
             } else if (next === '(') {
-                i = skipGroup(text, i);
+                [i, line] = skipGroup(text, i, line);
             } else if (isIdentStart(next)) {
                 i++;
                 while (i < text.length && isIdentChar(text[i])) i++;
                 if (i < text.length && text[i] === '(') {
-                    i = skipGroup(text, i);
+                    const groupStart = line;
+                    [i, line] = skipGroup(text, i, line);
+                    if (line > groupStart + 1) {
+                        ranges.push([groupStart, line - 1]);
+                    }
                 }
                 if (i < text.length && text[i] === '{') {
                     stack.push([line, true]);
