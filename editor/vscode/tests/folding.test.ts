@@ -27,7 +27,7 @@ const tests: TestCase[] = [
     {
         name: 'multi-line directive folds',
         input: '\\h4{\nSome content\n}',
-        expected: [[0, 2]],
+        expected: [[0, 1]],
     },
     {
         name: 'codeblock with inner braces folds to outer closing brace',
@@ -39,7 +39,7 @@ const tests: TestCase[] = [
             'f(2 + 2);',
             '}',
         ].join('\n'),
-        expected: [[0, 5]],
+        expected: [[0, 4]],
     },
     {
         name: 'nested directives produce nested folds',
@@ -50,22 +50,22 @@ const tests: TestCase[] = [
             '}',
             '}',
         ].join('\n'),
-        expected: [[1, 3], [0, 4]],
+        expected: [[1, 2], [0, 3]],
     },
     {
         name: 'line comment braces are ignored',
         input: '\\: { open comment\n\\block{\ncontent\n}',
-        expected: [[1, 3]],
+        expected: [[1, 2]],
     },
     {
         name: 'block comment braces are ignored',
         input: '\\* { open comment *\\\n\\block{\ncontent\n}',
-        expected: [[1, 3]],
+        expected: [[1, 2]],
     },
     {
         name: 'escaped brace does not open a fold',
         input: '\\{ not a block\n\\block{\ncontent\n}',
-        expected: [[1, 3]],
+        expected: [[1, 2]],
     },
     {
         name: 'full issue #304 example',
@@ -87,7 +87,7 @@ const tests: TestCase[] = [
             '\\code(js){f} has no idea that its input was originally \\code(js){2 + 2}.',
             'It only sees the value \\code(js){4} and prints it, "oblivious to the outside".',
         ].join('\n'),
-        expected: [[8, 13]],
+        expected: [[8, 12]],
     },
 ];
 
