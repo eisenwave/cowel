@@ -714,6 +714,7 @@ Many examples can be found in this document.
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_highlight}(
   \cowdoc_param("lang", "string"),
+  \cowdoc_param("opaque", "bool") = false,
   \cowdoc_param("content", "block"),
 ): \cowel_highlight_as("keyword-type"){block}
 }
@@ -722,18 +723,56 @@ The \cowdoc_dir{cowel_highlight}
 processes content using the highlight policy,
 which wraps parts of code in HTML tags for the purpose of syntax highlighting.
 
-\cowdoc_dir{cowel_highlight} has a single \cowdoc_attr{lang} parameter.
-This specifies the name of language (e.g. \tt{cowel})
-in which the content is to be highlighted.
+The \cowdoc_attr{lang} parameter specifies the name of language
+in which the content is to be highlighted
+(e.g. \tt{cowel}).
 The name has to be one of the language short names
 supported by the \ref("https://github.com/Eisenwave/ulight"){µlight syntax highlighter},
 which is the highlighter that COWEL uses internally.
+
+If the \cowdoc_attr{opaque} is \cowdoc_c{true},
+the effect is equivalent to wrapping the directive splice in
+\cowdoc_dir{cowel_to_html}.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_highlight("cpp"){int}
+
+Opaque mode:
+\cowel_highlight("cpp"){\cowel_highlight("cpp", opaque=true){int} float}
+
+Non-opaque:
+\cowel_highlight("cpp"){\cowel_highlight("cpp"){int} float}
+}}
+
+HTML output (example):
+\htmlblock{\cowel_as_text{
+\cowel_highlight("cpp"){int}
+
+Opaque mode:
+\cowel_highlight("cpp"){\cowel_highlight("cpp", opaque=true){int} float}
+
+Non-opaque:
+\cowel_highlight("cpp"){\cowel_highlight("cpp"){int} float}
+}}
+
+In the non-opaque example,
+the output of the inner \cowdoc_dir{cowel_highlight} is
+\ol{
+  \li{the opening \cowdoc_html{<h->} tag,}
+  \li{the inner '\tt{int}' text, and}
+  \li{the closing \cowdoc_html{</h->} tag.}
+}
+The plain '\tt{int}' text is then highlighted again by the outout \cowdoc_dir{cowel_highlight}.
+}
 
 \cowdoc_dir_h4("cowel_highlight_as", "Syntax highlight override")
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_highlight_as}(
   \cowdoc_param("name", "string"),
+  \cowdoc_param("opaque", "bool") = true,
   \cowdoc_param("content", "block"),
 ): \cowel_highlight_as("keyword-type"){block}
 }
@@ -745,8 +784,8 @@ This is done by wrapping the given content in HTML tags for syntax highlighting
 and feeding the provided content, converted to HTML into the surrounding policy,
 so it is not subject to automatic highlighting.
 
-\cowdoc_dir{cowel_highlight_as} has a single \cowdoc_attr{name} parameter,
-which is the µlight \dfn{long name} for a highlight type.
+The \cowdoc_attr{name} parameter
+specifies the µlight \dfn{long name} for a highlight type.
 
 \Btip{
 You can obtain a list of possible long names at
@@ -779,6 +818,9 @@ the "short names" (e.g. \cowdoc_c{kw_type}) are not stable,
 i.e. they are more likely to change.
 Only µlight long names should be used directly.
 }
+
+The \cowdoc_attr{opaque} parameter has the same effect
+as for the \cowdoc_dir{cowel_highlight} directive (see above).
 
 \cowdoc_dir_h4("cowel_highlight_phantom", "Syntax highlight phantom text")
 

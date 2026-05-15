@@ -15,13 +15,22 @@
 #include "cowel/directive_processing.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/output_language.hpp"
-#include "cowel/services.hpp"
 
 #include "cowel/syntax/ast.hpp"
 
 namespace cowel {
 
 struct Syntax_Highlight_Policy : virtual Content_Policy {
+private:
+    [[nodiscard]]
+    static Text_Sink_Flags flags_from_parent(const bool opaque, const Text_Sink_Flags parent_flags)
+    {
+        using enum Text_Sink_Flags;
+        return !opaque                                ? parent_flags & discard
+            : ((parent_flags & discard_html) != none) ? discard
+                                                      : none;
+    }
+
 protected:
     enum struct Span_Type : Default_Underlying {
         html,
@@ -39,28 +48,34 @@ protected:
     std::pmr::vector<char8_t> m_html_text;
     std::pmr::vector<char8_t> m_highlighted_text;
     std::u8string_view m_suffix;
+    bool m_opaque;
 
 public:
     [[nodiscard]]
-    explicit Syntax_Highlight_Policy(std::pmr::memory_resource* memory)
-        : Text_Sink { Output_Language::html }
-        , Content_Policy { Output_Language::html }
+    explicit Syntax_Highlight_Policy(
+        std::pmr::memory_resource* const memory,
+        const bool opaque,
+        const Text_Sink_Flags parent_flags
+    )
+        : Text_Sink { flags_from_parent(opaque, parent_flags) }
+        , Content_Policy { flags_from_parent(opaque, parent_flags) }
         , m_spans { memory }
         , m_html_text { memory }
         , m_highlighted_text { memory }
+        , m_opaque { opaque }
     {
         m_spans.reserve(16);
         m_highlighted_text.reserve(16);
     }
 
-    bool write(Char_Sequence8 chars, Output_Language language) override;
+    void write(Char_Sequence8 chars, Output_Language language) override;
 
-    bool write_phantom(Char_Sequence8 chars)
+    void write_phantom(Char_Sequence8 chars)
     {
         if constexpr (enable_empty_string_assertions) {
             COWEL_ASSERT(!chars.empty());
         }
-        return write_highlighted_text(chars, Span_Type::phantom);
+        write_highlighted_text(chars, Span_Type::phantom);
     }
 
     [[nodiscard]]
@@ -125,7 +140,7 @@ public:
     dump_html_to(Text_Sink& out, Context& context, std::u8string_view language);
 
 private:
-    bool write_highlighted_text(Char_Sequence8 chars, Span_Type type);
+    void write_highlighted_text(Char_Sequence8 chars, Span_Type type);
 };
 
 } // namespace cowel

@@ -19,42 +19,52 @@ struct Text_Buffer_Sink {
     Text_Sink& parent;
     Output_Language language;
 
-    constexpr void operator()(std::span<const char8_t> data)
+    constexpr void operator()(const std::span<const char8_t> data)
     {
         parent.write(as_u8string_view(data), language);
     }
 };
 
+/// @brief An adaptor for `Buffer` which implements `Text_Sink`.
 template <std::size_t cap>
     requires(cap != 0)
 struct Text_Buffer final
     : Text_Sink
     , Buffer<char8_t, cap, Text_Buffer_Sink> {
+private:
+    Output_Language m_language;
 
+public:
     [[nodiscard]]
-    constexpr Text_Buffer(Text_Sink& parent, Output_Language language) noexcept
-        : Text_Sink { language }
+    constexpr Text_Buffer(Text_Sink& parent, const Output_Language language) noexcept
+        // We deliberately don't set this to indicate discarding of specific languages
+        // because we expect homogeneous input anyway.
+        // If input is heterogeneous,
+        // that will result in the assertion below being triggered,
+        // and discarding output would just silence the issue.
+        : Text_Sink { Text_Sink_Flags::none }
         , Buffer<char8_t, cap, Text_Buffer_Sink> { Text_Buffer_Sink { parent, language } }
+        , m_language { language }
     {
     }
 
     COWEL_HOT
-    bool write(Char_Sequence8 chars, [[maybe_unused]] Output_Language lang) final
+    void write(Char_Sequence8 chars, [[maybe_unused]] const Output_Language lang) override
     {
-        COWEL_DEBUG_ASSERT(lang == get_language());
+        COWEL_DEBUG_ASSERT(lang == m_language);
 
         if (chars.empty()) {
-            return true;
+            return;
         }
         if (const std::u8string_view sv = chars.as_string_view(); !sv.empty()) {
             this->append_range(sv);
-            return true;
         }
-        this->append_in_place(chars.size(), [&](std::span<char8_t> out) {
-            COWEL_DEBUG_ASSERT(out.size() <= chars.size());
-            chars.extract(out);
-        });
-        return true;
+        else {
+            this->append_in_place(chars.size(), [&](std::span<char8_t> out) {
+                COWEL_DEBUG_ASSERT(out.size() <= chars.size());
+                chars.extract(out);
+            });
+        }
     }
 
     /// @brief Returns a string view containing what is currently in the buffer.

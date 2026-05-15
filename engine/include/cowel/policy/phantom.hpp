@@ -16,21 +16,21 @@ namespace cowel {
 struct Phantom_Content_Policy : virtual Text_Only_Policy {
 
     [[nodiscard]]
-    explicit Phantom_Content_Policy(Text_Sink& parent)
-        : Text_Sink { Output_Language::text }
-        , Content_Policy { Output_Language::text }
+    explicit Phantom_Content_Policy(Text_Sink& parent) noexcept
+        : Text_Sink { flags_from_parent(parent) }
+        , Content_Policy { flags_from_parent(parent) }
         , Text_Only_Policy { parent }
     {
     }
 
-    bool write(Char_Sequence8 chars, Output_Language language) override
+    void write(Char_Sequence8 chars, const Output_Language language) override
     {
         COWEL_ASSERT(language != Output_Language::none);
-        if (language != Output_Language::text) {
-            return false;
+        if (language == Output_Language::text) {
+            if (auto* const highlight_policy = dynamic_cast<Syntax_Highlight_Policy*>(&m_parent)) {
+                highlight_policy->write_phantom(chars);
+            }
         }
-        auto* const highlight_policy = dynamic_cast<Syntax_Highlight_Policy*>(&m_parent);
-        return highlight_policy && highlight_policy->write_phantom(chars);
     }
 };
 

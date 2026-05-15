@@ -4,6 +4,10 @@
 
 ### Engine
 
+- Added `opaque` parameter to `cowel_highlight` and `cowel_highlight_as`,
+  and changed the mechanics behind filtering out syntax highlighting,
+  such as to generate `<h1 id=int><h- data-h=kw_type>int</h></h1>` automatically
+  from a syntax-highlighted title (notice that `id=int` is plain text).
 - Added `cowel_str_substr` directive for taking substrings (#333)
 - Updated µlight for various syntax highlighting fixes (#336)
 

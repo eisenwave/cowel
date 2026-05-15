@@ -26,7 +26,7 @@ inline bool write_as_html(Text_Sink& out, Char_Sequence8 chars)
     if constexpr (enable_empty_string_assertions) {
         COWEL_ASSERT(!chars.empty());
     }
-    if (out.get_language() == Output_Language::none) {
+    if (out.has_flags(Text_Sink_Flags::discard_html)) {
         return true;
     }
 
@@ -43,13 +43,20 @@ inline bool write_as_html(Text_Sink& out, Char_Sequence8 chars)
 
 struct HTML_Content_Policy : virtual Content_Policy {
 protected:
+    [[nodiscard]]
+    static Text_Sink_Flags flags_from_parent(const Text_Sink& parent)
+    {
+        return parent.has_flags(Text_Sink_Flags::discard_html) ? Text_Sink_Flags::discard
+                                                               : Text_Sink_Flags::none;
+    }
+
     Text_Sink& m_parent;
 
 public:
     [[nodiscard]]
     explicit HTML_Content_Policy(Text_Sink& parent)
-        : Text_Sink { Output_Language::html }
-        , Content_Policy { Output_Language::html }
+        : Text_Sink { flags_from_parent(parent) }
+        , Content_Policy { flags_from_parent(parent) }
         , m_parent { parent }
     {
     }
@@ -60,7 +67,7 @@ public:
         return m_parent;
     }
 
-    bool write(Char_Sequence8 chars, Output_Language language) override
+    void write(Char_Sequence8 chars, Output_Language language) override
     {
         if constexpr (enable_empty_string_assertions) {
             COWEL_ASSERT(!chars.empty());
@@ -71,13 +78,15 @@ public:
             COWEL_ASSERT_UNREACHABLE(u8"None input.");
         }
         case Output_Language::text: {
-            return detail::write_as_html(m_parent, chars);
+            detail::write_as_html(m_parent, chars);
+            break;
         }
         case Output_Language::html: {
-            return m_parent.write(chars, language);
+            m_parent.write(chars, language);
+            break;
         }
         default: {
-            return false;
+            break;
         }
         }
     }

@@ -43,22 +43,11 @@ void Deprecated_Behavior::warn(const Invocation& call, Context& context) const
 Processing_Status
 Error_Behavior::splice(Content_Policy& out, const Invocation& call, Context&) const
 {
-    // TODO: inline display
-    switch (out.get_language()) {
-    case Output_Language::none: {
-        return Processing_Status::ok;
-    }
-    case Output_Language::html: {
-        Text_Sink_HTML_Writer writer { out };
-        writer.open_tag(id);
-        writer.write_inner_text(call.directive.get_source());
-        writer.close_tag(id);
-        return Processing_Status::ok;
-    }
-    default: {
-        return Processing_Status::ok;
-    }
-    }
+    Text_Sink_HTML_Writer writer { out };
+    writer.open_tag(id);
+    writer.write_inner_text(call.directive.get_source());
+    writer.close_tag(id);
+    return Processing_Status::ok;
 }
 
 Processing_Status

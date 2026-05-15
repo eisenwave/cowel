@@ -16,21 +16,29 @@ namespace cowel {
 
 struct Text_Only_Policy : virtual Content_Policy {
 protected:
+    [[nodiscard]]
+    static Text_Sink_Flags flags_from_parent(const Text_Sink& parent)
+    {
+        return (parent.get_flags() & Text_Sink_Flags::discard_text) | Text_Sink_Flags::discard_html;
+    }
+
     Text_Sink& m_parent;
 
 public:
     [[nodiscard]]
-    explicit Text_Only_Policy(Text_Sink& parent)
-        : Text_Sink { Output_Language::text }
-        , Content_Policy { Output_Language::text }
+    explicit Text_Only_Policy(Text_Sink& parent) noexcept
+        : Text_Sink { flags_from_parent(parent) }
+        , Content_Policy { flags_from_parent(parent) }
         , m_parent { parent }
     {
     }
 
-    bool write(Char_Sequence8 chars, Output_Language language) override
+    void write(Char_Sequence8 chars, const Output_Language language) override
     {
         COWEL_ASSERT(language != Output_Language::none);
-        return language == Output_Language::text && m_parent.write(chars, language);
+        if (language == Output_Language::text) {
+            m_parent.write(chars, language);
+        }
     }
 
     [[nodiscard]]
@@ -84,19 +92,29 @@ public:
 };
 
 struct As_Text_Policy : virtual Text_Only_Policy {
+private:
+    static Text_Sink_Flags flags_from_parent(const Text_Sink& parent)
+    {
+        // The policy reinterprets all input as text,
+        // so if text is being discarded,
+        // everything is discarded.
+        return parent.has_flags(Text_Sink_Flags::discard_text) ? Text_Sink_Flags::discard
+                                                               : Text_Sink_Flags::none;
+    }
 
+public:
     [[nodiscard]]
-    explicit As_Text_Policy(Text_Sink& parent)
-        : Text_Sink { Output_Language::text }
-        , Content_Policy { Output_Language::text }
+    explicit As_Text_Policy(Text_Sink& parent) noexcept
+        : Text_Sink { flags_from_parent(parent) }
+        , Content_Policy { flags_from_parent(parent) }
         , Text_Only_Policy { parent }
     {
     }
 
-    bool write(Char_Sequence8 chars, Output_Language language) override
+    void write(Char_Sequence8 chars, Output_Language language) override
     {
         COWEL_ASSERT(language != Output_Language::none);
-        return m_parent.write(chars, Output_Language::text);
+        m_parent.write(chars, Output_Language::text);
     }
 };
 

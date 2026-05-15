@@ -81,28 +81,26 @@ public:
     [[nodiscard]]
     explicit Paragraph_Split_Policy(
         Text_Sink& parent,
-        std::pmr::memory_resource* memory,
-        Paragraphs_State initial_state = Paragraphs_State::outside
+        std::pmr::memory_resource* const memory,
+        const Paragraphs_State initial_state = Paragraphs_State::outside
     )
-        : Text_Sink { Output_Language::html }
-        , Content_Policy { Output_Language::html }
+        : Text_Sink { flags_from_parent(parent) }
+        , Content_Policy { flags_from_parent(parent) }
         , HTML_Content_Policy { parent }
         , m_state { initial_state }
         , m_memory { memory }
     {
     }
 
-    bool write(Char_Sequence8 chars, Output_Language language) override
+    void write(Char_Sequence8 chars, Output_Language language) override
     {
         if (m_directive_depth != 0 || language != Output_Language::text) {
-            return HTML_Content_Policy::write(chars, language);
+            HTML_Content_Policy::write(chars, language);
         }
-        if (chars.empty()) {
-            return true;
+        else if (!chars.empty()) {
+            const std::u8string_view sv = chars.as_string_view();
+            split_into_paragraphs(sv.empty() ? to_string(chars, m_memory) : sv);
         }
-        const std::u8string_view sv = chars.as_string_view();
-        split_into_paragraphs(sv.empty() ? to_string(chars, m_memory) : sv);
-        return true;
     }
 
     [[nodiscard]]

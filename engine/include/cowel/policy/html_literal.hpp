@@ -17,19 +17,22 @@
 namespace cowel {
 
 struct HTML_Literal_Content_Policy : virtual HTML_Content_Policy {
+    static constexpr auto flags = Text_Sink_Flags::discard_html;
 
     [[nodiscard]]
-    explicit HTML_Literal_Content_Policy(Text_Sink& parent)
-        : Text_Sink { Output_Language::text }
-        , Content_Policy { Output_Language::text }
+    explicit HTML_Literal_Content_Policy(Text_Sink& parent) noexcept
+        : Text_Sink { flags }
+        , Content_Policy { flags }
         , HTML_Content_Policy { parent }
     {
     }
 
-    bool write(Char_Sequence8 chars, Output_Language language) override
+    void write(Char_Sequence8 chars, Output_Language language) override
     {
         COWEL_ASSERT(language != Output_Language::none);
-        return language == Output_Language::text && m_parent.write(chars, Output_Language::html);
+        if (language == Output_Language::text) {
+            m_parent.write(chars, Output_Language::html);
+        }
     }
 
     [[nodiscard]]

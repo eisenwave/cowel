@@ -16,16 +16,16 @@ protected:
 
 public:
     [[nodiscard]]
-    explicit Actions_Content_Policy(Content_Policy& parent)
-        : Text_Sink { parent.get_language() }
-        , Content_Policy { parent.get_language() }
+    explicit Actions_Content_Policy(Content_Policy& parent) noexcept
+        : Text_Sink { parent.get_flags() }
+        , Content_Policy { parent.get_flags() }
         , m_parent { parent }
     {
     }
 
-    bool write(Char_Sequence8 chars, Output_Language language) override
+    void write(Char_Sequence8 chars, Output_Language language) override
     {
-        return m_parent.write(chars, language);
+        m_parent.write(chars, language);
     }
 
     [[nodiscard]]

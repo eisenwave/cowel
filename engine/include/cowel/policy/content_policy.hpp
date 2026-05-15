@@ -13,31 +13,56 @@
 
 namespace cowel {
 
+enum struct Text_Sink_Flags : Default_Underlying {
+    /// @brief No flags are set.
+    none = 0,
+    /// @brief `true` if the sink discards input with `Output_Language::text`.
+    discard_text = 1 << 0,
+    /// @brief `true` if the sink discards input with `Output_Language::html`.
+    discard_html = 1 << 1,
+    /// @brief `true` if the sink discards all input.
+    discard = discard_text | discard_html,
+};
+
+[[nodiscard]]
+constexpr Text_Sink_Flags operator|(const Text_Sink_Flags x, const Text_Sink_Flags y)
+{
+    return Text_Sink_Flags(Default_Underlying(x) | Default_Underlying(y));
+}
+
+[[nodiscard]]
+constexpr Text_Sink_Flags operator&(const Text_Sink_Flags x, const Text_Sink_Flags y)
+{
+    return Text_Sink_Flags(Default_Underlying(x) & Default_Underlying(y));
+}
+
 struct Text_Sink {
 private:
-    Output_Language m_language;
+    Text_Sink_Flags m_flags;
 
 public:
     [[nodiscard]]
-    explicit Text_Sink(Output_Language language)
-        : m_language { language }
+    constexpr explicit Text_Sink(const Text_Sink_Flags flags) noexcept
+        : m_flags { flags }
     {
     }
 
-    /// @brief Returns the "native" language of the content policy.
-    /// That is, the language in which it expects its input content to be.
-    /// Most directives can ignore this information,
-    /// but some directives like `\cow_char_by_entity` have different output based on the language.
     [[nodiscard]]
-    Output_Language get_language() const noexcept
+    constexpr Text_Sink_Flags get_flags() const noexcept
     {
-        return m_language;
+        return m_flags;
+    }
+
+    [[nodiscard]]
+    constexpr bool has_flags(const Text_Sink_Flags flags) const noexcept
+    {
+        return (m_flags & flags) != Text_Sink_Flags::none;
     }
 
     /// @brief Attempts to write `str` in the specified `language`.
     /// @returns `true` iff the language was accepted.
     /// `get_language()` is always accepted.
-    virtual bool write(Char_Sequence8 str, Output_Language language) = 0;
+    virtual void write(Char_Sequence8 str, Output_Language language) = 0;
 };
 
 /// @brief A content policy can receive different kinds of content as well as text,
@@ -53,8 +78,8 @@ public:
 struct Content_Policy : virtual Text_Sink {
 
     [[nodiscard]]
-    explicit Content_Policy(Output_Language language)
-        : Text_Sink { language }
+    explicit Content_Policy(const Text_Sink_Flags flags = Text_Sink_Flags::none) noexcept
+        : Text_Sink { flags }
     {
     }
 
