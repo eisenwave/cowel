@@ -1,0 +1,14 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didOpen",
+    "params": {
+      "textDocument": {
+        "uri": "{{ROOT_URI}}/main.cow",
+        "languageId": "cowel",
+        "version": 1,
+        "text": "\\cowel_include(\"lib.cow\")"
+      }
+    }
+  }
+]

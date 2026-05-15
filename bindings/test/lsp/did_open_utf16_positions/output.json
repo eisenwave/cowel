@@ -1,0 +1,42 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "capabilities": {
+        "textDocumentSync": {
+          "openClose": true,
+          "change": 1
+        }
+      },
+      "serverInfo": {
+        "name": "cowel"
+      }
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "textDocument/publishDiagnostics",
+    "params": {
+      "uri": "{{ROOT_URI}}/main.cow",
+      "diagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 16
+            },
+            "end": {
+              "line": 0,
+              "character": 17
+            }
+          },
+          "severity": 1,
+          "code": "parse",
+          "source": "cowel",
+          "message": "No matching '}'. This block is unclosed."
+        }
+      ]
+    }
+  }
+]

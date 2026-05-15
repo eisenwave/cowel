@@ -233,6 +233,23 @@ struct Code_Point_Index_To_Code_Unit_Index_Error {
 Result<std::size_t, Code_Point_Index_To_Code_Unit_Index_Error>
 code_point_index_to_code_unit_index(std::u8string_view str, std::size_t code_point_index) noexcept;
 
+/// @brief Returns the number of UTF-16 code units needed to encode `str`.
+/// May return incorrect results if `str` is not correctly encoded.
+[[nodiscard]]
+constexpr std::size_t unchecked_utf8_to_utf16_length(const std::u8string_view str) noexcept
+{
+    std::size_t result = 0;
+    for (const char8_t c : str) {
+        const bool is_continuation = (c & 0xC0u) == 0x80u;
+        if (!is_continuation) {
+            // 4-byte leading bytes (11110xxx) encode code points above U+FFFF,
+            // requiring a UTF-16 surrogate pair (2 units).
+            result += c >= 0xf0u ? 2u : 1u;
+        }
+    }
+    return result;
+}
+
 } // namespace cowel
 
 #endif

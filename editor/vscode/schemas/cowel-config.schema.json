@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "COWEL Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "include": {
+      "type": "array",
+      "description": "Glob patterns for COWEL entry-point files, resolved relative to the directory containing this config file.",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "index.cow",
+          "chapters/**/*.cowel"
+        ]
+      ]
+    }
+  }
+}

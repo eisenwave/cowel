@@ -40,6 +40,7 @@ both this file and `lang-summary.md` must be updated to reflect the change.
 ## High-Value Layout (Start Here)
 
 - Root build system: `CMakeLists.txt`
+- Bindings test/build reference: `bindings/README.md`
 - Core C++ headers: `engine/include/cowel/`
 - Core C++ sources: `engine/src/`
 - C++ tests: `engine/test/src/`
@@ -172,12 +173,27 @@ Validated outcome:
 ## WASM/NPM CMake Path
 
 CI uses Emscripten and builds target `cowel-npm`.
+CI also builds target `cowel-lsp-wasm`.
 
 Expected sequence:
 1. Install and activate emsdk.
 2. Configure with Emscripten toolchain file.
-3. Build `cowel-npm` target.
+3. Build `cowel-npm` and `cowel-lsp-wasm` targets.
 4. Run `npm test` from `bindings/node` and a CLI smoke test using `build/npm/cowel.js`.
+
+Expected artifacts from `cowel-npm`:
+- `build/npm/cowel.wasm`
+- `build/npm/cowel.js`
+- transpiled Node tests under `build/test/`
+
+Expected artifacts from `cowel-lsp-wasm`:
+- `build/lsp-wasm/cowel-lsp.wasm`
+- `build/lsp-wasm/lsp-wasm-runner.js`
+
+This artifact set is a required contract for Node integration tests.
+If these files are missing,
+that indicates an incomplete WASM build setup and must be fixed,
+not treated as a baseline test failure.
 
 Observed failure when emsdk is absent or not sourced in the shell:
 - `Could not find toolchain file: .../emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake`

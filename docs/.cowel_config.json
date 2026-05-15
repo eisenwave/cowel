@@ -1,0 +1,6 @@
+{
+    "include": [
+        "index.cow",
+        "test.cow"
+    ]
+}

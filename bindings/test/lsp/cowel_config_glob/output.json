@@ -1,0 +1,35 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "method": "textDocument/publishDiagnostics",
+    "params": {
+      "uri": "{{ROOT_URI}}/entry_main.cow",
+      "diagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 0
+            },
+            "end": {
+              "line": 2,
+              "character": 2
+            }
+          },
+          "severity": 1,
+          "code": "parse",
+          "source": "cowel",
+          "message": "Expected comment or escape sequence, but got '\\+' following a backslash."
+        }
+      ]
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "textDocument/publishDiagnostics",
+    "params": {
+      "uri": "{{ROOT_URI}}/fragment.cow",
+      "diagnostics": []
+    }
+  }
+]

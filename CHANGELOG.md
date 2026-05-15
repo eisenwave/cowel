@@ -15,6 +15,8 @@
 
 - The VSCode extension is now available on the marketplace at
   <https://marketplace.visualstudio.com/items?itemName=cowel.cowel>
+- Added a rudimentary language server that processes every open COWEL document,
+  and visualizes emitted errors and warnings in the editor (#342)
 - Fixed *BLOCK-TEXT-TOKEN* being highlighted like a string
   when a *directive-splice* appears in a *string-literal* (#329)
 - Fixed incorrect and unnecessary (for plaintext braces) folding markers (#304)

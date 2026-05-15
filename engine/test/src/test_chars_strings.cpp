@@ -274,6 +274,30 @@ TEST(Strings, code_point_index_to_code_unit_index)
     }
 }
 
+TEST(Strings, unchecked_utf8_to_utf16_length)
+{
+    // Empty string.
+    EXPECT_EQ(unchecked_utf8_to_utf16_length(u8""), 0uz);
+
+    // ASCII-only: every byte is one UTF-16 unit.
+    EXPECT_EQ(unchecked_utf8_to_utf16_length(u8"hello"), 5uz);
+
+    // é (U+00E9): 2-byte UTF-8 sequence → 1 UTF-16 unit.
+    EXPECT_EQ(unchecked_utf8_to_utf16_length(u8"\u00E9"), 1uz);
+
+    // € (U+20AC): 3-byte UTF-8 sequence → 1 UTF-16 unit.
+    EXPECT_EQ(unchecked_utf8_to_utf16_length(u8"\u20AC"), 1uz);
+
+    // 😀 (U+1F600): 4-byte UTF-8 sequence → 2 UTF-16 units (surrogate pair).
+    EXPECT_EQ(unchecked_utf8_to_utf16_length(u8"\U0001F600"), 2uz);
+
+    // Mixed: 'a' + € + 'b' → 1 + 1 + 1 = 3.
+    EXPECT_EQ(unchecked_utf8_to_utf16_length(u8"a\u20ACb"), 3uz);
+
+    // Mixed: 'a' + 😀 + 'b' → 1 + 2 + 1 = 4.
+    EXPECT_EQ(unchecked_utf8_to_utf16_length(u8"a\U0001F600b"), 4uz);
+}
+
 TEST(Strings, is_html_tag_name)
 {
     EXPECT_TRUE(is_html_tag_name(u8"tag"));
