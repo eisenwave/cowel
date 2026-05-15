@@ -919,13 +919,19 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         return *var;
     }
     case ast::Primary_Kind::quoted_string: {
+        // TODO: This is somewhat suboptimal because if there is only a single piece of text
+        //       or only a single escape sequence,
+        //       we don't need an extra dynamic buffer for splicing.
+        //       We also don't need to re-compute the string kind then.
         Vector_Text_Sink text { Output_Language::text, context.get_transient_memory() };
         Text_Only_Policy policy { text };
         const Processing_Status result = splice_primary(policy, value, frame, context);
         if (result != Processing_Status::ok) {
             return result;
         }
-        return Value::string(as_u8string_view(*text), value.get_string_kind());
+        const auto result_str = as_u8string_view(*text);
+        const auto kind = is_all_ascii(result_str) ? String_Kind::ascii : String_Kind::unicode;
+        return Value::string(result_str, kind);
     }
     case ast::Primary_Kind::block: {
         return Value::block(value, frame);
