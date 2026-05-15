@@ -1,4 +1,5 @@
 **/build
+**/build-native
 node_modules
 __pycache__
 

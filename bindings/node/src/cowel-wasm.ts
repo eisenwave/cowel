@@ -106,9 +106,9 @@ export type CodeCiteOptions = {
     colors: boolean;
 };
 
-type Address = number;
+export type Address = number;
 
-type Allocation = {
+export type Allocation = {
     address: Address,
     size: number,
     alignment: number,
@@ -230,26 +230,26 @@ type OrchestrationAllocations = {
     preservedVariablesStrings: Allocation[],
 };
 
-type BigIntId = number;
-type RegExpId = number;
+export type BigIntId = number;
+export type RegExpId = number;
 
-const MASK_64 = (1n << 64n) - 1n;
-const POW_2_127 = 1n << 127n;
+export const MASK_64 = (1n << 64n) - 1n;
+export const POW_2_127 = 1n << 127n;
 
-enum DivRounding {
+export enum DivRounding {
     to_zero = 0,
     to_pos_inf = 1,
     to_neg_inf = 2,
 }
 
-enum FromStringStatus {
+export enum FromStringStatus {
     small_result,
     big_result,
     invalid_argument,
     result_out_of_range,
 }
 
-interface BigIntEnvironment {
+export interface BigIntEnvironment {
     setSmallResult(x: bigint): void;
     setBigResult(x: BigIntId): void;
 
@@ -261,7 +261,7 @@ interface BigIntEnvironment {
     writeString(address: Address, length: number, str: string): void;
 }
 
-class BigIntApi {
+export class BigIntApi {
     private readonly repository: Map<BigIntId, bigint> = new Map();
     private currentId = 0;
     private readonly environment;
@@ -670,7 +670,7 @@ class BigIntApi {
     }
 };
 
-function parseBigInt(string: string, radix: number): bigint {
+export function parseBigInt(string: string, radix: number): bigint {
     if (radix === 10) {
         return BigInt(string);
     }
@@ -704,14 +704,14 @@ function parseBigInt(string: string, radix: number): bigint {
     return negative ? -value : value;
 }
 
-enum RegExpStatus {
+export enum RegExpStatus {
     unmatched = 0,
     matched = 1,
     invalid = 2,
     execution_error = 3,
 }
 
-enum RegExpFlags {
+export enum RegExpFlags {
     /// `i`.
     ignore_case = 1 << 0,
     /// `m`.
@@ -722,9 +722,9 @@ enum RegExpFlags {
     unicode_sets = 1 << 3,
 }
 
-const RegExpFlagsString = "imsv";
+export const RegExpFlagsString = "imsv";
 
-function regExpFlagsToString(flags: RegExpFlags): string {
+export function regExpFlagsToString(flags: RegExpFlags): string {
     let result = "";
     for (let i = 0; i < RegExpFlagsString.length; i++) {
         if ((flags & (1 << i)) !== 0) {
@@ -734,14 +734,14 @@ function regExpFlagsToString(flags: RegExpFlags): string {
     return result;
 }
 
-interface RegExpEnvironment {
+export interface RegExpEnvironment {
     readString(address: Address, length: number): string;
     writeSearchResult(address: Address, index: number, length: number): void;
     allocUtf8(str: string): Allocation;
     writeStringView(address: Address, allocation: Allocation): void;
 }
 
-class RegExpApi {
+export class RegExpApi {
     private readonly repository: Map<RegExpId, RegExp> = new Map();
     private currentId = 0;
     private readonly environment: RegExpEnvironment;

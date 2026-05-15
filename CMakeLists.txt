@@ -68,6 +68,13 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/Taywee/args.git
     GIT_TAG        6.4.7
 )
+# The tayweeargs test suite uses C++ exceptions (e.g. HelpFlag::ParseValue throws to
+# signal --help).
+# WASM targets are compiled with -fno-exceptions, so those tests abort at runtime.
+# Disable them for Emscripten builds.
+if(DEFINED EMSCRIPTEN)
+    set(ARGS_BUILD_UNITTESTS OFF CACHE BOOL "" FORCE)
+endif()
 FetchContent_MakeAvailable(tayweeargs)
 
 find_package(Python3 REQUIRED)
@@ -298,6 +305,12 @@ set(NATIVE_LIBRARY_SOURCES
 )
 
 if(DEFINED EMSCRIPTEN)
+    set(COMMON_WASM_SOURCES
+        ${COMMON_LIBRARY_SOURCES}
+        bindings/node/src/cpp/big_int_wasm.cpp
+        bindings/node/src/cpp/regexp_wasm.cpp
+        bindings/node/src/cpp/wasm_stubs.cpp
+    )
     set(WASM_COMPILE_OPTIONS
         # the SHELL option group prevents de-duplication
         # https://cmake.org/cmake/help/latest/prop_tgt/COMPILE_OPTIONS.html#option-de-duplication
@@ -322,11 +335,8 @@ if(DEFINED EMSCRIPTEN)
     )
 
     add_executable(cowel-wasm
-        ${COMMON_LIBRARY_SOURCES}
-        bindings/node/src/cpp/big_int_wasm.cpp
-        bindings/node/src/cpp/regexp_wasm.cpp
+        ${COMMON_WASM_SOURCES}
         bindings/node/src/cpp/wasm.cpp
-        bindings/node/src/cpp/wasm_stubs.cpp
     )
     set_target_properties(cowel-wasm PROPERTIES
         OUTPUT_NAME "cowel"
@@ -350,6 +360,28 @@ if(DEFINED EMSCRIPTEN)
     )
     target_link_libraries(cowel-wasm PRIVATE ulight args)
 
+    # ── LSP WASM binary ────────────────────────────────────────────────────────
+    # A self-contained Node.js WASM executable that implements the LSP server.
+    # Compiled with ENVIRONMENT=node so that Emscripten routes C stdio to
+    # A raw WASM library (same flags as cowel-wasm) loaded by the TypeScript
+    # runner lsp-wasm-runner.ts in bindings/node/src/.
+    # The runner provides big_int_* and reg_exp_* imports by reusing BigIntApi
+    # and RegExpApi from cowel-wasm.ts,
+    # then routes Content-Length-framed JSON-RPC from process.stdin through the
+    # WASM to process.stdout.
+    add_executable(cowel-lsp
+        ${COMMON_WASM_SOURCES}
+        bindings/lsp/lsp.cpp
+    )
+    set_target_properties(cowel-lsp PROPERTIES
+        OUTPUT_NAME "cowel-lsp"
+        SUFFIX ".wasm"
+    )
+    target_compile_options(cowel-lsp PRIVATE ${WASM_COMPILE_OPTIONS})
+    target_link_options(cowel-lsp PRIVATE ${WASM_LINK_OPTIONS})
+    target_compile_definitions(cowel-lsp PUBLIC COWEL_BUILD_WASM=1)
+    target_link_libraries(cowel-lsp PRIVATE ulight args)
+
     set(NPM_DIR "${CMAKE_BINARY_DIR}/npm")
     set(NPM_TEST_DIR "${CMAKE_BINARY_DIR}/test")
     set(NODE_BINDINGS_DIR "${CMAKE_CURRENT_LIST_DIR}/bindings/node")
@@ -369,6 +401,7 @@ if(DEFINED EMSCRIPTEN)
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_LIST_DIR}/CHANGELOG.md"
             "${CMAKE_CURRENT_BINARY_DIR}/cowel.wasm"
+            "${CMAKE_CURRENT_BINARY_DIR}/cowel-lsp.wasm"
             "${NPM_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
             "${CMAKE_CURRENT_LIST_DIR}/docs/npm"
@@ -380,8 +413,9 @@ if(DEFINED EMSCRIPTEN)
             "${NPM_DIR}"
             "${NPM_TEST_DIR}"
             "${NPM_DIR}/cowel.wasm"
+            "${NPM_DIR}/cowel-lsp.wasm"
             "${CMAKE_BINARY_DIR}/npm/.tsbuildinfo"
-        DEPENDS cowel-wasm
+        DEPENDS cowel-wasm cowel-lsp
         COMMENT "Preparing npm package in ${NPM_DIR}"
     )
 else()
@@ -397,6 +431,11 @@ else()
         bindings/native/src/cli.cpp
     )
     target_link_libraries(cowel-cli cowel ulight args)
+
+    add_executable(cowel-lsp
+        bindings/lsp/lsp.cpp
+    )
+    target_link_libraries(cowel-lsp cowel ulight)
 
     add_executable(cowel-test
         ${HEADERS}
