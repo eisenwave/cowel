@@ -11,6 +11,7 @@ Currently, the plugin supports:
   - support for directives, literals, comments, and escape sequences
 - bracket matching and auto-closing
 - folding support for structured content
+- minimal diagnostics backed by the COWEL WASM build
 
 ## Language Features
 
