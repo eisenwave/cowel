@@ -68,6 +68,11 @@ const tests: TestCase[] = [
         expected: [[1, 2]],
     },
     {
+        name: 'multi-line argument group folds',
+        input: '\\d(\n  x = k{0}\n)',
+        expected: [[0, 1]],
+    },
+    {
         name: 'full issue #304 example',
         input: [
             '\\h4{Lazy processing}',
