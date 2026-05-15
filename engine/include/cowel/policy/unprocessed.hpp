@@ -15,8 +15,8 @@ private:
 public:
     [[nodiscard]]
     explicit Unprocessed_Content_Policy(Text_Sink& parent)
-        : Text_Sink { Output_Language::text }
-        , Content_Policy { Output_Language::text }
+        : Text_Sink { flags_from_parent(parent) }
+        , Content_Policy { flags_from_parent(parent) }
         , Text_Only_Policy { parent }
     {
     }

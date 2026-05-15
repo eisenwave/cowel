@@ -19,12 +19,18 @@ namespace cowel {
 struct Capturing_Ref_Text_Sink : virtual Text_Sink {
 private:
     std::pmr::vector<char8_t>& m_out;
+    Output_Language m_language;
 
 public:
     [[nodiscard]]
-    explicit Capturing_Ref_Text_Sink(std::pmr::vector<char8_t>& out, Output_Language language)
-        : Text_Sink { language }
+    explicit Capturing_Ref_Text_Sink(
+        std::pmr::vector<char8_t>& out,
+        const Output_Language language,
+        const Text_Sink_Flags flags = Text_Sink_Flags::none
+    ) noexcept
+        : Text_Sink { flags }
         , m_out { out }
+        , m_language { language }
     {
     }
 
@@ -34,14 +40,13 @@ public:
         return m_out;
     }
 
-    // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
-    bool write(Char_Sequence8 chars, Output_Language) override
+    void write(Char_Sequence8 chars, const Output_Language lang) override
     {
+        COWEL_DEBUG_ASSERT(lang == m_language);
         if constexpr (enable_empty_string_assertions) {
             COWEL_ASSERT(!chars.empty());
         }
         append(m_out, chars);
-        return true;
     }
 };
 
@@ -50,12 +55,18 @@ public:
 struct Vector_Text_Sink : virtual Text_Sink {
 private:
     std::pmr::vector<char8_t> m_out;
+    Output_Language m_language;
 
 public:
     [[nodiscard]]
-    explicit Vector_Text_Sink(Output_Language language, std::pmr::memory_resource* memory)
-        : Text_Sink { language }
+    explicit Vector_Text_Sink(
+        const Output_Language language,
+        std::pmr::memory_resource* const memory,
+        const Text_Sink_Flags flags = Text_Sink_Flags::none
+    )
+        : Text_Sink { flags }
         , m_out { memory }
+        , m_language { language }
     {
     }
 
@@ -94,14 +105,13 @@ public:
         return &m_out;
     }
 
-    // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
-    bool write(Char_Sequence8 chars, Output_Language) override
+    void write(Char_Sequence8 chars, const Output_Language lang) override
     {
+        COWEL_DEBUG_ASSERT(lang == m_language);
         if constexpr (enable_empty_string_assertions) {
             COWEL_ASSERT(!chars.empty());
         }
         append(m_out, chars);
-        return true;
     }
 };
 

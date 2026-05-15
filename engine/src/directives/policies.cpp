@@ -2,7 +2,6 @@
 
 #include "cowel/parameters.hpp"
 #include "cowel/util/assert.hpp"
-#include "cowel/util/result.hpp"
 
 #include "cowel/policy/actions.hpp"
 #include "cowel/policy/content_policy.hpp"
@@ -13,7 +12,6 @@
 #include "cowel/policy/paragraph_split.hpp"
 #include "cowel/policy/phantom.hpp"
 #include "cowel/policy/plaintext.hpp"
-#include "cowel/policy/syntax_highlight.hpp"
 #include "cowel/policy/unprocessed.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
@@ -70,33 +68,6 @@ Processing_Status consume_current(Content_Policy& out, const Invocation& call, C
     return content_matcher.get().splice_block(out, context);
 }
 
-[[nodiscard]]
-Processing_Status
-consume_syntax_highlighted(Content_Policy& out, const Invocation& call, Context& context)
-{
-    Spliceable_To_String_Matcher lang_string { context.get_transient_memory() };
-    Parameter lang_param { u8"lang"sv, Optionality::mandatory, lang_string };
-    Block_Matcher content_matcher;
-    Parameter content_param { u8"content"sv, Optionality::mandatory, content_matcher };
-    Parameter* const parameters[] { &lang_param, &content_param };
-
-    const auto match_status = match_call(parameters, call, context);
-    if (match_status != Processing_Status::ok) {
-        return status_is_error(match_status) ? try_generate_error(out, call, context, match_status)
-                                             : match_status;
-    }
-
-    Syntax_Highlight_Policy policy { context.get_transient_memory() };
-    const Processing_Status consume_status = content_matcher.get().splice_block(policy, context);
-    const Result<void, Syntax_Highlight_Error> result
-        = policy.dump_html_to(out, context, lang_string.get());
-    if (!result) {
-        diagnose(result.error(), lang_string.get(), call, context);
-    }
-
-    return consume_status;
-}
-
 } // namespace
 
 Processing_Status
@@ -108,9 +79,6 @@ Policy_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
     }
     case Known_Content_Policy::to_html: {
         return consume_simply<HTML_Content_Policy>(out, call, context);
-    }
-    case Known_Content_Policy::highlight: {
-        return consume_syntax_highlighted(out, call, context);
     }
     case Known_Content_Policy::phantom: {
         return consume_simply<Phantom_Content_Policy>(out, call, context);

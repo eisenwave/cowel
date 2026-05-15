@@ -71,8 +71,8 @@ constexpr Comparison_Expression_Behavior cowel_ge //
     { Comparison_Expression_Kind::ge };
 constexpr Comparison_Expression_Behavior cowel_gt //
     { Comparison_Expression_Kind::gt };
-constexpr Policy_Behavior cowel_highlight //
-    { Known_Content_Policy::highlight };
+constexpr Highlight_Behavior cowel_highlight //
+    {};
 constexpr Highlight_As_Behavior cowel_highlight_as //
     {};
 constexpr Policy_Behavior cowel_highlight_phantom //

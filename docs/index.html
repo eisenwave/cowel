@@ -4826,6 +4826,7 @@ Many examples can be found in this document.
 <pre>
 <h- data-h=mk_tag>cowel_highlight</h->(
   <h- data-h=mk_attr>lang</h->: <h- data-h=kw_type>string</h->,
+  <h- data-h=mk_attr>opaque</h->: <h- data-h=kw_type>bool</h-> = false,
   <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
 ): <h- data-h=kw_type>block</h->
 </pre>
@@ -4834,18 +4835,52 @@ Many examples can be found in this document.
 processes content using the highlight policy,
 which wraps parts of code in HTML tags for the purpose of syntax highlighting.
 </p>
-<p><code><h- data-h=mk_tag>\cowel_highlight</h-></code> has a single <tt-><h- data-h=mk_attr>lang</h-></tt-> parameter.
-This specifies the name of language (e.g. <tt->cowel</tt->)
-in which the content is to be highlighted.
+<p>The <tt-><h- data-h=mk_attr>lang</h-></tt-> parameter specifies the name of language
+in which the content is to be highlighted
+(e.g. <tt->cowel</tt->).
 The name has to be one of the language short names
 supported by the <a href=https://github.com/Eisenwave/ulight>µlight syntax highlighter</a>,
 which is the highlighter that COWEL uses internally.
 </p>
+<p>If the <tt-><h- data-h=mk_attr>opaque</h-></tt-> is <code>true</code>,
+the effect is equivalent to wrapping the directive splice in
+<code><h- data-h=mk_tag>\cowel_to_html</h-></code>.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>cpp</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->int<h- data-h=sym_brac>}</h->
+
+Opaque mode:
+<h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>cpp</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>cpp</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>opaque</h-><h- data-h=sym_punc>=</h-><h- data-h=bool>true</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->int<h- data-h=sym_brac>}</h-> float<h- data-h=sym_brac>}</h->
+
+Non-opaque:
+<h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>cpp</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h-><h- data-h=mk_tag>\cowel_highlight</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>cpp</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->int<h- data-h=sym_brac>}</h-> float<h- data-h=sym_brac>}</h-></code-block>
+
+<p>HTML output (example):
+</p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_punc>&gt;</h->int<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h->
+
+Opaque mode:
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_punc>&gt;</h->int<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-> <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_punc>&gt;</h->float<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h->
+
+Non-opaque:
+<h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_punc>&gt;</h->int<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-> <h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-> <h- data-h=mk_attr>data-h</h-><h- data-h=sym_punc>=</h-><h- data-h=str>kw_type</h-><h- data-h=sym_punc>&gt;</h->float<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-></code-block>
+
+<p>In the non-opaque example,
+the output of the inner <code><h- data-h=mk_tag>\cowel_highlight</h-></code> is
+</p><ol>
+  <li>the opening <code><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-></code> tag,</li>
+  <li>the inner '<tt->int</tt->' text, and</li>
+  <li>the closing <code><h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>h-</h-><h- data-h=sym_punc>&gt;</h-></code> tag.</li>
+</ol>
+<p>The plain '<tt->int</tt->' text is then highlighted again by the outout <code><h- data-h=mk_tag>\cowel_highlight</h-></code>.
+</p></example-block>
+
 <h4 id=dir-cowel_highlight_as><a class=para href=#dir-cowel_highlight_as></a>9.5.2. <code><h- data-h=mk_tag>\cowel_highlight_as</h-></code> — Syntax highlight override</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_highlight_as</h->(
   <h- data-h=mk_attr>name</h->: <h- data-h=kw_type>string</h->,
+  <h- data-h=mk_attr>opaque</h->: <h- data-h=kw_type>bool</h-> = true,
   <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
 ): <h- data-h=kw_type>block</h->
 </pre>
@@ -4857,8 +4892,8 @@ This is done by wrapping the given content in HTML tags for syntax highlighting
 and feeding the provided content, converted to HTML into the surrounding policy,
 so it is not subject to automatic highlighting.
 </p>
-<p><code><h- data-h=mk_tag>\cowel_highlight_as</h-></code> has a single <tt-><h- data-h=mk_attr>name</h-></tt-> parameter,
-which is the µlight <dfn>long name</dfn> for a highlight type.
+<p>The <tt-><h- data-h=mk_attr>name</h-></tt-> parameter
+specifies the µlight <dfn>long name</dfn> for a highlight type.
 </p>
 <tip-block><p><intro-></intro-> 
 You can obtain a list of possible long names at
@@ -4888,6 +4923,9 @@ i.e. they are more likely to change.
 Only µlight long names should be used directly.
 </p></note-block>
 
+<p>The <tt-><h- data-h=mk_attr>opaque</h-></tt-> parameter has the same effect
+as for the <code><h- data-h=mk_tag>\cowel_highlight</h-></code> directive (see above).
+</p>
 <h4 id=dir-cowel_highlight_phantom><a class=para href=#dir-cowel_highlight_phantom></a>9.5.3. <code><h- data-h=mk_tag>\cowel_highlight_phantom</h-></code> — Syntax highlight phantom text</h4>
 
 <pre>

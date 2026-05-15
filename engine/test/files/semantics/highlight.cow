@@ -3,6 +3,12 @@
 \cowel_highlight(lang="html"){\cowel_highlight_phantom{<}div}
 \cowel_highlight("nasm"){mov}
 \cowel_highlight("nasm"){mov\cowel_highlight_phantom{:}}
+
+\cowel_highlight("x"){\cowel_highlight("x"){xxx}}
+\cowel_highlight("x"){\cowel_highlight("x", opaque=true){xxx}}
+
+\cowel_highlight("x"){\cowel_highlight_as("string"){x}}
+\cowel_highlight("x"){\cowel_highlight_as("string", opaque=false){x}}
 }
 
 \test_output{
@@ -10,4 +16,10 @@ div
 <h- data-h=mk_tag>div</h->
 <h- data-h=name_inst>mov</h->
 <h- data-h=name_labl_decl>mov</h->
+
+<h- data-h=kw><h- data-h=kw>xxx</h-></h->
+<h- data-h=kw>xxx</h->
+
+<h- data-h=str>x</h->
+<h- data-h=str><h- data-h=kw>x</h-></h->
 }

@@ -104,8 +104,8 @@ private:
 public:
     [[nodiscard]]
     Math_Content_Policy(Text_Sink& parent, const bool permit_text)
-        : Text_Sink { Output_Language::html }
-        , Content_Policy { Output_Language::html }
+        : Text_Sink { flags_from_parent(parent) }
+        , Content_Policy { flags_from_parent(parent) }
         , HTML_Content_Policy { parent }
         , m_permit_text { permit_text }
     {

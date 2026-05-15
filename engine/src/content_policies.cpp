@@ -45,18 +45,18 @@ bool index_ranges_intersect(
     return begin_a < end_b && begin_b < end_a;
 }
 
-/// @brief Writes HTML containing syntax highlighting elements to `out`.
-/// @param out The writer.
-/// @param code The highlighted source code.
-/// @param begin The first index within `code` to be highlighted.
-/// @param end The amount of characters to highlight.
-/// @param highlights The highlights for `source`.
-void generate_highlighted_html(
-    Text_Buffer_HTML_Writer& out,
-    std::u8string_view code,
-    std::size_t begin,
-    std::size_t length,
-    std::span<const Highlight_Span> highlights
+/// @brief Writes highlighted code spans,
+/// either as HTML or as mixed text/HTML.
+/// @param mixed If `false`, all output is HTML.
+/// Otherwise, non-highlighted text is written as `Output_Language::text`,
+/// and highlight tags as `Output_Language::html`.
+void generate_highlighted(
+    Text_Sink& out,
+    const std::u8string_view code,
+    const std::size_t begin,
+    const std::size_t length,
+    const std::span<const Highlight_Span> highlights,
+    const bool mixed
 )
 {
     if constexpr (enable_empty_string_assertions) {
@@ -73,6 +73,20 @@ void generate_highlighted_html(
     auto it = std::ranges::upper_bound(highlights, begin, {}, projection);
     std::size_t index = begin;
 
+    HTML_Writer_Buffer buffer { out, Output_Language::html };
+    Text_Sink_HTML_Writer tag_writer { buffer };
+    const auto write_text = [&](const std::u8string_view str) {
+        if (mixed) {
+            // Mixed mode bypasses `buffer` for plaintext writes,
+            // so flush pending HTML first to preserve write order.
+            buffer.flush();
+            out.write(str, Output_Language::text);
+        }
+        else {
+            tag_writer.write_inner_text(str);
+        }
+    };
+
     for (; it != highlights.end() && index_ranges_intersect(begin, length, it->begin, it->length);
          ++it) {
         const Highlight_Span& highlight = *it;
@@ -81,7 +95,7 @@ void generate_highlighted_html(
 
         // Leading non-highlighted content.
         if (highlight.begin > index) {
-            out.write_inner_text(code.substr(index, highlight.begin - index));
+            write_text(code.substr(index, highlight.begin - index));
             index = highlight.begin;
         }
         // This length limit is necessary because it is possible that the source reference ends
@@ -97,32 +111,39 @@ void generate_highlighted_html(
 
         const std::u8string_view id
             = ulight::highlight_type_short_string_u8(ulight::Highlight_Type(highlight.type));
-        out.open_tag_with_attributes(highlighting_tag)
+        // Opening tag as HTML.
+        tag_writer.open_tag_with_attributes(highlighting_tag)
             .write_attribute(highlighting_attribute, id, highlighting_attribute_style)
             .end();
-        out.write_inner_text(code.substr(index, actual_end - index));
-        out.close_tag(highlighting_tag);
+        // Highlighted text.
+        write_text(code.substr(index, actual_end - index));
+        // Closing tag as HTML.
+        tag_writer.close_tag(highlighting_tag);
         index = actual_end;
     }
 
-    // Trailing non-highlighted content, but still within the code range.
+    // Trailing non-highlighted content.
     const std::size_t code_range_end = begin + length;
     COWEL_ASSERT(index <= code_range_end);
     if (index < code_range_end) {
-        out.write_inner_text(code.substr(index, code_range_end - index));
+        write_text(code.substr(index, code_range_end - index));
     }
+
+    // Ensure trailing buffered HTML (for example a final closing highlight tag)
+    // is emitted even if no subsequent plaintext write occurs.
+    buffer.flush();
 }
 
 } // namespace
 
-bool Syntax_Highlight_Policy::write(Char_Sequence8 chars, Output_Language language)
+void Syntax_Highlight_Policy::write(Char_Sequence8 chars, const Output_Language language)
 {
     const std::size_t chars_size = chars.size();
     if constexpr (enable_empty_string_assertions) {
         COWEL_ASSERT(chars_size != 0);
     }
     else if (chars_size == 0) {
-        return true;
+        return;
     }
 
     switch (language) {
@@ -130,22 +151,23 @@ bool Syntax_Highlight_Policy::write(Char_Sequence8 chars, Output_Language langua
         COWEL_ASSERT_UNREACHABLE(u8"None input.");
     }
     case Output_Language::text: {
-        return write_highlighted_text(chars, Span_Type::highlight);
+        write_highlighted_text(chars, Span_Type::highlight);
+        break;
     }
     case Output_Language::html: {
         const std::size_t initial_size = m_html_text.size();
         m_spans.push_back({ Span_Type::html, initial_size, chars_size });
         append(m_html_text, chars);
         COWEL_ASSERT(m_html_text.size() == initial_size + chars_size);
-        return true;
+        break;
     }
     default: {
-        return false;
+        break;
     }
     }
 }
 
-bool Syntax_Highlight_Policy::write_highlighted_text(Char_Sequence8 chars, Span_Type type)
+void Syntax_Highlight_Policy::write_highlighted_text(Char_Sequence8 chars, const Span_Type type)
 {
     const std::size_t chars_size = chars.size();
     if constexpr (enable_empty_string_assertions) {
@@ -155,7 +177,6 @@ bool Syntax_Highlight_Policy::write_highlighted_text(Char_Sequence8 chars, Span_
     m_spans.push_back({ type, initial_size, chars_size });
     append(m_highlighted_text, chars);
     COWEL_ASSERT(m_highlighted_text.size() == initial_size + chars_size);
-    return true;
 }
 
 Result<void, Syntax_Highlight_Error>
@@ -176,30 +197,53 @@ Syntax_Highlight_Policy::dump_html_to(Text_Sink& out, Context& context, std::u8s
 
     m_highlighted_text.resize(initial_size);
 
-    HTML_Writer_Buffer buffer { out, Output_Language::html };
-    Text_Buffer_HTML_Writer writer { buffer };
+    if (m_opaque) {
+        HTML_Writer_Buffer buffer { out, Output_Language::html };
 
-    for (const Output_Span& span : m_spans) {
-        switch (span.type) {
-        case Span_Type::html: {
-            const auto snippet = as_u8string_view(m_html_text).substr(span.begin, span.length);
-            writer.write_inner_html(snippet);
-            break;
+        for (const Output_Span& span : m_spans) {
+            switch (span.type) {
+            case Span_Type::html: {
+                const auto snippet = as_u8string_view(m_html_text).substr(span.begin, span.length);
+                buffer.write(snippet, Output_Language::html);
+                break;
+            }
+            case Span_Type::highlight: {
+                generate_highlighted(
+                    buffer, code_string, span.begin, span.length, highlights, false
+                );
+                break;
+            }
+            case Span_Type::phantom: {
+                // Deliberately do nothing.
+                // Phantom text is only relevant to generating highlights,
+                // but does not appear in the output.
+                break;
+            }
+            }
         }
-        case Span_Type::highlight: {
-            generate_highlighted_html(writer, code_string, span.begin, span.length, highlights);
-            break;
-        }
-        case Span_Type::phantom: {
-            // Deliberately do nothing.
-            // Phantom text is only relevant to generating highlights,
-            // but does not appear in the output.
-            break;
-        }
+
+        buffer.flush();
+    }
+    else {
+        for (const Output_Span& span : m_spans) {
+            switch (span.type) {
+            case Span_Type::html: {
+                const auto snippet = as_u8string_view(m_html_text).substr(span.begin, span.length);
+                out.write(snippet, Output_Language::html);
+                break;
+            }
+            case Span_Type::highlight: {
+                generate_highlighted(out, code_string, span.begin, span.length, highlights, true);
+                break;
+            }
+            case Span_Type::phantom: {
+                // Deliberately do nothing.
+                break;
+            }
+            }
         }
     }
 
-    buffer.flush();
     return result;
 }
 

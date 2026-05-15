@@ -350,13 +350,17 @@ public:
     Processing_Status splice(Content_Policy&, const Invocation&, Context&) const override;
 };
 
+struct [[nodiscard]] Highlight_Behavior : Block_Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Highlight_Behavior()
+        = default;
+
+    [[nodiscard]]
+    Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
+};
+
 /// @brief Forces a certain highlight to be applied.
 struct [[nodiscard]] Highlight_As_Behavior : Block_Directive_Behavior {
-private:
-    static constexpr std::u8string_view name_parameter = u8"name";
-    static constexpr std::u8string_view parameters[] { name_parameter };
-
-public:
     [[nodiscard]]
     constexpr explicit Highlight_As_Behavior()
         = default;
@@ -368,7 +372,6 @@ public:
 enum struct Known_Content_Policy : Default_Underlying {
     current,
     to_html,
-    highlight,
     phantom,
     paragraphs,
     no_invoke,

@@ -14,17 +14,14 @@ namespace cowel {
 struct Ignorant_Content_Policy : virtual Content_Policy {
 
     [[nodiscard]]
-    explicit Ignorant_Content_Policy()
-        : Text_Sink { Output_Language::none }
-        , Content_Policy { Output_Language::none }
+    explicit Ignorant_Content_Policy() noexcept
+        : Text_Sink { Text_Sink_Flags::discard }
+        , Content_Policy { Text_Sink_Flags::discard }
 
     {
     }
 
-    bool write(Char_Sequence8, Output_Language) override
-    {
-        return true;
-    }
+    void write(Char_Sequence8, Output_Language) override { }
 
     [[nodiscard]]
     Processing_Status consume(const ast::Primary&, Frame_Index, Context&) override
