@@ -3,9 +3,10 @@
   "displayName": "COWEL",
   "version": "0.9.2-pre",
   "description": "Syntax highlighting and language support for Compact Web Language (COWEL)",
+  "main": "./out/extension.js",
   "scripts": {
-    "test": "ts-node tests/test-runner.ts",
-    "build": "vsce package",
+    "test": "ts-node tests/test-runner.ts && ts-node --project tests/tsconfig.json tests/folding.test.ts",
+    "build": "tsc -p tsconfig.json && vsce package",
     "clean": "rm -f *.vsix",
     "rebuild": "npm run clean && npm run build",
     "dev": "code --extensionDevelopmentPath=. test.cow"
@@ -30,6 +31,7 @@
   "publisher": "cowel",
   "devDependencies": {
     "@types/node": "^25.0.3",
+    "@types/vscode": "^1.80.0",
     "@vscode/vsce": "^3.9.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
@@ -37,9 +39,7 @@
     "vscode-textmate": "^9.3.1"
   },
   "engines": {
-    "vscode": "^1.80.0"
-  },
-  "devEngines": {
+    "vscode": "^1.80.0",
     "node": "^20.0.0"
   },
   "repository": {
