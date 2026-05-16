@@ -194,7 +194,9 @@ describe("Document Generation", async () => {
 
 describe("CLI Output", () => {
     const cliTestDir = path.join(projectRoot, "bindings", "test");
-    const testPaths = findFilesRecursively(cliTestDir, /\.cow$/);
+    const lspFixtureDir = path.join(cliTestDir, "lsp");
+    const testPaths = findFilesRecursively(cliTestDir, /\.cow$/)
+        .filter((testPath) => !testPath.startsWith(`${lspFixtureDir}${path.sep}`));
     const cliPath = path.join(projectRoot, "build", "npm", "cowel.js");
 
     for (const testPath of testPaths) {
