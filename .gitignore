@@ -9,6 +9,7 @@ cmake_test_discovery_*.json
 .cache/
 playground/
 out/
+emsdk/
 
 .clangd
 *.vsix
