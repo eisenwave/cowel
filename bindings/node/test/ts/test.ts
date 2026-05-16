@@ -72,7 +72,9 @@ function parseFramedJsonRpcMessages(bytes: Buffer): unknown[] {
 
         const header = bytes.subarray(index, headerEnd).toString("ascii");
         const match = /Content-Length:\s*(\d+)/i.exec(header);
-        assert.notStrictEqual(match, null, `Missing Content-Length header: ${header}`);
+        if (match === null) {
+            assert.fail(`Missing Content-Length header: ${header}`);
+        }
 
         const bodyLength = Number.parseInt(match[1], 10);
         const bodyStart = headerEnd + 4;
