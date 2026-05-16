@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import * as cowel from "../../src/cowel-wasm.js";
 
@@ -55,6 +55,58 @@ type LoadedFile = {
     path: string;
     data: Buffer;
 };
+
+function frameJsonRpcBody(body: string): Buffer {
+    const bodyBytes = Buffer.from(body, "utf8");
+    const header = Buffer.from(`Content-Length: ${bodyBytes.length}\r\n\r\n`, "ascii");
+    return Buffer.concat([header, bodyBytes]);
+}
+
+function parseFramedJsonRpcMessages(bytes: Buffer): unknown[] {
+    const messages: unknown[] = [];
+    let index = 0;
+
+    while (index < bytes.length) {
+        const headerEnd = bytes.indexOf("\r\n\r\n", index, "ascii");
+        assert.notStrictEqual(headerEnd, -1, "Incomplete LSP header in stdout");
+
+        const header = bytes.subarray(index, headerEnd).toString("ascii");
+        const match = /Content-Length:\s*(\d+)/i.exec(header);
+        assert.notStrictEqual(match, null, `Missing Content-Length header: ${header}`);
+
+        const bodyLength = Number.parseInt(match[1], 10);
+        const bodyStart = headerEnd + 4;
+        const bodyEnd = bodyStart + bodyLength;
+        assert.ok(bodyEnd <= bytes.length, "Incomplete LSP body in stdout");
+
+        const body = bytes.subarray(bodyStart, bodyEnd).toString("utf8");
+        messages.push(JSON.parse(body) as unknown);
+        index = bodyEnd;
+    }
+
+    return messages;
+}
+
+function mapFixturePlaceholders(value: unknown, fixtureDir: string): unknown {
+    const fixturePath = fixtureDir.replaceAll(path.sep, "/");
+    const fixtureUri = pathToFileURL(fixtureDir).href;
+    if (typeof value === "string") {
+        return value
+            .replaceAll("{{ROOT_URI}}", fixtureUri)
+            .replaceAll("{{ROOT_PATH}}", fixturePath);
+    }
+    if (Array.isArray(value)) {
+        return value.map((entry) => mapFixturePlaceholders(entry, fixtureDir));
+    }
+    if (value !== null && typeof value === "object") {
+        const result: Record<string, unknown> = {};
+        for (const [key, entry] of Object.entries(value)) {
+            result[key] = mapFixturePlaceholders(entry, fixtureDir);
+        }
+        return result;
+    }
+    return value;
+}
 
 describe("Document Generation", async () => {
     const moduleBytes = readModuleFileSync("build/npm/cowel.wasm");
@@ -193,4 +245,66 @@ describe("CLI Output", () => {
         const actual = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
         assert.strictEqual(actual, expected);
     });
+});
+
+describe("LSP Integration (WASM)", () => {
+    const lspTestDir = path.join(projectRoot, "bindings", "test", "lsp");
+    const runnerPath = path.join(projectRoot, "build", "test", "src", "lsp-wasm-runner.js");
+    const suiteDirs = fs.readdirSync(lspTestDir, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => path.join(lspTestDir, entry.name))
+        .sort();
+
+    assert.ok(suiteDirs.length > 0, "No LSP integration test suites discovered");
+
+    for (const suiteDir of suiteDirs) {
+        const suiteName = path.relative(lspTestDir, suiteDir);
+        const configPath = path.join(suiteDir, ".cowel_config.json");
+        const inputPath = path.join(suiteDir, "input.json");
+        const outputPath = path.join(suiteDir, "output.json");
+        const sourcePaths = findFilesRecursively(suiteDir, /\.cow$/);
+
+        test(suiteName, () => {
+            assert.ok(fs.existsSync(configPath), `Missing fixture config: ${configPath}`);
+            assert.ok(fs.existsSync(inputPath), `Missing LSP input fixture: ${inputPath}`);
+            assert.ok(fs.existsSync(outputPath), `Missing LSP output fixture: ${outputPath}`);
+            assert.ok(sourcePaths.length > 0, `Missing .cow source fixtures in: ${suiteDir}`);
+
+            const inputFixture = JSON.parse(fs.readFileSync(inputPath, "utf8")) as unknown;
+            const outputFixture = JSON.parse(fs.readFileSync(outputPath, "utf8")) as unknown;
+
+            assert.ok(Array.isArray(inputFixture), `LSP input fixture must be an array: ${inputPath}`);
+            assert.ok(Array.isArray(outputFixture), `LSP output fixture must be an array: ${outputPath}`);
+
+            const inputMessages = mapFixturePlaceholders(inputFixture, suiteDir) as unknown[];
+            const expectedMessages = mapFixturePlaceholders(outputFixture, suiteDir) as unknown[];
+
+            const stdinBytes = Buffer.concat(inputMessages.map((entry) => {
+                if (
+                    entry !== null
+                    && typeof entry === "object"
+                    && "$raw" in entry
+                    && typeof (entry as { $raw: unknown }).$raw === "string"
+                ) {
+                    return frameJsonRpcBody((entry as { $raw: string }).$raw);
+                }
+                return frameJsonRpcBody(JSON.stringify(entry));
+            }));
+
+            const result = spawnSync(process.execPath, [runnerPath], {
+                cwd: suiteDir,
+                input: stdinBytes,
+            });
+
+            assert.notStrictEqual(result.status, null, `LSP runner failed to start: ${suiteName}`);
+            assert.strictEqual(
+                result.status,
+                0,
+                `LSP runner exited with ${result.status} for ${suiteName}: ${result.stderr.toString("utf8")}`,
+            );
+
+            const actualMessages = parseFramedJsonRpcMessages(result.stdout);
+            assert.deepStrictEqual(actualMessages, expectedMessages);
+        });
+    }
 });
