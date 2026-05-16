@@ -620,5 +620,125 @@ TEST(JsonWrite, roundtrip)
     EXPECT_EQ(serialize(*parsed), src);
 }
 
+TEST(JsonWrite, string_named_escapes_backspace_formfeed_return)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    {
+        String s { u8"a\N{BACKSPACE}x", &memory };
+        EXPECT_EQ(serialize(s), u8"\"a\\bx\"");
+    }
+    {
+        String s { u8"a\fx", &memory };
+        EXPECT_EQ(serialize(s), u8"\"a\\fx\"");
+    }
+    {
+        String s { u8"a\rx", &memory };
+        EXPECT_EQ(serialize(s), u8"\"a\\rx\"");
+    }
+}
+
+TEST(JsonEscape, escape_named)
+{
+    EXPECT_EQ(escape(u8'\b'), u8"\\b"sv);
+    EXPECT_EQ(escape(u8'\t'), u8"\\t"sv);
+    EXPECT_EQ(escape(u8'\n'), u8"\\n"sv);
+    EXPECT_EQ(escape(u8'\f'), u8"\\f"sv);
+    EXPECT_EQ(escape(u8'\r'), u8"\\r"sv);
+    EXPECT_EQ(escape(u8'"'), u8"\\\""sv);
+    EXPECT_EQ(escape(u8'\\'), u8"\\\\"sv);
+}
+
+TEST(JsonEscape, escape_hex)
+{
+    EXPECT_EQ(escape(char8_t(0x00)), u8"\\u0000"sv);
+    EXPECT_EQ(escape(char8_t(0x01)), u8"\\u0001"sv);
+    EXPECT_EQ(escape(char8_t(0x02)), u8"\\u0002"sv);
+    EXPECT_EQ(escape(char8_t(0x03)), u8"\\u0003"sv);
+    EXPECT_EQ(escape(char8_t(0x03)), u8"\\u0003"sv);
+    EXPECT_EQ(escape(char8_t(0x04)), u8"\\u0004"sv);
+    EXPECT_EQ(escape(char8_t(0x05)), u8"\\u0005"sv);
+    EXPECT_EQ(escape(char8_t(0x07)), u8"\\u0007"sv);
+    EXPECT_EQ(escape(char8_t(0x0b)), u8"\\u000b"sv);
+    EXPECT_EQ(escape(char8_t(0x0e)), u8"\\u000e"sv);
+    EXPECT_EQ(escape(char8_t(0x0f)), u8"\\u000f"sv);
+
+    EXPECT_EQ(escape(char8_t(0x10)), u8"\\u0010"sv);
+    EXPECT_EQ(escape(char8_t(0x11)), u8"\\u0011"sv);
+    EXPECT_EQ(escape(char8_t(0x12)), u8"\\u0012"sv);
+    EXPECT_EQ(escape(char8_t(0x13)), u8"\\u0013"sv);
+    EXPECT_EQ(escape(char8_t(0x13)), u8"\\u0013"sv);
+    EXPECT_EQ(escape(char8_t(0x14)), u8"\\u0014"sv);
+    EXPECT_EQ(escape(char8_t(0x15)), u8"\\u0015"sv);
+    EXPECT_EQ(escape(char8_t(0x17)), u8"\\u0017"sv);
+    EXPECT_EQ(escape(char8_t(0x18)), u8"\\u0018"sv);
+    EXPECT_EQ(escape(char8_t(0x19)), u8"\\u0019"sv);
+    EXPECT_EQ(escape(char8_t(0x1a)), u8"\\u001a"sv);
+    EXPECT_EQ(escape(char8_t(0x1b)), u8"\\u001b"sv);
+    EXPECT_EQ(escape(char8_t(0x1c)), u8"\\u001c"sv);
+    EXPECT_EQ(escape(char8_t(0x1d)), u8"\\u001d"sv);
+    EXPECT_EQ(escape(char8_t(0x1e)), u8"\\u001e"sv);
+    EXPECT_EQ(escape(char8_t(0x1f)), u8"\\u001f"sv);
+}
+
+TEST(JsonEscape, escape_printable)
+{
+    EXPECT_EQ(escape(u8' '), u8""sv);
+    EXPECT_EQ(escape(u8'a'), u8""sv);
+    EXPECT_EQ(escape(u8'z'), u8""sv);
+    EXPECT_EQ(escape(u8'0'), u8""sv);
+    EXPECT_EQ(escape(char8_t(0x7e)), u8""sv); // '~', highest 7-bit printable
+}
+
+TEST(JsonObject, find_value_returns_value_for_existing_keys)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    const auto result = parse(R"({"n": 42, "s": "hi", "b": true, "nil": null})", &memory);
+    ASSERT_TRUE(result.has_value());
+    const Object* const o = result->as_object();
+    ASSERT_NE(o, nullptr);
+
+    const Value* const n = o->find_value(u8"n");
+    ASSERT_NE(n, nullptr);
+    ASSERT_NE(n->as_number(), nullptr);
+    EXPECT_EQ(*n->as_number(), 42.0);
+
+    const Value* const s = o->find_value(u8"s");
+    ASSERT_NE(s, nullptr);
+    ASSERT_NE(s->as_string(), nullptr);
+    EXPECT_EQ(*s->as_string(), u8"hi"sv);
+
+    const Value* const b = o->find_value(u8"b");
+    ASSERT_NE(b, nullptr);
+    ASSERT_NE(b->as_boolean(), nullptr);
+    EXPECT_EQ(*b->as_boolean(), true);
+
+    const Value* const nil = o->find_value(u8"nil");
+    ASSERT_NE(nil, nullptr);
+    EXPECT_NE(nil->as_null(), nullptr);
+}
+
+TEST(JsonObject, find_value_missing_key_returns_nullptr)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    const auto result = parse(R"({"a": 1})", &memory);
+    ASSERT_TRUE(result.has_value());
+    const Object* const o = result->as_object();
+    ASSERT_NE(o, nullptr);
+    EXPECT_EQ(o->find_value(u8"missing"), nullptr);
+    EXPECT_EQ(o->find_value(u8""), nullptr);
+}
+
+TEST(JsonObject, find_value_mutable_allows_modification)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    Object o { &memory };
+    o.push_back({ String { u8"x", &memory }, Number { 1 } });
+
+    Value* const v = o.find_value(u8"x");
+    ASSERT_NE(v, nullptr);
+    *v = Number { 2 };
+    EXPECT_EQ(*o.find_number(u8"x"), 2.0);
+}
+
 } // namespace
 } // namespace cowel::json
