@@ -458,8 +458,8 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
             .source = u8"cowel"sv,
             .message = u8"message"sv,
         };
-        auto [it, _] = by_uri.try_emplace(diagnostic_uri, std::vector<lsp::Diagnostic> {});
-        it->second.push_back(lsp_diagnostic);
+        auto emplace_result = by_uri.try_emplace(diagnostic_uri, std::vector<lsp::Diagnostic> {});
+        emplace_result.first->second.push_back(lsp_diagnostic);
     }
 
     return by_uri;
@@ -491,10 +491,12 @@ void publish_diagnostics_for(const std::u8string_view uri, const std::u8string_v
 void clear_diagnostics_for(const std::u8string_view uri)
 {
     std::pmr::monotonic_buffer_resource mem;
+    const auto params
+        = lsp::Publish_Diagnostics_Params { .uri = uri, .diagnostics = {} }.to_json(&mem);
     write_message(
             lsp::Notification_Message {
                 .method = lsp::method::text_document::publish_diagnostics,
-                .params = lsp::Publish_Diagnostics_Params { .uri = uri, .diagnostics = {} }.to_json(&mem),
+                .params = params,
             }
                 .to_json(&mem)
         );

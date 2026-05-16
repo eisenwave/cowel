@@ -79,6 +79,13 @@ inline constexpr auto utf32 = u8"utf-32"sv;
 
 } // namespace position_encoding_kind
 
+namespace text_document_sync_kind {
+
+/// Full document sync.
+inline constexpr int full = 1;
+
+} // namespace text_document_sync_kind
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 struct Position {
     /// Zero-based line index.
@@ -174,16 +181,16 @@ struct Publish_Diagnostics_Params {
 
 [[nodiscard]]
 inline json::Value clone_json_rpc_id(
-    const json::Value* const id, std::pmr::memory_resource* const memory
+    const json::Value* const json_rpc_id, std::pmr::memory_resource* const memory
 )
 {
-    if (id == nullptr) {
+    if (json_rpc_id == nullptr) {
         return json::null;
     }
-    if (const auto* const n = id->as_number()) {
+    if (const auto* const n = json_rpc_id->as_number()) {
         return *n;
     }
-    if (const auto* const s = id->as_string()) {
+    if (const auto* const s = json_rpc_id->as_string()) {
         return json::String { *s, memory };
     }
     return json::null;
@@ -191,7 +198,7 @@ inline json::Value clone_json_rpc_id(
 
 struct Text_Document_Sync_Options {
     bool open_close = true;
-    int change = 1;
+    int change = text_document_sync_kind::full;
 
     [[nodiscard]]
     json::Object to_json(std::pmr::memory_resource* const memory) const
