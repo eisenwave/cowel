@@ -1,0 +1,77 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 59
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Configure GitHub SSH URL fallback to HTTPS
+        run: |
+          git config --global url."https://github.com/".insteadOf git@github.com:
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: |
+            bindings/node/package-lock.json
+            editor/vscode/package-lock.json
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-13 \
+            g++-13 \
+            clang-20 \
+            libc++-20-dev \
+            libstdc++-13-dev \
+            llvm-20 \
+            clang-format-20 \
+            libicu-dev \
+            ninja-build \
+            python3
+
+      - name: Install Emscripten SDK
+        run: |
+          EMSDK_DIR="${{ github.workspace }}/emsdk"
+          if [[ ! -d "$EMSDK_DIR/.git" ]]; then
+            git clone https://github.com/emscripten-core/emsdk.git "$EMSDK_DIR"
+          fi
+
+          cd "$EMSDK_DIR"
+          ./emsdk install latest
+          ./emsdk activate latest
+
+          if ! grep -Fq "$EMSDK_DIR/emsdk_env.sh" ~/.bashrc; then
+            echo "source \"$EMSDK_DIR/emsdk_env.sh\" >/dev/null" >> ~/.bashrc
+          fi
+
+      - name: Preinstall Node dependencies
+        run: |
+          npm ci --prefix bindings/node
+          npm install --prefix editor/vscode
+
+      - name: Preinstall Boost source tree
+        run: |
+          if [[ ! -d third_party/boost/libs ]]; then
+            bash tools/boost-install.sh third_party/boost
+          fi
