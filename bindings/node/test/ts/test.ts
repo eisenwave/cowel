@@ -253,7 +253,7 @@ describe("CLI Output", () => {
 
 describe("LSP Integration (WASM)", () => {
     const lspTestDir = path.join(projectRoot, "bindings", "test", "lsp");
-    const runnerPath = path.join(projectRoot, "build", "npm", "lsp-wasm-runner.js");
+    const runnerPath = path.join(projectRoot, "build", "lsp-wasm", "lsp-wasm-runner.js");
     const suiteDirs = fs.readdirSync(lspTestDir, { withFileTypes: true })
         .filter((entry) => entry.isDirectory())
         .map((entry) => path.join(lspTestDir, entry.name))

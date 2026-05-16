@@ -18,6 +18,7 @@ import {
     type BigIntId,
     BigIntApi,
     BigIntEnvironment,
+    createBigIntRegExpWasmEnvObject,
     RegExpApi,
     RegExpEnvironment,
     MASK_64,
@@ -111,58 +112,17 @@ class LspWasmRunner {
         const module = await WebAssembly.compile(wasmBytes);
         const bi = this.bigInts;
         const re = this.regExps;
-
-        this.instance = await WebAssembly.instantiate(module, {
-            env: {
-                emscripten_notify_memory_growth: () => {
+        const imports: WebAssembly.Imports = {
+            env: createBigIntRegExpWasmEnvObject(
+                bi,
+                re,
+                () => {
                     this.onMemoryGrowth();
                 },
-                big_int_i32: bi.big_int_i32.bind(bi),
-                big_int_i64: bi.big_int_i64.bind(bi),
-                big_int_i128: bi.big_int_i128.bind(bi),
-                big_int_i192: bi.big_int_i192.bind(bi),
-                big_int_pow2_i32: bi.big_int_pow2_i32.bind(bi),
-                big_int_delete: bi.big_int_delete.bind(bi),
-                big_int_compare_i32: bi.big_int_compare_i32.bind(bi),
-                big_int_compare_i128: bi.big_int_compare_i128.bind(bi),
-                big_int_compare: bi.big_int_compare.bind(bi),
-                big_int_twos_width: bi.big_int_twos_width.bind(bi),
-                big_int_ones_width: bi.big_int_ones_width.bind(bi),
-                big_int_neg: bi.big_int_neg.bind(bi),
-                big_int_bit_not: bi.big_int_bit_not.bind(bi),
-                big_int_abs: bi.big_int_abs.bind(bi),
-                big_int_trunc_i128: bi.big_int_trunc_i128.bind(bi),
-                big_int_add_i32: bi.big_int_add_i32.bind(bi),
-                big_int_add_i128: bi.big_int_add_i128.bind(bi),
-                big_int_add: bi.big_int_add.bind(bi),
-                big_int_sub_i128: bi.big_int_sub_i128.bind(bi),
-                big_int_sub: bi.big_int_sub.bind(bi),
-                big_int_mul_i128: bi.big_int_mul_i128.bind(bi),
-                big_int_mul_i128_i128: bi.big_int_mul_i128_i128.bind(bi),
-                big_int_mul: bi.big_int_mul.bind(bi),
-                big_int_div_rem: bi.big_int_div_rem.bind(bi),
-                big_int_div: bi.big_int_div.bind(bi),
-                big_int_rem: bi.big_int_rem.bind(bi),
-                big_int_shl_i128_i32: bi.big_int_shl_i128_i32.bind(bi),
-                big_int_shl_i32: bi.big_int_shl_i32.bind(bi),
-                big_int_shr_i32: bi.big_int_shr_i32.bind(bi),
-                big_int_pow_i128_i32: bi.big_int_pow_i128_i32.bind(bi),
-                big_int_pow_i32: bi.big_int_pow_i32.bind(bi),
-                big_int_bit_and_i128: bi.big_int_bit_and_i128.bind(bi),
-                big_int_bit_and: bi.big_int_bit_and.bind(bi),
-                big_int_bit_or_i128: bi.big_int_bit_or_i128.bind(bi),
-                big_int_bit_or: bi.big_int_bit_or.bind(bi),
-                big_int_bit_xor_i128: bi.big_int_bit_xor_i128.bind(bi),
-                big_int_bit_xor: bi.big_int_bit_xor.bind(bi),
-                big_int_to_string: bi.big_int_to_string.bind(bi),
-                big_int_from_string: bi.big_int_from_string.bind(bi),
-                reg_exp_compile: re.compile.bind(re),
-                reg_exp_delete: re.delete.bind(re),
-                reg_exp_match: re.match.bind(re),
-                reg_exp_search: re.search.bind(re),
-                reg_exp_replace_all: re.replaceAll.bind(re),
-            },
-        });
+            ),
+        };
+
+        this.instance = await WebAssembly.instantiate(module, imports);
         this.onMemoryGrowth();
         this.exports._initialize();
     }

@@ -114,17 +114,8 @@ export type Allocation = {
     alignment: number,
 };
 
-interface CowelWasmEnvObject {
-    load_file: (
-        resultAddress: Address,
-        pathAddress: Address,
-        pathLength: number,
-        baseFileId: number,
-    ) => void;
-    log: (diagnosticAddress: Address) => void;
+export interface BigIntRegExpWasmEnvObject {
     emscripten_notify_memory_growth: (byteLength: number) => void;
-    consume_variables: (variables: Address, length: number) => void;
-
     big_int_i32: (x: number) => BigIntId;
     big_int_i64: (x: bigint) => BigIntId;
     big_int_i128: (x_lo: bigint, y_lo: bigint) => BigIntId;
@@ -178,6 +169,17 @@ interface CowelWasmEnvObject {
         replacement: Address,
         replacementLength: number,
     ) => RegExpStatus;
+}
+
+interface CowelWasmEnvObject extends BigIntRegExpWasmEnvObject {
+    load_file: (
+        resultAddress: Address,
+        pathAddress: Address,
+        pathLength: number,
+        baseFileId: number,
+    ) => void;
+    log: (diagnosticAddress: Address) => void;
+    consume_variables: (variables: Address, length: number) => void;
 }
 
 type CowelWasmImports = WebAssembly.Imports & {
@@ -873,6 +875,60 @@ export class RegExpApi {
     }
 }
 
+export function createBigIntRegExpWasmEnvObject(
+    bigInts: BigIntApi,
+    regExps: RegExpApi,
+    onMemoryGrowth: (byteLength: number) => void,
+): BigIntRegExpWasmEnvObject {
+    return {
+        emscripten_notify_memory_growth: onMemoryGrowth,
+        big_int_i32: bigInts.big_int_i32.bind(bigInts),
+        big_int_i64: bigInts.big_int_i64.bind(bigInts),
+        big_int_i128: bigInts.big_int_i128.bind(bigInts),
+        big_int_i192: bigInts.big_int_i192.bind(bigInts),
+        big_int_pow2_i32: bigInts.big_int_pow2_i32.bind(bigInts),
+        big_int_delete: bigInts.big_int_delete.bind(bigInts),
+        big_int_compare_i32: bigInts.big_int_compare_i32.bind(bigInts),
+        big_int_compare_i128: bigInts.big_int_compare_i128.bind(bigInts),
+        big_int_compare: bigInts.big_int_compare.bind(bigInts),
+        big_int_twos_width: bigInts.big_int_twos_width.bind(bigInts),
+        big_int_ones_width: bigInts.big_int_ones_width.bind(bigInts),
+        big_int_neg: bigInts.big_int_neg.bind(bigInts),
+        big_int_bit_not: bigInts.big_int_bit_not.bind(bigInts),
+        big_int_abs: bigInts.big_int_abs.bind(bigInts),
+        big_int_trunc_i128: bigInts.big_int_trunc_i128.bind(bigInts),
+        big_int_add_i32: bigInts.big_int_add_i32.bind(bigInts),
+        big_int_add_i128: bigInts.big_int_add_i128.bind(bigInts),
+        big_int_add: bigInts.big_int_add.bind(bigInts),
+        big_int_sub_i128: bigInts.big_int_sub_i128.bind(bigInts),
+        big_int_sub: bigInts.big_int_sub.bind(bigInts),
+        big_int_mul_i128: bigInts.big_int_mul_i128.bind(bigInts),
+        big_int_mul_i128_i128: bigInts.big_int_mul_i128_i128.bind(bigInts),
+        big_int_mul: bigInts.big_int_mul.bind(bigInts),
+        big_int_div_rem: bigInts.big_int_div_rem.bind(bigInts),
+        big_int_div: bigInts.big_int_div.bind(bigInts),
+        big_int_rem: bigInts.big_int_rem.bind(bigInts),
+        big_int_shl_i128_i32: bigInts.big_int_shl_i128_i32.bind(bigInts),
+        big_int_shl_i32: bigInts.big_int_shl_i32.bind(bigInts),
+        big_int_shr_i32: bigInts.big_int_shr_i32.bind(bigInts),
+        big_int_pow_i128_i32: bigInts.big_int_pow_i128_i32.bind(bigInts),
+        big_int_pow_i32: bigInts.big_int_pow_i32.bind(bigInts),
+        big_int_bit_and_i128: bigInts.big_int_bit_and_i128.bind(bigInts),
+        big_int_bit_and: bigInts.big_int_bit_and.bind(bigInts),
+        big_int_bit_or_i128: bigInts.big_int_bit_or_i128.bind(bigInts),
+        big_int_bit_or: bigInts.big_int_bit_or.bind(bigInts),
+        big_int_bit_xor_i128: bigInts.big_int_bit_xor_i128.bind(bigInts),
+        big_int_bit_xor: bigInts.big_int_bit_xor.bind(bigInts),
+        big_int_to_string: bigInts.big_int_to_string.bind(bigInts),
+        big_int_from_string: bigInts.big_int_from_string.bind(bigInts),
+        reg_exp_compile: regExps.compile.bind(regExps),
+        reg_exp_delete: regExps.delete.bind(regExps),
+        reg_exp_match: regExps.match.bind(regExps),
+        reg_exp_search: regExps.search.bind(regExps),
+        reg_exp_replace_all: regExps.replaceAll.bind(regExps),
+    };
+}
+
 export type ParsedCliOptions = {
     command: "none" | "help" | "version" | "run";
     ok: boolean;
@@ -985,53 +1041,13 @@ export class CowelWasm {
                         this.capturedVariables.push(this.decodeUtf8(textAddress, textLength));
                     }
                 },
-                emscripten_notify_memory_growth: (byteLength: number) => {
-                    this.onMemoryGrowth(byteLength);
-                },
-                big_int_i32: this.bigInts.big_int_i32.bind(this.bigInts),
-                big_int_i64: this.bigInts.big_int_i64.bind(this.bigInts),
-                big_int_i128: this.bigInts.big_int_i128.bind(this.bigInts),
-                big_int_i192: this.bigInts.big_int_i192.bind(this.bigInts),
-                big_int_pow2_i32: this.bigInts.big_int_pow2_i32.bind(this.bigInts),
-                big_int_delete: this.bigInts.big_int_delete.bind(this.bigInts),
-                big_int_compare_i32: this.bigInts.big_int_compare_i32.bind(this.bigInts),
-                big_int_compare_i128: this.bigInts.big_int_compare_i128.bind(this.bigInts),
-                big_int_compare: this.bigInts.big_int_compare.bind(this.bigInts),
-                big_int_twos_width: this.bigInts.big_int_twos_width.bind(this.bigInts),
-                big_int_ones_width: this.bigInts.big_int_ones_width.bind(this.bigInts),
-                big_int_neg: this.bigInts.big_int_neg.bind(this.bigInts),
-                big_int_bit_not: this.bigInts.big_int_bit_not.bind(this.bigInts),
-                big_int_abs: this.bigInts.big_int_abs.bind(this.bigInts),
-                big_int_trunc_i128: this.bigInts.big_int_trunc_i128.bind(this.bigInts),
-                big_int_add_i32: this.bigInts.big_int_add_i32.bind(this.bigInts),
-                big_int_add_i128: this.bigInts.big_int_add_i128.bind(this.bigInts),
-                big_int_add: this.bigInts.big_int_add.bind(this.bigInts),
-                big_int_sub_i128: this.bigInts.big_int_sub_i128.bind(this.bigInts),
-                big_int_sub: this.bigInts.big_int_sub.bind(this.bigInts),
-                big_int_mul_i128: this.bigInts.big_int_mul_i128.bind(this.bigInts),
-                big_int_mul_i128_i128: this.bigInts.big_int_mul_i128_i128.bind(this.bigInts),
-                big_int_mul: this.bigInts.big_int_mul.bind(this.bigInts),
-                big_int_div_rem: this.bigInts.big_int_div_rem.bind(this.bigInts),
-                big_int_div: this.bigInts.big_int_div.bind(this.bigInts),
-                big_int_rem: this.bigInts.big_int_rem.bind(this.bigInts),
-                big_int_shl_i128_i32: this.bigInts.big_int_shl_i128_i32.bind(this.bigInts),
-                big_int_shl_i32: this.bigInts.big_int_shl_i32.bind(this.bigInts),
-                big_int_shr_i32: this.bigInts.big_int_shr_i32.bind(this.bigInts),
-                big_int_pow_i128_i32: this.bigInts.big_int_pow_i128_i32.bind(this.bigInts),
-                big_int_pow_i32: this.bigInts.big_int_pow_i32.bind(this.bigInts),
-                big_int_bit_and_i128: this.bigInts.big_int_bit_and_i128.bind(this.bigInts),
-                big_int_bit_and: this.bigInts.big_int_bit_and.bind(this.bigInts),
-                big_int_bit_or_i128: this.bigInts.big_int_bit_or_i128.bind(this.bigInts),
-                big_int_bit_or: this.bigInts.big_int_bit_or.bind(this.bigInts),
-                big_int_bit_xor_i128: this.bigInts.big_int_bit_xor_i128.bind(this.bigInts),
-                big_int_bit_xor: this.bigInts.big_int_bit_xor.bind(this.bigInts),
-                big_int_to_string: this.bigInts.big_int_to_string.bind(this.bigInts),
-                big_int_from_string: this.bigInts.big_int_from_string.bind(this.bigInts),
-                reg_exp_compile: this.regExps.compile.bind(this.regExps),
-                reg_exp_delete: this.regExps.delete.bind(this.regExps),
-                reg_exp_match: this.regExps.match.bind(this.regExps),
-                reg_exp_search: this.regExps.search.bind(this.regExps),
-                reg_exp_replace_all: this.regExps.replaceAll.bind(this.regExps),
+                ...createBigIntRegExpWasmEnvObject(
+                    this.bigInts,
+                    this.regExps,
+                    (byteLength: number) => {
+                        this.onMemoryGrowth(byteLength);
+                    },
+                ),
             },
         };
 

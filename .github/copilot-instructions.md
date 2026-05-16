@@ -173,18 +173,22 @@ Validated outcome:
 ## WASM/NPM CMake Path
 
 CI uses Emscripten and builds target `cowel-npm`.
+CI also builds target `cowel-lsp-wasm`.
 
 Expected sequence:
 1. Install and activate emsdk.
 2. Configure with Emscripten toolchain file.
-3. Build `cowel-npm` target.
+3. Build `cowel-npm` and `cowel-lsp-wasm` targets.
 4. Run `npm test` from `bindings/node` and a CLI smoke test using `build/npm/cowel.js`.
 
 Expected artifacts from `cowel-npm`:
 - `build/npm/cowel.wasm`
-- `build/npm/cowel-lsp.wasm`
 - `build/npm/cowel.js`
 - transpiled Node tests under `build/test/`
+
+Expected artifacts from `cowel-lsp-wasm`:
+- `build/lsp-wasm/cowel-lsp.wasm`
+- `build/lsp-wasm/lsp-wasm-runner.js`
 
 This artifact set is a required contract for Node integration tests.
 If these files are missing,

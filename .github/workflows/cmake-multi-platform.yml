@@ -294,7 +294,7 @@ jobs:
         source "${{ steps.strings.outputs.emsdk_dir }}/emsdk_env.sh"
         cmake \
           --build "${{ steps.strings.outputs.build_dir }}" \
-          --target cowel-npm \
+          --target cowel-npm cowel-lsp-wasm \
           --config Release \
           --verbose
 

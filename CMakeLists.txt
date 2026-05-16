@@ -383,6 +383,7 @@ if(DEFINED EMSCRIPTEN)
     target_link_libraries(cowel-lsp PRIVATE ulight args)
 
     set(NPM_DIR "${CMAKE_BINARY_DIR}/npm")
+    set(LSP_WASM_DIR "${CMAKE_BINARY_DIR}/lsp-wasm")
     set(NPM_TEST_DIR "${CMAKE_BINARY_DIR}/test")
     set(NODE_BINDINGS_DIR "${CMAKE_CURRENT_LIST_DIR}/bindings/node")
     find_program(NPX_EXECUTABLE npx REQUIRED)
@@ -401,7 +402,6 @@ if(DEFINED EMSCRIPTEN)
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_LIST_DIR}/CHANGELOG.md"
             "${CMAKE_CURRENT_BINARY_DIR}/cowel.wasm"
-            "${CMAKE_CURRENT_BINARY_DIR}/cowel-lsp.wasm"
             "${NPM_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
             "${CMAKE_CURRENT_LIST_DIR}/docs/npm"
@@ -413,10 +413,27 @@ if(DEFINED EMSCRIPTEN)
             "${NPM_DIR}"
             "${NPM_TEST_DIR}"
             "${NPM_DIR}/cowel.wasm"
-            "${NPM_DIR}/cowel-lsp.wasm"
             "${CMAKE_BINARY_DIR}/npm/.tsbuildinfo"
-        DEPENDS cowel-wasm cowel-lsp
+        DEPENDS cowel-wasm
         COMMENT "Preparing npm package in ${NPM_DIR}"
+    )
+
+    add_custom_target(cowel-lsp-wasm
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${LSP_WASM_DIR}"
+        COMMAND "${NPX_EXECUTABLE}" --prefix "${NODE_BINDINGS_DIR}" tsc
+            -p "${NODE_BINDINGS_DIR}/tsconfig.json"
+            --outDir "${LSP_WASM_DIR}"
+            --tsBuildInfoFile "${LSP_WASM_DIR}/.tsbuildinfo"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${CMAKE_CURRENT_BINARY_DIR}/cowel-lsp.wasm"
+            "${LSP_WASM_DIR}"
+        BYPRODUCTS
+            "${LSP_WASM_DIR}"
+            "${LSP_WASM_DIR}/cowel-lsp.wasm"
+            "${LSP_WASM_DIR}/lsp-wasm-runner.js"
+            "${LSP_WASM_DIR}/.tsbuildinfo"
+        DEPENDS cowel-lsp
+        COMMENT "Preparing LSP WASM artifacts in ${LSP_WASM_DIR}"
     )
 else()
     add_library(cowel STATIC ${NATIVE_LIBRARY_SOURCES})
