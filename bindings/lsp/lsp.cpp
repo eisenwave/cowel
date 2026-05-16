@@ -135,57 +135,6 @@ void write_message(const json::Value& msg)
     server_state.output.append(body.data(), n);
 }
 
-/// @brief Convenience builder for `json::Object`.
-struct Object_Builder {
-    json::Object obj;
-
-    /// @brief Constructs a builder whose object uses @p mem.
-    explicit Object_Builder(std::pmr::memory_resource* const mem) noexcept
-        : obj { mem }
-    {
-    }
-
-    /// @brief Appends a key–value pair to the object under construction.
-    Object_Builder& set(const std::u8string_view key, json::Value val)
-    {
-        std::pmr::memory_resource* const mem = obj.get_allocator().resource();
-        obj.push_back({ json::String { key, mem }, std::move(val) });
-        return *this;
-    }
-    Object_Builder& set(const std::u8string_view key, const std::u8string_view val)
-    {
-        std::pmr::memory_resource* const mem = obj.get_allocator().resource();
-        obj.push_back({ json::String { key, mem }, json::String { val, mem } });
-        return *this;
-    }
-
-    /// @brief Returns the completed object as a `json::Value`,
-    /// leaving the builder in a valid but unspecified state.
-    [[nodiscard]]
-    json::Value build() noexcept
-    {
-        return std::move(obj);
-    }
-};
-
-// ── JSON-RPC helpers ──────────────────────────────────────────────────────────
-
-/// @brief Clones a JSON-RPC `id` (number or string) into @p mem.
-[[nodiscard]]
-json::Value clone_id(const json::Value* const id, std::pmr::memory_resource* const mem)
-{
-    if (id == nullptr) {
-        return json::null;
-    }
-    if (const auto* const n = id->as_number()) {
-        return *n;
-    }
-    if (const auto* const s = id->as_string()) {
-        return json::String { *s, mem };
-    }
-    return json::null;
-}
-
 // ── File URI helpers ──────────────────────────────────────────────────────────
 
 /// @brief Converts a `file://` URI to a filesystem path.
@@ -420,11 +369,10 @@ lsp::Position compute_end_position(const std::u8string_view bytes, const Diagnos
 /// @brief Runs COWEL on @p content (at @p uri) and returns a map from document
 /// URI to its LSP `Diagnostic[]` JSON array.
 [[nodiscard]]
-String_Map<json::Array> validate_document(
+String_Map<std::vector<lsp::Diagnostic>> validate_document(
     const std::u8string_view uri,
     const std::u8string_view content,
-    const String_Map<std::u8string>& open_docs,
-    std::pmr::memory_resource* const mem
+    const String_Map<std::u8string>& open_docs
 )
 {
     Validation_Context ctx {
@@ -463,8 +411,8 @@ String_Map<json::Array> validate_document(
 
     // Build the result map, pre-inserting an empty array for the main document
     // so it is always published (clears stale diagnostics after a fix).
-    String_Map<json::Array> by_uri;
-    by_uri.emplace(uri, json::Array { mem });
+    String_Map<std::vector<lsp::Diagnostic>> by_uri;
+    by_uri.emplace(uri, std::vector<lsp::Diagnostic> {});
 
     for (const auto& diagnostic : ctx.diagnostics) {
         const std::optional<lsp::Diagnostic_Severity> severity
@@ -510,8 +458,8 @@ String_Map<json::Array> validate_document(
             .source = u8"cowel"sv,
             .message = u8"message"sv,
         };
-        auto [it, _] = by_uri.try_emplace(diagnostic_uri, json::Array { mem });
-        it->second.push_back(lsp_diagnostic.to_json(mem));
+        auto emplace_result = by_uri.try_emplace(diagnostic_uri, std::vector<lsp::Diagnostic> {});
+        emplace_result.first->second.push_back(lsp_diagnostic);
     }
 
     return by_uri;
@@ -522,16 +470,16 @@ String_Map<json::Array> validate_document(
 void publish_diagnostics_for(const std::u8string_view uri, const std::u8string_view content)
 {
     std::pmr::monotonic_buffer_resource mem;
-    auto by_uri = validate_document(uri, content, server_state.open_docs, &mem);
-    for (auto& [document_uri, diagnostics] : by_uri) {
-        auto params_obj = Object_Builder { &mem }
-                              .set(u8"uri"sv, document_uri)
-                              .set(u8"diagnostics"sv, std::move(diagnostics))
-                              .build();
+    auto by_uri = validate_document(uri, content, server_state.open_docs);
+    for (const auto& [document_uri, diagnostics] : by_uri) {
         write_message(
             lsp::Notification_Message {
                 .method = lsp::method::text_document::publish_diagnostics,
-                .params = std::move(params_obj),
+                .params = lsp::Publish_Diagnostics_Params {
+                    .uri = document_uri,
+                    .diagnostics = diagnostics,
+                }
+                              .to_json(&mem),
             }
                 .to_json(&mem)
         );
@@ -543,47 +491,35 @@ void publish_diagnostics_for(const std::u8string_view uri, const std::u8string_v
 void clear_diagnostics_for(const std::u8string_view uri)
 {
     std::pmr::monotonic_buffer_resource mem;
+    const auto params
+        = lsp::Publish_Diagnostics_Params { .uri = uri, .diagnostics = {} }.to_json(&mem);
     write_message(
-        lsp::Notification_Message {
-            .method = lsp::method::text_document::publish_diagnostics,
-            .params = Object_Builder { &mem }
-                          .set(u8"uri"sv, uri)
-                          .set(u8"diagnostics"sv, json::Array { &mem })
-                          .build(),
-        }
-            .to_json(&mem)
-    );
+            lsp::Notification_Message {
+                .method = lsp::method::text_document::publish_diagnostics,
+                .params = params,
+            }
+                .to_json(&mem)
+        );
 }
 
 /// @brief Handles the "initialize" request: sends server capabilities.
 void handle_initialize(const json::Value* const id)
 {
     std::pmr::monotonic_buffer_resource mem;
-    // TextDocumentSyncKind.Full = 1
     write_message(
         lsp::Response_Message {
-            .id = clone_id(id, &mem),
-            .result = Object_Builder { &mem }
-                          .set(
-                              u8"capabilities"sv,
-                              Object_Builder { &mem }
-                                  .set(u8"positionEncoding"sv, lsp::position_encoding_kind::utf8)
-                                  .set(
-                                      u8"textDocumentSync"sv,
-                                      Object_Builder { &mem }
-                                          .set(u8"openClose"sv, true)
-                                          .set(u8"change"sv, json::Number { 1 })
-                                          .build()
-                                  )
-                                  .build()
-                          )
-                          .set(
-                              u8"serverInfo",
-                              Object_Builder { &mem } //
-                                  .set(u8"name"sv, u8"cowel"sv) //
-                                  .build()
-                          )
-                          .build(),
+            .id = lsp::clone_json_rpc_id(id, &mem),
+            .result = lsp::Initialize_Result {
+                .capabilities = lsp::Server_Capabilities {
+                    .position_encoding = lsp::position_encoding_kind::utf8,
+                    .text_document_sync = lsp::Text_Document_Sync_Options {
+                        .open_close = true,
+                        .change = 1,
+                    },
+                },
+                .server_info = lsp::Server_Info { .name = u8"cowel"sv },
+            }
+                          .to_json(&mem),
             .error = {},
         }
             .to_json(&mem)
@@ -679,7 +615,7 @@ void dispatch(const json::Object& msg)
         server_state.shutdown_requested = true;
         write_message(
             lsp::Response_Message {
-                .id = clone_id(id, &mem),
+                .id = lsp::clone_json_rpc_id(id, &mem),
                 .result = json::null,
                 .error = {},
             }
@@ -715,7 +651,7 @@ void dispatch(const json::Object& msg)
     if (id != nullptr) {
         write_message(
             lsp::Response_Message {
-                .id = clone_id(id, &mem),
+                .id = lsp::clone_json_rpc_id(id, &mem),
                 .result = {},
                 .error = lsp::Response_Error { json_rpc::Error_Code::method_not_found,
                                                u8"Method not found"sv },

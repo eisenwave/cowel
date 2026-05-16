@@ -2,10 +2,15 @@
 #define COWEL_LSP_HPP
 
 #include <optional>
+#include <span>
 #include <string_view>
 
 #include "cowel/fwd.hpp"
 #include "cowel/json.hpp"
+
+/// This header defines reusable JSON-RPC/LSP data-model abstractions.
+/// Keep declarations protocol-generic and free of server-specific defaults.
+/// Concrete server behavior and concrete protocol values belong in `lsp.cpp`.
 
 namespace cowel::json_rpc {
 
@@ -148,6 +153,113 @@ struct Diagnostic {
         result.push_back(
             { json::String { u8"message"sv, memory }, json::String { message, memory } }
         );
+        return result;
+    }
+};
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#publishDiagnosticsParams
+struct Publish_Diagnostics_Params {
+    std::u8string_view uri;
+    std::span<const Diagnostic> diagnostics;
+
+    [[nodiscard]]
+    json::Object to_json(std::pmr::memory_resource* const memory) const
+    {
+        json::Object result { memory };
+        result.push_back({ json::String { u8"uri"sv, memory }, json::String { uri, memory } });
+        json::Array diagnostics_json { memory };
+        diagnostics_json.reserve(diagnostics.size());
+        for (const Diagnostic& diagnostic : diagnostics) {
+            diagnostics_json.push_back(diagnostic.to_json(memory));
+        }
+        result.push_back({ json::String { u8"diagnostics"sv, memory }, std::move(diagnostics_json) });
+        return result;
+    }
+};
+
+/// @see https://www.jsonrpc.org/specification#request_object
+/// @see https://www.jsonrpc.org/specification#response_object
+[[nodiscard]]
+inline json::Value clone_json_rpc_id(
+    const json::Value* const json_rpc_id, std::pmr::memory_resource* const memory
+)
+{
+    if (json_rpc_id == nullptr) {
+        return json::null;
+    }
+    if (const auto* const n = json_rpc_id->as_number()) {
+        return *n;
+    }
+    if (const auto* const s = json_rpc_id->as_string()) {
+        return json::String { *s, memory };
+    }
+    return json::null;
+}
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentSyncOptions
+struct Text_Document_Sync_Options {
+    bool open_close;
+    int change;
+
+    [[nodiscard]]
+    json::Object to_json(std::pmr::memory_resource* const memory) const
+    {
+        json::Object result { memory };
+        result.push_back({ json::String { u8"openClose"sv, memory }, open_close });
+        result.push_back({ json::String { u8"change"sv, memory }, json::Number { change } });
+        return result;
+    }
+};
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#serverCapabilities
+struct Server_Capabilities {
+    std::u8string_view position_encoding;
+    Text_Document_Sync_Options text_document_sync;
+
+    [[nodiscard]]
+    json::Object to_json(std::pmr::memory_resource* const memory) const
+    {
+        json::Object result { memory };
+        result.push_back(
+            {
+                json::String { u8"positionEncoding"sv, memory },
+                json::String { position_encoding, memory },
+            }
+        );
+        result.push_back(
+            {
+                json::String { u8"textDocumentSync"sv, memory },
+                text_document_sync.to_json(memory),
+            }
+        );
+        return result;
+    }
+};
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeResult
+struct Server_Info {
+    std::u8string_view name;
+
+    [[nodiscard]]
+    json::Object to_json(std::pmr::memory_resource* const memory) const
+    {
+        json::Object result { memory };
+        result.push_back({ json::String { u8"name"sv, memory }, json::String { name, memory } });
+        return result;
+    }
+};
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeResult
+struct Initialize_Result {
+    Server_Capabilities capabilities;
+    Server_Info server_info;
+
+    [[nodiscard]]
+    json::Object to_json(std::pmr::memory_resource* const memory) const
+    {
+        json::Object result { memory };
+        result.push_back({ json::String { u8"capabilities"sv, memory }, capabilities.to_json(memory) });
+        result.push_back({ json::String { u8"serverInfo"sv, memory }, server_info.to_json(memory) });
         return result;
     }
 };
