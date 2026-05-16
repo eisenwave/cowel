@@ -9,16 +9,11 @@
 
 #include "cowel/util/char_sequence.hpp"
 #include "cowel/util/html_entities.hpp"
+#include "cowel/util/string_or_char_consumer.hpp"
 
 #include "cowel/settings.hpp"
 
 namespace cowel {
-
-template <typename F>
-concept string_or_char_consumer = requires(F& f, std::u8string_view s, char8_t c) {
-    f(s);
-    f(c);
-};
 
 template <string_or_char_consumer Out, std::invocable<char8_t> Predicate>
 void append_html_escaped(Out& out, std::u8string_view text, Predicate p)
