@@ -509,7 +509,17 @@ void handle_initialize(const json::Value* const id)
     write_message(
         lsp::Response_Message {
             .id = lsp::clone_json_rpc_id(id, &mem),
-            .result = lsp::Initialize_Result {}.to_json(&mem),
+            .result = lsp::Initialize_Result {
+                .capabilities = lsp::Server_Capabilities {
+                    .position_encoding = lsp::position_encoding_kind::utf8,
+                    .text_document_sync = lsp::Text_Document_Sync_Options {
+                        .open_close = true,
+                        .change = 1,
+                    },
+                },
+                .server_info = lsp::Server_Info { .name = u8"cowel"sv },
+            }
+                          .to_json(&mem),
             .error = {},
         }
             .to_json(&mem)

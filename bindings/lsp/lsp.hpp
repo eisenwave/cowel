@@ -8,6 +8,10 @@
 #include "cowel/fwd.hpp"
 #include "cowel/json.hpp"
 
+/// This header defines reusable JSON-RPC/LSP data-model abstractions.
+/// Keep declarations protocol-generic and free of server-specific defaults.
+/// Concrete server behavior and concrete protocol values belong in `lsp.cpp`.
+
 namespace cowel::json_rpc {
 
 /// @brief A JSON-RPC error code.
@@ -78,13 +82,6 @@ inline constexpr auto utf16 = u8"utf-16"sv;
 inline constexpr auto utf32 = u8"utf-32"sv;
 
 } // namespace position_encoding_kind
-
-namespace text_document_sync_kind {
-
-/// Full document sync.
-inline constexpr int full = 1;
-
-} // namespace text_document_sync_kind
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 struct Position {
@@ -160,6 +157,7 @@ struct Diagnostic {
     }
 };
 
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#publishDiagnosticsParams
 struct Publish_Diagnostics_Params {
     std::u8string_view uri;
     std::span<const Diagnostic> diagnostics;
@@ -179,6 +177,8 @@ struct Publish_Diagnostics_Params {
     }
 };
 
+/// @see https://www.jsonrpc.org/specification#request_object
+/// @see https://www.jsonrpc.org/specification#response_object
 [[nodiscard]]
 inline json::Value clone_json_rpc_id(
     const json::Value* const json_rpc_id, std::pmr::memory_resource* const memory
@@ -196,9 +196,10 @@ inline json::Value clone_json_rpc_id(
     return json::null;
 }
 
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentSyncOptions
 struct Text_Document_Sync_Options {
-    bool open_close = true;
-    int change = text_document_sync_kind::full;
+    bool open_close;
+    int change;
 
     [[nodiscard]]
     json::Object to_json(std::pmr::memory_resource* const memory) const
@@ -210,9 +211,10 @@ struct Text_Document_Sync_Options {
     }
 };
 
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#serverCapabilities
 struct Server_Capabilities {
-    std::u8string_view position_encoding = position_encoding_kind::utf8;
-    Text_Document_Sync_Options text_document_sync {};
+    std::u8string_view position_encoding;
+    Text_Document_Sync_Options text_document_sync;
 
     [[nodiscard]]
     json::Object to_json(std::pmr::memory_resource* const memory) const
@@ -234,6 +236,7 @@ struct Server_Capabilities {
     }
 };
 
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeResult
 struct Server_Info {
     std::u8string_view name;
 
@@ -246,9 +249,10 @@ struct Server_Info {
     }
 };
 
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeResult
 struct Initialize_Result {
-    Server_Capabilities capabilities {};
-    Server_Info server_info { .name = u8"cowel"sv };
+    Server_Capabilities capabilities;
+    Server_Info server_info;
 
     [[nodiscard]]
     json::Object to_json(std::pmr::memory_resource* const memory) const
