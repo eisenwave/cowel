@@ -1,1 +1,0 @@
-/usr/bin/em++ -O3 -DNDEBUG @CMakeFiles/gitlike.dir/objects1.rsp -o gitlike.js
