@@ -2,6 +2,7 @@
 #define COWEL_LSP_HPP
 
 #include <optional>
+#include <span>
 #include <string_view>
 
 #include "cowel/fwd.hpp"
@@ -148,6 +149,106 @@ struct Diagnostic {
         result.push_back(
             { json::String { u8"message"sv, memory }, json::String { message, memory } }
         );
+        return result;
+    }
+};
+
+struct Publish_Diagnostics_Params {
+    std::u8string_view uri;
+    std::span<const Diagnostic> diagnostics;
+
+    [[nodiscard]]
+    json::Object to_json(std::pmr::memory_resource* const memory) const
+    {
+        json::Object result { memory };
+        result.push_back({ json::String { u8"uri"sv, memory }, json::String { uri, memory } });
+        json::Array diagnostics_json { memory };
+        diagnostics_json.reserve(diagnostics.size());
+        for (const Diagnostic& diagnostic : diagnostics) {
+            diagnostics_json.push_back(diagnostic.to_json(memory));
+        }
+        result.push_back({ json::String { u8"diagnostics"sv, memory }, std::move(diagnostics_json) });
+        return result;
+    }
+};
+
+[[nodiscard]]
+inline json::Value clone_json_rpc_id(
+    const json::Value* const id, std::pmr::memory_resource* const memory
+)
+{
+    if (id == nullptr) {
+        return json::null;
+    }
+    if (const auto* const n = id->as_number()) {
+        return *n;
+    }
+    if (const auto* const s = id->as_string()) {
+        return json::String { *s, memory };
+    }
+    return json::null;
+}
+
+struct Text_Document_Sync_Options {
+    bool open_close = true;
+    int change = 1;
+
+    [[nodiscard]]
+    json::Object to_json(std::pmr::memory_resource* const memory) const
+    {
+        json::Object result { memory };
+        result.push_back({ json::String { u8"openClose"sv, memory }, open_close });
+        result.push_back({ json::String { u8"change"sv, memory }, json::Number { change } });
+        return result;
+    }
+};
+
+struct Server_Capabilities {
+    std::u8string_view position_encoding = position_encoding_kind::utf8;
+    Text_Document_Sync_Options text_document_sync {};
+
+    [[nodiscard]]
+    json::Object to_json(std::pmr::memory_resource* const memory) const
+    {
+        json::Object result { memory };
+        result.push_back(
+            {
+                json::String { u8"positionEncoding"sv, memory },
+                json::String { position_encoding, memory },
+            }
+        );
+        result.push_back(
+            {
+                json::String { u8"textDocumentSync"sv, memory },
+                text_document_sync.to_json(memory),
+            }
+        );
+        return result;
+    }
+};
+
+struct Server_Info {
+    std::u8string_view name;
+
+    [[nodiscard]]
+    json::Object to_json(std::pmr::memory_resource* const memory) const
+    {
+        json::Object result { memory };
+        result.push_back({ json::String { u8"name"sv, memory }, json::String { name, memory } });
+        return result;
+    }
+};
+
+struct Initialize_Result {
+    Server_Capabilities capabilities {};
+    Server_Info server_info { .name = u8"cowel"sv };
+
+    [[nodiscard]]
+    json::Object to_json(std::pmr::memory_resource* const memory) const
+    {
+        json::Object result { memory };
+        result.push_back({ json::String { u8"capabilities"sv, memory }, capabilities.to_json(memory) });
+        result.push_back({ json::String { u8"serverInfo"sv, memory }, server_info.to_json(memory) });
         return result;
     }
 };
