@@ -115,6 +115,7 @@ export type Allocation = {
 };
 
 export interface BigIntRegExpWasmEnvObject {
+    [key: string]: WebAssembly.ImportValue;
     emscripten_notify_memory_growth: (byteLength: number) => void;
     big_int_i32: (x: number) => BigIntId;
     big_int_i64: (x: bigint) => BigIntId;

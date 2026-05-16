@@ -112,7 +112,7 @@ class LspWasmRunner {
         const module = await WebAssembly.compile(wasmBytes);
         const bi = this.bigInts;
         const re = this.regExps;
-        const imports: WebAssembly.Imports = {
+        const imports = {
             env: createBigIntRegExpWasmEnvObject(
                 bi,
                 re,
