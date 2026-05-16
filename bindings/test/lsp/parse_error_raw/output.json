@@ -2,7 +2,6 @@
     {
         "jsonrpc": "2.0",
         "id": null,
-        "result": null,
         "error": {
             "code": -32700,
             "message": "Parse error"

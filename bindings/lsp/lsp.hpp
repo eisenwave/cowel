@@ -206,7 +206,12 @@ struct Text_Document_Sync_Options {
     {
         json::Object result { memory };
         result.push_back({ json::String { u8"openClose"sv, memory }, open_close });
-        result.push_back({ json::String { u8"change"sv, memory }, json::Number { change } });
+        result.push_back(
+            {
+                json::String { u8"change"sv, memory },
+                static_cast<json::Number>(change),
+            }
+        );
         return result;
     }
 };
