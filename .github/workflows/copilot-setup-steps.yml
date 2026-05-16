@@ -12,6 +12,7 @@ on:
 jobs:
   copilot-setup-steps:
     runs-on: ubuntu-latest
+    # Copilot setup workflows support a maximum timeout of 59 minutes.
     timeout-minutes: 59
     permissions:
       contents: read
@@ -24,6 +25,8 @@ jobs:
 
       - name: Configure GitHub SSH URL fallback to HTTPS
         run: |
+          # Some repo dependencies (for example submodule URLs) may be SSH-formatted.
+          # This keeps setup working in environments without SSH key access.
           git config --global url."https://github.com/".insteadOf git@github.com:
 
       - name: Set up Node.js
@@ -60,10 +63,9 @@ jobs:
           cd "$EMSDK_DIR"
           ./emsdk install latest
           ./emsdk activate latest
+          ./emsdk list --installed
 
-          if ! grep -Fq "$EMSDK_DIR/emsdk_env.sh" ~/.bashrc; then
-            echo "source \"$EMSDK_DIR/emsdk_env.sh\" >/dev/null" >> ~/.bashrc
-          fi
+          echo "EMSDK=$EMSDK_DIR" >> "$GITHUB_ENV"
 
       - name: Preinstall Node dependencies
         run: |
