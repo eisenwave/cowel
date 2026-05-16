@@ -185,6 +185,7 @@ set(COMMON_LIBRARY_SOURCES
     engine/include/cowel/util/result.hpp
     engine/include/cowel/util/severity.hpp
     engine/include/cowel/util/source_position.hpp
+    engine/include/cowel/util/string_or_char_consumer.hpp
     engine/include/cowel/util/stringify.hpp
     engine/include/cowel/util/strings.hpp
     engine/include/cowel/util/to_chars.hpp

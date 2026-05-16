@@ -1,3 +1,4 @@
+#include <limits>
 #include <memory_resource>
 #include <optional>
 #include <string_view>
@@ -463,6 +464,280 @@ TEST(Json, realistic_config_object)
     const bool* const stable = meta->find_bool(u8"stable");
     ASSERT_NE(stable, nullptr);
     EXPECT_EQ(*stable, false);
+}
+
+// ── to_characters8 ───────────────────────────────────────────────────────────
+
+std::u8string serialize(const Value& v)
+{
+    std::u8string out;
+    U8String_Consumer consumer { out };
+    write_value(consumer, v);
+    return out;
+}
+
+TEST(JsonWrite, null)
+{
+    EXPECT_EQ(serialize(null), u8"null");
+}
+
+TEST(JsonWrite, boolean_true)
+{
+    EXPECT_EQ(serialize(true), u8"true");
+}
+
+TEST(JsonWrite, boolean_false)
+{
+    EXPECT_EQ(serialize(false), u8"false");
+}
+
+TEST(JsonWrite, integer_number)
+{
+    EXPECT_EQ(serialize(Number { 0 }), u8"0");
+    EXPECT_EQ(serialize(Number { 42 }), u8"42");
+    EXPECT_EQ(serialize(Number { -1 }), u8"-1");
+}
+
+TEST(JsonWrite, fractional_number)
+{
+    EXPECT_EQ(serialize(Number { 1.5 }), u8"1.5");
+    EXPECT_EQ(serialize(Number { -0.25 }), u8"-0.25");
+}
+
+TEST(JsonWrite, non_finite_number_is_null)
+{
+    EXPECT_EQ(serialize(Number { std::numeric_limits<double>::infinity() }), u8"null");
+    EXPECT_EQ(serialize(Number { -std::numeric_limits<double>::infinity() }), u8"null");
+    EXPECT_EQ(serialize(Number { std::numeric_limits<double>::quiet_NaN() }), u8"null");
+}
+
+TEST(JsonWrite, empty_string)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    EXPECT_EQ(serialize(String { &memory }), u8"\"\"");
+}
+
+TEST(JsonWrite, plain_string)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    String s { &memory };
+    s = u8"hello";
+    EXPECT_EQ(serialize(s), u8"\"hello\"");
+}
+
+TEST(JsonWrite, string_escapes)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    {
+        String s { &memory };
+        s = u8"a\"b";
+        EXPECT_EQ(serialize(s), u8R"("a\"b")");
+    }
+    {
+        String s { &memory };
+        s = u8"a\\b";
+        EXPECT_EQ(serialize(s), u8R"("a\\b")");
+    }
+    {
+        String s { &memory };
+        s = u8"a\nb";
+        EXPECT_EQ(serialize(s), u8"\"a\\nb\"");
+    }
+    {
+        String s { &memory };
+        s = u8"a\tb";
+        EXPECT_EQ(serialize(s), u8"\"a\\tb\"");
+    }
+    {
+        String s { &memory };
+        s = u8"a\x01x";
+        EXPECT_EQ(serialize(s), u8"\"a\\u0001x\"");
+    }
+}
+
+TEST(JsonWrite, empty_array)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    EXPECT_EQ(serialize(Array { &memory }), u8"[]");
+}
+
+TEST(JsonWrite, array_of_values)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    Array a { &memory };
+    a.push_back(Number { 1 });
+    a.push_back(Number { 2 });
+    a.push_back(Number { 3 });
+    EXPECT_EQ(serialize(a), u8"[1,2,3]");
+}
+
+TEST(JsonWrite, nested_array)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    Array inner { &memory };
+    inner.push_back(Number { 1 });
+    Array outer { &memory };
+    outer.push_back(inner);
+    EXPECT_EQ(serialize(outer), u8"[[1]]");
+}
+
+TEST(JsonWrite, empty_object)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    EXPECT_EQ(serialize(Object { &memory }), u8"{}");
+}
+
+TEST(JsonWrite, object_single_member)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    Object o { &memory };
+    String key { &memory };
+    key = u8"x";
+    o.push_back({ std::move(key), Number { 1 } });
+    EXPECT_EQ(serialize(o), u8"{\"x\":1}");
+}
+
+TEST(JsonWrite, object_multiple_members)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    Object o { &memory };
+    auto add = [&](std::u8string_view k, Value v) {
+        String key { k, &memory };
+        o.push_back({ std::move(key), std::move(v) });
+    };
+    add(u8"a", Number { 1 });
+    add(u8"b", true);
+    add(u8"c", null);
+    EXPECT_EQ(serialize(o), u8"{\"a\":1,\"b\":true,\"c\":null}");
+}
+
+TEST(JsonWrite, roundtrip)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    const std::u8string_view src = u8R"({"id":1,"method":"initialize","params":{"x":true}})";
+    const auto parsed = load(src, &memory);
+    ASSERT_TRUE(parsed.has_value());
+    EXPECT_EQ(serialize(*parsed), src);
+}
+
+TEST(JsonWrite, string_named_escapes_backspace_formfeed_return)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    {
+        String s { u8"a\N{BACKSPACE}x", &memory };
+        EXPECT_EQ(serialize(s), u8"\"a\\bx\"");
+    }
+    {
+        String s { u8"a\fx", &memory };
+        EXPECT_EQ(serialize(s), u8"\"a\\fx\"");
+    }
+    {
+        String s { u8"a\rx", &memory };
+        EXPECT_EQ(serialize(s), u8"\"a\\rx\"");
+    }
+}
+
+TEST(JsonEscape, escape_named)
+{
+    EXPECT_EQ(escape(u8'\b'), u8"\\b"sv);
+    EXPECT_EQ(escape(u8'\t'), u8"\\t"sv);
+    EXPECT_EQ(escape(u8'\n'), u8"\\n"sv);
+    EXPECT_EQ(escape(u8'\f'), u8"\\f"sv);
+    EXPECT_EQ(escape(u8'\r'), u8"\\r"sv);
+    EXPECT_EQ(escape(u8'"'), u8"\\\""sv);
+    EXPECT_EQ(escape(u8'\\'), u8"\\\\"sv);
+}
+
+TEST(JsonEscape, escape_hex)
+{
+    EXPECT_EQ(escape(char8_t(0x00)), u8"\\u0000"sv);
+    EXPECT_EQ(escape(char8_t(0x01)), u8"\\u0001"sv);
+    EXPECT_EQ(escape(char8_t(0x02)), u8"\\u0002"sv);
+    EXPECT_EQ(escape(char8_t(0x03)), u8"\\u0003"sv);
+    EXPECT_EQ(escape(char8_t(0x03)), u8"\\u0003"sv);
+    EXPECT_EQ(escape(char8_t(0x04)), u8"\\u0004"sv);
+    EXPECT_EQ(escape(char8_t(0x05)), u8"\\u0005"sv);
+    EXPECT_EQ(escape(char8_t(0x07)), u8"\\u0007"sv);
+    EXPECT_EQ(escape(char8_t(0x0b)), u8"\\u000b"sv);
+    EXPECT_EQ(escape(char8_t(0x0e)), u8"\\u000e"sv);
+    EXPECT_EQ(escape(char8_t(0x0f)), u8"\\u000f"sv);
+
+    EXPECT_EQ(escape(char8_t(0x10)), u8"\\u0010"sv);
+    EXPECT_EQ(escape(char8_t(0x11)), u8"\\u0011"sv);
+    EXPECT_EQ(escape(char8_t(0x12)), u8"\\u0012"sv);
+    EXPECT_EQ(escape(char8_t(0x13)), u8"\\u0013"sv);
+    EXPECT_EQ(escape(char8_t(0x13)), u8"\\u0013"sv);
+    EXPECT_EQ(escape(char8_t(0x14)), u8"\\u0014"sv);
+    EXPECT_EQ(escape(char8_t(0x15)), u8"\\u0015"sv);
+    EXPECT_EQ(escape(char8_t(0x17)), u8"\\u0017"sv);
+    EXPECT_EQ(escape(char8_t(0x18)), u8"\\u0018"sv);
+    EXPECT_EQ(escape(char8_t(0x19)), u8"\\u0019"sv);
+    EXPECT_EQ(escape(char8_t(0x1a)), u8"\\u001a"sv);
+    EXPECT_EQ(escape(char8_t(0x1b)), u8"\\u001b"sv);
+    EXPECT_EQ(escape(char8_t(0x1c)), u8"\\u001c"sv);
+    EXPECT_EQ(escape(char8_t(0x1d)), u8"\\u001d"sv);
+    EXPECT_EQ(escape(char8_t(0x1e)), u8"\\u001e"sv);
+    EXPECT_EQ(escape(char8_t(0x1f)), u8"\\u001f"sv);
+}
+
+TEST(JsonEscape, escape_printable)
+{
+    EXPECT_EQ(escape(u8' '), u8""sv);
+    EXPECT_EQ(escape(u8'a'), u8""sv);
+    EXPECT_EQ(escape(u8'z'), u8""sv);
+    EXPECT_EQ(escape(u8'0'), u8""sv);
+    EXPECT_EQ(escape(char8_t(0x7e)), u8""sv); // '~', highest 7-bit printable
+}
+
+TEST(JsonObject, find_value_returns_value_for_existing_keys)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    const auto result = parse(R"({"n": 42, "s": "hi", "b": true, "nil": null})", &memory);
+    ASSERT_TRUE(result.has_value());
+    const Object* const o = result->as_object();
+    ASSERT_NE(o, nullptr);
+
+    const Value* const n = o->find_value(u8"n");
+    ASSERT_NE(n, nullptr);
+    ASSERT_NE(n->as_number(), nullptr);
+    EXPECT_EQ(*n->as_number(), 42.0);
+
+    const Value* const s = o->find_value(u8"s");
+    ASSERT_NE(s, nullptr);
+    ASSERT_NE(s->as_string(), nullptr);
+    EXPECT_EQ(*s->as_string(), u8"hi"sv);
+
+    const Value* const b = o->find_value(u8"b");
+    ASSERT_NE(b, nullptr);
+    ASSERT_NE(b->as_boolean(), nullptr);
+    EXPECT_EQ(*b->as_boolean(), true);
+
+    const Value* const nil = o->find_value(u8"nil");
+    ASSERT_NE(nil, nullptr);
+    EXPECT_NE(nil->as_null(), nullptr);
+}
+
+TEST(JsonObject, find_value_missing_key_returns_nullptr)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    const auto result = parse(R"({"a": 1})", &memory);
+    ASSERT_TRUE(result.has_value());
+    const Object* const o = result->as_object();
+    ASSERT_NE(o, nullptr);
+    EXPECT_EQ(o->find_value(u8"missing"), nullptr);
+    EXPECT_EQ(o->find_value(u8""), nullptr);
+}
+
+TEST(JsonObject, find_value_mutable_allows_modification)
+{
+    std::pmr::monotonic_buffer_resource memory;
+    Object o { &memory };
+    o.push_back({ String { u8"x", &memory }, Number { 1 } });
+
+    Value* const v = o.find_value(u8"x");
+    ASSERT_NE(v, nullptr);
+    *v = Number { 2 };
+    EXPECT_EQ(*o.find_number(u8"x"), 2.0);
 }
 
 } // namespace
