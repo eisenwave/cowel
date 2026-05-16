@@ -1,0 +1,1 @@
+/usr/bin/em++ -O3 -DNDEBUG -fno-exceptions -Os -stdlib=libc++ -static-libc++ -s WASM=1 -s ENVIRONMENT=web -s IMPORTED_MEMORY=0 -s ALLOW_MEMORY_GROWTH=1 -s ALLOW_TABLE_GROWTH=1 -s AUTO_JS_LIBRARIES=0 -s STANDALONE_WASM=0 --no-entry @CMakeFiles/cowel-wasm.dir/objects1.rsp -o cowel.wasm @CMakeFiles/cowel-wasm.dir/linkLibs.rsp
