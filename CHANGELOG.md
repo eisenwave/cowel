@@ -10,6 +10,7 @@
   from a syntax-highlighted title (notice that `id=int` is plain text).
 - Added `cowel_str_substr` directive for taking substrings (#333)
 - Updated µlight for various syntax highlighting fixes (#336)
+- Fixed crash on file ending in closing parenthesis of a *group* (#352)
 
 ### VSCode extension
 
