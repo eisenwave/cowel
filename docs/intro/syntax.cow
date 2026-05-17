@@ -1,3 +1,8 @@
+\cowel_var_let("grammar_all", cowel_include_text("grammar.ebnf"))\
+\cowel_var_let("lex_end", cowel_str_find(grammar_all, "document\'LF'"))\
+\cowel_var_let("lex_grammar", cowel_str_substr(grammar_all, 0, lex_end))\
+\cowel_var_let("parse_grammar", cowel_str_substr(grammar_all, lex_end))\
+\
 \h2{Syntax}
 
 At the document level,
@@ -69,7 +74,7 @@ Formally, in \ref("https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_fo
 grammar format,
 a \gterm{DOCUMENT} is matched as follows:
 
-\codeblock("ebnf"){\cowel_include_text("lex_grammar.ebnf")}
+\codeblock("ebnf"){\(lex_grammar)}
 
 Let the \dfn{tokens} of the document be any matched nonterminals
 whose name ends with \gterm{TOKEN}.
@@ -595,7 +600,7 @@ After lexical analysis,
 the produced tokens are used as the input to the parsing stage.
 The tokens from lexical analysis are matched by a context-free grammar as follows:
 
-\codeblock("ebnf"){\cowel_include_text("grammar.ebnf")}
+\codeblock("ebnf"){\(parse_grammar)}
 
 \h3{Directive splices}
 
