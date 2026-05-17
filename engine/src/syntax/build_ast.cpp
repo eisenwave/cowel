@@ -739,9 +739,11 @@ private:
             members.push_back(build_group_member());
         }
 
+        const std::size_t end_pos
+            = m_token_index >= m_tokens.size() ? m_source.size() : peek_token().location.begin;
         const File_Source_Span source_span {
             initial_pos,
-            peek_token().location.begin - initial_pos.begin,
+            end_pos - initial_pos.begin,
             m_file,
         };
         return ast::Primary::group(source_span, extract(source_span), std::move(members));
