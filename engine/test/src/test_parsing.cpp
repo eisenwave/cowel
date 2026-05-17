@@ -1632,6 +1632,28 @@ TEST(Parse_And_Build, file_ends_in_brace)
     ASSERT_EQ(expected, actual);
 }
 
+TEST(Parse_And_Build, file_ends_in_group_parenthesis)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"cowel_include",
+                Node::group(
+                    { Node::positional({ Node::quoted_string({ Node::text(u8"lib.cow") }) }) }
+                )
+            ),
+        },
+        &memory,
+    };
+
+    std::optional<Actual_Document> parsed
+        = parse_and_build_file(u8"file_ends_in_group_parenthesis.cow", &memory);
+    ASSERT_TRUE(parsed);
+    const auto actual = parsed->to_expected(); // NOLINT(bugprone-unchecked-optional-access)
+    ASSERT_EQ(expected, actual);
+}
+
 TEST(Parse_And_Build, hello_code)
 {
     static std::pmr::monotonic_buffer_resource memory;
