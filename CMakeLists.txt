@@ -222,6 +222,7 @@ set(COMMON_LIBRARY_SOURCES
     engine/include/cowel/integration_testing.hpp
     engine/include/cowel/invocation.hpp
     engine/include/cowel/json.hpp
+    engine/include/cowel/lsp.hpp
     engine/include/cowel/memory_resources.hpp
     engine/include/cowel/output_language.hpp
     engine/include/cowel/parameters.hpp
@@ -298,6 +299,12 @@ set(NATIVE_LIBRARY_SOURCES
 )
 
 if(DEFINED EMSCRIPTEN)
+    set(COMMON_WASM_SOURCES
+        ${COMMON_LIBRARY_SOURCES}
+        bindings/node/src/cpp/big_int_wasm.cpp
+        bindings/node/src/cpp/regexp_wasm.cpp
+        bindings/node/src/cpp/wasm_stubs.cpp
+    )
     set(WASM_COMPILE_OPTIONS
         # the SHELL option group prevents de-duplication
         # https://cmake.org/cmake/help/latest/prop_tgt/COMPILE_OPTIONS.html#option-de-duplication
@@ -322,11 +329,8 @@ if(DEFINED EMSCRIPTEN)
     )
 
     add_executable(cowel-wasm
-        ${COMMON_LIBRARY_SOURCES}
-        bindings/node/src/cpp/big_int_wasm.cpp
-        bindings/node/src/cpp/regexp_wasm.cpp
+        ${COMMON_WASM_SOURCES}
         bindings/node/src/cpp/wasm.cpp
-        bindings/node/src/cpp/wasm_stubs.cpp
     )
     set_target_properties(cowel-wasm PROPERTIES
         OUTPUT_NAME "cowel"
@@ -350,7 +354,21 @@ if(DEFINED EMSCRIPTEN)
     )
     target_link_libraries(cowel-wasm PRIVATE ulight args)
 
+    add_executable(cowel-lsp
+        ${COMMON_WASM_SOURCES}
+        bindings/lsp/lsp.cpp
+    )
+    set_target_properties(cowel-lsp PROPERTIES
+        OUTPUT_NAME "cowel-lsp"
+        SUFFIX ".wasm"
+    )
+    target_compile_options(cowel-lsp PRIVATE ${WASM_COMPILE_OPTIONS})
+    target_link_options(cowel-lsp PRIVATE ${WASM_LINK_OPTIONS})
+    target_compile_definitions(cowel-lsp PUBLIC COWEL_BUILD_WASM=1)
+    target_link_libraries(cowel-lsp PRIVATE ulight args)
+
     set(NPM_DIR "${CMAKE_BINARY_DIR}/npm")
+    set(LSP_WASM_DIR "${CMAKE_BINARY_DIR}/lsp-wasm")
     set(NPM_TEST_DIR "${CMAKE_BINARY_DIR}/test")
     set(NODE_BINDINGS_DIR "${CMAKE_CURRENT_LIST_DIR}/bindings/node")
     find_program(NPX_EXECUTABLE npx REQUIRED)
@@ -384,6 +402,24 @@ if(DEFINED EMSCRIPTEN)
         DEPENDS cowel-wasm
         COMMENT "Preparing npm package in ${NPM_DIR}"
     )
+
+    add_custom_target(cowel-lsp-wasm ALL
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${LSP_WASM_DIR}"
+        COMMAND "${NPX_EXECUTABLE}" --prefix "${NODE_BINDINGS_DIR}" tsc
+            -p "${NODE_BINDINGS_DIR}/tsconfig.json"
+            --outDir "${LSP_WASM_DIR}"
+            --tsBuildInfoFile "${LSP_WASM_DIR}/.tsbuildinfo"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${CMAKE_CURRENT_BINARY_DIR}/cowel-lsp.wasm"
+            "${LSP_WASM_DIR}"
+        BYPRODUCTS
+            "${LSP_WASM_DIR}"
+            "${LSP_WASM_DIR}/cowel-lsp.wasm"
+            "${LSP_WASM_DIR}/lsp-wasm-runner.js"
+            "${LSP_WASM_DIR}/.tsbuildinfo"
+        DEPENDS cowel-lsp
+        COMMENT "Preparing LSP WASM artifacts in ${LSP_WASM_DIR}"
+    )
 else()
     add_library(cowel STATIC ${NATIVE_LIBRARY_SOURCES})
     target_link_libraries(cowel ulight args)
@@ -412,6 +448,7 @@ else()
         engine/test/src/test_html_writer.cpp
         engine/test/src/test_json.cpp
         engine/test/src/test_levenshtein.cpp
+        engine/test/src/test_lsp.cpp
         engine/test/src/test_lexing.cpp
         engine/test/src/test_math.cpp
         engine/test/src/test_parsing.cpp

@@ -1,0 +1,18 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "method": "textDocument/publishDiagnostics",
+    "params": {
+      "uri": "{{ROOT_URI}}/index.cow",
+      "diagnostics": []
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "textDocument/publishDiagnostics",
+    "params": {
+      "uri": "{{ROOT_URI}}/subdir/fragment.cow",
+      "diagnostics": []
+    }
+  }
+]

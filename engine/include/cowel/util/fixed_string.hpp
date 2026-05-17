@@ -19,11 +19,11 @@ struct Basic_Fixed_String {
     using const_iterator = array_type::const_iterator;
     static constexpr std::size_t max_size_v = capacity;
 
-private:
+    // These are public so that Basic_Fixed_String is a structural type.
+
     array_type m_buffer {};
     std::size_t m_length = 0;
 
-public:
     [[nodiscard]]
     constexpr Basic_Fixed_String(const Char* str, std::size_t length)
         : m_length { length }

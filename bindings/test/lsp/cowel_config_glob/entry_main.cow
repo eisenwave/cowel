@@ -1,0 +1,3 @@
+\cowel_macro("my_macro"){Hello from macro}
+\cowel_include("fragment.cow")
+\+

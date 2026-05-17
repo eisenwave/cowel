@@ -12,8 +12,7 @@ on:
 jobs:
   copilot-setup-steps:
     runs-on: ubuntu-latest
-    # Copilot setup workflows support a maximum timeout of 59 minutes.
-    timeout-minutes: 59
+    timeout-minutes: 30
     permissions:
       contents: read
 
