@@ -52,7 +52,15 @@ jobs:
             ninja-build \
             python3
 
+      - name: Restore Emscripten cache
+        id: emsdk-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ github.workspace }}/emsdk
+          key: ${{ runner.os }}-emsdk-latest-${{ hashFiles('.github/workflows/cmake-multi-platform.yml') }}
+
       - name: Install Emscripten SDK
+        if: steps.emsdk-cache.outputs.cache-hit != 'true'
         run: |
           EMSDK_DIR="${{ github.workspace }}/emsdk"
           if [[ ! -d "$EMSDK_DIR/.git" ]]; then
@@ -71,7 +79,15 @@ jobs:
           npm ci --prefix bindings/node
           npm install --prefix editor/vscode
 
+      - name: Restore Boost cache
+        id: boost-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: third_party/boost
+          key: ${{ runner.os }}-boost-1.90.0-${{ hashFiles('tools/boost-install.sh') }}
+
       - name: Preinstall Boost source tree
+        if: steps.boost-cache.outputs.cache-hit != 'true'
         run: |
           if [[ ! -d third_party/boost/libs ]]; then
             bash tools/boost-install.sh third_party/boost
