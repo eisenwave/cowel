@@ -17,7 +17,8 @@ This makes COWEL easy to nest foreign content in.
   If 8 digits can be matched, they win over 4.
   Hex letters must be all lowercase or all uppercase.
   `\'NAME'` (apostrophe, uppercase letters/digits/spaces/hyphens, closing apostrophe)
-  encodes the Unicode scalar value by character name (e.g. `\'DIGIT ZERO'`).
+  encodes the Unicode scalar value by character name (e.g. `\'DIGIT ZERO'`, `\'LF'`).
+  All escape forms also work **inside string literals** (e.g. `"line1\'LF'line2"`).
   `\` followed by a newline → nothing (joins lines without whitespace).
 - **Line comment** — `\: comment text` extends to end of line.
   The trailing newline is consumed, so it leaves no blank line.
@@ -115,6 +116,11 @@ A directive call `name(args)` or `name{block}` is also a valid expression.
 Values can be spliced into text using directives and expression splices:
 `"x = \(1 + 2)"` or `{x = \(1 + 2)}` evaluates the expression and inserts `3`.
 Directive splices work the same way: `"Hello, \name!"`.
+
+A bare **identifier** in an expression that is not followed by a group or block
+is an **id-expression** and resolves to the value of the variable with that name.
+This is the idiomatic way to read variables:
+`myvar` instead of `cowel_var_get("myvar")`.
 
 ## Defining macros
 
