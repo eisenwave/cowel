@@ -459,9 +459,8 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         };
     }
 
-    const bool main_parse_success = lex_and_parse_and_build(
-        root_content, main_source, File_Id::main, memory, on_parse_error
-    );
+    const bool main_parse_success
+        = lex_and_parse_and_build(root_content, main_source, File_Id::main, memory, on_parse_error);
     if (!main_parse_success) {
         return {
             .status = COWEL_PROCESSING_ERROR,
@@ -534,10 +533,10 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         }
         const std::size_t n = hover_entries.size();
         const std::size_t hovers_alloc_size = n * sizeof(cowel_hover_u8) + total_article_bytes;
-        auto* const flat = static_cast<char8_t*>(
-            memory->allocate(hovers_alloc_size, alignof(cowel_hover_u8))
-        );
-        hovers_ptr = reinterpret_cast<cowel_hover_u8*>(flat);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        auto* const flat
+            = static_cast<char8_t*>(memory->allocate(hovers_alloc_size, alignof(cowel_hover_u8)));
+        hovers_ptr = reinterpret_cast<cowel_hover_u8*>(flat
+        ); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         hovers_size = n;
         char8_t* article_data = flat + n * sizeof(cowel_hover_u8);
         for (std::size_t i = 0; i < n; ++i) {

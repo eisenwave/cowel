@@ -44,7 +44,6 @@ Code_Point_Behavior::do_evaluate(const Invocation& call, Context& context) const
         const std::size_t min_len = 4;
         const std::size_t padded_len = hex_len < min_len ? min_len : hex_len;
         const std::size_t total = 2u + padded_len;
-        
         std::pmr::u8string article { context.get_persistent_memory() };
         article.reserve(total);
         article += u8'U';
@@ -54,12 +53,8 @@ Code_Point_Behavior::do_evaluate(const Invocation& call, Context& context) const
             article += u8'0';
         }
         article += std::u8string_view(hex_chars);
-        
         COWEL_ASSERT(!article.empty());
-        context.push_hover(
-            call.directive.get_source_span(),
-            article
-        );
+        context.push_hover(call.directive.get_source_span(), article);
     }
 
     return to_static_string<Short_String_Value::max_size_v>(make_char_sequence(*code_point));

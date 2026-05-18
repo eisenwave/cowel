@@ -863,7 +863,10 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Heading_Behavior(const int level, const std::u8string_view hover_article) noexcept
+    constexpr explicit Heading_Behavior(
+        const int level,
+        const std::u8string_view hover_article
+    ) noexcept
         : Block_Directive_Behavior { hover_article }
         , m_level { level }
     {
