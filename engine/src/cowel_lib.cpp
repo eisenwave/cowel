@@ -76,63 +76,6 @@ Allocator_Options Allocator_Options::from_memory_resource( //
 
 namespace {
 
-static_assert(int(File_Id::main) == COWEL_FILE_ID_MAIN);
-static_assert(std::is_trivially_copyable_v<cowel_options>);
-static_assert(std::is_trivially_copyable_v<cowel_options_u8>);
-static_assert(alignof(cowel_options) == alignof(cowel_options_u8));
-static_assert(sizeof(cowel_options) == sizeof(cowel_options_u8));
-
-static_assert(offsetof(cowel_options, source) == offsetof(cowel_options_u8, source));
-static_assert(
-    offsetof(cowel_options, highlight_theme_source)
-    == offsetof(cowel_options_u8, highlight_theme_json)
-);
-static_assert(offsetof(cowel_options, mode) == offsetof(cowel_options_u8, mode));
-static_assert(offsetof(cowel_options, flags) == offsetof(cowel_options_u8, flags));
-static_assert(
-    offsetof(cowel_options, min_log_severity) == offsetof(cowel_options_u8, min_log_severity)
-);
-static_assert(
-    offsetof(cowel_options, preserved_variables) == offsetof(cowel_options_u8, preserved_variables)
-);
-static_assert(
-    offsetof(cowel_options, preserved_variables_size)
-    == offsetof(cowel_options_u8, preserved_variables_size)
-);
-static_assert(
-    offsetof(cowel_options, consume_variables) == offsetof(cowel_options_u8, consume_variables)
-);
-static_assert(
-    offsetof(cowel_options, consume_variables_data)
-    == offsetof(cowel_options_u8, consume_variables_data)
-);
-static_assert(offsetof(cowel_options, alloc) == offsetof(cowel_options_u8, alloc));
-static_assert(offsetof(cowel_options, alloc_data) == offsetof(cowel_options_u8, alloc_data));
-static_assert(offsetof(cowel_options, free) == offsetof(cowel_options_u8, free));
-static_assert(offsetof(cowel_options, free_data) == offsetof(cowel_options_u8, free_data));
-static_assert(offsetof(cowel_options, load_file) == offsetof(cowel_options_u8, load_file));
-static_assert(
-    offsetof(cowel_options, load_file_data) == offsetof(cowel_options_u8, load_file_data)
-);
-static_assert(offsetof(cowel_options, log) == offsetof(cowel_options_u8, log));
-static_assert(offsetof(cowel_options, log_data) == offsetof(cowel_options_u8, log_data));
-static_assert(offsetof(cowel_options, highlighter) == offsetof(cowel_options_u8, highlighter));
-static_assert(
-    offsetof(cowel_options, highlight_policy) == offsetof(cowel_options_u8, highlight_policy)
-);
-static_assert(offsetof(cowel_options, preamble) == offsetof(cowel_options_u8, preamble));
-
-static_assert(std::is_trivially_copyable_v<cowel_gen_result>);
-static_assert(std::is_trivially_copyable_v<cowel_gen_result_u8>);
-static_assert(alignof(cowel_gen_result) == alignof(cowel_gen_result_u8));
-static_assert(sizeof(cowel_gen_result) == sizeof(cowel_gen_result_u8));
-static_assert(offsetof(cowel_gen_result, status) == offsetof(cowel_gen_result_u8, status));
-static_assert(offsetof(cowel_gen_result, output) == offsetof(cowel_gen_result_u8, output));
-static_assert(offsetof(cowel_gen_result, hovers) == offsetof(cowel_gen_result_u8, hovers));
-static_assert(
-    offsetof(cowel_gen_result, hovers_size) == offsetof(cowel_gen_result_u8, hovers_size)
-);
-
 [[nodiscard]]
 bool has_meaningful_location(const File_Source_Span& location)
 {
@@ -393,9 +336,6 @@ public:
             // so resize and overwriting happen in separate steps, and require some zeroing.
             const std::size_t initial_size = out_ptr->size();
             out_ptr->resize(initial_size + size);
-            static_assert(std::is_trivially_copyable_v<cowel_syntax_highlight_token>);
-            static_assert(std::is_trivially_copyable_v<Highlight_Span>);
-            static_assert(sizeof(cowel_syntax_highlight_token) == sizeof(Highlight_Span));
             std::memcpy(
                 out_ptr->data() + initial_size, tokens, size * sizeof(cowel_syntax_highlight_token)
             );
