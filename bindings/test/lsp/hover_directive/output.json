@@ -29,12 +29,12 @@
     "result": {
       "contents": {
         "kind": "markdown",
-        "value": "**`\\b`** — Bold\n\nWraps its content in an HTML `<b>` element.\n\n**Signature:** `\\b{content}`"
+        "value": "**`\\b`** — Bold\n\nWraps its content in an HTML `<b>` element.\n\n```\nb(\n  attr: pack named str,\n  content: block,\n): block\n```\n"
       },
       "range": {
         "start": {
           "line": 0,
-          "character": 1
+          "character": 0
         },
         "end": {
           "line": 0,
