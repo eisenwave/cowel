@@ -987,8 +987,9 @@ Processing_Status splice_invocation( //
 
     if (context.collects_hovers()) {
         const std::u8string_view article = behavior->get_hover_article();
-        COWEL_ASSERT(!article.empty());
-        context.push_hover(directive.get_name_span(), article);
+        if (!article.empty()) {
+            context.push_hover(directive.get_name_span(), article);
+        }
     }
 
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
