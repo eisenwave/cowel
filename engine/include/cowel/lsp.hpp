@@ -975,6 +975,63 @@ std::convertible_to<json::Value> auto to_json(const T& val, std::pmr::memory_res
     return detail::Serializer<T>::to_json(val, memory);
 }
 
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#markupContent
+namespace markup_kind {
+
+inline constexpr auto plain_text = u8"plaintext"sv;
+inline constexpr auto markdown = u8"markdown"sv;
+
+} // namespace markup_kind
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#markupContentInnerDefinition
+struct Markup_Content {
+    /// The type of the markup.
+    std::u8string_view kind;
+    /// The content itself
+    std::u8string_view value;
+};
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#hoverClientCapabilities
+struct Hover_Client_Capabilities {
+    /// Whether hover supports dynamic registration.
+    std::optional<bool> dynamic_registration = {};
+    /// Client supports the following content formats
+    /// if the content property refers to a `literal of type MarkupContent`.
+    /// The order describes the preferred format of the client.
+    std::span<const std::u8string_view> content_format;
+};
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#markdownClientCapabilities
+struct Markdown_Client_Capabilities {
+    /// The name of the parser.
+    std::u8string_view parser;
+    /// The version of the parser.
+    std::optional<std::u8string_view> version = {};
+    /// A list of HTML tags that the client allows / supports in Markdown.
+    std::optional<std::span<const std::u8string_view>> allowed_tags = {};
+};
+
+using Progress_Token = std::variant<Integer, std::u8string_view>;
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#hoverParams
+struct Hover_Params {
+    /// The text document.
+    Text_Document_Identifier text_document;
+    /// The position inside the text document.
+    Position position;
+    /// An optional token that a server can use to report work done progress.
+    std::optional<Progress_Token> work_done_token = {};
+};
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#hover
+struct Hover {
+    /// The hover's content.
+    Markup_Content contents;
+    /// An optional range is a range inside a text document that is used to visualize a hover,
+    /// e.g. by changing the background color.
+    std::optional<Range> range = {};
+};
+
 } // namespace cowel::lsp
 
 #endif
