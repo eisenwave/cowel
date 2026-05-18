@@ -68,6 +68,8 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/Taywee/args.git
     GIT_TAG        6.4.7
 )
+set(ARGS_BUILD_EXAMPLE OFF CACHE BOOL "Build args examples" FORCE)
+set(ARGS_BUILD_UNITTESTS OFF CACHE BOOL "Build args unit tests" FORCE)
 FetchContent_MakeAvailable(tayweeargs)
 
 find_package(Python3 REQUIRED)
