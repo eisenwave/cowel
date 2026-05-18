@@ -195,7 +195,13 @@ constexpr Fixed_Name_Passthrough_Behavior b {
 
 Wraps its content in an HTML `<b>` element.
 
-**Signature:** `\b{content}`)md"sv,
+```
+b(
+  attr: pack named str,
+  content: block,
+): block
+```
+)md"sv,
 };
 constexpr Special_Block_Behavior Babstract //
     { HTML_Tag_Name(u8"abstract-block"), Intro_Policy::yes };
@@ -269,7 +275,13 @@ constexpr Fixed_Name_Passthrough_Behavior em {
 
 Wraps its content in an HTML `<em>` element for emphasis.
 
-**Signature:** `\em{content}`)md"sv,
+```
+em(
+  attr: pack named str,
+  content: block,
+): block
+```
+)md"sv,
 };
 constexpr Error_Behavior error //
     {};
@@ -281,7 +293,13 @@ constexpr Heading_Behavior h1 {
 
 Creates a level 1 `<h1>` heading element.
 
-**Signature:** `\h1{title}`)md"sv,
+```
+h1(
+  id: str,
+  content: block,
+): block
+```
+)md"sv,
 };
 constexpr Heading_Behavior h2 {
     2,
@@ -289,7 +307,13 @@ constexpr Heading_Behavior h2 {
 
 Creates a level 2 `<h2>` heading element.
 
-**Signature:** `\h2{title}`)md"sv,
+```
+h2(
+  id: str,
+  content: block,
+): block
+```
+)md"sv,
 };
 constexpr Heading_Behavior h3 {
     3,
@@ -297,7 +321,13 @@ constexpr Heading_Behavior h3 {
 
 Creates a level 3 `<h3>` heading element.
 
-**Signature:** `\h3{title}`)md"sv,
+```
+h3(
+  id: str,
+  content: block,
+): block
+```
+)md"sv,
 };
 constexpr Heading_Behavior h4 {
     4,
@@ -305,7 +335,13 @@ constexpr Heading_Behavior h4 {
 
 Creates a level 4 `<h4>` heading element.
 
-**Signature:** `\h4{title}`)md"sv,
+```
+h4(
+  id: str,
+  content: block,
+): block
+```
+)md"sv,
 };
 constexpr Heading_Behavior h5 {
     5,
@@ -313,7 +349,13 @@ constexpr Heading_Behavior h5 {
 
 Creates a level 5 `<h5>` heading element.
 
-**Signature:** `\h5{title}`)md"sv,
+```
+h5(
+  id: str,
+  content: block,
+): block
+```
+)md"sv,
 };
 constexpr Heading_Behavior h6 {
     6,
@@ -321,7 +363,13 @@ constexpr Heading_Behavior h6 {
 
 Creates a level 6 `<h6>` heading element.
 
-**Signature:** `\h6{title}`)md"sv,
+```
+h6(
+  id: str,
+  content: block,
+): block
+```
+)md"sv,
 };
 constexpr Here_Behavior here //
     { Directive_Display::in_line };

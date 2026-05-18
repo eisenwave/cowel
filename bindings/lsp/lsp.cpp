@@ -127,6 +127,19 @@ struct Server_State {
         }
         return it;
     }
+
+    /// @brief Inserts or updates an entry in `hover_map`
+    /// using transparent comparison to avoid a key allocation on update.
+    void upsert_hovers(const std::u8string_view uri, std::vector<Hover_Entry>&& entries)
+    {
+        auto it = hover_map.find(uri);
+        if (it == hover_map.end()) {
+            hover_map.emplace(std::u8string(uri), std::move(entries));
+        }
+        else {
+            it->second = std::move(entries);
+        }
+    }
 };
 
 Server_State server_state;
@@ -517,14 +530,13 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
                         content, line_start_byte, h.column + h.length, server_state.use_utf8_positions
                     ),
                 };
-                std::u8string article { h.article, h.article_length };
                 hover_entries.push_back({
                     .range = { start_pos, end_pos },
-                    .article = std::move(article),
+                    .article = { h.article, h.article_length },
                 });
             }
         }
-        server_state.hover_map.insert_or_assign(std::u8string(uri), std::move(hover_entries));
+        server_state.upsert_hovers(uri, std::move(hover_entries));
     }
 
     static constexpr std::vector<lsp::Diagnostic> empty_diagnostics;

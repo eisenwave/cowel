@@ -77,7 +77,7 @@ public:
     /// @brief Returns the Markdown hover article for this behavior,
     /// or an empty string view if no article is defined.
     [[nodiscard]]
-    std::u8string_view get_hover_article() const noexcept
+    constexpr std::u8string_view get_hover_article() const noexcept
     {
         return m_hover_article;
     }
@@ -211,7 +211,7 @@ struct Block_Directive_Behavior : Directive_Behavior {
     {
     }
     [[nodiscard]]
-    constexpr explicit Block_Directive_Behavior(std::u8string_view hover_article) noexcept
+    constexpr explicit Block_Directive_Behavior(const std::u8string_view hover_article) noexcept
         : Directive_Behavior { Type::block, hover_article }
     {
     }

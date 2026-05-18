@@ -174,7 +174,7 @@ TEST(Document_Generation, file_tests)
             .source = as_cowel_string_view(as_u8string_view(source)),
             .highlight_theme_json = as_cowel_string_view(as_u8string_view(theme_source)),
             .mode = COWEL_MODE_MINIMAL,
-            .flags = 0,
+            .flags = COWEL_GEN_FLAGS_NONE,
             .min_log_severity = COWEL_SEVERITY_DEBUG,
             .preserved_variables = preserved_variables,
             .preserved_variables_size = std::size(preserved_variables),

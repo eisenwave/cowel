@@ -423,7 +423,7 @@ struct cowel_options {
     /// @brief The processing mode.
     cowel_mode mode;
     /// @brief Generation flags (see `cowel_gen_flags`).
-    unsigned int flags;
+    cowel_gen_flags flags;
     /// @brief The minimum (inclusive) level that log messages must have to be logged.
     cowel_severity min_log_severity;
 

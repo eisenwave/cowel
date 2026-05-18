@@ -39,23 +39,23 @@ Code_Point_Behavior::do_evaluate(const Invocation& call, Context& context) const
     if (context.collects_hovers()) {
         const char32_t cp = *code_point;
         // Format as U+XXXX (minimum 4 uppercase hex digits).
-        char8_t hex_buf[8];
-        int hex_len = 0;
-        char32_t tmp = cp;
-        do {
-            const int d = static_cast<int>(tmp & 0xFu);
-            hex_buf[7 - hex_len] = d < 10 ? char8_t('0' + d) : char8_t('A' + d - 10);
-            ++hex_len;
-            tmp >>= 4;
-        } while (tmp != 0 || hex_len < 4);
-        const std::size_t total = 2u + std::size_t(hex_len);
+        const auto hex_chars = to_characters8(static_cast<std::uint32_t>(cp), 16, true);
+        const std::size_t hex_len = hex_chars.size();
+        const std::size_t min_len = 4;
+        const std::size_t padded_len = hex_len < min_len ? min_len : hex_len;
+        const std::size_t total = 2u + padded_len;
+        
         std::pmr::u8string article { context.get_persistent_memory() };
         article.reserve(total);
         article += u8'U';
         article += u8'+';
-        for (int i = 0; i < hex_len; ++i) {
-            article += hex_buf[8 - hex_len + i];
+        // Left-pad with zeros if needed
+        for (std::size_t i = hex_len; i < min_len; ++i) {
+            article += u8'0';
         }
+        article += std::u8string_view(hex_chars);
+        
+        COWEL_ASSERT(!article.empty());
         context.push_hover(
             call.directive.get_source_span(),
             article

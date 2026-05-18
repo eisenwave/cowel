@@ -674,9 +674,9 @@ public:
     }
     [[nodiscard]]
     constexpr explicit Passthrough_Behavior(
-        Policy_Usage policy,
-        Directive_Display display,
-        std::u8string_view hover_article
+        const Policy_Usage policy,
+        const Directive_Display display,
+        const std::u8string_view hover_article
     ) noexcept
         : Block_Directive_Behavior { hover_article }
         , m_policy { policy }
@@ -777,10 +777,10 @@ public:
     }
     [[nodiscard]]
     constexpr explicit Fixed_Name_Passthrough_Behavior(
-        HTML_Tag_Name name,
-        Policy_Usage policy,
-        Directive_Display display,
-        std::u8string_view hover_article
+        const HTML_Tag_Name name,
+        const Policy_Usage policy,
+        const Directive_Display display,
+        const std::u8string_view hover_article
     ) noexcept
         : Passthrough_Behavior { policy, display, hover_article }
         , m_name { name }
@@ -863,13 +863,7 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Heading_Behavior(int level)
-        : m_level { level }
-    {
-        COWEL_ASSERT(m_level >= 1 && level <= 6);
-    }
-    [[nodiscard]]
-    constexpr explicit Heading_Behavior(int level, std::u8string_view hover_article) noexcept
+    constexpr explicit Heading_Behavior(const int level, const std::u8string_view hover_article) noexcept
         : Block_Directive_Behavior { hover_article }
         , m_level { level }
     {
