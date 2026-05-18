@@ -5,7 +5,7 @@
   "description": "Syntax highlighting and language support for Compact Web Language (COWEL)",
   "main": "./out/extension.js",
   "scripts": {
-    "test": "ts-node tests/test-runner.ts && ts-node --project tests/tsconfig.json tests/folding.test.ts",
+    "test": "ts-node tests/test-runner.ts && ts-node --project tests/tsconfig.json tests/folding.test.ts && ts-node tests/markdown-injection.test.ts",
     "build": "tsc -p tsconfig.json && node scripts/prepare-lsp-assets.mjs && vsce package",
     "clean": "rm -f *.vsix",
     "rebuild": "npm run clean && npm run build",
@@ -116,6 +116,19 @@
           "invalid.illegal.escape.cowel",
           "punctuation.definition.template-expression"
         ]
+      },
+      {
+        "scopeName": "markdown.cowel.codeblock",
+        "path": "./syntaxes/markdown-cowel-codeblock.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.cowel": "cowel"
+        },
+        "tokenTypes": {
+          "meta.embedded.block.cowel": "other"
+        }
       }
     ]
   }
