@@ -1,0 +1,1 @@
+/usr/bin/em++ -g @CMakeFiles/gitlike.dir/objects1.rsp -o gitlike.js
