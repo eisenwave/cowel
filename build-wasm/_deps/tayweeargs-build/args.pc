@@ -1,7 +1,0 @@
-prefix=/home/runner/work/cowel/cowel/emsdk/upstream/emscripten/cache/sysroot
-includedir=${prefix}/include
-
-Name: args
-Description: A flexible single-header C++11 argument parsing library that is designed to appear somewhat similar to Python's argparse
-Version: 6.4.7
-Cflags: -I${includedir}
