@@ -1,0 +1,7 @@
+# Hashes of file build rules.
+cfd1c88acd3c899640e288093203ffa4 CMakeFiles/cowel-lsp-wasm
+93d0ecd2b68092aac0eb2dc7cb5c93e2 CMakeFiles/cowel-npm
+f84cc5197c5dc92c7a1d20b916d98601 generated/light_dark_js.cpp
+662c39a086bc49b105c5e8da1201adb4 generated/main_css.cpp
+ecdab3cc61d6b8438a71a28a8fd02b20 generated/settings_widget_html.cpp
+9fc6adb4059a767b60810d04251f8851 generated/wg21_json.cpp
