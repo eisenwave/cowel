@@ -467,6 +467,8 @@ inline constexpr auto did_open = u8"textDocument/didOpen"sv;
 inline constexpr auto did_change = u8"textDocument/didChange"sv;
 /// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didClose
 inline constexpr auto did_close = u8"textDocument/didClose"sv;
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_hover
+inline constexpr auto hover = u8"textDocument/hover"sv;
 
 } // namespace text_document
 } // namespace method
@@ -629,6 +631,8 @@ struct Server_Capabilities {
     std::optional<std::u8string_view> position_encoding = {};
     /// Defines how text documents are synced.
     Text_Document_Sync_Options text_document_sync;
+    /// Whether hover is supported.
+    bool hover_provider = false;
 
     friend bool operator==(const Server_Capabilities&, const Server_Capabilities&) = default;
 };
@@ -640,7 +644,8 @@ struct Serializer<Server_Capabilities>
     : Object_Serializer<
           Server_Capabilities,
           COWEL_MEMBER_DESCRIPTION(Server_Capabilities, position_encoding),
-          COWEL_MEMBER_DESCRIPTION(Server_Capabilities, text_document_sync)> { };
+          COWEL_MEMBER_DESCRIPTION(Server_Capabilities, text_document_sync),
+          COWEL_MEMBER_DESCRIPTION(Server_Capabilities, hover_provider)> { };
 
 } // namespace detail
 

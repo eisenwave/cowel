@@ -38,6 +38,11 @@ struct Generation_Options {
     Logger& logger = ignorant_logger;
     Syntax_Highlighter& highlighter = no_support_syntax_highlighter;
 
+    /// @brief Optional sink for hover entries.
+    /// When non-null, every resolved directive whose behavior has a hover article
+    /// records a `Hover_Entry` here during processing.
+    std::pmr::vector<Hover_Entry>* hover_sink = nullptr;
+
     /// @brief A source of memory to be used throughout generation,
     /// emitting diagnostics, etc.
     std::pmr::memory_resource* memory;

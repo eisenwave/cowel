@@ -672,6 +672,17 @@ public:
         , m_display { display }
     {
     }
+    [[nodiscard]]
+    constexpr explicit Passthrough_Behavior(
+        const Policy_Usage policy,
+        const Directive_Display display,
+        const std::u8string_view hover_article
+    ) noexcept
+        : Block_Directive_Behavior { hover_article }
+        , m_policy { policy }
+        , m_display { display }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status
@@ -764,6 +775,17 @@ public:
         , m_name { name }
     {
     }
+    [[nodiscard]]
+    constexpr explicit Fixed_Name_Passthrough_Behavior(
+        const HTML_Tag_Name name,
+        const Policy_Usage policy,
+        const Directive_Display display,
+        const std::u8string_view hover_article
+    ) noexcept
+        : Passthrough_Behavior { policy, display, hover_article }
+        , m_name { name }
+    {
+    }
 
     [[nodiscard]]
     HTML_Tag_Name get_name(const Invocation&, Context&) const override
@@ -841,8 +863,9 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Heading_Behavior(int level)
-        : m_level { level }
+    constexpr explicit Heading_Behavior(const int level, const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+        , m_level { level }
     {
         COWEL_ASSERT(m_level >= 1 && level <= 6);
     }

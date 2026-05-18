@@ -7,7 +7,8 @@
         "textDocumentSync": {
           "openClose": true,
           "change": 1
-        }
+        },
+        "hoverProvider": true
       },
       "serverInfo": {
         "name": "cowel"

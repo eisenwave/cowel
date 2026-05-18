@@ -88,10 +88,18 @@ using String_Map = std::unordered_map<
     Transparent_String_View_Hash8, //
     Transparent_String_View_Equals8>;
 
+/// @brief A hover entry: LSP range and Markdown article text.
+struct Hover_Entry {
+    lsp::Range range;
+    std::u8string article;
+};
+
 /// @brief All mutable server state bundled to avoid scattered globals.
 struct Server_State {
     /// Documents currently open in the editor (URI → full content).
     String_Map<std::u8string> open_docs;
+    /// Per-URI hover entries collected during validation.
+    String_Map<std::vector<Hover_Entry>> hover_map;
     /// Set to true after a "shutdown" request.
     bool shutdown_requested = false;
     /// Set to true after an LSP "exit" notification.
@@ -118,6 +126,19 @@ struct Server_State {
             it->second.assign(text);
         }
         return it;
+    }
+
+    /// @brief Inserts or updates an entry in `hover_map`
+    /// using transparent comparison to avoid a key allocation on update.
+    void upsert_hovers(const std::u8string_view uri, std::vector<Hover_Entry>&& entries)
+    {
+        auto it = hover_map.find(uri);
+        if (it == hover_map.end()) {
+            hover_map.emplace(std::u8string(uri), std::move(entries));
+        }
+        else {
+            it->second = std::move(entries);
+        }
     }
 };
 
@@ -375,6 +396,22 @@ std::optional<lsp::Diagnostic_Severity> cowel_severity_to_lsp_severity(const cow
     return {};
 }
 
+/// @brief Scans @p bytes for the byte offset of the start of the given @p line (0-based).
+[[nodiscard]]
+std::size_t find_line_start_byte(const std::u8string_view bytes, const std::size_t line) noexcept
+{
+    std::size_t pos = 0;
+    for (std::size_t i = 0; i < line; ++i) {
+        while (pos < bytes.size() && bytes[pos] != u8'\n') {
+            ++pos;
+        }
+        if (pos < bytes.size()) {
+            ++pos; // skip the '\n'
+        }
+    }
+    return pos;
+}
+
 /// @brief Converts a UTF-8 byte-offset column to an LSP `character` value.
 /// @param line_start_byte is the byte offset of the first byte of the line
 /// (i.e. `loc.begin - loc.column`).
@@ -448,6 +485,7 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
         .source = { content.data(), content.size() },
         .highlight_theme_json = {},
         .mode = COWEL_MODE_DOCUMENT,
+        .flags = COWEL_GEN_FLAGS_COLLECT_HOVERS,
         .min_log_severity = COWEL_SEVERITY_SOFT_WARNING,
         .preserved_variables = nullptr,
         .preserved_variables_size = 0,
@@ -469,6 +507,36 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
     const cowel_gen_result_u8 gen = cowel_generate_html_u8(&opts);
     if (gen.output.text != nullptr) {
         cowel_free(static_cast<void*>(gen.output.text), gen.output.length, alignof(char8_t));
+    }
+
+    // Collect hover entries and store them in server_state.hover_map keyed by URI.
+    {
+        std::vector<Hover_Entry> hover_entries;
+        if (gen.hovers != nullptr) {
+            hover_entries.reserve(gen.hovers_size);
+            for (std::size_t i = 0; i < gen.hovers_size; ++i) {
+                const cowel_hover_u8& h = gen.hovers[i];
+                const std::size_t line_start_byte
+                    = find_line_start_byte(content, h.line);
+                const lsp::Position start_pos {
+                    .line = h.line,
+                    .character = column_to_character(
+                        content, line_start_byte, h.column, server_state.use_utf8_positions
+                    ),
+                };
+                const lsp::Position end_pos {
+                    .line = h.line,
+                    .character = column_to_character(
+                        content, line_start_byte, h.column + h.length, server_state.use_utf8_positions
+                    ),
+                };
+                hover_entries.push_back({
+                    .range = { start_pos, end_pos },
+                    .article = { h.article, h.article_length },
+                });
+            }
+        }
+        server_state.upsert_hovers(uri, std::move(hover_entries));
     }
 
     static constexpr std::vector<lsp::Diagnostic> empty_diagnostics;
@@ -756,6 +824,70 @@ void clear_diagnostics_for(const std::u8string_view uri, Request_Context& contex
     );
 }
 
+void handle_hover(
+    const lsp::Hover_Params& params,
+    const lsp::Request_Message::Id& id,
+    Request_Context& context
+)
+{
+    const std::u8string_view uri = params.text_document.uri;
+    const lsp::Position pos = params.position;
+
+    const auto it = server_state.hover_map.find(uri);
+    if (it == server_state.hover_map.end()) {
+        // No hover found at this position — return null per LSP spec.
+        write_message(
+            lsp::Response_Message {
+                .id = lsp::to_response_id(id),
+                .result = json::null,
+                .error = {},
+            },
+            context
+        );
+        return;
+    }
+
+    for (const Hover_Entry& entry : it->second) {
+        const lsp::Range& range = entry.range;
+        const std::u8string& article = entry.article;
+        const bool after_start = pos.line > range.start.line
+            || (pos.line == range.start.line
+                && pos.character >= range.start.character);
+        const bool before_end = pos.line < range.end.line
+            || (pos.line == range.end.line
+                && pos.character < range.end.character);
+        if (!after_start || !before_end) {
+            continue;
+        }
+        const lsp::Hover hover_result {
+            .contents = {
+                .kind = lsp::markup_kind::markdown,
+                .value = article,
+            },
+            .range = range,
+        };
+        write_message(
+            lsp::Response_Message {
+                .id = lsp::to_response_id(id),
+                .result = lsp::to_json(hover_result, &context.memory),
+                .error = {},
+            },
+            context
+        );
+        return;
+    }
+
+    // No hover found at this position — return null per LSP spec.
+    write_message(
+        lsp::Response_Message {
+            .id = lsp::to_response_id(id),
+            .result = json::null,
+            .error = {},
+        },
+        context
+    );
+}
+
 void handle_initialize(
     const lsp::Initialize_Params& params,
     const lsp::Request_Message::Id& id,
@@ -791,6 +923,7 @@ void handle_initialize(
         .capabilities = {
             .position_encoding = position_encoding,
             .text_document_sync = sync_options,
+            .hover_provider = true,
         },
         .server_info = server_info,
     };
@@ -898,6 +1031,14 @@ void dispatch(const lsp::Request_Message& request, Request_Context& context)
             context
         );
         return;
+    }
+    if (request.method == lsp::method::text_document::hover
+        && request.params != nullptr) {
+        if (const auto p
+            = lsp::from_json<lsp::Hover_Params>(*request.params, context.storage)) {
+            handle_hover(*p, request.id, context);
+            return;
+        }
     }
     write_message(
         lsp::Response_Message {

@@ -54,6 +54,12 @@ public:
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const final;
 };
 
+/// @brief A hover entry: source location and Markdown article text.
+struct Hover_Entry {
+    File_Source_Span span;
+    std::pmr::u8string article;
+};
+
 /// @brief Stores contextual information during document processing.
 struct Context {
 public:
@@ -135,6 +141,7 @@ private:
     Call_Stack m_call_stack { m_memory };
     Small_Vector<Frame_Index, 8> m_active_diagnostic_frames;
     Small_Vector<File_Source_Span, 8> m_diagnostic_stack;
+    std::pmr::vector<Hover_Entry>* m_hover_sink = nullptr;
 
 public:
     /// @brief Constructs a new context.
@@ -282,6 +289,29 @@ public:
     std::pmr::memory_resource* get_transient_memory() const
     {
         return m_transient_memory;
+    }
+
+    /// @brief Sets the sink into which hover entries are pushed during processing.
+    /// Only used when `collect_hovers` is true in the generation options.
+    void set_hover_sink(std::pmr::vector<Hover_Entry>& sink) noexcept
+    {
+        m_hover_sink = &sink;
+    }
+
+    /// @brief Returns true if hover entries are being collected.
+    [[nodiscard]]
+    bool collects_hovers() const noexcept
+    {
+        return m_hover_sink != nullptr;
+    }
+
+    /// @brief Records a hover entry at @p span with @p article.
+    /// Does nothing if `collects_hovers()` is false.
+    void push_hover(const File_Source_Span& span, const std::u8string_view article)
+    {
+        if (m_hover_sink != nullptr) {
+            m_hover_sink->push_back({ span, std::pmr::u8string { article, m_memory } });
+        }
     }
 
     [[nodiscard]]

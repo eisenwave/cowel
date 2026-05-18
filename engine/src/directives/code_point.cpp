@@ -35,6 +35,33 @@ Code_Point_Behavior::do_evaluate(const Invocation& call, Context& context) const
         COWEL_ASSERT(code_point.error() != Processing_Status::ok);
         return code_point.error();
     }
+
+    if (context.collects_hovers()) {
+        const char32_t cp = *code_point;
+        // Format as U+XXXX (minimum 4 uppercase hex digits).
+        const auto hex_chars = to_characters8(static_cast<std::uint32_t>(cp), 16, true);
+        const std::size_t hex_len = hex_chars.size();
+        const std::size_t min_len = 4;
+        const std::size_t padded_len = hex_len < min_len ? min_len : hex_len;
+        const std::size_t total = 2u + padded_len;
+        
+        std::pmr::u8string article { context.get_persistent_memory() };
+        article.reserve(total);
+        article += u8'U';
+        article += u8'+';
+        // Left-pad with zeros if needed
+        for (std::size_t i = hex_len; i < min_len; ++i) {
+            article += u8'0';
+        }
+        article += std::u8string_view(hex_chars);
+        
+        COWEL_ASSERT(!article.empty());
+        context.push_hover(
+            call.directive.get_source_span(),
+            article
+        );
+    }
+
     return to_static_string<Short_String_Value::max_size_v>(make_char_sequence(*code_point));
 }
 
