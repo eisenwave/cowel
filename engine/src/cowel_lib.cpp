@@ -448,17 +448,27 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
           };
     ast::Pmr_Vector<ast::Markup_Element> root_content;
     const bool preamble_parse_success = lex_and_parse_and_build(
-        root_content, preamble_source, File_Id::main, memory, on_parse_error //
+        root_content, preamble_source, File_Id::main, memory, on_parse_error
     );
     if (!preamble_parse_success) {
-        return { .status = COWEL_PROCESSING_ERROR, .output = {}, .hovers = nullptr, .hovers_size = 0, .hovers_alloc_size = 0 };
+        return {
+            .status = COWEL_PROCESSING_ERROR,
+            .output = {},
+            .hovers = nullptr,
+            .hovers_size = 0,
+        };
     }
 
     const bool main_parse_success = lex_and_parse_and_build(
-        root_content, main_source, File_Id::main, memory, on_parse_error //
+        root_content, main_source, File_Id::main, memory, on_parse_error
     );
     if (!main_parse_success) {
-        return { .status = COWEL_PROCESSING_ERROR, .output = {}, .hovers = nullptr, .hovers_size = 0, .hovers_alloc_size = 0 };
+        return {
+            .status = COWEL_PROCESSING_ERROR,
+            .output = {},
+            .hovers = nullptr,
+            .hovers_size = 0,
+        };
     }
 
     const std::u8string_view highlight_theme_source = options.highlight_theme_json.length == 0
@@ -499,7 +509,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         .file_loader = file_loader,
         .logger = logger,
         .highlighter = highlighter,
-        .hover_sink = options.collect_hovers ? &hover_entries : nullptr,
+        .hover_sink = (options.flags & COWEL_GEN_FLAGS_COLLECT_HOVERS) ? &hover_entries : nullptr,
         .memory = memory,
     };
 
@@ -517,14 +527,13 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
     // Build the flat hover buffer when requested.
     cowel_hover_u8* hovers_ptr = nullptr;
     std::size_t hovers_size = 0;
-    std::size_t hovers_alloc_size = 0;
-    if (options.collect_hovers && !hover_entries.empty()) {
+    if ((options.flags & COWEL_GEN_FLAGS_COLLECT_HOVERS) && !hover_entries.empty()) {
         std::size_t total_article_bytes = 0;
         for (const Hover_Entry& e : hover_entries) {
             total_article_bytes += e.article.size();
         }
         const std::size_t n = hover_entries.size();
-        hovers_alloc_size = n * sizeof(cowel_hover_u8) + total_article_bytes;
+        const std::size_t hovers_alloc_size = n * sizeof(cowel_hover_u8) + total_article_bytes;
         auto* const flat = static_cast<char8_t*>(
             memory->allocate(hovers_alloc_size, alignof(cowel_hover_u8))
         );
@@ -533,12 +542,14 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         char8_t* article_data = flat + n * sizeof(cowel_hover_u8);
         for (std::size_t i = 0; i < n; ++i) {
             const Hover_Entry& e = hover_entries[i];
-            const char8_t* article_ptr = e.article.empty() ? nullptr : article_data;
-            hovers_ptr[i].line = e.span.line;
-            hovers_ptr[i].column = e.span.column;
-            hovers_ptr[i].length = e.span.length;
-            hovers_ptr[i].article = article_ptr;
-            hovers_ptr[i].article_length = e.article.size();
+            const char8_t* const article_ptr = e.article.empty() ? nullptr : article_data;
+            hovers_ptr[i] = {
+                .line = e.span.line,
+                .column = e.span.column,
+                .length = e.span.length,
+                .article = article_ptr,
+                .article_length = e.article.size(),
+            };
             if (!e.article.empty()) {
                 std::memcpy(article_data, e.article.data(), e.article.size());
                 article_data += e.article.size();
@@ -552,7 +563,6 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
             .output = {},
             .hovers = hovers_ptr,
             .hovers_size = hovers_size,
-            .hovers_alloc_size = hovers_alloc_size,
         };
     }
 
@@ -566,7 +576,6 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
             .output = result,
             .hovers = hovers_ptr,
             .hovers_size = hovers_size,
-            .hovers_alloc_size = hovers_alloc_size,
         };
     }
 
@@ -576,7 +585,6 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         .output = result,
         .hovers = hovers_ptr,
         .hovers_size = hovers_size,
-        .hovers_alloc_size = hovers_alloc_size,
     };
 }
 

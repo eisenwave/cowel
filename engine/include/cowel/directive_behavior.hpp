@@ -40,13 +40,13 @@ public:
     {
     }
     [[nodiscard]]
-    constexpr Directive_Behavior(const Type& static_type, std::u8string_view hover_article) noexcept
+    constexpr Directive_Behavior(const Type& static_type, const std::u8string_view hover_article) noexcept
         : m_static_type { static_type }
         , m_hover_article { hover_article }
     {
     }
     [[nodiscard]]
-    constexpr Directive_Behavior(Type&& static_type, std::u8string_view hover_article) noexcept
+    constexpr Directive_Behavior(Type&& static_type, const std::u8string_view hover_article) noexcept
         : m_static_type { std::move(static_type) }
         , m_hover_article { hover_article }
     {

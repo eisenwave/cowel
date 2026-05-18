@@ -49,17 +49,16 @@ Code_Point_Behavior::do_evaluate(const Invocation& call, Context& context) const
             tmp >>= 4;
         } while (tmp != 0 || hex_len < 4);
         const std::size_t total = 2u + std::size_t(hex_len);
-        auto* const article_mem = static_cast<char8_t*>(
-            context.get_persistent_memory()->allocate(total, 1)
-        );
-        article_mem[0] = u8'U';
-        article_mem[1] = u8'+';
+        std::pmr::u8string article { context.get_persistent_memory() };
+        article.reserve(total);
+        article += u8'U';
+        article += u8'+';
         for (int i = 0; i < hex_len; ++i) {
-            article_mem[2 + i] = hex_buf[8 - hex_len + i];
+            article += hex_buf[8 - hex_len + i];
         }
         context.push_hover(
             call.directive.get_source_span(),
-            std::u8string_view { article_mem, total }
+            article
         );
     }
 

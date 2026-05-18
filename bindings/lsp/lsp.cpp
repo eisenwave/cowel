@@ -88,12 +88,18 @@ using String_Map = std::unordered_map<
     Transparent_String_View_Hash8, //
     Transparent_String_View_Equals8>;
 
+/// @brief A hover entry: LSP range and Markdown article text.
+struct Hover_Entry {
+    lsp::Range range;
+    std::u8string article;
+};
+
 /// @brief All mutable server state bundled to avoid scattered globals.
 struct Server_State {
     /// Documents currently open in the editor (URI → full content).
     String_Map<std::u8string> open_docs;
     /// Per-URI hover entries collected during validation.
-    String_Map<std::vector<std::pair<lsp::Range, std::u8string>>> hover_map;
+    String_Map<std::vector<Hover_Entry>> hover_map;
     /// Set to true after a "shutdown" request.
     bool shutdown_requested = false;
     /// Set to true after an LSP "exit" notification.
@@ -466,7 +472,7 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
         .source = { content.data(), content.size() },
         .highlight_theme_json = {},
         .mode = COWEL_MODE_DOCUMENT,
-        .collect_hovers = true,
+        .flags = COWEL_GEN_FLAGS_COLLECT_HOVERS,
         .min_log_severity = COWEL_SEVERITY_SOFT_WARNING,
         .preserved_variables = nullptr,
         .preserved_variables_size = 0,
@@ -492,31 +498,33 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
 
     // Collect hover entries and store them in server_state.hover_map keyed by URI.
     {
-        std::vector<std::pair<lsp::Range, std::u8string>> hover_entries;
+        std::vector<Hover_Entry> hover_entries;
         if (gen.hovers != nullptr) {
             hover_entries.reserve(gen.hovers_size);
             for (std::size_t i = 0; i < gen.hovers_size; ++i) {
                 const cowel_hover_u8& h = gen.hovers[i];
                 const std::size_t line_start_byte
                     = find_line_start_byte(content, h.line);
-                lsp::Position start_pos;
-                start_pos.line = h.line;
-                start_pos.character = column_to_character(
-                    content, line_start_byte, h.column, server_state.use_utf8_positions
-                );
-                lsp::Position end_pos;
-                end_pos.line = h.line;
-                end_pos.character = column_to_character(
-                    content, line_start_byte, h.column + h.length, server_state.use_utf8_positions
-                );
+                const lsp::Position start_pos {
+                    .line = h.line,
+                    .character = column_to_character(
+                        content, line_start_byte, h.column, server_state.use_utf8_positions
+                    ),
+                };
+                const lsp::Position end_pos {
+                    .line = h.line,
+                    .character = column_to_character(
+                        content, line_start_byte, h.column + h.length, server_state.use_utf8_positions
+                    ),
+                };
                 std::u8string article { h.article, h.article_length };
-                hover_entries.emplace_back(lsp::Range { start_pos, end_pos }, std::move(article));
+                hover_entries.push_back({
+                    .range = { start_pos, end_pos },
+                    .article = std::move(article),
+                });
             }
-            cowel_free(
-                static_cast<void*>(gen.hovers), gen.hovers_alloc_size, alignof(cowel_hover_u8)
-            );
         }
-        server_state.hover_map[std::u8string(uri)] = std::move(hover_entries);
+        server_state.hover_map.insert_or_assign(std::u8string(uri), std::move(hover_entries));
     }
 
     static constexpr std::vector<lsp::Diagnostic> empty_diagnostics;
@@ -814,33 +822,47 @@ void handle_hover(
     const lsp::Position pos = params.position;
 
     const auto it = server_state.hover_map.find(uri);
-    if (it != server_state.hover_map.end()) {
-        for (const auto& [range, article] : it->second) {
-            const bool after_start = pos.line > range.start.line
-                || (pos.line == range.start.line
-                    && pos.character >= range.start.character);
-            const bool before_end = pos.line < range.end.line
-                || (pos.line == range.end.line
-                    && pos.character < range.end.character);
-            if (after_start && before_end) {
-                const lsp::Hover hover_result {
-                    .contents = {
-                        .kind = lsp::markup_kind::markdown,
-                        .value = article,
-                    },
-                    .range = range,
-                };
-                write_message(
-                    lsp::Response_Message {
-                        .id = lsp::to_response_id(id),
-                        .result = lsp::to_json(hover_result, &context.memory),
-                        .error = {},
-                    },
-                    context
-                );
-                return;
-            }
+    if (it == server_state.hover_map.end()) {
+        // No hover found at this position — return null per LSP spec.
+        write_message(
+            lsp::Response_Message {
+                .id = lsp::to_response_id(id),
+                .result = json::null,
+                .error = {},
+            },
+            context
+        );
+        return;
+    }
+
+    for (const Hover_Entry& entry : it->second) {
+        const lsp::Range& range = entry.range;
+        const std::u8string& article = entry.article;
+        const bool after_start = pos.line > range.start.line
+            || (pos.line == range.start.line
+                && pos.character >= range.start.character);
+        const bool before_end = pos.line < range.end.line
+            || (pos.line == range.end.line
+                && pos.character < range.end.character);
+        if (!after_start || !before_end) {
+            continue;
         }
+        const lsp::Hover hover_result {
+            .contents = {
+                .kind = lsp::markup_kind::markdown,
+                .value = article,
+            },
+            .range = range,
+        };
+        write_message(
+            lsp::Response_Message {
+                .id = lsp::to_response_id(id),
+                .result = lsp::to_json(hover_result, &context.memory),
+                .error = {},
+            },
+            context
+        );
+        return;
     }
 
     // No hover found at this position — return null per LSP spec.
@@ -998,13 +1020,12 @@ void dispatch(const lsp::Request_Message& request, Request_Context& context)
         );
         return;
     }
-    if (request.method == lsp::method::text_document::hover) {
-        if (request.params != nullptr) {
-            if (const auto p
-                = lsp::from_json<lsp::Hover_Params>(*request.params, context.storage)) {
-                handle_hover(*p, request.id, context);
-                return;
-            }
+    if (request.method == lsp::method::text_document::hover
+        && request.params != nullptr) {
+        if (const auto p
+            = lsp::from_json<lsp::Hover_Params>(*request.params, context.storage)) {
+            handle_hover(*p, request.id, context);
+            return;
         }
     }
     write_message(
