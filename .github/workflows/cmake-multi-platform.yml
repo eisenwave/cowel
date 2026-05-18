@@ -222,6 +222,10 @@ jobs:
   node:
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        build_type: [Debug, Release]
 
     steps:
     - uses: actions/checkout@v5
@@ -264,6 +268,11 @@ jobs:
         npm ci
       working-directory: bindings/node
 
+    - name: Install VS Code extension dependencies
+      run: |
+        npm ci
+      working-directory: editor/vscode
+
     - name: Lint
       run: >
         npx eslint src
@@ -286,7 +295,7 @@ jobs:
         -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
         -DCMAKE_COLOR_DIAGNOSTICS=ON \
         -DCMAKE_CXX_FLAGS="-fdiagnostics-color=always" \
-        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
         -S ${{ github.workspace }}
 
     - name: Build
@@ -295,8 +304,20 @@ jobs:
         cmake \
           --build "${{ steps.strings.outputs.build_dir }}" \
           --target cowel-npm cowel-lsp-wasm \
-          --config Release \
+          --config ${{ matrix.build_type }} \
           --verbose
+
+    - name: Build VS Code extension
+      run: npm run build
+      working-directory: editor/vscode
+
+    - name: Upload VS Code extension artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: vscode-extension-${{ matrix.build_type }}-${{ github.sha }}
+        path: editor/vscode/*.vsix
+        if-no-files-found: error
+        retention-days: 30
 
     - name: Test
       run: npm test
