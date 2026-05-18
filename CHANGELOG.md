@@ -21,6 +21,7 @@
 - Fixed *BLOCK-TEXT-TOKEN* being highlighted like a string
   when a *directive-splice* appears in a *string-literal* (#329)
 - Fixed incorrect and unnecessary (for plaintext braces) folding markers (#304)
+- Enabled nested highlighting of COWEL code within Markdown fenced code blocks (#357)
 
 **Full Changelog**:
 [`v0.9.1...main`](https://github.com/eisenwave/cowel/compare/v0.9.1...main)
