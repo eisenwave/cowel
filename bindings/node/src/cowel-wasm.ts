@@ -1068,7 +1068,7 @@ export class CowelWasm {
         this.log = options.log;
 
         const allocations = this.makeOptions(options);
-        const genResult = this.alloc2(12, 4);
+        const genResult = this.alloc2(20, 4);
 
         this.exports.cowel_generate_html_u8(genResult.address, allocations.options.address);
         const result = this.decodeGenResult(genResult.address);
@@ -1305,7 +1305,7 @@ export class CowelWasm {
      * @returns The allocated `cowel_options_u8` and source text.
      */
     private makeOptions(genOptions: GenOptions): OrchestrationAllocations {
-        const options = this.alloc2(88, 4);
+        const options = this.alloc2(92, 4);
         const source = this.allocUtf8(genOptions.source);
 
         const preservedVariables = genOptions.preservedVariables ?? [];
