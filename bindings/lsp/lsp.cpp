@@ -396,22 +396,6 @@ std::optional<lsp::Diagnostic_Severity> cowel_severity_to_lsp_severity(const cow
     return {};
 }
 
-/// @brief Scans @p bytes for the byte offset of the start of the given @p line (0-based).
-[[nodiscard]]
-std::size_t find_line_start_byte(const std::u8string_view bytes, const std::size_t line) noexcept
-{
-    std::size_t pos = 0;
-    for (std::size_t i = 0; i < line; ++i) {
-        while (pos < bytes.size() && bytes[pos] != u8'\n') {
-            ++pos;
-        }
-        if (pos < bytes.size()) {
-            ++pos; // skip the '\n'
-        }
-    }
-    return pos;
-}
-
 /// @brief Converts a UTF-8 byte-offset column to an LSP `character` value.
 /// @param line_start_byte is the byte offset of the first byte of the line
 /// (i.e. `loc.begin - loc.column`).
@@ -504,19 +488,19 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
         .preamble = {},
     };
 
-    const cowel_gen_result_u8 gen = cowel_generate_html_u8(&opts);
-    if (gen.output.text != nullptr) {
-        cowel_free(static_cast<void*>(gen.output.text), gen.output.length, alignof(char8_t));
+    const cowel_gen_result_u8 gen_result = cowel_generate_html_u8(&opts);
+    if (gen_result.output.text != nullptr) {
+        cowel_free(gen_result.output.text, gen_result.output.length, alignof(char8_t));
     }
 
     // Collect hover entries and store them in server_state.hover_map keyed by URI.
     {
         std::vector<Hover_Entry> hover_entries;
-        if (gen.hovers != nullptr) {
-            hover_entries.reserve(gen.hovers_size);
-            for (std::size_t i = 0; i < gen.hovers_size; ++i) {
-                const cowel_hover_u8& h = gen.hovers[i];
-                const std::size_t line_start_byte = find_line_start_byte(content, h.line);
+        if (gen_result.hovers != nullptr) {
+            hover_entries.reserve(gen_result.hovers_size);
+            for (std::size_t i = 0; i < gen_result.hovers_size; ++i) {
+                const cowel_hover_u8& h = gen_result.hovers[i];
+                const std::size_t line_start_byte = h.begin - h.column;
                 const lsp::Position start_pos {
                     .line = h.line,
                     .character = column_to_character(

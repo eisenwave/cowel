@@ -198,6 +198,9 @@ struct cowel_hover {
     size_t line;
     /// @brief 0-based UTF-8 code unit offset (column) of the directive name token.
     size_t column;
+    /// @brief UTF-8 byte offset within the source of the directive name token.
+    /// Equal to the byte offset of the start of the containing line plus `column`.
+    size_t begin;
     /// @brief Length of the directive name in UTF-8 code units (excluding the leading backslash).
     size_t length;
     /// @brief Null-terminated hover article text (UTF-8).
@@ -210,6 +213,7 @@ struct cowel_hover {
 struct cowel_hover_u8 {
     size_t line;
     size_t column;
+    size_t begin;
     size_t length;
     const char8_t* article;
     size_t article_length;

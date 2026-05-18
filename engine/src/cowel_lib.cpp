@@ -532,24 +532,26 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
             total_article_bytes += e.article.size();
         }
         const std::size_t n = hover_entries.size();
-        const std::size_t hovers_alloc_size = n * sizeof(cowel_hover_u8) + total_article_bytes;
+        const std::size_t hovers_alloc_size = (n * sizeof(cowel_hover_u8)) + total_article_bytes;
         auto* const flat
             = static_cast<char8_t*>(memory->allocate(hovers_alloc_size, alignof(cowel_hover_u8)));
-        hovers_ptr = reinterpret_cast<cowel_hover_u8*>(flat
-        ); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        hovers_ptr = reinterpret_cast<cowel_hover_u8*>(flat);
         hovers_size = n;
-        char8_t* article_data = flat + n * sizeof(cowel_hover_u8);
+        char8_t* article_data = flat + (n * sizeof(cowel_hover_u8));
         for (std::size_t i = 0; i < n; ++i) {
             const Hover_Entry& e = hover_entries[i];
             const char8_t* const article_ptr = e.article.empty() ? nullptr : article_data;
             hovers_ptr[i] = {
                 .line = e.span.line,
                 .column = e.span.column,
+                .begin = e.span.begin,
                 .length = e.span.length,
                 .article = article_ptr,
                 .article_length = e.article.size(),
             };
             if (!e.article.empty()) {
+                // NOLINTNEXTLINE(bugprone-not-null-terminated-result)
                 std::memcpy(article_data, e.article.data(), e.article.size());
                 article_data += e.article.size();
             }
