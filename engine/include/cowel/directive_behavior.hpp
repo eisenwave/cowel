@@ -210,6 +210,11 @@ struct Block_Directive_Behavior : Directive_Behavior {
         : Directive_Behavior { Type::block }
     {
     }
+    [[nodiscard]]
+    constexpr explicit Block_Directive_Behavior(std::u8string_view hover_article) noexcept
+        : Directive_Behavior { Type::block, hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<Value, Processing_Status> evaluate(const Invocation& call, Context& context) const final;

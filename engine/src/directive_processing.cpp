@@ -588,6 +588,13 @@ evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
         return Processing_Status::error;
     }
 
+    if (context.collects_hovers()) {
+        const std::u8string_view article = behavior->get_hover_article();
+        if (!article.empty()) {
+            context.push_hover(directive.get_name_span(), article);
+        }
+    }
+
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
     call.call_frame = scope.get_index();
     return behavior->evaluate(call, context);
@@ -976,6 +983,13 @@ Processing_Status splice_invocation( //
         try_lookup_error(directive, context);
         call.call_frame = context.get_call_stack().get_top_index();
         return try_generate_error(out, call, context);
+    }
+
+    if (context.collects_hovers()) {
+        const std::u8string_view article = behavior->get_hover_article();
+        if (!article.empty()) {
+            context.push_hover(directive.get_name_span(), article);
+        }
     }
 
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });

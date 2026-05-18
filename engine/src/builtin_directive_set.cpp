@@ -18,6 +18,8 @@
 namespace cowel {
 namespace {
 
+using namespace std::string_view_literals;
+
 constexpr Internal_Arg_Source_As_Text_Behavior internal_arg_source_as_text //
     {};
 constexpr Internal_Eq_Behavior internal_eq //
@@ -185,8 +187,16 @@ constexpr Var_Set_Behavior cowel_var_set //
     {};
 
 // Legacy directives
-constexpr Fixed_Name_Passthrough_Behavior b //
-    { html_tag::b, Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior b {
+    html_tag::b,
+    Policy_Usage::inherit,
+    Directive_Display::in_line,
+    u8R"md(**`\b`** — Bold
+
+Wraps its content in an HTML `<b>` element.
+
+**Signature:** `\b{content}`)md"sv,
+};
 constexpr Special_Block_Behavior Babstract //
     { HTML_Tag_Name(u8"abstract-block"), Intro_Policy::yes };
 constexpr Special_Block_Behavior Bdecision //
@@ -251,24 +261,68 @@ constexpr Fixed_Name_Passthrough_Behavior dl //
     { HTML_Tag_Name(u8"dl"), Policy_Usage::html, Directive_Display::block };
 constexpr Fixed_Name_Passthrough_Behavior dt //
     { HTML_Tag_Name(u8"dt"), Policy_Usage::html, Directive_Display::block };
-constexpr Fixed_Name_Passthrough_Behavior em //
-    { HTML_Tag_Name(u8"em"), Policy_Usage::inherit, Directive_Display::in_line };
+constexpr Fixed_Name_Passthrough_Behavior em {
+    HTML_Tag_Name(u8"em"),
+    Policy_Usage::inherit,
+    Directive_Display::in_line,
+    u8R"md(**`\em`** — Emphasis
+
+Wraps its content in an HTML `<em>` element for emphasis.
+
+**Signature:** `\em{content}`)md"sv,
+};
 constexpr Error_Behavior error //
     {};
 constexpr Fixed_Name_Passthrough_Behavior gterm //
     { HTML_Tag_Name(u8"g-term"), Policy_Usage::inherit, Directive_Display::in_line };
-constexpr Heading_Behavior h1 //
-    { 1 };
-constexpr Heading_Behavior h2 //
-    { 2 };
-constexpr Heading_Behavior h3 //
-    { 3 };
-constexpr Heading_Behavior h4 //
-    { 4 };
-constexpr Heading_Behavior h5 //
-    { 5 };
-constexpr Heading_Behavior h6 //
-    { 6 };
+constexpr Heading_Behavior h1 {
+    1,
+    u8R"md(**`\h1`** — Level 1 heading
+
+Creates a level 1 `<h1>` heading element.
+
+**Signature:** `\h1{title}`)md"sv,
+};
+constexpr Heading_Behavior h2 {
+    2,
+    u8R"md(**`\h2`** — Level 2 heading
+
+Creates a level 2 `<h2>` heading element.
+
+**Signature:** `\h2{title}`)md"sv,
+};
+constexpr Heading_Behavior h3 {
+    3,
+    u8R"md(**`\h3`** — Level 3 heading
+
+Creates a level 3 `<h3>` heading element.
+
+**Signature:** `\h3{title}`)md"sv,
+};
+constexpr Heading_Behavior h4 {
+    4,
+    u8R"md(**`\h4`** — Level 4 heading
+
+Creates a level 4 `<h4>` heading element.
+
+**Signature:** `\h4{title}`)md"sv,
+};
+constexpr Heading_Behavior h5 {
+    5,
+    u8R"md(**`\h5`** — Level 5 heading
+
+Creates a level 5 `<h5>` heading element.
+
+**Signature:** `\h5{title}`)md"sv,
+};
+constexpr Heading_Behavior h6 {
+    6,
+    u8R"md(**`\h6`** — Level 6 heading
+
+Creates a level 6 `<h6>` heading element.
+
+**Signature:** `\h6{title}`)md"sv,
+};
 constexpr Here_Behavior here //
     { Directive_Display::in_line };
 constexpr Here_Behavior hereblock //
