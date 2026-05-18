@@ -26,6 +26,7 @@ enum struct Evaluation_Result_Kind : Default_Underlying {
 struct Directive_Behavior {
 private:
     Type m_static_type;
+    std::u8string_view m_hover_article;
 
 public:
     [[nodiscard]]
@@ -36,6 +37,18 @@ public:
     [[nodiscard]]
     constexpr explicit Directive_Behavior(Type&& static_type) noexcept
         : m_static_type { std::move(static_type) }
+    {
+    }
+    [[nodiscard]]
+    constexpr Directive_Behavior(const Type& static_type, std::u8string_view hover_article) noexcept
+        : m_static_type { static_type }
+        , m_hover_article { hover_article }
+    {
+    }
+    [[nodiscard]]
+    constexpr Directive_Behavior(Type&& static_type, std::u8string_view hover_article) noexcept
+        : m_static_type { std::move(static_type) }
+        , m_hover_article { hover_article }
     {
     }
 
@@ -59,6 +72,14 @@ public:
     const Type& get_static_type() const
     {
         return m_static_type;
+    }
+
+    /// @brief Returns the Markdown hover article for this behavior,
+    /// or an empty string view if no article is defined.
+    [[nodiscard]]
+    std::u8string_view get_hover_article() const noexcept
+    {
+        return m_hover_article;
     }
 };
 

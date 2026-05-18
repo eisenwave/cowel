@@ -183,6 +183,32 @@ struct cowel_diagnostic_u8 {
     size_t stack_size;
 };
 
+/// @brief Hover information for a single directive invocation.
+/// @see `cowel_gen_result`
+struct cowel_hover {
+    /// @brief 0-based line of the directive name token.
+    size_t line;
+    /// @brief 0-based column of the directive name token.
+    size_t column;
+    /// @brief Length of the directive name (excluding the leading backslash).
+    size_t length;
+    /// @brief Null-terminated hover article text (UTF-8).
+    const char* article;
+    /// @brief Byte length of `article`, excluding the null terminator.
+    size_t article_length;
+};
+
+/// @brief See `cowel_hover`.
+struct cowel_hover_u8 {
+    size_t line;
+    size_t column;
+    size_t length;
+    const char8_t* article;
+    size_t article_length;
+};
+
+static_assert(sizeof(cowel_hover) == sizeof(cowel_hover_u8));
+
 /// @brief A type which contains result information when a file was loaded.
 struct cowel_file_result {
     /// @brief The status of loading the file, indicating success or failure.
@@ -388,6 +414,8 @@ struct cowel_options {
     cowel_string_view highlight_theme_source;
     /// @brief The processing mode.
     cowel_mode mode;
+    /// @brief When true, the result's `hovers` array is populated with hover entries.
+    bool collect_hovers;
     /// @brief The minimum (inclusive) level that log messages must have to be logged.
     cowel_severity min_log_severity;
 
@@ -474,6 +502,7 @@ struct cowel_options_u8 {
     cowel_string_view_u8 source;
     cowel_string_view_u8 highlight_theme_json;
     cowel_mode mode;
+    bool collect_hovers;
     cowel_severity min_log_severity;
 
     const cowel_string_view_u8* preserved_variables;
@@ -505,11 +534,25 @@ static_assert(sizeof(cowel_options) == sizeof(cowel_options_u8));
 struct cowel_gen_result {
     cowel_processing_status status;
     cowel_mutable_string_view output;
+    /// @brief Pointer to the hover entries array,
+    /// or null if `collect_hovers` was false or there were no hovers.
+    cowel_hover* hovers;
+    /// @brief Number of entries in `hovers`.
+    size_t hovers_size;
+    /// @brief Allocation size of `hovers` (for use with `cowel_free`).
+    size_t hovers_alloc_size;
 };
 
 struct cowel_gen_result_u8 {
     cowel_processing_status status;
     cowel_mutable_string_view_u8 output;
+    /// @brief Pointer to the hover entries array,
+    /// or null if `collect_hovers` was false or there were no hovers.
+    cowel_hover_u8* hovers;
+    /// @brief Number of entries in `hovers`.
+    size_t hovers_size;
+    /// @brief Allocation size of `hovers` (for use with `cowel_free`).
+    size_t hovers_alloc_size;
 };
 
 // clang-format off
