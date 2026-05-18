@@ -36,10 +36,10 @@ void cowel_import_consume_variables_u8(const cowel_string_view_u8* variables, si
 }
 
 #ifdef COWEL_EMSCRIPTEN
-static_assert(sizeof(cowel_options_u8) == 88);
+static_assert(sizeof(cowel_options_u8) == 92);
 static_assert(alignof(cowel_options_u8) == 4);
-static_assert(sizeof(cowel_gen_result) == 12);
-static_assert(alignof(cowel_gen_result) == 4);
+static_assert(sizeof(cowel_gen_result_u8) == 20);
+static_assert(alignof(cowel_gen_result_u8) == 4);
 static_assert(sizeof(cowel_parsed_cli_options_u8) == 36);
 static_assert(alignof(cowel_parsed_cli_options_u8) == 4);
 #endif
@@ -91,6 +91,7 @@ void init_options(
         .source = { source_text, source_length },
         .highlight_theme_json = { nullptr, 0 },
         .mode = mode,
+        .flags = COWEL_GEN_FLAGS_NONE,
         .min_log_severity = min_log_severity,
         .preserved_variables = preserved_variables,
         .preserved_variables_size = preserved_variables_size,
