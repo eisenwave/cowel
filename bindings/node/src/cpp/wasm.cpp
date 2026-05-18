@@ -91,7 +91,7 @@ void init_options(
         .source = { source_text, source_length },
         .highlight_theme_json = { nullptr, 0 },
         .mode = mode,
-        .flags = 0,
+        .flags = COWEL_GEN_FLAGS_NONE,
         .min_log_severity = min_log_severity,
         .preserved_variables = preserved_variables,
         .preserved_variables_size = preserved_variables_size,
