@@ -516,8 +516,7 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
             hover_entries.reserve(gen.hovers_size);
             for (std::size_t i = 0; i < gen.hovers_size; ++i) {
                 const cowel_hover_u8& h = gen.hovers[i];
-                const std::size_t line_start_byte
-                    = find_line_start_byte(content, h.line);
+                const std::size_t line_start_byte = find_line_start_byte(content, h.line);
                 const lsp::Position start_pos {
                     .line = h.line,
                     .character = column_to_character(
@@ -527,13 +526,16 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
                 const lsp::Position end_pos {
                     .line = h.line,
                     .character = column_to_character(
-                        content, line_start_byte, h.column + h.length, server_state.use_utf8_positions
+                        content, line_start_byte, h.column + h.length,
+                        server_state.use_utf8_positions
                     ),
                 };
-                hover_entries.push_back({
-                    .range = { start_pos, end_pos },
-                    .article = { h.article, h.article_length },
-                });
+                hover_entries.push_back(
+                    {
+                        .range = { start_pos, end_pos },
+                        .article = { h.article, h.article_length },
+                    }
+                );
             }
         }
         server_state.upsert_hovers(uri, std::move(hover_entries));
@@ -851,11 +853,9 @@ void handle_hover(
         const lsp::Range& range = entry.range;
         const std::u8string& article = entry.article;
         const bool after_start = pos.line > range.start.line
-            || (pos.line == range.start.line
-                && pos.character >= range.start.character);
+            || (pos.line == range.start.line && pos.character >= range.start.character);
         const bool before_end = pos.line < range.end.line
-            || (pos.line == range.end.line
-                && pos.character < range.end.character);
+            || (pos.line == range.end.line && pos.character < range.end.character);
         if (!after_start || !before_end) {
             continue;
         }
@@ -1032,10 +1032,8 @@ void dispatch(const lsp::Request_Message& request, Request_Context& context)
         );
         return;
     }
-    if (request.method == lsp::method::text_document::hover
-        && request.params != nullptr) {
-        if (const auto p
-            = lsp::from_json<lsp::Hover_Params>(*request.params, context.storage)) {
+    if (request.method == lsp::method::text_document::hover && request.params != nullptr) {
+        if (const auto p = lsp::from_json<lsp::Hover_Params>(*request.params, context.storage)) {
             handle_hover(*p, request.id, context);
             return;
         }
