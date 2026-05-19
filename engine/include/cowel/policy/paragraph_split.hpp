@@ -104,7 +104,7 @@ public:
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Primary& node, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Primary& node, Frame_Index, Context& context) override
     {
         switch (node.get_kind()) {
         case ast::Primary_Kind::text: {
@@ -129,6 +129,7 @@ public:
                 enter_paragraph();
                 HTML_Content_Policy::write(text, Output_Language::text);
             }
+            push_escape_hover(node, text, context);
             break;
         }
         case ast::Primary_Kind::unit_literal:

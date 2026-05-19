@@ -534,12 +534,13 @@ TEST(LspServerCapabilities, deserialize)
 {
     Deserialize_Storage storage;
     constexpr auto json
-        = u8R"({"positionEncoding":"utf-8","textDocumentSync":{"openClose":true,"change":1}})";
+        = u8R"({"positionEncoding":"utf-8","textDocumentSync":{"openClose":true,"change":1},"hoverProvider":true})";
     const auto result = from_json_str<Server_Capabilities>(json, storage);
     ASSERT_TRUE(result.has_value());
     ASSERT_TRUE(result->position_encoding.has_value());
     EXPECT_EQ(*result->position_encoding, lsp::position_encoding_kind::utf8);
     EXPECT_EQ(result->text_document_sync, (Text_Document_Sync_Options { true, 1 }));
+    EXPECT_EQ(result->hover_provider, true);
 }
 
 TEST(LspServerCapabilities, serialize)
@@ -547,10 +548,11 @@ TEST(LspServerCapabilities, serialize)
     const Server_Capabilities caps {
         .position_encoding = lsp::position_encoding_kind::utf16,
         .text_document_sync = { false, 2 },
+        .hover_provider = false,
     };
     EXPECT_EQ(
         to_json_str(caps),
-        u8R"({"positionEncoding":"utf-16","textDocumentSync":{"openClose":false,"change":2}})"
+        u8R"({"positionEncoding":"utf-16","textDocumentSync":{"openClose":false,"change":2},"hoverProvider":false})"
     );
 }
 
@@ -558,8 +560,12 @@ TEST(LspServerCapabilities, serialize_no_position_encoding)
 {
     const Server_Capabilities caps {
         .text_document_sync = { false, 2 },
+        .hover_provider = true,
     };
-    EXPECT_EQ(to_json_str(caps), u8R"({"textDocumentSync":{"openClose":false,"change":2}})");
+    EXPECT_EQ(
+        to_json_str(caps),
+        u8R"({"textDocumentSync":{"openClose":false,"change":2},"hoverProvider":true})"
+    );
 }
 
 TEST(LspServerInfo, deserialize)
@@ -589,12 +595,13 @@ TEST(LspInitializeResult, serialize)
         .capabilities = {
             .position_encoding = lsp::position_encoding_kind::utf8,
             .text_document_sync = { true, 1 },
+            .hover_provider = false,
         },
         .server_info = { u8"cowel-lsp"sv },
     };
     EXPECT_EQ(
         to_json_str(res),
-        u8R"({"capabilities":{"positionEncoding":"utf-8","textDocumentSync":{"openClose":true,"change":1}},"serverInfo":{"name":"cowel-lsp"}})"
+        u8R"({"capabilities":{"positionEncoding":"utf-8","textDocumentSync":{"openClose":true,"change":1},"hoverProvider":false},"serverInfo":{"name":"cowel-lsp"}})"
     );
 }
 

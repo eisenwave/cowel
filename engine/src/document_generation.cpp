@@ -55,6 +55,10 @@ Processing_Status run_generation(
         options.memory,
         &transient_memory,
     };
+    if (options.hover_sink != nullptr) {
+        context.set_hover_sink(*options.hover_sink);
+    }
+
     const auto status = generate(context);
 
     if (options.consume_variables) {

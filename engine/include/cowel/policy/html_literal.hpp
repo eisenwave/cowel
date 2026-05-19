@@ -36,7 +36,7 @@ struct HTML_Literal_Content_Policy : virtual HTML_Content_Policy {
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Primary& node, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Primary& node, Frame_Index, Context& context) override
     {
         switch (node.get_kind()) {
         case ast::Primary_Kind::text: {
@@ -48,6 +48,7 @@ struct HTML_Literal_Content_Policy : virtual HTML_Content_Policy {
             if (!text.empty()) {
                 write(text, Output_Language::text);
             }
+            push_escape_hover(node, text, context);
             return Processing_Status::ok;
         }
         case ast::Primary_Kind::comment: {

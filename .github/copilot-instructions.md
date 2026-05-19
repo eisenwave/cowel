@@ -204,6 +204,14 @@ Mitigation:
 - always install/activate emsdk before wasm configure,
   source `emsdk_env.sh` in configure/build steps,
   and verify toolchain file path exists.
+- In Copilot cloud-agent sessions,
+  setup steps restore/install emsdk under `${GITHUB_WORKSPACE}/emsdk`.
+- When the emsdk cache hits,
+  the `Install Emscripten SDK` step is skipped,
+  so `$EMSDK` may be unset even though emsdk is present on disk.
+- In that case,
+  source `${GITHUB_WORKSPACE}/emsdk/emsdk_env.sh`
+  explicitly in each shell before running Emscripten/CMake commands.
 
 ## Architecture Pointers For Fast Edits
 

@@ -9,6 +9,8 @@
 #include <type_traits>
 #include <variant>
 
+#include "cowel/util/chars.hpp"
+
 #include "cowel/fwd.hpp"
 #include "cowel/json.hpp"
 
@@ -292,6 +294,8 @@ struct Serializer<std::span<const T>> {
     }
 };
 
+using Member_Name = Fixed_String8<32>;
+
 template <typename T>
 struct Member_Description;
 
@@ -301,17 +305,37 @@ struct Member_Description<T C::*> {
     using class_type = C;
 
     /// The name of the data member in the serialized JSON object.
-    Fixed_String8<32> name;
+    Member_Name name;
     /// The pointer to the non-static data member.
     T C::* member_ptr;
 };
 
+[[nodiscard]]
+consteval Member_Name to_camel_case(const Member_Name snake_case)
+{
+    Member_Name result;
+    bool capitalize_next = false;
+    for (const char8_t c : snake_case) {
+        if (c == u8'_') {
+            capitalize_next = true;
+        }
+        else if (capitalize_next) {
+            result.push_back(to_ascii_upper(c));
+            capitalize_next = false;
+        }
+        else {
+            result.push_back(c);
+        }
+    }
+    return result;
+}
+
+static_assert(to_camel_case(u8"snake"sv) == u8"snake"sv);
+static_assert(to_camel_case(u8"snake_case"sv) == u8"snakeCase"sv);
+
 // clang-format off
 #define COWEL_MEMBER_DESCRIPTION(C, name)                                                          \
-    Member_Description<decltype(&C::name)> { u8## #name##sv, &C::name }
-
-#define COWEL_MEMBER_DESCRIPTION_AS(C, json_name, cpp_name)                                        \
-    Member_Description<decltype(&C::cpp_name)> { u8## #json_name##sv, &C::cpp_name }
+    Member_Description<decltype(&C::name)> { to_camel_case(u8## #name##sv), &C::name }
 // clang-format on
 
 template <typename T>
@@ -443,6 +467,8 @@ inline constexpr auto did_open = u8"textDocument/didOpen"sv;
 inline constexpr auto did_change = u8"textDocument/didChange"sv;
 /// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didClose
 inline constexpr auto did_close = u8"textDocument/didClose"sv;
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_hover
+inline constexpr auto hover = u8"textDocument/hover"sv;
 
 } // namespace text_document
 } // namespace method
@@ -593,7 +619,7 @@ template <>
 struct Serializer<Text_Document_Sync_Options>
     : Object_Serializer<
           Text_Document_Sync_Options,
-          COWEL_MEMBER_DESCRIPTION_AS(Text_Document_Sync_Options, openClose, open_close),
+          COWEL_MEMBER_DESCRIPTION(Text_Document_Sync_Options, open_close),
           COWEL_MEMBER_DESCRIPTION(Text_Document_Sync_Options, change)> { };
 
 } // namespace detail
@@ -605,6 +631,8 @@ struct Server_Capabilities {
     std::optional<std::u8string_view> position_encoding = {};
     /// Defines how text documents are synced.
     Text_Document_Sync_Options text_document_sync;
+    /// Whether hover is supported.
+    bool hover_provider = false;
 
     friend bool operator==(const Server_Capabilities&, const Server_Capabilities&) = default;
 };
@@ -615,9 +643,9 @@ template <>
 struct Serializer<Server_Capabilities>
     : Object_Serializer<
           Server_Capabilities,
-          COWEL_MEMBER_DESCRIPTION_AS(Server_Capabilities, positionEncoding, position_encoding),
-          COWEL_MEMBER_DESCRIPTION_AS(Server_Capabilities, textDocumentSync, text_document_sync)> {
-};
+          COWEL_MEMBER_DESCRIPTION(Server_Capabilities, position_encoding),
+          COWEL_MEMBER_DESCRIPTION(Server_Capabilities, text_document_sync),
+          COWEL_MEMBER_DESCRIPTION(Server_Capabilities, hover_provider)> { };
 
 } // namespace detail
 
@@ -651,11 +679,7 @@ template <>
 struct Serializer<General_Client_Capabilities>
     : Object_Serializer<
           General_Client_Capabilities,
-          COWEL_MEMBER_DESCRIPTION_AS(
-              General_Client_Capabilities,
-              positionEncodings,
-              position_encodings
-          )> { };
+          COWEL_MEMBER_DESCRIPTION(General_Client_Capabilities, position_encodings)> { };
 
 } // namespace detail
 
@@ -702,7 +726,7 @@ struct Serializer<Initialize_Result>
     : Object_Serializer<
           Initialize_Result,
           COWEL_MEMBER_DESCRIPTION(Initialize_Result, capabilities),
-          COWEL_MEMBER_DESCRIPTION_AS(Initialize_Result, serverInfo, server_info)> { };
+          COWEL_MEMBER_DESCRIPTION(Initialize_Result, server_info)> { };
 
 } // namespace detail
 
@@ -725,7 +749,7 @@ struct Serializer<Text_Document_Item>
     : Object_Serializer<
           Text_Document_Item,
           COWEL_MEMBER_DESCRIPTION(Text_Document_Item, uri),
-          COWEL_MEMBER_DESCRIPTION_AS(Text_Document_Item, languageId, language_id),
+          COWEL_MEMBER_DESCRIPTION(Text_Document_Item, language_id),
           COWEL_MEMBER_DESCRIPTION(Text_Document_Item, version),
           COWEL_MEMBER_DESCRIPTION(Text_Document_Item, text)> { };
 
@@ -806,8 +830,7 @@ template <>
 struct Serializer<Did_Open_Text_Document_Params>
     : Object_Serializer<
           Did_Open_Text_Document_Params,
-          COWEL_MEMBER_DESCRIPTION_AS(Did_Open_Text_Document_Params, textDocument, text_document)> {
-};
+          COWEL_MEMBER_DESCRIPTION(Did_Open_Text_Document_Params, text_document)> { };
 
 } // namespace detail
 
@@ -823,12 +846,8 @@ template <>
 struct Serializer<Did_Change_Text_Document_Params>
     : Object_Serializer<
           Did_Change_Text_Document_Params,
-          COWEL_MEMBER_DESCRIPTION_AS(Did_Change_Text_Document_Params, textDocument, text_document),
-          COWEL_MEMBER_DESCRIPTION_AS(
-              Did_Change_Text_Document_Params,
-              contentChanges,
-              content_changes
-          )> { };
+          COWEL_MEMBER_DESCRIPTION(Did_Change_Text_Document_Params, text_document),
+          COWEL_MEMBER_DESCRIPTION(Did_Change_Text_Document_Params, content_changes)> { };
 
 } // namespace detail
 
@@ -847,11 +866,7 @@ template <>
 struct Serializer<Did_Close_Text_Document_Params>
     : Object_Serializer<
           Did_Close_Text_Document_Params,
-          COWEL_MEMBER_DESCRIPTION_AS(
-              Did_Close_Text_Document_Params,
-              textDocument,
-              text_document
-          )> { };
+          COWEL_MEMBER_DESCRIPTION(Did_Close_Text_Document_Params, text_document)> { };
 
 } // namespace detail
 
@@ -974,6 +989,120 @@ std::convertible_to<json::Value> auto to_json(const T& val, std::pmr::memory_res
 {
     return detail::Serializer<T>::to_json(val, memory);
 }
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#markupContent
+namespace markup_kind {
+
+inline constexpr auto plain_text = u8"plaintext"sv;
+inline constexpr auto markdown = u8"markdown"sv;
+
+} // namespace markup_kind
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#markupContentInnerDefinition
+struct Markup_Content {
+    /// The type of the markup.
+    std::u8string_view kind;
+    /// The content itself
+    std::u8string_view value;
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Markup_Content>
+    : Object_Serializer<
+          Markup_Content,
+          COWEL_MEMBER_DESCRIPTION(Markup_Content, kind),
+          COWEL_MEMBER_DESCRIPTION(Markup_Content, value)> { };
+
+} // namespace detail
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#hoverClientCapabilities
+struct Hover_Client_Capabilities {
+    /// Whether hover supports dynamic registration.
+    std::optional<bool> dynamic_registration = {};
+    /// Client supports the following content formats
+    /// if the content property refers to a `literal of type MarkupContent`.
+    /// The order describes the preferred format of the client.
+    std::span<const std::u8string_view> content_format;
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Hover_Client_Capabilities>
+    : Object_Serializer<
+          Hover_Client_Capabilities,
+          COWEL_MEMBER_DESCRIPTION(Hover_Client_Capabilities, dynamic_registration),
+          COWEL_MEMBER_DESCRIPTION(Hover_Client_Capabilities, content_format)> { };
+
+} // namespace detail
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#markdownClientCapabilities
+struct Markdown_Client_Capabilities {
+    /// The name of the parser.
+    std::u8string_view parser;
+    /// The version of the parser.
+    std::optional<std::u8string_view> version = {};
+    /// A list of HTML tags that the client allows / supports in Markdown.
+    std::optional<std::span<const std::u8string_view>> allowed_tags = {};
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Markdown_Client_Capabilities>
+    : Object_Serializer<
+          Markdown_Client_Capabilities,
+          COWEL_MEMBER_DESCRIPTION(Markdown_Client_Capabilities, parser),
+          COWEL_MEMBER_DESCRIPTION(Markdown_Client_Capabilities, version),
+          COWEL_MEMBER_DESCRIPTION(Markdown_Client_Capabilities, allowed_tags)> { };
+
+} // namespace detail
+
+using Progress_Token = std::variant<Integer, std::u8string_view>;
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#hoverParams
+struct Hover_Params {
+    /// The text document.
+    Text_Document_Identifier text_document;
+    /// The position inside the text document.
+    Position position;
+    /// An optional token that a server can use to report work done progress.
+    std::optional<Progress_Token> work_done_token = {};
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Hover_Params>
+    : Object_Serializer<
+          Hover_Params,
+          COWEL_MEMBER_DESCRIPTION(Hover_Params, text_document),
+          COWEL_MEMBER_DESCRIPTION(Hover_Params, position),
+          COWEL_MEMBER_DESCRIPTION(Hover_Params, work_done_token)> { };
+
+} // namespace detail
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#hover
+struct Hover {
+    /// The hover's content.
+    Markup_Content contents;
+    /// An optional range is a range inside a text document that is used to visualize a hover,
+    /// e.g. by changing the background color.
+    std::optional<Range> range = {};
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Hover>
+    : Object_Serializer<
+          Hover,
+          COWEL_MEMBER_DESCRIPTION(Hover, contents),
+          COWEL_MEMBER_DESCRIPTION(Hover, range)> { };
+
+} // namespace detail
 
 } // namespace cowel::lsp
 

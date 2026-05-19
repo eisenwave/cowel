@@ -35,6 +35,7 @@ Code_Point_Behavior::do_evaluate(const Invocation& call, Context& context) const
         COWEL_ASSERT(code_point.error() != Processing_Status::ok);
         return code_point.error();
     }
+
     return to_static_string<Short_String_Value::max_size_v>(make_char_sequence(*code_point));
 }
 

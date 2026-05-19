@@ -271,6 +271,7 @@ int main(int argc, const char* const* const argv)
         .source = as_cowel_string_view(in_source),
         .highlight_theme_json = as_cowel_string_view(assets::wg21_json),
         .mode = COWEL_MODE_DOCUMENT,
+        .flags = 0,
         .min_log_severity = opts.min_severity,
         .preserved_variables = nullptr,
         .preserved_variables_size = 0,

@@ -11,6 +11,7 @@
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
+#include "cowel/util/unicode.hpp"
 
 #include "cowel/policy/capture.hpp"
 #include "cowel/policy/content_policy.hpp"
@@ -34,6 +35,38 @@
 using namespace std::string_view_literals;
 
 namespace cowel {
+
+void push_escape_hover(const ast::Primary& node, std::u8string_view units, Context& context)
+{
+    if (!context.collects_hovers()) {
+        return;
+    }
+    if (units.empty()) {
+        context.push_hover(node.get_source_span(), u8"Expands to empty character sequence."sv);
+        return;
+    }
+    const auto article = [&] {
+        constexpr std::size_t min_hex_chars = 4;
+
+        const char32_t cp = utf8::decode_unchecked(units.data());
+        const auto hex_chars = to_characters8(std::uint32_t(cp), 16, true);
+        const std::size_t hex_len = hex_chars.size();
+
+        Fixed_String8<16> result;
+        result.push_back(u8'`');
+        result.push_back(u8'U');
+        result.push_back(u8'+');
+        for (std::size_t i = hex_len; i < min_hex_chars; ++i) {
+            result.push_back(u8'0');
+        }
+        for (const char8_t c : hex_chars) {
+            result.push_back(c);
+        }
+        result.push_back(u8'`');
+        return result;
+    }();
+    context.push_hover(node.get_source_span(), article);
+}
 
 Processing_Status
 Directive_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
@@ -588,6 +621,13 @@ evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
         return Processing_Status::error;
     }
 
+    if (context.collects_hovers()) {
+        const std::u8string_view article = behavior->get_hover_article();
+        if (!article.empty()) {
+            context.push_hover(directive.get_name_span(), article);
+        }
+    }
+
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
     call.call_frame = scope.get_index();
     return behavior->evaluate(call, context);
@@ -976,6 +1016,13 @@ Processing_Status splice_invocation( //
         try_lookup_error(directive, context);
         call.call_frame = context.get_call_stack().get_top_index();
         return try_generate_error(out, call, context);
+    }
+
+    if (context.collects_hovers()) {
+        const std::u8string_view article = behavior->get_hover_article();
+        if (!article.empty()) {
+            context.push_hover(directive.get_name_span(), article);
+        }
     }
 
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });

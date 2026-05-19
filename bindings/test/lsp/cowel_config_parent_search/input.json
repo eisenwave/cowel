@@ -7,7 +7,7 @@
         "uri": "{{ROOT_URI}}/subdir/fragment.cow",
         "languageId": "cowel",
         "version": 1,
-        "text": "\\my_macro\n"
+        "text": "{{TEXT:subdir/fragment.cow}}"
       }
     }
   }

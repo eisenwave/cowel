@@ -93,6 +93,14 @@ enum cowel_assertion_type {
 };
 
 // NOLINTNEXTLINE(performance-enum-size)
+enum cowel_gen_flags {
+    /// @brief No special flags.
+    COWEL_GEN_FLAGS_NONE = 0,
+    /// @brief Collect hover information for directives.
+    COWEL_GEN_FLAGS_COLLECT_HOVERS = 1 << 0,
+};
+
+// NOLINTNEXTLINE(performance-enum-size)
 enum {
     /// @brief The value of a `cowel_file_id` representing the main document.
     COWEL_FILE_ID_MAIN = -1,
@@ -182,6 +190,36 @@ struct cowel_diagnostic_u8 {
     const cowel_diagnostic_location_u8* stack;
     size_t stack_size;
 };
+
+/// @brief Hover information for a single directive invocation.
+/// @see `cowel_gen_result`
+struct cowel_hover {
+    /// @brief 0-based line of the directive name token.
+    size_t line;
+    /// @brief 0-based UTF-8 code unit offset (column) of the directive name token.
+    size_t column;
+    /// @brief UTF-8 byte offset within the source of the directive name token.
+    /// Equal to the byte offset of the start of the containing line plus `column`.
+    size_t begin;
+    /// @brief Length of the directive name in UTF-8 code units (excluding the leading backslash).
+    size_t length;
+    /// @brief Null-terminated hover article text (UTF-8).
+    const char* article;
+    /// @brief Byte length of `article`, excluding the null terminator.
+    size_t article_length;
+};
+
+/// @brief See `cowel_hover`.
+struct cowel_hover_u8 {
+    size_t line;
+    size_t column;
+    size_t begin;
+    size_t length;
+    const char8_t* article;
+    size_t article_length;
+};
+
+static_assert(sizeof(cowel_hover) == sizeof(cowel_hover_u8));
 
 /// @brief A type which contains result information when a file was loaded.
 struct cowel_file_result {
@@ -388,6 +426,8 @@ struct cowel_options {
     cowel_string_view highlight_theme_source;
     /// @brief The processing mode.
     cowel_mode mode;
+    /// @brief Generation flags (see `cowel_gen_flags`).
+    cowel_gen_flags flags;
     /// @brief The minimum (inclusive) level that log messages must have to be logged.
     cowel_severity min_log_severity;
 
@@ -474,6 +514,7 @@ struct cowel_options_u8 {
     cowel_string_view_u8 source;
     cowel_string_view_u8 highlight_theme_json;
     cowel_mode mode;
+    unsigned int flags;
     cowel_severity min_log_severity;
 
     const cowel_string_view_u8* preserved_variables;
@@ -505,11 +546,21 @@ static_assert(sizeof(cowel_options) == sizeof(cowel_options_u8));
 struct cowel_gen_result {
     cowel_processing_status status;
     cowel_mutable_string_view output;
+    /// @brief Pointer to the hover entries array,
+    /// or null if `COWEL_GEN_FLAGS_COLLECT_HOVERS` was not set or there were no hovers.
+    cowel_hover* hovers;
+    /// @brief Number of entries in `hovers`.
+    size_t hovers_size;
 };
 
 struct cowel_gen_result_u8 {
     cowel_processing_status status;
     cowel_mutable_string_view_u8 output;
+    /// @brief Pointer to the hover entries array,
+    /// or null if `COWEL_GEN_FLAGS_COLLECT_HOVERS` was not set or there were no hovers.
+    cowel_hover_u8* hovers;
+    /// @brief Number of entries in `hovers`.
+    size_t hovers_size;
 };
 
 // clang-format off

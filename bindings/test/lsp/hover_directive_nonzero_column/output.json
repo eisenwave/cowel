@@ -1,0 +1,46 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "capabilities": {
+        "textDocumentSync": {
+          "openClose": true,
+          "change": 1
+        },
+        "hoverProvider": true
+      },
+      "serverInfo": {
+        "name": "cowel"
+      }
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "textDocument/publishDiagnostics",
+    "params": {
+      "uri": "{{ROOT_URI}}/main.cow",
+      "diagnostics": []
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**`\\b`** — Bold\n\nWraps its content in an HTML `<b>` element.\n\n```\nb(\n  attr: pack named str,\n  content: block,\n): block\n```\n"
+      },
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 6
+        },
+        "end": {
+          "line": 1,
+          "character": 8
+        }
+      }
+    }
+  }
+]
