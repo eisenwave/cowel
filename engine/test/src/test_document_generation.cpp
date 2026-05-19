@@ -337,5 +337,51 @@ TEST(Document_Generation, documentation)
     EXPECT_TRUE(logger.diagnostics.empty());
 }
 
+TEST(Document_Generation, hover_directives)
+{
+    constexpr auto file_path = u8"engine/test/files/hover_directives.cow"sv;
+
+    Global_Memory_Resource memory;
+
+    std::pmr::vector<char8_t> source { &memory };
+    ASSERT_TRUE(load_utf8_file_or_error(source, file_path, &memory));
+    std::pmr::vector<char8_t> theme_source { &memory };
+    ASSERT_TRUE(load_utf8_file_or_error(theme_source, theme_path, &memory));
+    ast::Pmr_Vector<ast::Markup_Element> content { &memory };
+
+    Builtin_Directive_Set directives;
+    Collecting_Logger logger { &memory };
+
+    const bool parse_success = lex_and_parse_and_build(
+        content, as_u8string_view(source), File_Id::main, &memory, Parse_Error_Logger { logger }
+    );
+    ASSERT_TRUE(parse_success);
+
+    std::pmr::vector<Hover_Entry> hovers { &memory };
+
+    const Generation_Options options {
+        .error_behavior = &directives.get_error_behavior(),
+        .highlight_theme_source = as_u8string_view(theme_source),
+        .builtin_name_resolver = directives,
+        .logger = logger,
+        .highlighter = ulight_syntax_highlighter,
+        .hover_sink = &hovers,
+        .memory = &memory,
+    };
+    Vector_Text_Sink sink { Output_Language::html, &memory };
+    const Processing_Status status = run_generation(
+        [&](Context& context) -> Processing_Status {
+            return write_wg21_document(sink, content, context);
+        },
+        options
+    );
+
+    const auto line_count = std::size_t(std::ranges::count(source, u8'\n'));
+
+    EXPECT_EQ(status, Processing_Status::ok);
+    EXPECT_EQ(hovers.size(), line_count);
+    EXPECT_TRUE(logger.diagnostics.empty());
+}
+
 } // namespace
 } // namespace cowel
