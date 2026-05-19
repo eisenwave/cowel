@@ -7,7 +7,7 @@
         "uri": "{{ROOT_URI}}/fragment.cow",
         "languageId": "cowel",
         "version": 1,
-        "text": "\\undefined_directive\n"
+        "text": "{{TEXT:fragment.cow}}"
       }
     }
   }

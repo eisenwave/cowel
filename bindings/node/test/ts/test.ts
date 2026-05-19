@@ -94,6 +94,8 @@ function mapFixturePlaceholders(value: unknown, fixtureDir: string): unknown {
     const fixtureUri = pathToFileURL(fixtureDir).href;
     if (typeof value === "string") {
         return value
+            .replace(/\{\{TEXT:([^}]+)\}\}/g, (_, filename: string) =>
+                fs.readFileSync(path.join(fixtureDir, filename), "utf-8"))
             .replaceAll("{{ROOT_URI}}", fixtureUri)
             .replaceAll("{{ROOT_PATH}}", fixturePath);
     }

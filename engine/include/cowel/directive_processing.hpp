@@ -64,6 +64,11 @@ Processing_Status splice_directive_invocation(
     Context& context
 );
 
+/// @brief If `context.collects_hovers()` and `node` has a real code point
+/// (i.e. not a whitespace escape),
+/// pushes a hover article of the form "U+XXXX" for the escape node.
+void push_escape_hover(const ast::Primary& node, std::u8string_view code_units, Context& context);
+
 template <std::ranges::input_range R, typename Consumer>
     requires std::is_invocable_r_v<Processing_Status, Consumer, std::ranges::range_reference_t<R>>
 [[nodiscard]]

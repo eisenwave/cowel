@@ -22,7 +22,7 @@
         "uri": "{{ROOT_URI}}/main.cow",
         "languageId": "cowel",
         "version": 1,
-        "text": "\\b{bold text}"
+        "text": "{{TEXT:main.cow}}"
       }
     }
   },

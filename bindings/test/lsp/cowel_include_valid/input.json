@@ -7,7 +7,7 @@
         "uri": "{{ROOT_URI}}/main.cow",
         "languageId": "cowel",
         "version": 1,
-        "text": "\\cowel_include(\"lib.cow\")"
+        "text": "{{TEXT:main.cow}}"
       }
     }
   }
