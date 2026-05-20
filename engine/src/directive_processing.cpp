@@ -2,11 +2,13 @@
 #include <cstddef>
 #include <cstring>
 #include <span>
+#include <string>
 #include <string_view>
 #include <variant>
 #include <vector>
 
 #include "cowel/util/assert.hpp"
+#include "cowel/util/code_point_names.hpp"
 #include "cowel/util/html_writer.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
@@ -45,26 +47,51 @@ void push_escape_hover(const ast::Primary& node, std::u8string_view units, Conte
         context.push_hover(node.get_source_span(), u8"Expands to empty character sequence."sv);
         return;
     }
-    const auto article = [&] {
-        constexpr std::size_t min_hex_chars = 4;
 
-        const char32_t cp = utf8::decode_unchecked(units.data());
-        const auto hex_chars = to_characters8(std::uint32_t(cp), 16, true);
-        const std::size_t hex_len = hex_chars.size();
+    const std::u8string_view source = node.get_source();
+    const std::u8string_view escaped = node.get_escaped();
 
-        Fixed_String8<16> result;
-        result.push_back(u8'`');
-        result.push_back(u8'U');
-        result.push_back(u8'+');
-        for (std::size_t i = hex_len; i < min_hex_chars; ++i) {
-            result.push_back(u8'0');
-        }
-        for (const char8_t c : hex_chars) {
-            result.push_back(c);
-        }
-        result.push_back(u8'`');
-        return result;
-    }();
+    // Determine kind label from first character of the escape sequence.
+    std::u8string_view kind_label;
+    if (escaped[0] == u8'+') {
+        kind_label = u8"Numeric escape"sv;
+    }
+    else if (escaped[0] == u8'\'') {
+        kind_label = u8"Named escape"sv;
+    }
+    else {
+        kind_label = u8"Escape"sv;
+    }
+
+    constexpr std::size_t min_hex_chars = 4;
+    const char32_t cp = utf8::decode_unchecked(units.data());
+    const auto hex_chars = to_characters8(std::uint32_t(cp), 16, true);
+    const std::size_t hex_len = hex_chars.size();
+    const auto display_name = code_point_display_name(cp);
+
+    // Article format:
+    // # <kind_label> `<source>`
+    // U+XXXX <display_name>
+    std::u8string article;
+    article.reserve(128);
+    article += u8"# ";
+    article += kind_label;
+    article += u8" `";
+    article += source;
+    article += u8"`\n";
+    article += u8"U+";
+    for (std::size_t i = hex_len; i < min_hex_chars; ++i) {
+        article += u8'0';
+    }
+    for (const char8_t c : hex_chars) {
+        article += c;
+    }
+    const std::u8string_view name_view = display_name.as_string();
+    if (!name_view.empty()) {
+        article += u8' ';
+        article += name_view;
+    }
+
     context.push_hover(node.get_source_span(), article);
 }
 
