@@ -94,9 +94,10 @@ The procedure for creating a release is as follows:
   - Double-check `node cowel.js run ../../docs/index.cow ../../docs/index.html`
   - `npm login`
   - `npm publish`
-6. From the project root, to create the VScode extension:
+6. From the project root, to create and publish the VScode extension:
   - `cd editor/vscode`
   - `npm run build`
+  - `vsce publish`
 7. `git tag -a v0.x.0 -m 'Version 0.x.0`
 8. `git push --tags`
 9. Create the release on GitHub from `CHANGELOG.md`.

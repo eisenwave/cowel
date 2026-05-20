@@ -1,6 +1,6 @@
 # Changelog
 
-## **[v0.x.x](https://github.com/eisenwave/cowel/releases/tag/v0.x.x)** (2026-??-??)
+## **[v0.10.0](https://github.com/eisenwave/cowel/releases/tag/v0.10.0)** (2026-05-20)
 
 ### Engine
 
@@ -26,7 +26,7 @@
 - Enabled nested highlighting of COWEL code within Markdown fenced code blocks (#357)
 
 **Full Changelog**:
-[`v0.9.1...main`](https://github.com/eisenwave/cowel/compare/v0.9.1...main)
+[`v0.9.1...v0.10.0`](https://github.com/eisenwave/cowel/compare/v0.9.1...v0.10.0)
 
 
 ## **[v0.9.1](https://github.com/eisenwave/cowel/releases/tag/v0.9.1)** (2026-05-10)
