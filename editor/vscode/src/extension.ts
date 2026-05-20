@@ -14,13 +14,16 @@ let client: LanguageClient | undefined;
 
 type CowelStatusKind = 'busy' | 'idle' | 'error';
 
-const LANGUAGE_CLIENT_ID = 'cowel-language-server';
+const LANGUAGE_CLIENT_ID = 'cowel';
 const LANGUAGE_CLIENT_NAME = 'COWEL Language Server';
 const LANGUAGE_NAME = 'cowel';
 const STATUS_INDICATOR_ID = `${LANGUAGE_NAME}.lsp.status`;
 const STATUS_INDICATOR_NAME = 'COWEL LSP';
 
 export function activate(context: vscode.ExtensionContext): void {
+    const serverOutputChannel = vscode.window.createOutputChannel(LANGUAGE_CLIENT_NAME);
+    context.subscriptions.push(serverOutputChannel);
+
     const lspStatus = vscode.languages.createLanguageStatusItem(
         STATUS_INDICATOR_ID,
         { language: LANGUAGE_NAME },
@@ -65,6 +68,7 @@ export function activate(context: vscode.ExtensionContext): void {
     };
     const clientOptions: LanguageClientOptions = {
         documentSelector: [{ language: LANGUAGE_NAME }],
+        outputChannel: serverOutputChannel,
     };
 
     client = new LanguageClient(

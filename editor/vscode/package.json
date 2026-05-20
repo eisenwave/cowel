@@ -51,6 +51,22 @@
   },
   "icon": "./icons/extension.png",
   "contributes": {
+    "configuration": {
+      "title": "COWEL",
+      "properties": {
+        "cowel.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "scope": "window",
+          "description": "Trace communication between VS Code and the COWEL language server."
+        }
+      }
+    },
     "commands": [
       {
         "command": "cowel.restartLanguageServer",
