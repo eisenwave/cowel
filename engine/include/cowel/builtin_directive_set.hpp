@@ -82,14 +82,23 @@ public:
 struct Error_Behavior : Block_Directive_Behavior {
     static constexpr auto id = html_tag::error_;
 
-    constexpr explicit Error_Behavior() = default;
+    [[nodiscard]]
+    constexpr explicit Error_Behavior(const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy& out, const Invocation& call, Context&) const override;
 };
 
 struct Comment_Behavior : Unit_Directive_Behavior {
-    constexpr explicit Comment_Behavior() = default;
+
+    [[nodiscard]]
+    constexpr explicit Comment_Behavior(const std::u8string_view hover_article) noexcept
+        : Unit_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status do_evaluate(const Invocation&, Context&) const override
@@ -101,8 +110,10 @@ struct Comment_Behavior : Unit_Directive_Behavior {
 struct [[nodiscard]]
 Char_By_Entity_Behavior final : Short_String_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Char_By_Entity_Behavior()
-        = default;
+    constexpr explicit Char_By_Entity_Behavior(const std::u8string_view hover_article) noexcept
+        : Short_String_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<Short_String_Value, Processing_Status>
@@ -111,8 +122,10 @@ Char_By_Entity_Behavior final : Short_String_Directive_Behavior {
 
 struct [[nodiscard]] Code_Point_Behavior : Short_String_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Code_Point_Behavior()
-        = default;
+    constexpr explicit Code_Point_Behavior(const std::u8string_view hover_article) noexcept
+        : Short_String_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<Short_String_Value, Processing_Status>
@@ -125,8 +138,10 @@ struct [[nodiscard]] Code_Point_Behavior : Short_String_Directive_Behavior {
 struct [[nodiscard]]
 Char_By_Num_Behavior final : Code_Point_Behavior {
     [[nodiscard]]
-    constexpr explicit Char_By_Num_Behavior()
-        = default;
+    constexpr explicit Char_By_Num_Behavior(const std::u8string_view hover_article) noexcept
+        : Code_Point_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<char32_t, Processing_Status>
@@ -136,8 +151,10 @@ Char_By_Num_Behavior final : Code_Point_Behavior {
 struct [[nodiscard]]
 Char_By_Name_Behavior final : Code_Point_Behavior {
     [[nodiscard]]
-    constexpr explicit Char_By_Name_Behavior()
-        = default;
+    constexpr explicit Char_By_Name_Behavior(const std::u8string_view hover_article) noexcept
+        : Code_Point_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<char32_t, Processing_Status>
@@ -153,8 +170,8 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Char_Get_Name_Behavior()
-        : Directive_Behavior { return_type }
+    constexpr explicit Char_Get_Name_Behavior(const std::u8string_view hover_article)
+        : Directive_Behavior { return_type, hover_article }
     {
     }
 
@@ -165,8 +182,10 @@ public:
 struct [[nodiscard]]
 Char_Get_Num_Behavior final : Int_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Char_Get_Num_Behavior()
-        = default;
+    constexpr explicit Char_Get_Num_Behavior(const std::u8string_view hover_article) noexcept
+        : Int_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<Big_Int, Processing_Status> do_evaluate(const Invocation&, Context&) const final;
@@ -180,8 +199,8 @@ struct String_Sink {
 
 struct String_Sink_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit String_Sink_Behavior()
-        : Directive_Behavior { Type::str }
+    constexpr explicit String_Sink_Behavior(const std::u8string_view hover_article)
+        : Directive_Behavior { Type::str, hover_article }
     {
     }
 
@@ -208,8 +227,12 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Str_Length_Behavior(Str_Length_Kind kind)
-        : m_kind { kind }
+    constexpr explicit Str_Length_Behavior(
+        Str_Length_Kind kind,
+        const std::u8string_view hover_article
+    )
+        : Int_Directive_Behavior { hover_article }
+        , m_kind { kind }
     {
     }
 
@@ -229,8 +252,12 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Str_Transform_Behavior(Text_Transformation transform)
-        : m_transform { transform }
+    constexpr explicit Str_Transform_Behavior(
+        Text_Transformation transform,
+        const std::u8string_view hover_article
+    )
+        : String_Sink_Behavior { hover_article }
+        , m_transform { transform }
     {
     }
 
@@ -241,8 +268,10 @@ public:
 struct [[nodiscard]]
 Str_Match_Behavior final : Bool_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Str_Match_Behavior()
-        = default;
+    constexpr explicit Str_Match_Behavior(const std::u8string_view hover_article) noexcept
+        : Bool_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
@@ -251,8 +280,10 @@ Str_Match_Behavior final : Bool_Directive_Behavior {
 struct [[nodiscard]]
 Str_Contains_Behavior final : Bool_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Str_Contains_Behavior()
-        = default;
+    constexpr explicit Str_Contains_Behavior(const std::u8string_view hover_article) noexcept
+        : Bool_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
@@ -267,8 +298,8 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Str_Find_Behavior()
-        : Directive_Behavior { return_type }
+    constexpr explicit Str_Find_Behavior(const std::u8string_view hover_article)
+        : Directive_Behavior { return_type, hover_article }
     {
     }
 
@@ -279,8 +310,8 @@ public:
 struct [[nodiscard]]
 Str_Substr_Behavior final : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Str_Substr_Behavior()
-        : Directive_Behavior { Type::str }
+    constexpr explicit Str_Substr_Behavior(const std::u8string_view hover_article)
+        : Directive_Behavior { Type::str, hover_article }
     {
     }
 
@@ -300,8 +331,11 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Str_Replace_Behavior(const Str_Replacement_Kind kind)
-        : Directive_Behavior { Type::str }
+    constexpr explicit Str_Replace_Behavior(
+        const Str_Replacement_Kind kind,
+        const std::u8string_view hover_article
+    )
+        : Directive_Behavior { Type::str, hover_article }
         , m_kind { kind }
     {
     }
@@ -313,8 +347,8 @@ public:
 struct [[nodiscard]]
 Regex_Make_Behavior final : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Regex_Make_Behavior()
-        : Directive_Behavior { Type::regex }
+    constexpr explicit Regex_Make_Behavior(const std::u8string_view hover_article)
+        : Directive_Behavior { Type::regex, hover_article }
     {
     }
 
@@ -327,9 +361,12 @@ inline constexpr std::u8string_view lorem_ipsum = u8"Lorem ipsum dolor sit amet,
 // clang-format on
 
 struct Lorem_Ipsum_Behavior final : Block_Directive_Behavior {
+
     [[nodiscard]]
-    constexpr explicit Lorem_Ipsum_Behavior()
-        = default;
+    constexpr explicit Lorem_Ipsum_Behavior(const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override
@@ -356,9 +393,11 @@ public:
     constexpr explicit Code_Behavior(
         HTML_Tag_Name tag_name,
         Directive_Display display,
-        Pre_Trimming pre_compat_trim
+        Pre_Trimming pre_compat_trim,
+        std::u8string_view hover_article
     )
-        : m_tag_name { tag_name }
+        : Block_Directive_Behavior { hover_article }
+        , m_tag_name { tag_name }
         , m_display { display }
         , m_pre_compat_trim { pre_compat_trim }
     {
@@ -370,8 +409,10 @@ public:
 
 struct [[nodiscard]] Highlight_Behavior : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Highlight_Behavior()
-        = default;
+    constexpr explicit Highlight_Behavior(const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
@@ -380,8 +421,10 @@ struct [[nodiscard]] Highlight_Behavior : Block_Directive_Behavior {
 /// @brief Forces a certain highlight to be applied.
 struct [[nodiscard]] Highlight_As_Behavior : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Highlight_As_Behavior()
-        = default;
+    constexpr explicit Highlight_As_Behavior(const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
@@ -406,8 +449,12 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Policy_Behavior(Known_Content_Policy policy)
-        : m_policy { policy }
+    constexpr explicit Policy_Behavior(
+        Known_Content_Policy policy,
+        const std::u8string_view hover_article
+    )
+        : Block_Directive_Behavior { hover_article }
+        , m_policy { policy }
     {
     }
 
@@ -440,8 +487,12 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit HTML_Raw_Text_Behavior(HTML_Tag_Name tag_name)
-        : m_tag_name { tag_name }
+    constexpr explicit HTML_Raw_Text_Behavior(
+        HTML_Tag_Name tag_name,
+        std::u8string_view hover_article
+    )
+        : Block_Directive_Behavior { hover_article }
+        , m_tag_name { tag_name }
     {
         COWEL_ASSERT(tag_name == u8"style"sv || tag_name == u8"script"sv);
     }
@@ -452,8 +503,10 @@ public:
 
 struct Logical_Not_Behavior final : Bool_Directive_Behavior {
     [[nodiscard]]
-    explicit Logical_Not_Behavior()
-        = default;
+    constexpr explicit Logical_Not_Behavior(const std::u8string_view hover_article) noexcept
+        : Bool_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<bool, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
@@ -470,8 +523,12 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Logical_Expression_Behavior(Logical_Expression_Kind kind)
-        : m_expression_kind { kind }
+    constexpr explicit Logical_Expression_Behavior(
+        Logical_Expression_Kind kind,
+        const std::u8string_view hover_article
+    )
+        : Bool_Directive_Behavior { hover_article }
+        , m_expression_kind { kind }
     {
     }
 
@@ -487,8 +544,12 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Comparison_Expression_Behavior(Comparison_Expression_Kind kind)
-        : m_comparison_kind { kind }
+    constexpr explicit Comparison_Expression_Behavior(
+        Comparison_Expression_Kind kind,
+        const std::u8string_view hover_article
+    )
+        : Bool_Directive_Behavior { hover_article }
+        , m_comparison_kind { kind }
     {
     }
 
@@ -539,8 +600,11 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Unary_Numeric_Expression_Behavior(Unary_Numeric_Expression_Kind kind)
-        : Directive_Behavior { Type::any }
+    constexpr explicit Unary_Numeric_Expression_Behavior(
+        Unary_Numeric_Expression_Kind kind,
+        const std::u8string_view hover_article
+    )
+        : Directive_Behavior { Type::any, hover_article }
         , m_expression_kind { kind }
         , m_type { expression_kind_takes_int(kind) && expression_kind_takes_float(kind)
                        ? &numeric_type
@@ -568,8 +632,12 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Integer_Division_Expression_Behavior(Integer_Division_Kind kind)
-        : m_expression_kind { kind }
+    constexpr explicit Integer_Division_Expression_Behavior(
+        Integer_Division_Kind kind,
+        const std::u8string_view hover_article
+    )
+        : Int_Directive_Behavior { hover_article }
+        , m_expression_kind { kind }
     {
     }
 
@@ -592,8 +660,11 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit N_Ary_Numeric_Expression_Behavior(N_Ary_Numeric_Expression_Kind kind)
-        : Directive_Behavior { Type::any }
+    constexpr explicit N_Ary_Numeric_Expression_Behavior(
+        N_Ary_Numeric_Expression_Kind kind,
+        const std::u8string_view hover_article
+    )
+        : Directive_Behavior { Type::any, hover_article }
         , m_expression_kind { kind }
     {
     }
@@ -604,8 +675,8 @@ public:
 
 struct To_Str_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit To_Str_Behavior() noexcept
-        : Directive_Behavior { Type::str }
+    constexpr explicit To_Str_Behavior(const std::u8string_view hover_article) noexcept
+        : Directive_Behavior { Type::str, hover_article }
     {
     }
 
@@ -615,8 +686,10 @@ struct To_Str_Behavior : Directive_Behavior {
 
 struct Reinterpret_As_Int_Behavior final : Int_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Reinterpret_As_Int_Behavior()
-        = default;
+    constexpr explicit Reinterpret_As_Int_Behavior(const std::u8string_view hover_article) noexcept
+        : Int_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<Big_Int, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
@@ -624,8 +697,12 @@ struct Reinterpret_As_Int_Behavior final : Int_Directive_Behavior {
 
 struct Reinterpret_As_Float_Behavior final : Float_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Reinterpret_As_Float_Behavior()
-        = default;
+    constexpr explicit Reinterpret_As_Float_Behavior(
+        const std::u8string_view hover_article
+    ) noexcept
+        : Float_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<Float, Processing_Status> do_evaluate(const Invocation&, Context&) const override;
@@ -633,8 +710,8 @@ struct Reinterpret_As_Float_Behavior final : Float_Directive_Behavior {
 
 struct Var_Get_Behavior final : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Var_Get_Behavior()
-        : Directive_Behavior { Type::any }
+    constexpr explicit Var_Get_Behavior(const std::u8string_view hover_article)
+        : Directive_Behavior { Type::any, hover_article }
     {
     }
 
@@ -644,8 +721,10 @@ struct Var_Get_Behavior final : Directive_Behavior {
 
 struct Var_Exists_Behavior final : Bool_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Var_Exists_Behavior()
-        = default;
+    constexpr explicit Var_Exists_Behavior(const std::u8string_view hover_article) noexcept
+        : Bool_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Result<bool, Processing_Status> do_evaluate(const Invocation&, Context& context) const final;
@@ -653,8 +732,10 @@ struct Var_Exists_Behavior final : Bool_Directive_Behavior {
 
 struct Var_Let_Behavior final : Unit_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Var_Let_Behavior()
-        = default;
+    constexpr explicit Var_Let_Behavior(const std::u8string_view hover_article) noexcept
+        : Unit_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status do_evaluate(const Invocation& call, Context& context) const final;
@@ -662,8 +743,10 @@ struct Var_Let_Behavior final : Unit_Directive_Behavior {
 
 struct Var_Set_Behavior final : Unit_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Var_Set_Behavior()
-        = default;
+    constexpr explicit Var_Set_Behavior(const std::u8string_view hover_article) noexcept
+        : Unit_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status do_evaluate(const Invocation& call, Context& context) const final;
@@ -671,8 +754,10 @@ struct Var_Set_Behavior final : Unit_Directive_Behavior {
 
 struct Var_Delete_Behavior final : Unit_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Var_Delete_Behavior()
-        = default;
+    constexpr explicit Var_Delete_Behavior(const std::u8string_view hover_article) noexcept
+        : Unit_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status do_evaluate(const Invocation& call, Context& context) const final;
@@ -722,8 +807,12 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit HTML_Element_Behavior(HTML_Element_Self_Closing self_closing)
-        : m_self_closing { self_closing }
+    constexpr explicit HTML_Element_Behavior(
+        HTML_Element_Self_Closing self_closing,
+        const std::u8string_view hover_article
+    )
+        : Block_Directive_Behavior { hover_article }
+        , m_self_closing { self_closing }
     {
     }
 
@@ -745,9 +834,11 @@ public:
         HTML_Tag_Name tag_name,
         std::u8string_view class_name,
         Policy_Usage policy,
-        Directive_Display display
+        Directive_Display display,
+        std::u8string_view hover_article
     )
-        : m_tag_name { tag_name }
+        : Block_Directive_Behavior { hover_article }
+        , m_tag_name { tag_name }
         , m_class_name { class_name }
         , m_policy { policy }
         , m_display { display }
@@ -767,8 +858,13 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Self_Closing_Behavior(HTML_Tag_Name tag_name, Directive_Display display)
-        : m_tag_name { tag_name }
+    constexpr explicit Self_Closing_Behavior(
+        HTML_Tag_Name tag_name,
+        Directive_Display display,
+        std::u8string_view hover_article
+    )
+        : Block_Directive_Behavior { hover_article }
+        , m_tag_name { tag_name }
         , m_display { display }
     {
     }
@@ -819,8 +915,13 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Special_Block_Behavior(HTML_Tag_Name name, Intro_Policy intro)
-        : m_name { name }
+    constexpr explicit Special_Block_Behavior(
+        HTML_Tag_Name name,
+        Intro_Policy intro,
+        std::u8string_view hover_article
+    )
+        : Block_Directive_Behavior { hover_article }
+        , m_name { name }
         , m_intro { intro }
     {
     }
@@ -832,8 +933,10 @@ public:
 
 struct WG21_Head_Behavior final : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit WG21_Head_Behavior()
-        = default;
+    constexpr explicit WG21_Head_Behavior(const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status
@@ -846,8 +949,9 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit URL_Behavior(std::u8string_view url_prefix = u8"")
-        : m_url_prefix { url_prefix }
+    constexpr explicit URL_Behavior(std::u8string_view url_prefix, std::u8string_view hover_article)
+        : Block_Directive_Behavior { hover_article }
+        , m_url_prefix { url_prefix }
     {
     }
 
@@ -858,8 +962,10 @@ public:
 
 struct Ref_Behavior final : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Ref_Behavior()
-        = default;
+    constexpr explicit Ref_Behavior(const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy&, const Invocation& call, Context& context) const final;
@@ -867,8 +973,10 @@ struct Ref_Behavior final : Block_Directive_Behavior {
 
 struct Bibliography_Add_Behavior final : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Bibliography_Add_Behavior()
-        = default;
+    constexpr explicit Bibliography_Add_Behavior(const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status
@@ -898,8 +1006,10 @@ public:
 
 struct There_Behavior final : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit There_Behavior()
-        = default;
+    constexpr explicit There_Behavior(const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status
@@ -912,8 +1022,9 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Here_Behavior(Directive_Display display)
-        : m_display { display }
+    constexpr explicit Here_Behavior(Directive_Display display, std::u8string_view hover_article)
+        : Block_Directive_Behavior { hover_article }
+        , m_display { display }
     {
     }
 
@@ -933,9 +1044,11 @@ public:
     constexpr explicit Make_Section_Behavior(
         Directive_Display display,
         std::u8string_view class_name,
-        std::u8string_view section_name
+        std::u8string_view section_name,
+        std::u8string_view hover_article
     )
-        : m_display { display }
+        : Block_Directive_Behavior { hover_article }
+        , m_display { display }
         , m_class_name { class_name }
         , m_section_name { section_name }
     {
@@ -952,8 +1065,9 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Math_Behavior(Directive_Display display)
-        : m_display { display }
+    constexpr explicit Math_Behavior(Directive_Display display, std::u8string_view hover_article)
+        : Block_Directive_Behavior { hover_article }
+        , m_display { display }
     {
     }
 
@@ -964,8 +1078,10 @@ public:
 
 struct Include_Text_Behavior final : String_Sink_Behavior {
     [[nodiscard]]
-    constexpr explicit Include_Text_Behavior()
-        = default;
+    constexpr explicit Include_Text_Behavior(const std::u8string_view hover_article) noexcept
+        : String_Sink_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status do_evaluate(String_Sink& out, const Invocation&, Context&) const override;
@@ -973,8 +1089,10 @@ struct Include_Text_Behavior final : String_Sink_Behavior {
 
 struct Include_Behavior final : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Include_Behavior()
-        = default;
+    constexpr explicit Include_Behavior(const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
@@ -983,8 +1101,10 @@ struct Include_Behavior final : Block_Directive_Behavior {
 struct Macro_Behavior final : Unit_Directive_Behavior {
 
     [[nodiscard]]
-    constexpr explicit Macro_Behavior()
-        = default;
+    constexpr explicit Macro_Behavior(const std::u8string_view hover_article) noexcept
+        : Unit_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status do_evaluate(const Invocation&, Context&) const override;
@@ -995,8 +1115,8 @@ struct Argument;
 struct Put_Behavior final : Directive_Behavior {
 
     [[nodiscard]]
-    constexpr explicit Put_Behavior()
-        : Directive_Behavior { auto(Type::any) }
+    constexpr explicit Put_Behavior(const std::u8string_view hover_article)
+        : Directive_Behavior { auto(Type::any), hover_article }
     {
     }
 
@@ -1013,7 +1133,10 @@ private:
 
 struct Paragraph_Enter_Behavior final : Block_Directive_Behavior {
 
-    constexpr explicit Paragraph_Enter_Behavior() = default;
+    constexpr explicit Paragraph_Enter_Behavior(const std::u8string_view hover_article)
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
@@ -1021,7 +1144,10 @@ struct Paragraph_Enter_Behavior final : Block_Directive_Behavior {
 
 struct Paragraph_Leave_Behavior final : Block_Directive_Behavior {
 
-    constexpr explicit Paragraph_Leave_Behavior() = default;
+    constexpr explicit Paragraph_Leave_Behavior(const std::u8string_view hover_article)
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
@@ -1029,7 +1155,10 @@ struct Paragraph_Leave_Behavior final : Block_Directive_Behavior {
 
 struct Paragraph_Inherit_Behavior final : Block_Directive_Behavior {
 
-    constexpr explicit Paragraph_Inherit_Behavior() = default;
+    constexpr explicit Paragraph_Inherit_Behavior(const std::u8string_view hover_article)
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
@@ -1038,8 +1167,10 @@ struct Paragraph_Inherit_Behavior final : Block_Directive_Behavior {
 struct Invoke_Behavior final : Block_Directive_Behavior {
 
     [[nodiscard]]
-    constexpr explicit Invoke_Behavior()
-        = default;
+    constexpr explicit Invoke_Behavior(const std::u8string_view hover_article) noexcept
+        : Block_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const override;
@@ -1048,8 +1179,10 @@ struct Invoke_Behavior final : Block_Directive_Behavior {
 struct Alias_Behavior final : Unit_Directive_Behavior {
 
     [[nodiscard]]
-    constexpr explicit Alias_Behavior()
-        = default;
+    constexpr explicit Alias_Behavior(const std::u8string_view hover_article) noexcept
+        : Unit_Directive_Behavior { hover_article }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status do_evaluate(const Invocation&, Context&) const override;

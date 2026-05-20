@@ -96,8 +96,8 @@ public:
 /// The static type is `Type::void`.
 struct Unit_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr Unit_Directive_Behavior() noexcept
-        : Directive_Behavior { Type::unit }
+    constexpr explicit Unit_Directive_Behavior(const std::u8string_view hover_article = {}) noexcept
+        : Directive_Behavior { Type::unit, hover_article }
     {
     }
 
@@ -125,8 +125,8 @@ protected:
 
 struct Bool_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr Bool_Directive_Behavior() noexcept
-        : Directive_Behavior { Type::boolean }
+    constexpr explicit Bool_Directive_Behavior(const std::u8string_view hover_article = {}) noexcept
+        : Directive_Behavior { Type::boolean, hover_article }
     {
     }
 
@@ -144,8 +144,8 @@ protected:
 
 struct Int_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr Int_Directive_Behavior() noexcept
-        : Directive_Behavior { Type::integer }
+    constexpr explicit Int_Directive_Behavior(const std::u8string_view hover_article = {}) noexcept
+        : Directive_Behavior { Type::integer, hover_article }
     {
     }
 
@@ -163,8 +163,10 @@ protected:
 
 struct Float_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr Float_Directive_Behavior() noexcept
-        : Directive_Behavior { Type::floating }
+    constexpr explicit Float_Directive_Behavior(
+        const std::u8string_view hover_article = {}
+    ) noexcept
+        : Directive_Behavior { Type::floating, hover_article }
     {
     }
 
@@ -189,8 +191,10 @@ protected:
 /// because splicing bypasses the creation of a `Value` object.
 struct Short_String_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr Short_String_Directive_Behavior() noexcept
-        : Directive_Behavior { Type::str }
+    constexpr explicit Short_String_Directive_Behavior(
+        const std::u8string_view hover_article = {}
+    ) noexcept
+        : Directive_Behavior { Type::str, hover_article }
     {
     }
 
@@ -212,12 +216,9 @@ protected:
 /// The static type is `Type::block`.
 struct Block_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr Block_Directive_Behavior() noexcept
-        : Directive_Behavior { Type::block }
-    {
-    }
-    [[nodiscard]]
-    constexpr explicit Block_Directive_Behavior(const std::u8string_view hover_article) noexcept
+    constexpr explicit Block_Directive_Behavior(
+        const std::u8string_view hover_article = {}
+    ) noexcept
         : Directive_Behavior { Type::block, hover_article }
     {
     }
