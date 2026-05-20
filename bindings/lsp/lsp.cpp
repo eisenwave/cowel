@@ -493,28 +493,38 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
         cowel_free(gen_result.output.text, gen_result.output.length, alignof(char8_t));
     }
 
-    // Collect hover entries and store them in server_state.hover_map keyed by URI.
+    // Collect hover entries and map them by file URI using file_id.
     {
-        std::vector<Hover_Entry> hover_entries;
+        String_Map<std::vector<Hover_Entry>> hover_by_uri;
         if (gen_result.hovers != nullptr) {
-            hover_entries.reserve(gen_result.hovers_size);
             for (std::size_t i = 0; i < gen_result.hovers_size; ++i) {
                 const cowel_hover_u8& h = gen_result.hovers[i];
+
+                // Determine which file this hover belongs to.
+                std::u8string hover_uri { uri };
+                std::u8string_view hover_bytes = content;
+
+                if (h.file_id >= 0 && std::size_t(h.file_id) < validation_context.includes.size()) {
+                    const auto& include = validation_context.includes[std::size_t(h.file_id)];
+                    hover_uri = path_to_uri(include.path);
+                    hover_bytes = include.content;
+                }
+
                 const std::size_t line_start_byte = h.begin - h.column;
                 const lsp::Position start_pos {
                     .line = h.line,
                     .character = column_to_character(
-                        content, line_start_byte, h.column, server_state.use_utf8_positions
+                        hover_bytes, line_start_byte, h.column, server_state.use_utf8_positions
                     ),
                 };
                 const lsp::Position end_pos {
                     .line = h.line,
                     .character = column_to_character(
-                        content, line_start_byte, h.column + h.length,
+                        hover_bytes, line_start_byte, h.column + h.length,
                         server_state.use_utf8_positions
                     ),
                 };
-                hover_entries.push_back(
+                hover_by_uri[hover_uri].push_back(
                     {
                         .range = { start_pos, end_pos },
                         .article = { h.article, h.article_length },
@@ -522,7 +532,10 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
                 );
             }
         }
-        server_state.upsert_hovers(uri, std::move(hover_entries));
+        // Store hovers for each URI they belong to.
+        for (auto& [hover_uri, entries] : hover_by_uri) {
+            server_state.upsert_hovers(hover_uri, std::move(entries));
+        }
     }
 
     static constexpr std::vector<lsp::Diagnostic> empty_diagnostics;
