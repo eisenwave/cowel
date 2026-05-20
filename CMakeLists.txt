@@ -72,6 +72,13 @@ set(ARGS_BUILD_EXAMPLE OFF CACHE BOOL "Build args examples" FORCE)
 set(ARGS_BUILD_UNITTESTS OFF CACHE BOOL "Build args unit tests" FORCE)
 FetchContent_MakeAvailable(tayweeargs)
 
+FetchContent_Declare(
+    code_point_names
+    GIT_REPOSITORY https://github.com/eisenwave/code-point-names.git
+    GIT_TAG        513a21d81ac9cc82690e15cf747ecea6bf1a14ca
+)
+FetchContent_MakeAvailable(code_point_names)
+
 find_package(Python3 REQUIRED)
 
 set(ASSETS_DIR "${CMAKE_CURRENT_LIST_DIR}/assets")
@@ -242,6 +249,7 @@ set(COMMON_LIBRARY_SOURCES
     engine/src/util/case_transform.cpp
     engine/src/util/charconv.cpp
     engine/src/util/code_point_by_name.cpp
+    engine/src/util/code_point_name.cpp
     engine/src/util/draft_uris.cpp
     engine/src/util/html_entities.cpp
     engine/src/util/typo.cpp
@@ -355,6 +363,7 @@ if(DEFINED EMSCRIPTEN)
         "-fno-exceptions"
     )
     target_link_libraries(cowel-wasm PRIVATE ulight args)
+    target_link_libraries(cowel-wasm PRIVATE get_code_point_name::get_code_point_name)
 
     add_executable(cowel-lsp
         ${COMMON_WASM_SOURCES}
@@ -368,6 +377,7 @@ if(DEFINED EMSCRIPTEN)
     target_link_options(cowel-lsp PRIVATE ${WASM_LINK_OPTIONS})
     target_compile_definitions(cowel-lsp PUBLIC COWEL_BUILD_WASM=1)
     target_link_libraries(cowel-lsp PRIVATE ulight args)
+    target_link_libraries(cowel-lsp PRIVATE get_code_point_name::get_code_point_name)
 
     set(NPM_DIR "${CMAKE_BINARY_DIR}/npm")
     set(LSP_WASM_DIR "${CMAKE_BINARY_DIR}/lsp-wasm")
@@ -425,6 +435,7 @@ if(DEFINED EMSCRIPTEN)
 else()
     add_library(cowel STATIC ${NATIVE_LIBRARY_SOURCES})
     target_link_libraries(cowel ulight args)
+    target_link_libraries(cowel get_code_point_name::get_code_point_name)
     target_link_libraries(cowel boost_config boost_multiprecision boost_regex)
     target_link_libraries(cowel ICU::data ICU::i18n ICU::uc)
     target_compile_options(cowel PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS} ${COVERAGE_OPTIONS})
