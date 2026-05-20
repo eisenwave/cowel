@@ -295,6 +295,57 @@ This renders as
 whereas '\tt{b}' and '\tt{c}' are discarded.
 }
 
+\cowdoc_dir_h4("cowel_char_get_name", "Get name of character")
+
+\pre{
+\cowel_highlight_as("markup-tag"){cowel_char_get_name}(\cowdoc_param("x", "str")): \cowel_highlight_as("keyword-type"){str | null}
+}
+
+The \cowdoc_dir{cowel_char_get_name} directive returns the official Unicode name
+of the first code point in \cowdoc_attr{x}.
+If the code point has no official Unicode name
+(e.g. control characters, private-use characters, surrogates, and reserved code points),
+\cowdoc_c{null} is returned instead.
+
+\Bnote{
+Only the Unicode code point name is returned,
+not correction aliases or other aliases.
+For example,
+U+2118 ℘ has the official name \tt{SCRIPT CAPITAL P}
+and the correction alias \tt{WEIERSTRASS ELLIPTIC FUNCTION};
+this directive returns the former.
+}
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_char_get_name("A")
+\cowel_char_get_name("¶")
+\: U+2118 has a correction alias but the official name is returned.
+\cowel_char_get_name("℘")
+}}
+Generated HTML:
+\htmlblock{
+\cowel_char_get_name("A")
+\cowel_char_get_name("¶")
+\cowel_char_get_name("℘")
+}
+}
+
+\Bug{
+If more than one code point is provided,
+some input is discarded:
+\cowblock{
+\\cowel_char_get_name("AB")
+}
+This renders as
+\Bindent{
+\cowel_char_get_name("A")
+}
+... which corresponds to '\tt{A}',
+whereas '\tt{B}' is discarded.
+}
+
 \h3{HTML utilities}
 
 \cowdoc_dir_h4("cowel_html_element", "HTML element")

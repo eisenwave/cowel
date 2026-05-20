@@ -1627,6 +1627,8 @@ h1 {
 <a href=#dir-cowel_char_by_num><h4><code><h- data-h=mk_tag>\cowel_char_by_num</h-></code> — Character by code point number</h4></a>
 <div class=toc-num data-level=4>9.2.4</div>
 <a href=#dir-cowel_char_get_num><h4><code><h- data-h=mk_tag>\cowel_char_get_num</h-></code> — Get digits of character</h4></a>
+<div class=toc-num data-level=4>9.2.5</div>
+<a href=#dir-cowel_char_get_name><h4><code><h- data-h=mk_tag>\cowel_char_get_name</h-></code> — Get name of character</h4></a>
 <div class=toc-num data-level=3>9.3</div>
 <a href=#html-utilities><h3>HTML utilities</h3></a>
 <div class=toc-num data-level=4>9.3.1</div>
@@ -4439,6 +4441,51 @@ some input is discarded:
 </div>
 <p>... which corresponds to '<tt->a</tt->',
 whereas '<tt->b</tt->' and '<tt->c</tt->' are discarded.
+</p></bug-block>
+
+<h4 id=dir-cowel_char_get_name><a class=para href=#dir-cowel_char_get_name></a>9.2.5. <code><h- data-h=mk_tag>\cowel_char_get_name</h-></code> — Get name of character</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_char_get_name</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str | null</h->
+</pre>
+
+<p>The <code><h- data-h=mk_tag>\cowel_char_get_name</h-></code> directive returns the official Unicode name
+of the first code point in <tt-><h- data-h=mk_attr>x</h-></tt->.
+If the code point has no official Unicode name
+(e.g. control characters, private-use characters, surrogates, and reserved code points),
+<code>null</code> is returned instead.
+</p>
+<note-block><p><intro-></intro-> 
+Only the Unicode code point name is returned,
+not correction aliases or other aliases.
+For example,
+U+2118 ℘ has the official name <tt->SCRIPT CAPITAL P</tt->
+and the correction alias <tt->WEIERSTRASS ELLIPTIC FUNCTION</tt->;
+this directive returns the former.
+</p></note-block>
+
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_char_get_name</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>A</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_char_get_name</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>¶</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+<h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> U+2118 has a correction alias but the official name is returned.</h->
+<h- data-h=mk_tag>\cowel_char_get_name</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>℘</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>LATIN CAPITAL LETTER A
+PILCROW SIGN
+SCRIPT CAPITAL P</code-block>
+</example-block>
+
+<bug-block><p><intro-></intro-> 
+If more than one code point is provided,
+some input is discarded:
+</p><code-block><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_char_get_name</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>AB</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code-block>
+<p>This renders as
+</p><div class=indent>
+LATIN CAPITAL LETTER A
+</div>
+<p>... which corresponds to '<tt->A</tt->',
+whereas '<tt->B</tt->' is discarded.
 </p></bug-block>
 
 <h3 id=html-utilities><a class=para href=#html-utilities></a>9.3. HTML utilities</h3>

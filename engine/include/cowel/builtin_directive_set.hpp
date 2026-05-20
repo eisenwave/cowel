@@ -145,6 +145,24 @@ Char_By_Name_Behavior final : Code_Point_Behavior {
 };
 
 struct [[nodiscard]]
+Char_Get_Name_Behavior final : Directive_Behavior {
+private:
+    static constexpr Type alternatives[] { Type::null, Type::str };
+    static constexpr Type return_type = Type::union_of(alternatives);
+    static_assert(return_type.is_canonical());
+
+public:
+    [[nodiscard]]
+    constexpr explicit Char_Get_Name_Behavior()
+        : Directive_Behavior { return_type }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const override;
+};
+
+struct [[nodiscard]]
 Char_Get_Num_Behavior final : Int_Directive_Behavior {
     [[nodiscard]]
     constexpr explicit Char_Get_Num_Behavior()
