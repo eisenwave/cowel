@@ -1,6 +1,6 @@
-#include <get_code_point_name.hpp>
-
 #include "cowel/util/code_point_names.hpp"
+
+#include <get_code_point_name.hpp>
 
 namespace cowel {
 namespace {

@@ -78,6 +78,14 @@ FetchContent_Declare(
     GIT_TAG        513a21d81ac9cc82690e15cf747ecea6bf1a14ca
 )
 FetchContent_MakeAvailable(code_point_names)
+# Suppress warnings from the library's headers by marking its include
+# directory as a system path (passes -isystem instead of -I to consumers).
+get_target_property(_cpn_inc get_code_point_name INTERFACE_INCLUDE_DIRECTORIES)
+set_property(
+    TARGET get_code_point_name
+    PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${_cpn_inc}"
+)
+unset(_cpn_inc)
 
 find_package(Python3 REQUIRED)
 
