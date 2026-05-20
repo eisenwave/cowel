@@ -547,6 +547,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
                 .column = e.span.column,
                 .begin = e.span.begin,
                 .length = e.span.length,
+                .file_id = static_cast<cowel_file_id>(e.span.file),
                 .article = article_ptr,
                 .article_length = e.article.size(),
             };

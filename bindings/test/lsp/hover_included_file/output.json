@@ -1,0 +1,54 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "capabilities": {
+        "textDocumentSync": {
+          "openClose": true,
+          "change": 1
+        },
+        "hoverProvider": true
+      },
+      "serverInfo": {
+        "name": "cowel"
+      }
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "textDocument/publishDiagnostics",
+    "params": {
+      "uri": "{{ROOT_URI}}/fragment.cow",
+      "diagnostics": []
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "textDocument/publishDiagnostics",
+    "params": {
+      "uri": "{{ROOT_URI}}/index.cow",
+      "diagnostics": []
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "### Directive `b`\n```\nb(\n  attr: pack named str,\n  content: block,\n): block\n```\nMakes content bold.\n\n#### Example\n`b{hello}` → `<b>hello</b>`\n"
+      },
+      "range": {
+        "start": {
+          "line": 0,
+          "character": 0
+        },
+        "end": {
+          "line": 0,
+          "character": 2
+        }
+      }
+    }
+  }
+]

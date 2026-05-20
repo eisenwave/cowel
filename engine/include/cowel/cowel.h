@@ -203,6 +203,9 @@ struct cowel_hover {
     size_t begin;
     /// @brief Length of the directive name in UTF-8 code units (excluding the leading backslash).
     size_t length;
+    /// @brief The id of the file in which the hover occurs.
+    /// -1 refers to the main file, >= 0 refers to included files.
+    cowel_file_id file_id;
     /// @brief Null-terminated hover article text (UTF-8).
     const char* article;
     /// @brief Byte length of `article`, excluding the null terminator.
@@ -215,6 +218,7 @@ struct cowel_hover_u8 {
     size_t column;
     size_t begin;
     size_t length;
+    cowel_file_id file_id;
     const char8_t* article;
     size_t article_length;
 };
