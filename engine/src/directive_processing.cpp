@@ -74,7 +74,7 @@ void push_escape_hover(const ast::Primary& node, std::u8string_view units, Conte
     // U+XXXX <display_name>
     std::u8string article;
     article.reserve(128);
-    article += u8"# ";
+    article += u8"### ";
     article += kind_label;
     article += u8" `";
     article += source;

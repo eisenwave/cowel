@@ -29,7 +29,7 @@
     "result": {
       "contents": {
         "kind": "markdown",
-        "value": "**`\\b`** — Bold\n\nWraps its content in an HTML `<b>` element.\n\n```\nb(\n  attr: pack named str,\n  content: block,\n): block\n```\n"
+        "value": "### Directive `b`\n```\nb(\n  attr: pack named str,\n  content: block,\n): block\n```\nMakes content bold.\n\n#### Example\n`b{hello}` → `<b>hello</b>`\n"
       },
       "range": {
         "start": {
