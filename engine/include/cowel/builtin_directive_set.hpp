@@ -82,7 +82,6 @@ public:
 struct Error_Behavior : Block_Directive_Behavior {
     static constexpr auto id = html_tag::error_;
 
-
     [[nodiscard]]
     constexpr explicit Error_Behavior(const std::u8string_view hover_article) noexcept
         : Block_Directive_Behavior { hover_article }
@@ -950,10 +949,7 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit URL_Behavior(
-        std::u8string_view url_prefix,
-        std::u8string_view hover_article
-    )
+    constexpr explicit URL_Behavior(std::u8string_view url_prefix, std::u8string_view hover_article)
         : Block_Directive_Behavior { hover_article }
         , m_url_prefix { url_prefix }
     {
@@ -1026,10 +1022,7 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Here_Behavior(
-        Directive_Display display,
-        std::u8string_view hover_article
-    )
+    constexpr explicit Here_Behavior(Directive_Display display, std::u8string_view hover_article)
         : Block_Directive_Behavior { hover_article }
         , m_display { display }
     {
@@ -1072,10 +1065,7 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Math_Behavior(
-        Directive_Display display,
-        std::u8string_view hover_article
-    )
+    constexpr explicit Math_Behavior(Directive_Display display, std::u8string_view hover_article)
         : Block_Directive_Behavior { hover_article }
         , m_display { display }
     {
