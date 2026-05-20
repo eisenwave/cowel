@@ -6,6 +6,8 @@
 #include <string>
 #include <string_view>
 
+#include "cowel/util/fixed_string.hpp"
+
 namespace cowel {
 
 /// @brief Returns a Unicode code point by its character name,
@@ -31,6 +33,31 @@ std::size_t nearest_matches_for_codepoint_name(
     std::u8string_view pattern,
     std::span<Code_Point_Name_Match> out_matches
 );
+
+/// @brief Returns the Unicode name of a code point
+/// as defined in the Unicode Character Database.
+/// @param code_point The Unicode code point to look up.
+/// @return The name, or an empty string if the code point has no name.
+[[nodiscard]]
+Fixed_String8<96> code_point_name(char32_t code_point) noexcept;
+
+/// @brief Returns the most suitable name for display of a code point.
+/// Specifically, this returns a name from the following name sources,
+/// in that order of precedence:
+/// - `correction` name alias
+/// - `code_point_name(code_point)`
+/// - `control` name alias
+/// - `alternate` name alias
+/// - `figment` name alias
+///
+/// Note that names from the `abbreviation` name alias category are never returned.
+/// Also note that only one of the aliases is returned,
+/// though there are code points like `U+000A` with multiple aliases in the same category.
+/// @param code_point The Unicode code point to look up.
+/// @return The display name,
+/// or an empty string if the code point has no name and no aliases.
+[[nodiscard]]
+Fixed_String8<96> code_point_display_name(char32_t code_point) noexcept;
 
 } // namespace cowel
 
