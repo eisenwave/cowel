@@ -55,6 +55,8 @@ constexpr Char_By_Name_Behavior cowel_char_by_name //
     {};
 constexpr Char_By_Num_Behavior cowel_char_by_num //
     {};
+constexpr Char_Get_Name_Behavior cowel_char_get_name //
+    {};
 constexpr Char_Get_Num_Behavior cowel_char_get_num //
     {};
 constexpr N_Ary_Numeric_Expression_Behavior cowel_div //
@@ -533,6 +535,7 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_entity),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_name),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_by_num),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_get_name),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_char_get_num),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_div),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_div_to_neg_inf),

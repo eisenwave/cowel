@@ -154,4 +154,55 @@ Char_Get_Num_Behavior::do_evaluate(const Invocation& call, Context& context) con
     return Big_Int { Int128 { code_point } };
 }
 
+Result<Value, Processing_Status>
+Char_Get_Name_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    String_Matcher x_matcher { context.get_transient_memory() };
+    Parameter x_parameter { u8"x", Optionality::mandatory, x_matcher };
+    Parameter* const parameters[] { &x_parameter };
+
+    const auto args_status = match_call(parameters, call, context);
+    if (args_status != Processing_Status::ok) {
+        return args_status;
+    }
+
+    const std::u8string_view input_text = x_matcher.get();
+
+    if (input_text.empty()) {
+        context.try_error(
+            diagnostic::char_blank, call.directive.get_source_span(),
+            u8"Nothing can be generated because the input is empty."sv
+        );
+        return Processing_Status::error;
+    }
+
+    const std::expected<utf8::Code_Point_And_Length, utf8::Unicode_Error> decode_result
+        = utf8::decode_and_length(input_text);
+    if (!decode_result) {
+        context.try_error(
+            diagnostic::char_corrupted, call.directive.get_source_span(),
+            u8"The input could not be interpreted as a code point because it is malformed UTF-8."sv
+        );
+        return Processing_Status::error;
+    }
+
+    const auto [code_point, length] = *decode_result;
+    if (std::size_t(length) != input_text.size()) {
+        COWEL_ASSERT(std::size_t(length) <= input_text.size());
+        context.try_warning(
+            diagnostic::ignored_input, call.directive.get_source_span(),
+            u8"Some of the code units inside were ignored because only the first given code point "
+            u8"is named. "
+            u8"This can happen if you type a glyph that consist of multiple "
+            u8"code points, like a country flag."sv
+        );
+    }
+
+    const Fixed_String8<96> name = code_point_name(code_point);
+    if (name.empty()) {
+        return Value::null;
+    }
+    return Value::string(name, String_Kind::ascii);
+}
+
 } // namespace cowel

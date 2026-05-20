@@ -9,6 +9,7 @@
   such as to generate `<h1 id=int><h- data-h=kw_type>int</h></h1>` automatically
   from a syntax-highlighted title (notice that `id=int` is plain text).
 - Added `cowel_str_substr` directive for taking substrings (#333)
+- Added `cowel_char_get_name` directive for obtaining code point names (#363)
 - Updated µlight for various syntax highlighting fixes (#336)
 - Fixed crash on file ending in closing parenthesis of a *group* (#352)
 

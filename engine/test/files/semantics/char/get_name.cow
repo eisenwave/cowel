@@ -1,0 +1,27 @@
+\test_input{
+\: ASCII named code point
+\cowel_char_get_name("A")
+\: Multi-byte named code point
+\cowel_char_get_name("¶")
+\: Code point with correction alias - returns official name, not alias
+\cowel_char_get_name("℘")
+\: Control character - no official Unicode name, returns null
+\cowel_char_get_name(cowel_char_by_num(1))
+
+\test_expect_warning("ignored.input"){\cowel_char_get_name("AB")}
+
+\test_expect_error("type.mismatch"){\cowel_char_get_name()}
+\test_expect_error("char.blank"){\cowel_char_get_name("")}
+}
+
+\test_output{
+LATIN CAPITAL LETTER A
+PILCROW SIGN
+SCRIPT CAPITAL P
+null
+
+LATIN CAPITAL LETTER A
+
+<error->\cowel_char_get_name()</error->
+<error->\cowel_char_get_name("")</error->
+}
