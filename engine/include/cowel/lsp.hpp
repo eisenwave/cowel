@@ -254,16 +254,12 @@ template <typename T>
 struct Serializer<std::span<const T>> {
     [[nodiscard]]
     static std::optional<std::span<const T>>
-    from_json(const json::Value& val, Deserialize_Storage& storage)
+    from_json(const json::Array& val, Deserialize_Storage& storage)
     {
-        const json::Array* const array = val.as_array();
-        if (!array) {
-            return {};
-        }
         std::vector<T> vector;
-        vector.reserve(array->size());
-        for (const json::Value& element : *array) {
-            std::optional<T> element_value = from_json<T>(element, storage);
+        vector.reserve(val.size());
+        for (const json::Value& element : val) {
+            std::optional<T> element_value = lsp::from_json<T>(element, storage);
             if (!element_value) {
                 return {};
             }
