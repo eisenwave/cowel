@@ -94,39 +94,79 @@ struct Deserialize_Storage {
 
 namespace detail {
 
+/// A JSON serializer (and deserializer),
+/// where each specialization is expected to provide two static member functions:
+/// - `std::optional<T> from_json(const json_type_t<T>&)`
+/// - `json_type_t<T> to_json(const T& val, std::pmr::memory_resource*)`
 template <typename T>
 struct Serializer;
 
-template <>
-struct Serializer<bool> {
+/// The corresponding JSON type of `T` when serialized.
+template <typename T>
+using json_type_t = decltype(Serializer<T>::to_json(
+    std::declval<const T&>(),
+    static_cast<std::pmr::memory_resource*>(nullptr)
+));
+
+} // namespace detail
+
+template <typename T>
+concept json_serializable = requires { detail::Serializer<T> {}; };
+
+/// Deserializes from one of `json::Value`'s alternatives to `T`
+/// (specifically from the `json_type_t<T>`).
+template <json_serializable T>
+    requires(!std::is_same_v<detail::json_type_t<T>, json::Value>)
+std::optional<T> from_json(const detail::json_type_t<T>& val, Deserialize_Storage& storage);
+/// Deserializes from `json::Value`,
+/// which first requires checking whether the active alternative is `json_type_t<T>`,
+/// and if so, deserializing that alternative.
+template <json_serializable T>
+std::optional<T> from_json(const json::Value& val, Deserialize_Storage& storage);
+
+template <json_serializable T>
+detail::json_type_t<T> to_json(const T& val, std::pmr::memory_resource* memory);
+
+namespace detail {
+
+template <typename T>
+struct Identity_Serializer {
     [[nodiscard]]
-    static std::optional<bool> from_json(const json::Value& val, Deserialize_Storage&)
+    static std::optional<T> from_json(const T& val, Deserialize_Storage&)
     {
-        if (const bool* const result = val.as_boolean()) {
-            return *result;
-        }
-        return {};
+        return val;
     }
     [[nodiscard]]
-    static bool to_json(const bool val, std::pmr::memory_resource* const)
+    static T to_json(const T& val, std::pmr::memory_resource* const)
     {
         return val;
     }
 };
 
+template <>
+struct Serializer<json::Null> : Identity_Serializer<json::Null> { };
+template <>
+struct Serializer<bool> : Identity_Serializer<bool> { };
+template <>
+struct Serializer<json::Number> : Identity_Serializer<json::Number> { };
+template <>
+struct Serializer<json::Array> : Identity_Serializer<json::Array> { };
+template <>
+struct Serializer<json::Object> : Identity_Serializer<json::Object> { };
+template <>
+struct Serializer<json::Value> : Identity_Serializer<json::Value> { };
+
 template <typename T>
     requires std::is_integral_v<T>
 struct Serializer<T> {
     [[nodiscard]]
-    static std::optional<T> from_json(const json::Value& val, Deserialize_Storage&)
+    static std::optional<T> from_json(const json::Number val, Deserialize_Storage&)
     {
-        if (const json::Number* const result = val.as_number()) {
-            json::Number integral;
-            if (*result >= json::Number(std::numeric_limits<T>::min()) //
-                && *result <= json::Number(std::numeric_limits<T>::max()) //
-                && std::modf(*result, &integral) == 0.f) {
-                return static_cast<T>(integral);
-            }
+        json::Number integral;
+        if (val >= json::Number(std::numeric_limits<T>::min()) //
+            && val <= json::Number(std::numeric_limits<T>::max()) //
+            && std::modf(val, &integral) == 0.f) {
+            return static_cast<T>(integral);
         }
         return {};
     }
@@ -138,48 +178,12 @@ struct Serializer<T> {
 };
 
 template <>
-struct Serializer<json::Number> {
-    [[nodiscard]]
-    static std::optional<json::Number> from_json(const json::Value& val, Deserialize_Storage&)
-    {
-        if (const json::Number* const result = val.as_number()) {
-            return *result;
-        }
-        return {};
-    }
-    [[nodiscard]]
-    static json::Number to_json(const json::Number val, std::pmr::memory_resource* const)
-    {
-        return val;
-    }
-};
-
-template <>
-struct Serializer<Null> {
-    [[nodiscard]]
-    static std::optional<Null> from_json(const json::Value& val, Deserialize_Storage&)
-    {
-        if (val.as_null()) {
-            return Null {};
-        }
-        return {};
-    }
-    [[nodiscard]]
-    static json::Null to_json(const Null, std::pmr::memory_resource* const)
-    {
-        return Null {};
-    }
-};
-
-template <>
 struct Serializer<std::u8string_view> {
     [[nodiscard]]
-    static std::optional<std::u8string_view> from_json(const json::Value& val, Deserialize_Storage&)
+    static std::optional<std::u8string_view>
+    from_json(const json::String& val, Deserialize_Storage&)
     {
-        if (const json::String* const result = val.as_string()) {
-            return *result;
-        }
-        return {};
+        return val;
     }
     [[nodiscard]]
     static json::String
@@ -190,23 +194,9 @@ struct Serializer<std::u8string_view> {
 };
 
 template <>
-struct Serializer<json::Value> {
-    [[nodiscard]]
-    static std::optional<json::Value> from_json(const json::Value& val, Deserialize_Storage&)
-    {
-        return val;
-    }
-    [[nodiscard]]
-    static json::Value to_json(const json::Value& val, std::pmr::memory_resource* const)
-    {
-        return val;
-    }
-};
-
-template <>
 struct Serializer<Error_Code> {
     [[nodiscard]]
-    static std::optional<Error_Code> from_json(const json::Value& val, Deserialize_Storage& storage)
+    static std::optional<Error_Code> from_json(const json::Number val, Deserialize_Storage& storage)
     {
         if (const std::optional<Integer> integer = Serializer<Integer>::from_json(val, storage)) {
             return Error_Code(*integer);
@@ -226,7 +216,7 @@ variant_from_json(const json::Value& val, Deserialize_Storage& storage)
 {
     std::optional<std::variant<Ts...>> result;
     ([&]() -> bool {
-        auto deserialized = Serializer<Ts>::from_json(val, storage);
+        auto deserialized = from_json<Ts>(val, storage);
         if (!deserialized) {
             return false;
         }
@@ -273,7 +263,7 @@ struct Serializer<std::span<const T>> {
         std::vector<T> vector;
         vector.reserve(array->size());
         for (const json::Value& element : *array) {
-            std::optional<T> element_value = Serializer<T>::from_json(element, storage);
+            std::optional<T> element_value = from_json<T>(element, storage);
             if (!element_value) {
                 return {};
             }
@@ -358,7 +348,7 @@ bool extract_member(
             return true;
         }
         using inner = typename value_type::value_type;
-        auto deserialized = Serializer<inner>::from_json(*field, storage);
+        auto deserialized = from_json<inner>(*field, storage);
         if (!deserialized) {
             return false;
         }
@@ -374,7 +364,7 @@ bool extract_member(
         if (field == nullptr) {
             return false;
         }
-        auto deserialized = Serializer<value_type>::from_json(*field, storage);
+        auto deserialized = from_json<value_type>(*field, storage);
         if (!deserialized) {
             return false;
         }
@@ -397,7 +387,7 @@ void append_member(json::Object& out, const typename decltype(Member)::class_typ
         out.push_back(
             {
                 json::String { std::u8string_view { Member.name }, memory },
-                json::Value { Serializer<inner>::to_json(*opt, memory) },
+                json::Value { to_json<inner>(*opt, memory) },
             }
         );
     }
@@ -413,7 +403,7 @@ void append_member(json::Object& out, const typename decltype(Member)::class_typ
         out.push_back(
             {
                 json::String { std::u8string_view { Member.name }, memory },
-                json::Value { Serializer<value_type>::to_json(val.*Member.member_ptr, memory) },
+                json::Value { to_json<value_type>(val.*Member.member_ptr, memory) },
             }
         );
     }
@@ -423,14 +413,10 @@ template <typename T, Member_Description... Members>
 struct Object_Serializer {
     static_assert((std::is_same_v<T, typename decltype(Members)::class_type> && ...));
     [[nodiscard]]
-    static std::optional<T> from_json(const json::Value& val, Deserialize_Storage& storage)
+    static std::optional<T> from_json(const json::Object& val, Deserialize_Storage& storage)
     {
-        const json::Object* const obj = val.as_object();
-        if (obj == nullptr) {
-            return {};
-        }
         T result {};
-        if (!((extract_member<Members>(*obj, result, storage)) && ...)) {
+        if (!((extract_member<Members>(val, result, storage)) && ...)) {
             return {};
         }
         return result;
@@ -541,7 +527,7 @@ template <>
 struct Serializer<Diagnostic_Severity> {
     [[nodiscard]]
     static std::optional<Diagnostic_Severity>
-    from_json(const json::Value& val, Deserialize_Storage& storage)
+    from_json(const json::Number& val, Deserialize_Storage& storage)
     {
         if (const auto integer = Serializer<Default_Underlying>::from_json(val, storage)) {
             return Diagnostic_Severity(*integer);
@@ -960,8 +946,10 @@ struct Serializer<Response_Message>
 /// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
 struct Notification_Message {
     std::u8string_view jsonrpc = u8"2.0"sv;
+    /// The method to be invoked.
     std::u8string_view method;
-    std::optional<json::Value> params = {};
+    /// The notification's params.
+    std::optional<std::variant<std::span<const json::Array>, json::Object>> params;
 
     friend bool operator==(const Notification_Message&, const Notification_Message&) = default;
 };
@@ -978,14 +966,29 @@ struct Serializer<Notification_Message>
 
 } // namespace detail
 
-template <typename T>
-std::optional<T> from_json(const json::Value& val, Deserialize_Storage& storage)
+template <json_serializable T>
+    requires(!std::is_same_v<detail::json_type_t<T>, json::Value>)
+std::optional<T> from_json(const detail::json_type_t<T>& val, Deserialize_Storage& storage)
 {
     return detail::Serializer<T>::from_json(val, storage);
 }
+template <json_serializable T>
+std::optional<T> from_json(const json::Value& val, Deserialize_Storage& storage)
+{
+    if constexpr (std::is_same_v<detail::json_type_t<T>, json::Value>) {
+        return detail::Serializer<T>::from_json(val, storage);
+    }
+    else {
+        const auto* const alternative = std::get_if<detail::json_type_t<T>>(&val);
+        if (alternative) {
+            return detail::Serializer<T>::from_json(*alternative, storage);
+        }
+        return {};
+    }
+}
 
-template <typename T>
-std::convertible_to<json::Value> auto to_json(const T& val, std::pmr::memory_resource* const memory)
+template <json_serializable T>
+detail::json_type_t<T> to_json(const T& val, std::pmr::memory_resource* const memory)
 {
     return detail::Serializer<T>::to_json(val, memory);
 }

@@ -5,7 +5,6 @@
 /// exposes a C API consumed by the TypeScript LSP runner in `bindings/node/`.
 
 #include <algorithm>
-#include <deque>
 #include <filesystem>
 #include <memory_resource>
 #include <optional>
@@ -94,17 +93,29 @@ struct Hover_Entry {
     std::u8string article;
 };
 
-/// @brief All mutable server state bundled to avoid scattered globals.
-struct Server_State {
-    /// Documents currently open in the editor (URI → full content).
-    String_Map<std::u8string> open_docs;
-    /// Per-URI hover entries collected during validation.
-    String_Map<std::vector<Hover_Entry>> hover_map;
-    /// Maps each validated entry-point URI to the set of file URIs it
-    /// transitively included during its last validation run.
+struct Document {
+    /// The UTF-8 text content of the document.
+    std::u8string content {};
+    /// The filesystem path of this document.
+    std::u8string path {};
+    /// The `file://` URI of this document.
+    std::u8string uri {};
+    /// Hover entries collected during validation.
+    std::vector<Hover_Entry> hovers {};
+    /// List of file URIs that were transitively included during its last validation run.
     /// Used to find which open documents need re-validation
     /// when an included file changes.
-    String_Map<std::vector<std::u8string>> doc_includes;
+    std::vector<std::u8string> includes {};
+    /// True when this is a disk-loaded document transiently inserted into `open_docs`
+    /// for a validation run; such entries are erased when the run completes.
+    bool transient = false;
+};
+
+/// @brief All mutable server state bundled to avoid scattered globals.
+struct Server_State {
+private:
+    /// Documents currently open in the editor (URI → document).
+    String_Map<Document> m_open_docs;
     /// Set to true after a "shutdown" request.
     bool shutdown_requested = false;
     /// Set to true after an LSP "exit" notification.
@@ -117,46 +128,148 @@ struct Server_State {
     /// otherwise, they are UTF-16 code-unit offsets.
     bool use_utf8_positions = false;
 
-    /// @brief Inserts or updates an entry in `open_docs`
-    /// using transparent comparison to avoid a key allocation on update.
-    /// @returns An iterator to the inserted or updated entry.
-    String_Map<std::u8string>::iterator
-    upsert_doc(const std::u8string_view uri, const std::u8string_view text)
+public:
+    [[nodiscard]]
+    explicit Server_State()
+        = default;
+
+    [[nodiscard]]
+    const String_Map<Document>& get_open_docs() const
     {
-        auto it = open_docs.find(uri);
-        if (it == open_docs.end()) {
-            it = open_docs.emplace(std::u8string(uri), std::u8string(text)).first;
+        return m_open_docs;
+    }
+
+    [[nodiscard]]
+    Document* find_open_document(const std::u8string_view uri)
+    {
+        const auto it = m_open_docs.find(uri);
+        return it != m_open_docs.end() ? &it->second : nullptr;
+    }
+
+    [[nodiscard]]
+    bool has_open_document(const std::u8string_view uri) const
+    {
+        return m_open_docs.find(uri) != m_open_docs.end();
+    }
+    void erase_open_document(const std::u8string_view uri)
+    {
+        const auto it = m_open_docs.find(uri);
+        if (it != m_open_docs.end()) {
+            m_open_docs.erase(it);
         }
-        else {
-            it->second.assign(text);
+    }
+    void clear_transient_documents()
+    {
+        std::erase_if(m_open_docs, [](const auto& kv) { return kv.second.transient; });
+    }
+
+    /// @brief Inserts or updates an entry in `open_docs`.
+    /// @returns An iterator to the inserted or updated entry.
+    String_Map<Document>::iterator insert_or_assign_document(
+        const std::u8string_view uri,
+        const std::u8string_view path,
+        const std::u8string_view text
+    )
+    {
+        const auto it = m_open_docs.find(uri);
+        if (it == m_open_docs.end()) {
+            return m_open_docs
+                .emplace(
+                    uri,
+                    Document {
+                        .content { text },
+                        .path { path },
+                        .uri { uri },
+                    }
+                )
+                .first;
         }
+        it->second = Document {
+            .content { text },
+            .path { path },
+            .uri { uri },
+        };
         return it;
     }
 
-    /// @brief Inserts or updates an entry in `doc_includes`
-    /// using transparent comparison to avoid a key allocation on update.
-    void upsert_doc_includes(const std::u8string_view uri, std::vector<std::u8string>&& includes)
+    /// @brief Inserts a transient (disk-loaded) document into `open_docs`.
+    /// @returns A reference to the inserted or pre-existing entry.
+    Document& emplace_transient_document(
+        const std::u8string_view uri,
+        const std::u8string_view path,
+        const std::u8string_view content
+    )
     {
-        auto it = doc_includes.find(uri);
-        if (it == doc_includes.end()) {
-            doc_includes.emplace(std::u8string(uri), std::move(includes));
-        }
-        else {
-            it->second = std::move(includes);
-        }
+        return m_open_docs
+            .emplace(
+                uri,
+                Document {
+                    .content { content },
+                    .path { path },
+                    .uri { uri },
+                    .transient = true,
+                }
+            )
+            .first->second;
     }
 
-    /// @brief Inserts or updates an entry in `hover_map`
-    /// using transparent comparison to avoid a key allocation on update.
-    void upsert_hovers(const std::u8string_view uri, std::vector<Hover_Entry>&& entries)
+    void append_output(const std::u8string_view s)
     {
-        auto it = hover_map.find(uri);
-        if (it == hover_map.end()) {
-            hover_map.emplace(std::u8string(uri), std::move(entries));
+        output += s;
+    }
+    void clear_output()
+    {
+        output.clear();
+    }
+    [[nodiscard]]
+    std::u8string_view get_output() const
+    {
+        return output;
+    }
+
+    [[nodiscard]]
+    bool uses_utf8_positions() const
+    {
+        return use_utf8_positions;
+    }
+    void set_use_utf8_positions(const bool value)
+    {
+        use_utf8_positions = value;
+    }
+
+    [[nodiscard]]
+    bool is_exit_requested() const
+    {
+        return should_exit;
+    }
+    void request_exit()
+    {
+        should_exit = true;
+    }
+
+    void request_shutdown()
+    {
+        shutdown_requested = true;
+    }
+
+    /// @brief Converts a UTF-8 byte-offset column to an LSP `character` value.
+    /// @param line_start_byte is the byte offset of the first byte of the line
+    /// (i.e. `loc.begin - loc.column`).
+    /// Uses `use_utf8_positions` to decide whether to return the byte offset unchanged
+    /// or convert it to a UTF-16 code-unit count.
+    [[nodiscard]]
+    std::size_t column_to_character(
+        const std::u8string_view bytes,
+        const std::size_t line_start_byte,
+        const std::size_t utf8_column
+    ) const
+    {
+        if (use_utf8_positions) {
+            return utf8_column;
         }
-        else {
-            it->second = std::move(entries);
-        }
+        const std::size_t safe_start = std::min(line_start_byte, bytes.size());
+        const std::size_t safe_end = std::min(line_start_byte + utf8_column, bytes.size());
+        return unchecked_utf8_to_utf16_length(bytes.substr(safe_start, safe_end - safe_start));
     }
 };
 
@@ -199,10 +312,10 @@ void do_write_message(const json::Value& msg, Request_Context& context)
         return result;
     }();
 
-    server_state.output += u8"Content-Length: "sv;
-    server_state.output += to_characters8(body.size());
-    server_state.output += u8"\r\n\r\n"sv;
-    server_state.output += body;
+    server_state.append_output(u8"Content-Length: "sv);
+    server_state.append_output(to_characters8(body.size()));
+    server_state.append_output(u8"\r\n\r\n"sv);
+    server_state.append_output(body);
 }
 
 void write_message(const lsp::Response_Message& msg, Request_Context& context)
@@ -252,7 +365,9 @@ std::u8string uri_to_path(const std::u8string_view uri_in)
 std::u8string path_to_uri(const std::u8string_view path)
 {
     constexpr auto upper_hex = u8"0123456789ABCDEF"sv;
-    std::u8string result = u8"file://"s;
+    constexpr auto prefix = u8"file://"s;
+    std::u8string result = prefix;
+    result.reserve(prefix.length() + (path.length() * 3 / 2));
     for (const char8_t c : path) {
         const auto uc = static_cast<unsigned char>(c);
         if (uc <= 0x20 || uc > 0x7e || uc == u8'#' || uc == u8'?' || uc == u8'%') {
@@ -285,20 +400,14 @@ struct Diagnostic {
     std::vector<Diagnostic_Location> stack;
 };
 
-/// @brief A file loaded during a validation run.
-struct Loaded_File {
-    std::u8string path;
-    std::u8string content;
-};
-
 /// @brief Per-validation context, passed as `data` into COWEL callbacks.
 struct Validation_Context {
     /// Filesystem path of the main document.
     std::u8string main_path;
-    /// Included files, indexed by `cowel_file_id` (>= 0).
-    /// This uses `deque` instead of `vector` to guarantee reference stability,
-    /// which is convenient in some places.
-    std::deque<Loaded_File> includes;
+    /// Pointers to included files, indexed by `cowel_file_id` (>= 0).
+    /// Each points into `server_state.open_docs`
+    /// (either a pre-existing editor document or a transient disk-loaded one).
+    std::vector<Document*> includes;
     /// Diagnostics collected by the `log` callback.
     std::vector<Diagnostic> diagnostics;
 };
@@ -322,27 +431,24 @@ cowel_file_result_u8 load_file_callback(
     // Resolve the base directory from which this include is relative.
     const std::u8string_view base_path = (relative_to == COWEL_FILE_ID_MAIN)
         ? validation_context.main_path
-        : validation_context.includes[std::size_t(relative_to)].path;
+        : validation_context.includes[std::size_t(relative_to)]->path;
 
     const std::filesystem::path resolved
         = (std::filesystem::path { base_path }.parent_path() / std::string { path_sv })
               .lexically_normal();
     const std::u8string resolved_str = resolved.u8string();
 
-    {
-        // Check if this file is open in the editor (in-memory override).
-        const std::u8string uri = path_to_uri(resolved_str);
-        const auto it = server_state.open_docs.find(uri);
-        if (it != server_state.open_docs.end()) {
-            const int id = static_cast<int>(validation_context.includes.size());
-            validation_context.includes.push_back({ resolved_str, it->second });
-            const auto& entry = validation_context.includes.back();
-            return {
-                COWEL_IO_OK,
-                { entry.content.data(), entry.content.size() },
-                id,
-            };
-        }
+    const std::u8string uri = path_to_uri(resolved_str);
+
+    // Check if this file is open in the editor (in-memory override).
+    if (Document* const doc = server_state.find_open_document(uri)) {
+        const int id = static_cast<int>(validation_context.includes.size());
+        validation_context.includes.push_back(doc);
+        return {
+            COWEL_IO_OK,
+            { doc->content.data(), doc->content.size() },
+            id,
+        };
     }
 
     // Ask the host to read the file from the filesystem.
@@ -355,14 +461,17 @@ cowel_file_result_u8 load_file_callback(
         return { COWEL_IO_ERROR_NOT_FOUND, {}, -1 };
     }
 
+    // Insert the file into server state as a transient document for the duration of
+    // this validation run; it will be erased by validate_document once compilation completes.
     const int id = static_cast<int>(validation_context.includes.size());
-    std::u8string file_text(static_cast<const char8_t*>(content_ptr), content_len);
-    validation_context.includes.push_back({ resolved_str, std::move(file_text) });
+    Document& transient_doc = server_state.emplace_transient_document(
+        uri, resolved_str, { static_cast<const char8_t*>(content_ptr), content_len }
+    );
     cowel_free(content_ptr, content_len, 1);
-    const auto& entry = validation_context.includes.back();
+    validation_context.includes.push_back(&transient_doc);
     return {
         COWEL_IO_OK,
-        { entry.content.data(), entry.content.size() },
+        { transient_doc.content.data(), transient_doc.content.size() },
         id,
     };
 }
@@ -414,50 +523,25 @@ std::optional<lsp::Diagnostic_Severity> cowel_severity_to_lsp_severity(const cow
     return {};
 }
 
-/// @brief Converts a UTF-8 byte-offset column to an LSP `character` value.
-/// @param line_start_byte is the byte offset of the first byte of the line
-/// (i.e. `loc.begin - loc.column`).
-/// @param use_utf8 When true, the column is returned unchanged;
-/// otherwise it is converted to a UTF-16 code-unit count.
-[[nodiscard]]
-std::size_t column_to_character(
-    const std::u8string_view bytes,
-    const std::size_t line_start_byte,
-    const std::size_t utf8_column,
-    const bool use_utf8
-) noexcept
-{
-    if (use_utf8) {
-        return utf8_column;
-    }
-    const std::size_t safe_start = std::min(line_start_byte, bytes.size());
-    const std::size_t safe_end = std::min(line_start_byte + utf8_column, bytes.size());
-    return unchecked_utf8_to_utf16_length(bytes.substr(safe_start, safe_end - safe_start));
-}
-
 /// @brief Computes the LSP end position by scanning `loc.length` bytes
 /// starting at `loc.begin` in @p bytes, counting newlines
-/// and converting to UTF-8 or UTF-16 code units according to @p use_utf8.
+/// and converting to UTF-8 or UTF-16 code units according to the server's position encoding.
 [[nodiscard]]
-lsp::Position compute_end_position(
-    const std::u8string_view bytes,
-    const Diagnostic_Location& loc,
-    const bool use_utf8
-)
+lsp::Position compute_end_position(const std::u8string_view bytes, const Diagnostic_Location& loc)
 {
     const std::size_t from = std::min(loc.begin, bytes.size());
     const std::size_t to = std::min(loc.begin + loc.length, bytes.size());
     const std::size_t line_start_byte = (from >= loc.column) ? from - loc.column : 0;
     lsp::Position result {
         loc.line,
-        column_to_character(bytes, line_start_byte, loc.column, use_utf8),
+        server_state.column_to_character(bytes, line_start_byte, loc.column),
     };
     for (std::size_t i = from; i < to; ++i) {
         if (bytes[i] == u8'\n') {
             ++result.line;
             result.character = 0;
         }
-        else if (use_utf8) {
+        else if (server_state.uses_utf8_positions()) {
             ++result.character;
         }
         else if ((bytes[i] & 0xC0u) != 0x80u) {
@@ -533,23 +617,22 @@ Validate_Result validate_document(
                 std::u8string_view hover_bytes = content;
 
                 if (h.file_id >= 0 && std::size_t(h.file_id) < validation_context.includes.size()) {
-                    const auto& include = validation_context.includes[std::size_t(h.file_id)];
-                    hover_uri = path_to_uri(include.path);
-                    hover_bytes = include.content;
+                    const Document* const include
+                        = validation_context.includes[std::size_t(h.file_id)];
+                    hover_uri = include->uri;
+                    hover_bytes = include->content;
                 }
 
                 const std::size_t line_start_byte = h.begin - h.column;
                 const lsp::Position start_pos {
                     .line = h.line,
-                    .character = column_to_character(
-                        hover_bytes, line_start_byte, h.column, server_state.use_utf8_positions
-                    ),
+                    .character
+                    = server_state.column_to_character(hover_bytes, line_start_byte, h.column),
                 };
                 const lsp::Position end_pos {
                     .line = h.line,
-                    .character = column_to_character(
-                        hover_bytes, line_start_byte, h.column + h.length,
-                        server_state.use_utf8_positions
+                    .character = server_state.column_to_character(
+                        hover_bytes, line_start_byte, h.column + h.length
                     ),
                 };
                 hover_by_uri[hover_uri].push_back(
@@ -560,9 +643,12 @@ Validate_Result validate_document(
                 );
             }
         }
-        // Store hovers for each URI they belong to.
+        // Store hovers for each URI they belong to,
+        // but only for documents that are open in the editor.
         for (auto& [hover_uri, entries] : hover_by_uri) {
-            server_state.upsert_hovers(hover_uri, std::move(entries));
+            if (Document* const doc = server_state.find_open_document(hover_uri)) {
+                doc->hovers = std::move(entries);
+            }
         }
     }
 
@@ -576,7 +662,7 @@ Validate_Result validate_document(
             return {};
         }
         auto* const buf = static_cast<char8_t*>(context.memory.allocate(s.size(), 1));
-        std::copy(s.begin(), s.end(), buf);
+        std::ranges::copy(s, buf);
         return { buf, s.size() };
     };
 
@@ -600,9 +686,10 @@ Validate_Result validate_document(
             const auto& primary = diagnostic.stack[0];
             if (primary.file_id >= 0
                 && std::size_t(primary.file_id) < validation_context.includes.size()) {
-                const auto& include = validation_context.includes[std::size_t(primary.file_id)];
-                diagnostic_uri = path_to_uri(include.path);
-                diagnostic_bytes = include.content;
+                const Document* const include
+                    = validation_context.includes[std::size_t(primary.file_id)];
+                diagnostic_uri = include->uri;
+                diagnostic_bytes = include->content;
             }
             else if (!primary.file_name.empty()) {
                 diagnostic_uri = primary.file_name.starts_with(u8"file://"sv)
@@ -619,11 +706,10 @@ Validate_Result validate_document(
                 const std::size_t line_start_byte
                     = (loc.begin >= loc.column) ? loc.begin - loc.column : 0;
                 start_pos.line = loc.line;
-                start_pos.character = column_to_character(
-                    diagnostic_bytes, line_start_byte, loc.column, server_state.use_utf8_positions
+                start_pos.character = server_state.column_to_character(
+                    diagnostic_bytes, line_start_byte, loc.column
                 );
-                end_pos
-                    = compute_end_position(diagnostic_bytes, loc, server_state.use_utf8_positions);
+                end_pos = compute_end_position(diagnostic_bytes, loc);
             }
             return { start_pos, end_pos };
         }();
@@ -642,9 +728,11 @@ Validate_Result validate_document(
     Validate_Result result;
     result.by_uri = std::move(by_uri);
     result.included_uris.reserve(validation_context.includes.size());
-    for (const auto& include : validation_context.includes) {
-        result.included_uris.push_back(path_to_uri(include.path));
+    for (const Document* const include : validation_context.includes) {
+        result.included_uris.push_back(include->uri);
     }
+    server_state.clear_transient_documents();
+
     return result;
 }
 
@@ -674,9 +762,8 @@ std::optional<std::vector<std::u8string>> find_config_entry_points(const std::u8
         std::u8string config_content;
         bool config_found = false;
         const std::u8string config_uri = path_to_uri(config_path);
-        if (const auto it = server_state.open_docs.find(config_uri);
-            it != server_state.open_docs.end()) {
-            config_content = it->second;
+        if (const Document* const doc = server_state.find_open_document(config_uri)) {
+            config_content = doc->content;
             config_found = true;
         }
         else {
@@ -769,12 +856,14 @@ String_Map<std::vector<lsp::Diagnostic>> collect_diagnostics_by_uri(
         // that have no current errors,
         // so any previously published diagnostics for those files are cleared.
         for (const std::u8string& inc_uri : included_uris) {
-            if (server_state.open_docs.contains(inc_uri)) {
+            if (server_state.has_open_document(inc_uri)) {
                 doc_by_uri.try_emplace(inc_uri, empty_diagnostics);
             }
         }
         by_uri = std::move(doc_by_uri);
-        server_state.upsert_doc_includes(uri, std::move(included_uris));
+        if (Document* const doc = server_state.find_open_document(uri)) {
+            doc->includes = std::move(included_uris);
+        }
         return by_uri;
     }
 
@@ -797,9 +886,8 @@ String_Map<std::vector<lsp::Diagnostic>> collect_diagnostics_by_uri(
         // then fall back to the filesystem via cowel_lsp_host_read_file.
         std::u8string ep_content_storage;
         std::u8string_view ep_content;
-        if (const auto it = server_state.open_docs.find(entry_point_uri);
-            it != server_state.open_docs.end()) {
-            ep_content = it->second;
+        if (const Document* const doc = server_state.find_open_document(entry_point_uri)) {
+            ep_content = doc->content;
         }
         else {
             void* text = nullptr;
@@ -817,7 +905,9 @@ String_Map<std::vector<lsp::Diagnostic>> collect_diagnostics_by_uri(
 
         auto [ep_by_uri, ep_included_uris]
             = validate_document(entry_point_uri, ep_content, context);
-        server_state.upsert_doc_includes(entry_point_uri, std::move(ep_included_uris));
+        if (Document* const doc = server_state.find_open_document(entry_point_uri)) {
+            doc->includes = std::move(ep_included_uris);
+        }
         for (const auto& [d_uri, d_diags] : ep_by_uri) {
             std::vector<lsp::Diagnostic>& slot
                 = by_uri.try_emplace(d_uri, empty_diagnostics).first->second;
@@ -897,29 +987,27 @@ struct URI_And_Content {
 [[nodiscard]]
 std::vector<URI_And_Content> get_open_dependent_roots(const std::u8string_view included_uri)
 {
-    // TODO: This step could probably be skipped if we kept track of which documents are non-roots.
+    // Collect URIs that appear in any open document's known include closure.
+    // Documents in this set are compiled as fragments via their includer,
+    // not as entry points, so they are not roots.
     std::vector<std::u8string_view> non_root_uris;
-    for (const auto& [doc_uri, includes] : server_state.doc_includes) {
-        if (server_state.open_docs.contains(doc_uri)) {
-            non_root_uris.insert(non_root_uris.end(), includes.begin(), includes.end());
-        }
+    for (const auto& [doc_uri, doc] : server_state.get_open_docs()) {
+        non_root_uris.insert(non_root_uris.end(), doc.includes.begin(), doc.includes.end());
     }
     std::ranges::sort(non_root_uris);
 
     std::vector<URI_And_Content> roots;
-    for (const auto& [doc_uri, doc_content] : server_state.open_docs) {
+    for (const auto& [doc_uri, doc] : server_state.get_open_docs()) {
         if (std::ranges::binary_search(non_root_uris, doc_uri)) {
             // fragment — compiled as part of its includer
             continue;
         }
         if (doc_uri != included_uri) {
-            const auto inc_it = server_state.doc_includes.find(doc_uri);
-            if (inc_it == server_state.doc_includes.end()
-                || !std::ranges::contains(inc_it->second, included_uri)) {
+            if (!std::ranges::contains(doc.includes, included_uri)) {
                 continue;
             }
         }
-        roots.push_back({ doc_uri, doc_content });
+        roots.push_back({ doc_uri, doc.content });
     }
     return roots;
 }
@@ -948,8 +1036,8 @@ void handle_hover(
     const std::u8string_view uri = params.text_document.uri;
     const lsp::Position pos = params.position;
 
-    const auto it = server_state.hover_map.find(uri);
-    if (it == server_state.hover_map.end()) {
+    const Document* const doc = server_state.find_open_document(uri);
+    if (doc == nullptr) {
         // No hover found at this position — return null per LSP spec.
         write_message(
             lsp::Response_Message {
@@ -962,7 +1050,7 @@ void handle_hover(
         return;
     }
 
-    for (const Hover_Entry& entry : it->second) {
+    for (const Hover_Entry& entry : doc->hovers) {
         const lsp::Range& range = entry.range;
         const std::u8string& article = entry.article;
         const bool after_start = pos.line > range.start.line
@@ -1023,7 +1111,7 @@ void handle_initialize(
         }
         return false;
     }();
-    server_state.use_utf8_positions = use_utf8;
+    server_state.set_use_utf8_positions(use_utf8);
     const auto position_encoding
         = use_utf8 ? lsp::position_encoding_kind::utf8 : std::optional<std::u8string_view> {};
 
@@ -1052,8 +1140,9 @@ void handle_initialize(
 
 void handle_did_open(const lsp::Did_Open_Text_Document_Params& params, Request_Context& context)
 {
-    const auto& [uri, text]
-        = *server_state.upsert_doc(params.text_document.uri, params.text_document.text);
+    const auto& [uri, doc] = *server_state.insert_or_assign_document(
+        params.text_document.uri, uri_to_path(params.text_document.uri), params.text_document.text
+    );
     revalidate_from(uri, context);
 }
 
@@ -1062,18 +1151,17 @@ void handle_did_change(const lsp::Did_Change_Text_Document_Params& params, Reque
     if (params.content_changes.empty()) {
         return;
     }
-    // Full sync: take the last change's text.
-    const auto& [uri, text]
-        = *server_state.upsert_doc(params.text_document.uri, params.content_changes.back().text);
+    const auto& [uri, doc] = *server_state.insert_or_assign_document(
+        params.text_document.uri, uri_to_path(params.text_document.uri),
+        params.content_changes.back().text
+    );
     revalidate_from(uri, context);
 }
 
 void handle_did_close(const lsp::Did_Close_Text_Document_Params& params, Request_Context& context)
 {
     const std::u8string_view uri = params.text_document.uri;
-    if (const auto it = server_state.open_docs.find(uri); it != server_state.open_docs.end()) {
-        server_state.open_docs.erase(it);
-    }
+    server_state.erase_open_document(uri);
     clear_diagnostics_for(uri, context);
 }
 
@@ -1083,14 +1171,14 @@ void dispatch(const lsp::Notification_Message& notification, Request_Context& co
         return;
     }
     if (notification.method == lsp::method::exit) {
-        server_state.should_exit = true;
+        server_state.request_exit();
         return;
     }
 
     if (notification.method == lsp::method::text_document::did_open) {
-        if (notification.params) {
+        if (notification.params && std::holds_alternative<json::Object>(*notification.params)) {
             if (const auto p = lsp::from_json<lsp::Did_Open_Text_Document_Params>(
-                    *notification.params, context.storage
+                    std::get<json::Object>(*notification.params), context.storage
                 )) {
                 handle_did_open(*p, context);
             }
@@ -1098,9 +1186,9 @@ void dispatch(const lsp::Notification_Message& notification, Request_Context& co
         return;
     }
     if (notification.method == lsp::method::text_document::did_change) {
-        if (notification.params) {
+        if (notification.params && std::holds_alternative<json::Object>(*notification.params)) {
             if (const auto p = lsp::from_json<lsp::Did_Change_Text_Document_Params>(
-                    *notification.params, context.storage
+                    std::get<json::Object>(*notification.params), context.storage
                 )) {
                 handle_did_change(*p, context);
             }
@@ -1108,9 +1196,9 @@ void dispatch(const lsp::Notification_Message& notification, Request_Context& co
         return;
     }
     if (notification.method == lsp::method::text_document::did_close) {
-        if (notification.params) {
+        if (notification.params && std::holds_alternative<json::Object>(*notification.params)) {
             if (const auto p = lsp::from_json<lsp::Did_Close_Text_Document_Params>(
-                    *notification.params, context.storage
+                    std::get<json::Object>(*notification.params), context.storage
                 )) {
                 handle_did_close(*p, context);
             }
@@ -1135,7 +1223,7 @@ void dispatch(const lsp::Request_Message& request, Request_Context& context)
         return;
     }
     if (request.method == lsp::method::shutdown) {
-        server_state.shutdown_requested = true;
+        server_state.request_shutdown();
         write_message(
             lsp::Response_Message {
                 .id = lsp::to_response_id(request.id),
@@ -1260,7 +1348,7 @@ void cowel_lsp_register_assertion_handler() noexcept
 COWEL_EXPORT
 void cowel_lsp_process_message(const char8_t* const json, const std::size_t length) noexcept
 {
-    server_state.output.clear();
+    server_state.clear_output();
     process_message({ json, length });
 }
 
@@ -1269,14 +1357,14 @@ void cowel_lsp_process_message(const char8_t* const json, const std::size_t leng
 COWEL_EXPORT
 const char* cowel_lsp_get_output_ptr() noexcept
 {
-    return reinterpret_cast<const char*>(server_state.output.data());
+    return reinterpret_cast<const char*>(server_state.get_output().data());
 }
 
 /// @brief Returns the number of accumulated output bytes.
 COWEL_EXPORT
 std::size_t cowel_lsp_get_output_length() noexcept
 {
-    return server_state.output.size();
+    return server_state.get_output().size();
 }
 
 /// @brief Returns true if the LSP client sent an "exit" notification.
@@ -1284,7 +1372,7 @@ std::size_t cowel_lsp_get_output_length() noexcept
 COWEL_EXPORT
 bool cowel_lsp_should_exit() noexcept
 {
-    return server_state.should_exit;
+    return server_state.is_exit_requested();
 }
 
 } // extern "C"
