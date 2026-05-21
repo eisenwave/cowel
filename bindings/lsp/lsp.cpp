@@ -100,6 +100,11 @@ struct Server_State {
     String_Map<std::u8string> open_docs;
     /// Per-URI hover entries collected during validation.
     String_Map<std::vector<Hover_Entry>> hover_map;
+    /// Maps each validated entry-point URI to the set of file URIs it
+    /// transitively included during its last validation run.
+    /// Used to find which open documents need re-validation
+    /// when an included file changes.
+    String_Map<std::vector<std::u8string>> doc_includes;
     /// Set to true after a "shutdown" request.
     bool shutdown_requested = false;
     /// Set to true after an LSP "exit" notification.
@@ -126,6 +131,19 @@ struct Server_State {
             it->second.assign(text);
         }
         return it;
+    }
+
+    /// @brief Inserts or updates an entry in `doc_includes`
+    /// using transparent comparison to avoid a key allocation on update.
+    void upsert_doc_includes(const std::u8string_view uri, std::vector<std::u8string>&& includes)
+    {
+        auto it = doc_includes.find(uri);
+        if (it == doc_includes.end()) {
+            doc_includes.emplace(std::u8string(uri), std::move(includes));
+        }
+        else {
+            it->second = std::move(includes);
+        }
     }
 
     /// @brief Inserts or updates an entry in `hover_map`
@@ -450,10 +468,20 @@ lsp::Position compute_end_position(
     return result;
 }
 
-/// @brief Runs COWEL on `content (at `uri`),
-/// and returns a map from document URI to its LSP `Diagnostic[]` JSON array.
+/// @brief Result of a single `validate_document` call.
+struct Validate_Result {
+    /// Diagnostics grouped by document URI.
+    String_Map<std::vector<lsp::Diagnostic>> by_uri;
+    /// `file://` URIs of every file transitively loaded during validation
+    /// (the direct and indirect includes of the validated entry point).
+    std::vector<std::u8string> included_uris;
+};
+
+/// @brief Runs COWEL on `content` (at `uri`) and returns a `Validate_Result`
+/// containing a map from document URI to its LSP `Diagnostic[]` array
+/// and the full transitive include closure.
 [[nodiscard]]
-String_Map<std::vector<lsp::Diagnostic>> validate_document(
+Validate_Result validate_document(
     const std::u8string_view uri,
     const std::u8string_view content,
     Request_Context& context
@@ -611,7 +639,13 @@ String_Map<std::vector<lsp::Diagnostic>> validate_document(
         it->second.push_back(lsp_diagnostic);
     }
 
-    return by_uri;
+    Validate_Result result;
+    result.by_uri = std::move(by_uri);
+    result.included_uris.reserve(validation_context.includes.size());
+    for (const auto& include : validation_context.includes) {
+        result.included_uris.push_back(path_to_uri(include.path));
+    }
+    return result;
 }
 
 /// @brief Searches for `.cowel_config.json` starting in the directory of `doc_uri`
@@ -715,9 +749,8 @@ std::optional<std::vector<std::u8string>> find_config_entry_points(const std::u8
     return std::nullopt; // No config found.
 }
 
-/// @brief Runs COWEL on `uri` and publishes `textDocument/publishDiagnostics`
-/// for the document and any included files.
-void publish_diagnostics_for(
+[[nodiscard]]
+String_Map<std::vector<lsp::Diagnostic>> collect_diagnostics_by_uri(
     const std::u8string_view uri,
     const std::u8string_view content,
     Request_Context& context
@@ -731,59 +764,89 @@ void publish_diagnostics_for(
     String_Map<std::vector<lsp::Diagnostic>> by_uri;
     if (!entry_point_paths) {
         // No config found: validate the opened document directly as entry point.
-        by_uri = validate_document(uri, content, context);
+        auto [doc_by_uri, included_uris] = validate_document(uri, content, context);
+        // Pre-insert empty diagnostic entries for open included documents
+        // that have no current errors,
+        // so any previously published diagnostics for those files are cleared.
+        for (const std::u8string& inc_uri : included_uris) {
+            if (server_state.open_docs.contains(inc_uri)) {
+                doc_by_uri.try_emplace(inc_uri, empty_diagnostics);
+            }
+        }
+        by_uri = std::move(doc_by_uri);
+        server_state.upsert_doc_includes(uri, std::move(included_uris));
+        return by_uri;
     }
-    else if (entry_point_paths->empty()) {
+
+    if (entry_point_paths->empty()) {
         // Config found but has no include entries:
         // validation is disabled; publish empty diagnostics to clear stale errors.
         by_uri.emplace(uri, empty_diagnostics);
+        return by_uri;
     }
-    else {
-        // Config-driven: validate config entry points instead.
-        // Pre-insert empty diagnostics for the opened document
-        // so stale errors are cleared even if it is not an entry point.
-        by_uri.emplace(uri, empty_diagnostics);
 
-        for (const std::u8string& ep_path : *entry_point_paths) {
-            const std::u8string ep_uri = path_to_uri(ep_path);
+    // Config-driven: validate config entry points instead.
+    // Pre-insert empty diagnostics for the opened document
+    // so stale errors are cleared even if it is not an entry point.
+    by_uri.emplace(uri, empty_diagnostics);
 
-            // Load entry point content: prefer open_docs (editor overrides),
-            // then fall back to the filesystem via cowel_lsp_host_read_file.
-            std::u8string ep_content_storage;
-            std::u8string_view ep_content;
-            if (const auto it = server_state.open_docs.find(ep_uri);
-                it != server_state.open_docs.end()) {
-                ep_content = it->second;
+    for (const std::u8string& entry_point_path : *entry_point_paths) {
+        const std::u8string entry_point_uri = path_to_uri(entry_point_path);
+
+        // Load entry point content: prefer open_docs (editor overrides),
+        // then fall back to the filesystem via cowel_lsp_host_read_file.
+        std::u8string ep_content_storage;
+        std::u8string_view ep_content;
+        if (const auto it = server_state.open_docs.find(entry_point_uri);
+            it != server_state.open_docs.end()) {
+            ep_content = it->second;
+        }
+        else {
+            void* text = nullptr;
+            std::size_t length = 0;
+            const bool read_file_success = cowel_lsp_host_read_file(
+                entry_point_path.data(), entry_point_path.size(), &text, &length
+            );
+            if (!read_file_success) {
+                continue;
             }
-            else {
-                void* ptr = nullptr;
-                std::size_t len = 0;
-                if (!cowel_lsp_host_read_file(ep_path.data(), ep_path.size(), &ptr, &len)) {
-                    continue;
-                }
-                ep_content_storage.assign(static_cast<const char8_t*>(ptr), len);
-                cowel_free(ptr, len, 1);
-                ep_content = ep_content_storage;
-            }
+            ep_content_storage.assign(static_cast<const char8_t*>(text), length);
+            cowel_free(text, length, 1);
+            ep_content = ep_content_storage;
+        }
 
-            String_Map<std::vector<lsp::Diagnostic>> ep_results
-                = validate_document(ep_uri, ep_content, context);
-            for (const auto& [d_uri, d_diags] : ep_results) {
-                std::vector<lsp::Diagnostic>& slot
-                    = by_uri.try_emplace(d_uri, empty_diagnostics).first->second;
-                for (const lsp::Diagnostic& d : d_diags) {
-                    slot.push_back(d);
-                }
+        auto [ep_by_uri, ep_included_uris]
+            = validate_document(entry_point_uri, ep_content, context);
+        server_state.upsert_doc_includes(entry_point_uri, std::move(ep_included_uris));
+        for (const auto& [d_uri, d_diags] : ep_by_uri) {
+            std::vector<lsp::Diagnostic>& slot
+                = by_uri.try_emplace(d_uri, empty_diagnostics).first->second;
+            for (const lsp::Diagnostic& d : d_diags) {
+                slot.push_back(d);
             }
         }
     }
+
+    return by_uri;
+}
+
+/// @brief Runs COWEL on `uri` and publishes `textDocument/publishDiagnostics`
+/// for the document and any included files.
+void publish_diagnostics_for(
+    const std::u8string_view uri,
+    const std::u8string_view content,
+    Request_Context& context
+)
+{
+    const String_Map<std::vector<lsp::Diagnostic>> by_uri
+        = collect_diagnostics_by_uri(uri, content, context);
 
     // Sort by URI for deterministic output order:
     struct Diagnostics_Entry {
         std::u8string_view uri;
         const std::vector<lsp::Diagnostic>* diagnostics;
     };
-    const auto sorted = [&] {
+    const auto sorted_by_uri = [&] {
         std::vector<Diagnostics_Entry> result;
         result.reserve(by_uri.size());
         for (const auto& [d_uri, d_diags] : by_uri) {
@@ -792,7 +855,7 @@ void publish_diagnostics_for(
         std::ranges::sort(result, {}, &Diagnostics_Entry::uri);
         return result;
     }();
-    for (const auto& [document_uri, diags_ptr] : sorted) {
+    for (const auto& [document_uri, diags_ptr] : sorted_by_uri) {
         const lsp::Notification_Message message {
             .method = lsp::method::text_document::publish_diagnostics,
             .params = lsp::to_json(
@@ -821,6 +884,59 @@ void clear_diagnostics_for(const std::u8string_view uri, Request_Context& contex
         },
         context
     );
+}
+
+struct URI_And_Content {
+    std::u8string_view uri;
+    std::u8string_view content;
+};
+
+/// @brief Returns a list of opened root documents that depend on the given document URI.
+/// This includes both the document specified by `included_uri` (if one is open),
+/// as well as any documents that include it (`cowel_include`).
+[[nodiscard]]
+std::vector<URI_And_Content> get_open_dependent_roots(const std::u8string_view included_uri)
+{
+    // TODO: This step could probably be skipped if we kept track of which documents are non-roots.
+    std::vector<std::u8string_view> non_root_uris;
+    for (const auto& [doc_uri, includes] : server_state.doc_includes) {
+        if (server_state.open_docs.contains(doc_uri)) {
+            non_root_uris.insert(non_root_uris.end(), includes.begin(), includes.end());
+        }
+    }
+    std::ranges::sort(non_root_uris);
+
+    std::vector<URI_And_Content> roots;
+    for (const auto& [doc_uri, doc_content] : server_state.open_docs) {
+        if (std::ranges::binary_search(non_root_uris, doc_uri)) {
+            // fragment — compiled as part of its includer
+            continue;
+        }
+        if (doc_uri != included_uri) {
+            const auto inc_it = server_state.doc_includes.find(doc_uri);
+            if (inc_it == server_state.doc_includes.end()
+                || !std::ranges::contains(inc_it->second, included_uri)) {
+                continue;
+            }
+        }
+        roots.push_back({ doc_uri, doc_content });
+    }
+    return roots;
+}
+
+/// @brief Validates every open "root" document affected by a change to `uri`.
+/// A root document is an open document that does not appear in the transitive
+/// include closure of any other open document;
+/// it is compiled as an entry point rather than as a fragment.
+///
+/// Roots whose known include closure contains `uri`,
+/// or that ARE `uri`, are re-validated exactly once,
+/// avoiding redundant compilation of shared included files.
+void revalidate_from(const std::u8string_view uri, Request_Context& context)
+{
+    for (const URI_And_Content& r : get_open_dependent_roots(uri)) {
+        publish_diagnostics_for(r.uri, r.content, context);
+    }
 }
 
 void handle_hover(
@@ -936,8 +1052,9 @@ void handle_initialize(
 
 void handle_did_open(const lsp::Did_Open_Text_Document_Params& params, Request_Context& context)
 {
-    const auto it = server_state.upsert_doc(params.text_document.uri, params.text_document.text);
-    publish_diagnostics_for(it->first, it->second, context);
+    const auto& [uri, text]
+        = *server_state.upsert_doc(params.text_document.uri, params.text_document.text);
+    revalidate_from(uri, context);
 }
 
 void handle_did_change(const lsp::Did_Change_Text_Document_Params& params, Request_Context& context)
@@ -946,9 +1063,9 @@ void handle_did_change(const lsp::Did_Change_Text_Document_Params& params, Reque
         return;
     }
     // Full sync: take the last change's text.
-    const auto it
-        = server_state.upsert_doc(params.text_document.uri, params.content_changes.back().text);
-    publish_diagnostics_for(it->first, it->second, context);
+    const auto& [uri, text]
+        = *server_state.upsert_doc(params.text_document.uri, params.content_changes.back().text);
+    revalidate_from(uri, context);
 }
 
 void handle_did_close(const lsp::Did_Close_Text_Document_Params& params, Request_Context& context)
