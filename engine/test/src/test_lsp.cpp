@@ -848,7 +848,6 @@ TEST(LspNotificationMessage, deserialize_with_params)
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result->method, u8"exit"sv);
     ASSERT_TRUE(result->params.has_value());
-    EXPECT_NE(result->params->as_object(), nullptr);
 }
 
 TEST(LspNotificationMessage, deserialize_missing_method_fails)
@@ -875,9 +874,9 @@ TEST(LspNotificationMessage, serialize_with_params)
     const Notification_Message msg {
         .jsonrpc = u8"2.0"sv,
         .method = u8"exit"sv,
-        .params = json::Value { json::Null {} },
+        .params = json::Object {},
     };
-    EXPECT_EQ(to_json_str(msg), u8R"({"jsonrpc":"2.0","method":"exit","params":null})");
+    EXPECT_EQ(to_json_str(msg), u8R"({"jsonrpc":"2.0","method":"exit","params":{}})");
 }
 
 TEST(LspNotificationMessage, roundtrip)
@@ -892,7 +891,7 @@ TEST(LspNotificationMessage, roundtrip)
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result->jsonrpc, original.jsonrpc);
     EXPECT_EQ(result->method, original.method);
-    EXPECT_EQ(result->params, original.params);
+    EXPECT_FALSE(result->params.has_value());
 }
 
 TEST(LspToResponseId, integer_id)

@@ -365,8 +365,8 @@ std::u8string uri_to_path(const std::u8string_view uri_in)
 std::u8string path_to_uri(const std::u8string_view path)
 {
     constexpr auto upper_hex = u8"0123456789ABCDEF"sv;
-    constexpr auto prefix = u8"file://"s;
-    std::u8string result = prefix;
+    constexpr auto prefix = u8"file://"sv;
+    std::u8string result { prefix };
     result.reserve(prefix.length() + (path.length() * 3 / 2));
     for (const char8_t c : path) {
         const auto uc = static_cast<unsigned char>(c);
