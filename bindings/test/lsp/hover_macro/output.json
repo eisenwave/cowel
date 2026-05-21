@@ -29,7 +29,7 @@
     "result": {
       "contents": {
         "kind": "markdown",
-        "value": "### Macro `m`\n``cowel`\n\\cowel_macro(\"m\"){Hello}\n```\n"
+        "value": "### Macro `m`\n```cowel\n\\cowel_macro(\"m\"){Hello}\n```\n"
       },
       "range": {
         "start": {
