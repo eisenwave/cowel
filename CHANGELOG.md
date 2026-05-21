@@ -1,5 +1,16 @@
 # Changelog
 
+## **[v0.10.1](https://github.com/eisenwave/cowel/releases/tag/v0.10.1)** (2026-??-??)
+
+### VSCode extension
+
+- Added hover tooltips for macros defined by `cowel_macro`
+- Fixed missing revalidation of documents when an included file changes (#370)
+- Also slightly improved performance of language server
+
+**Full Changelog**:
+[`v0.10.0...v0.10.1`](https://github.com/eisenwave/cowel/compare/v0.10.0...v0.10.1)
+
 ## **[v0.10.0](https://github.com/eisenwave/cowel/releases/tag/v0.10.0)** (2026-05-20)
 
 ### Engine

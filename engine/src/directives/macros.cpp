@@ -201,7 +201,7 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
         }
         const bool success = context.emplace_macro(
             std::pmr::u8string { alias_name, context.get_transient_memory() },
-            call.get_content_span()
+            call.get_content_span(), call.directive.get_source()
         );
         COWEL_ASSERT(success);
     }

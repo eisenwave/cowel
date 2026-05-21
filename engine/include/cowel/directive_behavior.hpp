@@ -87,6 +87,15 @@ public:
     {
         return m_hover_article;
     }
+
+protected:
+    /// @brief Updates the stored hover article view.
+    /// Intended for use by derived classes that own the article string
+    /// and must set the view after their owning member is initialized.
+    void set_hover_article(const std::u8string_view article) noexcept
+    {
+        m_hover_article = article;
+    }
 };
 
 /// @brief The behavior of directives that produce no output when spliced

@@ -263,16 +263,25 @@ const Directive_Behavior* Context::find_directive(std::u8string_view name)
 
 bool Context::emplace_macro(
     std::pmr::u8string&& name,
-    const std::span<const ast::Markup_Element> definition
+    const std::span<const ast::Markup_Element> definition,
+    const std::u8string_view macro_source
 )
 {
+    std::pmr::memory_resource* const memory = m_macros.get_allocator().resource();
     // TODO: once available, upgrade this to std::from_range construction
     std::pmr::vector<ast::Markup_Element> body {
         definition.begin(),
         definition.end(),
-        m_macros.get_allocator(),
+        memory,
     };
-    const auto [_, success] = m_macros.try_emplace(std::move(name), std::move(body));
+    std::pmr::u8string article { memory };
+    article += u8"### Macro `";
+    article += name;
+    article += u8"`\n```cowel\n";
+    article += macro_source;
+    article += u8"\n```\n";
+    const auto [_, success]
+        = m_macros.try_emplace(std::move(name), std::move(body), std::move(article));
     return success;
 }
 

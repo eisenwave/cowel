@@ -41,13 +41,19 @@ struct Referred {
 
 struct Macro_Definition final : Block_Directive_Behavior {
 private:
+    std::pmr::u8string m_article;
     std::pmr::vector<ast::Markup_Element> m_body;
 
 public:
     [[nodiscard]]
-    explicit Macro_Definition(std::pmr::vector<ast::Markup_Element>&& body) noexcept
-        : m_body { std::move(body) }
+    explicit Macro_Definition(
+        std::pmr::vector<ast::Markup_Element>&& body,
+        std::pmr::u8string&& article
+    )
+        : m_article { std::move(article) }
+        , m_body { std::move(body) }
     {
+        set_hover_article(m_article);
     }
 
     [[nodiscard]]
@@ -602,7 +608,11 @@ public:
     }
 
     [[nodiscard]]
-    bool emplace_macro(std::pmr::u8string&& name, std::span<const ast::Markup_Element> definition);
+    bool emplace_macro(
+        std::pmr::u8string&& name,
+        std::span<const ast::Markup_Element> definition,
+        std::u8string_view macro_source
+    );
 
 private:
     [[nodiscard]]
