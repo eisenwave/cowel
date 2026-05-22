@@ -1,10 +1,174 @@
-\b{text}
-\em{text}
 \h1{Heading 1}
 \h2{Heading 2}
 \h3{Heading 3}
 \h4{Heading 4}
 \h5{Heading 5}
 \h6{Heading 6}
+\b{text}
+\em{text}
+\i{text}
+\u{text}
+\strong{text}
+\s{text}
+\mark{text}
+\small{text}
+\cite{citation}
+\q{quotation}
+\samp{sample}
+\kbd{keyboard}
+\var{variable}
+\sub{subscript}
+\sup{superscript}
+\span{span}
+\ins{inserted}
+\del{deleted}
+\gterm{grammar term}
+\tt{typewriter}
+\sans{sans-serif}
+\serif{serif}
+\nobr{no break}
+\o{oblique}
+\dfn{definition}
+\code("cpp"){code}
+\br
+\hr
+\wbr
+\p{paragraph}
+\pre{preformatted}
+\blockquote{blockquote}
+\div{div}
+\details{details}
+\summary{summary}
+\dl{list}
+\dt{term}
+\dd{definition}
+\ol{list}
+\ul{list}
+\li{item}
+\table{row}
+\tbody{row}
+\thead{row}
+\tfoot{row}
+\tr{cell}
+\td{cell}
+\th{header}
+\colgroup{}
+\col
+\caption{caption}
+\Babstract{abstract}
+\Bdecision{decision}
+\Bdel{deleted}
+\Bdetails{details}
+\Bdiff{diff}
+\Bex{example}
+\Bimp{important}
+\Bindent{indented}
+\Bins{inserted}
+\Bnote{note}
+\Bquote{quote}
+\Btip{tip}
+\Btodo{todo}
+\Bug{bug}
+\Bwarn{warning}
+\noscript{text}
+\script{code}
+\style{css}
+\math{\mi{x}}
+\mathblock{\mi{x}}
+\codeblock("cpp"){code}
+\url{https://example.com}
+\mail{user@example.com}
+\tel{+1-800-555-1234}
+\ref("https://example.com")
+\comment{ignored}
+\error{error content}
+\lorem_ipsum
+\bib(id="ex")
+\make_bib
+\make_contents
+\there("_ts"){x}
+\here("_ts"){}
+\hereblock("_ts"){}
+\wg21_grammar{grammar}
+\wg21_head(title={Title}){content}
+\cowel_actions{x}
+\cowel_alias("_ca"){cowel_char_by_name}
+\_ca("LATIN SMALL LETTER A")
+\cowel_as_text{text}
+\cowel_html_element("div"){text}
+\cowel_html_self_closing_element("hr")
+\cowel_include("hover_include_target.cow")
+\cowel_include_text("hover_include_target.cow")
+\cowel_invoke("b"){text}
+\: FIXME: blank line to balance extra hover from \cowel_invoke
+\cowel_macro("_hm"){x}
+\_hm
+\cowel_no_invoke{\b{text}}
+\cowel_paragraphs{text}
+\cowel_paragraph_enter()
+\cowel_paragraph_inherit()
+\cowel_paragraph_leave()
+\cowel_source_as_text{text}
+\cowel_text_as_html{text}
+\cowel_text_only{text}
+\cowel_to_html{text}
+\cowel_to_str(42)
+\cowel_var_let("_v", 1)
+\cowel_var_get("_v")
+\cowel_var_set("_v", 2)
+\cowel_var_exists("_v")
+\cowel_var_delete("_v")
+\cowel_abs(1)
+\cowel_add(1, 2)
+\cowel_sub(5, 3)
+\cowel_mul(2, 3)
+\cowel_div(6.0, 2.0)
+\cowel_div_to_neg_inf(7, 2)
+\cowel_div_to_pos_inf(7, 2)
+\cowel_div_to_zero(7, 2)
+\cowel_rem_to_neg_inf(7, 2)
+\cowel_rem_to_pos_inf(7, 2)
+\cowel_rem_to_zero(7, 2)
+\cowel_neg(5)
+\cowel_pos(5)
+\cowel_ceil(1.5)
+\cowel_floor(1.5)
+\cowel_trunc(1.5)
+\cowel_nearest(1.5)
+\cowel_nearest_away_zero(1.5)
+\cowel_sqrt(4.0)
+\cowel_max(1, 2)
+\cowel_min(1, 2)
+\cowel_bit_not(0)
+\cowel_and(true, false)
+\cowel_or(false, true)
+\cowel_not(false)
+\cowel_eq(1, 1)
+\cowel_ne(1, 2)
+\cowel_lt(1, 2)
+\cowel_le(1, 1)
+\cowel_gt(2, 1)
+\cowel_ge(1, 1)
+\cowel_str_length("abc")
+\cowel_str_utf8_length("abc")
+\cowel_str_contains("abc", "b")
+\cowel_str_find("abc", "b")
+\cowel_str_substr("abc", 1)
+\cowel_str_match("abc",
+cowel_regex("a"))
+\cowel_str_to_lower("ABC")
+\cowel_str_to_upper("abc")
+\cowel_str_replace_all("abc", "b", "x")
+\cowel_str_replace_first("abc", "b", "x")
+\cowel_char_by_num(65)
+\cowel_char_by_name("LATIN SMALL LETTER A")
+\cowel_char_by_entity("#x41")
+\cowel_char_get_name("A")
+\cowel_char_get_num("A")
+\cowel_reinterpret_as_float(0)
+\cowel_reinterpret_as_int(0.0)
+\cowel_highlight("cpp"){code}
+\cowel_highlight_as("keyword"){text}
+\cowel_highlight_phantom{x}
 \+00A0
 \'LF'

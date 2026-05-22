@@ -6,6 +6,7 @@
 
 - Added hover tooltips for macros defined by `cowel_macro`
 - Fixed missing revalidation of documents when an included file changes (#370)
+- Fixed memory leaks for certain tooltips
 - Also slightly improved performance of language server
 
 **Full Changelog**:

@@ -83,8 +83,8 @@ struct Error_Behavior : Block_Directive_Behavior {
     static constexpr auto id = html_tag::error_;
 
     [[nodiscard]]
-    constexpr explicit Error_Behavior(const std::u8string_view hover_article) noexcept
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Error_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -95,8 +95,8 @@ struct Error_Behavior : Block_Directive_Behavior {
 struct Comment_Behavior : Unit_Directive_Behavior {
 
     [[nodiscard]]
-    constexpr explicit Comment_Behavior(const std::u8string_view hover_article) noexcept
-        : Unit_Directive_Behavior { hover_article }
+    constexpr explicit Comment_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Unit_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -110,8 +110,8 @@ struct Comment_Behavior : Unit_Directive_Behavior {
 struct [[nodiscard]]
 Char_By_Entity_Behavior final : Short_String_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Char_By_Entity_Behavior(const std::u8string_view hover_article) noexcept
-        : Short_String_Directive_Behavior { hover_article }
+    constexpr explicit Char_By_Entity_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Short_String_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -122,8 +122,8 @@ Char_By_Entity_Behavior final : Short_String_Directive_Behavior {
 
 struct [[nodiscard]] Code_Point_Behavior : Short_String_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Code_Point_Behavior(const std::u8string_view hover_article) noexcept
-        : Short_String_Directive_Behavior { hover_article }
+    constexpr explicit Code_Point_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Short_String_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -138,8 +138,8 @@ struct [[nodiscard]] Code_Point_Behavior : Short_String_Directive_Behavior {
 struct [[nodiscard]]
 Char_By_Num_Behavior final : Code_Point_Behavior {
     [[nodiscard]]
-    constexpr explicit Char_By_Num_Behavior(const std::u8string_view hover_article) noexcept
-        : Code_Point_Behavior { hover_article }
+    constexpr explicit Char_By_Num_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Code_Point_Behavior { tooltip_article }
     {
     }
 
@@ -151,8 +151,8 @@ Char_By_Num_Behavior final : Code_Point_Behavior {
 struct [[nodiscard]]
 Char_By_Name_Behavior final : Code_Point_Behavior {
     [[nodiscard]]
-    constexpr explicit Char_By_Name_Behavior(const std::u8string_view hover_article) noexcept
-        : Code_Point_Behavior { hover_article }
+    constexpr explicit Char_By_Name_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Code_Point_Behavior { tooltip_article }
     {
     }
 
@@ -170,8 +170,8 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Char_Get_Name_Behavior(const std::u8string_view hover_article)
-        : Directive_Behavior { return_type, hover_article }
+    constexpr explicit Char_Get_Name_Behavior(const Tooltip_Article& tooltip_article)
+        : Directive_Behavior { return_type, tooltip_article }
     {
     }
 
@@ -182,8 +182,8 @@ public:
 struct [[nodiscard]]
 Char_Get_Num_Behavior final : Int_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Char_Get_Num_Behavior(const std::u8string_view hover_article) noexcept
-        : Int_Directive_Behavior { hover_article }
+    constexpr explicit Char_Get_Num_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Int_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -199,8 +199,8 @@ struct String_Sink {
 
 struct String_Sink_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit String_Sink_Behavior(const std::u8string_view hover_article)
-        : Directive_Behavior { Type::str, hover_article }
+    constexpr explicit String_Sink_Behavior(const Tooltip_Article& tooltip_article)
+        : Directive_Behavior { Type::str, tooltip_article }
     {
     }
 
@@ -229,9 +229,9 @@ public:
     [[nodiscard]]
     constexpr explicit Str_Length_Behavior(
         Str_Length_Kind kind,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Int_Directive_Behavior { hover_article }
+        : Int_Directive_Behavior { tooltip_article }
         , m_kind { kind }
     {
     }
@@ -254,9 +254,9 @@ public:
     [[nodiscard]]
     constexpr explicit Str_Transform_Behavior(
         Text_Transformation transform,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : String_Sink_Behavior { hover_article }
+        : String_Sink_Behavior { tooltip_article }
         , m_transform { transform }
     {
     }
@@ -268,8 +268,8 @@ public:
 struct [[nodiscard]]
 Str_Match_Behavior final : Bool_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Str_Match_Behavior(const std::u8string_view hover_article) noexcept
-        : Bool_Directive_Behavior { hover_article }
+    constexpr explicit Str_Match_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Bool_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -280,8 +280,8 @@ Str_Match_Behavior final : Bool_Directive_Behavior {
 struct [[nodiscard]]
 Str_Contains_Behavior final : Bool_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Str_Contains_Behavior(const std::u8string_view hover_article) noexcept
-        : Bool_Directive_Behavior { hover_article }
+    constexpr explicit Str_Contains_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Bool_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -298,8 +298,8 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Str_Find_Behavior(const std::u8string_view hover_article)
-        : Directive_Behavior { return_type, hover_article }
+    constexpr explicit Str_Find_Behavior(const Tooltip_Article& tooltip_article)
+        : Directive_Behavior { return_type, tooltip_article }
     {
     }
 
@@ -310,8 +310,8 @@ public:
 struct [[nodiscard]]
 Str_Substr_Behavior final : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Str_Substr_Behavior(const std::u8string_view hover_article)
-        : Directive_Behavior { Type::str, hover_article }
+    constexpr explicit Str_Substr_Behavior(const Tooltip_Article& tooltip_article)
+        : Directive_Behavior { Type::str, tooltip_article }
     {
     }
 
@@ -333,9 +333,9 @@ public:
     [[nodiscard]]
     constexpr explicit Str_Replace_Behavior(
         const Str_Replacement_Kind kind,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Directive_Behavior { Type::str, hover_article }
+        : Directive_Behavior { Type::str, tooltip_article }
         , m_kind { kind }
     {
     }
@@ -347,8 +347,8 @@ public:
 struct [[nodiscard]]
 Regex_Make_Behavior final : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Regex_Make_Behavior(const std::u8string_view hover_article)
-        : Directive_Behavior { Type::regex, hover_article }
+    constexpr explicit Regex_Make_Behavior(const Tooltip_Article& tooltip_article)
+        : Directive_Behavior { Type::regex, tooltip_article }
     {
     }
 
@@ -363,8 +363,8 @@ inline constexpr std::u8string_view lorem_ipsum = u8"Lorem ipsum dolor sit amet,
 struct Lorem_Ipsum_Behavior final : Block_Directive_Behavior {
 
     [[nodiscard]]
-    constexpr explicit Lorem_Ipsum_Behavior(const std::u8string_view hover_article) noexcept
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Lorem_Ipsum_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -394,9 +394,9 @@ public:
         HTML_Tag_Name tag_name,
         Directive_Display display,
         Pre_Trimming pre_compat_trim,
-        std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Block_Directive_Behavior { hover_article }
+        : Block_Directive_Behavior { tooltip_article }
         , m_tag_name { tag_name }
         , m_display { display }
         , m_pre_compat_trim { pre_compat_trim }
@@ -409,8 +409,8 @@ public:
 
 struct [[nodiscard]] Highlight_Behavior : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Highlight_Behavior(const std::u8string_view hover_article) noexcept
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Highlight_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -421,8 +421,8 @@ struct [[nodiscard]] Highlight_Behavior : Block_Directive_Behavior {
 /// @brief Forces a certain highlight to be applied.
 struct [[nodiscard]] Highlight_As_Behavior : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Highlight_As_Behavior(const std::u8string_view hover_article) noexcept
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Highlight_As_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -451,9 +451,9 @@ public:
     [[nodiscard]]
     constexpr explicit Policy_Behavior(
         Known_Content_Policy policy,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Block_Directive_Behavior { hover_article }
+        : Block_Directive_Behavior { tooltip_article }
         , m_policy { policy }
     {
     }
@@ -489,9 +489,9 @@ public:
     [[nodiscard]]
     constexpr explicit HTML_Raw_Text_Behavior(
         HTML_Tag_Name tag_name,
-        std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Block_Directive_Behavior { hover_article }
+        : Block_Directive_Behavior { tooltip_article }
         , m_tag_name { tag_name }
     {
         COWEL_ASSERT(tag_name == u8"style"sv || tag_name == u8"script"sv);
@@ -503,8 +503,8 @@ public:
 
 struct Logical_Not_Behavior final : Bool_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Logical_Not_Behavior(const std::u8string_view hover_article) noexcept
-        : Bool_Directive_Behavior { hover_article }
+    constexpr explicit Logical_Not_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Bool_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -525,9 +525,9 @@ public:
     [[nodiscard]]
     constexpr explicit Logical_Expression_Behavior(
         Logical_Expression_Kind kind,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Bool_Directive_Behavior { hover_article }
+        : Bool_Directive_Behavior { tooltip_article }
         , m_expression_kind { kind }
     {
     }
@@ -546,9 +546,9 @@ public:
     [[nodiscard]]
     constexpr explicit Comparison_Expression_Behavior(
         Comparison_Expression_Kind kind,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Bool_Directive_Behavior { hover_article }
+        : Bool_Directive_Behavior { tooltip_article }
         , m_comparison_kind { kind }
     {
     }
@@ -602,9 +602,9 @@ public:
     [[nodiscard]]
     constexpr explicit Unary_Numeric_Expression_Behavior(
         Unary_Numeric_Expression_Kind kind,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Directive_Behavior { Type::any, hover_article }
+        : Directive_Behavior { Type::any, tooltip_article }
         , m_expression_kind { kind }
         , m_type { expression_kind_takes_int(kind) && expression_kind_takes_float(kind)
                        ? &numeric_type
@@ -634,9 +634,9 @@ public:
     [[nodiscard]]
     constexpr explicit Integer_Division_Expression_Behavior(
         Integer_Division_Kind kind,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Int_Directive_Behavior { hover_article }
+        : Int_Directive_Behavior { tooltip_article }
         , m_expression_kind { kind }
     {
     }
@@ -662,9 +662,9 @@ public:
     [[nodiscard]]
     constexpr explicit N_Ary_Numeric_Expression_Behavior(
         N_Ary_Numeric_Expression_Kind kind,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Directive_Behavior { Type::any, hover_article }
+        : Directive_Behavior { Type::any, tooltip_article }
         , m_expression_kind { kind }
     {
     }
@@ -675,8 +675,8 @@ public:
 
 struct To_Str_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit To_Str_Behavior(const std::u8string_view hover_article) noexcept
-        : Directive_Behavior { Type::str, hover_article }
+    constexpr explicit To_Str_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Directive_Behavior { Type::str, tooltip_article }
     {
     }
 
@@ -686,8 +686,8 @@ struct To_Str_Behavior : Directive_Behavior {
 
 struct Reinterpret_As_Int_Behavior final : Int_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Reinterpret_As_Int_Behavior(const std::u8string_view hover_article) noexcept
-        : Int_Directive_Behavior { hover_article }
+    constexpr explicit Reinterpret_As_Int_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Int_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -698,9 +698,9 @@ struct Reinterpret_As_Int_Behavior final : Int_Directive_Behavior {
 struct Reinterpret_As_Float_Behavior final : Float_Directive_Behavior {
     [[nodiscard]]
     constexpr explicit Reinterpret_As_Float_Behavior(
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     ) noexcept
-        : Float_Directive_Behavior { hover_article }
+        : Float_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -710,8 +710,8 @@ struct Reinterpret_As_Float_Behavior final : Float_Directive_Behavior {
 
 struct Var_Get_Behavior final : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Var_Get_Behavior(const std::u8string_view hover_article)
-        : Directive_Behavior { Type::any, hover_article }
+    constexpr explicit Var_Get_Behavior(const Tooltip_Article& tooltip_article)
+        : Directive_Behavior { Type::any, tooltip_article }
     {
     }
 
@@ -721,8 +721,8 @@ struct Var_Get_Behavior final : Directive_Behavior {
 
 struct Var_Exists_Behavior final : Bool_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Var_Exists_Behavior(const std::u8string_view hover_article) noexcept
-        : Bool_Directive_Behavior { hover_article }
+    constexpr explicit Var_Exists_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Bool_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -732,8 +732,8 @@ struct Var_Exists_Behavior final : Bool_Directive_Behavior {
 
 struct Var_Let_Behavior final : Unit_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Var_Let_Behavior(const std::u8string_view hover_article) noexcept
-        : Unit_Directive_Behavior { hover_article }
+    constexpr explicit Var_Let_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Unit_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -743,8 +743,8 @@ struct Var_Let_Behavior final : Unit_Directive_Behavior {
 
 struct Var_Set_Behavior final : Unit_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Var_Set_Behavior(const std::u8string_view hover_article) noexcept
-        : Unit_Directive_Behavior { hover_article }
+    constexpr explicit Var_Set_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Unit_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -754,8 +754,8 @@ struct Var_Set_Behavior final : Unit_Directive_Behavior {
 
 struct Var_Delete_Behavior final : Unit_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Var_Delete_Behavior(const std::u8string_view hover_article) noexcept
-        : Unit_Directive_Behavior { hover_article }
+    constexpr explicit Var_Delete_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Unit_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -779,9 +779,9 @@ public:
     constexpr explicit Passthrough_Behavior(
         const Policy_Usage policy,
         const Directive_Display display,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     ) noexcept
-        : Block_Directive_Behavior { hover_article }
+        : Block_Directive_Behavior { tooltip_article }
         , m_policy { policy }
         , m_display { display }
     {
@@ -809,9 +809,9 @@ public:
     [[nodiscard]]
     constexpr explicit HTML_Element_Behavior(
         HTML_Element_Self_Closing self_closing,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Block_Directive_Behavior { hover_article }
+        : Block_Directive_Behavior { tooltip_article }
         , m_self_closing { self_closing }
     {
     }
@@ -835,9 +835,9 @@ public:
         std::u8string_view class_name,
         Policy_Usage policy,
         Directive_Display display,
-        std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Block_Directive_Behavior { hover_article }
+        : Block_Directive_Behavior { tooltip_article }
         , m_tag_name { tag_name }
         , m_class_name { class_name }
         , m_policy { policy }
@@ -861,9 +861,9 @@ public:
     constexpr explicit Self_Closing_Behavior(
         HTML_Tag_Name tag_name,
         Directive_Display display,
-        std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Block_Directive_Behavior { hover_article }
+        : Block_Directive_Behavior { tooltip_article }
         , m_tag_name { tag_name }
         , m_display { display }
     {
@@ -894,9 +894,9 @@ public:
         const HTML_Tag_Name name,
         const Policy_Usage policy,
         const Directive_Display display,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     ) noexcept
-        : Passthrough_Behavior { policy, display, hover_article }
+        : Passthrough_Behavior { policy, display, tooltip_article }
         , m_name { name }
     {
     }
@@ -918,9 +918,9 @@ public:
     constexpr explicit Special_Block_Behavior(
         HTML_Tag_Name name,
         Intro_Policy intro,
-        std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Block_Directive_Behavior { hover_article }
+        : Block_Directive_Behavior { tooltip_article }
         , m_name { name }
         , m_intro { intro }
     {
@@ -933,8 +933,8 @@ public:
 
 struct WG21_Head_Behavior final : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit WG21_Head_Behavior(const std::u8string_view hover_article) noexcept
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit WG21_Head_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -949,8 +949,11 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit URL_Behavior(std::u8string_view url_prefix, std::u8string_view hover_article)
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit URL_Behavior(
+        std::u8string_view url_prefix,
+        const Tooltip_Article& tooltip_article
+    )
+        : Block_Directive_Behavior { tooltip_article }
         , m_url_prefix { url_prefix }
     {
     }
@@ -962,8 +965,8 @@ public:
 
 struct Ref_Behavior final : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Ref_Behavior(const std::u8string_view hover_article) noexcept
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Ref_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -973,8 +976,8 @@ struct Ref_Behavior final : Block_Directive_Behavior {
 
 struct Bibliography_Add_Behavior final : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Bibliography_Add_Behavior(const std::u8string_view hover_article) noexcept
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Bibliography_Add_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -991,9 +994,9 @@ public:
     [[nodiscard]]
     constexpr explicit Heading_Behavior(
         const int level,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     ) noexcept
-        : Block_Directive_Behavior { hover_article }
+        : Block_Directive_Behavior { tooltip_article }
         , m_level { level }
     {
         COWEL_ASSERT(m_level >= 1 && level <= 6);
@@ -1006,8 +1009,8 @@ public:
 
 struct There_Behavior final : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit There_Behavior(const std::u8string_view hover_article) noexcept
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit There_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -1022,8 +1025,11 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Here_Behavior(Directive_Display display, std::u8string_view hover_article)
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Here_Behavior(
+        Directive_Display display,
+        const Tooltip_Article& tooltip_article
+    )
+        : Block_Directive_Behavior { tooltip_article }
         , m_display { display }
     {
     }
@@ -1045,9 +1051,9 @@ public:
         Directive_Display display,
         std::u8string_view class_name,
         std::u8string_view section_name,
-        std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     )
-        : Block_Directive_Behavior { hover_article }
+        : Block_Directive_Behavior { tooltip_article }
         , m_display { display }
         , m_class_name { class_name }
         , m_section_name { section_name }
@@ -1065,8 +1071,11 @@ private:
 
 public:
     [[nodiscard]]
-    constexpr explicit Math_Behavior(Directive_Display display, std::u8string_view hover_article)
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Math_Behavior(
+        Directive_Display display,
+        const Tooltip_Article& tooltip_article
+    )
+        : Block_Directive_Behavior { tooltip_article }
         , m_display { display }
     {
     }
@@ -1078,8 +1087,8 @@ public:
 
 struct Include_Text_Behavior final : String_Sink_Behavior {
     [[nodiscard]]
-    constexpr explicit Include_Text_Behavior(const std::u8string_view hover_article) noexcept
-        : String_Sink_Behavior { hover_article }
+    constexpr explicit Include_Text_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : String_Sink_Behavior { tooltip_article }
     {
     }
 
@@ -1089,8 +1098,8 @@ struct Include_Text_Behavior final : String_Sink_Behavior {
 
 struct Include_Behavior final : Block_Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Include_Behavior(const std::u8string_view hover_article) noexcept
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Include_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -1101,8 +1110,8 @@ struct Include_Behavior final : Block_Directive_Behavior {
 struct Macro_Behavior final : Unit_Directive_Behavior {
 
     [[nodiscard]]
-    constexpr explicit Macro_Behavior(const std::u8string_view hover_article) noexcept
-        : Unit_Directive_Behavior { hover_article }
+    constexpr explicit Macro_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Unit_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -1115,8 +1124,8 @@ struct Argument;
 struct Put_Behavior final : Directive_Behavior {
 
     [[nodiscard]]
-    constexpr explicit Put_Behavior(const std::u8string_view hover_article)
-        : Directive_Behavior { auto(Type::any), hover_article }
+    constexpr explicit Put_Behavior(const Tooltip_Article& tooltip_article)
+        : Directive_Behavior { auto(Type::any), tooltip_article }
     {
     }
 
@@ -1133,8 +1142,8 @@ private:
 
 struct Paragraph_Enter_Behavior final : Block_Directive_Behavior {
 
-    constexpr explicit Paragraph_Enter_Behavior(const std::u8string_view hover_article)
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Paragraph_Enter_Behavior(const Tooltip_Article& tooltip_article)
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -1144,8 +1153,8 @@ struct Paragraph_Enter_Behavior final : Block_Directive_Behavior {
 
 struct Paragraph_Leave_Behavior final : Block_Directive_Behavior {
 
-    constexpr explicit Paragraph_Leave_Behavior(const std::u8string_view hover_article)
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Paragraph_Leave_Behavior(const Tooltip_Article& tooltip_article)
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -1155,8 +1164,8 @@ struct Paragraph_Leave_Behavior final : Block_Directive_Behavior {
 
 struct Paragraph_Inherit_Behavior final : Block_Directive_Behavior {
 
-    constexpr explicit Paragraph_Inherit_Behavior(const std::u8string_view hover_article)
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Paragraph_Inherit_Behavior(const Tooltip_Article& tooltip_article)
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -1167,8 +1176,8 @@ struct Paragraph_Inherit_Behavior final : Block_Directive_Behavior {
 struct Invoke_Behavior final : Block_Directive_Behavior {
 
     [[nodiscard]]
-    constexpr explicit Invoke_Behavior(const std::u8string_view hover_article) noexcept
-        : Block_Directive_Behavior { hover_article }
+    constexpr explicit Invoke_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Block_Directive_Behavior { tooltip_article }
     {
     }
 
@@ -1179,8 +1188,8 @@ struct Invoke_Behavior final : Block_Directive_Behavior {
 struct Alias_Behavior final : Unit_Directive_Behavior {
 
     [[nodiscard]]
-    constexpr explicit Alias_Behavior(const std::u8string_view hover_article) noexcept
-        : Unit_Directive_Behavior { hover_article }
+    constexpr explicit Alias_Behavior(const Tooltip_Article& tooltip_article) noexcept
+        : Unit_Directive_Behavior { tooltip_article }
     {
     }
 

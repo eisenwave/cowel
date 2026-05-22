@@ -290,12 +290,10 @@ int main(int argc, const char* const* const argv)
         .preamble = {},
     };
 
-    const cowel_gen_result_u8 result = cowel_generate_html_u8(&options);
+    cowel_gen_result_u8 result = cowel_generate_html_u8(&options);
 
     if (result.status != COWEL_PROCESSING_OK) {
-        if (result.output.text != nullptr) {
-            memory.deallocate(result.output.text, result.output.length, alignof(char8_t));
-        }
+        cowel_free_gen_result_u8(&options, &result);
 
         const auto status_name = processing_status_name(result.status);
         Diagnostic_String error { &memory };
@@ -330,9 +328,7 @@ int main(int argc, const char* const* const argv)
     const std::string out_path = std::string(as_string_view(out_path_u8));
     const auto out_file = fopen_unique(out_path.c_str(), "wb");
     if (!out_file) {
-        if (result.output.text != nullptr) {
-            memory.deallocate(result.output.text, result.output.length, alignof(char8_t));
-        }
+        cowel_free_gen_result_u8(&options, &result);
         Diagnostic_String error { &memory };
         print_location_of_file(error, out_path_u8);
         error.append(u8" Failed to open file.");
@@ -342,8 +338,8 @@ int main(int argc, const char* const* const argv)
 
     if (result.output.text != nullptr) {
         std::fwrite(result.output.text, 1, result.output.length, out_file.get());
-        memory.deallocate(result.output.text, result.output.length, alignof(char8_t));
     }
+    cowel_free_gen_result_u8(&options, &result);
 
     return logger.any_errors ? EXIT_FAILURE : EXIT_SUCCESS;
 }

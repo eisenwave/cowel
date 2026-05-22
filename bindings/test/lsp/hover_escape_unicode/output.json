@@ -29,7 +29,7 @@
     "result": {
       "contents": {
         "kind": "markdown",
-        "value": "### Numeric escape `\\+0041`\nU+0041 LATIN CAPITAL LETTER A"
+        "value": "### Numeric escape `\\+0041`\nU+0041 LATIN CAPITAL LETTER A\n"
       },
       "range": {
         "start": {
@@ -49,7 +49,7 @@
     "result": {
       "contents": {
         "kind": "markdown",
-        "value": "### Named escape `\\'LF'`\nU+000A LINE FEED"
+        "value": "### Named escape `\\'LF'`\nU+000A LINE FEED\n"
       },
       "range": {
         "start": {
