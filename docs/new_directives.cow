@@ -1892,6 +1892,8 @@ for each \math{\msub{\mi{x}\mi{i}}} in \cowdoc_attr{args}.
 \Btip{
 \cowdoc_dir{cowel_add} can also be written with the binary
 \cowdoc_c{+} operator.
+\cowdoc_c{cowel_add} itself is numeric-only;
+for \cowdoc_type{str}, \cowdoc_c{+} performs concatenation.
 See \ref("#binary-expressions").
 }
 

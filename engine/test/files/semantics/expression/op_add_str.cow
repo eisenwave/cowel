@@ -1,0 +1,41 @@
+\test_input{
+\__typeof("" + "")
+\__typeof("left" + "right")
+\__typeof("α" + "β")
+
+\("" + "")
+\("" + "ascii")
+\("ascii" + "")
+\("hello" + "world")
+\("" + "αβ")
+\("αβ" + "")
+\("α" + "β")
+\("A" + "β")
+\("α" + "B")
+\("" + "A" + "")
+\("α" + "" + "β")
+
+\test_expect_error("type.mismatch"){\cowel_to_str("" + 1)}
+\test_expect_error("type.mismatch"){\cowel_to_str(1 + "")}
+}
+
+\test_output{
+str
+str
+str
+
+
+ascii
+ascii
+helloworld
+αβ
+αβ
+αβ
+Aβ
+αB
+A
+αβ
+
+<error->\cowel_to_str("" + 1)</error->
+<error->\cowel_to_str(1 + "")</error->
+}
