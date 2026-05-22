@@ -400,7 +400,7 @@ if(DEFINED EMSCRIPTEN)
         COMMAND "${NPX_EXECUTABLE}" --prefix "${NODE_BINDINGS_DIR}" tsc
             -p "${NODE_BINDINGS_DIR}/tsconfig.json"
             --outDir "${NPM_DIR}"
-            --tsBuildInfoFile "${NPM_DIR}/.tsbuildinfo"
+            --tsBuildInfoFile "${CMAKE_BINARY_DIR}/npm.tsbuildinfo"
         COMMAND "${NPX_EXECUTABLE}" --prefix "${NODE_BINDINGS_DIR}" tsc
             -p "${NODE_BINDINGS_DIR}/tsconfig.test.json"
             --outDir "${NPM_TEST_DIR}"
@@ -418,7 +418,7 @@ if(DEFINED EMSCRIPTEN)
             "${NPM_DIR}"
             "${NPM_TEST_DIR}"
             "${NPM_DIR}/cowel.wasm"
-            "${CMAKE_BINARY_DIR}/npm/.tsbuildinfo"
+            "${CMAKE_BINARY_DIR}/npm.tsbuildinfo"
         DEPENDS cowel-wasm
         COMMENT "Preparing npm package in ${NPM_DIR}"
     )
@@ -428,7 +428,7 @@ if(DEFINED EMSCRIPTEN)
         COMMAND "${NPX_EXECUTABLE}" --prefix "${NODE_BINDINGS_DIR}" tsc
             -p "${NODE_BINDINGS_DIR}/tsconfig.json"
             --outDir "${LSP_WASM_DIR}"
-            --tsBuildInfoFile "${LSP_WASM_DIR}/.tsbuildinfo"
+            --tsBuildInfoFile "${CMAKE_BINARY_DIR}/lsp-wasm.tsbuildinfo"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_BINARY_DIR}/cowel-lsp.wasm"
             "${LSP_WASM_DIR}"
@@ -436,7 +436,7 @@ if(DEFINED EMSCRIPTEN)
             "${LSP_WASM_DIR}"
             "${LSP_WASM_DIR}/cowel-lsp.wasm"
             "${LSP_WASM_DIR}/lsp-wasm-runner.js"
-            "${LSP_WASM_DIR}/.tsbuildinfo"
+            "${CMAKE_BINARY_DIR}/lsp-wasm.tsbuildinfo"
         DEPENDS cowel-lsp
         COMMENT "Preparing LSP WASM artifacts in ${LSP_WASM_DIR}"
     )
