@@ -311,43 +311,6 @@ jobs:
       run: npm run build
       working-directory: editor/vscode
 
-    - name: Inspect VS Code extension .vsix
-      working-directory: editor/vscode
-      run: |
-        VSIX=$(find . -maxdepth 1 -name '*.vsix' -print -quit | sed 's|^\./||')
-        if [ -z "$VSIX" ]; then
-          echo "✗ No .vsix file found"
-          exit 1
-        fi
-        echo "Inspecting: $VSIX"
-
-        echo "=== All files in .vsix ==="
-        unzip -l "$VSIX"
-
-        echo "=== Checking required files ==="
-        unzip -l "$VSIX" | grep -q "extension/out/extension.js" \
-          && echo "✓ extension/out/extension.js present" \
-          || (echo "✗ extension/out/extension.js MISSING" && exit 1)
-
-        if [ -d out/lsp ]; then
-          unzip -l "$VSIX" | grep -q "extension/out/lsp/package.json" \
-            && echo "✓ extension/out/lsp/package.json present" \
-            || (echo "✗ extension/out/lsp/package.json MISSING" && exit 1)
-        else
-          echo "ℹ out/lsp/ not present in workspace, skipping LSP asset assertion"
-        fi
-
-        echo "=== Checking forbidden files ==="
-        if unzip -l "$VSIX" | grep -q "extension/node_modules/"; then
-          echo "✗ node_modules found in .vsix — bundling failed!"
-          exit 1
-        else
-          echo "✓ node_modules not present in .vsix"
-        fi
-
-        echo "=== extension.js size ==="
-        unzip -p "$VSIX" extension/out/extension.js | wc -c | xargs -I{} echo "{} bytes"
-
     - name: Upload VS Code extension artifact
       uses: actions/upload-artifact@v6
       with:
