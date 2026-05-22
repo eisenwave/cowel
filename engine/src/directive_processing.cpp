@@ -30,6 +30,7 @@
 #include "cowel/invocation.hpp"
 #include "cowel/output_language.hpp"
 #include "cowel/parameters.hpp"
+#include "cowel/tooltip.hpp"
 #include "cowel/value.hpp"
 
 #include "cowel/syntax/ast.hpp"
@@ -38,61 +39,83 @@ using namespace std::string_view_literals;
 
 namespace cowel {
 
+namespace {
+
+void render_tooltip_article(std::pmr::u8string& out, const Tooltip_Article& article)
+{
+    if (article.subject.empty()) {
+        return;
+    }
+    out += u8"### "sv;
+    out += tooltip_kind_title(article.kind);
+    out += u8" `"sv;
+    out += article.subject;
+    out += u8"`\n"sv;
+    if (!article.declaration.empty()) {
+        out += u8"```"sv;
+        out += article.declaration_language;
+        out += u8"\n"sv;
+        out += article.declaration;
+        out += u8"\n```\n"sv;
+    }
+    if (!article.description.empty()) {
+        out += article.description;
+        out += article.example.empty() ? u8"\n"sv : u8"\n\n"sv;
+    }
+    if (!article.example.empty()) {
+        out += u8"#### Example\n"sv;
+        out += article.example;
+        out += u8"\n"sv;
+    }
+}
+
+} // namespace
+
 void push_escape_hover(const ast::Primary& node, std::u8string_view units, Context& context)
 {
     if (!context.collects_hovers()) {
         return;
     }
-    if (units.empty()) {
-        context.push_hover(node.get_source_span(), u8"Expands to empty character sequence."sv);
-        return;
-    }
 
     const std::u8string_view source = node.get_source();
     const std::u8string_view escaped = node.get_escaped();
+    const auto kind //
+        = escaped.starts_with(u8'+')  ? Tooltip_Kind::numeric_escape
+        : escaped.starts_with(u8'\'') ? Tooltip_Kind::named_escape
+                                      : Tooltip_Kind::escape;
 
-    // Determine kind label from first character of the escape sequence.
-    std::u8string_view kind_label;
-    if (escaped[0] == u8'+') {
-        kind_label = u8"Numeric escape"sv;
-    }
-    else if (escaped[0] == u8'\'') {
-        kind_label = u8"Named escape"sv;
+    std::pmr::u8string description { context.get_transient_memory() };
+    if (units.empty()) {
+        description = u8"Expands to empty character sequence.";
     }
     else {
-        kind_label = u8"Escape"sv;
+        constexpr std::size_t min_hex_chars = 4;
+        const char32_t cp = utf8::decode_unchecked(units.data());
+        const auto hex_chars = to_characters8(std::uint32_t(cp), 16, true);
+        const std::size_t hex_len = hex_chars.size();
+        const auto display_name = code_point_display_name(cp);
+        description += u8"U+"sv;
+        for (std::size_t i = hex_len; i < min_hex_chars; ++i) {
+            description += u8'0';
+        }
+        for (const char8_t c : hex_chars) {
+            description += c;
+        }
+        const std::u8string_view name_view = display_name.as_string();
+        if (!name_view.empty()) {
+            description += u8' ';
+            description += name_view;
+        }
     }
 
-    constexpr std::size_t min_hex_chars = 4;
-    const char32_t cp = utf8::decode_unchecked(units.data());
-    const auto hex_chars = to_characters8(std::uint32_t(cp), 16, true);
-    const std::size_t hex_len = hex_chars.size();
-    const auto display_name = code_point_display_name(cp);
-
-    // Article format:
-    // # <kind_label> `<source>`
-    // U+XXXX <display_name>
-    std::u8string article;
-    article.reserve(128);
-    article += u8"### ";
-    article += kind_label;
-    article += u8" `";
-    article += source;
-    article += u8"`\n";
-    article += u8"U+";
-    for (std::size_t i = hex_len; i < min_hex_chars; ++i) {
-        article += u8'0';
-    }
-    for (const char8_t c : hex_chars) {
-        article += c;
-    }
-    const std::u8string_view name_view = display_name.as_string();
-    if (!name_view.empty()) {
-        article += u8' ';
-        article += name_view;
-    }
-
-    context.push_hover(node.get_source_span(), article);
+    const Tooltip_Article article {
+        .kind = kind,
+        .subject = source,
+        .description = description,
+    };
+    std::pmr::u8string rendered { context.get_transient_memory() };
+    render_tooltip_article(rendered, article);
+    context.push_hover(node.get_source_span(), rendered);
 }
 
 Processing_Status
@@ -274,14 +297,11 @@ bool Context::emplace_macro(
         definition.end(),
         memory,
     };
-    std::pmr::u8string article { memory };
-    article += u8"### Macro `";
-    article += name;
-    article += u8"`\n```cowel\n";
-    article += macro_source;
-    article += u8"\n```\n";
-    const auto [_, success]
-        = m_macros.try_emplace(std::move(name), std::move(body), std::move(article));
+    std::pmr::u8string name_copy { name, memory };
+    std::pmr::u8string decl_str { macro_source, memory };
+    const auto [_, success] = m_macros.try_emplace(
+        std::move(name), std::move(body), std::move(name_copy), std::move(decl_str)
+    );
     return success;
 }
 
@@ -658,9 +678,11 @@ evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
     }
 
     if (context.collects_hovers()) {
-        const std::u8string_view article = behavior->get_hover_article();
-        if (!article.empty()) {
-            context.push_hover(directive.get_name_span(), article);
+        const Tooltip_Article& article = behavior->get_tooltip_article();
+        if (!article.subject.empty()) {
+            std::pmr::u8string rendered { context.get_transient_memory() };
+            render_tooltip_article(rendered, article);
+            context.push_hover(directive.get_name_span(), rendered);
         }
     }
 
@@ -1055,9 +1077,11 @@ Processing_Status splice_invocation( //
     }
 
     if (context.collects_hovers()) {
-        const std::u8string_view article = behavior->get_hover_article();
-        if (!article.empty()) {
-            context.push_hover(directive.get_name_span(), article);
+        const Tooltip_Article& article = behavior->get_tooltip_article();
+        if (!article.subject.empty()) {
+            std::pmr::u8string rendered { context.get_transient_memory() };
+            render_tooltip_article(rendered, article);
+            context.push_hover(directive.get_name_span(), rendered);
         }
     }
 

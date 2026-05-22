@@ -193,12 +193,8 @@ TEST(Document_Generation, file_tests)
             .preamble = as_cowel_string_view(integration_test_preamble),
         };
 
-        const cowel_gen_result_u8 result = cowel_generate_html_u8(&cowel_options);
-        if (result.output.text != nullptr) {
-            alloc_options.free(
-                alloc_options.free_data, result.output.text, result.output.length, alignof(char8_t)
-            );
-        }
+        cowel_gen_result_u8 result = cowel_generate_html_u8(&cowel_options);
+        cowel_free_gen_result_u8(&cowel_options, &result);
 
         if (result.status != COWEL_PROCESSING_OK) {
             success = false;

@@ -600,10 +600,7 @@ Validate_Result validate_document(
         .preamble = {},
     };
 
-    const cowel_gen_result_u8 gen_result = cowel_generate_html_u8(&opts);
-    if (gen_result.output.text != nullptr) {
-        cowel_free(gen_result.output.text, gen_result.output.length, alignof(char8_t));
-    }
+    cowel_gen_result_u8 gen_result = cowel_generate_html_u8(&opts);
 
     // Collect hover entries and map them by file URI using file_id.
     {
@@ -651,6 +648,8 @@ Validate_Result validate_document(
             }
         }
     }
+    // Free the generation result (both output HTML and hover buffer).
+    cowel_free_gen_result_u8(&opts, &gen_result);
 
     static constexpr std::vector<lsp::Diagnostic> empty_diagnostics;
 

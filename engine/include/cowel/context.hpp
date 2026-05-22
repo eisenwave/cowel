@@ -41,19 +41,29 @@ struct Referred {
 
 struct Macro_Definition final : Block_Directive_Behavior {
 private:
-    std::pmr::u8string m_article;
+    std::pmr::u8string m_name;
+    std::pmr::u8string m_decl;
     std::pmr::vector<ast::Markup_Element> m_body;
 
 public:
     [[nodiscard]]
     explicit Macro_Definition(
         std::pmr::vector<ast::Markup_Element>&& body,
-        std::pmr::u8string&& article
+        std::pmr::u8string&& name,
+        std::pmr::u8string&& decl
     )
-        : m_article { std::move(article) }
+        : m_name { std::move(name) }
+        , m_decl { std::move(decl) }
         , m_body { std::move(body) }
     {
-        set_hover_article(m_article);
+        set_tooltip_article(
+            Tooltip_Article {
+                .kind = Tooltip_Kind::macro,
+                .subject = m_name,
+                .declaration_language = u8"cowel",
+                .declaration = m_decl,
+            }
+        );
     }
 
     [[nodiscard]]

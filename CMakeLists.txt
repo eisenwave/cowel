@@ -250,6 +250,7 @@ set(COMMON_LIBRARY_SOURCES
     engine/include/cowel/settings.hpp
     engine/include/cowel/string_kind.hpp
     engine/include/cowel/theme_to_css.hpp
+    engine/include/cowel/tooltip.hpp
     engine/include/cowel/type.hpp
     engine/include/cowel/ulight_highlighter.hpp
     engine/include/cowel/value.hpp

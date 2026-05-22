@@ -604,6 +604,22 @@ cowel_gen_result cowel_generate_html(const cowel_options* options) COWEL_NOEXCEP
 COWEL_EXPORT COWEL_NODISCARD
 cowel_gen_result_u8 cowel_generate_html_u8(const cowel_options_u8* options) COWEL_NOEXCEPT;
 
+/// @brief Frees all memory associated with a gen result
+/// returned by `cowel_generate_html` or `cowel_generate_html_u8`
+/// (both the output HTML and the hover entries array).
+/// Uses `options->free` if provided, otherwise uses `cowel_free`.
+/// Does nothing if `result` is null.
+/// After this call, all pointers in `result` are zeroed.
+COWEL_EXPORT
+void cowel_free_gen_result(const cowel_options* options, cowel_gen_result* result) COWEL_NOEXCEPT;
+
+/// @brief See `cowel_free_gen_result`.
+COWEL_EXPORT
+void cowel_free_gen_result_u8(
+    const cowel_options_u8* options,
+    cowel_gen_result_u8* result
+) COWEL_NOEXCEPT;
+
 COWEL_EXPORT
 void cowel_set_assertion_handler_u8(cowel_assertion_handler_fn_u8* handler) COWEL_NOEXCEPT;
 

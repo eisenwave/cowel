@@ -6,6 +6,7 @@
 #include "cowel/content_status.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
+#include "cowel/tooltip.hpp"
 #include "cowel/type.hpp"
 #include "cowel/value.hpp"
 
@@ -26,7 +27,7 @@ enum struct Evaluation_Result_Kind : Default_Underlying {
 struct Directive_Behavior {
 private:
     Type m_static_type;
-    std::u8string_view m_hover_article;
+    Tooltip_Article m_tooltip_article {};
 
 public:
     [[nodiscard]]
@@ -42,19 +43,19 @@ public:
     [[nodiscard]]
     constexpr Directive_Behavior(
         const Type& static_type,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     ) noexcept
         : m_static_type { static_type }
-        , m_hover_article { hover_article }
+        , m_tooltip_article { tooltip_article }
     {
     }
     [[nodiscard]]
     constexpr Directive_Behavior(
         Type&& static_type,
-        const std::u8string_view hover_article
+        const Tooltip_Article& tooltip_article
     ) noexcept
         : m_static_type { std::move(static_type) }
-        , m_hover_article { hover_article }
+        , m_tooltip_article { tooltip_article }
     {
     }
 
@@ -80,21 +81,21 @@ public:
         return m_static_type;
     }
 
-    /// @brief Returns the Markdown hover article for this behavior,
-    /// or an empty string view if no article is defined.
+    /// @brief Returns the structured tooltip article for this behavior.
+    /// The subject is empty when no article is defined.
     [[nodiscard]]
-    constexpr std::u8string_view get_hover_article() const noexcept
+    constexpr const Tooltip_Article& get_tooltip_article() const noexcept
     {
-        return m_hover_article;
+        return m_tooltip_article;
     }
 
 protected:
-    /// @brief Updates the stored hover article view.
-    /// Intended for use by derived classes that own the article string
-    /// and must set the view after their owning member is initialized.
-    void set_hover_article(const std::u8string_view article) noexcept
+    /// @brief Updates the stored tooltip article.
+    /// Intended for use by derived classes that own the article strings
+    /// and must set the article after their owning members are initialized.
+    void set_tooltip_article(const Tooltip_Article& article) noexcept
     {
-        m_hover_article = article;
+        m_tooltip_article = article;
     }
 };
 
@@ -105,8 +106,8 @@ protected:
 /// The static type is `Type::void`.
 struct Unit_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Unit_Directive_Behavior(const std::u8string_view hover_article = {}) noexcept
-        : Directive_Behavior { Type::unit, hover_article }
+    constexpr explicit Unit_Directive_Behavior(const Tooltip_Article& tooltip_article = {}) noexcept
+        : Directive_Behavior { Type::unit, tooltip_article }
     {
     }
 
@@ -134,8 +135,8 @@ protected:
 
 struct Bool_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Bool_Directive_Behavior(const std::u8string_view hover_article = {}) noexcept
-        : Directive_Behavior { Type::boolean, hover_article }
+    constexpr explicit Bool_Directive_Behavior(const Tooltip_Article& tooltip_article = {}) noexcept
+        : Directive_Behavior { Type::boolean, tooltip_article }
     {
     }
 
@@ -153,8 +154,8 @@ protected:
 
 struct Int_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
-    constexpr explicit Int_Directive_Behavior(const std::u8string_view hover_article = {}) noexcept
-        : Directive_Behavior { Type::integer, hover_article }
+    constexpr explicit Int_Directive_Behavior(const Tooltip_Article& tooltip_article = {}) noexcept
+        : Directive_Behavior { Type::integer, tooltip_article }
     {
     }
 
@@ -173,9 +174,9 @@ protected:
 struct Float_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
     constexpr explicit Float_Directive_Behavior(
-        const std::u8string_view hover_article = {}
+        const Tooltip_Article& tooltip_article = {}
     ) noexcept
-        : Directive_Behavior { Type::floating, hover_article }
+        : Directive_Behavior { Type::floating, tooltip_article }
     {
     }
 
@@ -201,9 +202,9 @@ protected:
 struct Short_String_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
     constexpr explicit Short_String_Directive_Behavior(
-        const std::u8string_view hover_article = {}
+        const Tooltip_Article& tooltip_article = {}
     ) noexcept
-        : Directive_Behavior { Type::str, hover_article }
+        : Directive_Behavior { Type::str, tooltip_article }
     {
     }
 
@@ -226,9 +227,9 @@ protected:
 struct Block_Directive_Behavior : Directive_Behavior {
     [[nodiscard]]
     constexpr explicit Block_Directive_Behavior(
-        const std::u8string_view hover_article = {}
+        const Tooltip_Article& tooltip_article = {}
     ) noexcept
-        : Directive_Behavior { Type::block, hover_article }
+        : Directive_Behavior { Type::block, tooltip_article }
     {
     }
 

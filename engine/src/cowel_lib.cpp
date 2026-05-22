@@ -726,4 +726,51 @@ cowel_gen_result_u8 cowel_generate_html_u8(const cowel_options_u8* options) noex
     }
 #endif
 }
+
+void cowel_free_gen_result_u8(
+    const cowel_options_u8* const options,
+    cowel_gen_result_u8* const result
+) noexcept
+{
+    COWEL_ASSERT(options != nullptr);
+    COWEL_ASSERT(result != nullptr);
+    cowel_free_fn* const free_fn = options->free;
+    const void* const free_data = free_fn != nullptr ? options->free_data : nullptr;
+    const auto do_free
+        = [&](void* const ptr, const std::size_t size, const std::size_t alignment) noexcept {
+              if (ptr == nullptr) {
+                  return;
+              }
+              if (free_fn != nullptr) {
+                  free_fn(free_data, ptr, size, alignment);
+              }
+              else {
+                  cowel_free(ptr, size, alignment);
+              }
+          };
+
+    if (result->output.text != nullptr) {
+        do_free(result->output.text, result->output.length, alignof(char8_t));
+        result->output = {};
+    }
+    if (result->hovers != nullptr) {
+        std::size_t total_article_bytes = 0;
+        for (std::size_t i = 0; i < result->hovers_size; ++i) {
+            total_article_bytes += result->hovers[i].article_length;
+        }
+        const std::size_t hovers_alloc_size
+            = (result->hovers_size * sizeof(cowel_hover_u8)) + total_article_bytes;
+        do_free(result->hovers, hovers_alloc_size, alignof(cowel_hover_u8));
+        result->hovers = nullptr;
+        result->hovers_size = 0;
+    }
+}
+
+void cowel_free_gen_result(const cowel_options* options, cowel_gen_result* result) noexcept
+{
+    const auto u8_options = std::bit_cast<cowel_options_u8>(*options);
+    auto u8_result = std::bit_cast<cowel_gen_result_u8>(*result);
+    cowel_free_gen_result_u8(&u8_options, &u8_result);
+    *result = std::bit_cast<cowel_gen_result>(u8_result);
+}
 }
