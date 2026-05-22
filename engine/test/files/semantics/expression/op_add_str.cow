@@ -3,20 +3,20 @@
 \__typeof("left" + "right")
 \__typeof("α" + "β")
 
-\cowel_pos("" + "")
-\cowel_pos("" + "ascii")
-\cowel_pos("ascii" + "")
-\cowel_pos("hello" + "world")
-\cowel_pos("" + "αβ")
-\cowel_pos("αβ" + "")
-\cowel_pos("α" + "β")
-\cowel_pos("A" + "β")
-\cowel_pos("α" + "B")
-\cowel_pos("" + "A" + "")
-\cowel_pos("α" + "" + "β")
+\("" + "")
+\("" + "ascii")
+\("ascii" + "")
+\("hello" + "world")
+\("" + "αβ")
+\("αβ" + "")
+\("α" + "β")
+\("A" + "β")
+\("α" + "B")
+\("" + "A" + "")
+\("α" + "" + "β")
 
-\test_expect_error("type.mismatch"){\cowel_pos("" + 1)}
-\test_expect_error("type.mismatch"){\cowel_pos(1 + "")}
+\test_expect_error("type.mismatch"){\cowel_to_str("" + 1)}
+\test_expect_error("type.mismatch"){\cowel_to_str(1 + "")}
 }
 
 \test_output{
@@ -36,6 +36,6 @@ Aβ
 A
 αβ
 
-<error->\cowel_pos("" + 1)</error->
-<error->\cowel_pos(1 + "")</error->
+<error->\cowel_to_str("" + 1)</error->
+<error->\cowel_to_str(1 + "")</error->
 }

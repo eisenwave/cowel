@@ -610,7 +610,7 @@ Result<Value, Processing_Status> evaluate_builtin(
     }
     case plus_str_str: {
         const String_Kind result_kind = lhs.get_string_kind() == String_Kind::ascii
-            && rhs.get_string_kind() == String_Kind::ascii
+                && rhs.get_string_kind() == String_Kind::ascii
             ? String_Kind::ascii
             : String_Kind::unknown;
         std::pmr::string result { context.get_transient_memory() };

@@ -3563,13 +3563,19 @@ using builtin directives:
 and computes a result from these operands.
 Evaluating a <g-term>binary-expression</g-term> is equivalent to
 evaluating a <g-term>directive-call-expression</g-term>
-for a builtin directive specified in the table below.
+for a builtin directive specified in the table below,
+except for <code>a + b</code> with <tt-><h- data-h=kw_type>str</h-></tt-> operands.
 </p>
 <table>
   <tr>
     <th>Binary expression</th>
     <th><g-term>directive-call-expression</g-term></th>
   </tr>
+
+  <note-block><p><intro-></intro-> 
+  If both operands of <code>a + b</code> are of type <tt-><h- data-h=kw_type>str</h-></tt->,
+  the result is their concatenation.
+  </p></note-block>
   <tr>
     <td><code>a || b</code></td>
     <td><code>cowel_or(a, b)</code></td>
@@ -5899,6 +5905,8 @@ the result is that of the IEEE-754 operations
 <tip-block><p><intro-></intro-> 
 <code><h- data-h=mk_tag>\cowel_add</h-></code> can also be written with the binary
 <code>+</code> operator.
+<code>cowel_add</code> itself is numeric-only;
+for <tt-><h- data-h=kw_type>str</h-></tt->, <code>+</code> performs concatenation.
 See <a href=#binary-expressions>§6.5. Binary expressions</a>.
 </p></tip-block>
 
