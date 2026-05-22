@@ -4,10 +4,11 @@
 
 ### VSCode extension
 
-- Added hover tooltips for macros defined by `cowel_macro`
+- Added hover tooltips for macros defined by `cowel_macro` (#374)
 - Fixed missing revalidation of documents when an included file changes (#370)
-- Fixed memory leaks for certain tooltips
-- Also slightly improved performance of language server
+- Fixed memory leaks for certain tooltips (#376)
+- Also slightly improved performance of language server (#373)
+- Also slightly reduced the extension size, improving load times (#375)
 
 **Full Changelog**:
 [`v0.10.0...v0.10.1`](https://github.com/eisenwave/cowel/compare/v0.10.0...v0.10.1)
