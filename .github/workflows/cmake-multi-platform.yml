@@ -314,7 +314,11 @@ jobs:
     - name: Inspect VS Code extension .vsix
       working-directory: editor/vscode
       run: |
-        VSIX=$(ls *.vsix | head -1)
+        VSIX=$(find . -maxdepth 1 -name '*.vsix' -print -quit | sed 's|^\./||')
+        if [ -z "$VSIX" ]; then
+          echo "✗ No .vsix file found"
+          exit 1
+        fi
         echo "Inspecting: $VSIX"
 
         echo "=== All files in .vsix ==="
