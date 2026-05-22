@@ -387,7 +387,6 @@ if(DEFINED EMSCRIPTEN)
     target_link_libraries(cowel-lsp PRIVATE ulight args)
     target_link_libraries(cowel-lsp PRIVATE get_code_point_name::get_code_point_name)
 
-    set(TSC_BUILDINFO_DIR "${CMAKE_BINARY_DIR}/.tsbuildinfo")
     set(NPM_DIR "${CMAKE_BINARY_DIR}/npm")
     set(LSP_WASM_DIR "${CMAKE_BINARY_DIR}/lsp-wasm")
     set(NPM_TEST_DIR "${CMAKE_BINARY_DIR}/test")
@@ -396,13 +395,12 @@ if(DEFINED EMSCRIPTEN)
     find_program(NODE_EXECUTABLE node REQUIRED)
 
     add_custom_target(cowel-npm ALL
-        COMMAND "${CMAKE_COMMAND}" -E make_directory "${TSC_BUILDINFO_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${NPM_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${NPM_TEST_DIR}"
         COMMAND "${NPX_EXECUTABLE}" --prefix "${NODE_BINDINGS_DIR}" tsc
             -p "${NODE_BINDINGS_DIR}/tsconfig.json"
             --outDir "${NPM_DIR}"
-            --tsBuildInfoFile "${TSC_BUILDINFO_DIR}/npm.tsbuildinfo"
+            --tsBuildInfoFile "${CMAKE_BINARY_DIR}/npm.tsbuildinfo"
         COMMAND "${NPX_EXECUTABLE}" --prefix "${NODE_BINDINGS_DIR}" tsc
             -p "${NODE_BINDINGS_DIR}/tsconfig.test.json"
             --outDir "${NPM_TEST_DIR}"
@@ -420,18 +418,17 @@ if(DEFINED EMSCRIPTEN)
             "${NPM_DIR}"
             "${NPM_TEST_DIR}"
             "${NPM_DIR}/cowel.wasm"
-            "${TSC_BUILDINFO_DIR}/npm.tsbuildinfo"
+            "${CMAKE_BINARY_DIR}/npm.tsbuildinfo"
         DEPENDS cowel-wasm
         COMMENT "Preparing npm package in ${NPM_DIR}"
     )
 
     add_custom_target(cowel-lsp-wasm ALL
-        COMMAND "${CMAKE_COMMAND}" -E make_directory "${TSC_BUILDINFO_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${LSP_WASM_DIR}"
         COMMAND "${NPX_EXECUTABLE}" --prefix "${NODE_BINDINGS_DIR}" tsc
             -p "${NODE_BINDINGS_DIR}/tsconfig.json"
             --outDir "${LSP_WASM_DIR}"
-            --tsBuildInfoFile "${TSC_BUILDINFO_DIR}/lsp-wasm.tsbuildinfo"
+            --tsBuildInfoFile "${CMAKE_BINARY_DIR}/lsp-wasm.tsbuildinfo"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_BINARY_DIR}/cowel-lsp.wasm"
             "${LSP_WASM_DIR}"
@@ -439,7 +436,7 @@ if(DEFINED EMSCRIPTEN)
             "${LSP_WASM_DIR}"
             "${LSP_WASM_DIR}/cowel-lsp.wasm"
             "${LSP_WASM_DIR}/lsp-wasm-runner.js"
-            "${TSC_BUILDINFO_DIR}/lsp-wasm.tsbuildinfo"
+            "${CMAKE_BINARY_DIR}/lsp-wasm.tsbuildinfo"
         DEPENDS cowel-lsp
         COMMENT "Preparing LSP WASM artifacts in ${LSP_WASM_DIR}"
     )
