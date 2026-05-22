@@ -355,10 +355,15 @@ TEST(Document_Generation, hover_directives)
 
     std::pmr::vector<Hover_Entry> hovers { &memory };
 
+    Relative_File_Loader file_loader {
+        std::filesystem::path { "engine/test/files/" },
+        &memory,
+    };
     const Generation_Options options {
         .error_behavior = &directives.get_error_behavior(),
         .highlight_theme_source = as_u8string_view(theme_source),
         .builtin_name_resolver = directives,
+        .file_loader = file_loader,
         .logger = logger,
         .highlighter = ulight_syntax_highlighter,
         .hover_sink = &hovers,
