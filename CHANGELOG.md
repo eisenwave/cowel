@@ -2,6 +2,10 @@
 
 ## **[v0.10.1](https://github.com/eisenwave/cowel/releases/tag/v0.10.1)** (2026-??-??)
 
+### Engine
+
+- Added string concatenation for binary `+` with `str` operands
+
 ### VSCode extension
 
 - Added hover tooltips for macros defined by `cowel_macro`

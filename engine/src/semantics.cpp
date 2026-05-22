@@ -355,6 +355,9 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
     static constexpr Type numeric_types[] { Type::integer, Type::floating };
     static constexpr auto numeric_type = Type::union_of(numeric_types);
     static_assert(numeric_type.is_canonical());
+    static constexpr Type addable_types[] { Type::integer, Type::floating, Type::str };
+    static constexpr auto addable_type = Type::union_of(addable_types);
+    static_assert(addable_type.is_canonical());
 
     switch (kind) {
     case Binary_Expression_Kind::logical_or: {
@@ -451,16 +454,17 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
 
     case Binary_Expression_Kind::plus: {
         if (!expect_types_homogeneous(
-                lhs, rhs, numeric_type, lhs_location, rhs_location, context
+                lhs, rhs, addable_type, lhs_location, rhs_location, context
             )) {
             return Processing_Status::error;
         }
         switch (lhs.get_kind()) {
         case Type_Kind::integer: return plus_int_int;
         case Type_Kind::floating: return plus_float_float;
+        case Type_Kind::str: return plus_str_str;
         default: break;
         }
-        COWEL_ASSERT_UNREACHABLE(u8"Validated type not in numeric_type?!");
+        COWEL_ASSERT_UNREACHABLE(u8"Validated type not in addable_type?!");
     }
     case Binary_Expression_Kind::minus: {
         if (!expect_types_homogeneous(
@@ -603,6 +607,17 @@ Result<Value, Processing_Status> evaluate_builtin(
     }
     case plus_float_float: {
         return Value::floating(lhs.as_float() + rhs.as_float());
+    }
+    case plus_str_str: {
+        const String_Kind result_kind = lhs.get_string_kind() == String_Kind::ascii
+            && rhs.get_string_kind() == String_Kind::ascii
+            ? String_Kind::ascii
+            : String_Kind::unknown;
+        std::pmr::string result { context.get_transient_memory() };
+        result.reserve(lhs.as_string().size() + rhs.as_string().size());
+        result += as_string_view(lhs.as_string());
+        result += as_string_view(rhs.as_string());
+        return Value::string(as_u8string_view(result), result_kind);
     }
     case minus_int_int: {
         return Value::integer(lhs.as_integer() - rhs.as_integer());

@@ -373,12 +373,18 @@ A \gterm{binary-expression} combines two operands
 and computes a result from these operands.
 Evaluating a \gterm{binary-expression} is equivalent to
 evaluating a \gterm{directive-call-expression}
-for a builtin directive specified in the table below.
+for a builtin directive specified in the table below,
+except for \cowdoc_c{a + b} with \cowdoc_type{str} operands.
 
 \table{
   \tr{
     \th{Binary expression}
     \th{\gterm{directive-call-expression}}
+  }
+
+  \Bnote{
+  If both operands of \cowdoc_c{a + b} are of type \cowdoc_type{str},
+  the result is their concatenation.
   }
   \tr{
     \td{\cowdoc_c{a || b}}

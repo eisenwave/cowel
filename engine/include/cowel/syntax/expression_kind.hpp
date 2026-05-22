@@ -100,6 +100,7 @@ enum struct Builtin_Operation_Kind : Default_Underlying {
     ge_str_str,
     plus_int_int,
     plus_float_float,
+    plus_str_str,
     minus_int_int,
     minus_float_float,
     multiply_int_int,

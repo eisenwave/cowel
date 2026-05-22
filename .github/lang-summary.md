@@ -110,7 +110,9 @@ Inside a group `(...)`, COWEL switches to a **scripting context** with typed val
 Expressions in groups follow **C-identical precedence and associativity**:
 prefix `~ ! + -`, then `* / %`, `+ -`, `< > <= >=`, `== !=`, `&&`, `||`.
 All binary and prefix operators desugar to `cowel_*` builtins
-(e.g. `a + b` ≡ `cowel_add(a, b)`).
+(e.g. numeric `a + b` ≡ `cowel_add(a, b)`).
+When both operands of `+` are `str`,
+`+` concatenates them.
 A directive call `name(args)` or `name{block}` is also a valid expression.
 
 Values can be spliced into text using directives and expression splices:
