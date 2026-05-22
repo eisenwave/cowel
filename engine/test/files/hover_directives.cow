@@ -100,7 +100,6 @@
 \cowel_include("hover_include_target.cow")
 \cowel_include_text("hover_include_target.cow")
 \cowel_invoke("b"){text}
-\: FIXME: blank line to balance extra hover from \cowel_invoke
 \cowel_macro("_hm"){x}
 \_hm
 \cowel_no_invoke{\b{text}}

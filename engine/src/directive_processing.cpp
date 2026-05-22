@@ -71,9 +71,9 @@ void render_tooltip_article(std::pmr::u8string& out, const Tooltip_Article& arti
 
 } // namespace
 
-void push_escape_hover(const ast::Primary& node, std::u8string_view units, Context& context)
+void push_escape_hover(const ast::Primary& node, const std::u8string_view units, Context& context)
 {
-    if (!context.collects_hovers()) {
+    if (!context.collects_hovers() || node.is_symbolized()) {
         return;
     }
 
@@ -115,6 +115,7 @@ void push_escape_hover(const ast::Primary& node, std::u8string_view units, Conte
     };
     std::pmr::u8string rendered { context.get_transient_memory() };
     render_tooltip_article(rendered, article);
+    node.mark_symbolized();
     context.push_hover(node.get_source_span(), rendered);
 }
 
@@ -677,13 +678,14 @@ evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
         return Processing_Status::error;
     }
 
-    if (context.collects_hovers()) {
+    if (context.collects_hovers() && !directive.is_symbolized()) {
         const Tooltip_Article& article = behavior->get_tooltip_article();
         if (!article.subject.empty()) {
             std::pmr::u8string rendered { context.get_transient_memory() };
             render_tooltip_article(rendered, article);
             context.push_hover(directive.get_name_span(), rendered);
         }
+        directive.mark_symbolized();
     }
 
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
@@ -1076,13 +1078,14 @@ Processing_Status splice_invocation( //
         return try_generate_error(out, call, context);
     }
 
-    if (context.collects_hovers()) {
+    if (context.collects_hovers() && !directive.is_symbolized()) {
         const Tooltip_Article& article = behavior->get_tooltip_article();
         if (!article.subject.empty()) {
             std::pmr::u8string rendered { context.get_transient_memory() };
             render_tooltip_article(rendered, article);
             context.push_hover(directive.get_name_span(), rendered);
         }
+        directive.mark_symbolized();
     }
 
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });

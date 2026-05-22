@@ -180,6 +180,7 @@ private:
     File_Source_Span m_source_span;
     std::u8string_view m_source;
     Extra_Variant m_extra;
+    mutable bool m_symbolized = false;
 
     [[nodiscard]]
     Primary(
@@ -349,6 +350,17 @@ public:
         return get_members().size();
     }
 
+    [[nodiscard]]
+    bool is_symbolized() const
+    {
+        return m_symbolized;
+    }
+
+    void mark_symbolized() const
+    {
+        m_symbolized = true;
+    }
+
     void swap(Primary& other) noexcept;
 
 private:
@@ -376,6 +388,7 @@ private:
 
     std::optional<Primary> m_arguments;
     std::optional<Primary> m_content;
+    mutable bool m_symbolized = false;
 
 public:
     [[nodiscard]]
@@ -462,6 +475,17 @@ public:
 
     [[nodiscard]]
     std::span<const ast::Markup_Element> get_content_span() const;
+
+    [[nodiscard]]
+    bool is_symbolized() const
+    {
+        return m_symbolized;
+    }
+
+    void mark_symbolized() const
+    {
+        m_symbolized = true;
+    }
 };
 
 static_assert(std::is_copy_constructible_v<Directive>);
