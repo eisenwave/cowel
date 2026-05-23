@@ -1,7 +1,8 @@
-Usage: cowel run <input> <output> [options]
+Usage: cowel <command> <input> <output> [options]
 
 Commands:
-  run <input> <output>  Processes a COWEL document
+  run   <input> <output>  Processes a COWEL document
+  watch <input> <output>  Processes a COWEL document and serves it with live reload
 
 Options:
   -h, --help            Display this help menu
