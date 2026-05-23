@@ -303,12 +303,10 @@ const WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 function upgradeToWs(req: http.IncomingMessage, socket: Socket): void {
     const key = req.headers["sec-websocket-key"] as string;
     const accept = crypto.createHash("sha1").update(key + WS_GUID).digest("base64");
-    socket.write(
-        "HTTP/1.1 101 Switching Protocols\r\n" +
+    socket.write("HTTP/1.1 101 Switching Protocols\r\n" +
         "Upgrade: websocket\r\n" +
         "Connection: Upgrade\r\n" +
-        `Sec-WebSocket-Accept: ${accept}\r\n\r\n`,
-    );
+        `Sec-WebSocket-Accept: ${accept}\r\n\r\n`);
 }
 
 function sendWsFrame(socket: Socket, message: string): void {
@@ -376,7 +374,6 @@ async function watchAndServe(
         });
     });
 
-    // port is assigned after listen(); declared here so the HTTP handler can close over it.
     let port = 0;
 
     await new Promise<void>((resolve) => server.listen(0, "localhost", resolve));
@@ -418,7 +415,8 @@ async function main(): Promise<number> {
     const moduleBytes = readModuleFileSync("cowel.wasm");
     wasm = await cowel.load(moduleBytes);
 
-    // Intercept "watch" before the WASM CLI parser sees it; reuse "run" parsing.
+    // Intercept "watch" before the WASM CLI parser sees it; 
+    // reuse "run" parsing.
     const isWatch = process.argv[2] === "watch";
     if (isWatch) process.argv[2] = "run";
 
