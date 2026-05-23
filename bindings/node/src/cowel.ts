@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 import path from "path";
 import fs from "fs";
+import http from "http";
+import crypto from "crypto";
 import process from "process";
 import { fileURLToPath } from "url";
+import type { AddressInfo } from "net";
+import type { Socket } from "net";
 
 import * as cowel from "./cowel-wasm.js";
 
@@ -42,10 +46,11 @@ enum AnsiCode {
 }
 
 const helpText = `\
-Usage: cowel run <input> <output> [options]
+Usage: cowel <command> <input> <output> [options]
 
 Commands:
-  run <input> <output>  Processes a COWEL document
+  run   <input> <output>  Processes a COWEL document
+  watch <input> <output>  Processes a COWEL document and serves it with live reload
 
 Options:
   -h, --help            Display this help menu
@@ -228,30 +233,25 @@ type RunOptions = {
     minSeverity: cowel.Severity;
 };
 
-async function run(
+async function compile(
     inputPath: string,
-    outputPath: string,
     options: RunOptions,
-): Promise<number> {
-    const mainFileResult = ((): string => {
-        try {
-            const data = fs.readFileSync(inputPath);
-            mainFile = { path: inputPath, data };
-            return data.toString("utf8");
-        } catch (_) {
-            logError(
-                inputPath,
-                "file.read",
-                "Failed to open main document.",
-            );
-            process.exit(1);
-        }
-    })();
-
+): Promise<string | null> {
+    files.length = 0;
     mainDocumentDir = path.dirname(inputPath);
 
+    let source: string;
+    try {
+        const data = fs.readFileSync(inputPath);
+        mainFile = { path: inputPath, data };
+        source = data.toString("utf8");
+    } catch (_) {
+        logError(inputPath, "file.read", "Failed to open main document.");
+        return null;
+    }
+
     const result = await wasm!.generateHtml({
-        source: mainFileResult,
+        source,
         mode: cowel.Mode.document,
         minSeverity: options.minSeverity,
         highlightPolicy: cowel.SyntaxHighlightPolicy.fall_back,
@@ -259,6 +259,7 @@ async function run(
         loadFile,
         log,
     });
+
     if (result.status !== cowel.ProcessingStatus.ok) {
         const statusString = cowel.ProcessingStatus[result.status];
         logError(
@@ -266,36 +267,160 @@ async function run(
             `status.${statusString}`,
             `Generation exited with status ${result.status} (${statusString}).`,
         );
-        return 1;
+        return null;
     }
 
+    return result.output;
+}
+
+async function run(
+    inputPath: string,
+    outputPath: string,
+    options: RunOptions,
+): Promise<number> {
+    const html = await compile(inputPath, options);
+    if (html === null) return 1;
+
     try {
-        fs.writeFileSync(outputPath, result.output, { encoding: "utf8" });
+        fs.writeFileSync(outputPath, html, { encoding: "utf8" });
     } catch (_) {
-        logError(
-            outputPath,
-            "file.write",
-            "Failed to write generated output.",
-        );
+        logError(outputPath, "file.write", "Failed to write generated output.");
         return 1;
     }
 
     if (options.minSeverity <= cowel.Severity.debug) {
         const absolutePath = path.resolve(outputPath);
-        logError(
-            outputPath,
-            "file.write",
-            `Output written to: ${absolutePath}`,
-            cowel.Severity.debug,
-        );
+        logError(outputPath, "file.write", `Output written to: ${absolutePath}`, cowel.Severity.debug);
     }
 
     return 0;
 }
 
+// Magic GUID required for the WebSocket handshake accept key.
+// See: https://datatracker.ietf.org/doc/html/rfc6455#section-1.3
+const WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+
+function upgradeToWs(req: http.IncomingMessage, socket: Socket): void {
+    const key = req.headers["sec-websocket-key"] as string;
+    const accept = crypto.createHash("sha1").update(key + WS_GUID).digest("base64");
+    socket.write(
+        "HTTP/1.1 101 Switching Protocols\r\n" +
+        "Upgrade: websocket\r\n" +
+        "Connection: Upgrade\r\n" +
+        `Sec-WebSocket-Accept: ${accept}\r\n\r\n`,
+    );
+}
+
+function sendWsFrame(socket: Socket, message: string): void {
+    const payload = Buffer.from(message, "utf8");
+    const frame = Buffer.allocUnsafe(2 + payload.length);
+    frame[0] = 0x81; // FIN + text opcode
+    frame[1] = payload.length;
+    payload.copy(frame, 2);
+    socket.write(frame);
+}
+
+function injectLiveReloadScript(html: string, port: number): string {
+    const script =
+        `<script>(function(){` +
+        `if(window.__cowelWs)window.__cowelWs.close();` +
+        `var ws=window.__cowelWs=new WebSocket("ws://localhost:${port}");` +
+        `ws.onmessage=function(){` +
+            `var x=scrollX,y=scrollY;` +
+            `fetch("/?__cowel_live")` +
+                `.then(function(r){return r.text()})` +
+                `.then(function(h){` +
+                    `var d=new DOMParser().parseFromString(h,"text/html");` +
+                    `document.head.innerHTML=d.head.innerHTML;` +
+                    `document.body.innerHTML=d.body.innerHTML;` +
+                    `scrollTo(x,y);` +
+                `});` +
+        `};` +
+        `ws.onclose=function(){setTimeout(function(){location.reload();},2000);};` +
+        `}());</script>`;
+    // Insert before the last </body> so it runs after page content is parsed.
+    const idx = html.lastIndexOf("</body>");
+    if (idx === -1) return html + script;
+    return html.slice(0, idx) + script + html.slice(idx);
+}
+
+async function watchAndServe(
+    inputPath: string,
+    outputPath: string,
+    options: RunOptions,
+): Promise<number> {
+    let currentHtml = await compile(inputPath, options);
+    if (currentHtml === null) return 1;
+
+    try {
+        fs.writeFileSync(outputPath, currentHtml, { encoding: "utf8" });
+    } catch (_) {
+        logError(outputPath, "file.write", "Failed to write generated output.");
+    }
+
+    const wsClients: Socket[] = [];
+
+    const server = http.createServer((req, res) => {
+        const isLiveFetch = req.url?.includes("__cowel_live") ?? false;
+        const body = isLiveFetch ? currentHtml! : injectLiveReloadScript(currentHtml!, port);
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+        res.end(body);
+    });
+
+    server.on("upgrade", (req, socket) => {
+        upgradeToWs(req, socket as Socket);
+        wsClients.push(socket as Socket);
+        socket.on("close", () => {
+            const i = wsClients.indexOf(socket as Socket);
+            if (i !== -1) wsClients.splice(i, 1);
+        });
+    });
+
+    // port is assigned after listen(); declared here so the HTTP handler can close over it.
+    let port = 0;
+
+    await new Promise<void>((resolve) => server.listen(0, "localhost", resolve));
+    port = (server.address() as AddressInfo).port;
+
+    const absInput = path.resolve(inputPath);
+    process.stdout.write(`Watching: ${absInput}\n`);
+    process.stdout.write(`Serving:  http://localhost:${port}\n`);
+
+    let debounce: ReturnType<typeof setTimeout> | undefined;
+    fs.watch(inputPath, () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(async () => {
+            const html = await compile(inputPath, options);
+            if (html !== null) {
+                currentHtml = html;
+                try {
+                    fs.writeFileSync(outputPath, html, { encoding: "utf8" });
+                } catch (_) {
+                    logError(outputPath, "file.write", "Failed to write generated output.");
+                }
+            }
+            // Notify all connected browsers; remove dead sockets.
+            for (let i = wsClients.length - 1; i >= 0; --i) {
+                try {
+                    sendWsFrame(wsClients[i], "update");
+                } catch (_) {
+                    wsClients.splice(i, 1);
+                }
+            }
+        }, 50);
+    });
+
+    // Keep the process alive indefinitely; users can Ctrl+C to exits.
+    return new Promise<number>(() => { /* intentionally never resolves */ });
+}
+
 async function main(): Promise<number> {
     const moduleBytes = readModuleFileSync("cowel.wasm");
     wasm = await cowel.load(moduleBytes);
+
+    // Intercept "watch" before the WASM CLI parser sees it; reuse "run" parsing.
+    const isWatch = process.argv[2] === "watch";
+    if (isWatch) process.argv[2] = "run";
 
     const opts = wasm.parseCliOptions(process.argv.slice(2));
 
@@ -317,7 +442,9 @@ async function main(): Promise<number> {
     }
 
     colorsEnabled = !opts.noColor;
-    return run(opts.input, opts.output, { minSeverity: opts.minSeverity });
+    const runOpts: RunOptions = { minSeverity: opts.minSeverity };
+    if (isWatch) return watchAndServe(opts.input, opts.output, runOpts);
+    return run(opts.input, opts.output, runOpts);
 }
 
 process.exitCode = await main();

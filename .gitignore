@@ -1,4 +1,5 @@
 **/build
+**/build-wasm
 node_modules
 __pycache__
 
