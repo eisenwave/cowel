@@ -2,6 +2,11 @@
 
 ## **[v0.10.1](https://github.com/eisenwave/cowel/releases/tag/v0.10.1)** (2026-??-??)
 
+### Command Line Interface
+
+- Added `watch` command for serving the output of a COWEL document over HTTP,
+  and auto-updating the web content on file changes (#339)
+
 ### VSCode extension
 
 - Added hover tooltips for macros defined by `cowel_macro` (#374)

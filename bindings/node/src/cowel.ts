@@ -319,23 +319,7 @@ function sendWsFrame(socket: Socket, message: string): void {
 }
 
 function injectLiveReloadScript(html: string, port: number): string {
-    const script =
-        `<script>(function(){` +
-        `if(window.__cowelWs)window.__cowelWs.close();` +
-        `var ws=window.__cowelWs=new WebSocket("ws://localhost:${port}");` +
-        `ws.onmessage=function(){` +
-            `var x=scrollX,y=scrollY;` +
-            `fetch("/?__cowel_live")` +
-                `.then(function(r){return r.text()})` +
-                `.then(function(h){` +
-                    `var d=new DOMParser().parseFromString(h,"text/html");` +
-                    `document.head.innerHTML=d.head.innerHTML;` +
-                    `document.body.innerHTML=d.body.innerHTML;` +
-                    `scrollTo(x,y);` +
-                `});` +
-        `};` +
-        `ws.onclose=function(){setTimeout(function(){location.reload();},2000);};` +
-        `}());</script>`;
+    const script = `<script>(function(){if(window.__cowelWs)window.__cowelWs.close();var ws=window.__cowelWs=new WebSocket("ws://localhost:${port}");ws.onmessage=function(){var x=scrollX,y=scrollY;fetch("/?__cowel_live").then(function(r){return r.text()}).then(function(h){var d=new DOMParser().parseFromString(h,"text/html");document.head.innerHTML=d.head.innerHTML;document.body.innerHTML=d.body.innerHTML;scrollTo(x,y)});};ws.onclose=function(){setTimeout(function(){location.reload();},2000);}}());</script>`;
     // Insert before the last </body> so it runs after page content is parsed.
     const idx = html.lastIndexOf("</body>");
     if (idx === -1) return html + script;
