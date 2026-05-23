@@ -415,7 +415,7 @@ async function main(): Promise<number> {
     const moduleBytes = readModuleFileSync("cowel.wasm");
     wasm = await cowel.load(moduleBytes);
 
-    // Intercept "watch" before the WASM CLI parser sees it; 
+    // Intercept "watch" before the WASM CLI parser sees it;
     // reuse "run" parsing.
     const isWatch = process.argv[2] === "watch";
     if (isWatch) process.argv[2] = "run";
