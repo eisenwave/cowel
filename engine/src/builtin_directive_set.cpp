@@ -59,7 +59,8 @@ constexpr N_Ary_Numeric_Expression_Behavior cowel_add {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_add"sv,
-    .declaration = u8R"md(cowel_add(args: pack int | pack float): int | float)md"sv,
+    .declaration = u8R"md(cowel_add(args: pack int): int
+cowel_add(args: pack float): float)md"sv,
     .description = u8R"md(Returns the sum of all arguments.)md"sv,
     .example = u8R"md(`cowel_add(1, 2, 3)` → `6`.)md"sv,
   },
@@ -68,7 +69,7 @@ constexpr Alias_Behavior cowel_alias {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_alias"sv,
-    .declaration = u8R"md(cowel_alias(...aliases: str){target: block}: unit)md"sv,
+    .declaration = u8R"md(cowel_alias(names: pack str, content: block): unit)md"sv,
     .description = u8R"md(Defines aliases for an existing directive.)md"sv,
     .example = u8R"md(`cowel_alias("N"){cowel_char_by_name}` makes `\N(...)` available.)md"sv,
   },
@@ -119,7 +120,7 @@ constexpr Char_By_Entity_Behavior cowel_char_by_entity {
     .subject = u8"cowel_char_by_entity"sv,
     .declaration = u8R"md(cowel_char_by_entity(name: str): str)md"sv,
     .description = u8R"md(Returns a character from an HTML entity name (without `&` and `;`).)md"sv,
-    .example = u8R"md(`cowel_char_by_entity("amp")` → `&`.)md"sv,
+    .example = u8R"md(`cowel_char_by_entity("amp")` → `"&"`.)md"sv,
   },
 };
 constexpr Char_By_Name_Behavior cowel_char_by_name {
@@ -128,7 +129,7 @@ constexpr Char_By_Name_Behavior cowel_char_by_name {
     .subject = u8"cowel_char_by_name"sv,
     .declaration = u8R"md(cowel_char_by_name(name: str): str)md"sv,
     .description = u8R"md(Returns a Unicode code point by official name or alias.)md"sv,
-    .example = u8R"md(`cowel_char_by_name("DIGIT ZERO")` → `0`.)md"sv,
+    .example = u8R"md(`cowel_char_by_name("DIGIT ZERO")` → `"0"`.)md"sv,
   },
 };
 constexpr Char_By_Num_Behavior cowel_char_by_num {
@@ -137,7 +138,7 @@ constexpr Char_By_Num_Behavior cowel_char_by_num {
     .subject = u8"cowel_char_by_num"sv,
     .declaration = u8R"md(cowel_char_by_num(num: int): str)md"sv,
     .description = u8R"md(Returns the Unicode scalar value with numeric code point num.)md"sv,
-    .example = u8R"md(`cowel_char_by_num(0x30)` → `0`.)md"sv,
+    .example = u8R"md(`cowel_char_by_num(0x30)` → `"0"`.)md"sv,
   },
 };
 constexpr Char_Get_Name_Behavior cowel_char_get_name {
@@ -145,7 +146,7 @@ constexpr Char_Get_Name_Behavior cowel_char_get_name {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_char_get_name"sv,
     .declaration = u8R"md(cowel_char_get_name(x: str): str | null)md"sv,
-    .description = u8R"md(Returns the official Unicode name of the first code point in x.)md"sv,
+    .description = u8R"md(Returns the Unicode code point name of the first code point in `x`.)md"sv,
     .example = u8R"md(`cowel_char_get_name("A")` → `LATIN CAPITAL LETTER A`.)md"sv,
   },
 };
@@ -154,7 +155,7 @@ constexpr Char_Get_Num_Behavior cowel_char_get_num {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_char_get_num"sv,
     .declaration = u8R"md(cowel_char_get_num(x: str): int)md"sv,
-    .description = u8R"md(Returns numeric value of the first code point in x.)md"sv,
+    .description = u8R"md(Returns numeric value of the first code point in `x`.)md"sv,
     .example = u8R"md(`cowel_char_get_num("0")` → `48`.)md"sv,
   },
 };
@@ -203,7 +204,12 @@ constexpr Comparison_Expression_Behavior cowel_eq {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_eq"sv,
-    .declaration = u8R"md(cowel_eq(x: T, y: T): bool)md"sv,
+    .declaration = u8R"md(cowel_eq(x: unit, y: unit): bool
+cowel_eq(x: null, y: null): bool
+cowel_eq(x: bool, y: bool): bool
+cowel_eq(x: int, y: int
+cowel_eq(x: float, y: float): bool
+cowel_eq(x: str, y: str): bool)md"sv,
     .description = u8R"md(Returns whether two values are equal.)md"sv,
     .example = u8R"md(`cowel_eq("a", "a")` → `true`.)md"sv,
   },
@@ -223,8 +229,10 @@ constexpr Comparison_Expression_Behavior cowel_ge {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_ge"sv,
-    .declaration = u8R"md(cowel_ge(x: int | float | str, y: int | float | str): bool)md"sv,
-    .description = u8R"md(Returns whether x >= y.)md"sv,
+    .declaration = u8R"md(cowel_ge(x: int, y: int): int
+cowel_ge(x: float, y: float): int
+cowel_ge(x: str, y: str): int)md"sv,
+    .description = u8R"md(Returns whether `x` ≥ `y`.)md"sv,
     .example = u8R"md(`cowel_ge(3, 2)` → `true`.)md"sv,
   },
 };
@@ -233,8 +241,10 @@ constexpr Comparison_Expression_Behavior cowel_gt {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_gt"sv,
-    .declaration = u8R"md(cowel_gt(x: int | float | str, y: int | float | str): bool)md"sv,
-    .description = u8R"md(Returns whether x > y.)md"sv,
+    .declaration = u8R"md(cowel_gt(x: int, y: int): int
+cowel_gt(x: float, y: float): int
+cowel_gt(x: str, y: str): int)md"sv,
+    .description = u8R"md(Returns whether `x` > `y`.)md"sv,
     .example = u8R"md(`cowel_gt(3, 3)` → `false`.)md"sv,
   },
 };
@@ -318,8 +328,10 @@ constexpr Comparison_Expression_Behavior cowel_le {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_le"sv,
-    .declaration = u8R"md(cowel_le(x: int | float | str, y: int | float | str): bool)md"sv,
-    .description = u8R"md(Returns whether x <= y.)md"sv,
+    .declaration = u8R"md(cowel_le(x: int, y: int): int
+cowel_le(x: float, y: float): int
+cowel_le(x: str, y: str): int)md"sv,
+    .description = u8R"md(Returns whether `x` ≤ `y`.)md"sv,
     .example = u8R"md(`cowel_le(2, 2)` → `true`.)md"sv,
   },
 };
@@ -328,8 +340,10 @@ constexpr Comparison_Expression_Behavior cowel_lt {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_lt"sv,
-    .declaration = u8R"md(cowel_lt(x: int | float | str, y: int | float | str): bool)md"sv,
-    .description = u8R"md(Returns whether x < y.)md"sv,
+    .declaration = u8R"md(cowel_lt(x: int, y: int): int
+cowel_lt(x: float, y: float): int
+cowel_lt(x: str, y: str): int)md"sv,
+    .description = u8R"md(Returns whether `x` < `y`.)md"sv,
     .example = u8R"md(`cowel_lt("a", "b")` → `true`.)md"sv,
   },
 };
@@ -337,9 +351,14 @@ constexpr Macro_Behavior cowel_macro {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_macro"sv,
-    .declaration = u8R"md(cowel_macro(...names: str, content: block): unit)md"sv,
+    .declaration = u8R"md(cowel_macro(names: pack str, content: block): unit)md"sv,
     .description = u8R"md(Defines one or more macros.)md"sv,
-    .example = u8R"md(`cowel_macro("m"){Hello}\m` emits `Hello`.)md"sv,
+    .example = u8R"md(```cowel
+\: Define macro named "m"
+\cowel_macro("m"){Hello}
+\: Generates "Hello"
+\m
+```)md"sv,
   },
 };
 constexpr N_Ary_Numeric_Expression_Behavior cowel_max {
@@ -347,7 +366,8 @@ constexpr N_Ary_Numeric_Expression_Behavior cowel_max {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_max"sv,
-    .declaration = u8R"md(cowel_max(args: pack int | pack float): int | float)md"sv,
+    .declaration = u8R"md(cowel_max(args: pack int): int
+cowel_max(args: pack float): float)md"sv,
     .description = u8R"md(Returns the greatest argument.)md"sv,
     .example = u8R"md(`cowel_max(3, 9, 4)` → `9`.)md"sv,
   },
@@ -357,8 +377,9 @@ constexpr N_Ary_Numeric_Expression_Behavior cowel_min {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_min"sv,
-    .declaration = u8R"md(cowel_min(args: pack int | pack float): int | float)md"sv,
-    .description = u8R"md(Returns the smallest argument.)md"sv,
+    .declaration = u8R"md(cowel_min(args: pack int): int
+cowel_min(args: pack float): float)md"sv,
+    .description = u8R"md(Returns the lowest argument.)md"sv,
     .example = u8R"md(`cowel_min(3, 9, 4)` → `3`.)md"sv,
   },
 };
@@ -367,7 +388,8 @@ constexpr N_Ary_Numeric_Expression_Behavior cowel_mul {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_mul"sv,
-    .declaration = u8R"md(cowel_mul(args: pack int | pack float): int | float)md"sv,
+    .declaration = u8R"md(cowel_mul(args: pack int): int
+cowel_mul(args: pack float): int)md"sv,
     .description = u8R"md(Returns product of all arguments.)md"sv,
     .example = u8R"md(`cowel_mul(2, 3, 4)` → `24`.)md"sv,
   },
@@ -377,7 +399,12 @@ constexpr Comparison_Expression_Behavior cowel_ne {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_ne"sv,
-    .declaration = u8R"md(cowel_ne(x: T, y: T): bool)md"sv,
+    .declaration = u8R"md(cowel_ne(x: unit, y: unit): bool
+cowel_ne(x: null, y: null): bool
+cowel_ne(x: bool, y: bool): bool
+cowel_ne(x: int, y: int
+cowel_ne(x: float, y: float): bool
+cowel_ne(x: str, y: str): bool)md"sv,
     .description = u8R"md(Returns whether two values are not equal.)md"sv,
     .example = u8R"md(`cowel_ne("a", "b")` → `true`.)md"sv,
   },
@@ -388,8 +415,12 @@ constexpr Unary_Numeric_Expression_Behavior cowel_nearest {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_nearest"sv,
     .declaration = u8R"md(cowel_nearest(x: float): float)md"sv,
-    .description = u8R"md(Rounds to nearest integer, ties to even.)md"sv,
-    .example = u8R"md(`cowel_nearest(2.5)` → `2.0`.)md"sv,
+    .description = u8R"md(Rounds to the nearest integer, ties to even.)md"sv,
+    .example = u8R"md(```cowel
+\cowel_nearest(2.4) \: 2.0
+\cowel_nearest(2.5) \: 2.0 (exact tie)
+\cowel_nearest(2.6) \: 3.0
+```)md"sv,
   },
 };
 constexpr Unary_Numeric_Expression_Behavior cowel_nearest_away_zero {
@@ -398,8 +429,12 @@ constexpr Unary_Numeric_Expression_Behavior cowel_nearest_away_zero {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_nearest_away_zero"sv,
     .declaration = u8R"md(cowel_nearest_away_zero(x: float): float)md"sv,
-    .description = u8R"md(Rounds to nearest integer, ties away from zero.)md"sv,
-    .example = u8R"md(`cowel_nearest_away_zero(-2.5)` → `-3.0`.)md"sv,
+    .description = u8R"md(Rounds to the nearest integer, ties away from zero.)md"sv,
+    .example = u8R"md(```cowel
+\cowel_nearest_away_zero(2.4) \: 2.0
+\cowel_nearest_away_zero(2.5) \: 3.0 (exact tie)
+\cowel_nearest_away_zero(2.6) \: 3.0
+```)md"sv,
   },
 };
 constexpr Unary_Numeric_Expression_Behavior cowel_neg {
@@ -407,8 +442,9 @@ constexpr Unary_Numeric_Expression_Behavior cowel_neg {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_neg"sv,
-    .declaration = u8R"md(cowel_neg(x: int | float): int | float)md"sv,
-    .description = u8R"md(Returns arithmetic negation of x.)md"sv,
+    .declaration = u8R"md(cowel_neg(x: int): int
+cowel_neg(x: float): float)md"sv,
+    .description = u8R"md(Returns arithmetic negation of `x`.)md"sv,
     .example = u8R"md(`cowel_neg(7)` → `-7`.)md"sv,
   },
 };
@@ -483,8 +519,9 @@ constexpr Unary_Numeric_Expression_Behavior cowel_pos {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_pos"sv,
-    .declaration = u8R"md(cowel_pos(x: int | float): int | float)md"sv,
-    .description = u8R"md(Returns x unchanged.)md"sv,
+    .declaration = u8R"md(cowel_pos(x: int): int
+cowel_pos(x: float): float)md"sv,
+    .description = u8R"md(Returns `x` unchanged.)md"sv,
     .example = u8R"md(`cowel_pos(-4)` → `-4`.)md"sv,
   },
 };
@@ -492,17 +529,20 @@ constexpr Put_Behavior cowel_put {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_put"sv,
-    .declaration = u8R"md(cowel_put(selector?: str | int, else?: any): any)md"sv,
+    .declaration = u8R"md(cowel_put(else?: lazy any, content?: block): any)md"sv,
     .description = u8R"md(In macro expansion, inserts supplied content or arguments.)md"sv,
-    .example = u8R"md(If `m` is `cowel_macro("m"){cowel_put{0}}`, then `\m("x")` emits `x`.)md"sv,
+    .example = u8R"md(If `m` is `cowel_macro("m"){\cowel_put{0}}`, then `\m("x")` emits `x`.)md"sv,
   },
 };
 constexpr Regex_Make_Behavior cowel_regex {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_regex"sv,
-    .declaration = u8R"md(cowel_regex(pattern: str): regex)md"sv,
-    .description = u8R"md(Compiles a regular-expression value.)md"sv,
+    .declaration = u8R"md(cowel_regex(
+  pattern: str,
+  flags: str = "",
+): regex)md"sv,
+    .description = u8R"md(Compiles a regular expression value.)md"sv,
     .example = u8R"md(`cowel_str_match("awoo", cowel_regex("awo+"))` → `true`.)md"sv,
   },
 };
@@ -530,7 +570,7 @@ constexpr Integer_Division_Expression_Behavior cowel_rem_to_neg_inf {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_rem_to_neg_inf"sv,
     .declaration = u8R"md(cowel_rem_to_neg_inf(x: int, y: int): int)md"sv,
-    .description = u8R"md(Remainder with floor-division semantics.)md"sv,
+    .description = u8R"md(Remainder of division `x / y` with rounding towards negative infinity..)md"sv,
     .example = u8R"md(`cowel_rem_to_neg_inf(-3, 2)` → `1`.)md"sv,
   },
 };
@@ -540,7 +580,7 @@ constexpr Integer_Division_Expression_Behavior cowel_rem_to_pos_inf {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_rem_to_pos_inf"sv,
     .declaration = u8R"md(cowel_rem_to_pos_inf(x: int, y: int): int)md"sv,
-    .description = u8R"md(Remainder with ceil-division semantics.)md"sv,
+    .description = u8R"md(Remainder of division `x / y` with rounding towards positive infinity.)md"sv,
     .example = u8R"md(`cowel_rem_to_pos_inf(-3, 2)` → `-1`.)md"sv,
   },
 };
@@ -550,7 +590,7 @@ constexpr Integer_Division_Expression_Behavior cowel_rem_to_zero {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_rem_to_zero"sv,
     .declaration = u8R"md(cowel_rem_to_zero(x: int, y: int): int)md"sv,
-    .description = u8R"md(Remainder with truncating division semantics.)md"sv,
+    .description = u8R"md(Remainder of division `x / y` with rounding towards zero.)md"sv,
     .example = u8R"md(`cowel_rem_to_zero(-3, 2)` → `-1`.)md"sv,
   },
 };
@@ -561,7 +601,7 @@ constexpr Policy_Behavior cowel_source_as_text {
     .subject = u8"cowel_source_as_text"sv,
     .declaration = u8R"md(cowel_source_as_text(content: block): block)md"sv,
     .description = u8R"md(Treats content as literal COWEL source text.)md"sv,
-    .example = u8R"md(`cowel_source_as_text{\: comment}` emits literal `\: comment`.)md"sv,
+    .example = u8R"md(`cowel_source_as_text{\d}` emits `\d` literally.)md"sv,
   },
 };
 constexpr Unary_Numeric_Expression_Behavior cowel_sqrt {
@@ -588,7 +628,7 @@ constexpr Str_Find_Behavior cowel_str_find {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_str_find"sv,
     .declaration = u8R"md(cowel_str_find(text: str, needle: str | regex): int | null)md"sv,
-    .description = u8R"md(Returns first match index in code points, or null.)md"sv,
+    .description = u8R"md(Returns first match index in code points, or `null`.)md"sv,
     .example = u8R"md(`cowel_str_find("awoo", "o")` → `2`.)md"sv,
   },
 };
@@ -596,7 +636,11 @@ constexpr Str_Substr_Behavior cowel_str_substr {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_str_substr"sv,
-    .declaration = u8R"md(cowel_str_substr(text: str, start: int, length: int | null = null): str)md"sv,
+    .declaration = u8R"md(cowel_str_substr(
+  text: str,
+  start: int,
+  length?: int,
+): str)md"sv,
     .description = u8R"md(Extracts substring by code-point index.)md"sv,
     .example = u8R"md(`cowel_str_substr("awoo", 1, 2)` → `wo`.)md"sv,
   },
@@ -625,8 +669,12 @@ constexpr Str_Replace_Behavior cowel_str_replace_all {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_str_replace_all"sv,
-    .declaration = u8R"md(cowel_str_replace_all(text: str, needle: str | regex, with: str): str)md"sv,
-    .description = u8R"md(Replaces all matches in text.)md"sv,
+    .declaration = u8R"md(cowel_str_replace_all(
+  text: str,
+  needle: str | regex,
+  with: str,
+): str)md"sv,
+    .description = u8R"md(Replaces all matches of `needle` in `text` with `with`.)md"sv,
     .example = u8R"md(`cowel_str_replace_all("awoo", "o", "x")` → `awxx`.)md"sv,
   },
 };
@@ -635,8 +683,12 @@ constexpr Str_Replace_Behavior cowel_str_replace_first {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_str_replace_first"sv,
-    .declaration = u8R"md(cowel_str_replace_first(text: str, needle: str | regex, with: str): str)md"sv,
-    .description = u8R"md(Replaces first match in text.)md"sv,
+    .declaration = u8R"md(cowel_str_replace_first(
+  text: str,
+  needle: str | regex,
+  with: str,
+): str)md"sv,
+    .description = u8R"md(Replaces the first match of `needle` in `text` with `with`.)md"sv,
     .example = u8R"md(`cowel_str_replace_first("awoo", "o", "x")` → `awxo`.)md"sv,
   },
 };
@@ -675,7 +727,8 @@ constexpr N_Ary_Numeric_Expression_Behavior cowel_sub {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_sub"sv,
-    .declaration = u8R"md(cowel_sub(args: pack int | pack float): int | float)md"sv,
+    .declaration = u8R"md(cowel_sub(args: pack int): int
+cowel_sub(args: pack float): float)md"sv,
     .description = u8R"md(Subtracts arguments left to right.)md"sv,
     .example = u8R"md(`cowel_sub(10, 3, 2)` → `5`.)md"sv,
   },
@@ -697,7 +750,7 @@ constexpr Policy_Behavior cowel_text_only {
     .subject = u8"cowel_text_only"sv,
     .declaration = u8R"md(cowel_text_only(content: block): block)md"sv,
     .description = u8R"md(Keeps plaintext and strips HTML output.)md"sv,
-    .example = u8R"md(`cowel_text_only{Hello, \cowel_html_element("strong"){x}}` yields plain text.)md"sv,
+    .example = u8R"md(`cowel_text_only{Hello, \cowel_html_element("strong"){x}}` yields `Hello, x`.)md"sv,
   },
 };
 constexpr Policy_Behavior cowel_to_html {
@@ -714,7 +767,16 @@ constexpr To_Str_Behavior cowel_to_str {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_to_str"sv,
-    .declaration = u8R"md(cowel_to_str(x: any, ...): str)md"sv,
+    .declaration = u8R"md(cowel_to_str(x: unit | bool | str | block): str
+cowel_to_str(
+  x: int,
+  base: int = 10,
+  zpad: int = 0,
+): str
+cowel_to_str(
+  x: float,
+  format: str = "splice",
+): str)md"sv,
     .description = u8R"md(Converts a value to string, with numeric formatting options.)md"sv,
     .example = u8R"md(`cowel_to_str(255, base=16)` → `ff`.)md"sv,
   },
@@ -725,7 +787,7 @@ constexpr Unary_Numeric_Expression_Behavior cowel_trunc {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_trunc"sv,
     .declaration = u8R"md(cowel_trunc(x: float): float)md"sv,
-    .description = u8R"md(Rounds toward zero.)md"sv,
+    .description = u8R"md(Rounds `x` toward zero.)md"sv,
     .example = u8R"md(`cowel_trunc(-1.9)` → `-1.0`.)md"sv,
   },
 };
@@ -797,7 +859,10 @@ constexpr Special_Block_Behavior Babstract {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Babstract"sv,
-    .declaration = u8R"md(Babstract(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Babstract(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates an `<abstract-block>` callout with an intro label.)md"sv,
   },
 };
@@ -807,7 +872,10 @@ constexpr Special_Block_Behavior Bdecision {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bdecision"sv,
-    .declaration = u8R"md(Bdecision(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bdecision(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a `<decision-block>` callout with an intro label.)md"sv,
   },
 };
@@ -817,7 +885,10 @@ constexpr Special_Block_Behavior Bdel {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bdel"sv,
-    .declaration = u8R"md(Bdel(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bdel(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a `<del-block>` block for marking deleted content.)md"sv,
   },
 };
@@ -828,7 +899,10 @@ constexpr Fixed_Name_Passthrough_Behavior Bdetails {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bdetails"sv,
-    .declaration = u8R"md(Bdetails(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bdetails(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<details>` disclosure block element.)md"sv,
   },
 };
@@ -838,7 +912,10 @@ constexpr Special_Block_Behavior Bdiff {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bdiff"sv,
-    .declaration = u8R"md(Bdiff(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bdiff(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a `<diff-block>` block for showing diff content.)md"sv,
   },
 };
@@ -848,7 +925,10 @@ constexpr Special_Block_Behavior Bex {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bex"sv,
-    .declaration = u8R"md(Bex(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bex(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates an `<example-block>` callout with an intro label.)md"sv,
   },
 };
@@ -856,11 +936,18 @@ constexpr Bibliography_Add_Behavior bib {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"bib"sv,
-    .declaration = u8R"md(bib(id: str, title: str, date: str, publisher: str, link: str, long_link: str, author: str): block)md"sv,
+    .declaration = u8R"md(bib(
+  id: str,
+  title?: str,
+  date?: str,
+  publisher?: str,
+  link?: str,
+  long_link?: str,
+  author?: str,
+): block)md"sv,
     .description = u8R"md(Adds a bibliography entry.
-`id` is mandatory; all other fields are optional.
 The entry can be referenced with `\ref`.)md"sv,
-    .example = u8R"md(`bib(id: ISO23, title: C++23 Standard, date: 2024)` registers a bibliography entry.)md"sv,
+    .example = u8R"md(`bib(id="ISO23", title="C++23 Standard", date="2024")` registers a bibliography entry.)md"sv,
   },
 };
 constexpr Special_Block_Behavior Bimp {
@@ -869,7 +956,10 @@ constexpr Special_Block_Behavior Bimp {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bimp"sv,
-    .declaration = u8R"md(Bimp(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bimp(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates an `<important-block>` callout with an intro label.)md"sv,
   },
 };
@@ -881,7 +971,10 @@ constexpr In_Tag_Behavior Bindent {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bindent"sv,
-    .declaration = u8R"md(Bindent(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bindent(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in a `<div class="indent">` for indented block content.)md"sv,
   },
 };
@@ -891,7 +984,10 @@ constexpr Special_Block_Behavior Bins {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bins"sv,
-    .declaration = u8R"md(Bins(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bins(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates an `<ins-block>` block for marking inserted content.)md"sv,
   },
 };
@@ -901,7 +997,10 @@ constexpr Special_Block_Behavior blockquote {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"blockquote"sv,
-    .declaration = u8R"md(blockquote(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(blockquote(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates an HTML `<blockquote>` element.)md"sv,
   },
 };
@@ -911,7 +1010,10 @@ constexpr Special_Block_Behavior Bnote {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bnote"sv,
-    .declaration = u8R"md(Bnote(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bnote(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a `<note-block>` callout with an intro label.)md"sv,
   },
 };
@@ -921,7 +1023,10 @@ constexpr Special_Block_Behavior Bquote {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bquote"sv,
-    .declaration = u8R"md(Bquote(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bquote(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates an HTML `<blockquote>` element.
 Alias of `blockquote`.)md"sv,
   },
@@ -943,7 +1048,10 @@ constexpr Special_Block_Behavior Btip {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Btip"sv,
-    .declaration = u8R"md(Btip(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Btip(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a `<tip-block>` callout with an intro label.)md"sv,
   },
 };
@@ -953,7 +1061,10 @@ constexpr Special_Block_Behavior Btodo {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Btodo"sv,
-    .declaration = u8R"md(Btodo(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Btodo(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a `<todo-block>` callout with an intro label.)md"sv,
   },
 };
@@ -963,7 +1074,10 @@ constexpr Special_Block_Behavior Bug {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bug"sv,
-    .declaration = u8R"md(Bug(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bug(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a `<bug-block>` callout with an intro label.)md"sv,
   },
 };
@@ -973,7 +1087,10 @@ constexpr Special_Block_Behavior Bwarn {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"Bwarn"sv,
-    .declaration = u8R"md(Bwarn(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(Bwarn(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a `<warning-block>` callout with an intro label.)md"sv,
   },
 };
@@ -984,7 +1101,10 @@ constexpr Fixed_Name_Passthrough_Behavior caption {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"caption"sv,
-    .declaration = u8R"md(caption(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(caption(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<caption>` element.)md"sv,
   },
 };
@@ -995,7 +1115,10 @@ constexpr Fixed_Name_Passthrough_Behavior cite {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cite"sv,
-    .declaration = u8R"md(cite(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(cite(
+    attr: pack named str,
+    content: block,
+  ): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<cite>` citation element.)md"sv,
     .example = u8R"md(`cite{My Book}` → `<cite>My Book</cite>`)md"sv,
   },
@@ -1007,7 +1130,10 @@ constexpr Code_Behavior code {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"code"sv,
-    .declaration = u8R"md(code(lang: str, content: block): block)md"sv,
+    .declaration = u8R"md(code(
+    lang: str,
+    content: block,
+  ): block)md"sv,
     .description = u8R"md(Renders content as syntax-highlighted inline code in a `<code>` element.)md"sv,
     .example = u8R"md(`code("cpp"){int}` → `<code><h- data-h=kw>int</h-></code>`)md"sv,
   },
@@ -1019,7 +1145,10 @@ constexpr Code_Behavior codeblock {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"codeblock"sv,
-    .declaration = u8R"md(codeblock(lang: str, content: block): block)md"sv,
+    .declaration = u8R"md(codeblock(
+    lang: str,
+    content: block,
+  ): block)md"sv,
     .description = u8R"md(Renders content as a syntax-highlighted code block in a `<code-block>` element.)md"sv,
     .example = u8R"md(`codeblock("cpp"){int main() {}}` produces a highlighted block.)md"sv,
   },
@@ -1031,7 +1160,10 @@ constexpr Fixed_Name_Passthrough_Behavior col {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"col"sv,
-    .declaration = u8R"md(col(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(col(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<col>` table column element.)md"sv,
   },
 };
@@ -1042,7 +1174,10 @@ constexpr Fixed_Name_Passthrough_Behavior colgroup {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"colgroup"sv,
-    .declaration = u8R"md(colgroup(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(colgroup(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<colgroup>` table column group element.)md"sv,
   },
 };
@@ -1062,7 +1197,10 @@ constexpr Fixed_Name_Passthrough_Behavior dd {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"dd"sv,
-    .declaration = u8R"md(dd(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(dd(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<dd>` description definition element.)md"sv,
   },
 };
@@ -1073,7 +1211,10 @@ constexpr Fixed_Name_Passthrough_Behavior del {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"del"sv,
-    .declaration = u8R"md(del(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(del(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<del>` element for deleted text.)md"sv,
     .example = u8R"md(`del{old text}` → `<del>old text</del>`)md"sv,
   },
@@ -1085,7 +1226,10 @@ constexpr Fixed_Name_Passthrough_Behavior details {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"details"sv,
-    .declaration = u8R"md(details(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(details(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<details>` disclosure element.)md"sv,
   },
 };
@@ -1096,7 +1240,10 @@ constexpr Fixed_Name_Passthrough_Behavior dfn {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"dfn"sv,
-    .declaration = u8R"md(dfn(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(dfn(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<dfn>` definition term element.)md"sv,
     .example = u8R"md(`dfn{iterator}` → `<dfn>iterator</dfn>`)md"sv,
   },
@@ -1108,7 +1255,10 @@ constexpr Fixed_Name_Passthrough_Behavior div {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"div"sv,
-    .declaration = u8R"md(div(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(div(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<div>` block element.)md"sv,
   },
 };
@@ -1119,7 +1269,10 @@ constexpr Fixed_Name_Passthrough_Behavior dl {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"dl"sv,
-    .declaration = u8R"md(dl(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(dl(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<dl>` description list element.)md"sv,
   },
 };
@@ -1130,7 +1283,10 @@ constexpr Fixed_Name_Passthrough_Behavior dt {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"dt"sv,
-    .declaration = u8R"md(dt(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(dt(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<dt>` description term element.)md"sv,
   },
 };
@@ -1141,7 +1297,10 @@ constexpr Fixed_Name_Passthrough_Behavior em {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"em"sv,
-    .declaration = u8R"md(em(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(em(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<em>` emphasis element.)md"sv,
     .example = u8R"md(`em{hello}` → `<em>hello</em>`)md"sv,
   },
@@ -1162,7 +1321,10 @@ constexpr Fixed_Name_Passthrough_Behavior gterm {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"gterm"sv,
-    .declaration = u8R"md(gterm(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(gterm(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in a `<g-term>` grammar term element.)md"sv,
   },
 };
@@ -1171,7 +1333,11 @@ constexpr Heading_Behavior h1 {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"h1"sv,
-    .declaration = u8R"md(h1(id: str, attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(h1(
+  id: str,
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a level 1 `<h1>` heading.
 Headings are automatically numbered and added to the table of contents.)md"sv,
     .example = u8R"md(`h1{Introduction}` → `<h1>Introduction</h1>`)md"sv,
@@ -1182,7 +1348,11 @@ constexpr Heading_Behavior h2 {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"h2"sv,
-    .declaration = u8R"md(h2(id: str, attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(h2(
+  id: str,
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a level 2 `<h2>` heading.
 Headings are automatically numbered and added to the table of contents.)md"sv,
   },
@@ -1192,7 +1362,11 @@ constexpr Heading_Behavior h3 {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"h3"sv,
-    .declaration = u8R"md(h3(id: str, attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(h3(
+  id: str,
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a level 3 `<h3>` heading.
 Headings are automatically numbered and added to the table of contents.)md"sv,
   },
@@ -1202,7 +1376,11 @@ constexpr Heading_Behavior h4 {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"h4"sv,
-    .declaration = u8R"md(h4(id: str, attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(h4(
+  id: str,
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a level 4 `<h4>` heading.
 Headings are automatically numbered and added to the table of contents.)md"sv,
   },
@@ -1212,7 +1390,11 @@ constexpr Heading_Behavior h5 {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"h5"sv,
-    .declaration = u8R"md(h5(id: str, attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(h5(
+  id: str,
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a level 5 `<h5>` heading.
 Headings are automatically numbered and added to the table of contents.)md"sv,
   },
@@ -1222,7 +1404,11 @@ constexpr Heading_Behavior h6 {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"h6"sv,
-    .declaration = u8R"md(h6(id: str, attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(h6(
+  id: str,
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Creates a level 6 `<h6>` heading.
 Headings are automatically numbered and added to the table of contents.)md"sv,
   },
@@ -1232,7 +1418,10 @@ constexpr Here_Behavior here {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"here"sv,
-    .declaration = u8R"md(here(section: str, content: block): block)md"sv,
+    .declaration = u8R"md(here(
+  section: str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Inserts previously stashed section content inline at this point.
 Use `there` to stash content for a named section.)md"sv,
   },
@@ -1242,7 +1431,10 @@ constexpr Here_Behavior hereblock {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"hereblock"sv,
-    .declaration = u8R"md(hereblock(section: str, content: block): block)md"sv,
+    .declaration = u8R"md(hereblock(
+  section: str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Inserts previously stashed section content as a block at this point.
 Use `there` to stash content for a named section.)md"sv,
   },
@@ -1265,7 +1457,10 @@ constexpr Fixed_Name_Passthrough_Behavior i {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"i"sv,
-    .declaration = u8R"md(i(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(i(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<i>` italic element.)md"sv,
     .example = u8R"md(`i{hello}` → `<i>hello</i>`)md"sv,
   },
@@ -1277,7 +1472,10 @@ constexpr Fixed_Name_Passthrough_Behavior ins {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"ins"sv,
-    .declaration = u8R"md(ins(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(ins(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<ins>` element for inserted text.)md"sv,
     .example = u8R"md(`ins{new text}` → `<ins>new text</ins>`)md"sv,
   },
@@ -1289,7 +1487,10 @@ constexpr Fixed_Name_Passthrough_Behavior kbd {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"kbd"sv,
-    .declaration = u8R"md(kbd(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(kbd(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<kbd>` keyboard input element.)md"sv,
     .example = u8R"md(`kbd{Ctrl+C}` → `<kbd>Ctrl+C</kbd>`)md"sv,
   },
@@ -1301,7 +1502,10 @@ constexpr Fixed_Name_Passthrough_Behavior li {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"li"sv,
-    .declaration = u8R"md(li(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(li(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<li>` list item element.)md"sv,
   },
 };
@@ -1355,7 +1559,10 @@ constexpr Fixed_Name_Passthrough_Behavior mark {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"mark"sv,
-    .declaration = u8R"md(mark(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(mark(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<mark>` highlight element.)md"sv,
     .example = u8R"md(`mark{important}` → `<mark>important</mark>`)md"sv,
   },
@@ -1365,7 +1572,10 @@ constexpr Math_Behavior math {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"math"sv,
-    .declaration = u8R"md(math(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(math(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Renders content as an inline math expression (MathML).)md"sv,
     .example = u8R"md(`math{x^2 + y^2}` produces inline math.)md"sv,
   },
@@ -1375,7 +1585,10 @@ constexpr Math_Behavior mathblock {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"mathblock"sv,
-    .declaration = u8R"md(mathblock(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(mathblock(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Renders content as a block-level math expression (MathML).)md"sv,
   },
 };
@@ -1387,7 +1600,10 @@ constexpr In_Tag_Behavior nobr {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"nobr"sv,
-    .declaration = u8R"md(nobr(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(nobr(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in a `<span class="word">` to prevent line breaks within the content.)md"sv,
   },
 };
@@ -1398,17 +1614,26 @@ constexpr Fixed_Name_Passthrough_Behavior noscript {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"noscript"sv,
-    .declaration = u8R"md(noscript(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(noscript(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<noscript>` element,
 shown when JavaScript is disabled.)md"sv,
   },
 };
 constexpr In_Tag_Behavior o {
-  html_tag::span,       u8"oblique", Policy_Usage::inherit, Directive_Display::in_line,
+  html_tag::span,
+  u8"oblique",
+  Policy_Usage::inherit,
+  Directive_Display::in_line,
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"o"sv,
-    .declaration = u8R"md(o(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(o(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in a `<span class="oblique">` for oblique styling.)md"sv,
     .example = u8R"md(`o{hello}` → `<span class="oblique">hello</span>`)md"sv,
   },
@@ -1420,7 +1645,10 @@ constexpr Fixed_Name_Passthrough_Behavior ol {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"ol"sv,
-    .declaration = u8R"md(ol(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(ol(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<ol>` ordered list element.)md"sv,
   },
 };
@@ -1431,7 +1659,10 @@ constexpr Fixed_Name_Passthrough_Behavior p {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"p"sv,
-    .declaration = u8R"md(p(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(p(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<p>` paragraph element.)md"sv,
   },
 };
@@ -1442,7 +1673,10 @@ constexpr Fixed_Name_Passthrough_Behavior pre {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"pre"sv,
-    .declaration = u8R"md(pre(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(pre(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<pre>` preformatted text element.)md"sv,
   },
 };
@@ -1453,7 +1687,10 @@ constexpr Fixed_Name_Passthrough_Behavior q {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"q"sv,
-    .declaration = u8R"md(q(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(q(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<q>` inline quotation element.)md"sv,
     .example = u8R"md(`q{hello}` → `<q>hello</q>`)md"sv,
   },
@@ -1464,7 +1701,7 @@ constexpr Ref_Behavior ref {
     .subject = u8"ref"sv,
     .declaration = u8R"md(ref(
   to: str,
-  content: block | null = null,
+  content?: block,
 ): block)md"sv,
     .description = u8R"md(Creates a hyperlink or document reference.
 `to` is the target URL or anchor;
@@ -1479,7 +1716,10 @@ constexpr Fixed_Name_Passthrough_Behavior s {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"s"sv,
-    .declaration = u8R"md(s(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(s(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<s>` strikethrough element.)md"sv,
     .example = u8R"md(`s{wrong}` → `<s>wrong</s>`)md"sv,
   },
@@ -1491,7 +1731,10 @@ constexpr Fixed_Name_Passthrough_Behavior samp {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"samp"sv,
-    .declaration = u8R"md(samp(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(samp(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<samp>` sample output element.)md"sv,
     .example = u8R"md(`samp{error: file not found}` → `<samp>error: file not found</samp>`)md"sv,
   },
@@ -1503,7 +1746,10 @@ constexpr Fixed_Name_Passthrough_Behavior sans {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"sans"sv,
-    .declaration = u8R"md(sans(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(sans(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an `<f-sans>` element for sans-serif styling.)md"sv,
     .example = u8R"md(`sans{hello}` → `<f-sans>hello</f-sans>`)md"sv,
   },
@@ -1513,7 +1759,10 @@ constexpr HTML_Raw_Text_Behavior script {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"script"sv,
-    .declaration = u8R"md(script(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(script(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Embeds raw content as an HTML `<script>` element.
 Content is taken literally (not HTML-escaped).)md"sv,
   },
@@ -1525,7 +1774,10 @@ constexpr Fixed_Name_Passthrough_Behavior serif {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"serif"sv,
-    .declaration = u8R"md(serif(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(serif(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an `<f-serif>` element for serif styling.)md"sv,
     .example = u8R"md(`serif{hello}` → `<f-serif>hello</f-serif>`)md"sv,
   },
@@ -1537,7 +1789,10 @@ constexpr Fixed_Name_Passthrough_Behavior small {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"small"sv,
-    .declaration = u8R"md(small(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(small(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<small>` element for smaller text.)md"sv,
     .example = u8R"md(`small{note}` → `<small>note</small>`)md"sv,
   },
@@ -1549,7 +1804,10 @@ constexpr Fixed_Name_Passthrough_Behavior span {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"span"sv,
-    .declaration = u8R"md(span(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(span(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<span>` inline container element.)md"sv,
   },
 };
@@ -1560,7 +1818,10 @@ constexpr Fixed_Name_Passthrough_Behavior strong {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"strong"sv,
-    .declaration = u8R"md(strong(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(strong(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<strong>` element for strong emphasis.)md"sv,
     .example = u8R"md(`strong{important}` → `<strong>important</strong>`)md"sv,
   },
@@ -1570,7 +1831,10 @@ constexpr HTML_Raw_Text_Behavior style {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"style"sv,
-    .declaration = u8R"md(style(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(style(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Embeds raw content as an HTML `<style>` element.
 Content is taken literally (not HTML-escaped).)md"sv,
   },
@@ -1582,7 +1846,10 @@ constexpr Fixed_Name_Passthrough_Behavior sub {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"sub"sv,
-    .declaration = u8R"md(sub(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(sub(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<sub>` subscript element.)md"sv,
     .example = u8R"md(`sub{2}` → `<sub>2</sub>`)md"sv,
   },
@@ -1594,7 +1861,10 @@ constexpr Fixed_Name_Passthrough_Behavior summary {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"summary"sv,
-    .declaration = u8R"md(summary(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(summary(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<summary>` element, used inside `details`.)md"sv,
   },
 };
@@ -1605,7 +1875,10 @@ constexpr Fixed_Name_Passthrough_Behavior sup {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"sup"sv,
-    .declaration = u8R"md(sup(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(sup(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<sup>` superscript element.)md"sv,
     .example = u8R"md(`sup{2}` → `<sup>2</sup>`)md"sv,
   },
@@ -1617,7 +1890,10 @@ constexpr Fixed_Name_Passthrough_Behavior table {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"table"sv,
-    .declaration = u8R"md(table(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(table(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<table>` element.)md"sv,
   },
 };
@@ -1638,7 +1914,10 @@ constexpr Fixed_Name_Passthrough_Behavior tbody {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"tbody"sv,
-    .declaration = u8R"md(tbody(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(tbody(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<tbody>` table body element.)md"sv,
   },
 };
@@ -1649,7 +1928,10 @@ constexpr Fixed_Name_Passthrough_Behavior td {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"td"sv,
-    .declaration = u8R"md(td(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(td(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<td>` table data cell element.)md"sv,
   },
 };
@@ -1660,7 +1942,10 @@ constexpr Fixed_Name_Passthrough_Behavior tfoot {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"tfoot"sv,
-    .declaration = u8R"md(tfoot(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(tfoot(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<tfoot>` table footer element.)md"sv,
   },
 };
@@ -1671,7 +1956,10 @@ constexpr Fixed_Name_Passthrough_Behavior th {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"th"sv,
-    .declaration = u8R"md(th(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(th(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<th>` table header cell element.)md"sv,
   },
 };
@@ -1682,7 +1970,10 @@ constexpr Fixed_Name_Passthrough_Behavior thead {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"thead"sv,
-    .declaration = u8R"md(thead(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(thead(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<thead>` table header element.)md"sv,
   },
 };
@@ -1690,7 +1981,10 @@ constexpr There_Behavior there {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"there"sv,
-    .declaration = u8R"md(there(section: str, content: block): block)md"sv,
+    .declaration = u8R"md(there(
+  section: str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Stashes `content` into the named section.
 The content is later inserted by `here` or `hereblock` with the same section name.)md"sv,
     .example = u8R"md(`there(section: toc){...}` stashes content for insertion at `here(section: toc)`.)md"sv,
@@ -1703,7 +1997,10 @@ constexpr Fixed_Name_Passthrough_Behavior tr {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"tr"sv,
-    .declaration = u8R"md(tr(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(tr(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<tr>` table row element.)md"sv,
   },
 };
@@ -1714,7 +2011,10 @@ constexpr Fixed_Name_Passthrough_Behavior tt {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"tt"sv,
-    .declaration = u8R"md(tt(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(tt(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in a `<tt->` element for teletype/monospace styling.)md"sv,
     .example = u8R"md(`tt{hello}` → `<tt->hello</tt->`)md"sv,
   },
@@ -1726,7 +2026,10 @@ constexpr Fixed_Name_Passthrough_Behavior u {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"u"sv,
-    .declaration = u8R"md(u(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(u(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<u>` underline element.)md"sv,
     .example = u8R"md(`u{hello}` → `<u>hello</u>`)md"sv,
   },
@@ -1738,7 +2041,10 @@ constexpr Fixed_Name_Passthrough_Behavior ul {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"ul"sv,
-    .declaration = u8R"md(ul(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(ul(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<ul>` unordered list element.)md"sv,
   },
 };
@@ -1759,7 +2065,10 @@ constexpr Fixed_Name_Passthrough_Behavior var {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"var"sv,
-    .declaration = u8R"md(var(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(var(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in an HTML `<var>` variable element.)md"sv,
     .example = u8R"md(`var{x}` → `<var>x</var>`)md"sv,
   },
@@ -1782,7 +2091,10 @@ constexpr In_Tag_Behavior wg21_grammar {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"wg21_grammar"sv,
-    .declaration = u8R"md(wg21_grammar(attr: pack named str, content: block): block)md"sv,
+    .declaration = u8R"md(wg21_grammar(
+  attr: pack named str,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Wraps content in a `<dl class="grammar">` element for WG21 grammar notation.)md"sv,
   },
 };
@@ -1790,7 +2102,10 @@ constexpr WG21_Head_Behavior wg21_head {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"wg21_head"sv,
-    .declaration = u8R"md(wg21_head(title: block, content: block): block)md"sv,
+    .declaration = u8R"md(wg21_head(
+  title: block,
+  content: block,
+): block)md"sv,
     .description = u8R"md(Generates a WG21-style document header `<div class="wg21-head">`.
 `title` is the document title; `content` is the body of the header.)md"sv,
   },
