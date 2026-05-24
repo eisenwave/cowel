@@ -1202,7 +1202,7 @@ or we can include it into a \cowdoc_dir{codeblock} to display its contents.
 }}
 Assuming that \tt{example.js} is located in the same directory as the document
 and that loading the file succeeds,
-this renders as: 
+this renders as:
 \codeblock("js"){
 // code included from example.js:
 \cowel_include_text("example.js")
@@ -1215,7 +1215,7 @@ this renders as:
 
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_alias}(
-  \cowdoc_param("names", "pack string"),
+  \cowdoc_param("names", "pack str"),
   \cowdoc_param("content", "block"),
 ): \cowel_highlight_as("keyword-type"){unit}
 }
