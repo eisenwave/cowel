@@ -1,17 +1,14 @@
-import eslint from "@eslint/js";
 import tseslint from 'typescript-eslint';
-import globals from "globals";
 import { defineConfig } from "eslint/config";
 import parser from '@typescript-eslint/parser';
 import plugin from '@typescript-eslint/eslint-plugin';
 import stylistic from '@stylistic/eslint-plugin';
-import { makeTsRules, jsRules } from '../../tools/eslint-shared-rules.mjs';
+import { makeTsRules } from '../../tools/eslint-shared-rules.mjs';
 
 export default defineConfig([
     {
         ignores: [
-            "build",
-            "ulight",
+            "out",
             "node_modules",
         ]
     },
@@ -21,7 +18,7 @@ export default defineConfig([
             parserOptions: {
                 project: [
                     './tsconfig.json',
-                    './tsconfig.test.json',
+                    './tests/tsconfig.json',
                 ],
             },
         },
@@ -31,27 +28,8 @@ export default defineConfig([
         },
         files: [
             "src/**/*.ts",
-            "test/**/*.ts",
+            "tests/**/*.ts",
         ],
         rules: makeTsRules(plugin),
     }),
-    {
-        languageOptions: {
-            ecmaVersion: 2022,
-            sourceType: 'module',
-            globals: {
-                ...globals.node
-            }
-        },
-        files: [
-            "src/**/*.js",
-        ],
-        plugins: {
-            js: eslint
-        },
-        extends: [
-            "js/recommended"
-        ],
-        rules: jsRules,
-    },
 ]);

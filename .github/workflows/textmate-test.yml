@@ -5,11 +5,13 @@ on:
     branches: [ "main" ]
     paths:
       - "editor/**"
+      - "scripts/**"
       - ".github/workflows/textmate-test.yml"
   pull_request:
     branches: [ "main" ]
     paths:
       - "editor/**"
+      - "scripts/**"
       - ".github/workflows/textmate-test.yml"
 
 jobs:
@@ -27,6 +29,10 @@ jobs:
 
     - name: Install dependencies
       run: npm install
+      working-directory: editor/vscode
+
+    - name: Lint
+      run: npm run lint
       working-directory: editor/vscode
 
     - name: Run TextMate grammar tests
