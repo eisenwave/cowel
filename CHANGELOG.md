@@ -1,6 +1,6 @@
 # Changelog
 
-## **[v0.10.1](https://github.com/eisenwave/cowel/releases/tag/v0.10.1)** (2026-??-??)
+## **[v0.10.1](https://github.com/eisenwave/cowel/releases/tag/v0.10.1)** (2026-05-24)
 
 ### Command Line Interface
 
@@ -9,7 +9,7 @@
 
 ### VSCode extension
 
-- Added hover tooltips for macros defined by `cowel_macro` (#374)
+- Added hover tooltips for macros defined by `cowel_macro` (#374, #371)
 - Fixed missing revalidation of documents when an included file changes (#370)
 - Fixed memory leaks for certain tooltips (#376)
 - Also slightly improved performance of language server (#373)
