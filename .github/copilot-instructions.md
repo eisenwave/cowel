@@ -47,6 +47,8 @@ both this file and `lang-summary.md` must be updated to reflect the change.
 - Native CLI wrapper: `bindings/native/src/`
 - Node wrapper TS sources: `bindings/node/src/`
 - Node wrapper TS tests: `bindings/node/test/`
+- Bindings CLI fixtures: `bindings/test/cli/`
+- Bindings LSP fixtures: `bindings/test/lsp/`
 - Utility scripts: `tools/`
   - includes `coverage-llvm.sh` for LLVM source-based coverage
 - Docs + golden sample I/O: `docs/index.cow` and `docs/index.html`
@@ -141,7 +143,15 @@ Validated outcomes/timings:
 - `npm run build` succeeded (~0.82s)
 - `npm run build:test` succeeded (~1.09s)
 - ESLint command succeeded (~2.06s)
-- `npm test` succeeded (`96` pass, `0` fail, ~0.30s)
+- `npm run test:unit` succeeded
+
+Optional interactive watch-mode workflow
+(only relevant when testing `cowel watch` behavior):
+
+```bash
+npm run playwright:install
+npm run test:watch
+```
 
 ## VS Code Grammar Validation (CI Parity)
 
