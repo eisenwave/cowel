@@ -1059,9 +1059,9 @@ bool run_parse_test(
 }
 
 /// @brief Returns `true` if parsing `engine/test/files/parse/failures/${file_name}`
-/// results in a parser error.
+/// results in a lex or parser error.
 /// This is primarily useful for verifying that no invalid markup is accepted
-/// and that the parser doesn't run into an infinite loop or crash on invalid input.
+/// and that the lexer/parser doesn't run into an infinite loop or crash on invalid input.
 [[nodiscard]]
 bool run_parse_fail_test(const std::u8string_view file_name)
 {
@@ -1072,7 +1072,9 @@ bool run_parse_fail_test(const std::u8string_view file_name)
     constexpr bool silence_parse_error = true;
     const Result<Parsed_File, Parse_Error_Stage> result
         = parse_file(path, &memory, silence_parse_error);
-    return !result && result.error() == Parse_Error_Stage::parse;
+    return !result
+        && (result.error() == Parse_Error_Stage::lex
+            || result.error() == Parse_Error_Stage::parse);
 }
 
 // NOLINTBEGIN(bugprone-unchecked-optional-access)

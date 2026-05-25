@@ -550,7 +550,20 @@ private:
                 continue;
             }
             case u8'\\': {
+                const Source_Position initial_pos = m_pos;
+                const std::size_t initial_size = m_out.size();
                 consume_backslash_prefixed();
+                if (initial_size == m_out.size()) {
+                    continue;
+                }
+                const Token_Kind kind = m_out[initial_size].kind;
+                if (kind != Token_Kind::line_comment && kind != Token_Kind::block_comment) {
+                    error(
+                        Source_Span { initial_pos, 1 },
+                        u8"Only comments are permitted after a backslash in argument groups."sv
+                    );
+                    return false;
+                }
                 continue;
             }
             case u8' ':
@@ -578,8 +591,14 @@ private:
 
     void consume_group()
     {
+        const Source_Position initial_pos = m_pos;
         COWEL_ASSERT(expect_and_emit(u8'(', Token_Kind::parenthesis_left));
-        void(consume_parenthesized_content(1));
+        if (!consume_parenthesized_content(1)) {
+            error(
+                Source_Span { initial_pos, 1 },
+                u8"No matching ')'. This argument group is unterminated."sv
+            );
+        }
     }
 
     void consume_numeric_literal()

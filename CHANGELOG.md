@@ -1,5 +1,14 @@
 # Changelog
 
+## **[v0.10.2](https://github.com/eisenwave/cowel/releases/tag/v0.10.2)** (2026-??-??)
+
+### Engine
+
+- Fixed parser crash on unbalanced parentheses (#384)
+
+**Full Changelog**:
+[`v0.10.1...v0.10.2`](https://github.com/eisenwave/cowel/compare/v0.10.1...v0.10.2)
+
 ## **[v0.10.1](https://github.com/eisenwave/cowel/releases/tag/v0.10.1)** (2026-05-24)
 
 ### Command Line Interface
