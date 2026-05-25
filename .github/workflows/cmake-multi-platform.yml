@@ -268,6 +268,10 @@ jobs:
         npm ci
       working-directory: bindings/node
 
+    - name: Install Playwright Chromium
+      run: npm run playwright:install
+      working-directory: bindings/node
+
     - name: Install VS Code extension dependencies
       run: |
         npm ci

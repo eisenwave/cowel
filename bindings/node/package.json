@@ -10,7 +10,13 @@
         "build": "tsc",
         "build:test": "tsc -p tsconfig.test.json",
         "lint": "eslint src test --max-warnings=0 --color",
-        "test": "node --test ../../build/test/test/ts/*.js"
+        "playwright:install": "playwright install --with-deps chromium",
+        "test:unit": "node --test ../../build/test/test/ts/test.js",
+        "test:watch": "playwright test test/ts/watch.test.ts",
+        "test:watch:headed": "playwright test test/ts/watch.test.ts --headed",
+        "test:watch:ui": "PLAYWRIGHT_VIDEO=on playwright test test/ts/watch.test.ts --ui --headed",
+        "test:watch:debug": "playwright test test/ts/watch.test.ts --debug",
+        "test": "npm run test:unit && npm run test:watch"
     },
     "repository": {
         "type": "git",
@@ -32,11 +38,13 @@
     "homepage": "https://cowel.org",
     "devDependencies": {
         "@stylistic/eslint-plugin": "^5.2.2",
+        "@playwright/test": "^1.60.0",
         "@types/node": "^24.1.0",
         "@typescript-eslint/eslint-plugin": "^8.38.0",
         "@typescript-eslint/parser": "^8.38.0",
         "eslint": "^9.32.0",
         "globals": "^16.3.0",
+        "playwright": "^1.60.0",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.38.0"
     },

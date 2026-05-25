@@ -1,6 +1,7 @@
 **/build
 node_modules
 __pycache__
+playwright-report/
 
 cmake_test_discovery_*.json
 
