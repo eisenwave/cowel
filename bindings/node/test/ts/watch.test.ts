@@ -116,6 +116,8 @@ async function waitForText(
     await page.getByText(text).waitFor({ timeout: timeoutMs });
 }
 
+const DEFAULT_TIMEOUT = 2_500;
+
 test.describe("Watch Mode", () => {
     test("serves a page and live-reloads after source edits", async ({ page }) => {
         test.setTimeout(45_000);
@@ -143,20 +145,166 @@ test.describe("Watch Mode", () => {
         );
 
         try {
-            const url = await waitForServingUrl(watchProcess, 10_000);
+            const url = await waitForServingUrl(watchProcess, DEFAULT_TIMEOUT);
             await page.goto(url, { waitUntil: "domcontentloaded" });
 
-            await waitForText(page, "WATCH_E2E_INITIAL", 10_000);
-            await waitForText(page, "TOKEN_A", 10_000);
+            await waitForText(page, "WATCH_E2E_INITIAL", DEFAULT_TIMEOUT);
+            await waitForText(page, "TOKEN_A", DEFAULT_TIMEOUT);
 
             fs.writeFileSync(inputPath, updatedSource, "utf8");
 
-            await waitForText(page, "WATCH_E2E_UPDATED", 10_000);
-            await waitForText(page, "TOKEN_B", 10_000);
+            await waitForText(page, "WATCH_E2E_UPDATED", DEFAULT_TIMEOUT);
+            await waitForText(page, "TOKEN_B", DEFAULT_TIMEOUT);
 
             expect(fs.existsSync(outputPath)).toBeTruthy();
             const html = fs.readFileSync(outputPath, "utf8");
             expect(html).toContain("WATCH_E2E_UPDATED");
+        } finally {
+            await closeWatchProcess(watchProcess);
+            fs.rmSync(tempDir, { recursive: true, force: true });
+        }
+    });
+
+    test("issue #382: updates to included files do not trigger live reload", async ({ page }) => {
+        test.setTimeout(45_000);
+        test.fail(true, "Known bug tracked in #382");
+
+        const buildDir = path.join(projectRoot, "build");
+        expect(fs.existsSync(buildDir)).toBeTruthy();
+
+        const tempDir = fs.mkdtempSync(path.join(buildDir, "watch-issue-382-"));
+        const inputPath = path.join(tempDir, "main.cow");
+        const includedPath = path.join(tempDir, "snippet.cow");
+        const outputPath = path.join(tempDir, "watch.html");
+        const cliPath = path.join(projectRoot, "build", "npm", "cowel.js");
+
+        const initialIncluded = "ISSUE_382_INITIAL\\n";
+        const updatedIncluded = "ISSUE_382_UPDATED\\n";
+        const mainSource = "\\cowel_include(path=\"snippet.cow\")\\n";
+
+        fs.writeFileSync(inputPath, mainSource, "utf8");
+        fs.writeFileSync(includedPath, initialIncluded, "utf8");
+
+        const watchProcess = spawn(
+            process.execPath,
+            [cliPath, "watch", inputPath, outputPath, "--no-color"],
+            {
+                cwd: projectRoot,
+                stdio: ["ignore", "pipe", "pipe"],
+            },
+        );
+
+        try {
+            const url = await waitForServingUrl(watchProcess, DEFAULT_TIMEOUT);
+            await page.goto(url, { waitUntil: "domcontentloaded" });
+            await waitForText(page, "ISSUE_382_INITIAL", DEFAULT_TIMEOUT);
+
+            fs.writeFileSync(includedPath, updatedIncluded, "utf8");
+
+            // Known bug #382: watch listens only to the entry document,
+            // so edits to included files do not trigger browser reload.
+            await waitForText(page, "ISSUE_382_UPDATED", DEFAULT_TIMEOUT);
+        } finally {
+            await closeWatchProcess(watchProcess);
+            fs.rmSync(tempDir, { recursive: true, force: true });
+        }
+    });
+
+    test("issue #385: heading counters are not reset between watch rebuilds", async ({ page }) => {
+        test.setTimeout(45_000);
+        test.fail(true, "Known bug tracked in #385");
+
+        const buildDir = path.join(projectRoot, "build");
+        expect(fs.existsSync(buildDir)).toBeTruthy();
+
+        const tempDir = fs.mkdtempSync(path.join(buildDir, "watch-issue-385-"));
+        const inputPath = path.join(tempDir, "watch.cow");
+        const outputPath = path.join(tempDir, "watch.html");
+        const cliPath = path.join(projectRoot, "build", "npm", "cowel.js");
+
+        const makeSource = (tick: number): string => [
+            "\\h1{Issue 385 Heading}",
+            "\\h2{Subheading}",
+            `Tick ${tick}`,
+            "",
+        ].join("\n");
+
+        fs.writeFileSync(inputPath, makeSource(0), "utf8");
+
+        const watchProcess = spawn(
+            process.execPath,
+            [cliPath, "watch", inputPath, outputPath, "--no-color"],
+            {
+                cwd: projectRoot,
+                stdio: ["ignore", "pipe", "pipe"],
+            },
+        );
+
+        try {
+            const url = await waitForServingUrl(watchProcess, DEFAULT_TIMEOUT);
+            await page.goto(url, { waitUntil: "domcontentloaded" });
+            await waitForText(page, "Tick 0", DEFAULT_TIMEOUT);
+            await waitForText(page, "1. Subheading", DEFAULT_TIMEOUT);
+
+            fs.writeFileSync(inputPath, makeSource(1), "utf8");
+            await waitForText(page, "Tick 1", DEFAULT_TIMEOUT);
+
+            // Known bug #385: heading counters persist between rebuilds,
+            // so this heading can become "2. Subheading", "3. ...", etc.
+            await waitForText(page, "1. Subheading", DEFAULT_TIMEOUT);
+
+            fs.writeFileSync(inputPath, makeSource(2), "utf8");
+            await waitForText(page, "Tick 2", DEFAULT_TIMEOUT);
+            await waitForText(page, "1. Subheading", DEFAULT_TIMEOUT);
+        } finally {
+            await closeWatchProcess(watchProcess);
+            fs.rmSync(tempDir, { recursive: true, force: true });
+        }
+    });
+
+    test("issue #386: back/forward can crash watch process with EPIPE", async ({ page }) => {
+        test.setTimeout(45_000);
+        test.fail(true, "Known bug tracked in #386");
+
+        const buildDir = path.join(projectRoot, "build");
+        expect(fs.existsSync(buildDir)).toBeTruthy();
+
+        const tempDir = fs.mkdtempSync(path.join(buildDir, "watch-issue-386-"));
+        const inputPath = path.join(tempDir, "watch.cow");
+        const outputPath = path.join(tempDir, "watch.html");
+        const cliPath = path.join(projectRoot, "build", "npm", "cowel.js");
+
+        const initialSource = "ISSUE_386_INITIAL\\n";
+        const updatedSource = "ISSUE_386_UPDATED\\n";
+
+        fs.writeFileSync(inputPath, initialSource, "utf8");
+
+        const watchProcess = spawn(
+            process.execPath,
+            [cliPath, "watch", inputPath, outputPath, "--no-color"],
+            {
+                cwd: projectRoot,
+                stdio: ["ignore", "pipe", "pipe"],
+            },
+        );
+
+        try {
+            const url = await waitForServingUrl(watchProcess, DEFAULT_TIMEOUT);
+            await page.goto(url, { waitUntil: "domcontentloaded" });
+            await waitForText(page, "ISSUE_386_INITIAL", DEFAULT_TIMEOUT);
+
+            await page.goto(`${url}/navigated`, { waitUntil: "domcontentloaded" });
+            await page.goBack({ waitUntil: "domcontentloaded" });
+            await waitForText(page, "ISSUE_386_INITIAL", DEFAULT_TIMEOUT);
+
+            fs.writeFileSync(inputPath, updatedSource, "utf8");
+
+            await waitForText(page, "ISSUE_386_UPDATED", DEFAULT_TIMEOUT);
+            // Known bug #386: after back/forward navigation,
+            // websocket writes can hit EPIPE and terminate the watch process.
+            await expect
+                .poll(() => watchProcess.exitCode, { timeout: DEFAULT_TIMEOUT })
+                .toBeNull();
         } finally {
             await closeWatchProcess(watchProcess);
             fs.rmSync(tempDir, { recursive: true, force: true });
