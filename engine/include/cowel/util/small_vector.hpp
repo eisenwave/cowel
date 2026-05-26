@@ -46,7 +46,10 @@ private:
     Alloc m_alloc {};
     T* m_dynamic_data = nullptr;
     union Small_Storage {
-        constexpr Small_Storage() noexcept { }
+        constexpr Small_Storage() noexcept
+            : dummy {}
+        {
+        }
         constexpr Small_Storage(const Small_Storage&) { }
         // NOLINTNEXTLINE(bugprone-unhandled-self-assignment)
         constexpr Small_Storage& operator=(const Small_Storage&)
@@ -54,8 +57,9 @@ private:
             return *this;
         }
         constexpr ~Small_Storage() noexcept { }
+        char dummy;
         T data[small_cap];
-    } m_small_storage;
+    } m_small_storage {};
 
 public:
     [[nodiscard]]
