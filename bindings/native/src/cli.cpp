@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <memory_resource>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -118,7 +119,7 @@ struct Stderr_Logger {
         const bool has_primary = stack_size != 0;
 
         File_Entry primary_file_entry {};
-        File_Source_Span primary_location {};
+        std::optional<File_Source_Span> primary_location;
         if (has_primary) {
             primary_file_entry = get_file_entry(stack[0]);
             primary_location = as_file_source_span(stack[0]);
@@ -137,7 +138,7 @@ struct Stderr_Logger {
                 print_location_of_file(out, primary_file_entry.name);
             }
             else {
-                print_file_position(out, primary_file_entry.name, primary_location);
+                print_file_position(out, primary_file_entry.name, *primary_location);
             }
         }
         out.append(u8' ');
@@ -153,7 +154,7 @@ struct Stderr_Logger {
         }
         out.append(u8'\n');
         if (has_primary && stack[0].length != 0) {
-            print_affected_line(out, primary_file_entry.source, primary_location);
+            print_affected_line(out, primary_file_entry.source, *primary_location);
         }
 
         for (std::size_t i = 1; i < stack_size; ++i) {
