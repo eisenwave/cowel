@@ -28,11 +28,6 @@ public:
 
     static_assert(small_cap != 0, "Cannot create a Small_Vector with zero small capacity.");
     static_assert(
-        std::is_default_constructible_v<T>,
-        "Element types must be default-constructible. "
-        "This is necessary for a constexpr implementation."
-    );
-    static_assert(
         std::is_same_v<pointer, T*>,
         "Allocators with custom pointer types are not yet supported."
     );
@@ -50,7 +45,17 @@ private:
     [[no_unique_address]]
     Alloc m_alloc {};
     T* m_dynamic_data = nullptr;
-    T m_small_data[small_cap] {};
+    union Small_Storage {
+        constexpr Small_Storage() noexcept { }
+        constexpr Small_Storage(const Small_Storage&) { }
+        // NOLINTNEXTLINE(bugprone-unhandled-self-assignment)
+        constexpr Small_Storage& operator=(const Small_Storage&)
+        {
+            return *this;
+        }
+        constexpr ~Small_Storage() noexcept { }
+        T data[small_cap];
+    } m_small_storage;
 
 public:
     [[nodiscard]]
@@ -164,42 +169,42 @@ public:
     }
 
     [[nodiscard]]
-    constexpr T& operator[](const std::size_t i)
+    T& operator[](const std::size_t i)
     {
         COWEL_DEBUG_ASSERT(i < m_size);
-        return m_using_small ? m_small_data[i] : m_dynamic_data[i];
+        return m_using_small ? small_data()[i] : m_dynamic_data[i];
     }
 
     [[nodiscard]]
-    constexpr const T& operator[](const std::size_t i) const
+    const T& operator[](const std::size_t i) const
     {
         COWEL_DEBUG_ASSERT(i < m_size);
-        return m_using_small ? m_small_data[i] : m_dynamic_data[i];
+        return m_using_small ? small_data()[i] : m_dynamic_data[i];
     }
 
     [[nodiscard]]
-    constexpr T& front()
+    T& front()
     {
         COWEL_ASSERT(!empty());
         return operator[](0);
     }
 
     [[nodiscard]]
-    constexpr const T& front() const
+    const T& front() const
     {
         COWEL_ASSERT(!empty());
         return operator[](0);
     }
 
     [[nodiscard]]
-    constexpr T& back()
+    T& back()
     {
         COWEL_ASSERT(!empty());
         return operator[](m_size - 1);
     }
 
     [[nodiscard]]
-    constexpr const T& back() const
+    const T& back() const
     {
         COWEL_ASSERT(!empty());
         return operator[](m_size - 1);
@@ -221,7 +226,10 @@ public:
 
     constexpr void clear() noexcept
     {
-        if (!m_using_small) {
+        if (m_using_small) {
+            std::ranges::destroy_n(small_data(), difference_type(m_size));
+        }
+        else {
             std::ranges::destroy_n(m_dynamic_data, difference_type(m_size));
         }
         m_size = 0;
@@ -238,12 +246,13 @@ public:
 
     constexpr void resize(const std::size_t amount, const T& value = {})
     {
+        if (amount == 0) {
+            clear();
+            return;
+        }
         if (amount < m_size) {
-            if (amount == 0) {
-                clear();
-            }
-            else if (m_using_small) {
-                std::ranges::fill(m_small_data + amount, m_small_data + m_size, T {});
+            if (m_using_small) {
+                std::ranges::destroy(small_data() + amount, small_data() + m_size);
             }
             else {
                 std::ranges::destroy(m_dynamic_data + amount, m_dynamic_data + m_size);
@@ -251,7 +260,9 @@ public:
         }
         else if (amount > m_size) {
             if (m_using_small && amount <= small_cap) {
-                std::ranges::fill(m_small_data + m_size, m_small_data + amount, value);
+                std::ranges::uninitialized_fill(
+                    small_data() + m_size, small_data() + amount, value
+                );
             }
             else {
                 ensure_dynamic_storage(amount);
@@ -280,25 +291,21 @@ public:
 
         if (m_using_small && other.m_using_small) {
             const auto common = std::min(m_size, other.m_size);
-            std::ranges::swap_ranges(
-                m_small_data, //
-                m_small_data + common, //
-                other.m_small_data, //
-                other.m_small_data + common
-            );
+            T* const sd = small_data();
+            T* const osd = other.small_data();
+            std::ranges::swap_ranges(sd, sd + common, osd, osd + common);
             if (m_size > other.m_size) {
-                std::ranges::move(
-                    m_small_data + common, //
-                    m_small_data + m_size, //
-                    other.m_small_data + common
+                std::ranges::uninitialized_move_n(
+                    sd + common, difference_type(m_size - common), osd + common, osd + m_size
                 );
+                std::ranges::destroy_n(sd + common, difference_type(m_size - common));
             }
             else if (other.m_size > m_size) {
-                std::ranges::move(
-                    other.m_small_data + common, //
-                    other.m_small_data + other.m_size, //
-                    m_small_data + common
+                std::ranges::uninitialized_move_n(
+                    osd + common, difference_type(other.m_size - common), sd + common,
+                    sd + other.m_size
                 );
+                std::ranges::destroy_n(osd + common, difference_type(other.m_size - common));
             }
             std::swap(m_size, other.m_size);
             std::swap(m_dynamic_data, other.m_dynamic_data);
@@ -308,7 +315,11 @@ public:
         }
 
         if (!m_using_small && other.m_using_small) {
-            std::ranges::move(other.m_small_data, other.m_small_data + other.m_size, m_small_data);
+            std::ranges::uninitialized_move_n(
+                other.small_data(), difference_type(other.m_size), small_data(),
+                small_data() + other.m_size
+            );
+            std::ranges::destroy_n(other.small_data(), difference_type(other.m_size));
             std::swap(m_dynamic_data, other.m_dynamic_data);
             std::swap(m_dynamic_capacity, other.m_dynamic_capacity);
             std::swap(m_size, other.m_size);
@@ -318,7 +329,11 @@ public:
         }
 
         if (m_using_small && !other.m_using_small) {
-            std::ranges::move(m_small_data, m_small_data + m_size, other.m_small_data);
+            std::ranges::uninitialized_move_n(
+                small_data(), difference_type(m_size), other.small_data(),
+                other.small_data() + m_size
+            );
+            std::ranges::destroy_n(small_data(), difference_type(m_size));
             std::swap(m_dynamic_data, other.m_dynamic_data);
             std::swap(m_dynamic_capacity, other.m_dynamic_capacity);
             std::swap(m_size, other.m_size);
@@ -335,23 +350,24 @@ public:
         x.swap(y);
     }
 
-    constexpr void push_back(const T& element)
+    void push_back(const T& element)
     {
         emplace_back(element);
     }
 
-    constexpr void push_back(T&& element)
+    void push_back(T&& element)
     {
         emplace_back(std::move(element));
     }
 
     template <typename... Args>
         requires std::constructible_from<T, Args&&...>
-    constexpr T& emplace_back(Args&&... args)
+    T& emplace_back(Args&&... args)
     {
         if (m_using_small && m_size < small_cap) {
-            m_small_data[m_size] = T(std::forward<Args>(args)...);
-            return m_small_data[m_size++];
+            T* const p = std::construct_at(small_data() + m_size, std::forward<Args>(args)...);
+            ++m_size;
+            return *p;
         }
         ensure_dynamic_storage(m_size + 1);
         return *std::construct_at(
@@ -360,10 +376,13 @@ public:
         );
     }
 
-    constexpr void pop_back()
+    void pop_back()
     {
         COWEL_ASSERT(!empty());
-        if (!m_using_small) {
+        if (m_using_small) {
+            std::destroy_at(small_data() + m_size - 1);
+        }
+        else {
             std::destroy_at(m_dynamic_data + m_size - 1);
         }
         --m_size;
@@ -378,7 +397,7 @@ public:
     /// @param begin The start of the inserted range.
     /// @param sentinel A sentinel delimiting the inserted range.
     template <std::input_iterator Iterator, std::sentinel_for<Iterator> Sentinel>
-    constexpr void insert(iterator pos, Iterator begin, Sentinel sentinel)
+    void insert(iterator pos, Iterator begin, Sentinel sentinel)
     {
         const auto pos_index = std::size_t(pos - this->begin());
 
@@ -389,16 +408,33 @@ public:
             const std::size_t new_size = m_size + count;
 
             if (m_using_small && new_size <= small_cap) {
-                std::ranges::move_backward(
-                    m_small_data + pos_index, //
-                    m_small_data + m_size, //
-                    m_small_data + new_size
-                );
-                std::ranges::copy_n(
-                    begin, //
-                    std::iter_difference_t<Iterator>(count), //
-                    m_small_data + pos_index
-                );
+                T* const sd = small_data();
+                const std::size_t shift_count = m_size - pos_index;
+                if (count <= shift_count) {
+                    std::ranges::uninitialized_move_n(
+                        sd + (m_size - count), difference_type(count), sd + m_size,
+                        sd + m_size + count
+                    );
+                    std::ranges::move_backward(sd + pos_index, sd + (m_size - count), sd + m_size);
+                    std::ranges::copy_n(
+                        begin, std::iter_difference_t<Iterator>(count), sd + pos_index
+                    );
+                }
+                else {
+                    std::ranges::uninitialized_move_n(
+                        sd + pos_index, difference_type(shift_count), sd + pos_index + count,
+                        sd + pos_index + count + shift_count
+                    );
+                    const auto existing_result = std::ranges::copy_n(
+                        begin, std::iter_difference_t<Iterator>(shift_count), sd + pos_index
+                    );
+                    const std::size_t insert_tail_count = count - shift_count;
+                    std::ranges::uninitialized_copy_n(
+                        existing_result.in, std::iter_difference_t<Iterator>(insert_tail_count),
+                        sd + pos_index + shift_count,
+                        sd + pos_index + shift_count + insert_tail_count
+                    );
+                }
                 m_size = new_size;
                 return;
             }
@@ -458,7 +494,7 @@ public:
     }
 
     template <std::ranges::range R>
-    constexpr void append_range(R&& r)
+    void append_range(R&& r)
     {
         insert(
             end(), //
@@ -470,14 +506,12 @@ public:
     [[nodiscard]]
     constexpr iterator begin() noexcept
     {
-        return m_using_small ? std::ranges::begin(m_small_data) //
-                             : m_dynamic_data;
+        return m_using_small ? small_data() : m_dynamic_data;
     }
     [[nodiscard]]
     constexpr const_iterator begin() const noexcept
     {
-        return m_using_small ? std::ranges::begin(m_small_data) //
-                             : m_dynamic_data;
+        return m_using_small ? small_data() : m_dynamic_data;
     }
     [[nodiscard]]
     constexpr const_iterator cbegin() const noexcept
@@ -488,14 +522,12 @@ public:
     [[nodiscard]]
     constexpr iterator end() noexcept
     {
-        return m_using_small ? std::ranges::begin(m_small_data) + m_size //
-                             : m_dynamic_data + m_size;
+        return m_using_small ? small_data() + m_size : m_dynamic_data + m_size;
     }
     [[nodiscard]]
     constexpr const_iterator end() const noexcept
     {
-        return m_using_small ? std::ranges::begin(m_small_data) + m_size //
-                             : m_dynamic_data + m_size;
+        return m_using_small ? small_data() + m_size : m_dynamic_data + m_size;
     }
     [[nodiscard]]
     constexpr const_iterator cend() const noexcept
@@ -504,6 +536,18 @@ public:
     }
 
 private:
+    [[nodiscard]]
+    constexpr T* small_data() noexcept
+    {
+        return m_small_storage.data;
+    }
+
+    [[nodiscard]]
+    constexpr const T* small_data() const noexcept
+    {
+        return m_small_storage.data;
+    }
+
     constexpr void destroy_and_deallocate() noexcept
     {
         clear();
@@ -528,7 +572,10 @@ private:
         }
 
         m_size = std::exchange(other.m_size, 0);
-        std::ranges::move(other.m_small_data, other.m_small_data + m_size, m_small_data);
+        std::ranges::uninitialized_move_n(
+            other.small_data(), difference_type(m_size), small_data(), small_data() + m_size
+        );
+        std::ranges::destroy_n(other.small_data(), difference_type(m_size));
         m_using_small = true;
         if (other.m_dynamic_data) {
             m_dynamic_data = std::exchange(other.m_dynamic_data, nullptr);
@@ -548,22 +595,25 @@ private:
         );
     }
 
-    constexpr void move_dynamic_to_small()
+    void move_dynamic_to_small()
     {
-        std::ranges::move(m_dynamic_data, m_dynamic_data + m_size, m_small_data);
+        std::ranges::uninitialized_move_n(
+            m_dynamic_data, difference_type(m_size), small_data(), small_data() + m_size
+        );
         std::ranges::destroy_n(m_dynamic_data, difference_type(m_size));
         m_using_small = true;
     }
 
-    constexpr void move_small_to_dynamic(T* const target)
+    void move_small_to_dynamic(T* const target)
     {
         std::ranges::uninitialized_move_n(
-            m_small_data, difference_type(m_size), target, target + m_size
+            small_data(), difference_type(m_size), target, target + m_size
         );
+        std::ranges::destroy_n(small_data(), difference_type(m_size));
         m_using_small = false;
     }
 
-    constexpr void ensure_dynamic_storage(const std::size_t min_needed)
+    void ensure_dynamic_storage(const std::size_t min_needed)
     {
         if (!m_dynamic_data || m_dynamic_capacity < min_needed) {
             grow_to(min_needed);
@@ -587,8 +637,9 @@ private:
         }
         else {
             std::ranges::uninitialized_move_n(
-                m_small_data, difference_type(m_size), new_data, new_data + m_size
+                small_data(), difference_type(m_size), new_data, new_data + m_size
             );
+            std::ranges::destroy_n(small_data(), difference_type(m_size));
         }
 
         if (m_dynamic_data) {

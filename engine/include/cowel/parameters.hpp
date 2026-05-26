@@ -169,10 +169,6 @@ private:
 
 public:
     [[nodiscard]]
-    Argument()
-        = default;
-
-    [[nodiscard]]
     const Value& get_name() const
     {
         return m_name;

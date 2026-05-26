@@ -56,7 +56,7 @@ TEST(Small_Vector, default_constructor)
         EXPECT_EQ(vec.capacity(), 4);
         EXPECT_EQ(vec.small_capacity(), 4);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 0);
     }
     EXPECT_EQ(object_count, 0);
 }
@@ -69,12 +69,12 @@ TEST(Small_Vector, copy_constructor_small)
         vec1.push_back(Counted { 1 });
         vec1.push_back(Counted { 2 });
         EXPECT_TRUE(vec1.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
 
         Small_Vector<Counted, 4> vec2 = vec1;
         EXPECT_EQ(vec2.size(), 2);
         EXPECT_TRUE(vec2.small());
-        EXPECT_EQ(object_count, 8);
+        EXPECT_EQ(object_count, 4);
         EXPECT_EQ(vec2[0].value, 1);
         EXPECT_EQ(vec2[1].value, 2);
     }
@@ -91,12 +91,12 @@ TEST(Small_Vector, copy_constructor_dynamic)
         vec1.push_back(Counted { 3 });
         vec1.push_back(Counted { 4 });
         EXPECT_FALSE(vec1.small());
-        EXPECT_EQ(object_count, 6);
+        EXPECT_EQ(object_count, 4);
 
         Small_Vector<Counted, 2> vec2 = vec1;
         EXPECT_EQ(vec2.size(), 4);
         EXPECT_FALSE(vec2.small());
-        EXPECT_EQ(object_count, 12);
+        EXPECT_EQ(object_count, 8);
         EXPECT_EQ(vec2[0].value, 1);
         EXPECT_EQ(vec2[1].value, 2);
         EXPECT_EQ(vec2[2].value, 3);
@@ -113,13 +113,13 @@ TEST(Small_Vector, move_constructor_small)
         vec1.push_back(Counted { 1 });
         vec1.push_back(Counted { 2 });
         EXPECT_TRUE(vec1.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
 
         Small_Vector<Counted, 4> vec2 = std::move(vec1);
         EXPECT_EQ(vec2.size(), 2);
         EXPECT_TRUE(vec2.small());
         EXPECT_EQ(vec1.size(), 0);
-        EXPECT_EQ(object_count, 8);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec2[0].value, 1);
         EXPECT_EQ(vec2[1].value, 2);
     }
@@ -136,13 +136,13 @@ TEST(Small_Vector, move_constructor_dynamic)
         vec1.push_back(Counted { 3 });
         vec1.push_back(Counted { 4 });
         EXPECT_FALSE(vec1.small());
-        EXPECT_EQ(object_count, 6);
+        EXPECT_EQ(object_count, 4);
 
         Small_Vector<Counted, 2> vec2 = std::move(vec1);
         EXPECT_EQ(vec2.size(), 4);
         EXPECT_FALSE(vec2.small());
         EXPECT_EQ(vec1.size(), 0);
-        EXPECT_EQ(object_count, 8);
+        EXPECT_EQ(object_count, 4);
         EXPECT_EQ(vec2[0].value, 1);
         EXPECT_EQ(vec2[1].value, 2);
         EXPECT_EQ(vec2[2].value, 3);
@@ -168,7 +168,7 @@ TEST(Small_Vector, move_constructor_small_with_dynamic_allocation)
         EXPECT_EQ(vec2.size(), 2);
         EXPECT_TRUE(vec2.small());
         EXPECT_EQ(vec2.capacity(), 4);
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec2[0].value, 1);
         EXPECT_EQ(vec2[1].value, 2);
     }
@@ -191,7 +191,7 @@ TEST(Small_Vector, copy_assignment)
         vec2 = vec1;
         EXPECT_EQ(vec2.size(), 2);
         EXPECT_TRUE(vec2.small());
-        EXPECT_EQ(object_count, 8);
+        EXPECT_EQ(object_count, 4);
         EXPECT_EQ(vec2[0].value, 1);
         EXPECT_EQ(vec2[1].value, 2);
     }
@@ -212,7 +212,7 @@ TEST(Small_Vector, copy_assignment_self)
         vec = *vec_pointer;
         EXPECT_EQ(vec.size(), 2);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
     }
@@ -236,7 +236,7 @@ TEST(Small_Vector, move_assignment)
         EXPECT_EQ(vec2.size(), 2);
         EXPECT_EQ(vec1.size(), 0);
         EXPECT_TRUE(vec2.small());
-        EXPECT_EQ(object_count, 8);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec2[0].value, 1);
         EXPECT_EQ(vec2[1].value, 2);
     }
@@ -257,7 +257,7 @@ TEST(Small_Vector, move_assignment_self)
         vec = std::move(*vec_pointer);
         EXPECT_EQ(vec.size(), 2);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
     }
@@ -273,7 +273,7 @@ TEST(Small_Vector, initializer_list_constructor)
         EXPECT_FALSE(vec.empty());
         EXPECT_TRUE(vec.small());
         EXPECT_EQ(vec.capacity(), 4);
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 3);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
         EXPECT_EQ(vec[2].value, 3);
@@ -290,14 +290,14 @@ TEST(Small_Vector, push_back_small)
         EXPECT_EQ(vec.size(), 1);
         EXPECT_FALSE(vec.empty());
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 1);
         EXPECT_EQ(vec[0].value, 1);
 
         vec.push_back(Counted { 2 });
         vec.push_back(Counted { 3 });
         EXPECT_EQ(vec.size(), 3);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 3);
         EXPECT_EQ(vec[1].value, 2);
         EXPECT_EQ(vec[2].value, 3);
     }
@@ -321,7 +321,7 @@ TEST(Small_Vector, push_back_grow_to_dynamic)
         EXPECT_FALSE(vec.small());
         EXPECT_EQ(vec.size(), 3);
         EXPECT_GE(vec.capacity(), 4);
-        EXPECT_EQ(object_count, 5);
+        EXPECT_EQ(object_count, 3);
         EXPECT_EQ(vec[2].value, 3);
     }
     EXPECT_EQ(object_count, 0);
@@ -343,7 +343,7 @@ TEST(Small_Vector, emplace_back)
         vec.emplace_back(3);
         EXPECT_EQ(vec.size(), 3);
         EXPECT_FALSE(vec.small());
-        EXPECT_EQ(object_count, 5);
+        EXPECT_EQ(object_count, 3);
         EXPECT_EQ(vec[2].value, 3);
     }
     EXPECT_EQ(object_count, 0);
@@ -357,12 +357,12 @@ TEST(Small_Vector, pop_back_small)
         vec.push_back(Counted { 1 });
         vec.push_back(Counted { 2 });
         vec.push_back(Counted { 3 });
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 3);
 
         vec.pop_back();
         EXPECT_EQ(vec.size(), 2);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
     }
@@ -379,12 +379,12 @@ TEST(Small_Vector, pop_back_dynamic)
         vec.push_back(Counted { 3 });
         vec.push_back(Counted { 4 });
         EXPECT_FALSE(vec.small());
-        EXPECT_EQ(object_count, 6);
+        EXPECT_EQ(object_count, 4);
 
         vec.pop_back();
         EXPECT_EQ(vec.size(), 3);
         EXPECT_FALSE(vec.small());
-        EXPECT_EQ(object_count, 5);
+        EXPECT_EQ(object_count, 3);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
         EXPECT_EQ(vec[2].value, 3);
@@ -401,7 +401,7 @@ TEST(Small_Vector, pop_back_transition_to_small)
         vec.push_back(Counted { 2 });
         vec.push_back(Counted { 3 });
         EXPECT_FALSE(vec.small());
-        EXPECT_EQ(object_count, 5);
+        EXPECT_EQ(object_count, 3);
 
         vec.pop_back();
         EXPECT_EQ(vec.size(), 2);
@@ -519,13 +519,13 @@ TEST(Small_Vector, clear_small)
         Small_Vector<Counted, 4> vec;
         vec.push_back(Counted { 1 });
         vec.push_back(Counted { 2 });
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
 
         vec.clear();
         EXPECT_EQ(vec.size(), 0);
         EXPECT_TRUE(vec.empty());
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 0);
     }
     EXPECT_EQ(object_count, 0);
 }
@@ -540,13 +540,13 @@ TEST(Small_Vector, clear_dynamic)
         vec.push_back(Counted { 3 });
         vec.push_back(Counted { 4 });
         EXPECT_FALSE(vec.small());
-        EXPECT_EQ(object_count, 6);
+        EXPECT_EQ(object_count, 4);
 
         vec.clear();
         EXPECT_EQ(vec.size(), 0);
         EXPECT_TRUE(vec.empty());
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 2);
+        EXPECT_EQ(object_count, 0);
     }
     EXPECT_EQ(object_count, 0);
 }
@@ -558,13 +558,13 @@ TEST(Small_Vector, reserve)
         Small_Vector<Counted, 2> vec;
         vec.push_back(Counted { 7 });
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 2);
+        EXPECT_EQ(object_count, 1);
 
         vec.reserve(8);
         EXPECT_FALSE(vec.small());
         EXPECT_GE(vec.capacity(), 8);
         EXPECT_EQ(vec.size(), 1);
-        EXPECT_EQ(object_count, 3);
+        EXPECT_EQ(object_count, 1);
         EXPECT_EQ(vec[0].value, 7);
     }
     EXPECT_EQ(object_count, 0);
@@ -582,7 +582,7 @@ TEST(Small_Vector, reserve_no_op)
         vec.reserve(2);
         EXPECT_TRUE(vec.small());
         EXPECT_EQ(vec.capacity(), 4);
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
     }
@@ -625,7 +625,7 @@ TEST(Small_Vector, insert_to_dynamic_storage)
         EXPECT_FALSE(vec.small());
         EXPECT_EQ(vec.size(), 3);
         EXPECT_GE(vec.capacity(), 4);
-        EXPECT_EQ(object_count, 6);
+        EXPECT_EQ(object_count, 4);
         EXPECT_EQ(vec[0].value, 9);
         EXPECT_EQ(vec[1].value, 1);
         EXPECT_EQ(vec[2].value, 2);
@@ -648,7 +648,7 @@ TEST(Small_Vector, insert_dynamic_growth)
         EXPECT_FALSE(vec.small());
         EXPECT_EQ(vec.size(), 5);
         EXPECT_EQ(vec.capacity(), 8);
-        EXPECT_EQ(object_count, 9);
+        EXPECT_EQ(object_count, 7);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 4);
         EXPECT_EQ(vec[2].value, 5);
@@ -728,7 +728,7 @@ TEST(Small_Vector, swap_both_small)
         EXPECT_EQ(vec2.size(), 2);
         EXPECT_TRUE(vec1.small());
         EXPECT_TRUE(vec2.small());
-        EXPECT_EQ(object_count, 8);
+        EXPECT_EQ(object_count, 3);
         EXPECT_EQ(vec1[0].value, 9);
         EXPECT_EQ(vec2[0].value, 1);
         EXPECT_EQ(vec2[1].value, 2);
@@ -753,7 +753,7 @@ TEST(Small_Vector, swap_both_small_reverse)
         EXPECT_EQ(vec2.size(), 1);
         EXPECT_TRUE(vec1.small());
         EXPECT_TRUE(vec2.small());
-        EXPECT_EQ(object_count, 8);
+        EXPECT_EQ(object_count, 4);
         EXPECT_EQ(vec1[0].value, 2);
         EXPECT_EQ(vec1[1].value, 3);
         EXPECT_EQ(vec1[2].value, 4);
@@ -782,7 +782,7 @@ TEST(Small_Vector, swap_both_dynamic)
         EXPECT_EQ(vec2.size(), 3);
         EXPECT_FALSE(vec1.small());
         EXPECT_FALSE(vec2.small());
-        EXPECT_EQ(object_count, 11);
+        EXPECT_EQ(object_count, 7);
         EXPECT_EQ(vec1[0].value, 4);
         EXPECT_EQ(vec1[3].value, 7);
         EXPECT_EQ(vec2[0].value, 1);
@@ -808,7 +808,7 @@ TEST(Small_Vector, swap_small_dynamic)
         EXPECT_EQ(vec2.size(), 1);
         EXPECT_FALSE(vec1.small());
         EXPECT_TRUE(vec2.small());
-        EXPECT_EQ(object_count, 7);
+        EXPECT_EQ(object_count, 4);
         EXPECT_EQ(vec1[0].value, 2);
         EXPECT_EQ(vec1[2].value, 4);
         EXPECT_EQ(vec2[0].value, 1);
@@ -833,7 +833,7 @@ TEST(Small_Vector, swap_dynamic_small)
         EXPECT_EQ(vec2.size(), 3);
         EXPECT_TRUE(vec1.small());
         EXPECT_FALSE(vec2.small());
-        EXPECT_EQ(object_count, 7);
+        EXPECT_EQ(object_count, 4);
         EXPECT_EQ(vec1[0].value, 4);
         EXPECT_EQ(vec2[0].value, 1);
         EXPECT_EQ(vec2[2].value, 3);
@@ -853,7 +853,7 @@ TEST(Small_Vector, swap_self)
         vec.swap(vec);
         EXPECT_EQ(vec.size(), 2);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
     }
@@ -878,7 +878,7 @@ TEST(Small_Vector, free_swap_function)
         EXPECT_EQ(vec2.size(), 1);
         EXPECT_TRUE(vec1.small());
         EXPECT_TRUE(vec2.small());
-        EXPECT_EQ(object_count, 8);
+        EXPECT_EQ(object_count, 3);
         EXPECT_EQ(vec1[0].value, 2);
         EXPECT_EQ(vec1[1].value, 3);
         EXPECT_EQ(vec2[0].value, 1);
@@ -899,7 +899,7 @@ TEST(Small_Vector, iterators)
         EXPECT_EQ(vec.cend() - vec.cbegin(), 2);
         EXPECT_EQ(&*vec.begin(), &vec[0]);
         EXPECT_EQ(&*vec.cbegin(), &vec[0]);
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec.begin()->value, 1);
     }
     EXPECT_EQ(object_count, 0);
@@ -919,7 +919,7 @@ TEST(Small_Vector, iterators_dynamic)
         EXPECT_EQ(vec.cend() - vec.cbegin(), 3);
         EXPECT_EQ(&*vec.begin(), &vec[0]);
         EXPECT_EQ(&*vec.cbegin(), &vec[0]);
-        EXPECT_EQ(object_count, 5);
+        EXPECT_EQ(object_count, 3);
         EXPECT_EQ(vec.begin()->value, 1);
     }
     EXPECT_EQ(object_count, 0);
@@ -938,7 +938,7 @@ TEST(Small_Vector, const_iterators)
         EXPECT_EQ(cvec.end() - cvec.begin(), 2);
         EXPECT_EQ(cvec.cend() - cvec.cbegin(), 2);
         EXPECT_EQ(&*cvec.begin(), &cvec[0]);
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(cvec.begin()->value, 1);
     }
     EXPECT_EQ(object_count, 0);
@@ -953,7 +953,7 @@ TEST(Small_Vector, allocator_constructor)
         EXPECT_EQ(vec.size(), 0);
         EXPECT_TRUE(vec.empty());
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 0);
     }
     EXPECT_EQ(object_count, 0);
 }
@@ -965,7 +965,7 @@ TEST(Small_Vector, get_allocator)
         Small_Vector<Counted, 4> vec;
         void(vec.get_allocator());
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 0);
     }
     EXPECT_EQ(object_count, 0);
 }
@@ -984,14 +984,14 @@ TEST(Small_Vector, multiple_growths)
         vec.push_back(Counted { 3 });
         EXPECT_FALSE(vec.small());
         EXPECT_EQ(vec.capacity(), 4);
-        EXPECT_EQ(object_count, 5);
+        EXPECT_EQ(object_count, 3);
 
         vec.push_back(Counted { 4 });
         vec.push_back(Counted { 5 });
         EXPECT_EQ(vec.size(), 5);
         EXPECT_EQ(vec.capacity(), 8);
         EXPECT_FALSE(vec.small());
-        EXPECT_EQ(object_count, 7);
+        EXPECT_EQ(object_count, 5);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[4].value, 5);
     }
@@ -1015,7 +1015,7 @@ TEST(Small_Vector, grow_with_existing_allocation)
         EXPECT_FALSE(vec.small());
         EXPECT_EQ(vec.capacity(), 4);
         EXPECT_EQ(vec.size(), 3);
-        EXPECT_EQ(object_count, 5);
+        EXPECT_EQ(object_count, 3);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
         EXPECT_EQ(vec[2].value, 4);
@@ -1033,13 +1033,13 @@ TEST(Small_Vector, resize_to_zero)
         vec.push_back(Counted { 3 });
         EXPECT_EQ(vec.size(), 3);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 3);
 
         vec.resize(0);
         EXPECT_EQ(vec.size(), 0);
         EXPECT_TRUE(vec.empty());
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 0);
     }
     EXPECT_EQ(object_count, 0);
 }
@@ -1054,12 +1054,12 @@ TEST(Small_Vector, resize_shrink_small)
         vec.push_back(Counted { 3 });
         EXPECT_EQ(vec.size(), 3);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 3);
 
         vec.resize(1);
         EXPECT_EQ(vec.size(), 1);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 1);
         EXPECT_EQ(vec[0].value, 1);
     }
     EXPECT_EQ(object_count, 0);
@@ -1077,12 +1077,12 @@ TEST(Small_Vector, resize_shrink_dynamic)
         vec.push_back(Counted { 5 });
         EXPECT_EQ(vec.size(), 5);
         EXPECT_FALSE(vec.small());
-        EXPECT_EQ(object_count, 7);
+        EXPECT_EQ(object_count, 5);
 
         vec.resize(2);
         EXPECT_EQ(vec.size(), 2);
         EXPECT_FALSE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
     }
@@ -1097,12 +1097,12 @@ TEST(Small_Vector, resize_grow_within_small)
         vec.push_back(Counted { 1 });
         EXPECT_EQ(vec.size(), 1);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 1);
 
         vec.resize(3);
         EXPECT_EQ(vec.size(), 3);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 3);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 0);
         EXPECT_EQ(vec[2].value, 0);
@@ -1118,13 +1118,13 @@ TEST(Small_Vector, resize_grow_to_dynamic)
         vec.push_back(Counted { 1 });
         EXPECT_EQ(vec.size(), 1);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 2);
+        EXPECT_EQ(object_count, 1);
 
         vec.resize(5);
         EXPECT_EQ(vec.size(), 5);
         EXPECT_FALSE(vec.small());
         EXPECT_GE(vec.capacity(), 5);
-        EXPECT_EQ(object_count, 7);
+        EXPECT_EQ(object_count, 5);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 0);
         EXPECT_EQ(vec[2].value, 0);
@@ -1144,13 +1144,13 @@ TEST(Small_Vector, resize_grow_dynamic)
         vec.push_back(Counted { 3 });
         EXPECT_EQ(vec.size(), 3);
         EXPECT_FALSE(vec.small());
-        EXPECT_EQ(object_count, 5);
+        EXPECT_EQ(object_count, 3);
 
         vec.resize(6);
         EXPECT_EQ(vec.size(), 6);
         EXPECT_FALSE(vec.small());
         EXPECT_GE(vec.capacity(), 6);
-        EXPECT_EQ(object_count, 8);
+        EXPECT_EQ(object_count, 6);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
         EXPECT_EQ(vec[2].value, 3);
@@ -1170,35 +1170,20 @@ TEST(Small_Vector, resize_same_size)
         vec.push_back(Counted { 2 });
         EXPECT_EQ(vec.size(), 2);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
 
         vec.resize(2);
         EXPECT_EQ(vec.size(), 2);
         EXPECT_TRUE(vec.small());
-        EXPECT_EQ(object_count, 4);
+        EXPECT_EQ(object_count, 2);
         EXPECT_EQ(vec[0].value, 1);
         EXPECT_EQ(vec[1].value, 2);
     }
     EXPECT_EQ(object_count, 0);
 }
 
-consteval int f()
-{
-    Small_Vector<int, 16> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
-    COWEL_ASSERT(v[0] == 1);
-    COWEL_ASSERT(v[1] == 2);
-    COWEL_ASSERT(v[2] == 3);
-
-    auto x = v;
-    return 0;
-}
-
 [[maybe_unused]]
-constexpr int x
-    = f();
+constexpr Small_Vector<std::string, 4> empty;
 
 } // namespace
 } // namespace cowel
