@@ -927,6 +927,7 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
             break;
         }
         case ast::Float_Literal_Status::float_underflow: {
+            COWEL_ASSERT(!std::isinf(parsed.value));
             context.try_warning(
                 diagnostic::literal_out_of_range, value.get_source_span(),
                 joined_char_sequence(
@@ -934,7 +935,7 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
                         u8"The parsed value is too small to be represented as "sv,
                         Type::floating.get_display_name(),
                         u8" and is rounded to "sv,
-                        (parsed.value < 0 ? u8"negative"sv : u8"positive"sv),
+                        (std::signbit(parsed.value) ? u8"negative"sv : u8"positive"sv),
                         u8" zero instead."sv,
                     }
                 )

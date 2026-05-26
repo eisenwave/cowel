@@ -123,8 +123,8 @@ Primary Primary::floating(File_Source_Span source_span, const std::u8string_view
             const auto str = std::u8string { source };
             const double error_value
                 = std::strtod(reinterpret_cast<const char*>(str.c_str()), nullptr);
-            const auto status = std::isinf(value) ? Float_Literal_Status::float_overflow
-                                                  : Float_Literal_Status::float_underflow;
+            const auto status = std::isinf(error_value) ? Float_Literal_Status::float_overflow
+                                                        : Float_Literal_Status::float_underflow;
             return { .value = error_value, .status = status };
         }
     }();
