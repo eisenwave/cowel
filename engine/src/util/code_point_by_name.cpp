@@ -704,6 +704,36 @@ bool append_name_match(
     return true;
 }
 
+[[nodiscard]]
+constexpr bool has_only_upper_hex(StringRef s)
+{
+    return std::ranges::all_of(s, [](char c) {
+        return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F');
+    });
+}
+
+[[nodiscard]]
+bool hex_starts_with(uint32_t value, StringRef prefix)
+{
+    if (prefix.empty()) {
+        return true;
+    }
+    char hex[8];
+    std::size_t len = 0;
+    uint32_t v = value;
+    do {
+        hex[7 - len] = hexdigit(v & 0xF);
+        v >>= 4;
+        ++len;
+    } while (v != 0);
+
+    if (prefix.size() > len) {
+        return false;
+    }
+    const StringRef value_hex(hex + (8 - len), len);
+    return value_hex.starts_with(prefix);
+}
+
 std::size_t
 code_point_names_starting_with_impl(std::span<Fixed_String8<96>> out, StringRef prefix)
 {
@@ -775,18 +805,21 @@ code_point_names_starting_with_impl(std::span<Fixed_String8<96>> out, StringRef 
         return count;
     }
 
-    for (uint32_t s_index = 0; s_index < LCount * VCount * TCount; ++s_index) {
-        const uint32_t l = s_index / (VCount * TCount);
-        const uint32_t v = (s_index / TCount) % VCount;
-        const uint32_t t = s_index % TCount;
+    static constexpr StringRef hangul_prefix = "HANGUL SYLLABLE ";
+    if (hangul_prefix.starts_with(prefix) || prefix.starts_with(hangul_prefix)) {
+        for (uint32_t s_index = 0; s_index < LCount * VCount * TCount; ++s_index) {
+            const uint32_t l = s_index / (VCount * TCount);
+            const uint32_t v = (s_index / TCount) % VCount;
+            const uint32_t t = s_index % TCount;
 
-        std::string name = "HANGUL SYLLABLE ";
-        name.append(HangulSyllables[l][0]);
-        name.append(HangulSyllables[v][1]);
-        name.append(HangulSyllables[t][2]);
+            std::string name = "HANGUL SYLLABLE ";
+            name.append(HangulSyllables[l][0]);
+            name.append(HangulSyllables[v][1]);
+            name.append(HangulSyllables[t][2]);
 
-        if (!append_string_name(name)) {
-            return count;
+            if (!append_string_name(name)) {
+                return count;
+            }
         }
     }
 
@@ -799,7 +832,18 @@ code_point_names_starting_with_impl(std::span<Fixed_String8<96>> out, StringRef 
             continue;
         }
 
+        StringRef hex_prefix;
+        if (prefix.size() > item.Prefix.size()) {
+            hex_prefix = prefix.substr(item.Prefix.size());
+            if (!has_only_upper_hex(hex_prefix)) {
+                continue;
+            }
+        }
+
         for (uint32_t value = item.Start; value <= item.End; ++value) {
+            if (!hex_starts_with(value, hex_prefix)) {
+                continue;
+            }
             std::string name(item.Prefix);
             name.append(utohexstr(value));
             if (!append_string_name(name)) {
