@@ -36,6 +36,8 @@ std::size_t nearest_matches_for_codepoint_name(
 
 /// @brief Finds Unicode code point names that start with a given prefix.
 /// @param out Output buffer receiving matching names.
+/// This may have lower size than there are possible results,
+/// in which case the algorithm quits early.
 /// @param prefix The queried name prefix.
 /// @return The number of results written to `out`.
 [[nodiscard]]

@@ -15,6 +15,7 @@ namespace cowel {
 template <char_like Char, std::size_t capacity>
 struct Basic_Fixed_String {
     using array_type = std::array<Char, capacity>;
+    using string_view_type = std::basic_string_view<Char>;
     using iterator = array_type::iterator;
     using const_iterator = array_type::const_iterator;
     static constexpr std::size_t max_size_v = capacity;
@@ -41,7 +42,7 @@ struct Basic_Fixed_String {
     }
 
     [[nodiscard]]
-    constexpr Basic_Fixed_String(std::basic_string_view<Char> str)
+    constexpr Basic_Fixed_String(const string_view_type str)
         : Basic_Fixed_String { str.data(), str.size() }
     {
     }
@@ -126,6 +127,13 @@ struct Basic_Fixed_String {
         m_buffer[m_length++] = c;
     }
 
+    constexpr void append(const string_view_type str)
+    {
+        COWEL_ASSERT(m_length + str.size() <= capacity);
+        std::ranges::copy(str, m_buffer.begin() + std::ptrdiff_t(m_length));
+        m_length += str.size();
+    }
+
     constexpr void erase(std::size_t index)
     {
         COWEL_ASSERT(index < m_length);
@@ -166,13 +174,19 @@ struct Basic_Fixed_String {
     }
 
     [[nodiscard]]
-    constexpr std::basic_string_view<Char> as_string() const
+    constexpr string_view_type as_string() const
     {
         return { m_buffer.data(), m_length };
     }
 
     [[nodiscard]]
-    constexpr operator std::basic_string_view<Char>() const
+    constexpr bool starts_with(const string_view_type sv) const noexcept
+    {
+        return as_string().starts_with(sv);
+    }
+
+    [[nodiscard]]
+    constexpr operator string_view_type() const
     {
         return as_string();
     }
@@ -185,8 +199,7 @@ struct Basic_Fixed_String {
     }
 
     [[nodiscard]]
-    friend constexpr bool
-    operator==(const Basic_Fixed_String& x, std::basic_string_view<Char> y) noexcept
+    friend constexpr bool operator==(const Basic_Fixed_String& x, const string_view_type y) noexcept
     {
         return x.as_string() == y;
     }
@@ -200,7 +213,7 @@ struct Basic_Fixed_String {
 
     [[nodiscard]]
     friend constexpr bool
-    operator<=>(const Basic_Fixed_String& x, std::basic_string_view<Char> y) noexcept
+    operator<=>(const Basic_Fixed_String& x, const string_view_type y) noexcept
     {
         return x.as_string() <=> y;
     }
