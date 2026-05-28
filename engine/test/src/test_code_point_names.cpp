@@ -97,6 +97,15 @@ TEST(Code_Point_Names, names_starting_with_empty_output_span)
     EXPECT_EQ(code_point_names_starting_with(out, u8"DIGIT"), 0);
 }
 
+TEST(Code_Point_Names, names_starting_with_rejects_invalid_or_unmatched_prefixes)
+{
+    std::array<Fixed_String8<96>, 8> out {};
+    EXPECT_EQ(code_point_names_starting_with(out, u8""), 0);
+    EXPECT_EQ(code_point_names_starting_with(out, u8" "), 0);
+    EXPECT_EQ(code_point_names_starting_with(out, u8"digit"), 0);
+    EXPECT_EQ(code_point_names_starting_with(out, u8"THIS PREFIX DOES NOT EXIST"), 0);
+}
+
 TEST(Code_Point_Names, names_starting_with_finds_database_names)
 {
     std::array<Fixed_String8<96>, 16> out {};
@@ -146,6 +155,7 @@ TEST(Code_Point_Names, names_starting_with_includes_hangul_programmatic_names)
         EXPECT_NE(code_point_by_name(name), char32_t(-1));
     }
     EXPECT_TRUE(found_ga);
+    EXPECT_EQ(code_point_names_starting_with(out, u8"HANGUL SYLLABLE ZZ"), 0);
 }
 
 TEST(Code_Point_Names, names_starting_with_includes_generated_programmatic_names)
@@ -164,6 +174,16 @@ TEST(Code_Point_Names, names_starting_with_includes_generated_programmatic_names
         EXPECT_NE(code_point_by_name(name), char32_t(-1));
     }
     EXPECT_TRUE(found_3400);
+    EXPECT_EQ(code_point_names_starting_with(out, u8"CJK UNIFIED IDEOGRAPH-ZZ"), 0);
+}
+
+TEST(Code_Point_Names, code_point_by_name_accepts_aliases_from_all_categories)
+{
+    EXPECT_EQ(code_point_by_name(u8"LATIN CAPITAL LETTER GHA"), U'\u01A2');
+    EXPECT_EQ(code_point_by_name(u8"START OF TEXT"), U'\u0002');
+    EXPECT_EQ(code_point_by_name(u8"BYTE ORDER MARK"), U'\uFEFF');
+    EXPECT_EQ(code_point_by_name(u8"PADDING CHARACTER"), U'\u0080');
+    EXPECT_EQ(code_point_by_name(u8"NBSP"), U'\u00A0');
 }
 
 TEST(Code_Point_Names, code_point_name_returns_unicode_name)

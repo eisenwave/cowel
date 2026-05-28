@@ -692,9 +692,9 @@ nearest_matches_for_codepoint_name_impl(StringRef Pattern, std::span<Code_Point_
 
 [[nodiscard]]
 bool append_name_match(
-    std::span<Fixed_String8<96>> out,
+    const std::span<Fixed_String8<96>> out,
     std::size_t& count,
-    StringRef name
+    const StringRef name
 )
 {
     if (count >= out.size()) {
@@ -705,15 +705,7 @@ bool append_name_match(
 }
 
 [[nodiscard]]
-constexpr bool has_only_upper_hex(StringRef s)
-{
-    return std::ranges::all_of(s, [](char c) {
-        return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F');
-    });
-}
-
-[[nodiscard]]
-bool hex_starts_with(uint32_t value, StringRef prefix)
+bool hex_starts_with(const uint32_t value, const StringRef prefix)
 {
     if (prefix.empty()) {
         return true;
@@ -735,9 +727,12 @@ bool hex_starts_with(uint32_t value, StringRef prefix)
 }
 
 std::size_t
-code_point_names_starting_with_impl(std::span<Fixed_String8<96>> out, StringRef prefix)
+code_point_names_starting_with_impl(
+    const std::span<Fixed_String8<96>> out,
+    const StringRef prefix
+)
 {
-    if (out.empty()) {
+    if (out.empty() || prefix.empty()) {
         return 0;
     }
 
@@ -769,7 +764,7 @@ code_point_names_starting_with_impl(std::span<Fixed_String8<96>> out, StringRef 
 
         if (should_visit_children && node.hasChildren()) {
             uint32_t child_offset = node.ChildrenOffset;
-            for (;;) {
+            while (true) {
                 if (!visit_node(child_offset, current, visit_node)) {
                     return false;
                 }
@@ -789,7 +784,7 @@ code_point_names_starting_with_impl(std::span<Fixed_String8<96>> out, StringRef 
         std::string current;
         Node root = createRoot();
         uint32_t child_offset = root.ChildrenOffset;
-        for (;;) {
+        while (true) {
             if (!visit_node(child_offset, current, visit_node)) {
                 break;
             }
@@ -835,7 +830,9 @@ code_point_names_starting_with_impl(std::span<Fixed_String8<96>> out, StringRef 
         StringRef hex_prefix;
         if (prefix.size() > item.Prefix.size()) {
             hex_prefix = prefix.substr(item.Prefix.size());
-            if (!has_only_upper_hex(hex_prefix)) {
+            if (!std::ranges::all_of(hex_prefix, [](const char c) {
+                    return cowel::is_ascii_upper_hex_digit(char8_t(c));
+                })) {
                 continue;
             }
         }

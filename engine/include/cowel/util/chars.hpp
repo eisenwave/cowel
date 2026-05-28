@@ -19,6 +19,7 @@ using ulight::is_ascii_digit;
 using ulight::is_ascii_digit_base;
 using ulight::is_ascii_hex_digit;
 using ulight::is_ascii_lower_alpha;
+using ulight::is_ascii_upper_hex_digit;
 using ulight::is_ascii_printing;
 using ulight::is_ascii_punctuation;
 using ulight::is_ascii_upper_alpha;
