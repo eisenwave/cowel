@@ -356,6 +356,11 @@ async function watchAndServe(
             const i = wsClients.indexOf(socket as Socket);
             if (i !== -1) wsClients.splice(i, 1);
         });
+        // Prevent EPIPE from crashing when the browser closes the connection.
+        socket.on("error", () => {
+            const i = wsClients.indexOf(socket as Socket);
+            if (i !== -1) wsClients.splice(i, 1);
+        });
     });
 
     let port = 0;
