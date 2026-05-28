@@ -1073,8 +1073,7 @@ bool run_parse_fail_test(const std::u8string_view file_name)
     const Result<Parsed_File, Parse_Error_Stage> result
         = parse_file(path, &memory, silence_parse_error);
     return !result
-        && (result.error() == Parse_Error_Stage::lex
-            || result.error() == Parse_Error_Stage::parse);
+        && (result.error() == Parse_Error_Stage::lex || result.error() == Parse_Error_Stage::parse);
 }
 
 // NOLINTBEGIN(bugprone-unchecked-optional-access)

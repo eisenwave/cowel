@@ -91,6 +91,103 @@ TEST(Code_Point_Names, nearest_matches_capacity_limits_and_prefix_is_stable)
     }
 }
 
+TEST(Code_Point_Names, names_starting_with_empty_output_span)
+{
+    constexpr std::span<Fixed_String8<96>> out;
+    EXPECT_EQ(code_point_names_starting_with(out, u8"DIGIT"), 0);
+}
+
+TEST(Code_Point_Names, names_starting_with_rejects_invalid_or_unmatched_prefixes)
+{
+    std::array<Fixed_String8<96>, 8> out {};
+    EXPECT_EQ(code_point_names_starting_with(out, u8""), 0);
+    EXPECT_EQ(code_point_names_starting_with(out, u8" "), 0);
+    EXPECT_EQ(code_point_names_starting_with(out, u8"digit"), 0);
+    EXPECT_EQ(code_point_names_starting_with(out, u8"THIS PREFIX DOES NOT EXIST"), 0);
+}
+
+TEST(Code_Point_Names, names_starting_with_finds_database_names)
+{
+    std::array<Fixed_String8<96>, 16> out {};
+    const std::size_t count = code_point_names_starting_with(out, u8"DIGIT Z");
+    ASSERT_GE(count, 1);
+
+    bool found_digit_zero = false;
+    for (std::size_t i = 0; i < count; ++i) {
+        const std::u8string_view name = out[i];
+        EXPECT_TRUE(name.starts_with(u8"DIGIT Z"));
+        if (name == u8"DIGIT ZERO") {
+            found_digit_zero = true;
+        }
+        EXPECT_NE(code_point_by_name(name), char32_t(-1));
+    }
+    EXPECT_TRUE(found_digit_zero);
+}
+
+TEST(Code_Point_Names, names_starting_with_respects_capacity_and_prefix_stability)
+{
+    std::array<Fixed_String8<96>, 8> large {};
+    std::array<Fixed_String8<96>, 3> small {};
+
+    const std::size_t large_count
+        = code_point_names_starting_with(large, u8"LATIN CAPITAL LETTER ");
+    const std::size_t small_count
+        = code_point_names_starting_with(small, u8"LATIN CAPITAL LETTER ");
+
+    ASSERT_EQ(large_count, large.size());
+    ASSERT_EQ(small_count, small.size());
+    for (std::size_t i = 0; i < small_count; ++i) {
+        EXPECT_EQ(small[i], large[i]);
+    }
+}
+
+TEST(Code_Point_Names, names_starting_with_includes_hangul_programmatic_names)
+{
+    std::array<Fixed_String8<96>, 8> out {};
+    const std::size_t count = code_point_names_starting_with(out, u8"HANGUL SYLLABLE GA");
+
+    ASSERT_GE(count, 1);
+    bool found_ga = false;
+    for (std::size_t i = 0; i < count; ++i) {
+        const std::u8string_view name = out[i];
+        EXPECT_TRUE(name.starts_with(u8"HANGUL SYLLABLE GA"));
+        if (name == u8"HANGUL SYLLABLE GA") {
+            found_ga = true;
+        }
+        EXPECT_NE(code_point_by_name(name), char32_t(-1));
+    }
+    EXPECT_TRUE(found_ga);
+    EXPECT_EQ(code_point_names_starting_with(out, u8"HANGUL SYLLABLE ZZ"), 0);
+}
+
+TEST(Code_Point_Names, names_starting_with_includes_generated_programmatic_names)
+{
+    std::array<Fixed_String8<96>, 8> out {};
+    const std::size_t count = code_point_names_starting_with(out, u8"CJK UNIFIED IDEOGRAPH-340");
+
+    ASSERT_GE(count, 1);
+    bool found_3400 = false;
+    for (std::size_t i = 0; i < count; ++i) {
+        const std::u8string_view name = out[i];
+        EXPECT_TRUE(name.starts_with(u8"CJK UNIFIED IDEOGRAPH-340"));
+        if (name == u8"CJK UNIFIED IDEOGRAPH-3400") {
+            found_3400 = true;
+        }
+        EXPECT_NE(code_point_by_name(name), char32_t(-1));
+    }
+    EXPECT_TRUE(found_3400);
+    EXPECT_EQ(code_point_names_starting_with(out, u8"CJK UNIFIED IDEOGRAPH-ZZ"), 0);
+}
+
+TEST(Code_Point_Names, code_point_by_name_accepts_aliases_from_all_categories)
+{
+    EXPECT_EQ(code_point_by_name(u8"LATIN CAPITAL LETTER GHA"), U'\u01A2');
+    EXPECT_EQ(code_point_by_name(u8"START OF TEXT"), U'\u0002');
+    EXPECT_EQ(code_point_by_name(u8"BYTE ORDER MARK"), U'\uFEFF');
+    EXPECT_EQ(code_point_by_name(u8"PADDING CHARACTER"), U'\u0080');
+    EXPECT_EQ(code_point_by_name(u8"NBSP"), U'\u00A0');
+}
+
 TEST(Code_Point_Names, code_point_name_returns_unicode_name)
 {
     EXPECT_EQ(code_point_name(U'A'), u8"LATIN CAPITAL LETTER A"sv);

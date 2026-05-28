@@ -622,7 +622,7 @@ TEST(Lex, file_tests)
 TEST(Lex, exhaustive_one_char)
 {
     std::pmr::vector<Token> tokens;
-    const auto noop = [](std::u8string_view, const Source_Span&, Char_Sequence8) {};
+    const auto noop = [](std::u8string_view, const Source_Span&, Char_Sequence8) { };
 
     char8_t source_char = 0;
     const std::u8string_view source { &source_char, 1 };
@@ -636,7 +636,7 @@ TEST(Lex, exhaustive_one_char)
 TEST(Lex, exhaustive_three_chars)
 {
     std::pmr::vector<Token> tokens;
-    const auto noop = [](std::u8string_view, const Source_Span&, Char_Sequence8) {};
+    const auto noop = [](std::u8string_view, const Source_Span&, Char_Sequence8) { };
 
     char8_t source_buf[3] = {};
     const std::u8string_view source { source_buf, 3 };
