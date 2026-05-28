@@ -690,6 +690,127 @@ nearest_matches_for_codepoint_name_impl(StringRef Pattern, std::span<Code_Point_
     return MatchesCount;
 }
 
+[[nodiscard]]
+bool append_name_match(
+    std::span<Fixed_String8<96>> out,
+    std::size_t& count,
+    StringRef name
+)
+{
+    if (count >= out.size()) {
+        return false;
+    }
+    out[count++] = Fixed_String8<96>(as_u8string_view(name));
+    return true;
+}
+
+std::size_t
+code_point_names_starting_with_impl(std::span<Fixed_String8<96>> out, StringRef prefix)
+{
+    if (out.empty()) {
+        return 0;
+    }
+
+    std::size_t count = 0;
+
+    const auto append_string_name = [&](StringRef name) -> bool {
+        if (!name.starts_with(prefix)) {
+            return true;
+        }
+        return append_name_match(out, count, name);
+    };
+
+    const auto visit_node = [&](uint32_t offset, std::string& current, auto& visit_node) -> bool {
+        Node node = readNode(offset);
+        if (!node.isValid()) {
+            return true;
+        }
+
+        const std::size_t old_size = current.size();
+        current.append(node.Name);
+
+        const bool node_starts_with_prefix = StringRef(current).starts_with(prefix);
+        const bool prefix_starts_with_node = prefix.starts_with(StringRef(current));
+        const bool should_visit_children = node_starts_with_prefix || prefix_starts_with_node;
+
+        if (node_starts_with_prefix && node.Value != 0xFFFFFFFF && !append_string_name(current)) {
+            return false;
+        }
+
+        if (should_visit_children && node.hasChildren()) {
+            uint32_t child_offset = node.ChildrenOffset;
+            for (;;) {
+                if (!visit_node(child_offset, current, visit_node)) {
+                    return false;
+                }
+                Node child = readNode(child_offset);
+                child_offset += child.Size;
+                if (!child.HasSibling) {
+                    break;
+                }
+            }
+        }
+
+        current.resize(old_size);
+        return true;
+    };
+
+    {
+        std::string current;
+        Node root = createRoot();
+        uint32_t child_offset = root.ChildrenOffset;
+        for (;;) {
+            if (!visit_node(child_offset, current, visit_node)) {
+                break;
+            }
+            Node child = readNode(child_offset);
+            child_offset += child.Size;
+            if (!child.HasSibling) {
+                break;
+            }
+        }
+    }
+
+    if (count >= out.size()) {
+        return count;
+    }
+
+    for (uint32_t s_index = 0; s_index < LCount * VCount * TCount; ++s_index) {
+        const uint32_t l = s_index / (VCount * TCount);
+        const uint32_t v = (s_index / TCount) % VCount;
+        const uint32_t t = s_index % TCount;
+
+        std::string name = "HANGUL SYLLABLE ";
+        name.append(HangulSyllables[l][0]);
+        name.append(HangulSyllables[v][1]);
+        name.append(HangulSyllables[t][2]);
+
+        if (!append_string_name(name)) {
+            return count;
+        }
+    }
+
+    if (count >= out.size()) {
+        return count;
+    }
+
+    for (const GeneratedNamesData& item : GeneratedNamesDataTable) {
+        if (!item.Prefix.starts_with(prefix) && !prefix.starts_with(item.Prefix)) {
+            continue;
+        }
+
+        for (uint32_t value = item.Start; value <= item.End; ++value) {
+            std::string name(item.Prefix);
+            name.append(utohexstr(value));
+            if (!append_string_name(name)) {
+                return count;
+            }
+        }
+    }
+
+    return count;
+}
+
 } // namespace
 
 char32_t code_point_by_name(std::u8string_view name) noexcept
@@ -704,6 +825,12 @@ std::size_t nearest_matches_for_codepoint_name(
 )
 {
     return nearest_matches_for_codepoint_name_impl(as_string_view(pattern), out_matches);
+}
+
+std::size_t
+code_point_names_starting_with(std::span<Fixed_String8<96>> out, std::u8string_view prefix)
+{
+    return code_point_names_starting_with_impl(out, as_string_view(prefix));
 }
 
 } // namespace cowel
