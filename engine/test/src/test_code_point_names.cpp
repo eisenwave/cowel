@@ -129,8 +129,10 @@ TEST(Code_Point_Names, names_starting_with_respects_capacity_and_prefix_stabilit
     std::array<Fixed_String8<96>, 8> large {};
     std::array<Fixed_String8<96>, 3> small {};
 
-    const std::size_t large_count = code_point_names_starting_with(large, u8"LATIN CAPITAL LETTER ");
-    const std::size_t small_count = code_point_names_starting_with(small, u8"LATIN CAPITAL LETTER ");
+    const std::size_t large_count
+        = code_point_names_starting_with(large, u8"LATIN CAPITAL LETTER ");
+    const std::size_t small_count
+        = code_point_names_starting_with(small, u8"LATIN CAPITAL LETTER ");
 
     ASSERT_EQ(large_count, large.size());
     ASSERT_EQ(small_count, small.size());

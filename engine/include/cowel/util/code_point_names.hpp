@@ -39,10 +39,8 @@ std::size_t nearest_matches_for_codepoint_name(
 /// @param prefix The queried name prefix.
 /// @return The number of results written to `out`.
 [[nodiscard]]
-std::size_t code_point_names_starting_with(
-    std::span<Fixed_String8<96>> out,
-    std::u8string_view prefix
-);
+std::size_t
+code_point_names_starting_with(std::span<Fixed_String8<96>> out, std::u8string_view prefix);
 
 /// @brief Returns the Unicode name of a code point
 /// as defined in the Unicode Character Database.

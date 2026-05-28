@@ -727,10 +727,7 @@ bool hex_starts_with(const uint32_t value, const StringRef prefix)
 }
 
 std::size_t
-code_point_names_starting_with_impl(
-    const std::span<Fixed_String8<96>> out,
-    const StringRef prefix
-)
+code_point_names_starting_with_impl(const std::span<Fixed_String8<96>> out, const StringRef prefix)
 {
     if (out.empty() || prefix.empty()) {
         return 0;
