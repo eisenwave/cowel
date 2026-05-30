@@ -982,7 +982,7 @@ std::size_t code_point_names_starting_with(
 {
     constexpr std::size_t max_length = decltype(Code_Point_Prefix_Match::name)::max_size_v;
 
-    if (out.empty() || prefix.empty()) {
+    if (out.empty()) {
         return 0;
     }
     std::size_t total = 0;

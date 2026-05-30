@@ -1110,6 +1110,7 @@ void handle_completion(
 )
 {
     static constexpr std::size_t max_completions = 50;
+    static constexpr std::size_t max_name_length = 96;
 
     const std::u8string_view uri = params.text_document.uri;
     const Document* const doc = server_state.find_open_document(uri);
@@ -1138,10 +1139,6 @@ void handle_completion(
         return;
     }
 
-    std::array<Code_Point_Prefix_Match, max_completions + 1> match_buffer {};
-    const std::size_t raw_count = code_point_names_starting_with(match_buffer, *prefix);
-    const std::size_t count = std::min(raw_count, max_completions);
-
     // Code-point names are pure ASCII,
     // so their byte length equals their UTF-16 code-unit count.
     // `prefix_char_count` is therefore valid for both position encodings.
@@ -1164,50 +1161,53 @@ void handle_completion(
 
     // A local temporary buffer is fine because the maximum amount of results is small,
     // and `write_message` does not store the message.
-    Fixed_String8<10> detail_strs[max_completions];
-    Fixed_String8<4> sort_text_strs[max_completions];
-    // When the escape has no closing quote, the inserted text must supply one.
-    Fixed_String8<96> new_text_strs[max_completions];
-    lsp::Completion_Item items_buf[max_completions];
+    Fixed_String8<10> detail_strings[max_completions];
+    Fixed_String8<4> sort_text_strings[max_completions];
+    Fixed_String8<max_name_length> new_text_strings[max_completions];
+    lsp::Completion_Item completion_items[max_completions];
+
+    std::array<Code_Point_Prefix_Match, max_completions + 1> match_buffer {};
+    const std::size_t raw_count = code_point_names_starting_with(match_buffer, *prefix);
+    const std::size_t count = std::min(raw_count, max_completions);
+
     for (std::size_t i = 0; i < count; ++i) {
         const std::u8string_view name = match_buffer[i].name;
         const auto cp = std::uint32_t(match_buffer[i].code_point);
         const auto hex = to_characters8(cp, 16, true);
-        detail_strs[i] = Fixed_String8<10>(u8"U+");
+        detail_strings[i] = Fixed_String8<10>(u8"U+");
         for (std::size_t pad = hex.size(); pad < 4; ++pad) {
-            detail_strs[i].push_back(u8'0');
+            detail_strings[i].push_back(u8'0');
         }
-        detail_strs[i].append(hex);
+        detail_strings[i].append(hex);
         const auto dec = to_characters8(i);
-        sort_text_strs[i] = {};
+        sort_text_strings[i] = {};
         for (std::size_t pad = dec.size(); pad < 3; ++pad) {
-            sort_text_strs[i].push_back(u8'0');
+            sort_text_strings[i].push_back(u8'0');
         }
-        sort_text_strs[i].append(dec);
+        sort_text_strings[i].append(dec);
+        // When the escape has no closing quote, the inserted text must supply one.
         std::u8string_view new_text = name;
         if (!closing_quote_byte.has_value()) {
-            new_text_strs[i] = Fixed_String8<96>(name);
-            if (new_text_strs[i].size() < Fixed_String8<96>::max_size_v) {
-                new_text_strs[i].push_back(u8'\'');
+            new_text_strings[i] = Fixed_String8<max_name_length>(name);
+            if (new_text_strings[i].size() < max_name_length) {
+                new_text_strings[i].push_back(u8'\'');
             }
-            new_text = std::u8string_view(new_text_strs[i]);
+            new_text = std::u8string_view(new_text_strings[i]);
         }
-        items_buf[i] = lsp::Completion_Item {
+        completion_items[i] = lsp::Completion_Item {
             .label = name,
             .kind = lsp::CompletionItemKind::Text,
-            .detail = std::u8string_view(detail_strs[i]),
-            .sort_text = std::u8string_view(sort_text_strs[i]),
+            .detail = std::u8string_view(detail_strings[i]),
+            .sort_text = std::u8string_view(sort_text_strings[i]),
             .filter_text = name,
-            .text_edit = lsp::Text_Edit {
-                .range = { prefix_start, edit_end },
-                .new_text = new_text,
-            },
+            .text_edit
+            = lsp::Text_Edit { .range = { prefix_start, edit_end }, .new_text = new_text },
         };
     }
 
     const lsp::Completion_List completion_list {
         .is_incomplete = raw_count > count,
-        .items = { items_buf, count },
+        .items = { completion_items, count },
     };
     write_message(
         lsp::Response_Message {

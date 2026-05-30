@@ -43,7 +43,35 @@
       },
       "position": {
         "line": 0,
-        "character": 12
+        "character": 9
+      }
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "textDocument/completion",
+    "params": {
+      "textDocument": {
+        "uri": "{{ROOT_URI}}/main.cow"
+      },
+      "position": {
+        "line": 1,
+        "character": 9
+      }
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "textDocument/completion",
+    "params": {
+      "textDocument": {
+        "uri": "{{ROOT_URI}}/main.cow"
+      },
+      "position": {
+        "line": 2,
+        "character": 2
       }
     }
   }
