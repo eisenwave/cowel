@@ -49,6 +49,60 @@ Result<std::size_t, Code_Point_Index_To_Code_Unit_Index_Error> code_point_index_
     return result;
 }
 
+[[nodiscard]]
+std::size_t unchecked_utf8_to_utf16_length(const std::u8string_view str) noexcept
+{
+    std::size_t result = 0;
+    for (const char8_t c : str) {
+        const bool is_continuation = (c & 0xC0u) == 0x80u;
+        if (!is_continuation) {
+            // 4-byte leading bytes (11110xxx) encode code points above U+FFFF,
+            // requiring a UTF-16 surrogate pair (2 units).
+            result += c >= 0xf0u ? 2u : 1u;
+        }
+    }
+    return result;
+}
+
+std::size_t unchecked_utf16_offset_to_utf8_offset(
+    const std::u8string_view str,
+    const std::size_t utf16_units
+) noexcept
+{
+    std::size_t i = 0;
+    std::size_t units = 0;
+    while (i < str.size() && units < utf16_units) {
+        const auto byte = static_cast<unsigned char>(str[i]);
+        if (byte < 0x80u) {
+            ++units;
+            ++i;
+        }
+        else if (byte < 0xC0u) {
+            ++i; // continuation byte — skip
+        }
+        else if (byte < 0xE0u) {
+            ++units;
+            i += 2;
+        }
+        else if (byte < 0xF0u) {
+            ++units;
+            i += 3;
+        }
+        else {
+            // Supplementary plane code point: 2 UTF-16 code units (surrogate pair).
+            // Only advance if both units fit within the requested count.
+            if (units + 2 <= utf16_units) {
+                units += 2;
+                i += 4;
+            }
+            else {
+                break;
+            }
+        }
+    }
+    return std::min(i, str.size());
+}
+
 namespace {
 
 struct Sink_For_Evaluation final : String_Sink {

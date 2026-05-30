@@ -193,22 +193,26 @@ struct Serializer<std::u8string_view> {
     }
 };
 
-template <>
-struct Serializer<Error_Code> {
+template <typename E>
+    requires std::is_enum_v<E>
+struct Enum_Serializer {
     [[nodiscard]]
-    static std::optional<Error_Code> from_json(const json::Number val, Deserialize_Storage& storage)
+    static std::optional<E> from_json(const json::Number val, Deserialize_Storage& storage)
     {
         if (const std::optional<Integer> integer = Serializer<Integer>::from_json(val, storage)) {
-            return Error_Code(*integer);
+            return E(*integer);
         }
         return {};
     }
     [[nodiscard]]
-    static json::Number to_json(const Error_Code val, std::pmr::memory_resource* const)
+    static json::Number to_json(const E val, std::pmr::memory_resource* const)
     {
-        return json::Number(std::underlying_type_t<Error_Code>(val));
+        return json::Number(std::underlying_type_t<E>(val));
     }
 };
+
+template <>
+struct Serializer<Error_Code> : Enum_Serializer<Error_Code> { };
 
 template <typename... Ts>
 std::optional<std::variant<Ts...>>
@@ -449,6 +453,8 @@ inline constexpr auto did_open = u8"textDocument/didOpen"sv;
 inline constexpr auto did_change = u8"textDocument/didChange"sv;
 /// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didClose
 inline constexpr auto did_close = u8"textDocument/didClose"sv;
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion
+inline constexpr auto completion = u8"textDocument/completion"sv;
 /// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_hover
 inline constexpr auto hover = u8"textDocument/hover"sv;
 
@@ -606,6 +612,96 @@ struct Serializer<Text_Document_Sync_Options>
 
 } // namespace detail
 
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#serverCompletionItemOptions
+struct Server_Completion_Item_Options {
+    /// The server has support for completion item label  details
+    /// when receiving a completion item in a resolve call.
+    /// @see Completion_Item_Label_Details
+    std::optional<bool> label_details_support = {};
+
+    friend bool
+    operator==(const Server_Completion_Item_Options&, const Server_Completion_Item_Options&)
+        = default;
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Server_Completion_Item_Options>
+    : Object_Serializer<
+          Server_Completion_Item_Options,
+          COWEL_MEMBER_DESCRIPTION(Server_Completion_Item_Options, label_details_support)> { };
+
+template <typename T>
+constexpr bool deep_equal(const std::optional<std::span<T>> x, const std::optional<std::span<T>> y)
+{
+    if (!x.has_value() && !y.has_value()) {
+        return true;
+    }
+    if (x.has_value() != y.has_value() || x->size() != y->size()) {
+        return false;
+    }
+    for (std::size_t i = 0; i < x->size(); ++i) {
+        if ((*x)[i] != (*y)[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+} // namespace detail
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionOptions
+struct Completion_Options {
+    std::optional<bool> work_done_progres = {};
+    /// Most tools trigger completion request automatically without explicitly
+    /// requesting it using a keyboard shortcut (e.g., Ctrl+Space).
+    /// Typically they do so when the user starts to type an identifier.
+    /// For example, if the user types `c` in a JavaScript file,
+    /// code complete will automatically pop up and present `console` as a completion item.
+    /// Characters that make up identifiers don't need to be listed here.
+    ///
+    /// If code complete should automatically be triggered on characters not being
+    /// valid inside an identifier (for example, `.` in JavaScript),
+    /// list them in `triggerCharacters`.
+    std::optional<std::span<const std::u8string_view>> trigger_characters = {};
+    /// The list of all possible characters that commit a completion.
+    /// This field can be used if clients don't support individual commit characters per
+    /// completion item.
+    /// See client capability `completion.completion_item.commit_characters_support`.
+    ///
+    /// If a server provides both `all_commit_characters` and commit characters on
+    /// an individual completion item, the ones on the completion item win.
+    std::optional<std::span<const std::u8string_view>> all_commit_characters = {};
+    /// The server provides support to resolve additional information for a completion item.
+    std::optional<bool> resolve_provider = {};
+    /// The server supports the following `Completion_Item` specific capabilities.
+    std::optional<Server_Completion_Item_Options> completion_item = {};
+
+    [[nodiscard]]
+    friend bool operator==(const Completion_Options& a, const Completion_Options& b) noexcept
+    {
+        return a.work_done_progres == b.work_done_progres //
+            && detail::deep_equal(a.trigger_characters, b.trigger_characters) //
+            && detail::deep_equal(a.all_commit_characters, b.all_commit_characters) //
+            && a.resolve_provider == b.resolve_provider //
+            && a.completion_item == b.completion_item;
+    }
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Completion_Options>
+    : Object_Serializer<
+          Completion_Options,
+          COWEL_MEMBER_DESCRIPTION(Completion_Options, trigger_characters),
+          COWEL_MEMBER_DESCRIPTION(Completion_Options, all_commit_characters),
+          COWEL_MEMBER_DESCRIPTION(Completion_Options, resolve_provider),
+          COWEL_MEMBER_DESCRIPTION(Completion_Options, completion_item)> { };
+
+} // namespace detail
+
 /// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#serverCapabilities
 struct Server_Capabilities {
     /// The position encoding chosen by the server.
@@ -615,6 +711,8 @@ struct Server_Capabilities {
     Text_Document_Sync_Options text_document_sync;
     /// Whether hover is supported.
     bool hover_provider = false;
+    /// The server provides completion support.
+    std::optional<Completion_Options> completion_provider = {};
 
     friend bool operator==(const Server_Capabilities&, const Server_Capabilities&) = default;
 };
@@ -627,7 +725,8 @@ struct Serializer<Server_Capabilities>
           Server_Capabilities,
           COWEL_MEMBER_DESCRIPTION(Server_Capabilities, position_encoding),
           COWEL_MEMBER_DESCRIPTION(Server_Capabilities, text_document_sync),
-          COWEL_MEMBER_DESCRIPTION(Server_Capabilities, hover_provider)> { };
+          COWEL_MEMBER_DESCRIPTION(Server_Capabilities, hover_provider),
+          COWEL_MEMBER_DESCRIPTION(Server_Capabilities, completion_provider)> { };
 
 } // namespace detail
 
@@ -1037,6 +1136,87 @@ struct Serializer<Hover_Client_Capabilities>
 
 } // namespace detail
 
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionItemKind
+enum struct CompletionItemKind : unsigned char {
+    Text = 1,
+    Method = 2,
+    Function = 3,
+    Constructor = 4,
+    Field = 5,
+    Variable = 6,
+    Class = 7,
+    Interface = 8,
+    Module = 9,
+    Property = 10,
+    Unit = 11,
+    Value = 12,
+    Enum = 13,
+    Keyword = 14,
+    Snippet = 15,
+    Color = 16,
+    File = 17,
+    Reference = 18,
+    Folder = 19,
+    EnumMember = 20,
+    Constant = 21,
+    Struct = 22,
+    Event = 23,
+    Operator = 24,
+    TypeParameter = 25,
+};
+
+namespace detail {
+
+template <>
+struct Serializer<CompletionItemKind> : Enum_Serializer<CompletionItemKind> { };
+
+} // namespace detail
+
+struct Client_Completion_Item_Options_Kind {
+    /// The completion item kind values the client supports.
+    /// When this property exists the client also guarantees that it will
+    /// handle values outside its set gracefully and falls back
+    /// to a default value when unknown.
+    ///
+    /// If this property is not present the client only supports
+    /// the completion items kinds from `Text` to `Reference` as defined in
+    /// the initial version of the protocol.
+    std::optional<std::span<const CompletionItemKind>> value_set = {};
+};
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#clientCompletionItemOptions
+struct Client_Completion_Item_Options {
+    /// Client supports snippets as insert text.
+    ///
+    /// A snippet can define tab stops and placeholders with `$1`, `$2` and `${3:foo}`.
+    /// `$0` defines the final tab stop,
+    /// it defaults to the end of the snippet.
+    /// Placeholders with equal identifiers are linked,
+    /// that is typing in one will update others too.
+    std::optional<bool> snippet_support = {};
+    /// Client supports commit characters on a completion item.
+    std::optional<bool> commit_characters_support = {};
+    /// Client supports the following content formats for the documentation property.
+    /// The order describes the preferred format of the client.
+    std::optional<std::span<const std::u8string_view>> documentation_format = {};
+    /// Client supports the deprecated property on a completion item.
+    std::optional<bool> deprecated_support;
+    /// Client supports the preselect property on a completion item.
+    std::optional<bool> preselect_support = {};
+    /// Client support insert replace edit to control different behavior if a
+    /// completion item is inserted in the text or should replace text.
+    std::optional<bool> insert_replace_support = {};
+};
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionClientCapabilities
+struct Completion_Client_Capabilities {
+    /// Whether completion supports dynamic registration.
+    std::optional<bool> dynamic_registration = {};
+    /// The client supports sending additional context information
+    /// for a `textDocument/completion` request.
+    std::optional<bool> context_support = {};
+};
+
 /// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#markdownClientCapabilities
 struct Markdown_Client_Capabilities {
     /// The name of the parser.
@@ -1059,7 +1239,77 @@ struct Serializer<Markdown_Client_Capabilities>
 
 } // namespace detail
 
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionTriggerKind
+enum struct Completion_Trigger_Kind : unsigned char {
+    /// Completion was triggered by typing an identifier (automatic code  complete),
+    /// manual invocation (e.g. Ctrl+Space) or via API.
+    invoked,
+    /// Completion was triggered by a trigger character
+    /// specified by the `trigger_characters` properties of the `Completion_Registration_Options`.
+    trigger_character,
+    /// Completion was re-triggered as the current completion list is incomplete.
+    trigger_for_incomplete_completions,
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Completion_Trigger_Kind> : Enum_Serializer<Completion_Trigger_Kind> { };
+
+} // namespace detail
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionContext
+struct Completion_Context {
+    /// How the completion was triggered.
+    Completion_Trigger_Kind trigger_kind;
+    /// The trigger character (a single character) that has triggered code complete.
+    /// Is undefined if `triggerKind !== Completion_Trigger_Kind::trigger_character`.
+    std::optional<std::u8string_view> trigger_character = {};
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Completion_Context>
+    : Object_Serializer<
+          Completion_Context,
+          COWEL_MEMBER_DESCRIPTION(Completion_Context, trigger_kind),
+          COWEL_MEMBER_DESCRIPTION(Completion_Context, trigger_character)> { };
+
+} // namespace detail
+
 using Progress_Token = std::variant<Integer, std::u8string_view>;
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionParams
+struct Completion_Params {
+    /// The text document.
+    Text_Document_Identifier text_document;
+    /// The position inside the text document.
+    Position position;
+    /// An optional token that a server can use to report work done progress.
+    std::optional<Progress_Token> work_done_token = {};
+    /// An optional token that a server can use to report partial results
+    /// (e.g. streaming) to the client.
+    std::optional<Progress_Token> partial_result_token = {};
+    /// The completion context.
+    /// This is only available if the client specifies to send this using the client capability
+    /// `completion.context_support` == true`.
+    std::optional<Completion_Context> context = {};
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Completion_Params>
+    : Object_Serializer<
+          Completion_Params,
+          COWEL_MEMBER_DESCRIPTION(Completion_Params, text_document),
+          COWEL_MEMBER_DESCRIPTION(Completion_Params, position),
+          COWEL_MEMBER_DESCRIPTION(Completion_Params, work_done_token),
+          COWEL_MEMBER_DESCRIPTION(Completion_Params, partial_result_token),
+          COWEL_MEMBER_DESCRIPTION(Completion_Params, context)> { };
+
+} // namespace detail
 
 /// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#hoverParams
 struct Hover_Params {
@@ -1100,6 +1350,89 @@ struct Serializer<Hover>
           Hover,
           COWEL_MEMBER_DESCRIPTION(Hover, contents),
           COWEL_MEMBER_DESCRIPTION(Hover, range)> { };
+
+} // namespace detail
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEdit
+struct Text_Edit {
+    /// The range of the text document to be manipulated.
+    /// To insert text into a document,
+    /// create a range where `start === end`.
+    Range range;
+    /// The string to be inserted.
+    /// For delete operations use an empty string.
+    std::u8string_view new_text;
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Text_Edit>
+    : Object_Serializer<
+          Text_Edit,
+          COWEL_MEMBER_DESCRIPTION(Text_Edit, range),
+          COWEL_MEMBER_DESCRIPTION(Text_Edit, new_text)> { };
+
+} // namespace detail
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem
+struct Completion_Item {
+    /// The label of this completion item.
+    ///
+    /// The `label` property is also by default the text
+    /// that is inserted when selecting this completion.
+    ///
+    /// If `label` details are provided,
+    /// the label itself should be an unqualified name of the completion item.
+    std::u8string_view label;
+    /// The kind of this completion item.
+    std::optional<CompletionItemKind> kind = {};
+    /// A human-readable string with additional information about this item,
+    /// like type or symbol information.
+    std::optional<std::u8string_view> detail = {};
+    /// A string that should be used when comparing this item with other items.
+    // When omitted the label is used as the sort text for this item.
+    std::optional<std::u8string_view> sort_text = {};
+    /// A string used when filtering a set of completion items.
+    /// When omitted the label is used as the filter text for this item.
+    std::optional<std::u8string_view> filter_text = {};
+    /// A text edit applied to the document when accepting this completion.
+    /// When an edit is provided the value of `insert_text` is ignored.
+    std::optional<Text_Edit> text_edit = {};
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Completion_Item>
+    : Object_Serializer<
+          Completion_Item,
+          COWEL_MEMBER_DESCRIPTION(Completion_Item, label),
+          COWEL_MEMBER_DESCRIPTION(Completion_Item, kind),
+          COWEL_MEMBER_DESCRIPTION(Completion_Item, detail),
+          COWEL_MEMBER_DESCRIPTION(Completion_Item, sort_text),
+          COWEL_MEMBER_DESCRIPTION(Completion_Item, filter_text),
+          COWEL_MEMBER_DESCRIPTION(Completion_Item, text_edit)> { };
+
+} // namespace detail
+
+/// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionList
+struct Completion_List {
+    /// This list is not complete.
+    /// Further typing should result in recomputing this list.
+    bool is_incomplete;
+    /// The completion items.
+    std::span<const Completion_Item> items;
+};
+
+namespace detail {
+
+template <>
+struct Serializer<Completion_List>
+    : Object_Serializer<
+          Completion_List,
+          COWEL_MEMBER_DESCRIPTION(Completion_List, is_incomplete),
+          COWEL_MEMBER_DESCRIPTION(Completion_List, items)> { };
 
 } // namespace detail
 

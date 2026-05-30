@@ -34,15 +34,25 @@ std::size_t nearest_matches_for_codepoint_name(
     std::span<Code_Point_Name_Match> out_matches
 );
 
-/// @brief Finds Unicode code point names that start with a given prefix.
-/// @param out Output buffer receiving matching names.
-/// This may have lower size than there are possible results,
-/// in which case the algorithm quits early.
+/// @brief A Unicode code point name that starts with a queried prefix,
+/// and the corresponding code point value.
+struct Code_Point_Prefix_Match {
+    Fixed_String8<96> name;
+    char32_t code_point = 0;
+
+    friend bool operator==(const Code_Point_Prefix_Match&, const Code_Point_Prefix_Match&)
+        = default;
+};
+
+/// @brief Finds Unicode code point names that start with a given prefix,
+/// ordered by shortest name first (ties broken alphabetically).
+/// @param out Output buffer receiving matching names and their code points.
+/// When there are more results than `out.size()`, the shortest results are preferred.
 /// @param prefix The queried name prefix.
 /// @return The number of results written to `out`.
 [[nodiscard]]
 std::size_t
-code_point_names_starting_with(std::span<Fixed_String8<96>> out, std::u8string_view prefix);
+code_point_names_starting_with(std::span<Code_Point_Prefix_Match> out, std::u8string_view prefix);
 
 /// @brief Returns the Unicode name of a code point
 /// as defined in the Unicode Character Database.

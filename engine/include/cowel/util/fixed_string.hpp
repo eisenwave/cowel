@@ -205,14 +205,14 @@ struct Basic_Fixed_String {
     }
 
     [[nodiscard]]
-    friend constexpr bool
+    friend constexpr auto
     operator<=>(const Basic_Fixed_String& x, const Basic_Fixed_String& y) noexcept
     {
         return x.as_string() <=> y.as_string();
     }
 
     [[nodiscard]]
-    friend constexpr bool
+    friend constexpr auto
     operator<=>(const Basic_Fixed_String& x, const string_view_type y) noexcept
     {
         return x.as_string() <=> y;

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <bit>
 #include <string>
 #include <string_view>
 
@@ -16,7 +17,6 @@ using namespace llvm::sys::unicode;
 using namespace std::string_view_literals;
 
 using BufferType = std::string;
-using StringRef = std::string_view;
 using std::uint16_t;
 using std::uint32_t;
 using std::uint8_t;
@@ -39,9 +39,10 @@ constexpr char toUpper(char c)
 }
 
 [[nodiscard]]
-constexpr bool getAsUnsignedInteger(StringRef Str, unsigned Radix, unsigned long long& Result)
+constexpr bool
+getAsUnsignedInteger(std::string_view Str, unsigned Radix, unsigned long long& Result)
 {
-    // https://github.com/llvm/llvm-project/blob/5f5560f62bfbaf3b38c90ae926fd07463ab74b8e/llvm/lib/Support/StringRef.cpp#L482
+    // https://github.com/llvm/llvm-project/blob/5f5560f62bfbaf3b38c90ae926fd07463ab74b8e/llvm/lib/Support/std::string_view.cpp#L482
     const auto [p, ec] = cowel::from_characters(Str, Result, int(Radix));
     return ec != std::errc {} || p != Str.data() + Str.size();
 }
@@ -77,9 +78,9 @@ inline std::string utohexstr(uint64_t X, bool LowerCase = false, unsigned Width 
 }
 
 [[nodiscard]]
-constexpr bool contains_insensitive(StringRef Self, StringRef Other)
+constexpr bool contains_insensitive(std::string_view Self, std::string_view Other)
 {
-    // https://github.com/llvm/llvm-project/blob/5f5560f62bfbaf3b38c90ae926fd07463ab74b8e/llvm/include/llvm/ADT/StringRef.h#L438
+    // https://github.com/llvm/llvm-project/blob/5f5560f62bfbaf3b38c90ae926fd07463ab74b8e/llvm/include/llvm/ADT/std::string_view.h#L438
     return cowel::ascii::contains_ignore_case(
         cowel::as_u8string_view(Self), cowel::as_u8string_view(Other)
     );
@@ -97,7 +98,7 @@ struct Node {
     uint32_t ChildrenOffset = 0;
     bool HasSibling = false;
     uint32_t Size = 0;
-    StringRef Name;
+    std::string_view Name;
     const Node* Parent = nullptr;
 
     [[nodiscard]]
@@ -160,10 +161,10 @@ Node readNode(uint32_t Offset, const Node* Parent = nullptr)
     if (LongName) {
         auto NameOffset = uint32_t(UnicodeNameToCodepointIndex[Offset++] << 8);
         NameOffset |= UnicodeNameToCodepointIndex[Offset++];
-        N.Name = StringRef(UnicodeNameToCodepointDict + NameOffset, Size);
+        N.Name = std::string_view(UnicodeNameToCodepointDict + NameOffset, Size);
     }
     else {
-        N.Name = StringRef(UnicodeNameToCodepointDict + Size, 1);
+        N.Name = std::string_view(UnicodeNameToCodepointDict + Size, 1);
     }
     if (HasValue) {
         uint8_t H = UnicodeNameToCodepointIndex[Offset++];
@@ -197,8 +198,8 @@ Node readNode(uint32_t Offset, const Node* Parent = nullptr)
 
 [[nodiscard]]
 bool startsWith(
-    StringRef Name,
-    StringRef Needle,
+    std::string_view Name,
+    std::string_view Needle,
     bool Strict,
     std::size_t& Consummed,
     char& PreviousCharInName,
@@ -266,7 +267,7 @@ bool startsWith(
 [[nodiscard]]
 std::tuple<Node, bool, uint32_t> compareNode(
     uint32_t Offset,
-    StringRef Name,
+    std::string_view Name,
     bool Strict,
     char PreviousCharInName,
     BufferType& Buffer,
@@ -309,7 +310,7 @@ std::tuple<Node, bool, uint32_t> compareNode(
 
 [[nodiscard]]
 std::tuple<Node, bool, uint32_t>
-compareNode(uint32_t Offset, StringRef Name, bool Strict, BufferType& Buffer)
+compareNode(uint32_t Offset, std::string_view Name, bool Strict, BufferType& Buffer)
 {
     return compareNode(Offset, Name, Strict, 0, Buffer);
 }
@@ -355,14 +356,15 @@ constexpr uint32_t VCount = 21;
 constexpr uint32_t TCount = 28;
 
 [[nodiscard]]
-std::size_t findSyllable(StringRef Name, bool Strict, char& PreviousInName, int& Pos, int Column)
+std::size_t
+findSyllable(std::string_view Name, bool Strict, char& PreviousInName, int& Pos, int Column)
 {
     COWEL_ASSERT(Column == 0 || Column == 1 || Column == 2);
     static std::size_t CountPerColumn[] = { LCount, VCount, TCount };
     int Len = -1;
     int Prev = PreviousInName; // NOLINT
     for (std::size_t I = 0; I < CountPerColumn[Column]; I++) {
-        StringRef Syllable(HangulSyllables[I][Column]);
+        std::string_view Syllable(HangulSyllables[I][Column]);
         if (int(Syllable.size()) <= Len) {
             continue;
         }
@@ -384,7 +386,8 @@ std::size_t findSyllable(StringRef Name, bool Strict, char& PreviousInName, int&
 }
 
 [[nodiscard]]
-std::optional<char32_t> nameToHangulCodePoint(StringRef Name, bool Strict, BufferType& Buffer)
+std::optional<char32_t>
+nameToHangulCodePoint(std::string_view Name, bool Strict, BufferType& Buffer)
 {
     Buffer.clear();
     // Hangul Syllable Decomposition
@@ -421,7 +424,7 @@ std::optional<char32_t> nameToHangulCodePoint(StringRef Name, bool Strict, Buffe
 }
 
 struct GeneratedNamesData {
-    StringRef Prefix;
+    std::string_view Prefix;
     uint32_t Start;
     uint32_t End;
 };
@@ -448,7 +451,8 @@ constexpr GeneratedNamesData GeneratedNamesDataTable[] = {
 };
 
 [[nodiscard]]
-std::optional<char32_t> nameToGeneratedCodePoint(StringRef Name, bool Strict, BufferType& Buffer)
+std::optional<char32_t>
+nameToGeneratedCodePoint(std::string_view Name, bool Strict, BufferType& Buffer)
 {
     for (auto&& Item : GeneratedNamesDataTable) {
         Buffer.clear();
@@ -478,7 +482,7 @@ std::optional<char32_t> nameToGeneratedCodePoint(StringRef Name, bool Strict, Bu
 }
 
 [[nodiscard]]
-std::optional<char32_t> nameToCodepoint(StringRef Name, bool Strict, BufferType& Buffer)
+std::optional<char32_t> nameToCodepoint(std::string_view Name, bool Strict, BufferType& Buffer)
 {
     if (Name.empty()) {
         return std::nullopt;
@@ -520,7 +524,7 @@ struct LooseMatchingResult {
 namespace {
 
 [[nodiscard]] [[maybe_unused]]
-std::optional<char32_t> nameToCodepointStrict(StringRef Name)
+std::optional<char32_t> nameToCodepointStrict(std::string_view Name)
 {
 
     BufferType Buffer;
@@ -529,7 +533,7 @@ std::optional<char32_t> nameToCodepointStrict(StringRef Name)
 }
 
 [[nodiscard]] [[maybe_unused]]
-std::optional<LooseMatchingResult> nameToCodepointLooseMatching(StringRef Name)
+std::optional<LooseMatchingResult> nameToCodepointLooseMatching(std::string_view Name)
 {
     BufferType Buffer;
     auto Opt = nameToCodepoint(Name, /* Strict=*/false, Buffer);
@@ -542,8 +546,10 @@ std::optional<LooseMatchingResult> nameToCodepointLooseMatching(StringRef Name)
 // Find the unicode character whose editing distance to Pattern
 // is shortest, using the Wagner–Fischer algorithm.
 [[nodiscard]]
-std::size_t
-nearest_matches_for_codepoint_name_impl(StringRef Pattern, std::span<Code_Point_Name_Match> Matches)
+std::size_t nearest_matches_for_codepoint_name_impl(
+    std::string_view Pattern,
+    std::span<Code_Point_Name_Match> Matches
+)
 {
     if (Matches.empty()) {
         return 0;
@@ -608,7 +614,7 @@ nearest_matches_for_codepoint_name_impl(StringRef Pattern, std::span<Code_Point_
 
     // We ignore case, space, hyphens, etc,
     // in both the search pattern and the prospective names.
-    auto Normalize = [](StringRef Name) {
+    auto Normalize = [](std::string_view Name) {
         std::string Out;
         Out.reserve(Name.size());
         for (char C : Name) {
@@ -693,7 +699,7 @@ nearest_matches_for_codepoint_name_impl(StringRef Pattern, std::span<Code_Point_
 }
 
 [[nodiscard]]
-bool hex_starts_with(const std::uint32_t value, const StringRef prefix)
+bool hex_starts_with(const std::uint32_t value, const std::string_view prefix)
 {
     if (prefix.empty()) {
         return true;
@@ -710,145 +716,248 @@ bool hex_starts_with(const std::uint32_t value, const StringRef prefix)
     if (prefix.size() > len) {
         return false;
     }
-    const StringRef value_hex(hex + (8 - len), len);
+    const std::string_view value_hex(hex + (8 - len), len);
     return value_hex.starts_with(prefix);
 }
 
-struct Code_Point_Names_Starting_With_Algorithm {
-    const std::span<Fixed_String8<96>> out;
-    const StringRef prefix;
+enum struct Append_Result : std::uint8_t {
+    /// Emitted at least one match at this target length.
+    found, // emitted at least one match at this target_length
+    /// No match at this target_length, but longer lengths may yield results.
+    none,
+    /// No match at this or any longer target length from this source.
+    exhausted,
+};
+
+/// Returns the number of uppercase hex digits needed to represent `v`.
+/// Returns `1` when `v` is zero.
+[[nodiscard]]
+constexpr std::size_t count_hex_digits(const std::uint32_t v) noexcept
+{
+    // Each hex digit encodes 4 bits; divide bit-width by 4, rounding up.
+    // The `| 1u` ensures the result is at least 1 when v == 0.
+    return std::size_t((std::bit_width(v | 1u) + 3) / 4);
+}
+
+static_assert(count_hex_digits(0x0) == 1);
+static_assert(count_hex_digits(0xF) == 1);
+static_assert(count_hex_digits(0x10) == 2);
+static_assert(count_hex_digits(0xFF) == 2);
+static_assert(count_hex_digits(0x100) == 3);
+static_assert(count_hex_digits(0xFFF) == 3);
+static_assert(count_hex_digits(0x1000) == 4);
+static_assert(count_hex_digits(0xFFFF) == 4);
+static_assert(count_hex_digits(0x1'0000) == 5);
+static_assert(count_hex_digits(0xF'FFFF) == 5);
+static_assert(count_hex_digits(0x10'0000) == 6);
+static_assert(count_hex_digits(0xFFF'FFFF) == 7);
+static_assert(count_hex_digits(0xFFFF'FFFF) == 8);
+
+/// Writes Unicode code point names of exactly `target_length` characters that start
+/// with `prefix` directly into `out`, in (length, alphabetical) order.
+/// Siblings at every trie level are sorted alphabetically before visiting,
+/// so traversal order is globally lexicographic and early truncation yields the
+/// globally first K matches (prefix-stability guarantee).
+struct Prefix_Match_Visitor {
+    const std::string_view prefix;
+    const std::size_t target_length;
+    const std::span<Code_Point_Prefix_Match> out;
     std::size_t count = 0;
+    bool prefix_seen = false;
+
+    // Unicode names use A-Z, space, and hyphen: branching factor ≤ 28.
+    static constexpr std::size_t max_siblings = 32;
 
     [[nodiscard]]
-    bool append_name_match(const StringRef name)
+    bool full() const noexcept
     {
-        if (count >= out.size()) {
-            return false;
-        }
-        out[count++] = Fixed_String8<96>(as_u8string_view(name));
-        return true;
+        return count >= out.size();
     }
 
-    [[nodiscard]]
-    bool try_append_candidate(const StringRef name)
+    void emit(const std::string_view name, const char32_t code_point)
     {
-        if (!name.starts_with(prefix)) {
-            return true;
-        }
-        return append_name_match(name);
+        out[count++] = Code_Point_Prefix_Match {
+            .name = Fixed_String8<96>(as_u8string_view(name)),
+            .code_point = code_point,
+        };
     }
 
-    [[nodiscard]]
-    bool visit_node(const std::uint32_t offset, Fixed_String<96>& current)
+    void visit_trie(const std::uint32_t offset, Fixed_String<96>& current)
     {
         const Node node = readNode(offset);
         if (!node.isValid()) {
-            return true;
+            return;
         }
-
         const std::size_t old_size = current.size();
+        // Guard against Fixed_String capacity overflow; do NOT prune at target_length
+        // here so that oversized nodes still contribute to the prefix_seen side-effect.
+        if (old_size + node.Name.size() > Fixed_String<96>::max_size_v) {
+            return;
+        }
         current.append(node.Name);
 
-        const bool node_starts_with_prefix = current.starts_with(prefix);
-        const bool prefix_starts_with_node = prefix.starts_with(current);
-        const bool should_visit_children = node_starts_with_prefix || prefix_starts_with_node;
+        const bool descendant_of_prefix = current.starts_with(prefix);
+        const bool ancestor_of_prefix = !descendant_of_prefix && prefix.starts_with(current);
 
-        if (node_starts_with_prefix && node.Value != 0xFFFFFFFF && !try_append_candidate(current)) {
-            return false;
-        }
-
-        if (should_visit_children && node.hasChildren()) {
-            std::uint32_t child_offset = node.ChildrenOffset;
-            while (true) {
-                if (!visit_node(child_offset, current)) {
-                    return false;
+        if (descendant_of_prefix || ancestor_of_prefix) {
+            prefix_seen = true;
+            if (current.size() <= target_length) {
+                if (descendant_of_prefix && current.size() == target_length
+                    && node.Value != 0xFFFFFFFF) {
+                    emit(current, node.Value);
                 }
-                const Node child = readNode(child_offset);
-                child_offset += child.Size;
-                if (!child.HasSibling) {
-                    break;
+                if (!full() && node.hasChildren() && current.size() < target_length) {
+                    visit_children(node.ChildrenOffset, current);
                 }
             }
         }
 
         current.remove_suffix(current.size() - old_size);
-        return true;
     }
 
-    void operator()();
-};
-
-void Code_Point_Names_Starting_With_Algorithm::operator()()
-{
+    void visit_children(const std::uint32_t children_offset, Fixed_String<96>& current)
     {
-        Fixed_String<96> current;
-        Node root = createRoot();
-        uint32_t child_offset = root.ChildrenOffset;
-        while (true) {
-            if (!visit_node(child_offset, current)) {
+        // Collect all siblings into a fixed local array (branching factor ≤ 28),
+        // sort by edge label, then recurse in alphabetical order
+        // so that stopping early due to full() still yields the globally-first K names.
+        struct Sibling {
+            std::string_view name;
+            std::uint32_t offset;
+        };
+        std::array<Sibling, max_siblings> siblings {};
+        std::size_t num_siblings = 0;
+        std::uint32_t off = children_offset;
+        while (num_siblings < max_siblings) {
+            const Node node = readNode(off);
+            if (!node.isValid()) {
                 break;
             }
-            Node child = readNode(child_offset);
-            child_offset += child.Size;
-            if (!child.HasSibling) {
+            siblings[num_siblings++] = { node.Name, off };
+            if (!node.HasSibling) {
                 break;
             }
+            off += node.Size;
+        }
+        std::ranges::sort(std::span(siblings.data(), num_siblings), {}, &Sibling::name);
+        for (std::size_t j = 0; j < num_siblings && !full(); ++j) {
+            visit_trie(siblings[j].offset, current);
         }
     }
 
-    if (count >= out.size()) {
-        return;
+    [[nodiscard]]
+    Append_Result append_trie_matches()
+    {
+        const std::size_t before = count;
+        Fixed_String<96> current;
+        const Node root = createRoot();
+        visit_children(root.ChildrenOffset, current);
+        if (!prefix_seen) {
+            return Append_Result::exhausted;
+        }
+        return count > before ? Append_Result::found : Append_Result::none;
     }
 
-    static constexpr StringRef hangul_prefix = "HANGUL SYLLABLE "sv;
-    if (hangul_prefix.starts_with(prefix) || prefix.starts_with(hangul_prefix)) {
-        for (uint32_t s_index = 0; s_index < LCount * VCount * TCount; ++s_index) {
-            const uint32_t l = s_index / (VCount * TCount);
-            const uint32_t v = (s_index / TCount) % VCount;
-            const uint32_t t = s_index % TCount;
+    [[nodiscard]]
+    Append_Result append_hangul_matches()
+    {
+        static constexpr auto hangul_prefix = "HANGUL SYLLABLE "sv;
+        // Hangul syllable names: "HANGUL SYLLABLE " (16) + syllable suffix.
+        // Shortest suffix: 1 vowel, no onset/coda → 1 char → total 17.
+        // Longest suffix: 2 (onset) + 3 (vowel) + 2 (coda) = 7 chars → total 23.
+        static constexpr std::size_t min_len = 17;
+        static constexpr std::size_t max_len = 23;
+
+        if (!hangul_prefix.starts_with(prefix) && !prefix.starts_with(hangul_prefix)) {
+            return Append_Result::exhausted;
+        }
+        if (target_length > max_len) {
+            return Append_Result::exhausted;
+        }
+        if (target_length < min_len) {
+            return Append_Result::none;
+        }
+
+        const std::size_t before = count;
+        for (uint32_t s = 0; s < LCount * VCount * TCount && !full(); ++s) {
+            const uint32_t l = s / (VCount * TCount);
+            const uint32_t v = (s / TCount) % VCount;
+            const uint32_t t = s % TCount;
 
             Fixed_String<96> name("HANGUL SYLLABLE "sv);
             name.append(HangulSyllables[l][0]);
             name.append(HangulSyllables[v][1]);
             name.append(HangulSyllables[t][2]);
 
-            if (!try_append_candidate(name)) {
-                return;
+            if (name.size() == target_length && name.starts_with(prefix)) {
+                emit(name, char32_t(SBase + ((l * VCount + v) * TCount + t)));
             }
         }
-    }
-
-    if (count >= out.size()) {
-        return;
-    }
-
-    for (const GeneratedNamesData& item : GeneratedNamesDataTable) {
-        if (!item.Prefix.starts_with(prefix) && !prefix.starts_with(item.Prefix)) {
-            continue;
+        if (count > before) {
+            std::ranges::sort(
+                out.subspan(before, count - before), {}, &Code_Point_Prefix_Match::name
+            );
+            return Append_Result::found;
         }
+        return Append_Result::none;
+    }
 
-        StringRef hex_prefix;
-        if (prefix.size() > item.Prefix.size()) {
-            hex_prefix = prefix.substr(item.Prefix.size());
-            if (!std::ranges::all_of(hex_prefix, [](const char c) {
-                    return cowel::is_ascii_upper_hex_digit(char8_t(c));
-                })) {
+    [[nodiscard]]
+    Append_Result append_generated_matches()
+    {
+        // Pre-scan: determine the range of possible name lengths across matching entries.
+        auto global_min = std::size_t(-1);
+        auto global_max = 0uz;
+        for (const GeneratedNamesData& item : GeneratedNamesDataTable) {
+            if (!item.Prefix.starts_with(prefix) && !prefix.starts_with(item.Prefix)) {
                 continue;
             }
+            global_min = std::min(global_min, item.Prefix.size() + count_hex_digits(item.Start));
+            global_max = std::max(global_max, item.Prefix.size() + count_hex_digits(item.End));
         }
-
-        for (uint32_t value = item.Start; value <= item.End; ++value) {
-            if (!hex_starts_with(value, hex_prefix)) {
+        if (global_min == std::size_t(-1)) {
+            return Append_Result::exhausted; // no entry is compatible with the prefix
+        }
+        if (target_length > global_max) {
+            return Append_Result::exhausted;
+        }
+        if (target_length < global_min) {
+            return Append_Result::none;
+        }
+        const std::size_t before = count;
+        for (const GeneratedNamesData& item : GeneratedNamesDataTable) {
+            if (!item.Prefix.starts_with(prefix) && !prefix.starts_with(item.Prefix)) {
                 continue;
             }
-            Fixed_String<96> name(item.Prefix);
-            name.append(to_characters(value, 16, true));
-            if (!try_append_candidate(name)) {
-                return;
+            std::string_view hex_prefix;
+            if (prefix.size() > item.Prefix.size()) {
+                hex_prefix = prefix.substr(item.Prefix.size());
+                const bool all_hex_digits = std::ranges::all_of(hex_prefix, [](const char c) {
+                    return is_ascii_upper_hex_digit(char8_t(c));
+                });
+                if (!all_hex_digits) {
+                    continue;
+                }
+            }
+            for (uint32_t value = item.Start; value <= item.End && !full(); ++value) {
+                if (!hex_starts_with(value, hex_prefix)) {
+                    continue;
+                }
+                Fixed_String<96> name(item.Prefix);
+                name.append(to_characters(value, 16, true));
+                if (name.size() == target_length && name.starts_with(prefix)) {
+                    emit(name, char32_t(value));
+                }
             }
         }
+        if (count > before) {
+            std::ranges::sort(
+                out.subspan(before, count - before), {}, &Code_Point_Prefix_Match::name
+            );
+            return Append_Result::found;
+        }
+        return Append_Result::none;
     }
-}
+};
 
 } // namespace
 
@@ -867,19 +976,40 @@ std::size_t nearest_matches_for_codepoint_name(
 }
 
 std::size_t code_point_names_starting_with(
-    const std::span<Fixed_String8<96>> out,
+    const std::span<Code_Point_Prefix_Match> out,
     const std::u8string_view prefix
 )
 {
+    constexpr std::size_t max_length = decltype(Code_Point_Prefix_Match::name)::max_size_v;
+
     if (out.empty() || prefix.empty()) {
         return 0;
     }
-    Code_Point_Names_Starting_With_Algorithm algo {
-        .out = out,
-        .prefix = as_string_view(prefix),
-    };
-    algo();
-    return algo.count;
+    std::size_t total = 0;
+    bool trie_exhausted = false;
+    bool hangul_exhausted = false;
+    bool generated_exhausted = false;
+    // Iterative-deepening DFS: one trie pass per target length,
+    // so shorter names always precede longer ones.
+    for (std::size_t target_len = prefix.size(); target_len <= max_length && total < out.size();
+         ++target_len) {
+        if (trie_exhausted && hangul_exhausted && generated_exhausted) {
+            break;
+        }
+        Prefix_Match_Visitor visitor {
+            .prefix = as_string_view(prefix),
+            .target_length = target_len,
+            .out = out.subspan(total),
+        };
+        trie_exhausted
+            = trie_exhausted || visitor.append_trie_matches() == Append_Result::exhausted;
+        hangul_exhausted
+            = hangul_exhausted || visitor.append_hangul_matches() == Append_Result::exhausted;
+        generated_exhausted
+            = generated_exhausted || visitor.append_generated_matches() == Append_Result::exhausted;
+        total += visitor.count;
+    }
+    return total;
 }
 
 } // namespace cowel

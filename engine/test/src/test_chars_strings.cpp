@@ -298,6 +298,53 @@ TEST(Strings, unchecked_utf8_to_utf16_length)
     EXPECT_EQ(unchecked_utf8_to_utf16_length(u8"a\U0001F600b"), 4uz);
 }
 
+TEST(Strings, unchecked_utf16_offset_to_utf8_offset)
+{
+    // Empty string: any offset clamps to 0.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"", 0uz), 0uz);
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"", 5uz), 0uz);
+
+    // ASCII: each code unit is one byte.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"hello", 0uz), 0uz);
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"hello", 3uz), 3uz);
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"hello", 5uz), 5uz);
+
+    // Clamp at end of string when offset exceeds the string's length.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"hi", 99uz), 2uz);
+
+    // é (U+00E9): 2-byte UTF-8 → 1 UTF-16 unit.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"\u00E9", 1uz), 2uz);
+
+    // € (U+20AC): 3-byte UTF-8 → 1 UTF-16 unit.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"\u20AC", 1uz), 3uz);
+
+    // 😀 (U+1F600): 4-byte UTF-8 → 2 UTF-16 units (surrogate pair).
+    // Requesting 2 units advances past the full character.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"\U0001F600", 2uz), 4uz);
+    // Requesting only 1 unit cannot split the surrogate pair — does not advance.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"\U0001F600", 1uz), 0uz);
+
+    // Mixed: 'a' (1) + € (3 bytes, 1 unit) + 'b' (1).
+    // Offset 0 → byte 0.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"a\u20ACb", 0uz), 0uz);
+    // Offset 1 → past 'a' → byte 1.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"a\u20ACb", 1uz), 1uz);
+    // Offset 2 → past 'a' + '€' → byte 4.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"a\u20ACb", 2uz), 4uz);
+    // Offset 3 → past 'a' + '€' + 'b' → byte 5.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"a\u20ACb", 3uz), 5uz);
+
+    // Mixed: 'a' (1) + 😀 (4 bytes, 2 units) + 'b' (1).
+    // Offset 1 → past 'a' → byte 1.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"a\U0001F600b", 1uz), 1uz);
+    // Offset 2 → cannot complete the surrogate pair starting at byte 1 — stops at byte 1.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"a\U0001F600b", 2uz), 1uz);
+    // Offset 3 → past 'a' + 😀 → byte 5.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"a\U0001F600b", 3uz), 5uz);
+    // Offset 4 → past 'a' + 😀 + 'b' → byte 6.
+    EXPECT_EQ(unchecked_utf16_offset_to_utf8_offset(u8"a\U0001F600b", 4uz), 6uz);
+}
+
 TEST(Strings, is_html_tag_name)
 {
     EXPECT_TRUE(is_html_tag_name(u8"tag"));

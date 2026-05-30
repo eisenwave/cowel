@@ -6,6 +6,11 @@
 
 - Fixed parser crash on unbalanced parentheses (#384)
 
+### VSCode extension
+
+- Added auto-completion for named character escapes;
+  for example, `\'DIGIT Z'` completes to `\'DIGIT ZERO'`.
+
 **Full Changelog**:
 [`v0.10.1...v0.10.2`](https://github.com/eisenwave/cowel/compare/v0.10.1...v0.10.2)
 

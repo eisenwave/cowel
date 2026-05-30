@@ -13,7 +13,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "cowel/util/code_point_names.hpp"
 #include "cowel/util/strings.hpp"
+#include "cowel/util/to_chars.hpp"
 #include "cowel/util/transparent_comparison.hpp"
 
 #include "cowel/cowel.h"
@@ -1026,6 +1028,196 @@ void revalidate_from(const std::u8string_view uri, Request_Context& context)
     }
 }
 
+/// @brief Converts an LSP `Position` to a byte offset in `text`.
+/// Respects the server's negotiated position encoding
+/// (UTF-8 bytes or UTF-16 code units).
+[[nodiscard]]
+std::size_t lsp_position_to_byte_offset(const std::u8string_view text, const lsp::Position pos)
+{
+    // Walk to the start of the target line.
+    std::size_t i = 0;
+    for (std::size_t line = 0; line < pos.line && i < text.size(); ++i) {
+        if (text[i] == u8'\n') {
+            ++line;
+        }
+    }
+
+    if (server_state.uses_utf8_positions()) {
+        return std::min(i + pos.character, text.size());
+    }
+    // UTF-16 mode: limit the search to the current line, then convert.
+    std::size_t line_end = i;
+    while (line_end < text.size() && text[line_end] != u8'\n') {
+        ++line_end;
+    }
+    return i + unchecked_utf16_offset_to_utf8_offset(text.substr(i, line_end - i), pos.character);
+}
+
+/// @brief Looks backward from `cursor_byte` in `text` for a named code-point
+/// escape prefix of the form `\'<NAME>`.
+/// @returns The typed prefix (text between `\'` and `cursor_byte`),
+/// or `std::nullopt` if the cursor is not inside a named escape.
+[[nodiscard]]
+std::optional<std::u8string_view>
+extract_named_escape_prefix(const std::u8string_view text, const std::size_t cursor_byte)
+{
+    static constexpr Charset256 is_code_point_name_char
+        = is_ascii_upper_alpha_set | is_ascii_digit_set | u8' ' | u8'-';
+
+    for (std::size_t pos = cursor_byte; pos > 0; --pos) {
+        const char8_t c = text[pos - 1];
+        if (c == u8'\'') {
+            if (pos >= 2 && text[pos - 2] == u8'\\') {
+                return text.substr(pos, cursor_byte - pos);
+            }
+            return {};
+        }
+        if (!is_code_point_name_char(c)) {
+            return {};
+        }
+    }
+    return {};
+}
+
+/// @brief Scans forward from `cursor_byte` through code-point name characters
+/// to find the closing `'\''` of a named escape on the same line.
+/// @returns The byte offset of the `'\''` if one is reachable via only
+/// code-point name characters without crossing a line boundary;
+/// otherwise `std::nullopt` (no existing closing quote).
+[[nodiscard]]
+std::optional<std::size_t>
+find_named_escape_suffix_end(const std::u8string_view text, const std::size_t cursor_byte)
+{
+    static constexpr Charset256 is_code_point_name_char
+        = is_ascii_upper_alpha_set | is_ascii_digit_set | u8' ' | u8'-';
+
+    for (std::size_t pos = cursor_byte; pos < text.size(); ++pos) {
+        const char8_t c = text[pos];
+        if (c == u8'\'') {
+            return pos;
+        }
+        if (!is_code_point_name_char(c)) {
+            return std::nullopt;
+        }
+    }
+    return std::nullopt;
+}
+
+void handle_completion(
+    const lsp::Completion_Params& params,
+    const lsp::Request_Message::Id& id,
+    Request_Context& context
+)
+{
+    static constexpr std::size_t max_completions = 50;
+
+    const std::u8string_view uri = params.text_document.uri;
+    const Document* const doc = server_state.find_open_document(uri);
+    if (doc == nullptr) {
+        write_message(
+            lsp::Response_Message {
+                .id = lsp::to_response_id(id),
+                .result = json::null,
+            },
+            context
+        );
+        return;
+    }
+
+    const std::size_t cursor_byte = lsp_position_to_byte_offset(doc->content, params.position);
+    const std::optional<std::u8string_view> prefix
+        = extract_named_escape_prefix(doc->content, cursor_byte);
+    if (!prefix) {
+        write_message(
+            lsp::Response_Message {
+                .id = lsp::to_response_id(id),
+                .result = json::null,
+            },
+            context
+        );
+        return;
+    }
+
+    std::array<Code_Point_Prefix_Match, max_completions + 1> match_buffer {};
+    const std::size_t raw_count = code_point_names_starting_with(match_buffer, *prefix);
+    const std::size_t count = std::min(raw_count, max_completions);
+
+    // Code-point names are pure ASCII,
+    // so their byte length equals their UTF-16 code-unit count.
+    // `prefix_char_count` is therefore valid for both position encodings.
+    const std::size_t prefix_char_count = prefix->size();
+    const lsp::Position prefix_start {
+        .line = params.position.line,
+        .character = params.position.character - prefix_char_count,
+    };
+
+    // Scan forward to see whether there is an existing closing quote to retain,
+    // e.g. when the cursor is in the middle of `\'DIGIT ZERO'`.
+    // All code-point name characters are ASCII, so byte count == char count.
+    const std::optional<std::size_t> closing_quote_byte
+        = find_named_escape_suffix_end(doc->content, cursor_byte);
+    const std::size_t suffix_end_byte = closing_quote_byte.value_or(cursor_byte);
+    const lsp::Position edit_end {
+        .line = params.position.line,
+        .character = params.position.character + (suffix_end_byte - cursor_byte),
+    };
+
+    // A local temporary buffer is fine because the maximum amount of results is small,
+    // and `write_message` does not store the message.
+    Fixed_String8<10> detail_strs[max_completions];
+    Fixed_String8<4> sort_text_strs[max_completions];
+    // When the escape has no closing quote, the inserted text must supply one.
+    Fixed_String8<96> new_text_strs[max_completions];
+    lsp::Completion_Item items_buf[max_completions];
+    for (std::size_t i = 0; i < count; ++i) {
+        const std::u8string_view name = match_buffer[i].name;
+        const auto cp = std::uint32_t(match_buffer[i].code_point);
+        const auto hex = to_characters8(cp, 16, true);
+        detail_strs[i] = Fixed_String8<10>(u8"U+");
+        for (std::size_t pad = hex.size(); pad < 4; ++pad) {
+            detail_strs[i].push_back(u8'0');
+        }
+        detail_strs[i].append(hex);
+        const auto dec = to_characters8(i);
+        sort_text_strs[i] = {};
+        for (std::size_t pad = dec.size(); pad < 3; ++pad) {
+            sort_text_strs[i].push_back(u8'0');
+        }
+        sort_text_strs[i].append(dec);
+        std::u8string_view new_text = name;
+        if (!closing_quote_byte.has_value()) {
+            new_text_strs[i] = Fixed_String8<96>(name);
+            if (new_text_strs[i].size() < Fixed_String8<96>::max_size_v) {
+                new_text_strs[i].push_back(u8'\'');
+            }
+            new_text = std::u8string_view(new_text_strs[i]);
+        }
+        items_buf[i] = lsp::Completion_Item {
+            .label = name,
+            .kind = lsp::CompletionItemKind::Text,
+            .detail = std::u8string_view(detail_strs[i]),
+            .sort_text = std::u8string_view(sort_text_strs[i]),
+            .filter_text = name,
+            .text_edit = lsp::Text_Edit {
+                .range = { prefix_start, edit_end },
+                .new_text = new_text,
+            },
+        };
+    }
+
+    const lsp::Completion_List completion_list {
+        .is_incomplete = raw_count > count,
+        .items = { items_buf, count },
+    };
+    write_message(
+        lsp::Response_Message {
+            .id = lsp::to_response_id(id),
+            .result = lsp::to_json(completion_list, &context.memory),
+        },
+        context
+    );
+}
+
 void handle_hover(
     const lsp::Hover_Params& params,
     const lsp::Request_Message::Id& id,
@@ -1119,11 +1311,16 @@ void handle_initialize(
         .change = 1,
     };
     static constexpr lsp::Server_Info server_info = { .name = u8"cowel"sv };
+    static constexpr std::array<std::u8string_view, 1> completion_trigger_chars { u8"'"sv };
+    static constexpr lsp::Completion_Options completion_provider {
+        .trigger_characters = std::span<const std::u8string_view> { completion_trigger_chars },
+    };
     const lsp::Initialize_Result initialize_result {
         .capabilities = {
             .position_encoding = position_encoding,
             .text_document_sync = sync_options,
             .hover_provider = true,
+            .completion_provider = completion_provider,
         },
         .server_info = server_info,
     };
@@ -1236,6 +1433,13 @@ void dispatch(const lsp::Request_Message& request, Request_Context& context)
     if (request.method == lsp::method::text_document::hover && request.params != nullptr) {
         if (const auto p = lsp::from_json<lsp::Hover_Params>(*request.params, context.storage)) {
             handle_hover(*p, request.id, context);
+            return;
+        }
+    }
+    if (request.method == lsp::method::text_document::completion && request.params != nullptr) {
+        if (const auto p
+            = lsp::from_json<lsp::Completion_Params>(*request.params, context.storage)) {
+            handle_completion(*p, request.id, context);
             return;
         }
     }
