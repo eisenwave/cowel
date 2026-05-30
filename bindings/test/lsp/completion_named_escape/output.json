@@ -26,7 +26,40 @@
     "method": "textDocument/publishDiagnostics",
     "params": {
       "uri": "{{ROOT_URI}}/main.cow",
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 0
+            },
+            "end": {
+              "line": 1,
+              "character": 2
+            }
+          },
+          "severity": 1,
+          "code": "parse",
+          "source": "cowel",
+          "message": "Expected comment or escape sequence, but got '\\'' following a backslash."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 0
+            },
+            "end": {
+              "line": 2,
+              "character": 2
+            }
+          },
+          "severity": 1,
+          "code": "parse",
+          "source": "cowel",
+          "message": "Expected comment or escape sequence, but got '\\'' following a backslash."
+        }
+      ]
     }
   },
   {
@@ -93,6 +126,1084 @@
               }
             },
             "newText": "DIGIT ZERO FULL STOP"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": {
+      "isIncomplete": false,
+      "items": [
+        {
+          "label": "DIGIT ZERO",
+          "kind": 1,
+          "detail": "U+0030",
+          "sortText": "000",
+          "filterText": "DIGIT ZERO",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 2
+              },
+              "end": {
+                "line": 1,
+                "character": 9
+              }
+            },
+            "newText": "DIGIT ZERO'"
+          }
+        },
+        {
+          "label": "DIGIT ZERO COMMA",
+          "kind": 1,
+          "detail": "U+1F101",
+          "sortText": "001",
+          "filterText": "DIGIT ZERO COMMA",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 2
+              },
+              "end": {
+                "line": 1,
+                "character": 9
+              }
+            },
+            "newText": "DIGIT ZERO COMMA'"
+          }
+        },
+        {
+          "label": "DIGIT ZERO FULL STOP",
+          "kind": 1,
+          "detail": "U+1F100",
+          "sortText": "002",
+          "filterText": "DIGIT ZERO FULL STOP",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 2
+              },
+              "end": {
+                "line": 1,
+                "character": 9
+              }
+            },
+            "newText": "DIGIT ZERO FULL STOP'"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "result": {
+      "isIncomplete": true,
+      "items": [
+        {
+          "label": "BS",
+          "kind": 1,
+          "detail": "U+0008",
+          "sortText": "000",
+          "filterText": "BS",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "BS'"
+          }
+        },
+        {
+          "label": "CR",
+          "kind": 1,
+          "detail": "U+000D",
+          "sortText": "001",
+          "filterText": "CR",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "CR'"
+          }
+        },
+        {
+          "label": "EM",
+          "kind": 1,
+          "detail": "U+0019",
+          "sortText": "002",
+          "filterText": "EM",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "EM'"
+          }
+        },
+        {
+          "label": "FF",
+          "kind": 1,
+          "detail": "U+000C",
+          "sortText": "003",
+          "filterText": "FF",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "FF'"
+          }
+        },
+        {
+          "label": "FS",
+          "kind": 1,
+          "detail": "U+001C",
+          "sortText": "004",
+          "filterText": "FS",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "FS'"
+          }
+        },
+        {
+          "label": "GS",
+          "kind": 1,
+          "detail": "U+001D",
+          "sortText": "005",
+          "filterText": "GS",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "GS'"
+          }
+        },
+        {
+          "label": "HT",
+          "kind": 1,
+          "detail": "U+0009",
+          "sortText": "006",
+          "filterText": "HT",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "HT'"
+          }
+        },
+        {
+          "label": "LF",
+          "kind": 1,
+          "detail": "U+000A",
+          "sortText": "007",
+          "filterText": "LF",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "LF'"
+          }
+        },
+        {
+          "label": "MW",
+          "kind": 1,
+          "detail": "U+0095",
+          "sortText": "008",
+          "filterText": "MW",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "MW'"
+          }
+        },
+        {
+          "label": "NL",
+          "kind": 1,
+          "detail": "U+000A",
+          "sortText": "009",
+          "filterText": "NL",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "NL'"
+          }
+        },
+        {
+          "label": "OX",
+          "kind": 1,
+          "detail": "U+1F402",
+          "sortText": "010",
+          "filterText": "OX",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "OX'"
+          }
+        },
+        {
+          "label": "PM",
+          "kind": 1,
+          "detail": "U+009E",
+          "sortText": "011",
+          "filterText": "PM",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "PM'"
+          }
+        },
+        {
+          "label": "RI",
+          "kind": 1,
+          "detail": "U+008D",
+          "sortText": "012",
+          "filterText": "RI",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "RI'"
+          }
+        },
+        {
+          "label": "RS",
+          "kind": 1,
+          "detail": "U+001E",
+          "sortText": "013",
+          "filterText": "RS",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "RS'"
+          }
+        },
+        {
+          "label": "SI",
+          "kind": 1,
+          "detail": "U+000F",
+          "sortText": "014",
+          "filterText": "SI",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "SI'"
+          }
+        },
+        {
+          "label": "SO",
+          "kind": 1,
+          "detail": "U+000E",
+          "sortText": "015",
+          "filterText": "SO",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "SO'"
+          }
+        },
+        {
+          "label": "SP",
+          "kind": 1,
+          "detail": "U+0020",
+          "sortText": "016",
+          "filterText": "SP",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "SP'"
+          }
+        },
+        {
+          "label": "ST",
+          "kind": 1,
+          "detail": "U+009C",
+          "sortText": "017",
+          "filterText": "ST",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "ST'"
+          }
+        },
+        {
+          "label": "US",
+          "kind": 1,
+          "detail": "U+001F",
+          "sortText": "018",
+          "filterText": "US",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "US'"
+          }
+        },
+        {
+          "label": "VT",
+          "kind": 1,
+          "detail": "U+000B",
+          "sortText": "019",
+          "filterText": "VT",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "VT'"
+          }
+        },
+        {
+          "label": "WJ",
+          "kind": 1,
+          "detail": "U+2060",
+          "sortText": "020",
+          "filterText": "WJ",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "WJ'"
+          }
+        },
+        {
+          "label": "ACK",
+          "kind": 1,
+          "detail": "U+0006",
+          "sortText": "021",
+          "filterText": "ACK",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "ACK'"
+          }
+        },
+        {
+          "label": "ALM",
+          "kind": 1,
+          "detail": "U+061C",
+          "sortText": "022",
+          "filterText": "ALM",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "ALM'"
+          }
+        },
+        {
+          "label": "ANT",
+          "kind": 1,
+          "detail": "U+1F41C",
+          "sortText": "023",
+          "filterText": "ANT",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "ANT'"
+          }
+        },
+        {
+          "label": "APC",
+          "kind": 1,
+          "detail": "U+009F",
+          "sortText": "024",
+          "filterText": "APC",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "APC'"
+          }
+        },
+        {
+          "label": "ARC",
+          "kind": 1,
+          "detail": "U+2312",
+          "sortText": "025",
+          "filterText": "ARC",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "ARC'"
+          }
+        },
+        {
+          "label": "AXE",
+          "kind": 1,
+          "detail": "U+1FA93",
+          "sortText": "026",
+          "filterText": "AXE",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "AXE'"
+          }
+        },
+        {
+          "label": "BAT",
+          "kind": 1,
+          "detail": "U+1F987",
+          "sortText": "027",
+          "filterText": "BAT",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "BAT'"
+          }
+        },
+        {
+          "label": "BED",
+          "kind": 1,
+          "detail": "U+1F6CF",
+          "sortText": "028",
+          "filterText": "BED",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "BED'"
+          }
+        },
+        {
+          "label": "BEL",
+          "kind": 1,
+          "detail": "U+0007",
+          "sortText": "029",
+          "filterText": "BEL",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "BEL'"
+          }
+        },
+        {
+          "label": "BOM",
+          "kind": 1,
+          "detail": "U+FEFF",
+          "sortText": "030",
+          "filterText": "BOM",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "BOM'"
+          }
+        },
+        {
+          "label": "BOY",
+          "kind": 1,
+          "detail": "U+1F466",
+          "sortText": "031",
+          "filterText": "BOY",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "BOY'"
+          }
+        },
+        {
+          "label": "BPH",
+          "kind": 1,
+          "detail": "U+0082",
+          "sortText": "032",
+          "filterText": "BPH",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "BPH'"
+          }
+        },
+        {
+          "label": "BUG",
+          "kind": 1,
+          "detail": "U+1F41B",
+          "sortText": "033",
+          "filterText": "BUG",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "BUG'"
+          }
+        },
+        {
+          "label": "BUS",
+          "kind": 1,
+          "detail": "U+1F68C",
+          "sortText": "034",
+          "filterText": "BUS",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "BUS'"
+          }
+        },
+        {
+          "label": "CAN",
+          "kind": 1,
+          "detail": "U+0018",
+          "sortText": "035",
+          "filterText": "CAN",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "CAN'"
+          }
+        },
+        {
+          "label": "CAT",
+          "kind": 1,
+          "detail": "U+1F408",
+          "sortText": "036",
+          "filterText": "CAT",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "CAT'"
+          }
+        },
+        {
+          "label": "CCH",
+          "kind": 1,
+          "detail": "U+0094",
+          "sortText": "037",
+          "filterText": "CCH",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "CCH'"
+          }
+        },
+        {
+          "label": "CGJ",
+          "kind": 1,
+          "detail": "U+034F",
+          "sortText": "038",
+          "filterText": "CGJ",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "CGJ'"
+          }
+        },
+        {
+          "label": "COW",
+          "kind": 1,
+          "detail": "U+1F404",
+          "sortText": "039",
+          "filterText": "COW",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "COW'"
+          }
+        },
+        {
+          "label": "CSI",
+          "kind": 1,
+          "detail": "U+009B",
+          "sortText": "040",
+          "filterText": "CSI",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "CSI'"
+          }
+        },
+        {
+          "label": "DC1",
+          "kind": 1,
+          "detail": "U+0011",
+          "sortText": "041",
+          "filterText": "DC1",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "DC1'"
+          }
+        },
+        {
+          "label": "DC2",
+          "kind": 1,
+          "detail": "U+0012",
+          "sortText": "042",
+          "filterText": "DC2",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "DC2'"
+          }
+        },
+        {
+          "label": "DC3",
+          "kind": 1,
+          "detail": "U+0013",
+          "sortText": "043",
+          "filterText": "DC3",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "DC3'"
+          }
+        },
+        {
+          "label": "DC4",
+          "kind": 1,
+          "detail": "U+0014",
+          "sortText": "044",
+          "filterText": "DC4",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "DC4'"
+          }
+        },
+        {
+          "label": "DCS",
+          "kind": 1,
+          "detail": "U+0090",
+          "sortText": "045",
+          "filterText": "DCS",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "DCS'"
+          }
+        },
+        {
+          "label": "DEL",
+          "kind": 1,
+          "detail": "U+007F",
+          "sortText": "046",
+          "filterText": "DEL",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "DEL'"
+          }
+        },
+        {
+          "label": "DLE",
+          "kind": 1,
+          "detail": "U+0010",
+          "sortText": "047",
+          "filterText": "DLE",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "DLE'"
+          }
+        },
+        {
+          "label": "DOG",
+          "kind": 1,
+          "detail": "U+1F415",
+          "sortText": "048",
+          "filterText": "DOG",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "DOG'"
+          }
+        },
+        {
+          "label": "DVD",
+          "kind": 1,
+          "detail": "U+1F4C0",
+          "sortText": "049",
+          "filterText": "DVD",
+          "textEdit": {
+            "range": {
+              "start": {
+                "line": 2,
+                "character": 2
+              },
+              "end": {
+                "line": 2,
+                "character": 2
+              }
+            },
+            "newText": "DVD'"
           }
         }
       ]

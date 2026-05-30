@@ -102,10 +102,20 @@ TEST(Code_Point_Names, names_starting_with_empty_output_span)
 TEST(Code_Point_Names, names_starting_with_rejects_invalid_or_unmatched_prefixes)
 {
     std::array<Code_Point_Prefix_Match, 8> out {};
-    EXPECT_EQ(code_point_names_starting_with(out, u8""), 0);
     EXPECT_EQ(code_point_names_starting_with(out, u8" "), 0);
     EXPECT_EQ(code_point_names_starting_with(out, u8"digit"), 0);
     EXPECT_EQ(code_point_names_starting_with(out, u8"THIS PREFIX DOES NOT EXIST"), 0);
+}
+
+TEST(Code_Point_Names, names_starting_with_empty_prefix_yields_results)
+{
+    std::array<Code_Point_Prefix_Match, 8> out {};
+    const std::size_t count = code_point_names_starting_with(out, u8"");
+    EXPECT_EQ(count, out.size());
+    for (std::size_t i = 0; i < count; ++i) {
+        const std::u8string_view name = out[i].name;
+        EXPECT_EQ(out[i].code_point, code_point_by_name(name));
+    }
 }
 
 TEST(Code_Point_Names, names_starting_with_finds_database_names)
