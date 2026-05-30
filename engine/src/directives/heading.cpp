@@ -19,7 +19,6 @@
 #include "cowel/policy/html.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
-#include "cowel/document_generation.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
