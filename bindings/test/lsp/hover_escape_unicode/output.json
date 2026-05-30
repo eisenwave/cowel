@@ -8,7 +8,12 @@
           "openClose": true,
           "change": 1
         },
-        "hoverProvider": true
+        "hoverProvider": true,
+        "completionProvider": {
+          "triggerCharacters": [
+            "'"
+          ]
+        }
       },
       "serverInfo": {
         "name": "cowel"

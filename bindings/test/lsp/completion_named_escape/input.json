@@ -1,0 +1,50 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+      "processId": null,
+      "rootUri": "{{ROOT_URI}}",
+      "capabilities": {
+        "general": {
+          "positionEncodings": [
+            "utf-8",
+            "utf-16"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "initialized",
+    "params": {}
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didOpen",
+    "params": {
+      "textDocument": {
+        "uri": "{{ROOT_URI}}/main.cow",
+        "languageId": "cowel",
+        "version": 1,
+        "text": "{{TEXT:main.cow}}"
+      }
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "textDocument/completion",
+    "params": {
+      "textDocument": {
+        "uri": "{{ROOT_URI}}/main.cow"
+      },
+      "position": {
+        "line": 0,
+        "character": 12
+      }
+    }
+  }
+]

@@ -1,5 +1,7 @@
+#include <algorithm>
 #include <array>
 #include <cstddef>
+#include <span>
 #include <string_view>
 
 #include <gtest/gtest.h>
@@ -93,13 +95,13 @@ TEST(Code_Point_Names, nearest_matches_capacity_limits_and_prefix_is_stable)
 
 TEST(Code_Point_Names, names_starting_with_empty_output_span)
 {
-    constexpr std::span<Fixed_String8<96>> out;
+    constexpr std::span<Code_Point_Prefix_Match> out;
     EXPECT_EQ(code_point_names_starting_with(out, u8"DIGIT"), 0);
 }
 
 TEST(Code_Point_Names, names_starting_with_rejects_invalid_or_unmatched_prefixes)
 {
-    std::array<Fixed_String8<96>, 8> out {};
+    std::array<Code_Point_Prefix_Match, 8> out {};
     EXPECT_EQ(code_point_names_starting_with(out, u8""), 0);
     EXPECT_EQ(code_point_names_starting_with(out, u8" "), 0);
     EXPECT_EQ(code_point_names_starting_with(out, u8"digit"), 0);
@@ -108,26 +110,26 @@ TEST(Code_Point_Names, names_starting_with_rejects_invalid_or_unmatched_prefixes
 
 TEST(Code_Point_Names, names_starting_with_finds_database_names)
 {
-    std::array<Fixed_String8<96>, 16> out {};
+    std::array<Code_Point_Prefix_Match, 16> out {};
     const std::size_t count = code_point_names_starting_with(out, u8"DIGIT Z");
     ASSERT_GE(count, 1);
 
     bool found_digit_zero = false;
     for (std::size_t i = 0; i < count; ++i) {
-        const std::u8string_view name = out[i];
+        const std::u8string_view name = out[i].name;
         EXPECT_TRUE(name.starts_with(u8"DIGIT Z"));
         if (name == u8"DIGIT ZERO") {
             found_digit_zero = true;
         }
-        EXPECT_NE(code_point_by_name(name), char32_t(-1));
+        EXPECT_EQ(out[i].code_point, code_point_by_name(name));
     }
     EXPECT_TRUE(found_digit_zero);
 }
 
 TEST(Code_Point_Names, names_starting_with_respects_capacity_and_prefix_stability)
 {
-    std::array<Fixed_String8<96>, 8> large {};
-    std::array<Fixed_String8<96>, 3> small {};
+    std::array<Code_Point_Prefix_Match, 8> large {};
+    std::array<Code_Point_Prefix_Match, 3> small {};
 
     const std::size_t large_count
         = code_point_names_starting_with(large, u8"LATIN CAPITAL LETTER ");
@@ -143,18 +145,18 @@ TEST(Code_Point_Names, names_starting_with_respects_capacity_and_prefix_stabilit
 
 TEST(Code_Point_Names, names_starting_with_includes_hangul_programmatic_names)
 {
-    std::array<Fixed_String8<96>, 8> out {};
+    std::array<Code_Point_Prefix_Match, 8> out {};
     const std::size_t count = code_point_names_starting_with(out, u8"HANGUL SYLLABLE GA");
 
     ASSERT_GE(count, 1);
     bool found_ga = false;
     for (std::size_t i = 0; i < count; ++i) {
-        const std::u8string_view name = out[i];
+        const std::u8string_view name = out[i].name;
         EXPECT_TRUE(name.starts_with(u8"HANGUL SYLLABLE GA"));
         if (name == u8"HANGUL SYLLABLE GA") {
             found_ga = true;
         }
-        EXPECT_NE(code_point_by_name(name), char32_t(-1));
+        EXPECT_EQ(out[i].code_point, code_point_by_name(name));
     }
     EXPECT_TRUE(found_ga);
     EXPECT_EQ(code_point_names_starting_with(out, u8"HANGUL SYLLABLE ZZ"), 0);
@@ -162,21 +164,64 @@ TEST(Code_Point_Names, names_starting_with_includes_hangul_programmatic_names)
 
 TEST(Code_Point_Names, names_starting_with_includes_generated_programmatic_names)
 {
-    std::array<Fixed_String8<96>, 8> out {};
+    std::array<Code_Point_Prefix_Match, 8> out {};
     const std::size_t count = code_point_names_starting_with(out, u8"CJK UNIFIED IDEOGRAPH-340");
 
     ASSERT_GE(count, 1);
     bool found_3400 = false;
     for (std::size_t i = 0; i < count; ++i) {
-        const std::u8string_view name = out[i];
+        const std::u8string_view name = out[i].name;
         EXPECT_TRUE(name.starts_with(u8"CJK UNIFIED IDEOGRAPH-340"));
         if (name == u8"CJK UNIFIED IDEOGRAPH-3400") {
             found_3400 = true;
         }
-        EXPECT_NE(code_point_by_name(name), char32_t(-1));
+        EXPECT_EQ(out[i].code_point, code_point_by_name(name));
     }
     EXPECT_TRUE(found_3400);
     EXPECT_EQ(code_point_names_starting_with(out, u8"CJK UNIFIED IDEOGRAPH-ZZ"), 0);
+}
+
+TEST(Code_Point_Names, names_starting_with_sorted_by_length_then_alpha)
+{
+    {
+        // "LF" (2 chars) must come before longer names like "LATIN CAPITAL LETTER A" (22 chars).
+        std::array<Code_Point_Prefix_Match, 16> out {};
+        const std::size_t count = code_point_names_starting_with(out, u8"L");
+        ASSERT_GE(count, 2);
+        EXPECT_EQ(out[0].name, u8"LF"sv);
+        EXPECT_EQ(out[0].code_point, U'\n');
+    }
+
+    static constexpr auto projection = [](const Code_Point_Prefix_Match& match) {
+        struct Comparable {
+            std::size_t length;
+            std::u8string_view name;
+            auto operator<=>(const Comparable&) const = default;
+        };
+        return Comparable { .length = match.name.length(), .name = match.name };
+    };
+    static constexpr auto check = [](const std::u8string_view prefix) {
+        std::array<Code_Point_Prefix_Match, 16> out {};
+        const std::size_t count = code_point_names_starting_with(out, prefix);
+        return std::ranges::is_sorted(std::span(out.data(), count), {}, projection);
+    };
+
+    ASSERT_TRUE(check(u8"L")) << R"(prefix "L")";
+    ASSERT_TRUE(check(u8"DIGIT")) << R"(prefix "DIGIT")";
+    ASSERT_TRUE(check(u8"LATIN")) << R"(prefix "LATIN")";
+    ASSERT_TRUE(check(u8"HANGUL")) << R"(prefix "HANGUL")";
+    ASSERT_TRUE(check(u8"CJK")) << R"(prefix "CJK")";
+    ASSERT_TRUE(check(u8"GREEK")) << R"(prefix "GREEK")";
+}
+
+TEST(Code_Point_Names, names_starting_with_digit_zero_is_first_for_digit_z)
+{
+    std::array<Code_Point_Prefix_Match, 8> out {};
+    const std::size_t count = code_point_names_starting_with(out, u8"DIGIT Z");
+
+    ASSERT_GE(count, 1);
+    EXPECT_EQ(out[0].name, u8"DIGIT ZERO"sv);
+    EXPECT_EQ(out[0].code_point, U'0');
 }
 
 TEST(Code_Point_Names, code_point_by_name_accepts_aliases_from_all_categories)

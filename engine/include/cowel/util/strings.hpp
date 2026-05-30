@@ -236,19 +236,17 @@ code_point_index_to_code_unit_index(std::u8string_view str, std::size_t code_poi
 /// @brief Returns the number of UTF-16 code units needed to encode `str`.
 /// May return incorrect results if `str` is not correctly encoded.
 [[nodiscard]]
-constexpr std::size_t unchecked_utf8_to_utf16_length(const std::u8string_view str) noexcept
-{
-    std::size_t result = 0;
-    for (const char8_t c : str) {
-        const bool is_continuation = (c & 0xC0u) == 0x80u;
-        if (!is_continuation) {
-            // 4-byte leading bytes (11110xxx) encode code points above U+FFFF,
-            // requiring a UTF-16 surrogate pair (2 units).
-            result += c >= 0xf0u ? 2u : 1u;
-        }
-    }
-    return result;
-}
+std::size_t unchecked_utf8_to_utf16_length(std::u8string_view str) noexcept;
+
+/// @brief Returns the byte offset in `str` after advancing `utf16_units` UTF-16 code units.
+/// If `str` encodes fewer than `utf16_units` code units, returns `str.size()`.
+/// Stops exactly on a code-point boundary;
+/// a surrogate pair (4-byte UTF-8 sequence) is only consumed
+/// if both of its UTF-16 units fit within the requested count.
+/// May return incorrect results if `str` is not correctly encoded.
+[[nodiscard]]
+std::size_t
+unchecked_utf16_offset_to_utf8_offset(std::u8string_view str, std::size_t utf16_units) noexcept;
 
 } // namespace cowel
 
