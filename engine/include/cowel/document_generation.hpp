@@ -95,11 +95,6 @@ write_wg21_document(Text_Sink& out, std::span<const ast::Markup_Element> content
     );
 }
 
-/// @brief Resets heading counters to zero.
-/// Must be called before each top-level document generation
-/// so that counters don't accumulate across multiple runs in the same process.
-void reset_heading_counters() noexcept;
-
 } // namespace cowel
 
 #endif
