@@ -167,7 +167,6 @@ test.describe("Watch Mode", () => {
 
     test("issue #382: updates to included files do not trigger live reload", async ({ page }) => {
         test.setTimeout(45_000);
-        test.fail(true, "Known bug tracked in #382");
 
         const buildDir = path.join(projectRoot, "build");
         expect(fs.existsSync(buildDir)).toBeTruthy();
@@ -178,9 +177,9 @@ test.describe("Watch Mode", () => {
         const outputPath = path.join(tempDir, "watch.html");
         const cliPath = path.join(projectRoot, "build", "npm", "cowel.js");
 
-        const initialIncluded = "ISSUE_382_INITIAL\\n";
-        const updatedIncluded = "ISSUE_382_UPDATED\\n";
-        const mainSource = "\\cowel_include(path=\"snippet.cow\")\\n";
+        const initialIncluded = "ISSUE_382_INITIAL\n";
+        const updatedIncluded = "ISSUE_382_UPDATED\n";
+        const mainSource = "\\cowel_include(path=\"snippet.cow\")\n";
 
         fs.writeFileSync(inputPath, mainSource, "utf8");
         fs.writeFileSync(includedPath, initialIncluded, "utf8");
@@ -201,8 +200,6 @@ test.describe("Watch Mode", () => {
 
             fs.writeFileSync(includedPath, updatedIncluded, "utf8");
 
-            // Known bug #382: watch listens only to the entry document,
-            // so edits to included files do not trigger browser reload.
             await waitForText(page, "ISSUE_382_UPDATED", DEFAULT_TIMEOUT);
         } finally {
             await closeWatchProcess(watchProcess);
@@ -212,8 +209,6 @@ test.describe("Watch Mode", () => {
 
     test("issue #385: heading counters are not reset between watch rebuilds", async ({ page }) => {
         test.setTimeout(45_000);
-        test.fail(true, "Known bug tracked in #385");
-
         const buildDir = path.join(projectRoot, "build");
         expect(fs.existsSync(buildDir)).toBeTruthy();
 
@@ -249,8 +244,6 @@ test.describe("Watch Mode", () => {
             fs.writeFileSync(inputPath, makeSource(1), "utf8");
             await waitForText(page, "Tick 1", DEFAULT_TIMEOUT);
 
-            // Known bug #385: heading counters persist between rebuilds,
-            // so this heading can become "2. Subheading", "3. ...", etc.
             await waitForText(page, "1. Subheading", DEFAULT_TIMEOUT);
 
             fs.writeFileSync(inputPath, makeSource(2), "utf8");
@@ -264,7 +257,6 @@ test.describe("Watch Mode", () => {
 
     test("issue #386: back/forward can crash watch process with EPIPE", async ({ page }) => {
         test.setTimeout(45_000);
-        test.fail(true, "Known bug tracked in #386");
 
         const buildDir = path.join(projectRoot, "build");
         expect(fs.existsSync(buildDir)).toBeTruthy();
@@ -274,8 +266,8 @@ test.describe("Watch Mode", () => {
         const outputPath = path.join(tempDir, "watch.html");
         const cliPath = path.join(projectRoot, "build", "npm", "cowel.js");
 
-        const initialSource = "ISSUE_386_INITIAL\\n";
-        const updatedSource = "ISSUE_386_UPDATED\\n";
+        const initialSource = "ISSUE_386_INITIAL\n";
+        const updatedSource = "ISSUE_386_UPDATED\n";
 
         fs.writeFileSync(inputPath, initialSource, "utf8");
 
