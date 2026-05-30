@@ -384,6 +384,8 @@ public:
 [[nodiscard]]
 cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 {
+    reset_heading_counters();
+
     Pointer_Memory_Resource pointer_memory { options };
     Global_Memory_Resource global_memory;
     auto* const memory = options.alloc && options.free

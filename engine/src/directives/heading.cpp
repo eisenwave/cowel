@@ -19,6 +19,7 @@
 #include "cowel/policy/html.hpp"
 
 #include "cowel/builtin_directive_set.hpp"
+#include "cowel/document_generation.hpp"
 #include "cowel/content_status.hpp"
 #include "cowel/context.hpp"
 #include "cowel/diagnostic.hpp"
@@ -60,6 +61,11 @@ constexpr int min_listing_level = 2;
 constexpr int max_listing_level = 6;
 
 } // namespace
+
+void reset_heading_counters() noexcept
+{
+    std::ranges::fill(h_counters, 0);
+}
 
 Processing_Status
 Heading_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
