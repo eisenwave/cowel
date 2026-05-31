@@ -356,6 +356,11 @@ async function watchAndServe(
             const i = wsClients.indexOf(socket as Socket);
             if (i !== -1) wsClients.splice(i, 1);
         });
+        // Prevent EPIPE from crashing when the browser closes the connection.
+        socket.on("error", () => {
+            const i = wsClients.indexOf(socket as Socket);
+            if (i !== -1) wsClients.splice(i, 1);
+        });
     });
 
     let port = 0;
@@ -368,7 +373,24 @@ async function watchAndServe(
     process.stdout.write(`Serving:  http://localhost:${port}\n`);
 
     let debounce: ReturnType<typeof setTimeout> | undefined;
-    fs.watch(inputPath, () => {
+    const watchers = new Map<string, fs.FSWatcher>();
+
+    function updateWatchers(): void {
+        const current = new Set([inputPath, ...files.map(f => f.path)]);
+        for (const [p, w] of watchers) {
+            if (!current.has(p)) {
+                w.close();
+                watchers.delete(p);
+            }
+        }
+        for (const p of current) {
+            if (!watchers.has(p)) {
+                watchers.set(p, fs.watch(p, onChange));
+            }
+        }
+    }
+
+    function onChange(): void {
         clearTimeout(debounce);
         debounce = setTimeout(async () => {
             const html = await compile(inputPath, options);
@@ -379,6 +401,7 @@ async function watchAndServe(
                 } catch (_) {
                     logError(outputPath, "file.write", "Failed to write generated output.");
                 }
+                updateWatchers();
             }
             // Notify all connected browsers; remove dead sockets.
             for (let i = wsClients.length - 1; i >= 0; --i) {
@@ -389,9 +412,9 @@ async function watchAndServe(
                 }
             }
         }, 50);
-    });
-
+    }
     // Keep the process alive indefinitely; users can Ctrl+C to exits.
+    updateWatchers();
     return new Promise<number>(() => { /* intentionally never resolves */ });
 }
 

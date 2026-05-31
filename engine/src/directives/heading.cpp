@@ -61,6 +61,11 @@ constexpr int max_listing_level = 6;
 
 } // namespace
 
+void reset_heading_counters() noexcept
+{
+    std::ranges::fill(h_counters, 0);
+}
+
 Processing_Status
 Heading_Behavior::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {

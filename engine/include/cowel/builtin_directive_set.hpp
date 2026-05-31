@@ -1271,6 +1271,11 @@ inline constexpr std::u8string_view table_of_contents = u8"std.toc";
 
 } // namespace section_name
 
+/// @brief Resets heading counters to zero.
+/// Must be called before each top-level document generation
+/// so that counters don't accumulate across multiple runs in the same process.
+void reset_heading_counters() noexcept;
+
 } // namespace cowel
 
 #endif
