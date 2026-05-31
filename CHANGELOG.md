@@ -2,6 +2,12 @@
 
 ## **[v0.10.2](https://github.com/eisenwave/cowel/releases/tag/v0.10.2)** (2026-??-??)
 
+### Command Line Interface
+
+- Fixed `cowel watch` crashing with EPIPE when navigating back/forward in the browser (#386)
+- Fixed `cowel watch` not reacting to changes in included files (#382)
+- Fixed `cowel watch` heading counters accumulating across rebuilds (#385)
+
 ### Engine
 
 - Fixed parser crash on unbalanced parentheses (#384)
