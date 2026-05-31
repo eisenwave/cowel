@@ -43,6 +43,9 @@ Processing_Status run_generation(
     COWEL_ASSERT(generate);
     COWEL_ASSERT(options.memory != nullptr);
 
+    // TODO: heading counters should eventually be managed via context variables.
+    reset_heading_counters();
+
     std::pmr::unsynchronized_pool_resource transient_memory { options.memory };
 
     Context context {

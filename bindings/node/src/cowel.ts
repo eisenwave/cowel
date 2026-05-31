@@ -373,12 +373,21 @@ async function watchAndServe(
     process.stdout.write(`Serving:  http://localhost:${port}\n`);
 
     let debounce: ReturnType<typeof setTimeout> | undefined;
-    let watchers: fs.FSWatcher[] = [];
+    const watchers = new Map<string, fs.FSWatcher>();
 
-    function rewatch(): void {
-        for (const w of watchers) w.close();
-        const paths = [inputPath, ...files.map(f => f.path)];
-        watchers = paths.map(p => fs.watch(p, onChange));
+    function updateWatchers(): void {
+        const current = new Set([inputPath, ...files.map(f => f.path)]);
+        for (const [p, w] of watchers) {
+            if (!current.has(p)) {
+                w.close();
+                watchers.delete(p);
+            }
+        }
+        for (const p of current) {
+            if (!watchers.has(p)) {
+                watchers.set(p, fs.watch(p, onChange));
+            }
+        }
     }
 
     function onChange(): void {
@@ -392,9 +401,7 @@ async function watchAndServe(
                 } catch (_) {
                     logError(outputPath, "file.write", "Failed to write generated output.");
                 }
-                // Included files may have changed.
-                // Watchers need to be re-established here.
-                rewatch();
+                updateWatchers();
             }
             // Notify all connected browsers; remove dead sockets.
             for (let i = wsClients.length - 1; i >= 0; --i) {
@@ -407,7 +414,7 @@ async function watchAndServe(
         }, 50);
     }
     // Keep the process alive indefinitely; users can Ctrl+C to exits.
-    rewatch();
+    updateWatchers();
     return new Promise<number>(() => { /* intentionally never resolves */ });
 }
 
