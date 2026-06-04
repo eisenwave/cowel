@@ -412,7 +412,7 @@ if(DEFINED EMSCRIPTEN)
         COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
             "${CMAKE_CURRENT_LIST_DIR}/docs/npm"
             "${NPM_DIR}"
-        COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/tools/transform-package-json.js"
+        COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/tools/transform-package-json.mjs"
             "${NODE_BINDINGS_DIR}/package.json"
             "${NPM_DIR}/package.json"
         BYPRODUCTS

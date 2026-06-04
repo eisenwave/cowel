@@ -1,6 +1,6 @@
 # Changelog
 
-## **[v0.10.2](https://github.com/eisenwave/cowel/releases/tag/v0.10.2)** (2026-??-??)
+## **[v0.10.2](https://github.com/eisenwave/cowel/releases/tag/v0.10.2)** (2026-06-04)
 
 ### Command Line Interface
 
@@ -11,6 +11,7 @@
 ### Engine
 
 - Fixed parser crash on unbalanced parentheses (#384)
+- Updated µlight for Kotlin highlighting fixes
 
 ### VSCode extension
 
