@@ -1,3 +1,4 @@
+#include <bitset>
 #include <limits>
 #include <ranges>
 #include <span>
@@ -144,6 +145,43 @@ Value Value::group_pack_move(std::span<Value> values)
 
 namespace {
 
+#define COWEL_BUILTIN_OPERATION_ONE(id) +1 // NOLINT
+
+constexpr std::size_t cowel_builtin_operation_count
+    = COWEL_BUILTIN_OPERATION_ENUM_DATA(COWEL_BUILTIN_OPERATION_ONE);
+
+constexpr bool builtin_operation_kind_is_dynamically_typed_impl(const Builtin_Operation_Kind kind)
+{
+    const auto index = std::size_t(kind);
+    COWEL_ASSERT(index <= std::size_t(cowel_builtin_operation_count));
+    static constexpr auto lookup = []() {
+        std::bitset<cowel_builtin_operation_count> result;
+#define COWEL_BUILTIN_OPERATION_IS_DYNAMIC(id)                                                     \
+    result[std::size_t(Builtin_Operation_Kind::id)] = (u8## #id##sv).ends_with(u8"_dynamic"sv);
+        COWEL_BUILTIN_OPERATION_ENUM_DATA(COWEL_BUILTIN_OPERATION_IS_DYNAMIC)
+        return result;
+    }();
+    return lookup[index];
+}
+
+static_assert(builtin_operation_kind_is_dynamically_typed_impl(Builtin_Operation_Kind::plus_dynamic)
+);
+static_assert(
+    !builtin_operation_kind_is_dynamically_typed_impl(Builtin_Operation_Kind::plus_int_int)
+);
+static_assert(
+    !builtin_operation_kind_is_dynamically_typed_impl(Builtin_Operation_Kind::eq_dynamic_groups)
+);
+
+} // namespace
+
+bool builtin_operation_kind_is_dynamically_typed(const Builtin_Operation_Kind kind)
+{
+    return builtin_operation_kind_is_dynamically_typed_impl(kind);
+}
+
+namespace {
+
 [[nodiscard]]
 Result<bool, Processing_Status> evaluate_internal_equality(
     const Value& lhs,
@@ -166,15 +204,8 @@ Result<bool, Processing_Status> evaluate_internal_equality(
     case Type_Kind::integer:
     case Type_Kind::floating:
     case Type_Kind::str: {
-        const auto operation = check_operation(
-            Binary_Expression_Kind::eq, lhs.get_type(), rhs.get_type(), lhs_location, rhs_location,
-            context
-        );
-        if (!operation) {
-            return operation.error();
-        }
         const auto result
-            = evaluate_builtin(*operation, lhs, rhs, lhs_location, rhs_location, context);
+            = evaluate_builtin(eq_dynamic, lhs, rhs, lhs_location, rhs_location, context);
         if (!result) {
             return result.error();
         }
@@ -327,8 +358,8 @@ bool expect_types_homogeneous(
 
 } // namespace
 
-Result<Builtin_Operation_Kind, Processing_Status> check_operation(
-    const Binary_Expression_Kind kind,
+Result<Builtin_Operation_Kind, Processing_Status> check_dynamically_typed_operation(
+    const Builtin_Operation_Kind kind,
     const Type& lhs,
     const Type& rhs,
     const File_Source_Span& lhs_location,
@@ -357,7 +388,7 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
     static_assert(numeric_type.is_canonical());
 
     switch (kind) {
-    case Binary_Expression_Kind::logical_or: {
+    case logical_or_dynamic: {
         if (!expect_types_homogeneous(
                 lhs, rhs, Type::boolean, lhs_location, rhs_location, context
             )) {
@@ -365,7 +396,7 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
         }
         return logical_or_bool_bool;
     }
-    case Binary_Expression_Kind::logical_and: {
+    case logical_and_dynamic: {
         if (!expect_types_homogeneous(
                 lhs, rhs, Type::boolean, lhs_location, rhs_location, context
             )) {
@@ -373,7 +404,7 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
         }
         return logical_and_bool_bool;
     }
-    case Binary_Expression_Kind::eq: {
+    case eq_dynamic: {
         if (!expect_types_homogeneous(
                 lhs, rhs, equality_comparable, lhs_location, rhs_location, context
             )) {
@@ -390,7 +421,7 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
         }
         COWEL_ASSERT_UNREACHABLE(u8"Validated type not in equality_comparable?!");
     }
-    case Binary_Expression_Kind::ne: {
+    case ne_dynamic: {
         if (!expect_types_homogeneous(
                 lhs, rhs, equality_comparable, lhs_location, rhs_location, context
             )) {
@@ -407,10 +438,10 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
         }
         COWEL_ASSERT_UNREACHABLE(u8"Validated type not in equality_comparable?!");
     }
-    case Binary_Expression_Kind::lt:
-    case Binary_Expression_Kind::gt:
-    case Binary_Expression_Kind::le:
-    case Binary_Expression_Kind::ge: {
+    case lt_dynamic:
+    case gt_dynamic:
+    case le_dynamic:
+    case ge_dynamic: {
         if (!expect_types_homogeneous(
                 lhs, rhs, relation_comparable, lhs_location, rhs_location, context
             )) {
@@ -419,28 +450,28 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
         switch (lhs.get_kind()) {
         case Type_Kind::integer:
             switch (kind) {
-            case Binary_Expression_Kind::lt: return lt_int_int;
-            case Binary_Expression_Kind::gt: return gt_int_int;
-            case Binary_Expression_Kind::le: return le_int_int;
-            case Binary_Expression_Kind::ge: return ge_int_int;
+            case lt_dynamic: return lt_int_int;
+            case gt_dynamic: return gt_int_int;
+            case le_dynamic: return le_int_int;
+            case ge_dynamic: return ge_int_int;
             default: break;
             }
             break;
         case Type_Kind::floating:
             switch (kind) {
-            case Binary_Expression_Kind::lt: return lt_float_float;
-            case Binary_Expression_Kind::gt: return gt_float_float;
-            case Binary_Expression_Kind::le: return le_float_float;
-            case Binary_Expression_Kind::ge: return ge_float_float;
+            case lt_dynamic: return lt_float_float;
+            case gt_dynamic: return gt_float_float;
+            case le_dynamic: return le_float_float;
+            case ge_dynamic: return ge_float_float;
             default: break;
             }
             break;
         case Type_Kind::str:
             switch (kind) {
-            case Binary_Expression_Kind::lt: return lt_str_str;
-            case Binary_Expression_Kind::gt: return gt_str_str;
-            case Binary_Expression_Kind::le: return le_str_str;
-            case Binary_Expression_Kind::ge: return ge_str_str;
+            case lt_dynamic: return lt_str_str;
+            case gt_dynamic: return gt_str_str;
+            case le_dynamic: return le_str_str;
+            case ge_dynamic: return ge_str_str;
             default: break;
             }
             break;
@@ -449,7 +480,7 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
         COWEL_ASSERT_UNREACHABLE(u8"Validated type not in relation_comparable?!");
     }
 
-    case Binary_Expression_Kind::plus: {
+    case plus_dynamic: {
         if (!expect_types_homogeneous(
                 lhs, rhs, numeric_type, lhs_location, rhs_location, context
             )) {
@@ -462,7 +493,7 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
         }
         COWEL_ASSERT_UNREACHABLE(u8"Validated type not in numeric_type?!");
     }
-    case Binary_Expression_Kind::minus: {
+    case minus_dynamic: {
         if (!expect_types_homogeneous(
                 lhs, rhs, numeric_type, lhs_location, rhs_location, context
             )) {
@@ -475,7 +506,7 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
         }
         COWEL_ASSERT_UNREACHABLE(u8"Validated type not in numeric_type?!");
     }
-    case Binary_Expression_Kind::multiply: {
+    case multiply_dynamic: {
         if (!expect_types_homogeneous(
                 lhs, rhs, numeric_type, lhs_location, rhs_location, context
             )) {
@@ -488,7 +519,7 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
         }
         COWEL_ASSERT_UNREACHABLE(u8"Validated type not in numeric_type?!");
     }
-    case Binary_Expression_Kind::divide: {
+    case div_dynamic: {
         if (!expect_types_homogeneous(
                 lhs, rhs, Type::floating, lhs_location, rhs_location, context
             )) {
@@ -496,13 +527,49 @@ Result<Builtin_Operation_Kind, Processing_Status> check_operation(
         }
         return div_float_float;
     }
-    case Binary_Expression_Kind::remainder: {
+    case rem_to_zero_dynamic: {
         if (!expect_types_homogeneous(
                 lhs, rhs, Type::integer, lhs_location, rhs_location, context
             )) {
             return Processing_Status::error;
         }
         return rem_to_zero_int_int;
+    }
+    case tautology:
+    case contradiction:
+    case logical_or_bool_bool:
+    case logical_and_bool_bool:
+    case eq_bool_bool:
+    case eq_int_int:
+    case eq_float_float:
+    case eq_str_str:
+    case eq_dynamic_groups:
+    case ne_bool_bool:
+    case ne_int_int:
+    case ne_float_float:
+    case ne_str_str:
+    case lt_int_int:
+    case lt_float_float:
+    case lt_str_str:
+    case gt_int_int:
+    case gt_float_float:
+    case gt_str_str:
+    case le_int_int:
+    case le_float_float:
+    case le_str_str:
+    case ge_int_int:
+    case ge_float_float:
+    case ge_str_str:
+    case plus_int_int:
+    case plus_float_float:
+    case minus_int_int:
+    case minus_float_float:
+    case multiply_int_int:
+    case multiply_float_float:
+    case div_float_float:
+    case rem_to_zero_int_int: {
+        COWEL_DEBUG_ASSERT_UNREACHABLE(u8"Should not check statically typed operations.");
+        return kind;
     }
     }
 
@@ -627,6 +694,30 @@ Result<Value, Processing_Status> evaluate_builtin(
             return Processing_Status::error;
         }
         return Value::integer(lhs.as_integer() % rhs.as_integer());
+    }
+    case Builtin_Operation_Kind::logical_or_dynamic:
+    case Builtin_Operation_Kind::logical_and_dynamic:
+    case Builtin_Operation_Kind::eq_dynamic:
+    case Builtin_Operation_Kind::ne_dynamic:
+    case Builtin_Operation_Kind::lt_dynamic:
+    case Builtin_Operation_Kind::gt_dynamic:
+    case Builtin_Operation_Kind::le_dynamic:
+    case Builtin_Operation_Kind::ge_dynamic:
+    case Builtin_Operation_Kind::plus_dynamic:
+    case Builtin_Operation_Kind::minus_dynamic:
+    case Builtin_Operation_Kind::multiply_dynamic:
+    case Builtin_Operation_Kind::div_dynamic:
+    case Builtin_Operation_Kind::rem_to_zero_dynamic: {
+        const Result<Builtin_Operation_Kind, Processing_Status> checked
+            = check_dynamically_typed_operation(
+                kind, lhs.get_type(), rhs.get_type(), lhs_location, rhs_location, context
+            );
+        if (!checked) {
+            return checked.error();
+        }
+        // If we got a dynamic operation back out, we would recurse infinitely.
+        COWEL_DEBUG_ASSERT(!builtin_operation_kind_is_dynamically_typed(*checked));
+        return evaluate_builtin(*checked, lhs, rhs, lhs_location, rhs_location, context);
     }
     }
     COWEL_ASSERT_UNREACHABLE(u8"All switch cases should have returned.");

@@ -253,15 +253,9 @@ Comparison_Expression_Behavior::do_evaluate(const Invocation& call, Context& con
     const Value& x = x_value.get();
     const Value& y = y_value.get();
 
-    const Result<Builtin_Operation_Kind, Processing_Status> operation = check_operation(
-        m_binary_kind, x.get_type(), y.get_type(), x_value.get_location(), y_value.get_location(),
-        context
-    );
-    if (!operation) {
-        return operation.error();
-    }
+    const auto dynamic_operation = binary_expression_kind_builtin_operation_kind(m_binary_kind);
     const Result<Value, Processing_Status> result = evaluate_builtin(
-        *operation, x, y, x_value.get_location(), y_value.get_location(), context
+        dynamic_operation, x, y, x_value.get_location(), y_value.get_location(), context
     );
     // The operation is a comparison,
     // so there's no way it could have failed,
@@ -322,16 +316,9 @@ Internal_Eq_Behavior::do_evaluate(const Invocation& call, Context& context) cons
         return result->as_boolean();
     }
 
-    const auto operation = check_operation(
-        Binary_Expression_Kind::eq, x.get_type(), y.get_type(), x_value.get_location(),
-        y_value.get_location(), context
-    );
-    if (!operation) {
-        return operation.error();
-    }
-
     const auto result = evaluate_builtin(
-        *operation, x, y, x_value.get_location(), y_value.get_location(), context
+        Builtin_Operation_Kind::eq_dynamic, x, y, x_value.get_location(), y_value.get_location(),
+        context
     );
     if (!result) {
         return result.error();

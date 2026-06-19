@@ -72,41 +72,101 @@ binary_expression_kind_comparison_kind(const Binary_Expression_Kind kind)
     COWEL_ASSERT_UNREACHABLE(u8"Expression kind is not a comparison.");
 }
 
+#define COWEL_BUILTIN_OPERATION_ENUM_DATA(F)                                                       \
+    F(tautology)                                                                                   \
+    F(contradiction)                                                                               \
+    F(logical_or_dynamic)                                                                          \
+    F(logical_or_bool_bool)                                                                        \
+    F(logical_and_dynamic)                                                                         \
+    F(logical_and_bool_bool)                                                                       \
+    F(eq_dynamic)                                                                                  \
+    F(eq_bool_bool)                                                                                \
+    F(eq_int_int)                                                                                  \
+    F(eq_float_float)                                                                              \
+    F(eq_str_str)                                                                                  \
+    F(eq_dynamic_groups)                                                                           \
+    F(ne_dynamic)                                                                                  \
+    F(ne_bool_bool)                                                                                \
+    F(ne_int_int)                                                                                  \
+    F(ne_float_float)                                                                              \
+    F(ne_str_str)                                                                                  \
+    F(lt_dynamic)                                                                                  \
+    F(lt_int_int)                                                                                  \
+    F(lt_float_float)                                                                              \
+    F(lt_str_str)                                                                                  \
+    F(gt_dynamic)                                                                                  \
+    F(gt_int_int)                                                                                  \
+    F(gt_float_float)                                                                              \
+    F(gt_str_str)                                                                                  \
+    F(le_dynamic)                                                                                  \
+    F(le_int_int)                                                                                  \
+    F(le_float_float)                                                                              \
+    F(le_str_str)                                                                                  \
+    F(ge_dynamic)                                                                                  \
+    F(ge_int_int)                                                                                  \
+    F(ge_float_float)                                                                              \
+    F(ge_str_str)                                                                                  \
+    F(plus_dynamic)                                                                                \
+    F(plus_int_int)                                                                                \
+    F(plus_float_float)                                                                            \
+    F(minus_dynamic)                                                                               \
+    F(minus_int_int)                                                                               \
+    F(minus_float_float)                                                                           \
+    F(multiply_dynamic)                                                                            \
+    F(multiply_int_int)                                                                            \
+    F(multiply_float_float)                                                                        \
+    F(div_dynamic)                                                                                 \
+    F(div_float_float)                                                                             \
+    F(rem_to_zero_dynamic)                                                                         \
+    F(rem_to_zero_int_int)
+
+#define COWEL_BUILTIN_OPERATION_ENUMERATOR(id) id,
+
 enum struct Builtin_Operation_Kind : Default_Underlying {
-    tautology,
-    contradiction,
-    logical_or_bool_bool,
-    logical_and_bool_bool,
-    eq_bool_bool,
-    eq_int_int,
-    eq_float_float,
-    eq_str_str,
-    eq_dynamic_groups,
-    ne_bool_bool,
-    ne_int_int,
-    ne_float_float,
-    ne_str_str,
-    lt_int_int,
-    lt_float_float,
-    lt_str_str,
-    gt_int_int,
-    gt_float_float,
-    gt_str_str,
-    le_int_int,
-    le_float_float,
-    le_str_str,
-    ge_int_int,
-    ge_float_float,
-    ge_str_str,
-    plus_int_int,
-    plus_float_float,
-    minus_int_int,
-    minus_float_float,
-    multiply_int_int,
-    multiply_float_float,
-    div_float_float,
-    rem_to_zero_int_int,
+    COWEL_BUILTIN_OPERATION_ENUM_DATA(COWEL_BUILTIN_OPERATION_ENUMERATOR)
 };
+
+/// @brief Returns `true` of `kind` is a dynamic operation.
+/// That is, an operation whose operand types are checked dynamically
+/// rather than requiring a type check in advance.
+[[nodiscard]]
+bool builtin_operation_kind_is_dynamically_typed(Builtin_Operation_Kind kind);
+
+[[nodiscard]]
+constexpr Builtin_Operation_Kind
+binary_expression_kind_builtin_operation_kind(const Binary_Expression_Kind kind)
+{
+    using enum Binary_Expression_Kind;
+    switch (kind) {
+    case logical_or: //
+        return Builtin_Operation_Kind::logical_or_dynamic;
+    case logical_and: //
+        return Builtin_Operation_Kind::logical_and_dynamic;
+    case eq: //
+        return Builtin_Operation_Kind::eq_dynamic;
+    case ne: //
+        return Builtin_Operation_Kind::ne_dynamic;
+    case lt: //
+        return Builtin_Operation_Kind::lt_dynamic;
+    case gt: //
+        return Builtin_Operation_Kind::gt_dynamic;
+    case le: //
+        return Builtin_Operation_Kind::le_dynamic;
+    case ge: //
+        return Builtin_Operation_Kind::ge_dynamic;
+    case plus: //
+        return Builtin_Operation_Kind::plus_dynamic;
+    case minus: //
+        return Builtin_Operation_Kind::minus_dynamic;
+    case multiply: //
+        return Builtin_Operation_Kind::multiply_dynamic;
+    case divide: //
+        return Builtin_Operation_Kind::div_dynamic;
+    case remainder: //
+        return Builtin_Operation_Kind::rem_to_zero_dynamic;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid expression kind.");
+}
 
 }; // namespace cowel
 
