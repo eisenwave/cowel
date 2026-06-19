@@ -568,7 +568,9 @@ Result<Builtin_Operation_Kind, Processing_Status> check_dynamically_typed_operat
     case multiply_float_float:
     case div_float_float:
     case rem_to_zero_int_int: {
-        COWEL_DEBUG_ASSERT_UNREACHABLE(u8"Should not check statically typed operations.");
+        if constexpr (is_debug_build) {
+            COWEL_ASSERT_UNREACHABLE(u8"Should not check statically typed operations.");
+        }
         return kind;
     }
     }
