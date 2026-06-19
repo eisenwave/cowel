@@ -25,6 +25,7 @@ This makes COWEL easy to nest foreign content in.
 - **Block comment** — `\* ... *\` (non-nestable).
 - **Directive splice** — `\name(args){content}` (see next section).
 - **Expression splice** — `\(expression)` evaluates an expression and inserts its text result.
+- **Expression line splice** — `\ expression` evaluates an expression on the next line and inserts its text result; the terminating newline is absorbed by the splice.
 
 ## Directives: the core abstraction
 

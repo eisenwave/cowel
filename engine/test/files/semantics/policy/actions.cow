@@ -1,9 +1,10 @@
 \test_input{
 \cowel_actions{\cowel_html_element("div"){actions content}}
 \cowel_actions{ignored text\cowel_html_element("span"){processed}}
+\ 1 + 2
 }
 
 \test_output{
 <div>actions content</div>
 <span>processed</span>
-}
+3}

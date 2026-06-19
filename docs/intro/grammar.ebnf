@@ -259,11 +259,14 @@ common-markup-element
   | LINE-COMMENT-TOKEN
   | BLOCK-COMMENT-TOKEN
   | directive-splice
-  | expression-splice;
+  | expression-splice
+  | expression-line-splice;
 directive-splice
   = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], [ block ];
 expression-splice
   = EXPRESSION-SPLICE-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
+expression-line-splice
+  = EXPRESSION-LINE-SPLICE-TOKEN, expression;
 identifier
   = IDENTIFIER-TOKEN;
 group

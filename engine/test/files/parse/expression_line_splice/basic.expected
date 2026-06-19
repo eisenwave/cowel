@@ -1,0 +1,13 @@
+push_document 2
+push_expression_line_splice
+push_expr_add
+decimal_int
+skip
+skip
+decimal_int
+pop_expr_add
+pop_expression_line_splice
+push_expression_line_splice
+decimal_int
+pop_expression_line_splice
+pop_document

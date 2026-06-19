@@ -5,6 +5,7 @@
 
 #include "ulight/impl/lang/cowel.hpp"
 
+#include "cowel/util/ascii_algorithm.hpp"
 #include "cowel/util/assert.hpp"
 #include "cowel/util/char_sequence_factory.hpp"
 #include "cowel/util/chars.hpp"
@@ -30,6 +31,13 @@ using ulight::cowel::match_identifier;
 using ulight::cowel::match_line_comment;
 using ulight::cowel::match_number;
 using ulight::cowel::match_whitespace;
+
+[[nodiscard]]
+std::size_t match_whitespace_except_line_terminator(const std::u8string_view str)
+{
+    constexpr auto chars = Charset256(u8" \t\f\r"sv);
+    return ascii::length_if(str, chars);
+}
 
 #define COWEL_TOKEN_KIND_FIRST_CHAR(id, name, first)                                               \
     case Token_Kind::id: return u8##first;
@@ -330,6 +338,17 @@ private:
     }
 
     [[nodiscard]]
+    bool expect_whitespace_except_line_terminator()
+    {
+        if (const std::size_t space = match_whitespace_except_line_terminator(peek_all())) {
+            emit(Token_Kind::whitespace, space);
+            advance_by(space);
+            return true;
+        }
+        return false;
+    }
+
+    [[nodiscard]]
     bool expect_line_comment()
     {
         const std::u8string_view remainder = peek_all();
@@ -595,21 +614,32 @@ private:
                 }
                 continue;
             }
-            case u8'\n':
-            case u8'\r': {
+            case u8'\n': {
                 if (terminator == Group_Content_Terminator::line && depth == 0) {
-                    const std::size_t line_terminator_length //
-                        = peek_all().starts_with(u8"\r\n"sv) ? 2 : 1;
-                    emit(Token_Kind::whitespace, line_terminator_length);
-                    advance_by(line_terminator_length);
+                    emit(Token_Kind::line_terminator, 1);
+                    advance_by(1);
                     return true;
                 }
-                [[fallthrough]];
+                const bool whitespace_matched = expect_whitespace();
+                COWEL_ASSERT(whitespace_matched);
+                continue;
             }
             case u8' ':
             case u8'\t':
-            case u8'\f': {
-                const bool whitespace_matched = expect_whitespace();
+            case u8'\f':
+            case u8'\r': {
+                // TODO: Consider reverting this added complexity.
+                // The parser actually just needs to check whether the whitespace ends in a newline,
+                // so having separate horizontal whitespace result in potentially two
+                // adjacent whitespace tokens (one for e.g. space, one for newline),
+                // and this may not actually have any benefit.
+                //
+                // However, we definitely need SOME detection of horizontal whitespace
+                // because expression line splices end at the first newline;
+                // we don't want to gobble up several lines.
+                const bool whitespace_matched = terminator == Group_Content_Terminator::line
+                    ? expect_whitespace_except_line_terminator()
+                    : expect_whitespace();
                 COWEL_ASSERT(whitespace_matched);
                 continue;
             }
