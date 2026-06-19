@@ -878,6 +878,11 @@ private:
         case Token_Kind::whitespace:
         case Token_Kind::block_comment:
         case Token_Kind::line_comment: break;
+
+        case Token_Kind::expression_line_splice: {
+            error(m_tokens[m_pos].location, u8"Expression line splices not implemented yet."sv);
+            break;
+        }
         }
 
         error(m_tokens[m_pos].location, u8"Unexpected token in expression."sv);

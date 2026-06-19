@@ -311,6 +311,7 @@ private:
             = expect_line_comment() //
             || expect_block_comment() //
             || expect_expression_splice() //
+            || expect_expression_line_splice() //
             || expect_directive_splice();
         if (!non_escape_matched) {
             consume_escape();
@@ -390,6 +391,19 @@ private:
     }
 
     [[nodiscard]]
+    bool expect_expression_line_splice()
+    {
+        if (!peek_all().starts_with(u8"\\ "sv)) {
+            return false;
+        }
+
+        emit(Token_Kind::expression_line_splice, 2);
+        advance_by(2);
+        static_cast<void>(consume_group_content(0, Group_Content_Terminator::line));
+        return true;
+    }
+
+    [[nodiscard]]
     bool expect_expression_splice()
     {
         if (!peek_all().starts_with(u8"\\("sv)) {
@@ -399,7 +413,7 @@ private:
         const Source_Position initial_pos = m_pos;
         emit(Token_Kind::expression_splice, 2);
         advance_by(2);
-        if (!consume_parenthesized_content(1)) {
+        if (!consume_group_content(1, Group_Content_Terminator::parenthesis)) {
             error(
                 Source_Span { initial_pos, 2 },
                 u8"No matching ')'. This expression splice is unterminated."sv
@@ -408,10 +422,20 @@ private:
         return true;
     }
 
+    enum struct Group_Content_Terminator : bool {
+        /// The group content ends at the closing parenthesis.
+        /// Nesting is possible.
+        parenthesis,
+        /// The group content ends at a line terminator (inclusive).
+        /// Balancing of parentheses is still considered,
+        /// i.e. line terminators inside parentheses don't terminate.
+        line,
+    };
+
     [[nodiscard]]
-    bool consume_parenthesized_content(std::size_t depth)
+    bool consume_group_content(std::size_t depth, const Group_Content_Terminator terminator)
     {
-        COWEL_DEBUG_ASSERT(depth > 0);
+        COWEL_DEBUG_ASSERT(terminator == Group_Content_Terminator::line || depth > 0);
         while (!eof()) {
             switch (peek()) {
             case u8'(': {
@@ -423,8 +447,13 @@ private:
             case u8')': {
                 emit(Token_Kind::parenthesis_right, 1);
                 advance_by(1);
-                if (--depth == 0) {
-                    return true;
+                if (terminator == Group_Content_Terminator::parenthesis) {
+                    if (--depth == 0) {
+                        return true;
+                    }
+                }
+                else if (depth != 0) {
+                    --depth;
                 }
                 continue;
             }
@@ -566,11 +595,20 @@ private:
                 }
                 continue;
             }
+            case u8'\n':
+            case u8'\r': {
+                if (terminator == Group_Content_Terminator::line && depth == 0) {
+                    const std::size_t line_terminator_length //
+                        = peek_all().starts_with(u8"\r\n"sv) ? 2 : 1;
+                    emit(Token_Kind::whitespace, line_terminator_length);
+                    advance_by(line_terminator_length);
+                    return true;
+                }
+                [[fallthrough]];
+            }
             case u8' ':
             case u8'\t':
-            case u8'\r':
-            case u8'\f':
-            case u8'\n': {
+            case u8'\f': {
                 const bool whitespace_matched = expect_whitespace();
                 COWEL_ASSERT(whitespace_matched);
                 continue;
@@ -593,7 +631,7 @@ private:
     {
         const Source_Position initial_pos = m_pos;
         COWEL_ASSERT(expect_and_emit(u8'(', Token_Kind::parenthesis_left));
-        if (!consume_parenthesized_content(1)) {
+        if (!consume_group_content(1, Group_Content_Terminator::parenthesis)) {
             error(
                 Source_Span { initial_pos, 1 },
                 u8"No matching ')'. This argument group is unterminated."sv
