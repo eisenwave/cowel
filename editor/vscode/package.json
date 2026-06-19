@@ -1,7 +1,7 @@
 {
   "name": "cowel",
   "displayName": "COWEL",
-  "version": "0.10.2",
+  "version": "0.11.0-pre",
   "description": "Syntax highlighting and language support for Compact Web Language (COWEL)",
   "main": "./out/extension.js",
   "scripts": {

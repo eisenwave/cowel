@@ -202,7 +202,7 @@ Options:
       --no-color        Disable colored output
 )";
 
-constexpr std::string_view version_text = "0.8.0\n";
+constexpr std::string_view version_text = "11.0.0-pre\n";
 
 int main(int argc, const char* const* const argv)
 {
