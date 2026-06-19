@@ -778,15 +778,9 @@ evaluate(const ast::Binary_Expression& expression, const Frame_Index frame, Cont
     const Value& lhs = *lhs_result;
     const Value& rhs = *rhs_result;
 
-    const Result<Builtin_Operation_Kind, Processing_Status> operation = check_operation(
-        kind, lhs.get_type(), rhs.get_type(), expression.get_lhs().get_source_span(),
-        expression.get_rhs().get_source_span(), context
-    );
-    if (!operation) {
-        return operation.error();
-    }
+    const auto dynamic_operation = binary_expression_kind_builtin_operation_kind(kind);
     return evaluate_builtin(
-        *operation, lhs, rhs, expression.get_lhs().get_source_span(),
+        dynamic_operation, lhs, rhs, expression.get_lhs().get_source_span(),
         expression.get_rhs().get_source_span(), context
     );
 }

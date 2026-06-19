@@ -234,8 +234,8 @@ Result<Value, Processing_Status> evaluate_unary(
 /// and returns the concrete `Builtin_Operation_Kind` if so.
 /// Otherwise, returns `Processing_Status::error` and outputs a diagnostic.
 [[nodiscard]]
-Result<Builtin_Operation_Kind, Processing_Status> check_operation(
-    Binary_Expression_Kind kind,
+Result<Builtin_Operation_Kind, Processing_Status> check_dynamically_typed_operation(
+    Builtin_Operation_Kind dynamic_kind,
     const Type& lhs,
     const Type& rhs,
     const File_Source_Span& lhs_location,
