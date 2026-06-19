@@ -1006,6 +1006,9 @@ bool run_parse_test(
     Result<Parsed_File, Parse_Error_Stage> actual = parse_file(path, &memory);
     if (!actual) {
         Diagnostic_String error;
+        error.append(path, Diagnostic_Highlight::code_position);
+        error.append(u8':', Diagnostic_Highlight::code_position);
+        error.append(u8' ');
         error.append(
             u8"Test failed because file couldn't be loaded and parsed.\n",
             Diagnostic_Highlight::error_text
@@ -1015,6 +1018,9 @@ bool run_parse_test(
     }
     if (!std::ranges::equal(expected, actual->instructions)) {
         Diagnostic_String error;
+        error.append(path, Diagnostic_Highlight::code_position);
+        error.append(u8':', Diagnostic_Highlight::code_position);
+        error.append(u8' ');
         error.append(
             u8"Test failed because expected parser output isn't matched.\n",
             Diagnostic_Highlight::error_text
@@ -1359,6 +1365,34 @@ TEST(Parse_And_Build, expression_splice_source_text)
     ASSERT_EQ(expression_sources.size(), 2);
     EXPECT_EQ(expression_sources[0], u8"\\(~1)");
     EXPECT_EQ(expression_sources[1], u8"\\(1 + 2)");
+}
+
+TEST(Parse_And_Build, expression_line_splice_basic)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::expression_splice(Node::add(Node::integer(u8"1"), Node::integer(u8"2"))),
+            Node::expression_splice(Node::integer(u8"3")),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"expression_line_splice/basic.cow");
+}
+
+TEST(Parse_And_Build, expression_line_splice_parenthesized)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::expression_splice(Node::add(Node::integer(u8"1"), Node::integer(u8"2"))),
+            Node::expression_splice(Node::integer(u8"1")),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"expression_line_splice/parenthesized.cow");
 }
 
 TEST(Parse_And_Build, floats)
@@ -1832,6 +1866,11 @@ TEST(Parse_Fail, hyphen_arg_name)
 TEST(Parse_Fail, parenthesized_named_member_missing_value)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"parenthesized_named_member_missing_value.cow"));
+}
+
+TEST(Parse_Fail, directive_line_splice_trailing)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"directive_line_splice_trailing.cow"));
 }
 
 } // namespace

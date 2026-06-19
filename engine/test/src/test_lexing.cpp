@@ -239,6 +239,7 @@ std::u8string_view token_kind_source(const Token_Kind kind)
     case string_quote: return u8"\""sv;
     case true_: return u8"true"sv;
     case unit: return u8"unit"sv;
+    case line_terminator: return u8"\n"sv;
     }
 
     COWEL_ASSERT_UNREACHABLE(u8"Invalid token kind.");

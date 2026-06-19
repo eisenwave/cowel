@@ -4,6 +4,7 @@ Text
 \\
 \cowel_html_element("span"){directive}
 \(1 + 2)
+\ 1 + 2
 }}
 
 \test_output{
@@ -11,4 +12,4 @@ Text
 \
 &lt;span&gt;directive&lt;/span&gt;
 3
-}
+3}

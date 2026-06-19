@@ -41,6 +41,7 @@ namespace cowel {
     F(less_equal, "LESS-EQUAL", '<')                                                               \
     F(less_than, "LESS-THAN", '<')                                                                 \
     F(line_comment, "LINE-COMMENT", '\\')                                                          \
+    F(line_terminator, "LINE-TERMINATOR", '\n')                                                    \
     F(logical_and, "LOGICAL-AND", '&')                                                             \
     F(logical_not, "LOGICAL-NOT", '!')                                                             \
     F(logical_or, "LOGICAL-OR", '|')                                                               \

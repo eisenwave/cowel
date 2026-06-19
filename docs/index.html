@@ -2838,11 +2838,14 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>LINE-COMMENT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BLOCK-COMMENT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>directive-splice</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>expression-splice</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>expression-splice</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>expression-line-splice</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>directive-splice</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>expression-splice</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>expression-line-splice</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-LINE-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>identifier</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>group</h->
@@ -3211,12 +3214,29 @@ COWEL markup:
 </p><code-block>1 + 2 = 3</code-block>
 </example-block>
 
-<p>In EBNF grammar, an <g-term>expression-splice</g-term> is constructed as follows:
+<p>A related form is the <dfn>expression line splice</dfn>,
+which starts with '<code><h- data-h=str_esc>\</h-><h- data-h=str_esc> </h-></code>'
+followed by an expression on the next line.
+The terminating newline is part of the splice,
+not part of the text markup.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block>3;</code-block>
+<p>Generated HTML:
+</p><code-block>3;</code-block>
+</example-block>
+
+<p>In EBNF grammar, the splice forms are constructed as follows:
 </p>
 <code-block><h- data-h=name_nt_decl>expression-splice</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>expression-line-splice</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-LINE-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>EXPRESSION-SPLICE-TOKEN</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str>(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>EXPRESSION-LINE-SPLICE-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str> </h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
 <h2 id=document-processing><a class=para href=#document-processing></a>5. Document processing</h2>
 
 <p>A COWEL document is processed from top to bottom,

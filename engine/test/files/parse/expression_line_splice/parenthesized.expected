@@ -1,0 +1,22 @@
+push_document 2
+
+push_expression_line_splice
+push_expr_parenthesized
+push_expr_add
+decimal_int
+skip
+skip
+decimal_int
+pop_expr_add
+pop_expr_parenthesized
+pop_expression_line_splice
+
+push_expression_line_splice
+push_expr_parenthesized
+push_expr_parenthesized
+decimal_int
+pop_expr_parenthesized
+pop_expr_parenthesized
+pop_expression_line_splice
+
+pop_document

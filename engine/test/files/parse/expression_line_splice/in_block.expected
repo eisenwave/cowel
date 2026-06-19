@@ -1,0 +1,17 @@
+push_document 2
+
+push_directive_splice
+push_block 4
+text
+push_expression_line_splice
+id_expression
+pop_expression_line_splice
+text
+push_expression_line_splice
+pop_expression_line_splice
+pop_block
+pop_directive_splice
+
+text
+
+pop_document

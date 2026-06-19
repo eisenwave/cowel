@@ -331,6 +331,10 @@ private:
             consume_expression_splice();
             return true;
         }
+        case Token_Kind::expression_line_splice: {
+            consume_expression_line_splice();
+            return true;
+        }
         case Token_Kind::brace_right: {
             COWEL_DEBUG_ASSERT(context == Content_Context::block);
             return false;
@@ -369,7 +373,7 @@ private:
 
         consume_blank_sequence();
         if (!expect_expression()) {
-            error(m_tokens[m_pos].location, u8"Invalid expression splice expression."sv);
+            error(m_tokens[m_pos].location, u8"Invalid expression of splice expression."sv);
         }
         consume_blank_sequence();
 
@@ -377,6 +381,52 @@ private:
         // The lexer should have ensured correct nesting.
         COWEL_ASSERT(is_closed);
         m_out.push_back({ CST_Instruction_Kind::pop_expression_splice });
+    }
+
+    void consume_expression_line_splice()
+    {
+        const Token* const splice = expect(Token_Kind::expression_line_splice);
+        COWEL_ASSERT(splice);
+
+        m_out.push_back({ CST_Instruction_Kind::push_expression_line_splice });
+
+        consume_blank_sequence();
+        (void)expect_expression();
+
+        const std::size_t trailing_start = m_pos;
+        while (const Token* const next = peek()) {
+            switch (next->kind) {
+            case Token_Kind::line_terminator: {
+                emit_and_advance_by_one(CST_Instruction_Kind::pop_expression_line_splice);
+                return;
+            }
+            case Token_Kind::whitespace:
+            case Token_Kind::line_comment:
+            case Token_Kind::block_comment: {
+                advance_by(1);
+                continue;
+            }
+            default: {
+                error(
+                    m_tokens[trailing_start].location,
+                    u8"Trailing content in expression line splice."sv
+                );
+                advance_by(1);
+                while (!eof()) {
+                    if (peek(Token_Kind::line_terminator)) {
+                        emit_and_advance_by_one(CST_Instruction_Kind::pop_expression_line_splice);
+                        return;
+                    }
+                    advance_by(1);
+                }
+            }
+            }
+        }
+        error(
+            m_tokens.back().location,
+            u8"Expression line splice requires a terminating newline, "
+            u8"but EOF was unexpectedly reached."sv
+        );
     }
 
     void consume_group()
@@ -847,16 +897,16 @@ private:
             return true;
         }
 
-        // Tokens that cannot start an expression in general.
+        // Tokens that cannot start an expression in general:
         case Token_Kind::comma:
         case Token_Kind::ellipsis:
         case Token_Kind::equals:
-        case Token_Kind::expression_splice:
         case Token_Kind::parenthesis_right:
         case Token_Kind::brace_right:
         case Token_Kind::directive_splice_name:
         case Token_Kind::escape:
-        // Binary operators cannot start an expression (they're infix).
+        case Token_Kind::line_terminator:
+        // Binary operators cannot start an expression (they're infix):
         case Token_Kind::asterisk:
         case Token_Kind::equals_equals:
         case Token_Kind::greater_equal:
@@ -868,8 +918,11 @@ private:
         case Token_Kind::not_equals:
         case Token_Kind::percent:
         case Token_Kind::slash: return false;
-
+        // Tokens that cannot appear in expressions
+        // or which should have been filtered out previously:
         case Token_Kind::document_text:
+        case Token_Kind::expression_splice:
+        case Token_Kind::expression_line_splice:
         case Token_Kind::quoted_string_text:
         case Token_Kind::block_text:
         case Token_Kind::error:
@@ -878,11 +931,6 @@ private:
         case Token_Kind::whitespace:
         case Token_Kind::block_comment:
         case Token_Kind::line_comment: break;
-
-        case Token_Kind::expression_line_splice: {
-            error(m_tokens[m_pos].location, u8"Expression line splices not implemented yet."sv);
-            break;
-        }
         }
 
         error(m_tokens[m_pos].location, u8"Unexpected token in expression."sv);
@@ -1036,6 +1084,8 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_directive_splice);
         COWEL_ENUM_STRING_CASE8(push_expression_splice);
         COWEL_ENUM_STRING_CASE8(pop_expression_splice);
+        COWEL_ENUM_STRING_CASE8(push_expression_line_splice);
+        COWEL_ENUM_STRING_CASE8(pop_expression_line_splice);
         COWEL_ENUM_STRING_CASE8(push_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(pop_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(push_expr_logical_not);
@@ -1117,6 +1167,8 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case push_directive_splice: return Token_Kind::directive_splice_name;
     case push_expression_splice: return Token_Kind::expression_splice;
     case pop_expression_splice: return Token_Kind::parenthesis_right;
+    case push_expression_line_splice: return Token_Kind::expression_line_splice;
+    case pop_expression_line_splice: return Token_Kind::line_terminator;
     case push_expr_bitwise_not: return Token_Kind::bitwise_not;
     case push_expr_logical_not: return Token_Kind::logical_not;
     case push_expr_unary_minus: return Token_Kind::minus;
@@ -1207,6 +1259,8 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case push_directive_splice:
     case push_expression_splice:
     case pop_expression_splice:
+    case push_expression_line_splice:
+    case pop_expression_line_splice:
     case push_expr_bitwise_not:
     case push_expr_logical_not:
     case push_expr_unary_minus:

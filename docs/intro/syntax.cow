@@ -915,11 +915,33 @@ Generated HTML:
 }
 }
 
-In EBNF grammar, an \gterm{expression-splice} is constructed as follows:
+A related form is the \dfn{expression line splice},
+which starts with '\cowdoc_c{\\ }'
+followed by an expression on the next line.
+The terminating newline is part of the splice,
+not part of the text markup.
+
+\Bex{
+COWEL markup:
+\cowblock{
+\ 1 + 2
+;
+}
+Generated HTML:
+\htmlblock{
+3;
+}
+}
+
+In EBNF grammar, the splice forms are constructed as follows:
 
 \codeblock("ebnf"){
 expression-splice
   = EXPRESSION-SPLICE-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
+expression-line-splice
+  = EXPRESSION-LINE-SPLICE-TOKEN, expression;
 EXPRESSION-SPLICE-TOKEN
   = "\\(";
+EXPRESSION-LINE-SPLICE-TOKEN
+  = "\\ ";
 }

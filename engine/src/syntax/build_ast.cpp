@@ -577,7 +577,8 @@ private:
             out.push_back(build_directive(Directive_Kind::splice));
             break;
         }
-        case push_expression_splice: {
+        case push_expression_splice:
+        case push_expression_line_splice: {
             out.push_back(build_expression_splice());
             break;
         }
@@ -589,7 +590,10 @@ private:
     ast::Expression build_expression_splice()
     {
         const CST_Instruction push = pop_instruction();
-        COWEL_ASSERT(push.kind == CST_Instruction_Kind::push_expression_splice);
+        COWEL_ASSERT(
+            push.kind == CST_Instruction_Kind::push_expression_splice
+            || push.kind == CST_Instruction_Kind::push_expression_line_splice
+        );
         const Source_Span expression_splice_begin = peek_token().location;
         advance_by_tokens(1);
 
@@ -598,7 +602,10 @@ private:
         ignore_skips();
 
         const CST_Instruction pop = pop_instruction();
-        COWEL_ASSERT(pop.kind == CST_Instruction_Kind::pop_expression_splice);
+        COWEL_ASSERT(
+            pop.kind == CST_Instruction_Kind::pop_expression_splice
+            || pop.kind == CST_Instruction_Kind::pop_expression_line_splice
+        );
         const Source_Span expression_splice_end = peek_token().location;
         advance_by_tokens(1);
 

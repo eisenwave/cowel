@@ -1,5 +1,16 @@
 # Changelog
 
+## **[v0.11.0](https://github.com/eisenwave/cowel/releases/tag/v0.11.0)** (2026-??-??)
+
+### Engine
+
+- Added *directive-line-splice* syntax like `\ 1 + 2`.
+  This is evaluated the same as `\(1 + 2)`, but is more syntactically lightweight,
+  and conveniently consumes the trailing newline as well.
+
+**Full Changelog**:
+[`v0.10.2...main`](https://github.com/eisenwave/cowel/compare/v0.10.2...main)
+
 ## **[v0.10.2](https://github.com/eisenwave/cowel/releases/tag/v0.10.2)** (2026-06-04)
 
 ### Command Line Interface
