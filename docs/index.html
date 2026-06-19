@@ -2100,6 +2100,7 @@ a <g-term>DOCUMENT</g-term> is matched as follows:
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>BLOCK-COMMENT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>EXPRESSION-SPLICE</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>EXPRESSION-LINE-SPLICE</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>RESERVED-ESCAPE-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>ESCAPE-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ESCAPABLE-CHAR</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>+</h-><h- data-h=str_dlim>"</h->
@@ -2149,6 +2150,10 @@ a <g-term>DOCUMENT</g-term> is matched as follows:
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>GROUP-CONTENT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>EXPRESSION-SPLICE-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\(</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>EXPRESSION-LINE-SPLICE</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-LINE-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>GROUP-CONTENT</h-> <h- data-h=sym_op>-</h-> <h- data-h=name_nt>LINE-TERMINATOR</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LINE-TERMINATOR</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>EXPRESSION-LINE-SPLICE-TOKEN</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\ </h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 
 <h- data-h=name_nt_decl>IDENTIFIER-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-START-CHAR</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>IDENTIFIER-CHAR</h-> <h- data-h=sym_brac>}</h->
