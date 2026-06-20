@@ -939,7 +939,7 @@ In EBNF grammar, the splice forms are constructed as follows:
 expression-splice
   = EXPRESSION-SPLICE-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
 expression-line-splice
-  = EXPRESSION-LINE-SPLICE-TOKEN, expression;
+  = EXPRESSION-LINE-SPLICE-TOKEN, [ expression ];
 EXPRESSION-SPLICE-TOKEN
   = "\\(";
 EXPRESSION-LINE-SPLICE-TOKEN

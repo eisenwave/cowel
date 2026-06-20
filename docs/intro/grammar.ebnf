@@ -44,7 +44,7 @@ RESERVED-ESCAPE-CHAR
   - IDENTIFIER-START-CHAR
   - "*" - ":" - LF - CR;
 RESERVED-CHARACTER-NAME-CHAR
-  = CHAR - CR - LF - "'";
+  = CHAR - " " - CR - LF - "'";
 LINE-COMMENT-TOKEN
   = "\:", { LINE-COMMENT-CHAR }, LINE-TERMINATOR;
 LINE-COMMENT-CHAR
@@ -266,7 +266,7 @@ directive-splice
 expression-splice
   = EXPRESSION-SPLICE-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
 expression-line-splice
-  = EXPRESSION-LINE-SPLICE-TOKEN, expression;
+  = EXPRESSION-LINE-SPLICE-TOKEN, [ expression ];
 identifier
   = IDENTIFIER-TOKEN;
 group
