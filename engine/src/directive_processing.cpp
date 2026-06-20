@@ -269,6 +269,7 @@ const Type& get_type(const ast::Primary& primary)
     case ast::Primary_Kind::text:
     case ast::Primary_Kind::comment:
     case ast::Primary_Kind::escape:
+    case ast::Primary_Kind::empty_splice:
         COWEL_ASSERT_UNREACHABLE(u8"Expected a value, not a markup element.");
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid primary kind.");
@@ -411,10 +412,13 @@ Processing_Status splice_primary(
     Context& context
 )
 {
-    COWEL_ASSERT(primary.is_value());
+    COWEL_ASSERT(primary.is_spliceable());
 
     switch (primary.get_kind()) {
     case ast::Primary_Kind::unit_literal:
+    case ast::Primary_Kind::empty_splice: {
+        return Processing_Status::ok;
+    }
     case ast::Primary_Kind::null_literal:
     case ast::Primary_Kind::bool_literal:
     case ast::Primary_Kind::unquoted_member_name: {
@@ -1041,7 +1045,8 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
     }
     case ast::Primary_Kind::text:
     case ast::Primary_Kind::comment:
-    case ast::Primary_Kind::escape: break;
+    case ast::Primary_Kind::escape:
+    case ast::Primary_Kind::empty_splice: break;
     }
     COWEL_ASSERT_UNREACHABLE(u8"Unexpected kind of primary.");
 }

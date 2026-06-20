@@ -94,7 +94,8 @@ public:
             push_escape_hover(node, text, context);
             return Processing_Status::ok;
         }
-        case ast::Primary_Kind::comment: {
+        case ast::Primary_Kind::comment:
+        case ast::Primary_Kind::empty_splice: {
             break;
         }
         case ast::Primary_Kind::unit_literal:
