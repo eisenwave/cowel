@@ -1,0 +1,96 @@
+{
+  "description": "Test expression line splice highlighting",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 0,
+      "expected": "punctuation.definition.template-expression.begin.cowel",
+      "description": "Expression line splice marker has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 2,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Number literal in the simple binary expression case"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 4,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "Operator in the simple binary expression case"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "source.cowel",
+      "description": "The zero marker on the next line is plain document text"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 2,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Adjacent integers on the same line are still highlighted as literals"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 4,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "The second adjacent integer is highlighted as a literal"
+    },
+    {
+      "type": "top-scope",
+      "line": 6,
+      "col": 0,
+      "expected": "punctuation.definition.template-expression.begin.cowel",
+      "description": "An empty line splice still starts with the splice marker"
+    },
+    {
+      "type": "top-scope",
+      "line": 9,
+      "col": 2,
+      "expected": "variable.other.cowel",
+      "description": "Text content in a line splice is highlighted as plain argument text"
+    },
+    {
+      "type": "top-scope",
+      "line": 12,
+      "col": 3,
+      "expected": "comment.block.cowel",
+      "description": "A block comment inside a line splice is highlighted as a comment"
+    },
+    {
+      "type": "top-scope",
+      "line": 13,
+      "col": 0,
+      "expected": "comment.block.cowel",
+      "description": "Comment text on the following line remains in the comment scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 16,
+      "col": 2,
+      "expected": "punctuation.section.group.begin.cowel",
+      "description": "Parentheses in a line splice open a nested group"
+    },
+    {
+      "type": "top-scope",
+      "line": 17,
+      "col": 0,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "The content on the next line keeps its numeric scope inside the continued splice"
+    },
+    {
+      "type": "top-scope",
+      "line": 17,
+      "col": 1,
+      "expected": "punctuation.section.group.end.cowel",
+      "description": "The closing parenthesis is highlighted as a group delimiter"
+    }
+  ]
+}

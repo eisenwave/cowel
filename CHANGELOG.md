@@ -6,7 +6,11 @@
 
 - Added *directive-line-splice* syntax like `\ 1 + 2`.
   This is evaluated the same as `\(1 + 2)`, but is more syntactically lightweight,
-  and conveniently consumes the trailing newline as well.
+  and conveniently consumes the trailing newline as well (#396)
+
+### VSCode extension
+
+- Added syntax highlighting for the new *directive-line-splice* feature.
 
 **Full Changelog**:
 [`v0.10.2...main`](https://github.com/eisenwave/cowel/compare/v0.10.2...main)
