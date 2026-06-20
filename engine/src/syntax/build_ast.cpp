@@ -63,12 +63,21 @@ Primary Primary::basic(Primary_Kind kind, File_Source_Span source_span, std::u8s
         return Primary { kind, source_span, source, length };
     }
 
+    case empty_splice: {
+        return Primary::empty_splice(source_span, source);
+    }
+
     case escape:
     case quoted_string:
     case block:
     case group: break;
     }
     COWEL_ASSERT_UNREACHABLE(u8"Kind is not basic basic.");
+}
+
+Primary Primary::empty_splice(const File_Source_Span source_span, const std::u8string_view source)
+{
+    return Primary { Primary_Kind::empty_splice, source_span, source, std::monostate {} };
 }
 
 Primary Primary::escape(
@@ -348,7 +357,8 @@ void Primary::assert_validity() const
     case Primary_Kind::decimal_float_literal:
     case Primary_Kind::unquoted_member_name:
     case Primary_Kind::id_expression:
-    case Primary_Kind::text: {
+    case Primary_Kind::text:
+    case Primary_Kind::empty_splice: {
         break;
     }
     case Primary_Kind::escape: {
@@ -598,8 +608,18 @@ private:
         advance_by_tokens(1);
 
         ignore_skips();
-        ast::Expression expression = build_expression();
-        ignore_skips();
+
+        const CST_Instruction_Kind pop_kind
+            = push.kind == CST_Instruction_Kind::push_expression_splice
+            ? CST_Instruction_Kind::pop_expression_splice
+            : CST_Instruction_Kind::pop_expression_line_splice;
+        const bool is_empty = !eof() && peek_instruction().kind == pop_kind;
+
+        std::optional<ast::Expression> expression;
+        if (!is_empty) {
+            expression.emplace(build_expression());
+            ignore_skips();
+        }
 
         const CST_Instruction pop = pop_instruction();
         COWEL_ASSERT(
@@ -614,8 +634,18 @@ private:
         // which does not have these delimiters as part of its source.
         const File_Source_Span expression_splice_span
             = make_file_span(expression_splice_begin, expression_splice_end);
+        if (is_empty) {
+            const auto source = extract(expression_splice_span);
+            return ast::Expression {
+                ast::Primary::basic(
+                    ast::Primary_Kind::empty_splice, expression_splice_span, source
+                ),
+                expression_splice_span,
+                source,
+            };
+        }
         return ast::Expression {
-            std::move(expression),
+            std::move(*expression),
             expression_splice_span,
             extract(expression_splice_span),
         };

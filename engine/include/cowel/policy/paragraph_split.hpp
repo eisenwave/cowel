@@ -116,8 +116,9 @@ public:
             }
             break;
         }
-        case ast::Primary_Kind::comment: {
-            // Comments syntactically include the terminating newline,
+        case ast::Primary_Kind::comment:
+        case ast::Primary_Kind::empty_splice: {
+            // Comments and empty splices syntactically include the terminating newline,
             // so a leading newline following a comment would be considered a paragraph break.
             m_line_state = Blank_Line_Initial_State::normal;
             break;

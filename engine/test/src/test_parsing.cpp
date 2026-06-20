@@ -68,6 +68,7 @@ enum struct Node_Kind : Default_Underlying {
     text,
     escape,
     line_comment,
+    empty_splice,
     directive,
     quoted_member_name,
     quoted_string,
@@ -294,6 +295,13 @@ struct Node {
     }
 
     [[nodiscard]]
+    static Node empty_splice(std::u8string_view text)
+    {
+        COWEL_ASSERT(text.starts_with(u8"\\ "));
+        return { .kind = Node_Kind::empty_splice, .name_or_text = text };
+    }
+
+    [[nodiscard]]
     static Node directive(std::u8string_view name)
     {
         return { .kind = Node_Kind::directive, .name_or_text = name };
@@ -480,6 +488,10 @@ struct Node {
 
         case ast::Primary_Kind::comment: {
             return line_comment(actual.get_source());
+        }
+
+        case ast::Primary_Kind::empty_splice: {
+            return empty_splice(actual.get_source());
         }
 
         case ast::Primary_Kind::quoted_string:
@@ -731,6 +743,10 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
 
     case Node_Kind::line_comment: {
         return out << "Comment(" << node.name_or_text << ')';
+    }
+
+    case Node_Kind::empty_splice: {
+        return out << "EmptySplice(" << node.name_or_text << ')';
     }
 
     case Node_Kind::directive: {

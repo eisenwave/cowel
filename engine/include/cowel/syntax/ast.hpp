@@ -43,6 +43,7 @@ enum struct Primary_Kind : Default_Underlying {
     text,
     escape,
     comment,
+    empty_splice,
 };
 
 /// @brief Returns `true` iff `kind` is a value.
@@ -69,7 +70,8 @@ constexpr bool primary_kind_is_value(Primary_Kind kind)
 
     case text:
     case escape:
-    case comment: return false;
+    case comment:
+    case empty_splice: return false;
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid kind.");
 }
@@ -92,7 +94,8 @@ constexpr bool primary_kind_is_spliceable(Primary_Kind kind)
     case block:
     case text:
     case escape:
-    case comment: return true;
+    case comment:
+    case empty_splice: return true;
 
     case group: return false;
     }
@@ -141,6 +144,9 @@ private:
 
     [[nodiscard]]
     static Primary floating(File_Source_Span source_span, std::u8string_view source);
+
+    [[nodiscard]]
+    static Primary empty_splice(File_Source_Span source_span, std::u8string_view source);
 
 public:
     [[nodiscard]]
