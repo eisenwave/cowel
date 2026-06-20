@@ -3215,14 +3215,15 @@ COWEL markup:
 </example-block>
 
 <p>A related form is the <dfn>expression line splice</dfn>,
-which starts with '<code><h- data-h=str_esc>\</h-><h- data-h=str_esc> </h-></code>'
+which starts with '<code>\ </code>'
 followed by an expression on the next line.
 The terminating newline is part of the splice,
 not part of the text markup.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block>3;</code-block>
+</p><code-block><h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim> </h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h->
+;</code-block>
 <p>Generated HTML:
 </p><code-block>3;</code-block>
 </example-block>

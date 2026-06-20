@@ -924,7 +924,7 @@ not part of the text markup.
 \Bex{
 COWEL markup:
 \cowblock{
-\ 1 + 2
+\\ 1 + 2
 ;
 }
 Generated HTML:
