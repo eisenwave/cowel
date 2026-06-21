@@ -11,7 +11,7 @@ namespace cowel {
 namespace {
 
 [[nodiscard]]
-cowel_mutable_string_view_u8 alloc_str(std::string_view s) noexcept
+cowel_mutable_string_view_u8 alloc_str(const std::string_view s) noexcept
 {
     return cowel_alloc_text_u8({ reinterpret_cast<const char8_t*>(s.data()), s.size() });
 }
@@ -22,7 +22,7 @@ cowel_mutable_string_view_u8 alloc_str(std::string_view s) noexcept
 extern "C" {
 
 cowel_parsed_cli_options_u8
-cowel_parse_cli_options_u8(const char* const* args, size_t arg_count) noexcept
+cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_count) noexcept
 {
     if (arg_count == 0) {
         return {
@@ -63,9 +63,9 @@ cowel_parse_cli_options_u8(const char* const* args, size_t arg_count) noexcept
         parser, "no-color", "Disable colored output", { "no-color" }, args::Options::Global
     };
 
-    std::string run_input;
-    std::string run_output;
-    cowel_severity run_severity = COWEL_SEVERITY_INFO;
+    std::string input_path;
+    std::string output_path;
+    cowel_severity severity = COWEL_SEVERITY_INFO;
     std::string subparser_error_msg;
 
     args::Command run_cmd {
@@ -90,9 +90,41 @@ cowel_parse_cli_options_u8(const char* const* args, size_t arg_count) noexcept
                 subparser_error_msg = sub.GetErrorMsg();
                 return;
             }
-            run_input = args::get(input_arg);
-            run_output = args::get(output_arg);
-            run_severity = args::get(severity_arg);
+            input_path = args::get(input_arg);
+            output_path = args::get(output_arg);
+            severity = args::get(severity_arg);
+        },
+    };
+
+    args::Command tokenize_cmd {
+        parser,
+        "tokenize",
+        "Dumps the tokens of a COWEL document",
+        [&](args::Subparser& sub) {
+            args::Positional<std::string> input_arg { sub, "input", "Input COWEL file",
+                                                      args::Options::Required };
+            args::Positional<std::string> output_arg {
+                sub,
+                "output",
+                "Output token dump file",
+                std::string {},
+            };
+            args::MapFlag<std::string, cowel_severity> severity_arg {
+                sub,
+                "severity",
+                "Minimum (>=) severity for log messages",
+                { 'l', "severity" },
+                severity_arg_map,
+                COWEL_SEVERITY_INFO,
+            };
+            sub.Parse();
+            if (sub.GetError() != args::Error::None) {
+                subparser_error_msg = sub.GetErrorMsg();
+                return;
+            }
+            input_path = args::get(input_arg);
+            output_path = args::get(output_arg);
+            severity = args::get(severity_arg);
         },
     };
 
@@ -137,24 +169,36 @@ cowel_parse_cli_options_u8(const char* const* args, size_t arg_count) noexcept
             .error_message = cowel::alloc_str(msg),
         };
     }
-    if (!run_cmd) {
+
+    if (run_cmd) {
         return {
-            .command = COWEL_CLI_COMMAND_NONE,
-            .input = {},
-            .output = {},
-            .min_severity = COWEL_SEVERITY_INFO,
-            .no_color = false,
+            .command = COWEL_CLI_COMMAND_RUN,
+            .input = cowel::alloc_str(input_path),
+            .output = cowel::alloc_str(output_path),
+            .min_severity = severity,
+            .no_color = no_color_arg.Get(),
+            .ok = true,
+            .error_message = {},
+        };
+    }
+    if (tokenize_cmd) {
+        return {
+            .command = COWEL_CLI_COMMAND_TOKENIZE,
+            .input = cowel::alloc_str(input_path),
+            .output = cowel::alloc_str(output_path),
+            .min_severity = severity,
+            .no_color = no_color_arg.Get(),
             .ok = true,
             .error_message = {},
         };
     }
 
     return {
-        .command = COWEL_CLI_COMMAND_RUN,
-        .input = cowel::alloc_str(run_input),
-        .output = cowel::alloc_str(run_output),
-        .min_severity = run_severity,
-        .no_color = no_color_arg.Get(),
+        .command = COWEL_CLI_COMMAND_NONE,
+        .input = {},
+        .output = {},
+        .min_severity = COWEL_SEVERITY_INFO,
+        .no_color = false,
         .ok = true,
         .error_message = {},
     };

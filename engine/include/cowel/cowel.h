@@ -541,11 +541,40 @@ struct cowel_options_u8 {
     cowel_string_view_u8 preamble;
 };
 
+struct cowel_dump_tokens_options {
+    cowel_string_view source;
+
+    cowel_alloc_fn* alloc;
+    const void* alloc_data;
+    cowel_free_fn* free;
+    const void* free_data;
+    cowel_log_fn* log;
+    const void* log_data;
+
+    cowel_severity min_log_severity;
+    bool no_color;
+};
+
+struct cowel_dump_tokens_options_u8 {
+    cowel_string_view_u8 source;
+
+    cowel_alloc_fn* alloc;
+    const void* alloc_data;
+    cowel_free_fn* free;
+    const void* free_data;
+    cowel_log_fn_u8* log;
+    const void* log_data;
+
+    cowel_severity min_log_severity;
+    bool no_color;
+};
+
 static_assert(sizeof(cowel_string_view) == sizeof(cowel_string_view_u8));
 static_assert(sizeof(cowel_mutable_string_view) == sizeof(cowel_mutable_string_view_u8));
 static_assert(sizeof(cowel_diagnostic) == sizeof(cowel_diagnostic_u8));
 static_assert(sizeof(cowel_syntax_highlighter) == sizeof(cowel_syntax_highlighter_u8));
 static_assert(sizeof(cowel_options) == sizeof(cowel_options_u8));
+static_assert(sizeof(cowel_dump_tokens_options) == sizeof(cowel_dump_tokens_options_u8));
 
 struct cowel_gen_result {
     cowel_processing_status status;
@@ -565,6 +594,16 @@ struct cowel_gen_result_u8 {
     cowel_hover_u8* hovers;
     /// @brief Number of entries in `hovers`.
     size_t hovers_size;
+};
+
+struct cowel_dump_tokens_result {
+    cowel_processing_status status;
+    cowel_mutable_string_view output;
+};
+
+struct cowel_dump_tokens_result_u8 {
+    cowel_processing_status status;
+    cowel_mutable_string_view_u8 output;
 };
 
 // clang-format off
@@ -604,6 +643,16 @@ cowel_gen_result cowel_generate_html(const cowel_options* options) COWEL_NOEXCEP
 COWEL_EXPORT COWEL_NODISCARD
 cowel_gen_result_u8 cowel_generate_html_u8(const cowel_options_u8* options) COWEL_NOEXCEPT;
 
+/// @brief Lexes a document and returns a textual dump of its tokens.
+COWEL_EXPORT COWEL_NODISCARD
+cowel_dump_tokens_result cowel_dump_tokens(const cowel_dump_tokens_options* options)
+    COWEL_NOEXCEPT;
+
+/// @brief See `cowel_dump_tokens`.
+COWEL_EXPORT COWEL_NODISCARD
+cowel_dump_tokens_result_u8 cowel_dump_tokens_u8(const cowel_dump_tokens_options_u8* options)
+    COWEL_NOEXCEPT;
+
 /// @brief Frees all memory associated with a gen result
 /// returned by `cowel_generate_html` or `cowel_generate_html_u8`
 /// (both the output HTML and the hover entries array).
@@ -621,6 +670,18 @@ void cowel_free_gen_result_u8(
 ) COWEL_NOEXCEPT;
 
 COWEL_EXPORT
+void cowel_free_dump_tokens_result_u8(
+    const cowel_dump_tokens_options_u8* options,
+    cowel_dump_tokens_result_u8* result
+) COWEL_NOEXCEPT;
+
+COWEL_EXPORT
+void cowel_free_dump_tokens_result(
+    const cowel_dump_tokens_options* options,
+    cowel_dump_tokens_result* result
+) COWEL_NOEXCEPT;
+
+COWEL_EXPORT
 void cowel_set_assertion_handler_u8(cowel_assertion_handler_fn_u8* handler) COWEL_NOEXCEPT;
 
 /// @brief Identifies the action requested by a parsed CLI invocation.
@@ -633,6 +694,8 @@ enum cowel_cli_command { // NOLINT(performance-enum-size)
     COWEL_CLI_COMMAND_VERSION,
     /// @brief The run subcommand was given with valid input and output paths.
     COWEL_CLI_COMMAND_RUN,
+    /// @brief The tokenize subcommand was given with a valid input path.
+    COWEL_CLI_COMMAND_TOKENIZE,
 };
 
 /// @brief The result of parsing CLI arguments via `cowel_parse_cli_options`.
@@ -643,10 +706,8 @@ struct cowel_parsed_cli_options_u8 {
     cowel_cli_command command;
 
     /// @brief Path to the input file.
-    /// Valid only when `command` is `COWEL_CLI_COMMAND_RUN`.
     cowel_mutable_string_view_u8 input;
     /// @brief Path to the output file.
-    /// Valid only when `command` is `COWEL_CLI_COMMAND_RUN`.
     cowel_mutable_string_view_u8 output;
     /// @brief Minimum log severity.
     /// Valid only when `command` is `COWEL_CLI_COMMAND_RUN`.

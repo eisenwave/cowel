@@ -59,6 +59,19 @@ export type GenResult = {
     variables: Record<string, string>;
 };
 
+export type DumpTokensOptions = {
+    noColor: boolean;
+    minSeverity: Severity;
+    log(diagnostic: Diagnostic): void;
+};
+
+export type DumpTokensResult = {
+    /** The processing status from token dumping. */
+    status: ProcessingStatus;
+    /** The dumped token text. */
+    output: string;
+};
+
 export type FileResult = {
     status: IoStatus,
     data?: Buffer,
@@ -194,6 +207,15 @@ type CowelWasmExports = WebAssembly.Exports & {
     cowel_alloc(size: number, alignment: number): Address;
     cowel_free(address: Address, size: number, alignment: number): void;
     cowel_generate_html_u8(result: Address, options: Address): void;
+    cowel_dump_tokens_u8(result: Address, options: Address): void;
+
+    init_dump_tokens_options(
+        result: Address,
+        sourceText: Address,
+        sourceLength: number,
+        minLogSeverity: Severity,
+        noColor: boolean,
+    ): void;
 
     init_options(
         resultAddress: Address,
@@ -931,7 +953,7 @@ export function createBigIntRegExpWasmEnvObject(
 }
 
 export type ParsedCliOptions = {
-    command: "none" | "help" | "version" | "run";
+    command: "none" | "help" | "version" | "run" | "tokenize";
     ok: boolean;
     input: string;
     output: string;
@@ -1087,6 +1109,33 @@ export class CowelWasm {
         return result;
     }
 
+    async dumpTokens(
+        source: string,
+        options: DumpTokensOptions,
+    ): Promise<DumpTokensResult> {
+        this.log = options.log;
+
+        const sourceAlloc = this.allocUtf8(source);
+        const optionsAlloc = this.alloc2(40, 4);
+        this.exports.init_dump_tokens_options(
+            optionsAlloc.address,
+            sourceAlloc.address,
+            sourceAlloc.size,
+            options.minSeverity,
+            options.noColor,
+        );
+
+        const resultAlloc = this.alloc2(12, 4);
+        this.exports.cowel_dump_tokens_u8(resultAlloc.address, optionsAlloc.address);
+        const result = this.decodeDumpTokensResult(resultAlloc.address);
+
+        this.free(resultAlloc);
+        this.free(optionsAlloc);
+        this.free(sourceAlloc);
+
+        return result;
+    }
+
     generateCodeCitationFor(options: CodeCiteOptions): string {
         if (options.length === 0) {
             throw new Error("Cannot generate code citation " +
@@ -1191,7 +1240,8 @@ export class CowelWasm {
             command === 0 ? "none" :
                 command === 1 ? "help" :
                     command === 2 ? "version" :
-                        "run"
+                        command === 4 ? "tokenize" :
+                            "run"
         ) as ParsedCliOptions["command"];
 
         return { command: commandStr, ok, input, output, minSeverity, noColor, errorMessage };
@@ -1282,6 +1332,15 @@ export class CowelWasm {
         }
 
         return { status, output, variables };
+    }
+
+    private decodeDumpTokensResult(address: Address): DumpTokensResult {
+        const status: ProcessingStatus = this.heap_i32[address / 4 + 0];
+        const outputAddress = this.heap_u32[address / 4 + 1];
+        const outputSize = this.heap_u32[address / 4 + 2];
+        const output = this.decodeUtf8(outputAddress, outputSize);
+        this.free(outputAddress, outputSize, 1);
+        return { status, output };
     }
 
     /**

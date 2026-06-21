@@ -27,10 +27,12 @@
 #include "cowel/fwd.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/output_language.hpp"
+#include "cowel/print.hpp"
 #include "cowel/services.hpp"
 #include "cowel/ulight_highlighter.hpp"
 
 #include "cowel/syntax/ast.hpp"
+#include "cowel/syntax/lex.hpp"
 #include "cowel/syntax/parse.hpp"
 
 namespace cowel {
@@ -382,6 +384,70 @@ public:
 };
 
 [[nodiscard]]
+cowel_dump_tokens_result_u8 do_dump_tokens(const cowel_dump_tokens_options_u8& options)
+{
+    Pointer_Memory_Resource pointer_memory { options.alloc, options.alloc_data, options.free,
+                                             options.free_data };
+    Global_Memory_Resource global_memory;
+    auto* const memory = options.alloc && options.free
+        ? static_cast<std::pmr::memory_resource*>(&pointer_memory)
+        : static_cast<std::pmr::memory_resource*>(&global_memory);
+
+    std::pmr::vector<Token> tokens { memory };
+    std::pmr::vector<char8_t> diagnostic_buffer { memory };
+    const auto on_error = [&](std::u8string_view id,
+                              [[maybe_unused]]
+                              const Source_Span& location,
+                              Char_Sequence8 message) {
+        if (cowel_severity(Severity::error) < options.min_log_severity) {
+            return;
+        }
+        if (options.log == nullptr) {
+            return;
+        }
+
+        diagnostic_buffer.clear();
+        const auto message_sv = char_sequence_to_sv(message, diagnostic_buffer);
+        const cowel_diagnostic_u8 diagnostic {
+            .severity = COWEL_SEVERITY_ERROR,
+            .id = { reinterpret_cast<const char8_t*>(id.data()), id.size() },
+            .message = { message_sv.text, message_sv.length },
+            .stack = nullptr,
+            .stack_size = 0,
+        };
+        options.log(options.log_data, &diagnostic);
+    };
+    if (!lex(tokens, as_u8string_view(options.source), on_error)) {
+        return {
+            .status = COWEL_PROCESSING_ERROR,
+            .output = {},
+        };
+    }
+
+    Diagnostic_String out { memory };
+    dump_tokens(out, std::span<const Token> { tokens }, as_u8string_view(options.source));
+
+    std::pmr::vector<char8_t> rendered { memory };
+    dump_code_string(rendered, out, !options.no_color);
+
+    auto* const result_data
+        = static_cast<char8_t*>(memory->allocate(rendered.size(), alignof(char8_t)));
+    const cowel_mutable_string_view_u8 result { result_data, rendered.size() };
+    if (result.text == nullptr) {
+        return {
+            .status = COWEL_PROCESSING_FATAL,
+            .output = result,
+        };
+    }
+
+    std::memcpy(result_data, rendered.data(), rendered.size());
+    return {
+        .status = COWEL_PROCESSING_OK,
+        .output = result,
+    };
+}
+
+[[nodiscard]]
 cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 {
     Pointer_Memory_Resource pointer_memory { options };
@@ -591,9 +657,9 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 }
 
 [[maybe_unused]] [[noreturn]]
-void uncaught_exception(const cowel_options& options)
+void uncaught_exception(cowel_log_fn* const log, const void* const log_data)
 {
-    if (!options.log) {
+    if (!log) {
         std::terminate();
     }
     constexpr std::string_view message = "Uncaught exception.";
@@ -606,14 +672,14 @@ void uncaught_exception(const cowel_options& options)
         .stack = nullptr,
         .stack_size = 0,
     };
-    options.log(options.log_data, &diagnostic);
+    log(log_data, &diagnostic);
     std::terminate();
 }
 
 [[maybe_unused]] [[noreturn]]
-void uncaught_exception_u8(const cowel_options_u8& options)
+void uncaught_exception_u8(cowel_log_fn_u8* const log, const void* const log_data)
 {
-    if (!options.log) {
+    if (!log) {
         std::terminate();
     }
     constexpr std::u8string_view message = u8"Uncaught exception.";
@@ -626,7 +692,7 @@ void uncaught_exception_u8(const cowel_options_u8& options)
         .stack = nullptr,
         .stack_size = 0,
     };
-    options.log(options.log_data, &diagnostic);
+    log(log_data, &diagnostic);
     std::terminate();
 }
 
@@ -708,7 +774,7 @@ cowel_gen_result cowel_generate_html(const cowel_options* options) noexcept
         return std::bit_cast<cowel_gen_result>(result_u8);
 #ifdef ULIGHT_EXCEPTIONS
     } catch (...) {
-        cowel::uncaught_exception(*options);
+        cowel::uncaught_exception(options->log, options->log_data);
     }
 #endif
 }
@@ -722,7 +788,39 @@ cowel_gen_result_u8 cowel_generate_html_u8(const cowel_options_u8* options) noex
         return cowel::do_generate_html(*options);
 #ifdef ULIGHT_EXCEPTIONS
     } catch (...) {
-        cowel::uncaught_exception_u8(*options);
+        cowel::uncaught_exception_u8(options->log, options->log_data);
+    }
+#endif
+}
+
+cowel_dump_tokens_result cowel_dump_tokens(const cowel_dump_tokens_options* options) noexcept
+{
+#ifdef ULIGHT_EXCEPTIONS
+    try {
+#endif
+        COWEL_ASSERT(options != nullptr);
+        const cowel_dump_tokens_options_u8& options_u8
+            = std::bit_cast<cowel_dump_tokens_options_u8>(*options);
+        const cowel_dump_tokens_result_u8 result_u8 = cowel_dump_tokens_u8(&options_u8);
+        return std::bit_cast<cowel_dump_tokens_result>(result_u8);
+#ifdef ULIGHT_EXCEPTIONS
+    } catch (...) {
+        cowel::uncaught_exception(options->log, options->log_data);
+    }
+#endif
+}
+
+cowel_dump_tokens_result_u8
+cowel_dump_tokens_u8(const cowel_dump_tokens_options_u8* options) noexcept
+{
+#ifdef ULIGHT_EXCEPTIONS
+    try {
+#endif
+        COWEL_ASSERT(options != nullptr);
+        return cowel::do_dump_tokens(*options);
+#ifdef ULIGHT_EXCEPTIONS
+    } catch (...) {
+        cowel::uncaught_exception_u8(options->log, options->log_data);
     }
 #endif
 }
@@ -766,11 +864,56 @@ void cowel_free_gen_result_u8(
     }
 }
 
-void cowel_free_gen_result(const cowel_options* options, cowel_gen_result* result) noexcept
+void cowel_free_gen_result(const cowel_options* options, cowel_gen_result* const result) noexcept
 {
+    COWEL_ASSERT(options != nullptr);
+    COWEL_ASSERT(result != nullptr);
     const auto u8_options = std::bit_cast<cowel_options_u8>(*options);
     auto u8_result = std::bit_cast<cowel_gen_result_u8>(*result);
     cowel_free_gen_result_u8(&u8_options, &u8_result);
     *result = std::bit_cast<cowel_gen_result>(u8_result);
+}
+
+void cowel_free_dump_tokens_result_u8(
+    const cowel_dump_tokens_options_u8* const options,
+    cowel_dump_tokens_result_u8* const result
+) noexcept
+{
+    if (result == nullptr) {
+        return;
+    }
+    cowel_free_fn* const free_fn = options != nullptr ? options->free : nullptr;
+    const void* const free_data
+        = free_fn != nullptr && options != nullptr ? options->free_data : nullptr;
+    const auto do_free
+        = [&](void* const ptr, const std::size_t size, const std::size_t alignment) noexcept {
+              if (ptr == nullptr) {
+                  return;
+              }
+              if (free_fn != nullptr) {
+                  free_fn(free_data, ptr, size, alignment);
+              }
+              else {
+                  cowel_free(ptr, size, alignment);
+              }
+          };
+
+    if (result->output.text != nullptr) {
+        do_free(result->output.text, result->output.length, alignof(char8_t));
+        result->output = {};
+    }
+}
+
+void cowel_free_dump_tokens_result(
+    const cowel_dump_tokens_options* const options,
+    cowel_dump_tokens_result* const result
+) noexcept
+{
+    COWEL_ASSERT(options != nullptr);
+    COWEL_ASSERT(result != nullptr);
+    const auto u8_options = std::bit_cast<cowel_dump_tokens_options_u8>(*options);
+    auto u8_result = std::bit_cast<cowel_dump_tokens_result_u8>(*result);
+    cowel_free_dump_tokens_result_u8(&u8_options, &u8_result);
+    *result = std::bit_cast<cowel_dump_tokens_result>(u8_result);
 }
 }

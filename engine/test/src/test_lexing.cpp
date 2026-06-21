@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 
 #include "cowel/util/annotated_string.hpp"
+#include "cowel/util/ansi.hpp"
 #include "cowel/util/ascii_algorithm.hpp"
 #include "cowel/util/char_sequence_ops.hpp"
 #include "cowel/util/chars.hpp"
@@ -21,6 +22,7 @@
 #include "cowel/util/tty.hpp"
 #include "cowel/util/unicode.hpp"
 
+#include "cowel/cowel.h"
 #include "cowel/diagnostic_highlight.hpp"
 #include "cowel/memory_resources.hpp"
 #include "cowel/print.hpp"
@@ -153,18 +155,6 @@ void decode_expectation_argument(std::pmr::u8string& out, const std::u8string_vi
 }
 
 [[nodiscard]]
-std::u8string_view token_kind_name(const Token_Kind kind)
-{
-#define COWEL_TOKEN_KIND_SWITCH_CASE(id, name, first)                                              \
-    case Token_Kind::id: return u8##name##sv;
-
-    switch (kind) {
-        COWEL_TOKEN_KIND_ENUM_DATA(COWEL_TOKEN_KIND_SWITCH_CASE)
-    }
-    return {};
-}
-
-[[nodiscard]]
 constexpr std::optional<Token_Kind> token_by_name(const std::u8string_view name)
 {
     struct Name_And_Token {
@@ -184,65 +174,6 @@ constexpr std::optional<Token_Kind> token_by_name(const std::u8string_view name)
         return {};
     }
     return result->kind;
-}
-
-[[nodiscard]]
-std::u8string_view token_kind_source(const Token_Kind kind)
-{
-    using enum Token_Kind;
-    switch (kind) {
-    case binary_int:
-    case block_comment:
-    case block_text:
-    case decimal_float:
-    case decimal_int:
-    case directive_splice_name:
-    case document_text:
-    case error:
-    case escape:
-    case identifier:
-    case hexadecimal_int_literal:
-    case line_comment:
-    case octal_int:
-    case quoted_string_text:
-    case reserved_escape:
-    case reserved_number:
-    case whitespace: return {};
-
-    case bitwise_not: return u8"~"sv;
-    case logical_not: return u8"!"sv;
-    case logical_and: return u8"&&"sv;
-    case logical_or: return u8"||"sv;
-    case not_equals: return u8"!="sv;
-    case minus: return u8"-"sv;
-    case plus: return u8"+"sv;
-    case asterisk: return u8"*"sv;
-    case slash: return u8"/"sv;
-    case percent: return u8"%"sv;
-    case brace_left: return u8"{"sv;
-    case brace_right: return u8"}"sv;
-    case comma: return u8","sv;
-    case ellipsis: return u8"..."sv;
-    case equals: return u8"="sv;
-    case equals_equals: return u8"=="sv;
-    case expression_line_splice: return u8"\\ "sv;
-    case expression_splice: return u8"\\("sv;
-    case less_than: return u8"<"sv;
-    case less_equal: return u8"<="sv;
-    case greater_than: return u8">"sv;
-    case greater_equal: return u8">="sv;
-    case false_: return u8"false"sv;
-    case infinity: return u8"infinity"sv;
-    case null: return u8"null"sv;
-    case parenthesis_left: return u8"("sv;
-    case parenthesis_right: return u8")"sv;
-    case string_quote: return u8"\""sv;
-    case true_: return u8"true"sv;
-    case unit: return u8"unit"sv;
-    case line_terminator: return u8"\n"sv;
-    }
-
-    COWEL_ASSERT_UNREACHABLE(u8"Invalid token kind.");
 }
 
 [[nodiscard]]
@@ -408,50 +339,15 @@ std::optional<Lex_Expectations> load_expectations(
     return result;
 }
 
-void append_token(Diagnostic_String& out, const Text_Token& token)
-{
-    out.append(token_kind_name(token.kind), Diagnostic_Highlight::tag);
-    out.append(u8' ');
-
-    const std::u8string_view source = token_kind_source(token.kind);
-    const auto highlight = source.empty() || source == token.text
-        ? Diagnostic_Highlight::text
-        : Diagnostic_Highlight::error_text;
-    auto builder = out.build(highlight);
-    builder.append(u8'"');
-    for (const char32_t c : utf8::Code_Point_View { token.text }) {
-        if (c == u8'\\') {
-            builder.append(u8"\\\\");
-            continue;
-        }
-        if (is_ascii_printing(c)) {
-            builder.append(char8_t(c));
-            continue;
-        }
-        const auto chars = to_characters8(std::uint32_t(c), 16);
-        if (c == std::uint16_t(c)) {
-            builder.append(u8"\\u");
-            builder.append(4 - chars.length(), u8'0');
-            builder.append(chars.as_string());
-        }
-        else {
-            builder.append(u8"\\U");
-            builder.append(8 - chars.length(), u8'0');
-            builder.append(chars.as_string());
-        }
-    }
-    builder.append(u8'"');
-}
-
 void dump_tokens(
     Diagnostic_String& out,
     const std::span<const Text_Token> tokens,
     const std::u8string_view indent = {}
 )
 {
-    for (const auto& i : tokens) {
+    for (const auto& token : tokens) {
         out.append(indent);
-        append_token(out, i);
+        print_token(out, token.kind, token.text);
         out.append(u8'\n');
     }
 }
@@ -649,6 +545,64 @@ TEST(Lex, exhaustive_three_chars)
         tokens.clear();
         lex(tokens, source, noop);
     }
+}
+
+TEST(Lex, DumpTokensCanRenderColorizedOutput)
+{
+    const std::u8string_view source = u8"foo";
+    const cowel_dump_tokens_options_u8 options {
+        .source = { source.data(), source.size() },
+        .alloc = nullptr,
+        .alloc_data = nullptr,
+        .free = nullptr,
+        .free_data = nullptr,
+        .log = nullptr,
+        .log_data = nullptr,
+        .min_log_severity = COWEL_SEVERITY_INFO,
+        .no_color = false,
+    };
+
+    cowel_dump_tokens_result_u8 result = cowel_dump_tokens_u8(&options);
+    ASSERT_EQ(result.status, COWEL_PROCESSING_OK);
+    ASSERT_NE(result.output.text, nullptr);
+
+    const std::u8string_view output { result.output.text, result.output.length };
+    EXPECT_NE(output.find(ansi::h_blue), std::u8string_view::npos);
+
+    cowel_free_dump_tokens_result_u8(&options, &result);
+}
+
+TEST(Lex, DumpTokensForwardsLexerDiagnostics)
+{
+    const std::u8string_view source = u8"\\ref(\"N1234\"\n\\bib()";
+    struct Diagnostic_Collector {
+        mutable std::vector<cowel_diagnostic_u8> diagnostics;
+    } collector;
+    const auto log = [](const void* data, const cowel_diagnostic_u8* diagnostic) noexcept {
+        const auto* const collector = static_cast<const Diagnostic_Collector*>(data);
+        collector->diagnostics.push_back(*diagnostic);
+    };
+
+    const cowel_dump_tokens_options_u8 options {
+        .source = { source.data(), source.size() },
+        .alloc = nullptr,
+        .alloc_data = nullptr,
+        .free = nullptr,
+        .free_data = nullptr,
+        .log = log,
+        .log_data = &collector,
+        .min_log_severity = COWEL_SEVERITY_INFO,
+        .no_color = true,
+    };
+
+    cowel_dump_tokens_result_u8 result = cowel_dump_tokens_u8(&options);
+    EXPECT_EQ(result.status, COWEL_PROCESSING_ERROR);
+    EXPECT_GE(collector.diagnostics.size(), 1uz);
+    ASSERT_FALSE(collector.diagnostics.empty());
+    EXPECT_EQ(collector.diagnostics.front().severity, COWEL_SEVERITY_ERROR);
+    EXPECT_NE(collector.diagnostics.front().message.length, 0uz);
+
+    cowel_free_dump_tokens_result_u8(&options, &result);
 }
 
 } // namespace

@@ -13,12 +13,17 @@
 
 - Added syntax highlighting for the new *directive-line-splice* feature.
 
+### Command line interface
+
+- Added a `cowel tokenize` command for dumping all the tokens in a COWEL document.
+  This is mainly intended as a developer tool for debugging (#407).
+
 **Full Changelog**:
 [`v0.10.2...main`](https://github.com/eisenwave/cowel/compare/v0.10.2...main)
 
 ## **[v0.10.2](https://github.com/eisenwave/cowel/releases/tag/v0.10.2)** (2026-06-04)
 
-### Command Line Interface
+### Command line interface
 
 - Fixed `cowel watch` crashing with EPIPE when navigating back/forward in the browser (#386)
 - Fixed `cowel watch` not reacting to changes in included files (#382)
@@ -39,7 +44,7 @@
 
 ## **[v0.10.1](https://github.com/eisenwave/cowel/releases/tag/v0.10.1)** (2026-05-24)
 
-### Command Line Interface
+### Command line interface
 
 - Added `watch` command for serving the output of a COWEL document over HTTP,
   and auto-updating the web content on file changes (#339)

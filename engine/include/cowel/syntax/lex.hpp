@@ -83,6 +83,12 @@ struct Token {
 using Lex_Error_Consumer = Function_Ref<
     void(std::u8string_view id, const Source_Span& location, Char_Sequence8 message)>;
 
+[[nodiscard]]
+std::u8string_view token_kind_name(Token_Kind kind);
+
+[[nodiscard]]
+std::u8string_view token_kind_source(Token_Kind kind);
+
 bool lex(
     std::pmr::vector<Token>& out, //
     std::u8string_view source,
