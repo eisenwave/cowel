@@ -215,6 +215,39 @@ describe("CLI Output", () => {
         assert.strictEqual(actual, expected);
     });
 
+    test("tokenize reports a missing input file", () => {
+        const missingPath = path.join(cliTestDir, "tokenize", "missing.cowel");
+        const result = spawnSync(
+            process.execPath,
+            [cliPath, "tokenize", missingPath, "--no-color"],
+            {
+                cwd: cliTestDir,
+                encoding: "utf8",
+            },
+        );
+
+        assert.notStrictEqual(result.status, 0);
+        const output = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+        assert.match(output, /Failed to open input file/);
+        assert.match(output, new RegExp(missingPath.replaceAll(path.sep, "\\\\")));
+    });
+
+    test("tokenize reports tokenizer errors", () => {
+        const inputPath = path.join(cliTestDir, "lex_error.cow");
+        const result = spawnSync(
+            process.execPath,
+            [cliPath, "tokenize", inputPath, "--no-color"],
+            {
+                cwd: cliTestDir,
+                encoding: "utf8",
+            },
+        );
+
+        assert.notStrictEqual(result.status, 0);
+        const output = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+        assert.match(output, /Token dump exited with status 2 \(error\)/);
+    });
+
     for (const testPath of testPaths) {
         const relativePath = path.relative(cliTestDir, testPath);
 

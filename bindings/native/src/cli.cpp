@@ -289,7 +289,9 @@ int run_run_command(
     const auto out_file = fopen_unique(out_path.c_str(), "wb");
     if (!out_file) {
         cowel_free_gen_result_u8(&options, &result);
-        log_cli_diagnostic(log_ref, COWEL_SEVERITY_FATAL, u8"Failed to open output file.", u8"run");
+        log_cli_diagnostic(
+            log_ref, COWEL_SEVERITY_FATAL, u8"Failed to open output file.", u8"run", out_path_u8
+        );
         return EXIT_FAILURE;
     }
 
@@ -341,7 +343,8 @@ int run_tokenize_command(
         const auto out_file = fopen_unique(out_path.c_str(), "wb");
         if (!out_file) {
             log_cli_diagnostic(
-                log_ref, COWEL_SEVERITY_FATAL, u8"Failed to open output file.", u8"tokenize"
+                log_ref, COWEL_SEVERITY_FATAL, u8"Failed to open output file.", u8"tokenize",
+                out_path_u8
             );
             cowel_free_dump_tokens_result_u8(&dump_options, &dump_result);
             return EXIT_FAILURE;
