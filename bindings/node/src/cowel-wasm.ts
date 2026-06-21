@@ -59,6 +59,12 @@ export type GenResult = {
     variables: Record<string, string>;
 };
 
+export type DumpTokensOptions = {
+    noColor: boolean;
+    minSeverity: Severity;
+    log(diagnostic: Diagnostic): void;
+};
+
 export type DumpTokensResult = {
     /** The processing status from token dumping. */
     status: ProcessingStatus;
@@ -1105,8 +1111,10 @@ export class CowelWasm {
 
     async dumpTokens(
         source: string,
-        options: { noColor: boolean; minSeverity: Severity },
+        options: DumpTokensOptions,
     ): Promise<DumpTokensResult> {
+        this.log = options.log;
+
         const sourceAlloc = this.allocUtf8(source);
         const optionsAlloc = this.alloc2(40, 4);
         this.exports.init_dump_tokens_options(
