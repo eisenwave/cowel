@@ -10,6 +10,7 @@
 #endif
 
 #include <cstddef>
+#include <span>
 #include <string_view>
 #include <vector>
 
@@ -19,6 +20,8 @@
 #include "cowel/util/source_position.hpp"
 
 #include "cowel/diagnostic_highlight.hpp"
+
+#include "cowel/syntax/lex.hpp"
 
 namespace cowel {
 
@@ -83,6 +86,15 @@ void append_char_sequence(
     Diagnostic_String& out,
     Char_Sequence8 chars,
     Diagnostic_Highlight highlight
+);
+
+void print_token(Diagnostic_String& out, Token_Kind kind, std::u8string_view token_text);
+
+void dump_tokens(
+    Diagnostic_String& out,
+    std::span<const Token> tokens,
+    std::u8string_view source,
+    std::u8string_view indent = {}
 );
 
 #ifndef COWEL_EMSCRIPTEN

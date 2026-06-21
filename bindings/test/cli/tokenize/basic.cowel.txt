@@ -1,0 +1,3 @@
+DOCUMENT-TEXT "x + 1\u000a\u000a"
+ESCAPE "\\\\"
+DOCUMENT-TEXT "foo{bar}\u000a\u000ahello\u000a"

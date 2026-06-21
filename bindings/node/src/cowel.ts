@@ -46,11 +46,12 @@ enum AnsiCode {
 }
 
 const helpText = `\
-Usage: cowel <command> <input> <output> [options]
+Usage: cowel <command> <input> [output] [options]
 
 Commands:
-  run   <input> <output>  Processes a COWEL document
-  watch <input> <output>  Processes a COWEL document and serves it with live reload
+  run       <input> <output>        Processes a COWEL document
+  tokenize  <input> [output]        Dumps the tokens of a COWEL document
+  watch     <input> <output>        Processes a COWEL document and serves it with live reload
 
 Options:
   -h, --help            Display this help menu
@@ -273,6 +274,44 @@ async function compile(
     return result.output;
 }
 
+async function tokenize(
+    inputPath: string,
+    outputPath: string,
+    noColor: boolean,
+): Promise<number> {
+    let source: string;
+    try {
+        source = fs.readFileSync(inputPath, "utf8");
+    } catch (_) {
+        logError(inputPath, "file.read", "Failed to open main document.");
+        return 1;
+    }
+
+    const result = await wasm!.dumpTokens(source, noColor);
+    if (result.status !== cowel.ProcessingStatus.ok) {
+        const statusString = cowel.ProcessingStatus[result.status];
+        logError(
+            inputPath,
+            `status.${statusString}`,
+            `Token dump exited with status ${result.status} (${statusString}).`,
+        );
+        return 1;
+    }
+
+    try {
+        if (outputPath.length !== 0) {
+            fs.writeFileSync(outputPath, result.output, { encoding: "utf8" });
+        } else {
+            process.stdout.write(result.output);
+        }
+    } catch (_) {
+        logError(outputPath, "file.write", "Failed to write generated output.");
+        return 1;
+    }
+
+    return 0;
+}
+
 async function run(
     inputPath: string,
     outputPath: string,
@@ -444,6 +483,8 @@ async function main(): Promise<number> {
             return 0;
         case "run":
             break;
+        case "tokenize":
+            return tokenize(opts.input, opts.output, opts.noColor);
     }
 
     colorsEnabled = !opts.noColor;

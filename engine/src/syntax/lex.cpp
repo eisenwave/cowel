@@ -19,6 +19,78 @@
 using namespace std::string_view_literals;
 
 namespace cowel {
+
+[[nodiscard]]
+std::u8string_view token_kind_name(const Token_Kind kind)
+{
+#define COWEL_TOKEN_KIND_SWITCH_CASE(id, name, first)                                              \
+    case Token_Kind::id: return u8##name##sv;
+
+    switch (kind) {
+        COWEL_TOKEN_KIND_ENUM_DATA(COWEL_TOKEN_KIND_SWITCH_CASE)
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid token kind.");
+}
+
+[[nodiscard]]
+std::u8string_view token_kind_source(const Token_Kind kind)
+{
+    using enum Token_Kind;
+    switch (kind) {
+    case binary_int:
+    case block_comment:
+    case block_text:
+    case decimal_float:
+    case decimal_int:
+    case directive_splice_name:
+    case document_text:
+    case error:
+    case escape:
+    case identifier:
+    case hexadecimal_int_literal:
+    case line_comment:
+    case octal_int:
+    case quoted_string_text:
+    case reserved_escape:
+    case reserved_number:
+    case whitespace: return {};
+
+    case bitwise_not: return u8"~"sv;
+    case logical_not: return u8"!"sv;
+    case logical_and: return u8"&&"sv;
+    case logical_or: return u8"||"sv;
+    case not_equals: return u8"!="sv;
+    case minus: return u8"-"sv;
+    case plus: return u8"+"sv;
+    case asterisk: return u8"*"sv;
+    case slash: return u8"/"sv;
+    case percent: return u8"%"sv;
+    case brace_left: return u8"{"sv;
+    case brace_right: return u8"}"sv;
+    case comma: return u8","sv;
+    case ellipsis: return u8"..."sv;
+    case equals: return u8"="sv;
+    case equals_equals: return u8"=="sv;
+    case expression_line_splice: return u8"\\ "sv;
+    case expression_splice: return u8"\\("sv;
+    case less_than: return u8"<"sv;
+    case less_equal: return u8"<="sv;
+    case greater_than: return u8">"sv;
+    case greater_equal: return u8">="sv;
+    case false_: return u8"false"sv;
+    case infinity: return u8"infinity"sv;
+    case null: return u8"null"sv;
+    case parenthesis_left: return u8"("sv;
+    case parenthesis_right: return u8")"sv;
+    case string_quote: return u8"\""sv;
+    case true_: return u8"true"sv;
+    case unit: return u8"unit"sv;
+    case line_terminator: return u8"\n"sv;
+    }
+
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid token kind.");
+}
+
 namespace {
 
 using ulight::Common_Number_Result;

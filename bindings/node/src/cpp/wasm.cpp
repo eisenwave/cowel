@@ -67,6 +67,28 @@ void consume_variables_callback(const void*, const cowel_string_view_u8* variabl
 extern "C" {
 
 COWEL_EXPORT
+void init_dump_tokens_options(
+    cowel_dump_tokens_options_u8* const result,
+    const char8_t* const source_text,
+    const std::size_t source_length,
+    const cowel_severity min_log_severity,
+    const bool no_color
+) noexcept
+{
+    *result = cowel_dump_tokens_options_u8 {
+        .source = { source_text, source_length },
+        .alloc = nullptr,
+        .alloc_data = nullptr,
+        .free = nullptr,
+        .free_data = nullptr,
+        .log = log_callback,
+        .log_data = nullptr,
+        .min_log_severity = min_log_severity,
+        .no_color = no_color,
+    };
+}
+
+COWEL_EXPORT
 void init_options(
     cowel_options_u8* const result,
     const char8_t* const source_text,

@@ -1,4 +1,6 @@
-**/build
+**/build/
+**/build-*/
+
 node_modules
 __pycache__
 playwright-report/

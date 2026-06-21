@@ -187,22 +187,172 @@ struct Stderr_Logger {
     }
 };
 
-constexpr std::string_view help_text = R"(Usage: cowel run <input> <output> [options]
+constexpr std::string_view help_text = R"(Usage: cowel <command> <input> [output] [options]
 
 Commands:
-  run <input> <output>  Processes a COWEL document
+  run <input> <output>        Processes a COWEL document
+  tokenize <input> [output]   Dumps the tokens of a COWEL document
 
 Options:
-  -h, --help            Display this help menu
-  -v, --version         Show version
-  -l, --severity        Minimum (>=) severity for log messages
-                        Choices: min, trace, debug, info, soft_warning,
-                                 warning, error, fatal, none
-                        Default: info
-      --no-color        Disable colored output
+  -h, --help                  Display this help menu
+  -v, --version               Show version
+  -l, --severity              Minimum (>=) severity for log messages
+                              Choices: min, trace, debug, info, soft_warning,
+                                       warning, error, fatal, none
+                              Default: info
+      --no-color              Disable colored output
 )";
 
 constexpr std::string_view version_text = "11.0.0-pre\n";
+
+void log_cli_diagnostic(
+    const Function_Ref<void(const cowel_diagnostic_u8*) noexcept>& log_ref,
+    cowel_severity severity,
+    std::u8string_view message,
+    std::u8string_view id = u8"cli",
+    std::u8string_view file = {}
+)
+{
+    const std::u8string message_storage { message };
+    const std::u8string id_storage { id };
+    const std::u8string file_storage { file };
+    const cowel_diagnostic_location_u8 location {
+        .file_name = as_cowel_string_view(file_storage),
+        .file_id = -1,
+        .begin = 0,
+        .length = 0,
+        .line = 0,
+        .column = 0,
+    };
+    const cowel_diagnostic_u8 diagnostic {
+        .severity = severity,
+        .id = as_cowel_string_view(id_storage),
+        .message = as_cowel_string_view(message_storage),
+        .stack = &location,
+        .stack_size = 1,
+    };
+    log_ref(&diagnostic);
+}
+
+int run_run_command(
+    const std::u8string_view in_source,
+    const std::u8string_view in_path_u8,
+    const std::u8string_view out_path_u8,
+    const Allocator_Options& alloc_options,
+    const Function_Ref<cowel_file_result_u8(cowel_string_view_u8, cowel_file_id) noexcept>
+        load_file_ref,
+    Stderr_Logger& logger,
+    const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref,
+    const cowel_severity min_log_severity
+)
+{
+    const cowel_options_u8 options {
+        .source = as_cowel_string_view(in_source),
+        .highlight_theme_json = as_cowel_string_view(assets::wg21_json),
+        .mode = COWEL_MODE_DOCUMENT,
+        .flags = 0,
+        .min_log_severity = min_log_severity,
+        .preserved_variables = nullptr,
+        .preserved_variables_size = 0,
+        .consume_variables = nullptr,
+        .consume_variables_data = nullptr,
+        .alloc = alloc_options.alloc,
+        .alloc_data = alloc_options.alloc_data,
+        .free = alloc_options.free,
+        .free_data = alloc_options.free_data,
+        .load_file = load_file_ref.get_invoker(),
+        .load_file_data = load_file_ref.get_entity(),
+        .log = log_ref.get_invoker(),
+        .log_data = log_ref.get_entity(),
+        .highlighter = nullptr,
+        .highlight_policy = COWEL_SYNTAX_HIGHLIGHT_POLICY_FALL_BACK,
+        .preamble = {},
+    };
+
+    cowel_gen_result_u8 result = cowel_generate_html_u8(&options);
+
+    if (result.status != COWEL_PROCESSING_OK) {
+        cowel_free_gen_result_u8(&options, &result);
+
+        const auto status_name = processing_status_name(result.status);
+        std::string status_message = "Generation exited with status ";
+        status_message += std::to_string(int(result.status));
+        status_message += " (";
+        status_message += std::string(as_string_view(status_name));
+        status_message += ").";
+        const std::u8string message { status_message.begin(), status_message.end() };
+        log_cli_diagnostic(log_ref, COWEL_SEVERITY_FATAL, message, u8"run", in_path_u8);
+        return EXIT_FAILURE;
+    }
+
+    const std::string out_path = std::string(as_string_view(out_path_u8));
+    const auto out_file = fopen_unique(out_path.c_str(), "wb");
+    if (!out_file) {
+        cowel_free_gen_result_u8(&options, &result);
+        log_cli_diagnostic(log_ref, COWEL_SEVERITY_FATAL, u8"Failed to open output file.", u8"run");
+        return EXIT_FAILURE;
+    }
+
+    if (result.output.text != nullptr) {
+        std::fwrite(result.output.text, 1, result.output.length, out_file.get());
+    }
+    cowel_free_gen_result_u8(&options, &result);
+
+    return logger.any_errors ? EXIT_FAILURE : EXIT_SUCCESS;
+}
+
+int run_tokenize_command(
+    const std::u8string_view in_source,
+    const std::u8string_view out_path_u8,
+    const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref,
+    const Allocator_Options& alloc_options,
+    const bool colors_enabled,
+    const cowel_severity min_log_severity
+)
+{
+    const cowel_dump_tokens_options_u8 dump_options {
+        .source = as_cowel_string_view(in_source),
+        .alloc = alloc_options.alloc,
+        .alloc_data = alloc_options.alloc_data,
+        .free = alloc_options.free,
+        .free_data = alloc_options.free_data,
+        .log = log_ref.get_invoker(),
+        .log_data = log_ref.get_entity(),
+        .min_log_severity = min_log_severity,
+        .no_color = !colors_enabled,
+    };
+    const cowel_dump_tokens_result_u8 dump_result = cowel_dump_tokens_u8(&dump_options);
+    if (dump_result.status != COWEL_PROCESSING_OK) {
+        const auto status_name = processing_status_name(dump_result.status);
+        std::string status_message = "Token dump exited with status ";
+        status_message += std::to_string(int(dump_result.status));
+        status_message += " (";
+        status_message += std::string(as_string_view(status_name));
+        status_message += ").";
+        log_cli_diagnostic(
+            log_ref, COWEL_SEVERITY_FATAL, as_u8string_view(status_message), u8"tokenize"
+        );
+        return EXIT_FAILURE;
+    }
+
+    if (out_path_u8.length() != 0) {
+        const std::string out_path = std::string(as_string_view(out_path_u8));
+        const auto out_file = fopen_unique(out_path.c_str(), "wb");
+        if (!out_file) {
+            log_cli_diagnostic(
+                log_ref, COWEL_SEVERITY_FATAL, u8"Failed to open output file.", u8"tokenize"
+            );
+            return EXIT_FAILURE;
+        }
+        if (dump_result.output.text != nullptr) {
+            std::fwrite(dump_result.output.text, 1, dump_result.output.length, out_file.get());
+        }
+    }
+    else if (dump_result.output.text != nullptr) {
+        std::fwrite(dump_result.output.text, 1, dump_result.output.length, stdout);
+    }
+    return EXIT_SUCCESS;
+}
 
 int main(int argc, const char* const* const argv)
 {
@@ -230,11 +380,18 @@ int main(int argc, const char* const* const argv)
 
     switch (opts.command) {
     case COWEL_CLI_COMMAND_NONE:
-    case COWEL_CLI_COMMAND_HELP:
+    case COWEL_CLI_COMMAND_HELP: {
         std::cout << help_text;
         return opts.command == COWEL_CLI_COMMAND_HELP ? EXIT_SUCCESS : EXIT_FAILURE;
-    case COWEL_CLI_COMMAND_VERSION: std::cout << version_text; return EXIT_SUCCESS;
-    case COWEL_CLI_COMMAND_RUN: break;
+    }
+    case COWEL_CLI_COMMAND_VERSION: {
+        std::cout << version_text;
+        return EXIT_SUCCESS;
+    }
+    // The remaining commands require too much shared setup work,
+    // so we handled them outside the switch.
+    case COWEL_CLI_COMMAND_RUN:
+    case COWEL_CLI_COMMAND_TOKENIZE: break;
     }
 
     const auto in_path_u8 = as_u8string_view(opts.input);
@@ -244,105 +401,54 @@ int main(int argc, const char* const* const argv)
     Global_Memory_Resource global_memory;
     std::pmr::unsynchronized_pool_resource memory { &global_memory };
 
-    const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text
-        = load_utf8_file(in_path_u8, &memory);
-    if (!in_text) {
-        Diagnostic_String error { &memory };
-        print_io_error(error, in_path_u8, in_text.error());
-        print_code_string_stderr(error);
-        return EXIT_FAILURE;
-    }
-    const auto in_source = as_u8string_view(*in_text);
-
     auto in_path_directory = std::filesystem::path { as_string_view(in_path_u8) }.parent_path();
     Relative_File_Loader file_loader { std::move(in_path_directory), &memory };
-    Stderr_Logger logger { file_loader, in_path_u8, in_source, &memory, colors_enabled };
 
     // TODO: allow custom ulight themes instead of hardcoding wg21.json
 
     const auto alloc_options = Allocator_Options::from_memory_resource(&memory);
     const auto load_file_ref = file_loader.as_cowel_load_file_fn();
 
+    const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text
+        = load_utf8_file(in_path_u8, &memory);
+    if (!in_text) {
+        Stderr_Logger logger { file_loader, in_path_u8, u8"", &memory, colors_enabled };
+        constexpr auto log_fn = [](Stderr_Logger* logger, const cowel_diagnostic_u8* diagnostic
+                                ) noexcept -> void { (*logger)(*diagnostic); };
+        const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref
+            = { const_v<log_fn>, &logger };
+        const std::u8string message = u8"Failed to open input file.";
+        log_cli_diagnostic(log_ref, COWEL_SEVERITY_FATAL, message, u8"cli", in_path_u8);
+        return EXIT_FAILURE;
+    }
+
+    const auto in_source = as_u8string_view(*in_text);
+    Stderr_Logger logger { file_loader, in_path_u8, in_source, &memory, colors_enabled };
     constexpr auto log_fn = [](Stderr_Logger* logger, const cowel_diagnostic_u8* diagnostic
                             ) noexcept -> void { (*logger)(*diagnostic); };
     const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref
         = { const_v<log_fn>, &logger };
 
-    const cowel_options_u8 options {
-        .source = as_cowel_string_view(in_source),
-        .highlight_theme_json = as_cowel_string_view(assets::wg21_json),
-        .mode = COWEL_MODE_DOCUMENT,
-        .flags = 0,
-        .min_log_severity = opts.min_severity,
-        .preserved_variables = nullptr,
-        .preserved_variables_size = 0,
-        .consume_variables = nullptr,
-        .consume_variables_data = nullptr,
-        .alloc = alloc_options.alloc,
-        .alloc_data = alloc_options.alloc_data,
-        .free = alloc_options.free,
-        .free_data = alloc_options.free_data,
-        .load_file = load_file_ref.get_invoker(),
-        .load_file_data = load_file_ref.get_entity(),
-        .log = log_ref.get_invoker(),
-        .log_data = log_ref.get_entity(),
-        .highlighter = nullptr,
-        .highlight_policy = COWEL_SYNTAX_HIGHLIGHT_POLICY_FALL_BACK,
-        .preamble = {},
-    };
-
-    cowel_gen_result_u8 result = cowel_generate_html_u8(&options);
-
-    if (result.status != COWEL_PROCESSING_OK) {
-        cowel_free_gen_result_u8(&options, &result);
-
-        const auto status_name = processing_status_name(result.status);
-        Diagnostic_String error { &memory };
-        if (colors_enabled) {
-            error.append(ansi::red);
-        }
-        error.append(u8"FATAL");
-        if (colors_enabled) {
-            error.append(ansi::reset);
-        }
-        error.append(u8" ");
-        print_location_of_file(error, in_path_u8);
-        error.append(u8" Generation exited with status ");
-        error.append(result.status);
-        error.append(u8" (");
-        error.append(status_name);
-        error.append(u8").");
-        if (colors_enabled) {
-            error.append(ansi::h_black);
-        }
-        error.append(u8" [status.");
-        error.append(status_name);
-        error.append(u8"]");
-        if (colors_enabled) {
-            error.append(ansi::reset);
-        }
-        error.append(u8'\n');
-        print_code_string_stderr(error);
-        return EXIT_FAILURE;
+    switch (opts.command) {
+    case COWEL_CLI_COMMAND_NONE:
+    case COWEL_CLI_COMMAND_HELP:
+    case COWEL_CLI_COMMAND_VERSION: {
+        COWEL_ASSERT_UNREACHABLE(u8"Simple commands should have been handled above.");
     }
-
-    const std::string out_path = std::string(as_string_view(out_path_u8));
-    const auto out_file = fopen_unique(out_path.c_str(), "wb");
-    if (!out_file) {
-        cowel_free_gen_result_u8(&options, &result);
-        Diagnostic_String error { &memory };
-        print_location_of_file(error, out_path_u8);
-        error.append(u8" Failed to open file.");
-        print_code_string_stderr(error);
-        return EXIT_FAILURE;
+    case COWEL_CLI_COMMAND_RUN: {
+        return run_run_command(
+            in_source, in_path_u8, out_path_u8, //
+            alloc_options, load_file_ref, logger, log_ref, opts.min_severity
+        );
     }
-
-    if (result.output.text != nullptr) {
-        std::fwrite(result.output.text, 1, result.output.length, out_file.get());
+    case COWEL_CLI_COMMAND_TOKENIZE: {
+        return run_tokenize_command(
+            in_source, out_path_u8, //
+            log_ref, alloc_options, colors_enabled, opts.min_severity
+        );
     }
-    cowel_free_gen_result_u8(&options, &result);
-
-    return logger.any_errors ? EXIT_FAILURE : EXIT_SUCCESS;
+    }
+    COWEL_ASSERT_UNREACHABLE(u8"Invalid command obtained from CLI options parser.");
 }
 
 } // namespace

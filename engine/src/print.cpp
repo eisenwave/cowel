@@ -23,6 +23,7 @@
 #include "cowel/util/source_position.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
+#include "cowel/util/unicode.hpp"
 
 #include "cowel/diagnostic_highlight.hpp"
 #include "cowel/print.hpp"
@@ -269,6 +270,55 @@ void append_char_sequence(
     while (!chars.empty()) {
         const std::size_t n = chars.extract(buffer);
         builder.append(std::u8string_view { buffer, n });
+    }
+}
+
+void print_token(Diagnostic_String& out, const Token_Kind kind, const std::u8string_view token_text)
+{
+    out.append(token_kind_name(kind), Diagnostic_Highlight::tag);
+    out.append(u8' ');
+
+    const std::u8string_view source = token_kind_source(kind);
+    const auto highlight = source.empty() || source == token_text
+        ? Diagnostic_Highlight::text
+        : Diagnostic_Highlight::error_text;
+    auto builder = out.build(highlight);
+    builder.append(u8'"');
+    for (const char32_t c : utf8::Code_Point_View { token_text }) {
+        if (c == u8'\\') {
+            builder.append(u8"\\\\");
+            continue;
+        }
+        if (is_ascii_printing(c)) {
+            builder.append(char8_t(c));
+            continue;
+        }
+        const auto chars = to_characters8(std::uint32_t(c), 16);
+        if (c == std::uint16_t(c)) {
+            builder.append(u8"\\u");
+            builder.append(4 - chars.length(), u8'0');
+            builder.append(chars.as_string());
+        }
+        else {
+            builder.append(u8"\\U");
+            builder.append(8 - chars.length(), u8'0');
+            builder.append(chars.as_string());
+        }
+    }
+    builder.append(u8'"');
+}
+
+void dump_tokens(
+    Diagnostic_String& out,
+    const std::span<const Token> tokens,
+    std::u8string_view source,
+    std::u8string_view indent
+)
+{
+    for (const auto& token : tokens) {
+        out.append(indent);
+        print_token(out, token.kind, source.substr(token.location.begin, token.location.length));
+        out.append(u8'\n');
     }
 }
 
