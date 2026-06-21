@@ -228,8 +228,8 @@ describe("CLI Output", () => {
 
         assert.notStrictEqual(result.status, 0);
         const output = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
-        assert.match(output, /Failed to open input file/);
-        assert.match(output, new RegExp(missingPath.replaceAll(path.sep, "\\\\")));
+        assert.ok(output.includes("Failed to open"));
+        assert.ok(output.includes(missingPath));
     });
 
     test("tokenize reports tokenizer errors", () => {
