@@ -562,12 +562,47 @@ TEST(Lex, DumpTokensCanRenderColorizedOutput)
         .no_color = false,
     };
 
-    const cowel_dump_tokens_result_u8 result = cowel_dump_tokens_u8(&options);
+    cowel_dump_tokens_result_u8 result = cowel_dump_tokens_u8(&options);
     ASSERT_EQ(result.status, COWEL_PROCESSING_OK);
     ASSERT_NE(result.output.text, nullptr);
 
     const std::u8string_view output { result.output.text, result.output.length };
     EXPECT_NE(output.find(ansi::h_blue), std::u8string_view::npos);
+
+    cowel_free_dump_tokens_result_u8(&options, &result);
+}
+
+TEST(Lex, DumpTokensForwardsLexerDiagnostics)
+{
+    const std::u8string_view source = u8"\\ref(\"N1234\"\n\\bib()";
+    struct Diagnostic_Collector {
+        mutable std::vector<cowel_diagnostic_u8> diagnostics;
+    } collector;
+    const auto log = [](const void* data, const cowel_diagnostic_u8* diagnostic) noexcept {
+        const auto* const collector = static_cast<const Diagnostic_Collector*>(data);
+        collector->diagnostics.push_back(*diagnostic);
+    };
+
+    const cowel_dump_tokens_options_u8 options {
+        .source = { source.data(), source.size() },
+        .alloc = nullptr,
+        .alloc_data = nullptr,
+        .free = nullptr,
+        .free_data = nullptr,
+        .log = log,
+        .log_data = &collector,
+        .min_log_severity = COWEL_SEVERITY_INFO,
+        .no_color = true,
+    };
+
+    cowel_dump_tokens_result_u8 result = cowel_dump_tokens_u8(&options);
+    EXPECT_EQ(result.status, COWEL_PROCESSING_ERROR);
+    EXPECT_GE(collector.diagnostics.size(), 1uz);
+    ASSERT_FALSE(collector.diagnostics.empty());
+    EXPECT_EQ(collector.diagnostics.front().severity, COWEL_SEVERITY_ERROR);
+    EXPECT_NE(collector.diagnostics.front().message.length, 0uz);
+
+    cowel_free_dump_tokens_result_u8(&options, &result);
 }
 
 } // namespace

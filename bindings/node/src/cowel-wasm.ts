@@ -1103,15 +1103,18 @@ export class CowelWasm {
         return result;
     }
 
-    async dumpTokens(source: string, noColor: boolean): Promise<DumpTokensResult> {
+    async dumpTokens(
+        source: string,
+        options: { noColor: boolean; minSeverity: Severity },
+    ): Promise<DumpTokensResult> {
         const sourceAlloc = this.allocUtf8(source);
-        const optionsAlloc = this.alloc2(36, 4);
+        const optionsAlloc = this.alloc2(40, 4);
         this.exports.init_dump_tokens_options(
             optionsAlloc.address,
             sourceAlloc.address,
             sourceAlloc.size,
-            Severity.min,
-            noColor,
+            options.minSeverity,
+            options.noColor,
         );
 
         const resultAlloc = this.alloc2(12, 4);

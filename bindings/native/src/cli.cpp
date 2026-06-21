@@ -321,7 +321,7 @@ int run_tokenize_command(
         .min_log_severity = min_log_severity,
         .no_color = !colors_enabled,
     };
-    const cowel_dump_tokens_result_u8 dump_result = cowel_dump_tokens_u8(&dump_options);
+    cowel_dump_tokens_result_u8 dump_result = cowel_dump_tokens_u8(&dump_options);
     if (dump_result.status != COWEL_PROCESSING_OK) {
         const auto status_name = processing_status_name(dump_result.status);
         std::string status_message = "Token dump exited with status ";
@@ -332,6 +332,7 @@ int run_tokenize_command(
         log_cli_diagnostic(
             log_ref, COWEL_SEVERITY_FATAL, as_u8string_view(status_message), u8"tokenize"
         );
+        cowel_free_dump_tokens_result_u8(&dump_options, &dump_result);
         return EXIT_FAILURE;
     }
 
@@ -342,6 +343,7 @@ int run_tokenize_command(
             log_cli_diagnostic(
                 log_ref, COWEL_SEVERITY_FATAL, u8"Failed to open output file.", u8"tokenize"
             );
+            cowel_free_dump_tokens_result_u8(&dump_options, &dump_result);
             return EXIT_FAILURE;
         }
         if (dump_result.output.text != nullptr) {
@@ -351,6 +353,7 @@ int run_tokenize_command(
     else if (dump_result.output.text != nullptr) {
         std::fwrite(dump_result.output.text, 1, dump_result.output.length, stdout);
     }
+    cowel_free_dump_tokens_result_u8(&dump_options, &dump_result);
     return EXIT_SUCCESS;
 }
 

@@ -65,7 +65,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
 
     std::string input_path;
     std::string output_path;
-    cowel_severity run_severity = COWEL_SEVERITY_INFO;
+    cowel_severity severity = COWEL_SEVERITY_INFO;
     std::string subparser_error_msg;
 
     args::Command run_cmd {
@@ -92,7 +92,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             }
             input_path = args::get(input_arg);
             output_path = args::get(output_arg);
-            run_severity = args::get(severity_arg);
+            severity = args::get(severity_arg);
         },
     };
 
@@ -109,6 +109,14 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
                 "Output token dump file",
                 std::string {},
             };
+            args::MapFlag<std::string, cowel_severity> severity_arg {
+                sub,
+                "severity",
+                "Minimum (>=) severity for log messages",
+                { 'l', "severity" },
+                severity_arg_map,
+                COWEL_SEVERITY_INFO,
+            };
             sub.Parse();
             if (sub.GetError() != args::Error::None) {
                 subparser_error_msg = sub.GetErrorMsg();
@@ -116,6 +124,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             }
             input_path = args::get(input_arg);
             output_path = args::get(output_arg);
+            severity = args::get(severity_arg);
         },
     };
 
@@ -166,7 +175,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .command = COWEL_CLI_COMMAND_RUN,
             .input = cowel::alloc_str(input_path),
             .output = cowel::alloc_str(output_path),
-            .min_severity = run_severity,
+            .min_severity = severity,
             .no_color = no_color_arg.Get(),
             .ok = true,
             .error_message = {},
@@ -177,7 +186,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .command = COWEL_CLI_COMMAND_TOKENIZE,
             .input = cowel::alloc_str(input_path),
             .output = cowel::alloc_str(output_path),
-            .min_severity = COWEL_SEVERITY_INFO,
+            .min_severity = severity,
             .no_color = no_color_arg.Get(),
             .ok = true,
             .error_message = {},

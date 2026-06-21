@@ -234,6 +234,10 @@ type RunOptions = {
     minSeverity: cowel.Severity;
 };
 
+type TokenizeOptions = RunOptions & {
+    noColor: boolean;
+};
+
 async function compile(
     inputPath: string,
     options: RunOptions,
@@ -277,7 +281,7 @@ async function compile(
 async function tokenize(
     inputPath: string,
     outputPath: string,
-    noColor: boolean,
+    options: TokenizeOptions,
 ): Promise<number> {
     let source: string;
     try {
@@ -287,7 +291,10 @@ async function tokenize(
         return 1;
     }
 
-    const result = await wasm!.dumpTokens(source, noColor);
+    const result = await wasm!.dumpTokens(source, {
+        noColor: options.noColor,
+        minSeverity: options.minSeverity,
+    });
     if (result.status !== cowel.ProcessingStatus.ok) {
         const statusString = cowel.ProcessingStatus[result.status];
         logError(
@@ -484,7 +491,11 @@ async function main(): Promise<number> {
         case "run":
             break;
         case "tokenize":
-            return tokenize(opts.input, opts.output, opts.noColor);
+            colorsEnabled = !opts.noColor;
+            return tokenize(opts.input, opts.output, {
+                noColor: opts.noColor,
+                minSeverity: opts.minSeverity,
+            });
     }
 
     colorsEnabled = !opts.noColor;

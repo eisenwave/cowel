@@ -670,6 +670,18 @@ void cowel_free_gen_result_u8(
 ) COWEL_NOEXCEPT;
 
 COWEL_EXPORT
+void cowel_free_dump_tokens_result_u8(
+    const cowel_dump_tokens_options_u8* options,
+    cowel_dump_tokens_result_u8* result
+) COWEL_NOEXCEPT;
+
+COWEL_EXPORT
+void cowel_free_dump_tokens_result(
+    const cowel_dump_tokens_options* options,
+    cowel_dump_tokens_result* result
+) COWEL_NOEXCEPT;
+
+COWEL_EXPORT
 void cowel_set_assertion_handler_u8(cowel_assertion_handler_fn_u8* handler) COWEL_NOEXCEPT;
 
 /// @brief Identifies the action requested by a parsed CLI invocation.
