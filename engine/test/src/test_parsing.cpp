@@ -1889,5 +1889,10 @@ TEST(Parse_Fail, directive_line_splice_trailing)
     ASSERT_TRUE(run_parse_fail_test(u8"directive_line_splice_trailing.cow"));
 }
 
+TEST(Parse_Fail, expression_splice_assignment)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"expression_splice_assignment.cow"));
+}
+
 } // namespace
 } // namespace cowel
