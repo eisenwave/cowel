@@ -379,9 +379,6 @@ private:
 
         if (!peek(Token_Kind::parenthesis_right)) {
             error(m_tokens[m_pos].location, u8"Expected ')' to close expression splice."sv);
-            // Skip any trailing tokens to reach the closing ')' the lexer guaranteed.
-            // Depth is tracked so that nested parentheses (e.g. from a sub-expression)
-            // are not mistaken for the splice's own closing ')'.
             int depth = 0;
             while (!eof()) {
                 if (peek(Token_Kind::parenthesis_left)) {
@@ -402,7 +399,6 @@ private:
         }
 
         const bool is_closed = expect(Token_Kind::parenthesis_right);
-        // The lexer should have ensured correct nesting.
         COWEL_ASSERT(is_closed);
         m_out.push_back({ CST_Instruction_Kind::pop_expression_splice });
     }
