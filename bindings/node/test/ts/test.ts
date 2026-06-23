@@ -248,6 +248,89 @@ describe("CLI Output", () => {
         assert.match(output, /Token dump exited with status 2 \(error\)/);
     });
 
+    test("parse", () => {
+        const inputPath = path.join(cliTestDir, "parse", "basic.cowel");
+        const expectedPath = `${inputPath}.txt`;
+        assert.ok(fs.existsSync(expectedPath), `Missing expected output fixture: ${expectedPath}`);
+
+        const expected = fs.readFileSync(expectedPath, "utf8");
+        const result = spawnSync(process.execPath, [cliPath, "parse", inputPath, "--no-color"], {
+            cwd: cliTestDir,
+            encoding: "utf8",
+        });
+
+        assert.strictEqual(result.status, 0);
+        const actual = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+        assert.strictEqual(actual, expected);
+    });
+
+    test("parse reports a missing input file", () => {
+        const missingPath = path.join(cliTestDir, "parse", "missing.cowel");
+        const result = spawnSync(
+            process.execPath,
+            [cliPath, "parse", missingPath, "--no-color"],
+            {
+                cwd: cliTestDir,
+                encoding: "utf8",
+            },
+        );
+
+        assert.notStrictEqual(result.status, 0);
+        const output = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+        assert.ok(output.includes("Failed to open"));
+        assert.ok(output.includes(missingPath));
+    });
+
+    test("parse reports parser errors", () => {
+        const inputPath = path.join(cliTestDir, "lex_error.cow");
+        const result = spawnSync(
+            process.execPath,
+            [cliPath, "parse", inputPath, "--no-color"],
+            {
+                cwd: cliTestDir,
+                encoding: "utf8",
+            },
+        );
+
+        assert.notStrictEqual(result.status, 0);
+        const output = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+        assert.match(output, /Parse dump exited with status 2 \(error\)/);
+    });
+
+    test("parse --no-indent", () => {
+        const inputPath = path.join(cliTestDir, "parse", "basic.cowel");
+        const expectedPath = path.join(cliTestDir, "parse", "basic.no-indent.cowel.txt");
+        assert.ok(fs.existsSync(expectedPath), `Missing expected output fixture: ${expectedPath}`);
+
+        const expected = fs.readFileSync(expectedPath, "utf8");
+        const result = spawnSync(
+            process.execPath,
+            [cliPath, "parse", inputPath, "--no-color", "--no-indent"],
+            { cwd: cliTestDir, encoding: "utf8" },
+        );
+
+        assert.strictEqual(result.status, 0);
+        const actual = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+        assert.strictEqual(actual, expected);
+    });
+
+    test("parse --no-source", () => {
+        const inputPath = path.join(cliTestDir, "parse", "basic.cowel");
+        const expectedPath = path.join(cliTestDir, "parse", "basic.no-source.cowel.txt");
+        assert.ok(fs.existsSync(expectedPath), `Missing expected output fixture: ${expectedPath}`);
+
+        const expected = fs.readFileSync(expectedPath, "utf8");
+        const result = spawnSync(
+            process.execPath,
+            [cliPath, "parse", inputPath, "--no-color", "--no-source"],
+            { cwd: cliTestDir, encoding: "utf8" },
+        );
+
+        assert.strictEqual(result.status, 0);
+        const actual = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+        assert.strictEqual(actual, expected);
+    });
+
     for (const testPath of testPaths) {
         const relativePath = path.relative(cliTestDir, testPath);
 

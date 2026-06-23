@@ -32,6 +32,8 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .min_severity = COWEL_SEVERITY_INFO,
             .no_color = false,
             .ok = true,
+            .no_indent = false,
+            .no_source = false,
             .error_message = {},
         };
     }
@@ -66,6 +68,8 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
     std::string input_path;
     std::string output_path;
     cowel_severity severity = COWEL_SEVERITY_INFO;
+    bool no_indent = false;
+    bool no_source = false;
     std::string subparser_error_msg;
 
     args::Command run_cmd {
@@ -128,6 +132,52 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
         },
     };
 
+    args::Command parse_cmd {
+        parser,
+        "parse",
+        "Dumps the CST instructions of a COWEL document",
+        [&](args::Subparser& sub) {
+            args::Positional<std::string> input_arg { sub, "input", "Input COWEL file",
+                                                      args::Options::Required };
+            args::Positional<std::string> output_arg {
+                sub,
+                "output",
+                "Output CST dump file",
+                std::string {},
+            };
+            args::MapFlag<std::string, cowel_severity> severity_arg {
+                sub,
+                "severity",
+                "Minimum (>=) severity for log messages",
+                { 'l', "severity" },
+                severity_arg_map,
+                COWEL_SEVERITY_INFO,
+            };
+            args::Flag no_indent_arg {
+                sub,
+                "no-indent",
+                "Use fixed (no) indentation instead of dynamic indentation",
+                { "no-indent" },
+            };
+            args::Flag no_source_arg {
+                sub,
+                "no-source",
+                "Do not show source text alongside instructions",
+                { "no-source" },
+            };
+            sub.Parse();
+            if (sub.GetError() != args::Error::None) {
+                subparser_error_msg = sub.GetErrorMsg();
+                return;
+            }
+            input_path = args::get(input_arg);
+            output_path = args::get(output_arg);
+            severity = args::get(severity_arg);
+            no_indent = no_indent_arg.Get();
+            no_source = no_source_arg.Get();
+        },
+    };
+
     // ParseCLI expects a range; build one from the raw pointers.
     std::vector<std::string> argv { args, args + arg_count };
     parser.ParseCLI(argv);
@@ -142,6 +192,8 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .min_severity = COWEL_SEVERITY_INFO,
             .no_color = false,
             .ok = true,
+            .no_indent = false,
+            .no_source = false,
             .error_message = {},
         };
     }
@@ -153,6 +205,8 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .min_severity = COWEL_SEVERITY_INFO,
             .no_color = false,
             .ok = true,
+            .no_indent = false,
+            .no_source = false,
             .error_message = {},
         };
     }
@@ -166,6 +220,8 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .min_severity = COWEL_SEVERITY_INFO,
             .no_color = false,
             .ok = false,
+            .no_indent = false,
+            .no_source = false,
             .error_message = cowel::alloc_str(msg),
         };
     }
@@ -178,6 +234,8 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .min_severity = severity,
             .no_color = no_color_arg.Get(),
             .ok = true,
+            .no_indent = false,
+            .no_source = false,
             .error_message = {},
         };
     }
@@ -189,6 +247,21 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .min_severity = severity,
             .no_color = no_color_arg.Get(),
             .ok = true,
+            .no_indent = false,
+            .no_source = false,
+            .error_message = {},
+        };
+    }
+    if (parse_cmd) {
+        return {
+            .command = COWEL_CLI_COMMAND_PARSE,
+            .input = cowel::alloc_str(input_path),
+            .output = cowel::alloc_str(output_path),
+            .min_severity = severity,
+            .no_color = no_color_arg.Get(),
+            .ok = true,
+            .no_indent = no_indent,
+            .no_source = no_source,
             .error_message = {},
         };
     }
@@ -200,6 +273,8 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
         .min_severity = COWEL_SEVERITY_INFO,
         .no_color = false,
         .ok = true,
+        .no_indent = false,
+        .no_source = false,
         .error_message = {},
     };
 }

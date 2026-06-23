@@ -1,0 +1,9 @@
+push_document 3
+  text "Hello "
+  push_directive_splice "\\b"
+    push_block 1 "{"
+      text "world"
+    pop_block "}"
+  pop_directive_splice
+  text "!\u000a"
+pop_document

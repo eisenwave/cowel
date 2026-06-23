@@ -17,6 +17,8 @@
 
 - Added a `cowel tokenize` command for dumping all the tokens in a COWEL document.
   This is mainly intended as a developer tool for debugging (#407).
+- Added a `cowel parse` command for dumping the CST instructions obtained when parsing a COWEL document.
+  This is mainly intended as a developer tool for debugging (#411).
 
 **Full Changelog**:
 [`v0.10.2...main`](https://github.com/eisenwave/cowel/compare/v0.10.2...main)

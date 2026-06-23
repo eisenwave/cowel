@@ -22,6 +22,7 @@
 #include "cowel/diagnostic_highlight.hpp"
 
 #include "cowel/syntax/lex.hpp"
+#include "cowel/syntax/parse.hpp"
 
 namespace cowel {
 
@@ -95,6 +96,30 @@ void dump_tokens(
     std::span<const Token> tokens,
     std::u8string_view source,
     std::u8string_view indent = {}
+);
+
+void print_instruction(Diagnostic_String& out, CST_Instruction_Kind kind, std::size_t n);
+
+enum struct Dump_Instructions_Indent_Kind : Default_Underlying {
+    /// Depth increases after every `push_*` instruction
+    /// and decreases before every `pop_*`.
+    dynamic,
+    /// Every instruction is prefixed by the same indent string.
+    fixed,
+};
+
+struct Dump_Instructions_Options {
+    std::u8string_view indent;
+    Dump_Instructions_Indent_Kind indent_kind;
+    bool show_source;
+};
+
+void dump_instructions(
+    Diagnostic_String& out,
+    std::span<const CST_Instruction> instructions,
+    std::span<const Token> tokens,
+    std::u8string_view source,
+    const Dump_Instructions_Options& options
 );
 
 #ifndef COWEL_EMSCRIPTEN

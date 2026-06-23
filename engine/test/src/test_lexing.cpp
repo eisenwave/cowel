@@ -559,7 +559,7 @@ TEST(Lex, DumpTokensCanRenderColorizedOutput)
         .log = nullptr,
         .log_data = nullptr,
         .min_log_severity = COWEL_SEVERITY_INFO,
-        .no_color = false,
+        .flags = COWEL_GEN_FLAGS_NONE,
     };
 
     cowel_dump_tokens_result_u8 result = cowel_dump_tokens_u8(&options);
@@ -592,7 +592,7 @@ TEST(Lex, DumpTokensForwardsLexerDiagnostics)
         .log = log,
         .log_data = &collector,
         .min_log_severity = COWEL_SEVERITY_INFO,
-        .no_color = true,
+        .flags = COWEL_GEN_FLAGS_NO_COLOR,
     };
 
     cowel_dump_tokens_result_u8 result = cowel_dump_tokens_u8(&options);
