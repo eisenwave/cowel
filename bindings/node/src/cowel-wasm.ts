@@ -36,6 +36,14 @@ export enum SyntaxHighlightPolicy {
     exclusive = 1,
 }
 
+export enum GenFlags {
+    none = 0,
+    collectHovers = 1 << 0,
+    noColor = 1 << 1,
+    noIndent = 1 << 2,
+    noSource = 1 << 3,
+}
+
 export type GenOptions = {
     source: string;
     mode: Mode;
@@ -60,7 +68,7 @@ export type GenResult = {
 };
 
 export type DumpTokensOptions = {
-    noColor: boolean;
+    flags: GenFlags;
     minSeverity: Severity;
     log(diagnostic: Diagnostic): void;
 };
@@ -69,6 +77,19 @@ export type DumpTokensResult = {
     /** The processing status from token dumping. */
     status: ProcessingStatus;
     /** The dumped token text. */
+    output: string;
+};
+
+export type DumpParseOptions = {
+    flags: GenFlags;
+    minSeverity: Severity;
+    log(diagnostic: Diagnostic): void;
+};
+
+export type DumpParseResult = {
+    /** The processing status from parse dumping. */
+    status: ProcessingStatus;
+    /** The dumped CST instruction text. */
     output: string;
 };
 
@@ -208,13 +229,22 @@ type CowelWasmExports = WebAssembly.Exports & {
     cowel_free(address: Address, size: number, alignment: number): void;
     cowel_generate_html_u8(result: Address, options: Address): void;
     cowel_dump_tokens_u8(result: Address, options: Address): void;
+    cowel_dump_parse_u8(result: Address, options: Address): void;
 
     init_dump_tokens_options(
         result: Address,
         sourceText: Address,
         sourceLength: number,
         minLogSeverity: Severity,
-        noColor: boolean,
+        flags: GenFlags,
+    ): void;
+
+    init_dump_parse_options(
+        result: Address,
+        sourceText: Address,
+        sourceLength: number,
+        minLogSeverity: Severity,
+        flags: GenFlags,
     ): void;
 
     init_options(
@@ -953,12 +983,14 @@ export function createBigIntRegExpWasmEnvObject(
 }
 
 export type ParsedCliOptions = {
-    command: "none" | "help" | "version" | "run" | "tokenize";
+    command: "none" | "help" | "version" | "run" | "tokenize" | "parse";
     ok: boolean;
     input: string;
     output: string;
     minSeverity: Severity;
     noColor: boolean;
+    noIndent: boolean;
+    noSource: boolean;
     errorMessage: string;
 };
 
@@ -1122,12 +1154,39 @@ export class CowelWasm {
             sourceAlloc.address,
             sourceAlloc.size,
             options.minSeverity,
-            options.noColor,
+            options.flags,
         );
 
         const resultAlloc = this.alloc2(12, 4);
         this.exports.cowel_dump_tokens_u8(resultAlloc.address, optionsAlloc.address);
         const result = this.decodeDumpTokensResult(resultAlloc.address);
+
+        this.free(resultAlloc);
+        this.free(optionsAlloc);
+        this.free(sourceAlloc);
+
+        return result;
+    }
+
+    async dumpParse(
+        source: string,
+        options: DumpParseOptions,
+    ): Promise<DumpParseResult> {
+        this.log = options.log;
+
+        const sourceAlloc = this.allocUtf8(source);
+        const optionsAlloc = this.alloc2(40, 4);
+        this.exports.init_dump_parse_options(
+            optionsAlloc.address,
+            sourceAlloc.address,
+            sourceAlloc.size,
+            options.minSeverity,
+            options.flags,
+        );
+
+        const resultAlloc = this.alloc2(12, 4);
+        this.exports.cowel_dump_parse_u8(resultAlloc.address, optionsAlloc.address);
+        const result = this.decodeDumpParseResult(resultAlloc.address);
 
         this.free(resultAlloc);
         this.free(optionsAlloc);
@@ -1177,7 +1236,8 @@ export class CowelWasm {
      *   offset 20: min_severity   (uint32)
      *   offset 24: no_color       (uint8)
      *   offset 25: ok             (uint8)
-     *   offset 26: padding        (2 bytes)
+     *   offset 26: no_indent      (uint8)
+     *   offset 27: no_source      (uint8)
      *   offset 28: error.text     (ptr)
      *   offset 32: error.length   (uint32)
      *   total: 36 bytes, align 4
@@ -1219,6 +1279,8 @@ export class CowelWasm {
         const minSeverity: Severity = this.heap_u32[resultAlloc.address / 4 + 5];
         const noColor = this.heap_u8[resultAlloc.address + 24] !== 0;
         const ok = this.heap_u8[resultAlloc.address + 25] !== 0;
+        const noIndent = this.heap_u8[resultAlloc.address + 26] !== 0;
+        const noSource = this.heap_u8[resultAlloc.address + 27] !== 0;
         const errorTextAddr = this.heap_u32[resultAlloc.address / 4 + 7];
         const errorLength = this.heap_u32[resultAlloc.address / 4 + 8];
 
@@ -1241,10 +1303,21 @@ export class CowelWasm {
                 command === 1 ? "help" :
                     command === 2 ? "version" :
                         command === 4 ? "tokenize" :
-                            "run"
+                            command === 5 ? "parse" :
+                                "run"
         ) as ParsedCliOptions["command"];
 
-        return { command: commandStr, ok, input, output, minSeverity, noColor, errorMessage };
+        return {
+            command: commandStr,
+            ok,
+            input,
+            output,
+            minSeverity,
+            noColor,
+            noIndent,
+            noSource,
+            errorMessage,
+        };
     }
 
     private onMemoryGrowth(_byteLength: number): void {
@@ -1335,6 +1408,15 @@ export class CowelWasm {
     }
 
     private decodeDumpTokensResult(address: Address): DumpTokensResult {
+        const status: ProcessingStatus = this.heap_i32[address / 4 + 0];
+        const outputAddress = this.heap_u32[address / 4 + 1];
+        const outputSize = this.heap_u32[address / 4 + 2];
+        const output = this.decodeUtf8(outputAddress, outputSize);
+        this.free(outputAddress, outputSize, 1);
+        return { status, output };
+    }
+
+    private decodeDumpParseResult(address: Address): DumpParseResult {
         const status: ProcessingStatus = this.heap_i32[address / 4 + 0];
         const outputAddress = this.heap_u32[address / 4 + 1];
         const outputSize = this.heap_u32[address / 4 + 2];

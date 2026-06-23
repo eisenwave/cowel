@@ -51,6 +51,7 @@ Usage: cowel <command> <input> [output] [options]
 Commands:
   run       <input> <output>        Processes a COWEL document
   tokenize  <input> [output]        Dumps the tokens of a COWEL document
+  parse     <input> [output]        Dumps the CST instructions of a COWEL document
   watch     <input> <output>        Processes a COWEL document and serves it with live reload
 
 Options:
@@ -236,6 +237,8 @@ type RunOptions = {
 
 type TokenizeOptions = cowel.DumpTokensOptions;
 
+type ParseOptions = cowel.DumpParseOptions;
+
 async function compile(
     inputPath: string,
     options: RunOptions,
@@ -290,7 +293,7 @@ async function tokenize(
     }
 
     const result = await wasm!.dumpTokens(source, {
-        noColor: options.noColor,
+        flags: options.flags,
         minSeverity: options.minSeverity,
         log,
     });
@@ -300,6 +303,48 @@ async function tokenize(
             inputPath,
             `status.${statusString}`,
             `Token dump exited with status ${result.status} (${statusString}).`,
+        );
+        return 1;
+    }
+
+    try {
+        if (outputPath.length !== 0) {
+            fs.writeFileSync(outputPath, result.output, { encoding: "utf8" });
+        } else {
+            process.stdout.write(result.output);
+        }
+    } catch (_) {
+        logError(outputPath, "file.write", "Failed to write generated output.");
+        return 1;
+    }
+
+    return 0;
+}
+
+async function parse(
+    inputPath: string,
+    outputPath: string,
+    options: ParseOptions,
+): Promise<number> {
+    let source: string;
+    try {
+        source = fs.readFileSync(inputPath, "utf8");
+    } catch (_) {
+        logError(inputPath, "file.read", "Failed to open main document.");
+        return 1;
+    }
+
+    const result = await wasm!.dumpParse(source, {
+        flags: options.flags,
+        minSeverity: options.minSeverity,
+        log,
+    });
+    if (result.status !== cowel.ProcessingStatus.ok) {
+        const statusString = cowel.ProcessingStatus[result.status];
+        logError(
+            inputPath,
+            `status.${statusString}`,
+            `Parse dump exited with status ${result.status} (${statusString}).`,
         );
         return 1;
     }
@@ -470,7 +515,9 @@ async function main(): Promise<number> {
     // Intercept "watch" before the WASM CLI parser sees it;
     // reuse "run" parsing.
     const isWatch = process.argv[2] === "watch";
-    if (isWatch) process.argv[2] = "run";
+    if (isWatch) {
+        process.argv[2] = "run";
+    }
 
     const opts = wasm.parseCliOptions(process.argv.slice(2));
 
@@ -481,27 +528,43 @@ async function main(): Promise<number> {
 
     switch (opts.command) {
         case "none":
-        case "help":
+        case "help": {
             process.stdout.write(helpText);
             return opts.command === "help" ? 0 : 1;
-        case "version":
+        }
+        case "version": {
             console.info(getVersion());
             return 0;
-        case "run":
-            break;
-        case "tokenize":
+        }
+        case "run": {
             colorsEnabled = !opts.noColor;
+            const runOpts: RunOptions = { minSeverity: opts.minSeverity };
+            if (isWatch) {
+                return watchAndServe(opts.input, opts.output, runOpts);
+            }
+            return run(opts.input, opts.output, runOpts);
+        }
+        case "tokenize": {
+            colorsEnabled = !opts.noColor;
+            const flags = (opts.noColor ? cowel.GenFlags.noColor : cowel.GenFlags.none);
             return tokenize(opts.input, opts.output, {
-                noColor: opts.noColor,
+                flags,
                 minSeverity: opts.minSeverity,
                 log,
             });
+        }
+        case "parse": {
+            colorsEnabled = !opts.noColor;
+            const flags = (opts.noColor ? cowel.GenFlags.noColor : cowel.GenFlags.none)
+                | (opts.noIndent ? cowel.GenFlags.noIndent : cowel.GenFlags.none)
+                | (opts.noSource ? cowel.GenFlags.noSource : cowel.GenFlags.none);
+            return parse(opts.input, opts.output, {
+                flags,
+                minSeverity: opts.minSeverity,
+                log,
+            });
+        }
     }
-
-    colorsEnabled = !opts.noColor;
-    const runOpts: RunOptions = { minSeverity: opts.minSeverity };
-    if (isWatch) return watchAndServe(opts.input, opts.output, runOpts);
-    return run(opts.input, opts.output, runOpts);
 }
 
 process.exitCode = await main();

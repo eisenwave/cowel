@@ -3,6 +3,7 @@ Usage: cowel <command> <input> [output] [options]
 Commands:
   run       <input> <output>        Processes a COWEL document
   tokenize  <input> [output]        Dumps the tokens of a COWEL document
+  parse     <input> [output]        Dumps the CST instructions of a COWEL document
   watch     <input> <output>        Processes a COWEL document and serves it with live reload
 
 Options:

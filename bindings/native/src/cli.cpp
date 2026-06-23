@@ -192,6 +192,7 @@ constexpr std::string_view help_text = R"(Usage: cowel <command> <input> [output
 Commands:
   run <input> <output>        Processes a COWEL document
   tokenize <input> [output]   Dumps the tokens of a COWEL document
+  parse <input> [output]      Dumps the CST instructions of a COWEL document
 
 Options:
   -h, --help                  Display this help menu
@@ -308,7 +309,7 @@ int run_tokenize_command(
     const std::u8string_view out_path_u8,
     const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref,
     const Allocator_Options& alloc_options,
-    const bool colors_enabled,
+    const unsigned int flags,
     const cowel_severity min_log_severity
 )
 {
@@ -321,7 +322,7 @@ int run_tokenize_command(
         .log = log_ref.get_invoker(),
         .log_data = log_ref.get_entity(),
         .min_log_severity = min_log_severity,
-        .no_color = !colors_enabled,
+        .flags = flags,
     };
     cowel_dump_tokens_result_u8 dump_result = cowel_dump_tokens_u8(&dump_options);
     if (dump_result.status != COWEL_PROCESSING_OK) {
@@ -357,6 +358,63 @@ int run_tokenize_command(
         std::fwrite(dump_result.output.text, 1, dump_result.output.length, stdout);
     }
     cowel_free_dump_tokens_result_u8(&dump_options, &dump_result);
+    return EXIT_SUCCESS;
+}
+
+int run_parse_command(
+    const std::u8string_view in_source,
+    const std::u8string_view out_path_u8,
+    const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref,
+    const Allocator_Options& alloc_options,
+    const unsigned int flags,
+    const cowel_severity min_log_severity
+)
+{
+    const cowel_dump_parse_options_u8 dump_options {
+        .source = as_cowel_string_view(in_source),
+        .alloc = alloc_options.alloc,
+        .alloc_data = alloc_options.alloc_data,
+        .free = alloc_options.free,
+        .free_data = alloc_options.free_data,
+        .log = log_ref.get_invoker(),
+        .log_data = log_ref.get_entity(),
+        .min_log_severity = min_log_severity,
+        .flags = flags,
+    };
+    cowel_dump_parse_result_u8 dump_result = cowel_dump_parse_u8(&dump_options);
+    if (dump_result.status != COWEL_PROCESSING_OK) {
+        const auto status_name = processing_status_name(dump_result.status);
+        std::string status_message = "Parse dump exited with status ";
+        status_message += std::to_string(int(dump_result.status));
+        status_message += " (";
+        status_message += std::string(as_string_view(status_name));
+        status_message += ").";
+        log_cli_diagnostic(
+            log_ref, COWEL_SEVERITY_FATAL, as_u8string_view(status_message), u8"parse"
+        );
+        cowel_free_dump_parse_result_u8(&dump_options, &dump_result);
+        return EXIT_FAILURE;
+    }
+
+    if (out_path_u8.length() != 0) {
+        const std::string out_path = std::string(as_string_view(out_path_u8));
+        const auto out_file = fopen_unique(out_path.c_str(), "wb");
+        if (!out_file) {
+            log_cli_diagnostic(
+                log_ref, COWEL_SEVERITY_FATAL, u8"Failed to open output file.", u8"parse",
+                out_path_u8
+            );
+            cowel_free_dump_parse_result_u8(&dump_options, &dump_result);
+            return EXIT_FAILURE;
+        }
+        if (dump_result.output.text != nullptr) {
+            std::fwrite(dump_result.output.text, 1, dump_result.output.length, out_file.get());
+        }
+    }
+    else if (dump_result.output.text != nullptr) {
+        std::fwrite(dump_result.output.text, 1, dump_result.output.length, stdout);
+    }
+    cowel_free_dump_parse_result_u8(&dump_options, &dump_result);
     return EXIT_SUCCESS;
 }
 
@@ -397,7 +455,8 @@ int main(int argc, const char* const* const argv)
     // The remaining commands require too much shared setup work,
     // so we handled them outside the switch.
     case COWEL_CLI_COMMAND_RUN:
-    case COWEL_CLI_COMMAND_TOKENIZE: break;
+    case COWEL_CLI_COMMAND_TOKENIZE:
+    case COWEL_CLI_COMMAND_PARSE: break;
     }
 
     const auto in_path_u8 = as_u8string_view(opts.input);
@@ -448,9 +507,23 @@ int main(int argc, const char* const* const argv)
         );
     }
     case COWEL_CLI_COMMAND_TOKENIZE: {
+        const unsigned int flags = colors_enabled ? COWEL_GEN_FLAGS_NONE : COWEL_GEN_FLAGS_NO_COLOR;
         return run_tokenize_command(
             in_source, out_path_u8, //
-            log_ref, alloc_options, colors_enabled, opts.min_severity
+            log_ref, alloc_options, flags, opts.min_severity
+        );
+    }
+    case COWEL_CLI_COMMAND_PARSE: {
+        unsigned int flags = colors_enabled ? COWEL_GEN_FLAGS_NONE : COWEL_GEN_FLAGS_NO_COLOR;
+        if (opts.no_indent) {
+            flags |= COWEL_GEN_FLAGS_NO_INDENT;
+        }
+        if (opts.no_source) {
+            flags |= COWEL_GEN_FLAGS_NO_SOURCE;
+        }
+        return run_parse_command(
+            in_source, out_path_u8, //
+            log_ref, alloc_options, flags, opts.min_severity
         );
     }
     }

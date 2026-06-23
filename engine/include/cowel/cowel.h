@@ -98,6 +98,14 @@ enum cowel_gen_flags {
     COWEL_GEN_FLAGS_NONE = 0,
     /// @brief Collect hover information for directives.
     COWEL_GEN_FLAGS_COLLECT_HOVERS = 1 << 0,
+    /// @brief Disable ANSI color codes in output.
+    COWEL_GEN_FLAGS_NO_COLOR = 1 << 1,
+    /// @brief Use fixed indentation instead of dynamic indentation.
+    /// Applicable to `cowel_dump_parse` operations.
+    COWEL_GEN_FLAGS_NO_INDENT = 1 << 2,
+    /// @brief Do not show source text alongside CST instructions.
+    /// Applicable to `cowel_dump_parse` operations.
+    COWEL_GEN_FLAGS_NO_SOURCE = 1 << 3,
 };
 
 // NOLINTNEXTLINE(performance-enum-size)
@@ -552,7 +560,7 @@ struct cowel_dump_tokens_options {
     const void* log_data;
 
     cowel_severity min_log_severity;
-    bool no_color;
+    unsigned int flags;
 };
 
 struct cowel_dump_tokens_options_u8 {
@@ -566,7 +574,35 @@ struct cowel_dump_tokens_options_u8 {
     const void* log_data;
 
     cowel_severity min_log_severity;
-    bool no_color;
+    unsigned int flags;
+};
+
+struct cowel_dump_parse_options {
+    cowel_string_view source;
+
+    cowel_alloc_fn* alloc;
+    const void* alloc_data;
+    cowel_free_fn* free;
+    const void* free_data;
+    cowel_log_fn* log;
+    const void* log_data;
+
+    cowel_severity min_log_severity;
+    unsigned int flags;
+};
+
+struct cowel_dump_parse_options_u8 {
+    cowel_string_view_u8 source;
+
+    cowel_alloc_fn* alloc;
+    const void* alloc_data;
+    cowel_free_fn* free;
+    const void* free_data;
+    cowel_log_fn_u8* log;
+    const void* log_data;
+
+    cowel_severity min_log_severity;
+    unsigned int flags;
 };
 
 static_assert(sizeof(cowel_string_view) == sizeof(cowel_string_view_u8));
@@ -575,6 +611,7 @@ static_assert(sizeof(cowel_diagnostic) == sizeof(cowel_diagnostic_u8));
 static_assert(sizeof(cowel_syntax_highlighter) == sizeof(cowel_syntax_highlighter_u8));
 static_assert(sizeof(cowel_options) == sizeof(cowel_options_u8));
 static_assert(sizeof(cowel_dump_tokens_options) == sizeof(cowel_dump_tokens_options_u8));
+static_assert(sizeof(cowel_dump_parse_options) == sizeof(cowel_dump_parse_options_u8));
 
 struct cowel_gen_result {
     cowel_processing_status status;
@@ -602,6 +639,16 @@ struct cowel_dump_tokens_result {
 };
 
 struct cowel_dump_tokens_result_u8 {
+    cowel_processing_status status;
+    cowel_mutable_string_view_u8 output;
+};
+
+struct cowel_dump_parse_result {
+    cowel_processing_status status;
+    cowel_mutable_string_view output;
+};
+
+struct cowel_dump_parse_result_u8 {
     cowel_processing_status status;
     cowel_mutable_string_view_u8 output;
 };
@@ -653,6 +700,16 @@ COWEL_EXPORT COWEL_NODISCARD
 cowel_dump_tokens_result_u8 cowel_dump_tokens_u8(const cowel_dump_tokens_options_u8* options)
     COWEL_NOEXCEPT;
 
+/// @brief Lexes and parses a document and returns a textual dump of its CST instructions.
+COWEL_EXPORT COWEL_NODISCARD
+cowel_dump_parse_result cowel_dump_parse(const cowel_dump_parse_options* options)
+    COWEL_NOEXCEPT;
+
+/// @brief See `cowel_dump_parse`.
+COWEL_EXPORT COWEL_NODISCARD
+cowel_dump_parse_result_u8 cowel_dump_parse_u8(const cowel_dump_parse_options_u8* options)
+    COWEL_NOEXCEPT;
+
 /// @brief Frees all memory associated with a gen result
 /// returned by `cowel_generate_html` or `cowel_generate_html_u8`
 /// (both the output HTML and the hover entries array).
@@ -682,6 +739,18 @@ void cowel_free_dump_tokens_result(
 ) COWEL_NOEXCEPT;
 
 COWEL_EXPORT
+void cowel_free_dump_parse_result_u8(
+    const cowel_dump_parse_options_u8* options,
+    cowel_dump_parse_result_u8* result
+) COWEL_NOEXCEPT;
+
+COWEL_EXPORT
+void cowel_free_dump_parse_result(
+    const cowel_dump_parse_options* options,
+    cowel_dump_parse_result* result
+) COWEL_NOEXCEPT;
+
+COWEL_EXPORT
 void cowel_set_assertion_handler_u8(cowel_assertion_handler_fn_u8* handler) COWEL_NOEXCEPT;
 
 /// @brief Identifies the action requested by a parsed CLI invocation.
@@ -696,6 +765,8 @@ enum cowel_cli_command { // NOLINT(performance-enum-size)
     COWEL_CLI_COMMAND_RUN,
     /// @brief The tokenize subcommand was given with a valid input path.
     COWEL_CLI_COMMAND_TOKENIZE,
+    /// @brief The parse subcommand was given with a valid input path.
+    COWEL_CLI_COMMAND_PARSE,
 };
 
 /// @brief The result of parsing CLI arguments via `cowel_parse_cli_options`.
@@ -719,6 +790,12 @@ struct cowel_parsed_cli_options_u8 {
 
     /// @brief True if parsing succeeded, false otherwise.
     bool ok;
+    /// @brief If true, use fixed (no) indentation instead of dynamic indentation.
+    /// Valid only when `command` is `COWEL_CLI_COMMAND_PARSE`.
+    bool no_indent;
+    /// @brief If true, do not show source text alongside instructions.
+    /// Valid only when `command` is `COWEL_CLI_COMMAND_PARSE`.
+    bool no_source;
     /// @brief Human-readable error description.
     /// Valid only when `ok` is false.
     cowel_mutable_string_view_u8 error_message;

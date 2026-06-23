@@ -273,18 +273,17 @@ void append_char_sequence(
     }
 }
 
-void print_token(Diagnostic_String& out, const Token_Kind kind, const std::u8string_view token_text)
-{
-    out.append(token_kind_name(kind), Diagnostic_Highlight::tag);
-    out.append(u8' ');
+namespace {
 
-    const std::u8string_view source = token_kind_source(kind);
-    const auto highlight = source.empty() || source == token_text
-        ? Diagnostic_Highlight::text
-        : Diagnostic_Highlight::error_text;
+void print_quoted_text(
+    Diagnostic_String& out,
+    const std::u8string_view text,
+    const Diagnostic_Highlight highlight = Diagnostic_Highlight::text
+)
+{
     auto builder = out.build(highlight);
     builder.append(u8'"');
-    for (const char32_t c : utf8::Code_Point_View { token_text }) {
+    for (const char32_t c : utf8::Code_Point_View { text }) {
         if (c == u8'\\') {
             builder.append(u8"\\\\");
             continue;
@@ -308,6 +307,19 @@ void print_token(Diagnostic_String& out, const Token_Kind kind, const std::u8str
     builder.append(u8'"');
 }
 
+} // namespace
+
+void print_token(Diagnostic_String& out, const Token_Kind kind, const std::u8string_view token_text)
+{
+    out.append(token_kind_name(kind), Diagnostic_Highlight::tag);
+    out.append(u8' ');
+    const std::u8string_view source = token_kind_source(kind);
+    const auto highlight = source.empty() || source == token_text
+        ? Diagnostic_Highlight::text
+        : Diagnostic_Highlight::error_text;
+    print_quoted_text(out, token_text, highlight);
+}
+
 void dump_tokens(
     Diagnostic_String& out,
     const std::span<const Token> tokens,
@@ -319,6 +331,57 @@ void dump_tokens(
         out.append(indent);
         print_token(out, token.kind, source.substr(token.location.begin, token.location.length));
         out.append(u8'\n');
+    }
+}
+
+void print_instruction(Diagnostic_String& out, const CST_Instruction_Kind kind, const std::size_t n)
+{
+    out.append(cst_instruction_kind_name(kind), Diagnostic_Highlight::tag);
+    if (cst_instruction_kind_has_operand(kind)) {
+        out.append(u8' ');
+        out.append_integer(n);
+    }
+    else if (n != 0) {
+        out.append(u8' ');
+        out.append_integer(n, Diagnostic_Highlight::error_text);
+    }
+}
+
+void dump_instructions(
+    Diagnostic_String& out,
+    const std::span<const CST_Instruction> instructions,
+    const std::span<const Token> tokens,
+    const std::u8string_view source,
+    const Dump_Instructions_Options& options
+)
+{
+    std::size_t token_idx = 0;
+    std::size_t depth = 0;
+    const bool dynamic = options.indent_kind == Dump_Instructions_Indent_Kind::dynamic;
+    for (const auto& ins : instructions) {
+        const std::u8string_view name = cst_instruction_kind_name(ins.kind);
+        const bool is_pop = name.starts_with(u8"pop_");
+        if (dynamic && is_pop && depth > 0) {
+            --depth;
+        }
+        for (std::size_t i = 0; i < depth; ++i) {
+            out.append(options.indent);
+        }
+        print_instruction(out, ins.kind, ins.n);
+        const bool advances = cst_instruction_kind_advances(ins.kind);
+        if (advances && options.show_source && !tokens.empty()) {
+            COWEL_ASSERT(token_idx < tokens.size());
+            const auto& tok = tokens[token_idx];
+            out.append(u8' ');
+            print_quoted_text(out, source.substr(tok.location.begin, tok.location.length));
+        }
+        if (advances) {
+            ++token_idx;
+        }
+        out.append(u8'\n');
+        if (dynamic && !is_pop && name.starts_with(u8"push_")) {
+            ++depth;
+        }
     }
 }
 

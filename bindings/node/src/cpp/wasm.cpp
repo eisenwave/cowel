@@ -42,6 +42,8 @@ static_assert(sizeof(cowel_gen_result_u8) == 20);
 static_assert(alignof(cowel_gen_result_u8) == 4);
 static_assert(sizeof(cowel_dump_tokens_options_u8) == 40);
 static_assert(alignof(cowel_dump_tokens_options_u8) == 4);
+static_assert(sizeof(cowel_dump_parse_options_u8) == 40);
+static_assert(alignof(cowel_dump_parse_options_u8) == 4);
 static_assert(sizeof(cowel_parsed_cli_options_u8) == 36);
 static_assert(alignof(cowel_parsed_cli_options_u8) == 4);
 #endif
@@ -74,7 +76,7 @@ void init_dump_tokens_options(
     const char8_t* const source_text,
     const std::size_t source_length,
     const cowel_severity min_log_severity,
-    const bool no_color
+    const unsigned flags
 ) noexcept
 {
     *result = cowel_dump_tokens_options_u8 {
@@ -86,7 +88,29 @@ void init_dump_tokens_options(
         .log = log_callback,
         .log_data = nullptr,
         .min_log_severity = min_log_severity,
-        .no_color = no_color,
+        .flags = flags,
+    };
+}
+
+COWEL_EXPORT
+void init_dump_parse_options(
+    cowel_dump_parse_options_u8* const result,
+    const char8_t* const source_text,
+    const std::size_t source_length,
+    const cowel_severity min_log_severity,
+    const unsigned flags
+) noexcept
+{
+    *result = cowel_dump_parse_options_u8 {
+        .source = { source_text, source_length },
+        .alloc = nullptr,
+        .alloc_data = nullptr,
+        .free = nullptr,
+        .free_data = nullptr,
+        .log = log_callback,
+        .log_data = nullptr,
+        .min_log_severity = min_log_severity,
+        .flags = flags,
     };
 }
 

@@ -899,32 +899,6 @@ parse_and_build_file(const std::u8string_view file_name, std::pmr::memory_resour
     return Actual_Document { std::move(parsed->source), std::move(content) };
 }
 
-void append_instruction(Diagnostic_String& out, const CST_Instruction& ins)
-{
-    out.append(cst_instruction_kind_name(ins.kind), Diagnostic_Highlight::tag);
-    if (cst_instruction_kind_has_operand(ins.kind)) {
-        out.append(u8' ');
-        out.append_integer(ins.n);
-    }
-    else if (ins.n != 0) {
-        out.append(u8' ');
-        out.append_integer(ins.n, Diagnostic_Highlight::error_text);
-    }
-}
-
-void dump_instructions(
-    Diagnostic_String& out,
-    std::span<const CST_Instruction> instructions,
-    std::u8string_view indent = {}
-)
-{
-    for (const auto& i : instructions) {
-        out.append(indent);
-        append_instruction(out, i);
-        out.append(u8'\n');
-    }
-}
-
 std::optional<CST_Instruction_Kind> cst_instruction_kind_from_name(std::u8string_view name)
 {
     struct Name_And_Instruction_Kind {
@@ -1043,13 +1017,23 @@ bool run_parse_test(
         );
         error.append(u8"Expected:\n", Diagnostic_Highlight::text);
         Diagnostic_String expected_text;
-        dump_instructions(error, expected, indent);
-        dump_instructions(expected_text, expected);
+        const Dump_Instructions_Options opts_with_indent {
+            .indent = indent,
+            .indent_kind = Dump_Instructions_Indent_Kind::fixed,
+            .show_source = false,
+        };
+        const Dump_Instructions_Options opts_no_indent {
+            .indent = {},
+            .indent_kind = Dump_Instructions_Indent_Kind::fixed,
+            .show_source = false,
+        };
+        dump_instructions(error, expected, {}, {}, opts_with_indent);
+        dump_instructions(expected_text, expected, {}, {}, opts_no_indent);
 
         error.append(u8"Actual:\n", Diagnostic_Highlight::text);
         Diagnostic_String actual_text;
-        dump_instructions(error, actual->instructions, indent);
-        dump_instructions(actual_text, actual->instructions);
+        dump_instructions(error, actual->instructions, {}, {}, opts_with_indent);
+        dump_instructions(actual_text, actual->instructions, {}, {}, opts_no_indent);
 
         error.append(
             u8"Test output instructions deviate from expected as follows:\n"sv,
