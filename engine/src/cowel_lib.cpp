@@ -498,7 +498,9 @@ cowel_dump_parse_result_u8 do_dump_parse(const cowel_dump_parse_options_u8& opti
 
     Diagnostic_String out { memory };
     const Dump_Instructions_Options dump_opts {
-        .indent = u8"  ",
+        .indent = (options.flags & COWEL_GEN_FLAGS_NO_INDENT) != 0
+            ? std::u8string_view {}
+            : std::u8string_view { u8"  " },
         .indent_kind = (options.flags & COWEL_GEN_FLAGS_NO_INDENT)
             ? Dump_Instructions_Indent_Kind::fixed
             : Dump_Instructions_Indent_Kind::dynamic,

@@ -364,7 +364,12 @@ void dump_instructions(
         if (dynamic && is_pop && depth > 0) {
             --depth;
         }
-        for (std::size_t i = 0; i < depth; ++i) {
+        if (dynamic) {
+            for (std::size_t i = 0; i < depth; ++i) {
+                out.append(options.indent);
+            }
+        }
+        else {
             out.append(options.indent);
         }
         print_instruction(out, ins.kind, ins.n);
