@@ -74,6 +74,7 @@ jobs:
             stdlib: libstdc++
             stdlib_package: libstdc++-13-dev
             run_coverage: false
+            enable_asan: true
           - toolchain: clang-libstdc++
             compiler: clang
             c_compiler: clang-20
@@ -81,6 +82,7 @@ jobs:
             stdlib: libstdc++
             stdlib_package: libstdc++-13-dev
             run_coverage: false
+            enable_asan: false
           - toolchain: clang-libc++
             compiler: clang
             c_compiler: clang-20
@@ -88,6 +90,7 @@ jobs:
             stdlib: libc++
             stdlib_package: libc++-20-dev
             run_coverage: false
+            enable_asan: false
           - toolchain: clang-coverage
             compiler: clang
             c_compiler: clang-20
@@ -96,6 +99,7 @@ jobs:
             stdlib_package: libstdc++-13-dev
             extra_package: llvm-20
             run_coverage: true
+            enable_asan: false
 
     steps:
     - uses: actions/checkout@v5
@@ -167,9 +171,13 @@ jobs:
       run: |
         COMPILER_FLAGS=""
         LINKER_FLAGS=""
+        ASAN_FLAGS=""
         if [[ "${{ matrix.compiler }}" == "clang" && "${{ matrix.stdlib }}" == "libc++" ]]; then
           COMPILER_FLAGS="-stdlib=libc++"
           LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi"
+        fi
+        if [[ "${{ matrix.enable_asan }}" == "true" ]]; then
+          ASAN_FLAGS="-DCOWEL_ENABLE_ASAN=ON"
         fi
 
         cmake -B ${{ steps.strings.outputs.build-output-dir }} \
@@ -180,6 +188,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+        $ASAN_FLAGS \
         -S ${{ github.workspace }}
 
     - name: Build
