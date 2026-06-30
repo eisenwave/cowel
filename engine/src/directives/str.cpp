@@ -16,6 +16,7 @@
 #include "cowel/context.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/parameters.hpp"
+#include "cowel/value.hpp"
 
 namespace cowel {
 
@@ -439,8 +440,8 @@ Str_Find_Behavior::evaluate(const Invocation& call, Context& context) const
     COWEL_ASSERT_UNREACHABLE(u8"Invalid status.");
 }
 
-Result<Value, Processing_Status>
-Str_At_Behavior::evaluate(const Invocation& call, Context& context) const
+Result<Short_String_Value, Processing_Status>
+Str_At_Behavior::do_evaluate(const Invocation& call, Context& context) const
 {
     String_Matcher text_matcher { context.get_transient_memory() };
     Parameter text_param { u8"text", Optionality::mandatory, text_matcher };
@@ -475,7 +476,7 @@ Str_At_Behavior::evaluate(const Invocation& call, Context& context) const
             return Processing_Status::error;
         }
         const auto index = std::size_t(Int128(index_big));
-        return Value::string(text.substr(index, 1), String_Kind::ascii);
+        return Short_String_Value(text[index]);
     }
 
     const auto begin_result
@@ -514,7 +515,7 @@ Str_At_Behavior::evaluate(const Invocation& call, Context& context) const
         );
         return Processing_Status::error;
     }
-    return Value::string(tail.substr(0, *end_result), text_kind);
+    return Short_String_Value(tail.substr(0, *end_result));
 }
 
 Result<Value, Processing_Status>

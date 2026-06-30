@@ -2449,7 +2449,8 @@ o+: 2
 ): \cowel_highlight_as("keyword-type"){str}
 }
 
-Returns the single code point of \cowdoc_attr{text} at code point index \cowdoc_attr{index}.
+Returns the single code point of \cowdoc_attr{text}
+at code point index \cowdoc_attr{index}.
 
 Raises an error if
 \ul{

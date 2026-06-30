@@ -620,7 +620,7 @@ constexpr Str_At_Behavior cowel_str_at {
     .subject = u8"cowel_str_at"sv,
     .declaration = u8R"md(cowel_str_at(text: str, index: int): str)md"sv,
     .description = u8R"md(Returns the code point at the given index.)md"sv,
-    .example = u8R"md(`cowel_str_at("awoo", 1)` → `w`.)md"sv,
+    .example = u8R"md(`cowel_str_at("awoo", 1)` → `"w"`.)md"sv,
   },
 };
 constexpr Str_Contains_Behavior cowel_str_contains {
