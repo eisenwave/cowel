@@ -46,12 +46,14 @@ enum AnsiCode {
 }
 
 const helpText = `\
-Usage: cowel <command> <input> [output] [options]
+Usage: cowel <command> [input] [output] [options]
 
 Commands:
   run       <input> <output>        Processes a COWEL document
-  tokenize  <input> [output]        Dumps the tokens of a COWEL document
-  parse     <input> [output]        Dumps the CST instructions of a COWEL document
+  tokenize  [input] [output]        Dumps the tokens of a COWEL document
+                                    (reads stdin when input is omitted)
+  parse     [input] [output]        Dumps the CST instructions of a COWEL document
+                                    (reads stdin when input is omitted)
   watch     <input> <output>        Processes a COWEL document and serves it with live reload
 
 Options:
@@ -279,18 +281,32 @@ async function compile(
     return result.output;
 }
 
+async function readStdinBytes(): Promise<Buffer> {
+    const chunks: Buffer[] = [];
+    for await (const chunk of process.stdin) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+}
+
 async function tokenize(
     inputPath: string,
     outputPath: string,
     options: TokenizeOptions,
 ): Promise<number> {
-    let source: string;
+    let sourceData: Buffer;
     try {
-        source = fs.readFileSync(inputPath, "utf8");
+        sourceData = inputPath.length !== 0 ? fs.readFileSync(inputPath) : await readStdinBytes();
     } catch (_) {
-        logError(inputPath, "file.read", "Failed to open main document.");
+        if (inputPath.length !== 0) {
+            logError(inputPath, "file.read", "Failed to open main document.");
+        } else {
+            logError("<stdin>", "file.read", "Failed to read stdin.");
+        }
         return 1;
     }
+    const source = sourceData.toString("utf8");
+    mainFile = { path: inputPath.length !== 0 ? inputPath : "<stdin>", data: sourceData };
 
     const result = await wasm!.dumpTokens(source, {
         flags: options.flags,
@@ -326,13 +342,19 @@ async function parse(
     outputPath: string,
     options: ParseOptions,
 ): Promise<number> {
-    let source: string;
+    let sourceData: Buffer;
     try {
-        source = fs.readFileSync(inputPath, "utf8");
+        sourceData = inputPath.length !== 0 ? fs.readFileSync(inputPath) : await readStdinBytes();
     } catch (_) {
-        logError(inputPath, "file.read", "Failed to open main document.");
+        if (inputPath.length !== 0) {
+            logError(inputPath, "file.read", "Failed to open main document.");
+        } else {
+            logError("<stdin>", "file.read", "Failed to read stdin.");
+        }
         return 1;
     }
+    const source = sourceData.toString("utf8");
+    mainFile = { path: inputPath.length !== 0 ? inputPath : "<stdin>", data: sourceData };
 
     const result = await wasm!.dumpParse(source, {
         flags: options.flags,

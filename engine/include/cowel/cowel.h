@@ -763,9 +763,11 @@ enum cowel_cli_command { // NOLINT(performance-enum-size)
     COWEL_CLI_COMMAND_VERSION,
     /// @brief The run subcommand was given with valid input and output paths.
     COWEL_CLI_COMMAND_RUN,
-    /// @brief The tokenize subcommand was given with a valid input path.
+    /// @brief The tokenize subcommand was given.
+    /// The input path may be empty, in which case input is read from stdin.
     COWEL_CLI_COMMAND_TOKENIZE,
-    /// @brief The parse subcommand was given with a valid input path.
+    /// @brief The parse subcommand was given.
+    /// The input path may be empty, in which case input is read from stdin.
     COWEL_CLI_COMMAND_PARSE,
 };
 
@@ -777,8 +779,12 @@ struct cowel_parsed_cli_options_u8 {
     cowel_cli_command command;
 
     /// @brief Path to the input file.
+    /// May be empty for some commands,
+    /// in which case input is read from `stdin`.
     cowel_mutable_string_view_u8 input;
     /// @brief Path to the output file.
+    /// May be empty for some commands,
+    /// in which case output is written to `stdout`.
     cowel_mutable_string_view_u8 output;
     /// @brief Minimum log severity.
     /// Valid only when `command` is `COWEL_CLI_COMMAND_RUN`.
