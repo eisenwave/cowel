@@ -46,7 +46,7 @@ enum AnsiCode {
 }
 
 const helpText = `\
-Usage: cowel <command> <input> [output] [options]
+Usage: cowel <command> [input] [output] [options]
 
 Commands:
   run       <input> <output>        Processes a COWEL document

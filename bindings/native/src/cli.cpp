@@ -190,7 +190,7 @@ struct Stderr_Logger {
     }
 };
 
-constexpr std::string_view help_text = R"(Usage: cowel <command> <input> [output] [options]
+constexpr std::string_view help_text = R"(Usage: cowel <command> [input] [output] [options]
 
 Commands:
   run <input> <output>        Processes a COWEL document
