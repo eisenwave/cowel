@@ -440,6 +440,84 @@ Str_Find_Behavior::evaluate(const Invocation& call, Context& context) const
 }
 
 Result<Value, Processing_Status>
+Str_At_Behavior::evaluate(const Invocation& call, Context& context) const
+{
+    String_Matcher text_matcher { context.get_transient_memory() };
+    Parameter text_param { u8"text", Optionality::mandatory, text_matcher };
+    Integer_Matcher index_matcher;
+    Parameter index_param { u8"index", Optionality::mandatory, index_matcher };
+    Parameter* const parameters[] { &text_param, &index_param };
+
+    const auto args_status = match_call(parameters, call, context);
+    if (args_status != Processing_Status::ok) {
+        return args_status;
+    }
+
+    const std::u8string_view text = text_matcher.get();
+    const String_Kind text_kind = text_matcher.get_string_kind();
+
+    const Big_Int& index_big = index_matcher.get();
+    if (index_big < 0) {
+        context.try_error_f(
+            diagnostic::str_at_range, index_matcher.get_location(),
+            u8"The given index {} must be a non-negative integer."sv, index_big
+        );
+        return Processing_Status::error;
+    }
+
+    if (text_kind == String_Kind::ascii) {
+        if (index_big >= Int128 { text.length() }) {
+            context.try_error_f(
+                diagnostic::str_at_range, index_matcher.get_location(),
+                u8"The given index {} exceeds the string length {}."sv, //
+                index_big, text.length()
+            );
+            return Processing_Status::error;
+        }
+        const auto index = std::size_t(Int128(index_big));
+        return Value::string(text.substr(index, 1), String_Kind::ascii);
+    }
+
+    const auto begin_result
+        = code_point_index_to_code_unit_index(text, std::size_t(Int128(index_big)));
+    if (!begin_result) {
+        const auto& err = begin_result.error();
+        if (err.kind == Code_Point_Index_To_Code_Unit_Index_Error_Kind::index_out_of_range) {
+            context.try_error_f(
+                diagnostic::str_at_range, index_matcher.get_location(),
+                u8"The given index {} exceeds the string length {}."sv, //
+                index_big, err.code_point_index
+            );
+            return Processing_Status::error;
+        }
+        context.try_error(
+            diagnostic::str_at_range, index_matcher.get_location(),
+            u8"The string contains invalid UTF-8."sv
+        );
+        return Processing_Status::error;
+    }
+    const std::u8string_view tail = text.substr(*begin_result);
+    if (tail.empty()) {
+        context.try_error_f(
+            diagnostic::str_at_range, index_matcher.get_location(),
+            u8"The given index {} exceeds the string length {}."sv, //
+            index_big, utf8::count_code_points_or_replacement(text)
+        );
+        return Processing_Status::error;
+    }
+
+    const auto end_result = code_point_index_to_code_unit_index(tail, 1);
+    if (!end_result) {
+        context.try_error(
+            diagnostic::str_at_range, index_matcher.get_location(),
+            u8"The string contains invalid UTF-8."sv
+        );
+        return Processing_Status::error;
+    }
+    return Value::string(tail.substr(0, *end_result), text_kind);
+}
+
+Result<Value, Processing_Status>
 Str_Substr_Behavior::evaluate(const Invocation& call, Context& context) const
 {
     static constexpr Type length_alternatives[] { Type::null, Type::integer };

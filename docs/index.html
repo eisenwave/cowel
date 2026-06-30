@@ -1778,18 +1778,20 @@ h1 {
 <div class=toc-num data-level=4>9.15.4</div>
 <a href=#dir-cowel_str_find><h4><code><h- data-h=mk_tag>\cowel_str_find</h-></code> — Find the position of a string</h4></a>
 <div class=toc-num data-level=4>9.15.5</div>
-<a href=#dir-cowel_str_substr><h4><code><h- data-h=mk_tag>\cowel_str_substr</h-></code> — Extract a substring</h4></a>
+<a href=#dir-cowel_str_at><h4><code><h- data-h=mk_tag>\cowel_str_at</h-></code> — Access a code point by index</h4></a>
 <div class=toc-num data-level=4>9.15.6</div>
-<a href=#dir-cowel_str_match><h4><code><h- data-h=mk_tag>\cowel_str_match</h-></code> — Test if a string matches a regular expression</h4></a>
+<a href=#dir-cowel_str_substr><h4><code><h- data-h=mk_tag>\cowel_str_substr</h-></code> — Extract a substring</h4></a>
 <div class=toc-num data-level=4>9.15.7</div>
-<a href=#dir-cowel_str_to_lower><h4><code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4></a>
+<a href=#dir-cowel_str_match><h4><code><h- data-h=mk_tag>\cowel_str_match</h-></code> — Test if a string matches a regular expression</h4></a>
 <div class=toc-num data-level=4>9.15.8</div>
-<a href=#dir-cowel_str_to_upper><h4><code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4></a>
+<a href=#dir-cowel_str_to_lower><h4><code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4></a>
 <div class=toc-num data-level=4>9.15.9</div>
-<a href=#dir-cowel_str_replace_first><h4><code><h- data-h=mk_tag>\cowel_str_replace_first</h-></code> — Replace first occurrence</h4></a>
+<a href=#dir-cowel_str_to_upper><h4><code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4></a>
 <div class=toc-num data-level=4>9.15.10</div>
-<a href=#dir-cowel_str_replace_all><h4><code><h- data-h=mk_tag>\cowel_str_replace_all</h-></code> — Replace every occurrence</h4></a>
+<a href=#dir-cowel_str_replace_first><h4><code><h- data-h=mk_tag>\cowel_str_replace_first</h-></code> — Replace first occurrence</h4></a>
 <div class=toc-num data-level=4>9.15.11</div>
+<a href=#dir-cowel_str_replace_all><h4><code><h- data-h=mk_tag>\cowel_str_replace_all</h-></code> — Replace every occurrence</h4></a>
+<div class=toc-num data-level=4>9.15.12</div>
 <a href=#dir-cowel_regex><h4><code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</h4></a>
 <div class=toc-num data-level=3>9.16</div>
 <a href=#variable-management><h3>Variable management</h3></a>
@@ -3854,7 +3856,7 @@ such as <code>"abc"</code>.
 <p><tt-><h- data-h=kw_type>regex</h-></tt-> is a regular expression.
 </p>
 <note-block><p><intro-></intro-> 
-A value of type <tt-><h- data-h=kw_type>regex</h-></tt-> can be obtained using <a href=#dir-cowel_regex>§9.15.11. <code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</a>.
+A value of type <tt-><h- data-h=kw_type>regex</h-></tt-> can be obtained using <a href=#dir-cowel_regex>§9.15.12. <code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</a>.
 </p></note-block>
 
 <h4 id=type-block><a class=para href=#type-block></a>7.2.10. <tt-><h- data-h=kw_type>block</h-></tt-> — Block</h4>
@@ -6461,7 +6463,33 @@ o+: 2
 0</code-block>
 </example-block>
 
-<h4 id=dir-cowel_str_substr><a class=para href=#dir-cowel_str_substr></a>9.15.5. <code><h- data-h=mk_tag>\cowel_str_substr</h-></code> — Extract a substring</h4>
+<h4 id=dir-cowel_str_at><a class=para href=#dir-cowel_str_at></a>9.15.5. <code><h- data-h=mk_tag>\cowel_str_at</h-></code> — Access a code point by index</h4>
+
+<pre>
+<h- data-h=mk_tag>cowel_str_at</h->(
+  <h- data-h=mk_attr>text</h->: <h- data-h=kw_type>str</h->,
+  <h- data-h=mk_attr>index</h->: <h- data-h=kw_type>int</h->,
+): <h- data-h=kw_type>str</h->
+</pre>
+
+<p>Returns the single code point of <tt-><h- data-h=mk_attr>text</h-></tt-> at code point index <tt-><h- data-h=mk_attr>index</h-></tt->.
+</p>
+<p>Raises an error if
+</p><ul>
+  <li><tt-><h- data-h=mk_attr>index</h-></tt-> is negative, or</li>
+  <li><tt-><h- data-h=mk_attr>index</h-></tt-> is greater than or equal to the length of <tt-><h- data-h=mk_attr>text</h-></tt->.</li>
+</ul>
+
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_str_at</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>awoo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>1</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\cowel_str_at</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>αβγ</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>w
+γ</code-block>
+</example-block>
+
+<h4 id=dir-cowel_str_substr><a class=para href=#dir-cowel_str_substr></a>9.15.6. <code><h- data-h=mk_tag>\cowel_str_substr</h-></code> — Extract a substring</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_str_substr</h->(
@@ -6497,7 +6525,7 @@ COWEL markup:
 oo</code-block>
 </example-block>
 
-<h4 id=dir-cowel_str_match><a class=para href=#dir-cowel_str_match></a>9.15.6. <code><h- data-h=mk_tag>\cowel_str_match</h-></code> — Test if a string matches a regular expression</h4>
+<h4 id=dir-cowel_str_match><a class=para href=#dir-cowel_str_match></a>9.15.7. <code><h- data-h=mk_tag>\cowel_str_match</h-></code> — Test if a string matches a regular expression</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_str_match</h->(<h- data-h=mk_attr>text</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>regex</h->: <h- data-h=kw_type>regex</h->): <h- data-h=kw_type>bool</h->
@@ -6515,7 +6543,7 @@ COWEL markup:
 false</code-block>
 </example-block>
 
-<h4 id=dir-cowel_str_to_lower><a class=para href=#dir-cowel_str_to_lower></a>9.15.7. <code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4>
+<h4 id=dir-cowel_str_to_lower><a class=para href=#dir-cowel_str_to_lower></a>9.15.8. <code><h- data-h=mk_tag>\cowel_str_to_lower</h-></code> — Convert string to lowercase</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_str_to_lower</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
@@ -6534,7 +6562,7 @@ COWEL markup:
 </p><code-block>awoo äöü 123</code-block>
 </example-block>
 
-<h4 id=dir-cowel_str_to_upper><a class=para href=#dir-cowel_str_to_upper></a>9.15.8. <code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4>
+<h4 id=dir-cowel_str_to_upper><a class=para href=#dir-cowel_str_to_upper></a>9.15.9. <code><h- data-h=mk_tag>\cowel_str_to_upper</h-></code> — Convert string to uppercase</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_str_to_upper</h->(<h- data-h=mk_attr>x</h->: <h- data-h=kw_type>str</h->): <h- data-h=kw_type>str</h->
@@ -6553,7 +6581,7 @@ COWEL markup:
 </p><code-block>AWOO ÄÖÜ STRASSE 123</code-block>
 </example-block>
 
-<h4 id=dir-cowel_str_replace_first><a class=para href=#dir-cowel_str_replace_first></a>9.15.9. <code><h- data-h=mk_tag>\cowel_str_replace_first</h-></code> — Replace first occurrence</h4>
+<h4 id=dir-cowel_str_replace_first><a class=para href=#dir-cowel_str_replace_first></a>9.15.10. <code><h- data-h=mk_tag>\cowel_str_replace_first</h-></code> — Replace first occurrence</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_str_replace_first</h->(
@@ -6587,7 +6615,7 @@ Replace everything: xyz
 No replacement:     awoo</code-block>
 </example-block>
 
-<h4 id=dir-cowel_str_replace_all><a class=para href=#dir-cowel_str_replace_all></a>9.15.10. <code><h- data-h=mk_tag>\cowel_str_replace_all</h-></code> — Replace every occurrence</h4>
+<h4 id=dir-cowel_str_replace_all><a class=para href=#dir-cowel_str_replace_all></a>9.15.11. <code><h- data-h=mk_tag>\cowel_str_replace_all</h-></code> — Replace every occurrence</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_str_replace_all</h->(
@@ -6626,7 +6654,7 @@ Replace everything: xyz
 No replacement:     awoo</code-block>
 </example-block>
 
-<h4 id=dir-cowel_regex><a class=para href=#dir-cowel_regex></a>9.15.11. <code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</h4>
+<h4 id=dir-cowel_regex><a class=para href=#dir-cowel_regex></a>9.15.12. <code><h- data-h=mk_tag>\cowel_regex</h-></code> — Create a regular expression</h4>
 
 <pre>
 <h- data-h=mk_tag>cowel_regex</h->(<h- data-h=mk_attr>pattern</h->: <h- data-h=kw_type>str</h->, <h- data-h=mk_attr>flags</h->: <h- data-h=kw_type>str</h-> = ""): <h- data-h=kw_type>regex</h->

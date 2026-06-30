@@ -308,6 +308,18 @@ public:
 };
 
 struct [[nodiscard]]
+Str_At_Behavior final : Directive_Behavior {
+    [[nodiscard]]
+    constexpr explicit Str_At_Behavior(const Tooltip_Article& tooltip_article)
+        : Directive_Behavior { Type::str, tooltip_article }
+    {
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const override;
+};
+
+struct [[nodiscard]]
 Str_Substr_Behavior final : Directive_Behavior {
     [[nodiscard]]
     constexpr explicit Str_Substr_Behavior(const Tooltip_Article& tooltip_article)
