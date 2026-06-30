@@ -2,6 +2,7 @@
 #define COWEL_BUILTIN_DIRECTIVE_SET
 
 #include <memory>
+#include <span>
 #include <string_view>
 
 #include "cowel/util/assert.hpp"
@@ -1244,6 +1245,10 @@ public:
 
     [[nodiscard]]
     const Directive_Behavior& get_error_behavior() const noexcept;
+
+    /// @brief Returns a span of all builtin directive names, in sorted order.
+    [[nodiscard]]
+    std::span<const std::u8string_view> get_all_names() const noexcept;
 
     [[nodiscard]]
     Distant<std::u8string_view>

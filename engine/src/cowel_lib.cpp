@@ -603,8 +603,8 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         return {
             .status = COWEL_PROCESSING_ERROR,
             .output = {},
-            .hovers = nullptr,
-            .hovers_size = 0,
+            .symbols = nullptr,
+            .symbols_size = 0,
         };
     }
 
@@ -614,8 +614,8 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         return {
             .status = COWEL_PROCESSING_ERROR,
             .output = {},
-            .hovers = nullptr,
-            .hovers_size = 0,
+            .symbols = nullptr,
+            .symbols_size = 0,
         };
     }
 
@@ -672,39 +672,87 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         gen_options
     );
 
-    // Build the flat hover buffer when requested.
-    cowel_hover_u8* hovers_ptr = nullptr;
-    std::size_t hovers_size = 0;
-    if ((options.flags & COWEL_GEN_FLAGS_COLLECT_HOVERS) && !hover_entries.empty()) {
-        std::size_t total_article_bytes = 0;
+    // Build the flat symbol buffer when requested.
+    // The buffer is a single allocation:
+    //   [n_total * sizeof(cowel_symbol_u8)] [string bytes...]
+    // where string bytes contains the name and article for each invocation symbol,
+    // followed by the name for each builtin definition symbol.
+    // Builtin definition symbols have a sentinel file_id (COWEL_FILE_ID_BUILTIN)
+    // and are used by the LSP for completion suggestions.
+    cowel_symbol_u8* symbols_ptr = nullptr;
+    std::size_t symbols_size = 0;
+    if (options.flags & COWEL_GEN_FLAGS_SYMBOLIZE) {
+        const std::span<const std::u8string_view> builtin_names
+            = builtin_behavior.get_all_names();
+        const std::size_t n_invocations = hover_entries.size();
+        const std::size_t n_builtins = builtin_names.size();
+        const std::size_t n_total = n_invocations + n_builtins;
+
+        std::size_t total_string_bytes = 0;
         for (const Hover_Entry& e : hover_entries) {
-            total_article_bytes += e.article.size();
+            total_string_bytes += e.name.size() + e.article.size();
         }
-        const std::size_t n = hover_entries.size();
-        const std::size_t hovers_alloc_size = (n * sizeof(cowel_hover_u8)) + total_article_bytes;
-        auto* const flat
-            = static_cast<char8_t*>(memory->allocate(hovers_alloc_size, alignof(cowel_hover_u8)));
+        for (const std::u8string_view name : builtin_names) {
+            total_string_bytes += name.size();
+        }
+
+        const std::size_t alloc_size = (n_total * sizeof(cowel_symbol_u8)) + total_string_bytes;
+        auto* const flat = static_cast<char8_t*>(
+            memory->allocate(alloc_size, alignof(cowel_symbol_u8))
+        );
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        hovers_ptr = reinterpret_cast<cowel_hover_u8*>(flat);
-        hovers_size = n;
-        char8_t* article_data = flat + (n * sizeof(cowel_hover_u8));
-        for (std::size_t i = 0; i < n; ++i) {
+        symbols_ptr = reinterpret_cast<cowel_symbol_u8*>(flat);
+        symbols_size = n_total;
+        char8_t* string_data = flat + (n_total * sizeof(cowel_symbol_u8));
+
+        // Pack invocation symbols.
+        for (std::size_t i = 0; i < n_invocations; ++i) {
             const Hover_Entry& e = hover_entries[i];
-            const char8_t* const article_ptr = e.article.empty() ? nullptr : article_data;
-            hovers_ptr[i] = {
+            const char8_t* const name_ptr = e.name.empty() ? nullptr : string_data;
+            if (!e.name.empty()) {
+                // NOLINTNEXTLINE(bugprone-not-null-terminated-result)
+                std::memcpy(string_data, e.name.data(), e.name.size());
+                string_data += e.name.size();
+            }
+            const char8_t* const article_ptr = e.article.empty() ? nullptr : string_data;
+            if (!e.article.empty()) {
+                // NOLINTNEXTLINE(bugprone-not-null-terminated-result)
+                std::memcpy(string_data, e.article.data(), e.article.size());
+                string_data += e.article.size();
+            }
+            symbols_ptr[i] = {
                 .line = e.span.line,
                 .column = e.span.column,
                 .begin = e.span.begin,
                 .length = e.span.length,
                 .file_id = static_cast<cowel_file_id>(e.span.file),
+                .name = name_ptr,
+                .name_length = e.name.size(),
                 .article = article_ptr,
                 .article_length = e.article.size(),
             };
-            if (!e.article.empty()) {
+        }
+
+        // Pack builtin definition symbols.
+        for (std::size_t i = 0; i < n_builtins; ++i) {
+            const std::u8string_view name = builtin_names[i];
+            const char8_t* const name_ptr = name.empty() ? nullptr : string_data;
+            if (!name.empty()) {
                 // NOLINTNEXTLINE(bugprone-not-null-terminated-result)
-                std::memcpy(article_data, e.article.data(), e.article.size());
-                article_data += e.article.size();
+                std::memcpy(string_data, name.data(), name.size());
+                string_data += name.size();
             }
+            symbols_ptr[n_invocations + i] = {
+                .line = 0,
+                .column = 0,
+                .begin = 0,
+                .length = 0,
+                .file_id = COWEL_FILE_ID_BUILTIN,
+                .name = name_ptr,
+                .name_length = name.size(),
+                .article = nullptr,
+                .article_length = 0,
+            };
         }
     }
 
@@ -712,8 +760,8 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         return {
             .status = static_cast<cowel_processing_status>(status),
             .output = {},
-            .hovers = hovers_ptr,
-            .hovers_size = hovers_size,
+            .symbols = symbols_ptr,
+            .symbols_size = symbols_size,
         };
     }
 
@@ -725,8 +773,8 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         return {
             .status = COWEL_PROCESSING_FATAL,
             .output = result,
-            .hovers = hovers_ptr,
-            .hovers_size = hovers_size,
+            .symbols = symbols_ptr,
+            .symbols_size = symbols_size,
         };
     }
 
@@ -734,8 +782,8 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
     return {
         .status = static_cast<cowel_processing_status>(status),
         .output = result,
-        .hovers = hovers_ptr,
-        .hovers_size = hovers_size,
+        .symbols = symbols_ptr,
+        .symbols_size = symbols_size,
     };
 }
 
@@ -965,16 +1013,16 @@ void cowel_free_gen_result_u8(
         do_free(result->output.text, result->output.length, alignof(char8_t));
         result->output = {};
     }
-    if (result->hovers != nullptr) {
-        std::size_t total_article_bytes = 0;
-        for (std::size_t i = 0; i < result->hovers_size; ++i) {
-            total_article_bytes += result->hovers[i].article_length;
+    if (result->symbols != nullptr) {
+        std::size_t total_string_bytes = 0;
+        for (std::size_t i = 0; i < result->symbols_size; ++i) {
+            total_string_bytes += result->symbols[i].name_length + result->symbols[i].article_length;
         }
-        const std::size_t hovers_alloc_size
-            = (result->hovers_size * sizeof(cowel_hover_u8)) + total_article_bytes;
-        do_free(result->hovers, hovers_alloc_size, alignof(cowel_hover_u8));
-        result->hovers = nullptr;
-        result->hovers_size = 0;
+        const std::size_t symbols_alloc_size
+            = (result->symbols_size * sizeof(cowel_symbol_u8)) + total_string_bytes;
+        do_free(result->symbols, symbols_alloc_size, alignof(cowel_symbol_u8));
+        result->symbols = nullptr;
+        result->symbols_size = 0;
     }
 }
 

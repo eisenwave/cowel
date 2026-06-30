@@ -96,8 +96,11 @@ enum cowel_assertion_type {
 enum cowel_gen_flags {
     /// @brief No special flags.
     COWEL_GEN_FLAGS_NONE = 0,
-    /// @brief Collect hover information for directives.
-    COWEL_GEN_FLAGS_COLLECT_HOVERS = 1 << 0,
+    /// @brief Collect symbol information for directives.
+    /// Enables hover articles and populates the `symbols` array in the result.
+    COWEL_GEN_FLAGS_SYMBOLIZE = 1 << 0,
+    /// @brief Alias for `COWEL_GEN_FLAGS_SYMBOLIZE` for backward compatibility.
+    COWEL_GEN_FLAGS_COLLECT_HOVERS = COWEL_GEN_FLAGS_SYMBOLIZE,
     /// @brief Disable ANSI color codes in output.
     COWEL_GEN_FLAGS_NO_COLOR = 1 << 1,
     /// @brief Use fixed indentation instead of dynamic indentation.
@@ -112,6 +115,10 @@ enum cowel_gen_flags {
 enum {
     /// @brief The value of a `cowel_file_id` representing the main document.
     COWEL_FILE_ID_MAIN = -1,
+    /// @brief Sentinel `cowel_file_id` for builtin directive definition symbols.
+    /// Symbols with this file id have no real source position;
+    /// they represent the existence of a builtin directive for completion purposes.
+    COWEL_FILE_ID_BUILTIN = -2,
 };
 
 /// @brief A container for a string and a length.
@@ -199,7 +206,53 @@ struct cowel_diagnostic_u8 {
     size_t stack_size;
 };
 
+/// @brief Symbol information for a single directive invocation or definition.
+/// @see `cowel_gen_result`
+struct cowel_symbol {
+    /// @brief 0-based line of the directive name token.
+    size_t line;
+    /// @brief 0-based UTF-8 code unit offset (column) of the directive name token.
+    size_t column;
+    /// @brief UTF-8 byte offset within the source of the directive name token.
+    /// Equal to the byte offset of the start of the containing line plus `column`.
+    size_t begin;
+    /// @brief Length of the directive name in UTF-8 code units (excluding the leading backslash).
+    size_t length;
+    /// @brief The id of the file in which the symbol occurs.
+    /// `COWEL_FILE_ID_MAIN` (-1) refers to the main file,
+    /// `>= 0` refers to included files.
+    /// `COWEL_FILE_ID_BUILTIN` (-2) is a sentinel indicating
+    /// this is a builtin directive definition symbol with no real source position.
+    cowel_file_id file_id;
+    /// @brief The directive name (UTF-8), without the leading backslash.
+    /// May be null for anonymous or unnamed contexts.
+    const char* name;
+    /// @brief Byte length of `name`.
+    size_t name_length;
+    /// @brief Markdown hover article text (UTF-8).
+    /// May be null when no hover article is available.
+    const char* article;
+    /// @brief Byte length of `article`.
+    size_t article_length;
+};
+
+/// @brief See `cowel_symbol`.
+struct cowel_symbol_u8 {
+    size_t line;
+    size_t column;
+    size_t begin;
+    size_t length;
+    cowel_file_id file_id;
+    const char8_t* name;
+    size_t name_length;
+    const char8_t* article;
+    size_t article_length;
+};
+
+static_assert(sizeof(cowel_symbol) == sizeof(cowel_symbol_u8));
+
 /// @brief Hover information for a single directive invocation.
+/// @deprecated Use `cowel_symbol` instead.
 /// @see `cowel_gen_result`
 struct cowel_hover {
     /// @brief 0-based line of the directive name token.
@@ -221,6 +274,7 @@ struct cowel_hover {
 };
 
 /// @brief See `cowel_hover`.
+/// @deprecated Use `cowel_symbol_u8` instead.
 struct cowel_hover_u8 {
     size_t line;
     size_t column;
@@ -616,21 +670,21 @@ static_assert(sizeof(cowel_dump_parse_options) == sizeof(cowel_dump_parse_option
 struct cowel_gen_result {
     cowel_processing_status status;
     cowel_mutable_string_view output;
-    /// @brief Pointer to the hover entries array,
-    /// or null if `COWEL_GEN_FLAGS_COLLECT_HOVERS` was not set or there were no hovers.
-    cowel_hover* hovers;
-    /// @brief Number of entries in `hovers`.
-    size_t hovers_size;
+    /// @brief Pointer to the symbol array,
+    /// or null if `COWEL_GEN_FLAGS_SYMBOLIZE` was not set or there were no symbols.
+    cowel_symbol* symbols;
+    /// @brief Number of entries in `symbols`.
+    size_t symbols_size;
 };
 
 struct cowel_gen_result_u8 {
     cowel_processing_status status;
     cowel_mutable_string_view_u8 output;
-    /// @brief Pointer to the hover entries array,
-    /// or null if `COWEL_GEN_FLAGS_COLLECT_HOVERS` was not set or there were no hovers.
-    cowel_hover_u8* hovers;
-    /// @brief Number of entries in `hovers`.
-    size_t hovers_size;
+    /// @brief Pointer to the symbol array,
+    /// or null if `COWEL_GEN_FLAGS_SYMBOLIZE` was not set or there were no symbols.
+    cowel_symbol_u8* symbols;
+    /// @brief Number of entries in `symbols`.
+    size_t symbols_size;
 };
 
 struct cowel_dump_tokens_result {

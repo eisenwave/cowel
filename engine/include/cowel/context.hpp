@@ -73,6 +73,7 @@ public:
 /// @brief A hover entry: source location and Markdown article text.
 struct Hover_Entry {
     File_Source_Span span;
+    std::pmr::u8string name;
     std::pmr::u8string article;
 };
 
@@ -323,10 +324,18 @@ public:
 
     /// @brief Records a hover entry at @p span with @p article.
     /// Does nothing if `collects_hovers()` is false.
-    void push_hover(const File_Source_Span& span, const std::u8string_view article)
+    void push_hover(
+        const File_Source_Span& span,
+        const std::u8string_view name,
+        const std::u8string_view article
+    )
     {
         if (m_hover_sink != nullptr) {
-            m_hover_sink->push_back({ span, std::pmr::u8string { article, m_memory } });
+            m_hover_sink->push_back({
+                span,
+                std::pmr::u8string { name, m_memory },
+                std::pmr::u8string { article, m_memory },
+            });
         }
     }
 

@@ -11,9 +11,11 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "cowel/util/code_point_names.hpp"
+#include "cowel/util/chars.hpp"
 #include "cowel/util/strings.hpp"
 #include "cowel/util/to_chars.hpp"
 #include "cowel/util/transparent_comparison.hpp"
@@ -89,9 +91,13 @@ using String_Map = std::unordered_map<
     Transparent_String_View_Hash8, //
     Transparent_String_View_Equals8>;
 
-/// @brief A hover entry: LSP range and Markdown article text.
-struct Hover_Entry {
+/// @brief A symbol entry: LSP range, name, and optional Markdown article.
+/// Invocation symbols have a valid source position;
+/// builtin definition symbols have `is_definition = true` and no source range.
+struct Symbol_Entry {
     lsp::Range range;
+    bool is_definition = false;
+    std::u8string name;
     std::u8string article;
 };
 
@@ -102,8 +108,9 @@ struct Document {
     std::u8string path {};
     /// The `file://` URI of this document.
     std::u8string uri {};
-    /// Hover entries collected during validation.
-    std::vector<Hover_Entry> hovers {};
+    /// Symbols collected during validation.
+    /// Invocation symbols have source positions; builtin definition symbols do not.
+    std::vector<Symbol_Entry> symbols {};
     /// List of file URIs that were transitively included during its last validation run.
     /// Used to find which open documents need re-validation
     /// when an included file changes.
@@ -583,7 +590,7 @@ Validate_Result validate_document(
         .source = { content.data(), content.size() },
         .highlight_theme_json = {},
         .mode = COWEL_MODE_DOCUMENT,
-        .flags = COWEL_GEN_FLAGS_COLLECT_HOVERS,
+        .flags = COWEL_GEN_FLAGS_SYMBOLIZE,
         .min_log_severity = COWEL_SEVERITY_SOFT_WARNING,
         .preserved_variables = nullptr,
         .preserved_variables_size = 0,
@@ -604,53 +611,66 @@ Validate_Result validate_document(
 
     cowel_gen_result_u8 gen_result = cowel_generate_html_u8(&opts);
 
-    // Collect hover entries and map them by file URI using file_id.
+    // Collect symbol entries and map them by file URI using file_id.
     {
-        String_Map<std::vector<Hover_Entry>> hover_by_uri;
-        if (gen_result.hovers != nullptr) {
-            for (std::size_t i = 0; i < gen_result.hovers_size; ++i) {
-                const cowel_hover_u8& h = gen_result.hovers[i];
+        String_Map<std::vector<Symbol_Entry>> symbols_by_uri;
+        if (gen_result.symbols != nullptr) {
+            for (std::size_t i = 0; i < gen_result.symbols_size; ++i) {
+                const cowel_symbol_u8& s = gen_result.symbols[i];
 
-                // Determine which file this hover belongs to.
-                std::u8string hover_uri { uri };
-                std::u8string_view hover_bytes = content;
-
-                if (h.file_id >= 0 && std::size_t(h.file_id) < validation_context.includes.size()) {
-                    const Document* const include
-                        = validation_context.includes[std::size_t(h.file_id)];
-                    hover_uri = include->uri;
-                    hover_bytes = include->content;
+                // Builtin definition symbols have no source position;
+                // store them under the main document URI.
+                if (s.file_id == COWEL_FILE_ID_BUILTIN) {
+                    symbols_by_uri[uri].push_back({
+                        .range = {},
+                        .is_definition = true,
+                        .name = { s.name, s.name_length },
+                        .article = {},
+                    });
+                    continue;
                 }
 
-                const std::size_t line_start_byte = h.begin - h.column;
+                // Determine which file this symbol belongs to.
+                std::u8string symbol_uri { uri };
+                std::u8string_view symbol_bytes = content;
+
+                if (s.file_id >= 0
+                    && std::size_t(s.file_id) < validation_context.includes.size()) {
+                    const Document* const include
+                        = validation_context.includes[std::size_t(s.file_id)];
+                    symbol_uri = include->uri;
+                    symbol_bytes = include->content;
+                }
+
+                const std::size_t line_start_byte = s.begin - s.column;
                 const lsp::Position start_pos {
-                    .line = h.line,
-                    .character
-                    = server_state.column_to_character(hover_bytes, line_start_byte, h.column),
-                };
-                const lsp::Position end_pos {
-                    .line = h.line,
+                    .line = s.line,
                     .character = server_state.column_to_character(
-                        hover_bytes, line_start_byte, h.column + h.length
+                        symbol_bytes, line_start_byte, s.column
                     ),
                 };
-                hover_by_uri[hover_uri].push_back(
-                    {
-                        .range = { start_pos, end_pos },
-                        .article = { h.article, h.article_length },
-                    }
-                );
+                const lsp::Position end_pos {
+                    .line = s.line,
+                    .character = server_state.column_to_character(
+                        symbol_bytes, line_start_byte, s.column + s.length
+                    ),
+                };
+                symbols_by_uri[symbol_uri].push_back({
+                    .range = { start_pos, end_pos },
+                    .is_definition = false,
+                    .name = { s.name, s.name_length },
+                    .article = { s.article, s.article_length },
+                });
             }
         }
-        // Store hovers for each URI they belong to,
-        // but only for documents that are open in the editor.
-        for (auto& [hover_uri, entries] : hover_by_uri) {
-            if (Document* const doc = server_state.find_open_document(hover_uri)) {
-                doc->hovers = std::move(entries);
+        // Store symbols for each URI, but only for documents open in the editor.
+        for (auto& [symbol_uri, entries] : symbols_by_uri) {
+            if (Document* const doc = server_state.find_open_document(symbol_uri)) {
+                doc->symbols = std::move(entries);
             }
         }
     }
-    // Free the generation result (both output HTML and hover buffer).
+    // Free the generation result (both output HTML and symbol buffer).
     cowel_free_gen_result_u8(&opts, &gen_result);
 
     static constexpr std::vector<lsp::Diagnostic> empty_diagnostics;
@@ -1053,6 +1073,42 @@ std::size_t lsp_position_to_byte_offset(const std::u8string_view text, const lsp
     return i + unchecked_utf16_offset_to_utf8_offset(text.substr(i, line_end - i), pos.character);
 }
 
+/// @brief Looks backward from `cursor_byte` in `text` for a directive prefix.
+/// A directive prefix is a backslash followed by identifier characters,
+/// e.g. `\cowel_` with cursor at the end.
+/// @returns The identifier portion typed so far (the text after `\`),
+/// or `std::nullopt` if the cursor is not immediately after a backslash-prefixed identifier.
+[[nodiscard]]
+std::optional<std::u8string_view>
+extract_directive_prefix(const std::u8string_view text, const std::size_t cursor_byte)
+{
+    for (std::size_t pos = cursor_byte; pos > 0; --pos) {
+        const char8_t c = text[pos - 1];
+        if (c == u8'\\') {
+            return text.substr(pos, cursor_byte - pos);
+        }
+        if (!is_cowel_identifier(c)) {
+            return {};
+        }
+    }
+    return {};
+}
+
+/// @brief Scans forward from `cursor_byte` through COWEL identifier characters
+/// to find the end of any existing directive name suffix.
+/// Used to replace a partially typed suffix when completing.
+/// @returns The byte offset just past the last identifier character.
+[[nodiscard]]
+std::size_t
+find_directive_suffix_end(const std::u8string_view text, const std::size_t cursor_byte)
+{
+    std::size_t pos = cursor_byte;
+    while (pos < text.size() && is_cowel_identifier(text[pos])) {
+        ++pos;
+    }
+    return pos;
+}
+
 /// @brief Looks backward from `cursor_byte` in `text` for a named code-point
 /// escape prefix of the form `\'<NAME>`.
 /// @returns The typed prefix (text between `\'` and `cursor_byte`),
@@ -1126,6 +1182,85 @@ void handle_completion(
     }
 
     const std::size_t cursor_byte = lsp_position_to_byte_offset(doc->content, params.position);
+
+    // Check whether the cursor is in a directive completion context (after `\<ident>`).
+    const std::optional<std::u8string_view> dir_prefix
+        = extract_directive_prefix(doc->content, cursor_byte);
+    if (dir_prefix) {
+        // All directive identifier characters are ASCII,
+        // so their byte length equals their UTF-16 code-unit count,
+        // making the following valid for both position encodings.
+        const std::size_t prefix_char_count = dir_prefix->size();
+        const lsp::Position prefix_start {
+            .line = params.position.line,
+            .character = params.position.character - prefix_char_count,
+        };
+
+        // Scan forward to find any identifier suffix to replace,
+        // e.g. when the cursor is in the middle of `\cowel_^abs`.
+        const std::size_t suffix_end_byte
+            = find_directive_suffix_end(doc->content, cursor_byte);
+        const lsp::Position edit_end {
+            .line = params.position.line,
+            .character = params.position.character + (suffix_end_byte - cursor_byte),
+        };
+
+        // Collect unique matching directive names from the document's symbol list.
+        // The list contains both invocation symbols and builtin definition symbols.
+        std::pmr::vector<std::u8string_view> matching { &context.memory };
+        std::pmr::unordered_set<
+            std::u8string_view,
+            Transparent_String_View_Hash8,
+            Transparent_String_View_Equals8>
+            seen { &context.memory };
+
+        for (const Symbol_Entry& sym : doc->symbols) {
+            const std::u8string_view name = sym.name;
+            if (name.empty() || !name.starts_with(*dir_prefix)) {
+                continue;
+            }
+            if (seen.insert(name).second) {
+                matching.push_back(name);
+            }
+        }
+
+        std::ranges::sort(matching);
+        const bool is_incomplete = matching.size() > max_completions;
+        const std::size_t count = std::min(matching.size(), max_completions);
+
+        // Build completion items.
+        // Directive names are pure ASCII, so no encoding adjustment is needed.
+        std::pmr::vector<lsp::Completion_Item> completion_items { &context.memory };
+        completion_items.reserve(count);
+        for (std::size_t i = 0; i < count; ++i) {
+            const std::u8string_view name = matching[i];
+            completion_items.push_back(lsp::Completion_Item {
+                .label = name,
+                .kind = lsp::CompletionItemKind::Function,
+                .sort_text = name,
+                .filter_text = name,
+                .text_edit = lsp::Text_Edit {
+                    .range = { prefix_start, edit_end },
+                    .new_text = name,
+                },
+            });
+        }
+
+        const lsp::Completion_List completion_list {
+            .is_incomplete = is_incomplete,
+            .items = { completion_items.data(), count },
+        };
+        write_message(
+            lsp::Response_Message {
+                .id = lsp::to_response_id(id),
+                .result = lsp::to_json(completion_list, &context.memory),
+            },
+            context
+        );
+        return;
+    }
+
+    // Check whether the cursor is in a named code-point escape context (after `\'`).
     const std::optional<std::u8string_view> prefix
         = extract_named_escape_prefix(doc->content, cursor_byte);
     if (!prefix) {
@@ -1241,9 +1376,12 @@ void handle_hover(
         return;
     }
 
-    for (const Hover_Entry& entry : doc->hovers) {
+    for (const Symbol_Entry& entry : doc->symbols) {
+        // Skip builtin definition symbols — they have no real source position.
+        if (entry.is_definition || entry.article.empty()) {
+            continue;
+        }
         const lsp::Range& range = entry.range;
-        const std::u8string& article = entry.article;
         const bool after_start = pos.line > range.start.line
             || (pos.line == range.start.line && pos.character >= range.start.character);
         const bool before_end = pos.line < range.end.line
@@ -1254,7 +1392,7 @@ void handle_hover(
         const lsp::Hover hover_result {
             .contents = {
                 .kind = lsp::markup_kind::markdown,
-                .value = article,
+                .value = entry.article,
             },
             .range = range,
         };
@@ -1311,7 +1449,10 @@ void handle_initialize(
         .change = 1,
     };
     static constexpr lsp::Server_Info server_info = { .name = u8"cowel"sv };
-    static constexpr std::array<std::u8string_view, 1> completion_trigger_chars { u8"'"sv };
+    static constexpr std::array<std::u8string_view, 2> completion_trigger_chars {
+        u8"\\"sv,
+        u8"'"sv,
+    };
     static constexpr lsp::Completion_Options completion_provider {
         .trigger_characters = std::span<const std::u8string_view> { completion_trigger_chars },
     };

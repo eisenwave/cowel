@@ -2346,6 +2346,16 @@ Builtin_Directive_Set::fuzzy_lookup_name(std::u8string_view name, Context& conte
     return { .value = all_names[result.value], .distance = result.distance };
 }
 
+std::span<const std::u8string_view> Builtin_Directive_Set::get_all_names() const noexcept
+{
+    static constexpr auto all_names = [] {
+        std::array<std::u8string_view, std::size(behaviors_by_name)> result;
+        std::ranges::transform(behaviors_by_name, result.data(), &Name_And_Behavior::name);
+        return result;
+    }();
+    return all_names;
+}
+
 const Directive_Behavior* Builtin_Directive_Set::operator()(std::u8string_view name) const
 {
     const auto* const it

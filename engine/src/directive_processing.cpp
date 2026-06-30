@@ -116,7 +116,7 @@ void push_escape_hover(const ast::Primary& node, const std::u8string_view units,
     std::pmr::u8string rendered { context.get_transient_memory() };
     render_tooltip_article(rendered, article);
     node.mark_symbolized();
-    context.push_hover(node.get_source_span(), rendered);
+    context.push_hover(node.get_source_span(), u8""sv, rendered);
 }
 
 Processing_Status
@@ -687,7 +687,7 @@ evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
         if (!article.subject.empty()) {
             std::pmr::u8string rendered { context.get_transient_memory() };
             render_tooltip_article(rendered, article);
-            context.push_hover(directive.get_name_span(), rendered);
+            context.push_hover(directive.get_name_span(), directive.get_name(), rendered);
         }
         directive.mark_symbolized();
     }
@@ -1082,7 +1082,7 @@ Processing_Status splice_invocation( //
         if (!article.subject.empty()) {
             std::pmr::u8string rendered { context.get_transient_memory() };
             render_tooltip_article(rendered, article);
-            context.push_hover(directive.get_name_span(), rendered);
+            context.push_hover(directive.get_name_span(), directive.get_name(), rendered);
         }
         directive.mark_symbolized();
     }
