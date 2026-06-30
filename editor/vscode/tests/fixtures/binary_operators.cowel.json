@@ -60,20 +60,41 @@
     {
       "type": "top-scope",
       "line": 9,
+      "col": 0,
+      "expected": "variable.other.cowel",
+      "description": "left operand around - stays an identifier"
+    },
+    {
+      "type": "top-scope",
+      "line": 9,
       "col": 1,
       "expected": "keyword.operator.arithmetic.cowel",
-      "description": "* has arithmetic scope"
+      "description": "- has arithmetic scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 9,
+      "col": 2,
+      "expected": "variable.other.cowel",
+      "description": "right operand around - stays an identifier"
     },
     {
       "type": "top-scope",
       "line": 10,
       "col": 1,
       "expected": "keyword.operator.arithmetic.cowel",
-      "description": "/ has arithmetic scope"
+      "description": "* has arithmetic scope"
     },
     {
       "type": "top-scope",
       "line": 11,
+      "col": 1,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "/ has arithmetic scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 12,
       "col": 1,
       "expected": "keyword.operator.arithmetic.cowel",
       "description": "% has arithmetic scope"
