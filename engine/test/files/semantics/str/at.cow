@@ -1,0 +1,51 @@
+\test_input{
+\__typeof(cowel_str_at("a", 0))
+
+\cowel_str_at("a", 0)
+\cowel_str_at("awoo", 0)
+\cowel_str_at("awoo", 1)
+\cowel_str_at("awoo", 3)
+
+\cowel_str_at("αβγ", 0)
+\cowel_str_at("αβγ", 1)
+\cowel_str_at("αβγ", 2)
+\cowel_str_at("🇩🇪x", 0)
+\cowel_str_at("🇩🇪x", 1)
+\cowel_str_at("🇩🇪x", 2)
+
+\test_expect_error("str.at.range"){\cowel_str_at("", 0)}
+\test_expect_error("str.at.range"){\cowel_str_at("awoo", -1)}
+\test_expect_error("str.at.range"){\cowel_str_at("awoo", 4)}
+
+\test_expect_error("str.at.range"){\cowel_str_at("αβγ", -1)}
+\test_expect_error("str.at.range"){\cowel_str_at("αβγ", 3)}
+
+\test_expect_error("str.at.range"){\cowel_str_at("🇩🇪x", -1)}
+\test_expect_error("str.at.range"){\cowel_str_at("🇩🇪x", 3)}
+}
+
+\test_output{
+str
+
+a
+a
+w
+o
+
+α
+β
+γ
+🇩
+🇪
+x
+
+<error->\cowel_str_at("", 0)</error->
+<error->\cowel_str_at("awoo", -1)</error->
+<error->\cowel_str_at("awoo", 4)</error->
+
+<error->\cowel_str_at("αβγ", -1)</error->
+<error->\cowel_str_at("αβγ", 3)</error->
+
+<error->\cowel_str_at("🇩🇪x", -1)</error->
+<error->\cowel_str_at("🇩🇪x", 3)</error->
+}

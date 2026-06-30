@@ -2440,6 +2440,37 @@ o+: 2
 }
 }
 
+\cowdoc_dir_h4("cowel_str_at", "Access a code point by index")
+
+\pre{
+\cowel_highlight_as("markup-tag"){cowel_str_at}(
+  \cowdoc_param("text", "str"),
+  \cowdoc_param("index", "int"),
+): \cowel_highlight_as("keyword-type"){str}
+}
+
+Returns the single code point of \cowdoc_attr{text}
+at code point index \cowdoc_attr{index}.
+
+Raises an error if
+\ul{
+  \li{\cowdoc_attr{index} is negative, or}
+  \li{\cowdoc_attr{index} is greater than or equal to the length of \cowdoc_attr{text}.}
+}
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_str_at("awoo", 1)
+\cowel_str_at("αβγ", 2)
+}}
+Generated HTML:
+\htmlblock{
+w
+γ
+}
+}
+
 \cowdoc_dir_h4("cowel_str_substr", "Extract a substring")
 
 \pre{

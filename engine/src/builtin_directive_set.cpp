@@ -614,6 +614,15 @@ constexpr Unary_Numeric_Expression_Behavior cowel_sqrt {
     .example = u8R"md(`cowel_sqrt(9.0)` → `3.0`.)md"sv,
   },
 };
+constexpr Str_At_Behavior cowel_str_at {
+  Tooltip_Article {
+    .kind = Tooltip_Kind::builtin_directive,
+    .subject = u8"cowel_str_at"sv,
+    .declaration = u8R"md(cowel_str_at(text: str, index: int): str)md"sv,
+    .description = u8R"md(Returns the code point at the given index.)md"sv,
+    .example = u8R"md(`cowel_str_at("awoo", 1)` → `"w"`.)md"sv,
+  },
+};
 constexpr Str_Contains_Behavior cowel_str_contains {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
@@ -2216,6 +2225,7 @@ constexpr Name_And_Behavior behaviors_by_name[] {
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_rem_to_zero),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_source_as_text),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_sqrt),
+    COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_at),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_contains),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_find),
     COWEL_NAME_AND_BEHAVIOR_ENTRY(cowel_str_length),
