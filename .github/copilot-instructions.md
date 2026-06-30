@@ -295,5 +295,7 @@ CHANGELOG.md
 - Prefer out-of-tree build dirs (for example `build/`) to avoid polluting tracked files.
 - For native parity with CI, keep warnings clean and run tests with `--output-on-failure`.
 - For WASM parity with CI, source `emsdk_env.sh` in any shell that runs Emscripten CMake configure/build commands.
+- `cowel tokenize` and `cowel parse` accept piped stdin when the input path is omitted.
+  Use this for stream-driven token/CST dumps.
 - Treat this file as primary operating guidance;
   search only for missing details or when commands here no longer match repository reality.

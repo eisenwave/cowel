@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <memory_resource>
@@ -11,9 +12,11 @@
 #include "cowel/util/annotated_string.hpp"
 #include "cowel/util/ansi.hpp"
 #include "cowel/util/function_ref.hpp"
+#include "cowel/util/io.hpp"
 #include "cowel/util/meta.hpp"
 #include "cowel/util/result.hpp"
 #include "cowel/util/strings.hpp"
+#include "cowel/util/unicode.hpp"
 
 #include "cowel/assets.hpp"
 #include "cowel/cowel.h"
@@ -191,8 +194,10 @@ constexpr std::string_view help_text = R"(Usage: cowel <command> <input> [output
 
 Commands:
   run <input> <output>        Processes a COWEL document
-  tokenize <input> [output]   Dumps the tokens of a COWEL document
-  parse <input> [output]      Dumps the CST instructions of a COWEL document
+  tokenize [input] [output]   Dumps the tokens of a COWEL document
+                               (reads stdin when input is omitted)
+  parse [input] [output]      Dumps the CST instructions of a COWEL document
+                               (reads stdin when input is omitted)
 
 Options:
   -h, --help                  Display this help menu
@@ -233,6 +238,32 @@ void log_cli_diagnostic(
         .stack_size = 1,
     };
     log_ref(&diagnostic);
+}
+
+[[nodiscard]]
+Result<std::pmr::vector<char8_t>, IO_Error_Code>
+load_utf8_stdin(std::pmr::memory_resource* memory)
+{
+    std::pmr::vector<char8_t> result { memory };
+
+    constexpr std::size_t block_size = BUFSIZ;
+    char buffer[block_size] {};
+    while (true) {
+        const std::size_t read_size = std::fread(buffer, 1, block_size, stdin);
+        if (std::ferror(stdin)) {
+            return IO_Error_Code::read_error;
+        }
+        if (read_size == 0) {
+            break;
+        }
+        const std::size_t old_size = result.size();
+        result.resize(old_size + read_size);
+        std::memcpy(result.data() + old_size, buffer, read_size);
+    }
+    if (!utf8::is_valid(as_u8string_view(result))) {
+        return IO_Error_Code::corrupted;
+    }
+    return result;
 }
 
 int run_run_command(
@@ -462,11 +493,17 @@ int main(int argc, const char* const* const argv)
     const auto in_path_u8 = as_u8string_view(opts.input);
     const auto out_path_u8 = as_u8string_view(opts.output);
     const bool colors_enabled = !opts.no_color;
+    const bool use_stdin_input
+        = in_path_u8.empty()
+        && (opts.command == COWEL_CLI_COMMAND_TOKENIZE || opts.command == COWEL_CLI_COMMAND_PARSE);
+    const std::u8string_view main_input_name = use_stdin_input ? u8"<stdin>" : in_path_u8;
 
     Global_Memory_Resource global_memory;
     std::pmr::unsynchronized_pool_resource memory { &global_memory };
 
-    auto in_path_directory = std::filesystem::path { as_string_view(in_path_u8) }.parent_path();
+    const auto in_path_directory = use_stdin_input //
+        ? std::filesystem::path { "." }
+        : std::filesystem::path { as_string_view(in_path_u8) }.parent_path();
     Relative_File_Loader file_loader { std::move(in_path_directory), &memory };
 
     // TODO: allow custom ulight themes instead of hardcoding wg21.json
@@ -474,21 +511,23 @@ int main(int argc, const char* const* const argv)
     const auto alloc_options = Allocator_Options::from_memory_resource(&memory);
     const auto load_file_ref = file_loader.as_cowel_load_file_fn();
 
-    const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text
-        = load_utf8_file(in_path_u8, &memory);
+    const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text = use_stdin_input
+        ? load_utf8_stdin(&memory)
+        : load_utf8_file(in_path_u8, &memory);
     if (!in_text) {
-        Stderr_Logger logger { file_loader, in_path_u8, u8"", &memory, colors_enabled };
+        Stderr_Logger logger { file_loader, main_input_name, u8"", &memory, colors_enabled };
         constexpr auto log_fn = [](Stderr_Logger* logger, const cowel_diagnostic_u8* diagnostic
                                 ) noexcept -> void { (*logger)(*diagnostic); };
         const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref
             = { const_v<log_fn>, &logger };
-        const std::u8string message = u8"Failed to open input file.";
-        log_cli_diagnostic(log_ref, COWEL_SEVERITY_FATAL, message, u8"cli", in_path_u8);
+        const std::u8string message = use_stdin_input ? u8"Failed to read stdin."
+                                                      : u8"Failed to open input file.";
+        log_cli_diagnostic(log_ref, COWEL_SEVERITY_FATAL, message, u8"cli", main_input_name);
         return EXIT_FAILURE;
     }
 
     const auto in_source = as_u8string_view(*in_text);
-    Stderr_Logger logger { file_loader, in_path_u8, in_source, &memory, colors_enabled };
+    Stderr_Logger logger { file_loader, main_input_name, in_source, &memory, colors_enabled };
     constexpr auto log_fn = [](Stderr_Logger* logger, const cowel_diagnostic_u8* diagnostic
                             ) noexcept -> void { (*logger)(*diagnostic); };
     const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref

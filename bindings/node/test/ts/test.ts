@@ -215,6 +215,23 @@ describe("CLI Output", () => {
         assert.strictEqual(actual, expected);
     });
 
+    test("tokenize from stdin", () => {
+        const inputPath = path.join(cliTestDir, "tokenize", "basic.cowel");
+        const expectedPath = `${inputPath}.txt`;
+        assert.ok(fs.existsSync(expectedPath), `Missing expected output fixture: ${expectedPath}`);
+
+        const expected = fs.readFileSync(expectedPath, "utf8");
+        const result = spawnSync(process.execPath, [cliPath, "tokenize", "--no-color"], {
+            cwd: cliTestDir,
+            encoding: "utf8",
+            input: fs.readFileSync(inputPath),
+        });
+
+        assert.strictEqual(result.status, 0);
+        const actual = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+        assert.strictEqual(actual, expected);
+    });
+
     test("tokenize reports a missing input file", () => {
         const missingPath = path.join(cliTestDir, "tokenize", "missing.cowel");
         const result = spawnSync(
@@ -257,6 +274,23 @@ describe("CLI Output", () => {
         const result = spawnSync(process.execPath, [cliPath, "parse", inputPath, "--no-color"], {
             cwd: cliTestDir,
             encoding: "utf8",
+        });
+
+        assert.strictEqual(result.status, 0);
+        const actual = `${result.stdout}${result.stderr}`.replaceAll("\r\n", "\n");
+        assert.strictEqual(actual, expected);
+    });
+
+    test("parse from stdin", () => {
+        const inputPath = path.join(cliTestDir, "parse", "basic.cowel");
+        const expectedPath = `${inputPath}.txt`;
+        assert.ok(fs.existsSync(expectedPath), `Missing expected output fixture: ${expectedPath}`);
+
+        const expected = fs.readFileSync(expectedPath, "utf8");
+        const result = spawnSync(process.execPath, [cliPath, "parse", "--no-color"], {
+            cwd: cliTestDir,
+            encoding: "utf8",
+            input: fs.readFileSync(inputPath),
         });
 
         assert.strictEqual(result.status, 0);

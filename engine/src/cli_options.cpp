@@ -105,8 +105,12 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
         "tokenize",
         "Dumps the tokens of a COWEL document",
         [&](args::Subparser& sub) {
-            args::Positional<std::string> input_arg { sub, "input", "Input COWEL file",
-                                                      args::Options::Required };
+            args::Positional<std::string> input_arg {
+                sub,
+                "input",
+                "Input COWEL file (reads stdin when omitted)",
+                std::string {},
+            };
             args::Positional<std::string> output_arg {
                 sub,
                 "output",
@@ -137,8 +141,12 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
         "parse",
         "Dumps the CST instructions of a COWEL document",
         [&](args::Subparser& sub) {
-            args::Positional<std::string> input_arg { sub, "input", "Input COWEL file",
-                                                      args::Options::Required };
+            args::Positional<std::string> input_arg {
+                sub,
+                "input",
+                "Input COWEL file (reads stdin when omitted)",
+                std::string {},
+            };
             args::Positional<std::string> output_arg {
                 sub,
                 "output",
