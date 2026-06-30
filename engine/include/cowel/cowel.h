@@ -779,9 +779,12 @@ struct cowel_parsed_cli_options_u8 {
     cowel_cli_command command;
 
     /// @brief Path to the input file.
-    /// May be empty for tokenize/parse, in which case input is read from stdin.
+    /// May be empty for some commands,
+    /// in which case input is read from `stdin`.
     cowel_mutable_string_view_u8 input;
     /// @brief Path to the output file.
+    /// May be empty for some commands,
+    /// in which case output is written to `stdout`.
     cowel_mutable_string_view_u8 output;
     /// @brief Minimum log severity.
     /// Valid only when `command` is `COWEL_CLI_COMMAND_RUN`.

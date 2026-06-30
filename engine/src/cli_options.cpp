@@ -108,13 +108,13 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             args::Positional<std::string> input_arg {
                 sub,
                 "input",
-                "Input COWEL file (reads stdin when omitted)",
+                "Input COWEL file (stdin when omitted)",
                 std::string {},
             };
             args::Positional<std::string> output_arg {
                 sub,
                 "output",
-                "Output token dump file",
+                "Output token dump file (stdout when omitted)",
                 std::string {},
             };
             args::MapFlag<std::string, cowel_severity> severity_arg {
@@ -144,13 +144,13 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             args::Positional<std::string> input_arg {
                 sub,
                 "input",
-                "Input COWEL file (reads stdin when omitted)",
+                "Input COWEL file (stdin when omitted)",
                 std::string {},
             };
             args::Positional<std::string> output_arg {
                 sub,
                 "output",
-                "Output CST dump file",
+                "Output CST dump file (stdout when omitted)",
                 std::string {},
             };
             args::MapFlag<std::string, cowel_severity> severity_arg {
