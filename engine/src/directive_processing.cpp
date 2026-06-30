@@ -396,6 +396,16 @@ Processing_Status splice_expression(
         return splice_primary(out, *primary, frame, context);
     }
 
+    // Assignment expressions are evaluated for their side effects only;
+    // their result is discarded rather than spliced into the output.
+    if (const auto* const binary = value.try_as_binary()) {
+        if (binary->get_kind() == Binary_Expression_Kind::assign) {
+            const Result<Value, Processing_Status> evaluated
+                = evaluate_expression(value, frame, context);
+            return evaluated ? Processing_Status::ok : evaluated.error();
+        }
+    }
+
     // General path for anything else: evaluate and splice the value.
     const Result<Value, Processing_Status> evaluated = evaluate_expression(value, frame, context);
     if (!evaluated) {

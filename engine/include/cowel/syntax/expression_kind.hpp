@@ -24,6 +24,7 @@ enum struct Unary_Expression_Kind : Default_Underlying {
 };
 
 enum struct Binary_Expression_Kind : Default_Underlying {
+    assign,
     logical_or,
     logical_and,
     eq,
@@ -75,6 +76,16 @@ binary_expression_kind_comparison_kind(const Binary_Expression_Kind kind)
 #define COWEL_BUILTIN_OPERATION_ENUM_DATA(F)                                                       \
     F(tautology)                                                                                   \
     F(contradiction)                                                                               \
+    F(assign_dynamic)                                                                              \
+    F(assign_int)                                                                                  \
+    F(assign_float)                                                                                \
+    F(assign_bool)                                                                                 \
+    F(assign_str)                                                                                  \
+    F(assign_unit)                                                                                 \
+    F(assign_null)                                                                                 \
+    F(assign_regex)                                                                                \
+    F(assign_block)                                                                                \
+    F(assign_group)                                                                                \
     F(logical_or_dynamic)                                                                          \
     F(logical_or_bool_bool)                                                                        \
     F(logical_and_dynamic)                                                                         \
@@ -138,6 +149,8 @@ binary_expression_kind_builtin_operation_kind(const Binary_Expression_Kind kind)
 {
     using enum Binary_Expression_Kind;
     switch (kind) {
+    case assign: //
+        return Builtin_Operation_Kind::assign_dynamic;
     case logical_or: //
         return Builtin_Operation_Kind::logical_or_dynamic;
     case logical_and: //

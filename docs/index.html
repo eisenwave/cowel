@@ -2867,7 +2867,10 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>string-literal</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-or-expression</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>assignment-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>assignment-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-or-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>id-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>assignment-expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>logical-or-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-and-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>logical-or-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LOGICAL-OR-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>logical-and-expression</h-><h- data-h=sym_punc>;</h->
@@ -3558,7 +3561,10 @@ using builtin directives:
 <h3 id=binary-expressions><a class=para href=#binary-expressions></a>6.5. Binary expressions</h3>
 
 <code-block><h- data-h=name_nt_decl>expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-or-expression</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>assignment-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>assignment-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-or-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>id-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>assignment-expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>logical-or-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-and-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>logical-or-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>LOGICAL-OR-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>logical-and-expression</h-><h- data-h=sym_punc>;</h->
@@ -3595,6 +3601,10 @@ for a builtin directive specified in the table below.
   <tr>
     <th>Binary expression</th>
     <th><g-term>directive-call-expression</g-term></th>
+  </tr>
+  <tr>
+    <td><code>x = value</code></td>
+    <td><code>cowel_var_set("x", value)</code></td>
   </tr>
   <tr>
     <td><code>a || b</code></td>
@@ -3687,6 +3697,11 @@ for a builtin directive specified in the table below.
     <td>6 <g-term>logical-or-expression</g-term></td>
     <td><code>||</code></td>
     <td>left-to-right</td>
+  </tr>
+  <tr>
+    <td>7 <g-term>assignment-expression</g-term></td>
+    <td><code>=</code></td>
+    <td>right-to-left</td>
   </tr>
 </table>
 

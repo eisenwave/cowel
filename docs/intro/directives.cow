@@ -341,7 +341,10 @@ using builtin directives:
 
 \codeblock("ebnf"){
 expression
-  = logical-or-expression;
+  = assignment-expression;
+assignment-expression
+  = logical-or-expression
+  | id-expression, ASSIGN-TOKEN, assignment-expression;
 logical-or-expression
   = logical-and-expression
   | logical-or-expression, LOGICAL-OR-TOKEN, logical-and-expression;
@@ -379,6 +382,10 @@ for a builtin directive specified in the table below.
   \tr{
     \th{Binary expression}
     \th{\gterm{directive-call-expression}}
+  }
+  \tr{
+    \td{\cowdoc_c{x = value}}
+    \td{\cowdoc_c{cowel_var_set("x", value)}}
   }
   \tr{
     \td{\cowdoc_c{a || b}}
@@ -471,6 +478,11 @@ Operator precedence and associativity are as follows:
     \td{6 \gterm{logical-or-expression}}
     \td{\cowdoc_c{||}}
     \td{left-to-right}
+  }
+  \tr{
+    \td{7 \gterm{assignment-expression}}
+    \td{\cowdoc_c{=}}
+    \td{right-to-left}
   }
 }
 

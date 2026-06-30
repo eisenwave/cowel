@@ -109,13 +109,18 @@ Inside a group `(...)`, COWEL switches to a **scripting context** with typed val
 | `T \| U` | Union; a value cannot be of union type itself. |
 
 Expressions in groups follow **C-identical precedence and associativity**:
-prefix `~ ! + -`, then `* / %`, `+ -`, `< > <= >=`, `== !=`, `&&`, `||`.
+prefix `~ ! + -`,
+then `* / %`, `+ -`, `< > <= >=`, `== !=`, `&&`, `||`, and `=`.
 All binary and prefix operators desugar to `cowel_*` builtins
 (e.g. `a + b` ≡ `cowel_add(a, b)`).
 A directive call `name(args)` or `name{block}` is also a valid expression.
 
-Values can be spliced into text using directives and expression splices:
+Values can be spliced into text using directives and expression-splices
+or expression-line-splices:
 `"x = \(1 + 2)"` or `{x = \(1 + 2)}` evaluates the expression and inserts `3`.
+`\ 1 + 2` does the same.
+`\(x = 1)` and `\ x = 1` (space after `\` is important)
+assigns `1` to the variable `x` (same as `\cowel_var_set("x", 1)`).
 Directive splices work the same way: `"Hello, \name!"`.
 
 A bare **identifier** in an expression that is not followed by a group or block

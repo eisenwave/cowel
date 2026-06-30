@@ -441,6 +441,7 @@ constexpr Binary_Expression_Kind instruction_kind_binary_kind(const CST_Instruct
 {
     using enum CST_Instruction_Kind;
     switch (push_kind) {
+    case push_expr_assign: return Binary_Expression_Kind::assign;
     case push_expr_logical_or: return Binary_Expression_Kind::logical_or;
     case push_expr_logical_and: return Binary_Expression_Kind::logical_and;
     case push_expr_equals: return Binary_Expression_Kind::eq;
@@ -464,6 +465,7 @@ constexpr Token_Kind instruction_kind_token_kind(const CST_Instruction_Kind push
 {
     using enum CST_Instruction_Kind;
     switch (push_kind) {
+    case push_expr_assign: return Token_Kind::equals;
     case push_expr_logical_or: return Token_Kind::logical_or;
     case push_expr_logical_and: return Token_Kind::logical_and;
     case push_expr_equals: return Token_Kind::equals_equals;
@@ -885,6 +887,11 @@ private:
     {
         const CST_Instruction instruction = peek_instruction();
         switch (instruction.kind) {
+        case CST_Instruction_Kind::push_expr_assign: {
+            return build_binary_expression(
+                CST_Instruction_Kind::push_expr_assign, CST_Instruction_Kind::pop_expr_assign
+            );
+        }
         case CST_Instruction_Kind::push_expr_logical_or: {
             return build_binary_expression(
                 CST_Instruction_Kind::push_expr_logical_or,
@@ -1041,6 +1048,23 @@ private:
         };
 
         ast::Expression lhs = build_expression();
+
+        // For assignment, convert the LHS from id_expression to unquoted_member_name
+        // so that it evaluates to the variable name string (rather than its value).
+        // This is a bit of a hack that makes it so that evaluating binary operators
+        // can still be implemented as `Value x Value -> Value`.
+        // Otherwise, we would need to genuinely draw a distinction between lvalues and rvalues.
+        if (push_kind == CST_Instruction_Kind::push_expr_assign) {
+            if (const ast::Primary* const primary = lhs.try_as_primary()) {
+                COWEL_ASSERT(primary->get_kind() == ast::Primary_Kind::id_expression);
+                auto name_primary = ast::Primary::basic(
+                    ast::Primary_Kind::unquoted_member_name, primary->get_source_span(),
+                    primary->get_source()
+                );
+                lhs = ast::Expression(std::move(name_primary));
+            }
+        }
+
         while (peek_token().kind != instruction_kind_token_kind(push_kind)) {
             consume_expression_trivia_instruction();
         }

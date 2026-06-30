@@ -535,8 +535,49 @@ Result<Builtin_Operation_Kind, Processing_Status> check_dynamically_typed_operat
         }
         return rem_to_zero_int_int;
     }
+    case assign_dynamic: {
+        if (lhs.get_kind() != Type_Kind::str) {
+            context.try_error_f(
+                diagnostic::type_mismatch, lhs_location,
+                u8"Expected a variable name of type {}, but got {}."sv,
+                Type::str.get_display_name(), lhs.get_display_name()
+            );
+            return Processing_Status::error;
+        }
+        switch (rhs.get_kind()) {
+        case Type_Kind::unit: return assign_unit;
+        case Type_Kind::null: return assign_null;
+        case Type_Kind::boolean: return assign_bool;
+        case Type_Kind::integer: return assign_int;
+        case Type_Kind::floating: return assign_float;
+        case Type_Kind::str: return assign_str;
+        case Type_Kind::regex: return assign_regex;
+        case Type_Kind::block: return assign_block;
+        case Type_Kind::group: return assign_group;
+        case Type_Kind::any:
+        case Type_Kind::nothing:
+        case Type_Kind::union_:
+        case Type_Kind::pack:
+        case Type_Kind::named:
+        case Type_Kind::lazy: break;
+        }
+        context.try_error_f(
+            diagnostic::type_mismatch, rhs_location, u8"Unable to assign a value of type {}."sv,
+            rhs.get_display_name()
+        );
+        return Processing_Status::error;
+    }
     case tautology:
     case contradiction:
+    case assign_int:
+    case assign_float:
+    case assign_bool:
+    case assign_str:
+    case assign_unit:
+    case assign_null:
+    case assign_regex:
+    case assign_block:
+    case assign_group:
     case logical_or_bool_bool:
     case logical_and_bool_bool:
     case eq_bool_bool:
@@ -595,6 +636,27 @@ Result<Value, Processing_Status> evaluate_builtin(
     }
     case contradiction: {
         return Value::false_;
+    }
+    case assign_int:
+    case assign_float:
+    case assign_bool:
+    case assign_str:
+    case assign_unit:
+    case assign_null:
+    case assign_regex:
+    case assign_block:
+    case assign_group: {
+        const std::u8string_view name = lhs.as_string();
+        const auto it = context.get_variables().find(name);
+        if (it == context.get_variables().end()) {
+            context.try_error_f(
+                diagnostic::var_set, lhs_location,
+                u8"Unable to set variable with the name \"{}\"."sv, name
+            );
+            return Processing_Status::error;
+        }
+        it->second = rhs;
+        return rhs;
     }
     case logical_or_bool_bool: {
         return Value::boolean(lhs.as_boolean() || rhs.as_boolean());
@@ -697,19 +759,20 @@ Result<Value, Processing_Status> evaluate_builtin(
         }
         return Value::integer(lhs.as_integer() % rhs.as_integer());
     }
-    case Builtin_Operation_Kind::logical_or_dynamic:
-    case Builtin_Operation_Kind::logical_and_dynamic:
-    case Builtin_Operation_Kind::eq_dynamic:
-    case Builtin_Operation_Kind::ne_dynamic:
-    case Builtin_Operation_Kind::lt_dynamic:
-    case Builtin_Operation_Kind::gt_dynamic:
-    case Builtin_Operation_Kind::le_dynamic:
-    case Builtin_Operation_Kind::ge_dynamic:
-    case Builtin_Operation_Kind::plus_dynamic:
-    case Builtin_Operation_Kind::minus_dynamic:
-    case Builtin_Operation_Kind::multiply_dynamic:
-    case Builtin_Operation_Kind::div_dynamic:
-    case Builtin_Operation_Kind::rem_to_zero_dynamic: {
+    case assign_dynamic:
+    case logical_or_dynamic:
+    case logical_and_dynamic:
+    case eq_dynamic:
+    case ne_dynamic:
+    case lt_dynamic:
+    case gt_dynamic:
+    case le_dynamic:
+    case ge_dynamic:
+    case plus_dynamic:
+    case minus_dynamic:
+    case multiply_dynamic:
+    case div_dynamic:
+    case rem_to_zero_dynamic: {
         const Result<Builtin_Operation_Kind, Processing_Status> checked
             = check_dynamically_typed_operation(
                 kind, lhs.get_type(), rhs.get_type(), lhs_location, rhs_location, context
