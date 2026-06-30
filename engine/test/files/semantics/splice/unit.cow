@@ -1,0 +1,9 @@
+\test_input{
+A\(unit)B
+A\(comment{hi})B
+}
+
+\test_output{
+AB
+AB
+}
