@@ -1,9 +1,11 @@
 \test_input{
+A\( unit )B
 \((1))
 \((1 + 2) * (3 + 4))
 }
 
 \test_output{
+AB
 1
 21
 }
