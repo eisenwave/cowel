@@ -6,8 +6,9 @@
 
 - Added *directive-line-splice* syntax like `\ 1 + 2`.
   This is evaluated the same as `\(1 + 2)`, but is more syntactically lightweight,
-  and conveniently consumes the trailing newline as well (#396)
+  and conveniently consumes the trailing newline as well (#396).
   - Highlighting through `\cowel_highlight` is also provided.
+- Added *assignment-expression*s like `\ x = y` (#418).
 
 ### VSCode extension
 

@@ -29,19 +29,20 @@ constexpr int token_kind_op_precedence(const Token_Kind kind)
 {
     using enum Token_Kind;
     switch (kind) {
-    case logical_or: return 1;
-    case logical_and: return 2;
+    case equals: return 1;
+    case logical_or: return 2;
+    case logical_and: return 3;
     case equals_equals:
-    case not_equals: return 3;
+    case not_equals: return 4;
     case less_than:
     case greater_than:
     case less_equal:
-    case greater_equal: return 4;
+    case greater_equal: return 5;
     case plus:
-    case minus: return 5;
+    case minus: return 6;
     case asterisk:
     case slash:
-    case percent: return 6;
+    case percent: return 7;
     default: return 0;
     }
 }
@@ -55,6 +56,11 @@ struct Binary_Op_Instructions {
 constexpr Binary_Op_Instructions token_kind_binary_op_instructions(const Token_Kind kind)
 {
     switch (kind) {
+    case Token_Kind::equals:
+        return {
+            CST_Instruction_Kind::push_expr_assign,
+            CST_Instruction_Kind::pop_expr_assign,
+        };
     case Token_Kind::logical_or:
         return {
             CST_Instruction_Kind::push_expr_logical_or,
@@ -782,8 +788,6 @@ private:
             }
 
             // We have a binary operator with sufficient precedence.
-            // For left-associativity, the right operand should have precedence > op_precedence.
-            // This ensures that x+y+z is parsed as (x+y)+z, not x+(y+z).
             const Token* const op_token = next;
             const auto [push_op, pop_op] = token_kind_binary_op_instructions(op_token->kind);
 
@@ -795,10 +799,35 @@ private:
             m_out.insert(
                 m_out.begin() + static_cast<std::ptrdiff_t>(left_start), CST_Instruction { push_op }
             );
+
+            // Validate assignment LHS: must be a bare id-expression.
+            if (op_token->kind == Token_Kind::equals) {
+                bool lhs_is_id = true;
+                std::size_t id_count = 0;
+                // left_start now points to push_op; LHS is right after it.
+                const std::size_t lhs_start = left_start + 1;
+                for (std::size_t i = lhs_start; i < m_out.size(); ++i) {
+                    const CST_Instruction_Kind k = m_out[i].kind;
+                    if (k != CST_Instruction_Kind::skip) {
+                        ++id_count;
+                        if (k != CST_Instruction_Kind::id_expression) {
+                            lhs_is_id = false;
+                            break;
+                        }
+                    }
+                }
+                if (!lhs_is_id || id_count != 1) {
+                    error(op_token->location, u8"Left side of assignment must be an identifier."sv);
+                }
+            }
+
             consume_blank_sequence();
 
-            // Parse the right operand with higher precedence (for left-associativity).
-            if (!expect_expression_with_min_precedence(op_precedence + 1)) {
+            const bool is_right_associative = op_token->kind == Token_Kind::equals;
+            const int right_min_precedence
+                = is_right_associative ? op_precedence : op_precedence + 1;
+
+            if (!expect_expression_with_min_precedence(right_min_precedence)) {
                 error(m_tokens[m_pos].location, u8"Expected expression after binary operator."sv);
                 skip_to_end_of_group_member();
             }
@@ -1118,6 +1147,8 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_expr_parenthesized);
         COWEL_ENUM_STRING_CASE8(push_expr_directive_call);
         COWEL_ENUM_STRING_CASE8(pop_expr_directive_call);
+        COWEL_ENUM_STRING_CASE8(push_expr_assign);
+        COWEL_ENUM_STRING_CASE8(pop_expr_assign);
         COWEL_ENUM_STRING_CASE8(push_expr_logical_or);
         COWEL_ENUM_STRING_CASE8(pop_expr_logical_or);
         COWEL_ENUM_STRING_CASE8(push_expr_logical_and);
@@ -1221,6 +1252,8 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case pop_expr_unary_minus:
     case pop_expr_unary_plus:
     case pop_expr_directive_call:
+    case push_expr_assign:
+    case pop_expr_assign:
     case push_expr_logical_or:
     case pop_expr_logical_or:
     case push_expr_logical_and:
@@ -1312,6 +1345,8 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case pop_expr_unary_minus:
     case pop_expr_unary_plus:
     case pop_expr_directive_call:
+    case push_expr_assign:
+    case pop_expr_assign:
     case push_expr_logical_or:
     case pop_expr_logical_or:
     case push_expr_logical_and:

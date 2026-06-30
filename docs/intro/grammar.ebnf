@@ -288,7 +288,10 @@ member-name
   = identifier
   | string-literal;
 expression
-  = logical-or-expression;
+  = assignment-expression;
+assignment-expression
+  = logical-or-expression
+  | id-expression, ASSIGN-TOKEN, assignment-expression;
 logical-or-expression
   = logical-and-expression
   | logical-or-expression, LOGICAL-OR-TOKEN, logical-and-expression;

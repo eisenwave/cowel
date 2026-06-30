@@ -52,6 +52,7 @@ enum struct Node_Kind : Default_Underlying {
     logical_not,
     unary_plus,
     unary_minus,
+    binary_assign,
     binary_logical_or,
     binary_logical_and,
     binary_equals,
@@ -155,6 +156,15 @@ struct Node {
     static Node unary_minus(Node&& operand)
     {
         return { .kind = Node_Kind::unary_minus, .children = { std::move(operand) } };
+    }
+
+    [[nodiscard]]
+    static Node assign(Node&& lhs, Node&& rhs)
+    {
+        return {
+            .kind = Node_Kind::binary_assign,
+            .children = { std::move(lhs), std::move(rhs) },
+        };
     }
 
     [[nodiscard]]
@@ -557,6 +567,7 @@ struct Node {
         Node lhs = from(actual.get_lhs());
         Node rhs = from(actual.get_rhs());
         switch (actual.get_kind()) {
+        case Binary_Expression_Kind::assign: return assign(std::move(lhs), std::move(rhs));
         case Binary_Expression_Kind::logical_or: return logical_or(std::move(lhs), std::move(rhs));
         case Binary_Expression_Kind::logical_and:
             return logical_and(std::move(lhs), std::move(rhs));
@@ -689,6 +700,9 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
     }
     case Node_Kind::unary_minus: {
         return out << "UnaryMinus(" << node.children.front() << ')';
+    }
+    case Node_Kind::binary_assign: {
+        return out << "Assign(" << node.children.front() << ", " << node.children.back() << ')';
     }
     case Node_Kind::binary_logical_or: {
         return out << "LogicalOr(" << node.children.front() << ", " << node.children.back() << ')';
@@ -1871,11 +1885,6 @@ TEST(Parse_Fail, parenthesized_named_member_missing_value)
 TEST(Parse_Fail, directive_line_splice_trailing)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"directive_line_splice_trailing.cow"));
-}
-
-TEST(Parse_Fail, expression_splice_assignment)
-{
-    ASSERT_TRUE(run_parse_fail_test(u8"expression_splice_assignment.cow"));
 }
 
 } // namespace

@@ -1,0 +1,17 @@
+push_document 1
+push_expression_line_splice
+push_expr_assign
+id_expression
+skip
+skip
+
+push_expr_assign
+id_expression
+skip
+skip
+decimal_int
+pop_expr_assign
+
+pop_expr_assign
+pop_expression_line_splice
+pop_document
