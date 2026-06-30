@@ -241,8 +241,7 @@ void log_cli_diagnostic(
 }
 
 [[nodiscard]]
-Result<std::pmr::vector<char8_t>, IO_Error_Code>
-load_utf8_stdin(std::pmr::memory_resource* memory)
+Result<std::pmr::vector<char8_t>, IO_Error_Code> load_utf8_stdin(std::pmr::memory_resource* memory)
 {
     std::pmr::vector<char8_t> result { memory };
 
@@ -493,15 +492,14 @@ int main(int argc, const char* const* const argv)
     const auto in_path_u8 = as_u8string_view(opts.input);
     const auto out_path_u8 = as_u8string_view(opts.output);
     const bool colors_enabled = !opts.no_color;
-    const bool use_stdin_input
-        = in_path_u8.empty()
+    const bool use_stdin_input = in_path_u8.empty()
         && (opts.command == COWEL_CLI_COMMAND_TOKENIZE || opts.command == COWEL_CLI_COMMAND_PARSE);
     const std::u8string_view main_input_name = use_stdin_input ? u8"<stdin>" : in_path_u8;
 
     Global_Memory_Resource global_memory;
     std::pmr::unsynchronized_pool_resource memory { &global_memory };
 
-    const auto in_path_directory = use_stdin_input //
+    auto in_path_directory = use_stdin_input //
         ? std::filesystem::path { "." }
         : std::filesystem::path { as_string_view(in_path_u8) }.parent_path();
     Relative_File_Loader file_loader { std::move(in_path_directory), &memory };
@@ -511,17 +509,16 @@ int main(int argc, const char* const* const argv)
     const auto alloc_options = Allocator_Options::from_memory_resource(&memory);
     const auto load_file_ref = file_loader.as_cowel_load_file_fn();
 
-    const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text = use_stdin_input
-        ? load_utf8_stdin(&memory)
-        : load_utf8_file(in_path_u8, &memory);
+    const Result<std::pmr::vector<char8_t>, IO_Error_Code> in_text
+        = use_stdin_input ? load_utf8_stdin(&memory) : load_utf8_file(in_path_u8, &memory);
     if (!in_text) {
         Stderr_Logger logger { file_loader, main_input_name, u8"", &memory, colors_enabled };
         constexpr auto log_fn = [](Stderr_Logger* logger, const cowel_diagnostic_u8* diagnostic
                                 ) noexcept -> void { (*logger)(*diagnostic); };
         const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref
             = { const_v<log_fn>, &logger };
-        const std::u8string message = use_stdin_input ? u8"Failed to read stdin."
-                                                      : u8"Failed to open input file.";
+        const std::u8string message
+            = use_stdin_input ? u8"Failed to read stdin." : u8"Failed to open input file.";
         log_cli_diagnostic(log_ref, COWEL_SEVERITY_FATAL, message, u8"cli", main_input_name);
         return EXIT_FAILURE;
     }
