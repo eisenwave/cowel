@@ -676,7 +676,8 @@ static_assert(std::is_move_constructible_v<Let_Expression>);
 static_assert(std::is_copy_assignable_v<Let_Expression>);
 static_assert(std::is_move_assignable_v<Let_Expression>);
 
-using Expression_Variant = std::variant<Directive, Primary, Unary_Expression, Binary_Expression, Let_Expression>;
+using Expression_Variant
+    = std::variant<Directive, Primary, Unary_Expression, Binary_Expression, Let_Expression>;
 
 /// @brief Represents an *expression* or *expression-splice*.
 struct Expression : Expression_Variant {
@@ -865,10 +866,8 @@ public:
         return is_directive() //
             || (is_primary() && as_primary().is_value())
             || (is_unary() && as_unary().get_operand().is_value())
-            || (is_binary() && as_binary().get_lhs().is_value() && as_binary().get_rhs().is_value()
-            )
-            || (is_let() && as_let().get_value().is_value()
-            );
+            || (is_binary() && as_binary().get_lhs().is_value() && as_binary().get_rhs().is_value())
+            || (is_let() && as_let().get_value().is_value());
     }
 
     [[nodiscard]]
