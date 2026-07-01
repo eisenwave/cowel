@@ -2723,6 +2723,12 @@ or if a character is not one of the permitted flags:
 Sets the value of a global variable named \cowdoc_attr{name} to \cowdoc_attr{value}.
 An error is raised if such a variable already exists.
 
+\Btip{
+\cowdoc_dir{cowel_var_let} can also be written with the
+\gterm{let-expression} shorthand if the variable name is constant.
+See \ref("#variable-expressions").
+}
+
 \cowdoc_dir_h4("cowel_var_set", "Set an existing variable")
 
 \pre{
@@ -2734,6 +2740,12 @@ An error is raised if such a variable already exists.
 
 Sets the value of a global variable named \cowdoc_attr{name} to \cowdoc_attr{value}.
 An error is raised if no such variable exists.
+
+\Btip{
+\cowdoc_dir{cowel_var_set} can also be written with the \cowdoc_c{=}
+\gterm{assignment-expression} shorthand if the variable name is constant.
+See \ref("#variable-expressions").
+}
 
 \cowdoc_dir_h4("cowel_var_exists", "Check whether a variable exists")
 

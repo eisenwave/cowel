@@ -1563,6 +1563,8 @@ h1 {
 <a href=#prefix-expression><h3><g-term>prefix-expression</g-term></h3></a>
 <div class=toc-num data-level=3>6.5</div>
 <a href=#binary-expressions><h3>Binary expressions</h3></a>
+<div class=toc-num data-level=3>6.6</div>
+<a href=#variable-expressions><h3>Variable declarations and assignments</h3></a>
 <div class=toc-num data-level=2>7</div>
 <a href=#types-intro><h2>Types</h2></a>
 <div class=toc-num data-level=3>7.1</div>
@@ -3619,10 +3621,6 @@ for a builtin directive specified in the table below.
     <td><code>cowel_var_set("x", value)</code></td>
   </tr>
   <tr>
-    <td><code>let x = value</code></td>
-    <td><code>cowel_var_let("x", value)</code></td>
-  </tr>
-  <tr>
     <td><code>a || b</code></td>
     <td><code>cowel_or(a, b)</code></td>
   </tr>
@@ -3721,13 +3719,6 @@ for a builtin directive specified in the table below.
   </tr>
 </table>
 
-<p>A <g-term>let-expression</g-term> of the form <code>let x = value</code>
-creates a new variable <code>x</code> with the given <code>value</code>.
-This is equivalent to <code>cowel_var_let("x", value)</code>.
-Unlike an <g-term>assignment-expression</g-term>,
-a <g-term>let-expression</g-term> declares a new variable
-rather than updating an existing one.
-</p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block><h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim>(</h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>3</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>7</h-><h- data-h=str_intp_dlim>)</h->
@@ -3735,6 +3726,42 @@ COWEL markup:
 <p>Generated HTML:
 </p><code-block>true
 true</code-block>
+</example-block>
+
+<h3 id=variable-expressions><a class=para href=#variable-expressions></a>6.6. Variable declarations and assignments</h3>
+
+<p>Variables can be declared and assigned using <g-term>let-expression</g-term>s
+and <g-term>assignment-expression</g-term>s directly in expression context,
+rather than through the <code><h- data-h=mk_tag>\cowel_var_let</h-></code>
+and <code><h- data-h=mk_tag>\cowel_var_set</h-></code> directives.
+</p>
+<p>A <g-term>let-expression</g-term> of the form <code>let x = value</code>
+declares a new variable <code>x</code> with the given <code>value</code>.
+This is equivalent to <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_var_let</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_var>value</h-><h- data-h=sym_par>)</h-></code>.
+An error is raised if <code>x</code> already exists.
+</p>
+<p>An <g-term>assignment-expression</g-term> of the form <code>x = value</code>
+updates the existing variable <code>x</code> to the given <code>value</code>.
+This is equivalent to <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_var_set</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_var>value</h-><h- data-h=sym_par>)</h-></code>.
+An error is raised if <code>x</code> does not exist.
+</p>
+<p>When a <g-term>let-expression</g-term> or <g-term>assignment-expression</g-term>
+appears directly in an <g-term>expression-splice</g-term> or <g-term>expression-line-splice</g-term>,
+it is evaluated for its side effects only
+and does not splice its result into the document.
+To use the value of the declared or assigned variable,
+nest the expression in another context
+or reference the variable by name.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>let</h-> <h- data-h=name_var>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>42</h->
+<h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>x</h-><h- data-h=str_intp_dlim>)</h->
+<h- data-h=str_intp_dlim>\ </h-><h- data-h=name_var>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>123</h->
+<h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>x</h-><h- data-h=str_intp_dlim>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>42
+123</code-block>
 </example-block>
 <h2 id=types-intro><a class=para href=#types-intro></a>7. Types</h2>
 
@@ -6754,6 +6781,12 @@ or if a character is not one of the permitted flags:
 <p>Sets the value of a global variable named <tt-><h- data-h=mk_attr>name</h-></tt-> to <tt-><h- data-h=mk_attr>value</h-></tt->.
 An error is raised if such a variable already exists.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_var_let</h-></code> can also be written with the
+<g-term>let-expression</g-term> shorthand if the variable name is constant.
+See <a href=#variable-expressions>§6.6. Variable declarations and assignments</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_var_set><a class=para href=#dir-cowel_var_set></a>9.16.2. <code><h- data-h=mk_tag>\cowel_var_set</h-></code> — Set an existing variable</h4>
 
 <pre>
@@ -6766,6 +6799,12 @@ An error is raised if such a variable already exists.
 <p>Sets the value of a global variable named <tt-><h- data-h=mk_attr>name</h-></tt-> to <tt-><h- data-h=mk_attr>value</h-></tt->.
 An error is raised if no such variable exists.
 </p>
+<tip-block><p><intro-></intro-> 
+<code><h- data-h=mk_tag>\cowel_var_set</h-></code> can also be written with the <code>=</code>
+<g-term>assignment-expression</g-term> shorthand if the variable name is constant.
+See <a href=#variable-expressions>§6.6. Variable declarations and assignments</a>.
+</p></tip-block>
+
 <h4 id=dir-cowel_var_exists><a class=para href=#dir-cowel_var_exists></a>9.16.3. <code><h- data-h=mk_tag>\cowel_var_exists</h-></code> — Check whether a variable exists</h4>
 
 <pre>
