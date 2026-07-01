@@ -535,6 +535,38 @@ Result<Builtin_Operation_Kind, Processing_Status> check_dynamically_typed_operat
         }
         return rem_to_zero_int_int;
     }
+    case let_dynamic: {
+        if (lhs.get_kind() != Type_Kind::str) {
+            context.try_error_f(
+                diagnostic::type_mismatch, lhs_location,
+                u8"Expected a variable name of type {}, but got {}."sv,
+                Type::str.get_display_name(), lhs.get_display_name()
+            );
+            return Processing_Status::error;
+        }
+        switch (rhs.get_kind()) {
+        case Type_Kind::unit: return let_unit;
+        case Type_Kind::null: return let_null;
+        case Type_Kind::boolean: return let_bool;
+        case Type_Kind::integer: return let_int;
+        case Type_Kind::floating: return let_float;
+        case Type_Kind::str: return let_str;
+        case Type_Kind::regex: return let_regex;
+        case Type_Kind::block: return let_block;
+        case Type_Kind::group: return let_group;
+        case Type_Kind::any:
+        case Type_Kind::nothing:
+        case Type_Kind::union_:
+        case Type_Kind::pack:
+        case Type_Kind::named:
+        case Type_Kind::lazy: break;
+        }
+        context.try_error_f(
+            diagnostic::type_mismatch, rhs_location, u8"Unable to assign a value of type {}."sv,
+            rhs.get_display_name()
+        );
+        return Processing_Status::error;
+    }
     case assign_dynamic: {
         if (lhs.get_kind() != Type_Kind::str) {
             context.try_error_f(
@@ -569,6 +601,15 @@ Result<Builtin_Operation_Kind, Processing_Status> check_dynamically_typed_operat
     }
     case tautology:
     case contradiction:
+    case let_int:
+    case let_float:
+    case let_bool:
+    case let_str:
+    case let_unit:
+    case let_null:
+    case let_regex:
+    case let_block:
+    case let_group:
     case assign_int:
     case assign_float:
     case assign_bool:
@@ -636,6 +677,29 @@ Result<Value, Processing_Status> evaluate_builtin(
     }
     case contradiction: {
         return Value::false_;
+    }
+    case let_int:
+    case let_float:
+    case let_bool:
+    case let_str:
+    case let_unit:
+    case let_null:
+    case let_regex:
+    case let_block:
+    case let_group: {
+        const std::u8string_view name = lhs.as_string();
+        const auto it = context.get_variables().find(name);
+        if (it != context.get_variables().end()) {
+            context.try_error_f(
+                diagnostic::var_let, lhs_location,
+                u8"Unable to declare new variable with the name \"{}\"."sv, name
+            );
+            return Processing_Status::error;
+        }
+        std::pmr::u8string name_copy { name, context.get_transient_memory() };
+        const auto [_, success] = context.get_variables().emplace(std::move(name_copy), rhs);
+        COWEL_DEBUG_ASSERT(success);
+        return rhs;
     }
     case assign_int:
     case assign_float:
@@ -759,6 +823,7 @@ Result<Value, Processing_Status> evaluate_builtin(
         }
         return Value::integer(lhs.as_integer() % rhs.as_integer());
     }
+    case let_dynamic:
     case assign_dynamic:
     case logical_or_dynamic:
     case logical_and_dynamic:

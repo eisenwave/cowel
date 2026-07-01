@@ -79,6 +79,7 @@ std::u8string_view token_kind_source(const Token_Kind kind)
     case greater_equal: return u8">="sv;
     case false_: return u8"false"sv;
     case infinity: return u8"infinity"sv;
+    case let: return u8"let"sv;
     case null: return u8"null"sv;
     case parenthesis_left: return u8"("sv;
     case parenthesis_right: return u8")"sv;
@@ -717,7 +718,7 @@ private:
             }
             default: break;
             }
-            const bool any_matched = expect_identifier_or_literal();
+            const bool any_matched = expect_identifier_or_keyword();
             if (!any_matched) {
                 error(Source_Span { m_pos, 1 }, u8"Unable to form a token."sv);
                 // FIXME: this should do a Unicode decode to avoid slicing code points
@@ -784,7 +785,7 @@ private:
         advance_by(result.length);
     }
 
-    bool expect_identifier_or_literal()
+    bool expect_identifier_or_keyword()
     {
         const std::u8string_view remainder = peek_all();
         const std::size_t length = match_identifier(remainder);
@@ -815,6 +816,11 @@ private:
         }
         if (match == u8"infinity"sv) {
             emit(Token_Kind::infinity, length);
+            advance_by(length);
+            return true;
+        }
+        if (match == u8"let"sv) {
+            emit(Token_Kind::let, length);
             advance_by(length);
             return true;
         }

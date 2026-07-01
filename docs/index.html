@@ -2869,7 +2869,12 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>string-literal</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>assignment-expression</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>assignment-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>let-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>let-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>keyword</h-> <h- data-h=name_mac>? "let" ?</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>keyword</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-> <h- data-h=name_mac>? equal to "let" ?</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>assignment-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-or-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>id-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>assignment-expression</h-><h- data-h=sym_punc>;</h->
@@ -2935,7 +2940,7 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>INFINITY-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>DECIMAL-FLOAT-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>id-expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-> <h- data-h=name_mac>? not followed by group or block ?</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=name_nt>IDENTIFIER-TOKEN</h-> <h- data-h=sym_op>-</h-> <h- data-h=name_nt>keyword</h-><h- data-h=sym_par>)</h-> <h- data-h=name_mac>? not followed by group or block ?</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>string-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>QUOTE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>string-literal-markup-element</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>QUOTE-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>string-literal-markup-element</h->
@@ -3563,7 +3568,12 @@ using builtin directives:
 <h3 id=binary-expressions><a class=para href=#binary-expressions></a>6.5. Binary expressions</h3>
 
 <code-block><h- data-h=name_nt_decl>expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>assignment-expression</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>assignment-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>let-expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>let-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>keyword</h-> <h- data-h=name_mac>? "let" ?</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>keyword</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-> <h- data-h=name_mac>? equal to "let" ?</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>assignment-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-or-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>id-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>assignment-expression</h-><h- data-h=sym_punc>;</h->
@@ -3607,6 +3617,10 @@ for a builtin directive specified in the table below.
   <tr>
     <td><code>x = value</code></td>
     <td><code>cowel_var_set("x", value)</code></td>
+  </tr>
+  <tr>
+    <td><code>let x = value</code></td>
+    <td><code>cowel_var_let("x", value)</code></td>
   </tr>
   <tr>
     <td><code>a || b</code></td>
@@ -3707,6 +3721,13 @@ for a builtin directive specified in the table below.
   </tr>
 </table>
 
+<p>A <g-term>let-expression</g-term> of the form <code>let x = value</code>
+creates a new variable <code>x</code> with the given <code>value</code>.
+This is equivalent to <code>cowel_var_let("x", value)</code>.
+Unlike an <g-term>assignment-expression</g-term>,
+a <g-term>let-expression</g-term> declares a new variable
+rather than updating an existing one.
+</p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block><h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim>(</h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>3</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>7</h-><h- data-h=str_intp_dlim>)</h->

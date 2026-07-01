@@ -1,0 +1,24 @@
+push_document 3
+
+push_expression_line_splice
+push_expr_let
+skip
+id_expression
+skip
+skip
+decimal_int
+pop_expr_let
+pop_expression_line_splice
+
+push_expression_splice
+push_expr_let
+skip
+id_expression
+skip
+skip
+decimal_int
+pop_expr_let
+pop_expression_splice
+text
+
+pop_document

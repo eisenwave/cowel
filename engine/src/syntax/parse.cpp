@@ -746,6 +746,41 @@ private:
         return false;
     }
 
+    void consume_let_expression()
+    {
+        const Token* const lettoken = peek(Token_Kind::let);
+        COWEL_ASSERT(lettoken);
+
+        emit_and_advance_by_one(CST_Instruction_Kind::push_expr_let);
+        consume_blank_sequence();
+
+        if (!peek(Token_Kind::identifier)) {
+            error(m_tokens[m_pos].location, u8"Expected variable name after 'let'."sv);
+            skip_to_end_of_group_member();
+            return;
+        }
+        emit_and_advance_by_one(CST_Instruction_Kind::id_expression);
+
+        consume_blank_sequence();
+
+        if (!expect(Token_Kind::equals)) {
+            error(
+                m_tokens[m_pos].location, u8"Expected '=' after variable name in let-expression."sv
+            );
+            skip_to_end_of_group_member();
+            return;
+        }
+
+        consume_blank_sequence();
+
+        if (!expect_expression()) {
+            error(m_tokens[m_pos].location, u8"Expected expression after '=' in let-expression."sv);
+            skip_to_end_of_group_member();
+        }
+
+        m_out.push_back({ CST_Instruction_Kind::pop_expr_let });
+    }
+
     [[nodiscard]]
     bool expect_expression()
     {
@@ -891,6 +926,10 @@ private:
         }
 
         // Primary expressions:
+        case Token_Kind::let: {
+            consume_let_expression();
+            return true;
+        }
         case Token_Kind::string_quote: {
             consume_quoted(
                 CST_Instruction_Kind::push_quoted_string, CST_Instruction_Kind::pop_quoted_string
@@ -1135,6 +1174,8 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_expression_splice);
         COWEL_ENUM_STRING_CASE8(push_expression_line_splice);
         COWEL_ENUM_STRING_CASE8(pop_expression_line_splice);
+        COWEL_ENUM_STRING_CASE8(push_expr_let);
+        COWEL_ENUM_STRING_CASE8(pop_expr_let);
         COWEL_ENUM_STRING_CASE8(push_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(pop_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(push_expr_logical_not);
@@ -1247,6 +1288,8 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case push_ellipsis_argument:
     case pop_ellipsis_argument:
     case pop_directive_splice:
+    case push_expr_let:
+    case pop_expr_let:
     case pop_expr_bitwise_not:
     case pop_expr_logical_not:
     case pop_expr_unary_minus:
@@ -1314,6 +1357,7 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case pop_expression_splice:
     case push_expression_line_splice:
     case pop_expression_line_splice:
+    case push_expr_let:
     case push_expr_bitwise_not:
     case push_expr_logical_not:
     case push_expr_unary_minus:
@@ -1345,6 +1389,7 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case pop_expr_unary_minus:
     case pop_expr_unary_plus:
     case pop_expr_directive_call:
+    case pop_expr_let:
     case push_expr_assign:
     case pop_expr_assign:
     case push_expr_logical_or:

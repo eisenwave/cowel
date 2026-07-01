@@ -341,7 +341,12 @@ using builtin directives:
 
 \codeblock("ebnf"){
 expression
-  = assignment-expression;
+  = assignment-expression
+  | let-expression;
+let-expression
+  = keyword ? "let" ?, IDENTIFIER-TOKEN, ASSIGN-TOKEN, expression;
+keyword
+  = IDENTIFIER-TOKEN ? equal to "let" ?;
 assignment-expression
   = logical-or-expression
   | id-expression, ASSIGN-TOKEN, assignment-expression;
@@ -386,6 +391,10 @@ for a builtin directive specified in the table below.
   \tr{
     \td{\cowdoc_c{x = value}}
     \td{\cowdoc_c{cowel_var_set("x", value)}}
+  }
+  \tr{
+    \td{\cowdoc_c{let x = value}}
+    \td{\cowdoc_c{cowel_var_let("x", value)}}
   }
   \tr{
     \td{\cowdoc_c{a || b}}
@@ -485,6 +494,13 @@ Operator precedence and associativity are as follows:
     \td{right-to-left}
   }
 }
+
+A \gterm{let-expression} of the form \cowdoc_c{let x = value}
+creates a new variable \cowdoc_c{x} with the given \cowdoc_c{value}.
+This is equivalent to \cowdoc_c{cowel_var_let("x", value)}.
+Unlike an \gterm{assignment-expression},
+a \gterm{let-expression} declares a new variable
+rather than updating an existing one.
 
 \Bex{
 COWEL markup:

@@ -52,6 +52,7 @@ enum struct Node_Kind : Default_Underlying {
     logical_not,
     unary_plus,
     unary_minus,
+    let_expression,
     binary_assign,
     binary_logical_or,
     binary_logical_and,
@@ -164,6 +165,16 @@ struct Node {
         return {
             .kind = Node_Kind::binary_assign,
             .children = { std::move(lhs), std::move(rhs) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node let_expression(std::u8string_view name, Node&& value)
+    {
+        return {
+            .kind = Node_Kind::let_expression,
+            .name_or_text = name,
+            .children = { std::move(value) },
         };
     }
 
@@ -587,6 +598,13 @@ struct Node {
     }
 
     [[nodiscard]]
+    static Node from(const ast::Let_Expression& actual)
+    {
+        Node value = from(actual.get_value());
+        return let_expression(actual.get_name(), std::move(value));
+    }
+
+    [[nodiscard]]
     static Node from(const ast::Group_Member& arg)
     {
         switch (arg.get_kind()) {
@@ -703,6 +721,9 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
     }
     case Node_Kind::binary_assign: {
         return out << "Assign(" << node.children.front() << ", " << node.children.back() << ')';
+    }
+    case Node_Kind::let_expression: {
+        return out << "Let(" << node.name_or_text << ", " << node.children.front() << ')';
     }
     case Node_Kind::binary_logical_or: {
         return out << "LogicalOr(" << node.children.front() << ", " << node.children.back() << ')';

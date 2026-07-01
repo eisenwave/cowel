@@ -10,6 +10,7 @@
   and conveniently consumes the trailing newline as well (#396).
   - Highlighting through `\cowel_highlight` is also provided.
 - Added *assignment-expression*s like `\ x = y` (#418).
+- Added *let-expression*s like `\ let x = y` for declaring new variables (#420).
 
 ### VSCode extension
 

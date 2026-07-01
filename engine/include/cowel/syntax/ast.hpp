@@ -614,7 +614,70 @@ static_assert(std::is_move_constructible_v<Binary_Expression>);
 static_assert(std::is_copy_assignable_v<Binary_Expression>);
 static_assert(std::is_move_assignable_v<Binary_Expression>);
 
-using Expression_Variant = std::variant<Directive, Primary, Unary_Expression, Binary_Expression>;
+/// @brief Represents a *let-expression* `let name = value`.
+struct Let_Expression {
+private:
+    std::u8string_view m_name;
+    File_Source_Span m_name_span;
+    GC_Ref<Expression> m_value;
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+
+public:
+    [[nodiscard]]
+    Let_Expression(const Let_Expression&);
+    [[nodiscard]]
+    Let_Expression(Let_Expression&&) noexcept;
+    Let_Expression(
+        std::u8string_view name,
+        File_Source_Span name_span,
+        GC_Ref<Expression> value,
+        File_Source_Span source_span,
+        std::u8string_view source
+    );
+
+    Let_Expression& operator=(const Let_Expression&);
+    Let_Expression& operator=(Let_Expression&&) noexcept;
+    ~Let_Expression();
+
+    [[nodiscard]]
+    std::u8string_view get_name() const
+    {
+        return m_name;
+    }
+
+    [[nodiscard]]
+    const File_Source_Span& get_name_span() const
+    {
+        return m_name_span;
+    }
+
+    [[nodiscard]]
+    const Expression& get_value() const
+    {
+        return *m_value;
+    }
+
+    [[nodiscard]]
+    const File_Source_Span& get_source_span() const
+    {
+        return m_source_span;
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        return m_source;
+    }
+};
+
+static_assert(std::is_copy_constructible_v<Let_Expression>);
+static_assert(std::is_move_constructible_v<Let_Expression>);
+static_assert(std::is_copy_assignable_v<Let_Expression>);
+static_assert(std::is_move_assignable_v<Let_Expression>);
+
+using Expression_Variant
+    = std::variant<Directive, Primary, Unary_Expression, Binary_Expression, Let_Expression>;
 
 /// @brief Represents an *expression* or *expression-splice*.
 struct Expression : Expression_Variant {
@@ -689,6 +752,21 @@ public:
     }
 
     [[nodiscard]]
+    Expression(const Let_Expression& value)
+        : Expression_Variant { value }
+        , m_source_span { value.get_source_span() }
+        , m_source { value.get_source() }
+    {
+    }
+    [[nodiscard]]
+    Expression(Let_Expression&& value)
+        : Expression_Variant { std::move(value) }
+        , m_source_span { std::get<Let_Expression>(*this).get_source_span() }
+        , m_source { std::get<Let_Expression>(*this).get_source() }
+    {
+    }
+
+    [[nodiscard]]
     Expression(
         Expression&& value,
         const File_Source_Span source_span,
@@ -720,6 +798,11 @@ public:
     bool is_binary() const
     {
         return std::holds_alternative<ast::Binary_Expression>(*this);
+    }
+    [[nodiscard]]
+    bool is_let() const
+    {
+        return std::holds_alternative<ast::Let_Expression>(*this);
     }
 
     [[nodiscard]]
@@ -767,13 +850,24 @@ public:
     }
 
     [[nodiscard]]
+    const ast::Let_Expression& as_let() const
+    {
+        return std::get<ast::Let_Expression>(*this);
+    }
+    [[nodiscard]]
+    const ast::Let_Expression* try_as_let() const
+    {
+        return std::get_if<ast::Let_Expression>(this);
+    }
+
+    [[nodiscard]]
     bool is_value() const noexcept
     {
         return is_directive() //
             || (is_primary() && as_primary().is_value())
             || (is_unary() && as_unary().get_operand().is_value())
-            || (is_binary() && as_binary().get_lhs().is_value() && as_binary().get_rhs().is_value()
-            );
+            || (is_binary() && as_binary().get_lhs().is_value() && as_binary().get_rhs().is_value())
+            || (is_let() && as_let().get_value().is_value());
     }
 
     [[nodiscard]]
@@ -1015,6 +1109,12 @@ inline Binary_Expression::Binary_Expression(Binary_Expression&&) noexcept = defa
 inline Binary_Expression& Binary_Expression::operator=(const Binary_Expression&) = default;
 inline Binary_Expression& Binary_Expression::operator=(Binary_Expression&&) noexcept = default;
 inline Binary_Expression::~Binary_Expression() = default;
+
+inline Let_Expression::Let_Expression(const Let_Expression&) = default;
+inline Let_Expression::Let_Expression(Let_Expression&&) noexcept = default;
+inline Let_Expression& Let_Expression::operator=(const Let_Expression&) = default;
+inline Let_Expression& Let_Expression::operator=(Let_Expression&&) noexcept = default;
+inline Let_Expression::~Let_Expression() = default;
 
 inline Group_Member::Group_Member(Group_Member&&) noexcept = default;
 inline Group_Member::Group_Member(const Group_Member&) = default;
