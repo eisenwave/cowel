@@ -396,7 +396,7 @@ Processing_Status splice_expression(
         return splice_primary(out, *primary, frame, context);
     }
 
-    // Assignment expressions are evaluated for their side effects only;
+    // Assignment and let expressions are evaluated for their side effects only;
     // their result is discarded rather than spliced into the output.
     if (const auto* const binary = value.try_as_binary()) {
         if (binary->get_kind() == Binary_Expression_Kind::assign) {
@@ -410,6 +410,9 @@ Processing_Status splice_expression(
     const Result<Value, Processing_Status> evaluated = evaluate_expression(value, frame, context);
     if (!evaluated) {
         return evaluated.error();
+    }
+    if (value.is_let()) {
+        return Processing_Status::ok;
     }
     return splice_value(out, *evaluated, value.get_source_span(), context);
 }
@@ -796,6 +799,23 @@ evaluate(const ast::Binary_Expression& expression, const Frame_Index frame, Cont
     return evaluate_builtin(
         dynamic_operation, lhs, rhs, expression.get_lhs().get_source_span(),
         expression.get_rhs().get_source_span(), context
+    );
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate(const ast::Let_Expression& expression, const Frame_Index frame, Context& context)
+{
+    Result<Value, Processing_Status> rhs_result
+        = evaluate_expression(expression.get_value(), frame, context);
+    if (!rhs_result) {
+        return rhs_result;
+    }
+    const Value lhs = Value::static_string(expression.get_name(), String_Kind::ascii);
+
+    return evaluate_builtin(
+        Builtin_Operation_Kind::let_dynamic, lhs, *rhs_result, expression.get_source_span(),
+        expression.get_source_span(), context
     );
 }
 

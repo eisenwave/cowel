@@ -121,6 +121,8 @@ or expression-line-splices:
 `\ 1 + 2` does the same.
 `\(x = 1)` and `\ x = 1` (space after `\` is important)
 assigns `1` to the variable `x` (same as `\cowel_var_set("x", 1)`).
+`\(let x = 1)` and `\ let x = 1` declares a new variable `x`
+with value `1` (same as `\cowel_var_let("x", 1)`).
 Directive splices work the same way: `"Hello, \name!"`.
 
 A bare **identifier** in an expression that is not followed by a group or block

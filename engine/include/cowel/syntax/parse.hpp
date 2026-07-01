@@ -60,6 +60,8 @@ namespace cowel {
     F(pop_expr_parenthesized, "pop_expr_parenthesized")                                            \
     F(push_expr_directive_call, "push_expr_directive_call")                                        \
     F(pop_expr_directive_call, "pop_expr_directive_call")                                          \
+    F(push_expr_let, "push_expr_let")                                                              \
+    F(pop_expr_let, "pop_expr_let")                                                                \
     F(push_expr_assign, "push_expr_assign")                                                        \
     F(pop_expr_assign, "pop_expr_assign")                                                          \
     F(push_expr_logical_or, "push_expr_logical_or")                                                \

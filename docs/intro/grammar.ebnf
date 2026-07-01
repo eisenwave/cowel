@@ -288,7 +288,12 @@ member-name
   = identifier
   | string-literal;
 expression
-  = assignment-expression;
+  = assignment-expression
+  | let-expression;
+let-expression
+  = keyword ? "let" ?, IDENTIFIER-TOKEN, ASSIGN-TOKEN, expression;
+keyword
+  = IDENTIFIER-TOKEN ? equal to "let" ?;
 assignment-expression
   = logical-or-expression
   | id-expression, ASSIGN-TOKEN, assignment-expression;
@@ -354,7 +359,7 @@ float-literal
   = INFINITY-TOKEN
   | DECIMAL-FLOAT-TOKEN;
 id-expression
-  = IDENTIFIER-TOKEN ? not followed by group or block ?;
+  = (IDENTIFIER-TOKEN - keyword) ? not followed by group or block ?;
 string-literal
   = QUOTE-TOKEN, { string-literal-markup-element }, QUOTE-TOKEN;
 string-literal-markup-element

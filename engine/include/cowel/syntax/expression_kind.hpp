@@ -76,6 +76,16 @@ binary_expression_kind_comparison_kind(const Binary_Expression_Kind kind)
 #define COWEL_BUILTIN_OPERATION_ENUM_DATA(F)                                                       \
     F(tautology)                                                                                   \
     F(contradiction)                                                                               \
+    F(let_dynamic)                                                                                 \
+    F(let_int)                                                                                     \
+    F(let_float)                                                                                   \
+    F(let_bool)                                                                                    \
+    F(let_str)                                                                                     \
+    F(let_unit)                                                                                    \
+    F(let_null)                                                                                    \
+    F(let_regex)                                                                                   \
+    F(let_block)                                                                                   \
+    F(let_group)                                                                                   \
     F(assign_dynamic)                                                                              \
     F(assign_int)                                                                                  \
     F(assign_float)                                                                                \

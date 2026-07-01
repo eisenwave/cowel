@@ -1,0 +1,10 @@
+\test_input{
+\ let x = (let y = 42)
+\(x)
+\(y)
+}
+
+\test_output{
+42
+42
+}

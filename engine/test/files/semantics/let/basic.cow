@@ -1,0 +1,8 @@
+\test_input{
+\ let x = 100
+\cowel_var_get("x")
+}
+
+\test_output{
+100
+}

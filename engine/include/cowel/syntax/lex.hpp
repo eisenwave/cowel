@@ -40,6 +40,7 @@ namespace cowel {
     F(infinity, "INFINITY", 'i')                                                                   \
     F(less_equal, "LESS-EQUAL", '<')                                                               \
     F(less_than, "LESS-THAN", '<')                                                                 \
+    F(let, "LET", 'l')                                                                             \
     F(line_comment, "LINE-COMMENT", '\\')                                                          \
     F(line_terminator, "LINE-TERMINATOR", '\n')                                                    \
     F(logical_and, "LOGICAL-AND", '&')                                                             \
