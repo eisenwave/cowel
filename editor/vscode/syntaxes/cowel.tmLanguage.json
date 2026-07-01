@@ -300,6 +300,10 @@
         {
           "name": "constant.language.cowel",
           "match": "(?<![-a-zA-Z0-9_])(?:unit|null|true|false)(?![-a-zA-Z0-9_])"
+        },
+        {
+          "name": "keyword.other.cowel",
+          "match": "(?<![-a-zA-Z0-9_])let(?![-a-zA-Z0-9_])"
         }
       ]
     },

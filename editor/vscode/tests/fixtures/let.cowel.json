@@ -1,0 +1,33 @@
+{
+  "description": "Test let keyword highlighting in expressions and as plain text",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 2,
+      "expected": "keyword.other.cowel",
+      "description": "let keyword in expression-line-splice has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 8,
+      "expected": "keyword.operator.assignment.cowel",
+      "description": "Assignment operator = has correct scope in expression-line-splice"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 10,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Integer literal has correct scope in expression-line-splice"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 0,
+      "expected": "source.cowel",
+      "description": "let as document text does not get keyword highlighting"
+    }
+  ]
+}
