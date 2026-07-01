@@ -15,6 +15,7 @@
 ### VSCode extension
 
 - Added syntax highlighting for the new *directive-line-splice* feature.
+- Added syntax highlighting for *let-expression*s.
 - Fixed `x-y` being highlighted as identifier instead of as subtraction expression (#415).
 
 ### Command line interface
