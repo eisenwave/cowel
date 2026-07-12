@@ -781,6 +781,54 @@ private:
         m_out.push_back({ CST_Instruction_Kind::pop_expr_let });
     }
 
+    void consume_function_expression()
+    {
+        const Token* const fun_token = peek(Token_Kind::fun);
+        COWEL_ASSERT(fun_token);
+
+        emit_and_advance_by_one(CST_Instruction_Kind::push_expr_fun);
+        consume_blank_sequence();
+
+        if (!peek(Token_Kind::identifier)) {
+            error(m_tokens[m_pos].location, u8"Expected function name after 'fun'."sv);
+            skip_to_end_of_group_member();
+            return;
+        }
+        emit_and_advance_by_one(CST_Instruction_Kind::id_expression);
+
+        consume_blank_sequence();
+
+        if (!peek(Token_Kind::parenthesis_left)) {
+            error(
+                m_tokens[m_pos].location,
+                u8"Expected '(' after function name in function expression."sv
+            );
+            skip_to_end_of_group_member();
+            return;
+        }
+        consume_group();
+
+        consume_blank_sequence();
+
+        if (!expect(Token_Kind::equals)) {
+            error(
+                m_tokens[m_pos].location,
+                u8"Expected '=' after parameter list in function expression."sv
+            );
+            skip_to_end_of_group_member();
+            return;
+        }
+
+        consume_blank_sequence();
+
+        if (!expect_expression()) {
+            error(m_tokens[m_pos].location, u8"Expected expression for function body after '='."sv);
+            skip_to_end_of_group_member();
+        }
+
+        m_out.push_back({ CST_Instruction_Kind::pop_expr_fun });
+    }
+
     [[nodiscard]]
     bool expect_expression()
     {
@@ -928,6 +976,10 @@ private:
         // Primary expressions:
         case Token_Kind::let: {
             consume_let_expression();
+            return true;
+        }
+        case Token_Kind::fun: {
+            consume_function_expression();
             return true;
         }
         case Token_Kind::string_quote: {
@@ -1176,6 +1228,8 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_expression_line_splice);
         COWEL_ENUM_STRING_CASE8(push_expr_let);
         COWEL_ENUM_STRING_CASE8(pop_expr_let);
+        COWEL_ENUM_STRING_CASE8(push_expr_fun);
+        COWEL_ENUM_STRING_CASE8(pop_expr_fun);
         COWEL_ENUM_STRING_CASE8(push_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(pop_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(push_expr_logical_not);
@@ -1290,6 +1344,8 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case pop_directive_splice:
     case push_expr_let:
     case pop_expr_let:
+    case push_expr_fun:
+    case pop_expr_fun:
     case pop_expr_bitwise_not:
     case pop_expr_logical_not:
     case pop_expr_unary_minus:
@@ -1358,6 +1414,7 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case push_expression_line_splice:
     case pop_expression_line_splice:
     case push_expr_let:
+    case push_expr_fun:
     case push_expr_bitwise_not:
     case push_expr_logical_not:
     case push_expr_unary_minus:
@@ -1390,6 +1447,7 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case pop_expr_unary_plus:
     case pop_expr_directive_call:
     case pop_expr_let:
+    case pop_expr_fun:
     case push_expr_assign:
     case pop_expr_assign:
     case push_expr_logical_or:

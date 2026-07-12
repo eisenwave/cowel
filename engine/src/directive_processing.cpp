@@ -669,6 +669,17 @@ Processing_Status splice_expression_to_plaintext(
 
 [[nodiscard]]
 Result<Value, Processing_Status>
+evaluate(const ast::Function_Expression& expression, const Frame_Index, Context& context)
+{
+    context.try_error(
+        diagnostic::error_error, expression.get_source_span(),
+        u8"Function expressions are not yet supported."sv
+    );
+    return Processing_Status::error;
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
 evaluate_expression(const ast::Expression& value, Frame_Index frame, Context& context)
 {
     const auto diagnostic_frame = context.push_diagnostic_frame(frame);

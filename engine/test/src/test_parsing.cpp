@@ -53,6 +53,7 @@ enum struct Node_Kind : Default_Underlying {
     unary_plus,
     unary_minus,
     let_expression,
+    function_expression,
     binary_assign,
     binary_logical_or,
     binary_logical_and,
@@ -175,6 +176,16 @@ struct Node {
             .kind = Node_Kind::let_expression,
             .name_or_text = name,
             .children = { std::move(value) },
+        };
+    }
+
+    [[nodiscard]]
+    static Node function_expression(std::u8string_view name, Node&& body)
+    {
+        return {
+            .kind = Node_Kind::function_expression,
+            .name_or_text = name,
+            .children = { std::move(body) },
         };
     }
 
@@ -605,6 +616,13 @@ struct Node {
     }
 
     [[nodiscard]]
+    static Node from(const ast::Function_Expression& actual)
+    {
+        Node body = from(actual.get_body());
+        return function_expression(actual.get_name(), std::move(body));
+    }
+
+    [[nodiscard]]
     static Node from(const ast::Group_Member& arg)
     {
         switch (arg.get_kind()) {
@@ -724,6 +742,9 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
     }
     case Node_Kind::let_expression: {
         return out << "Let(" << node.name_or_text << ", " << node.children.front() << ')';
+    }
+    case Node_Kind::function_expression: {
+        return out << "Fun(" << node.name_or_text << ", " << node.children.front() << ')';
     }
     case Node_Kind::binary_logical_or: {
         return out << "LogicalOr(" << node.children.front() << ", " << node.children.back() << ')';
@@ -1883,6 +1904,41 @@ TEST(Parse_And_Build, arguments_balanced_braces)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/balanced_braces.cow");
 }
 
+TEST(Parse_And_Build, function_expression)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group(
+                    {
+                        Node::positional(Node::function_expression(u8"f", Node::integer(u8"0"))),
+                        Node::positional(
+                            Node::function_expression(
+                                u8"sqr",
+                                Node::multiply(
+                                    Node::id_expression(u8"x"), Node::id_expression(u8"x")
+                                )
+                            )
+                        ),
+                        Node::positional(
+                            Node::function_expression(
+                                u8"add",
+                                Node::add(Node::id_expression(u8"x"), Node::id_expression(u8"y"))
+                            )
+                        ),
+                    }
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"fun/ast.cow");
+}
+
 TEST(Parse_Fail, directive_splice_as_argument)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"directive_splice_as_argument.cow"));
@@ -1906,6 +1962,26 @@ TEST(Parse_Fail, parenthesized_named_member_missing_value)
 TEST(Parse_Fail, directive_line_splice_trailing)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"directive_line_splice_trailing.cow"));
+}
+
+TEST(Parse_Fail, fun_missing_name)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_missing_name.cow"));
+}
+
+TEST(Parse_Fail, fun_missing_paren)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_missing_paren.cow"));
+}
+
+TEST(Parse_Fail, fun_missing_equals)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_missing_equals.cow"));
+}
+
+TEST(Parse_Fail, fun_missing_body)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_missing_body.cow"));
 }
 
 } // namespace

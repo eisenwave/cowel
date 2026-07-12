@@ -33,6 +33,7 @@ namespace cowel {
     F(expression_line_splice, "EXPRESSION-LINE-SPLICE", '\\')                                      \
     F(expression_splice, "EXPRESSION-SPLICE", '\\')                                                \
     F(false_, "FALSE", 'f')                                                                        \
+    F(fun, "FUN", 'f')                                                                             \
     F(greater_equal, "GREATER-EQUAL", '>')                                                         \
     F(greater_than, "GREATER-THAN", '>')                                                           \
     F(hexadecimal_int_literal, "HEXADECIMAL-INT", '\0')                                            \

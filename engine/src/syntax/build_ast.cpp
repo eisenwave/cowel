@@ -348,6 +348,29 @@ Let_Expression::Let_Expression(
     COWEL_ASSERT(!m_source.empty());
 }
 
+Function_Expression::Function_Expression(
+    const std::u8string_view name,
+    const File_Source_Span name_span,
+    Primary&& parameters,
+    GC_Ref<Expression> body,
+    const File_Source_Span source_span,
+    const std::u8string_view source
+)
+    : m_name { name }
+    , m_name_span { name_span }
+    , m_parameters { std::move(parameters) }
+    , m_body { std::move(body) }
+    , m_source_span { source_span }
+    , m_source { source }
+{
+    COWEL_ASSERT(!m_name.empty());
+    COWEL_ASSERT(m_name.length() == m_name_span.length);
+    COWEL_ASSERT(m_parameters.get_kind() == Primary_Kind::group);
+    COWEL_ASSERT(m_body);
+    COWEL_ASSERT(m_source_span.length == m_source.length());
+    COWEL_ASSERT(!m_source.empty());
+}
+
 void Primary::assert_validity() const
 {
     COWEL_ASSERT(!m_source_span.empty());
@@ -910,6 +933,9 @@ private:
         case CST_Instruction_Kind::push_expr_let: {
             return build_let_expression();
         }
+        case CST_Instruction_Kind::push_expr_fun: {
+            return build_function_expression();
+        }
         case CST_Instruction_Kind::push_expr_assign: {
             return build_binary_expression(
                 CST_Instruction_Kind::push_expr_assign, CST_Instruction_Kind::pop_expr_assign
@@ -1102,6 +1128,69 @@ private:
             name,
             name_span,
             gc_ref_make<ast::Expression>(std::move(value)),
+            source_span,
+            extract(source_span),
+        };
+    }
+
+    [[nodiscard]]
+    ast::Function_Expression build_function_expression()
+    {
+        const CST_Instruction push = pop_instruction();
+        COWEL_ASSERT(push.kind == CST_Instruction_Kind::push_expr_fun);
+        advance_by_tokens(1);
+
+        const auto consume_expression_trivia_instruction = [&]() {
+            const CST_Instruction trivia_instruction = pop_instruction();
+            COWEL_ASSERT(trivia_instruction.kind == CST_Instruction_Kind::skip);
+            advance_by_tokens(1);
+        };
+
+        // Consume any whitespace/comments between `fun` and the function name.
+        while (!eof() && peek_instruction().kind == CST_Instruction_Kind::skip) {
+            consume_expression_trivia_instruction();
+        }
+
+        // Build the function name as a simple id_expression primary,
+        // then extract its source text and span as the function name.
+        ast::Primary name_primary = build_simple_primary();
+        COWEL_ASSERT(name_primary.get_kind() == ast::Primary_Kind::id_expression);
+        const std::u8string_view name = name_primary.get_source();
+        const File_Source_Span name_span = name_primary.get_source_span();
+
+        // Consume whitespace/comments between the function name and `(`.
+        while (!eof() && peek_instruction().kind == CST_Instruction_Kind::skip) {
+            consume_expression_trivia_instruction();
+        }
+
+        // Build the parameter list as a group.
+        ast::Primary parameters = try_build_group().value();
+        COWEL_ASSERT(parameters.get_kind() == ast::Primary_Kind::group);
+
+        // Consume whitespace/comments between `)` and `=`.
+        while (!eof() && peek_token().kind != Token_Kind::equals) {
+            consume_expression_trivia_instruction();
+        }
+
+        // Consume the `=` token.
+        advance_by_tokens(1);
+        ignore_skips();
+
+        ast::Expression body = build_expression();
+        ignore_skips();
+
+        const CST_Instruction pop = pop_instruction();
+        COWEL_ASSERT(pop.kind == CST_Instruction_Kind::pop_expr_fun);
+        COWEL_DEBUG_ASSERT(!cst_instruction_kind_advances(pop.kind));
+
+        const auto source_span
+            = make_file_span(name_primary.get_source_span(), body.get_source_span());
+
+        return ast::Function_Expression {
+            name,
+            name_span,
+            std::move(parameters),
+            gc_ref_make<ast::Expression>(std::move(body)),
             source_span,
             extract(source_span),
         };

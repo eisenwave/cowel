@@ -1,0 +1,5 @@
+\d(
+  fun f() = 0,
+  fun sqr(x) = x * x,
+  fun add(x, y) = x + y,
+)

@@ -2873,10 +2873,8 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
 <h- data-h=name_nt_decl>expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>assignment-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>let-expression</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>let-expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>keyword</h-> <h- data-h=name_mac>? "let" ?</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>keyword</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-> <h- data-h=name_mac>? equal to "let" ?</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-> <h- data-h=name_mac>? equal to "let" | "fun" ?</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>assignment-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>logical-or-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>id-expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>assignment-expression</h-><h- data-h=sym_punc>;</h->
@@ -2919,6 +2917,8 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>block</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>primary-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parenthesized-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>let-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>function-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>UNIT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>NULL-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>bool-literal</h->
@@ -2930,6 +2930,18 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>parenthesized-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>let-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>keyword</h-> <h- data-h=name_mac>? "let" ?</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>function-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>keyword</h-> <h- data-h=name_mac>? "fun" ?</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h->
+  <h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>parameter-list</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h->
+  <h- data-h=sym_op>,</h-> <h- data-h=name_nt>function-body</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>parameter-list</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parameter</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>parameter</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>COMMA-TOKEN</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>parameter</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>function-body</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>bool-literal</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>TRUE-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>FALSE-TOKEN</h-><h- data-h=sym_punc>;</h->
@@ -3227,14 +3239,14 @@ COWEL markup:
 </example-block>
 
 <p>A related form is the <dfn>expression line splice</dfn>,
-which starts with '<code>\ </code>'
+which starts with '<code><h- data-h=str_esc>\</h-><h- data-h=str_esc> </h-></code>'
 followed by an expression on the next line.
 The terminating newline is part of the splice,
 not part of the text markup.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim> </h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h->
+</p><code-block><h- data-h=str_esc>\</h-><h- data-h=str_esc> </h->1 + 2
 ;</code-block>
 <p>Generated HTML:
 </p><code-block>3;</code-block>
@@ -3755,9 +3767,9 @@ or reference the variable by name.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>let</h-> <h- data-h=name_var>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>42</h->
+</p><code-block><h- data-h=str_esc>\ </h->let x = 42
 <h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>x</h-><h- data-h=str_intp_dlim>)</h->
-<h- data-h=str_intp_dlim>\ </h-><h- data-h=name_var>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>123</h->
+<h- data-h=str_esc>\ </h->x = 123
 <h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>x</h-><h- data-h=str_intp_dlim>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>42
