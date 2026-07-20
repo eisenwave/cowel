@@ -25,9 +25,16 @@
     {
       "type": "top-scope",
       "line": 1,
-      "col": 11,
+      "col": 10,
       "expected": "variable.other.cowel",
       "description": "Parameter name x has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 11,
+      "expected": "punctuation.definition.parameters.end.cowel",
+      "description": "Closing paren of parameter list has correct scope"
     },
     {
       "type": "top-scope",
