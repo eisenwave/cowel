@@ -102,17 +102,6 @@ cowel_string_view_u8 char_sequence_to_sv(Char_Sequence8 chars, std::pmr::vector<
     return as_cowel_string_view(as_u8string_view(buffer));
 }
 
-struct File_Loader_Less {
-    using is_transparent = void;
-
-    [[nodiscard]]
-    bool operator()(const auto& x, const auto& y) const noexcept
-    {
-        return std::u8string_view { x.data(), x.size() }
-        < std::u8string_view { y.data(), y.size() };
-    }
-};
-
 struct Loaded_File {
     cowel_file_id id;
     std::pmr::vector<char8_t> text;

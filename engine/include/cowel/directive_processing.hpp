@@ -227,6 +227,10 @@ evaluate(const ast::Binary_Expression& expression, Frame_Index frame, Context& c
 Result<Value, Processing_Status>
 evaluate(const ast::Let_Expression& expression, Frame_Index frame, Context& context);
 
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate(const ast::Function_Expression& expression, Frame_Index frame, Context& context);
+
 Result<Value, Processing_Status> evaluate_unary(
     Unary_Expression_Kind kind, //
     const Value& value,

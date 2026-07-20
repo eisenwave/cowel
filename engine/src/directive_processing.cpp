@@ -688,94 +688,6 @@ Processing_Status splice_expression_to_plaintext(
 }
 
 [[nodiscard]]
-Result<Value, Processing_Status>
-evaluate(const ast::Function_Expression& expression, const Frame_Index, Context& context)
-{
-    const std::u8string_view name = expression.get_name();
-    const std::u8string_view source = expression.get_source();
-
-    // The parser already ensures the function name is a valid identifier.
-    COWEL_ASSERT(!name.empty());
-    COWEL_ASSERT(is_identifier(name));
-
-    // Check for duplicates.
-    if (context.find_macro(name) || context.find_alias(name) || context.find_function(name)) {
-        context.try_fatal(
-            diagnostic::function_duplicate, expression.get_name_span(),
-            joined_char_sequence(
-                {
-                    u8"The name \""sv,
-                    name,
-                    u8"\" is already defined as a function, macro, or alias. "sv,
-                    u8"Redefinitions or duplicate definitions are not allowed."sv,
-                }
-            )
-        );
-        return Processing_Status::fatal;
-    }
-
-    Small_Vector<ast::Parameter, 16> params;
-    for (const ast::Parameter& p : expression.get_parameters()) {
-        params.push_back(p);
-    }
-    const bool success = context.emplace_function(
-        std::pmr::u8string { name, context.get_transient_memory() }, std::move(params),
-        ast::Expression { expression.get_body() }, source
-    );
-    COWEL_ASSERT(success);
-
-    return Value::unit;
-}
-
-[[nodiscard]]
-Result<Value, Processing_Status>
-Function_Definition::evaluate(const Invocation& call, Context& context) const
-{
-    const std::span<const ast::Parameter> function_params = m_parameters;
-
-    // Build per-parameter matchers, each accepting any type.
-    // Reserve capacity to keep references from Parameter to Value_Matcher stable.
-    const std::size_t param_count = function_params.size();
-    Small_Vector<Value_Of_Type_Matcher, 16> matchers;
-    Small_Vector<Parameter, 16> params;
-    Small_Vector<Parameter*, 16> param_ptrs;
-    matchers.reserve(param_count);
-    params.reserve(param_count);
-
-    for (const ast::Parameter& ast_param : function_params) {
-        matchers.emplace_back(Type::any);
-        params.emplace_back(ast_param.get_name(), Optionality::mandatory, matchers.back());
-        param_ptrs.push_back(&params.back());
-    }
-
-    // Match call arguments against parameters.
-    const Processing_Status match_status = match_call(param_ptrs, call, context);
-    if (match_status != Processing_Status::ok) {
-        return match_status;
-    }
-
-    // Build the binding map from matched parameters.
-    Context::Function_Binding_Chain bindings;
-    bindings.bindings = Context::Function_Binding_Map { context.get_transient_memory() };
-    for (std::size_t i = 0; i < param_ptrs.size(); ++i) {
-        if (matchers[i].was_matched()) {
-            bindings.bindings.emplace_back(
-                std::pmr::u8string { param_ptrs[i]->get_name(), context.get_transient_memory() },
-                matchers[i].get()
-            );
-        }
-    }
-
-    // Evaluate the body with parameter bindings in scope.
-    bindings.parent = context.get_function_bindings();
-    context.set_function_bindings(&bindings);
-    const auto result = evaluate_expression(m_body, call.call_frame, context);
-    context.set_function_bindings(bindings.parent);
-
-    return result;
-}
-
-[[nodiscard]]
 Processing_Status
 Function_Definition::splice(Content_Policy& out, const Invocation& call, Context& context) const
 {
@@ -936,6 +848,94 @@ evaluate(const ast::Let_Expression& expression, const Frame_Index frame, Context
         Builtin_Operation_Kind::let_dynamic, lhs, *rhs_result, expression.get_source_span(),
         expression.get_source_span(), context
     );
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate(const ast::Function_Expression& expression, const Frame_Index, Context& context)
+{
+    const std::u8string_view name = expression.get_name();
+    const std::u8string_view source = expression.get_source();
+
+    // The parser already ensures the function name is a valid identifier.
+    COWEL_ASSERT(!name.empty());
+    COWEL_ASSERT(is_identifier(name));
+
+    // Check for duplicates.
+    if (context.find_macro(name) || context.find_alias(name) || context.find_function(name)) {
+        context.try_fatal(
+            diagnostic::function_duplicate, expression.get_name_span(),
+            joined_char_sequence(
+                {
+                    u8"The name \""sv,
+                    name,
+                    u8"\" is already defined as a function, macro, or alias. "sv,
+                    u8"Redefinitions or duplicate definitions are not allowed."sv,
+                }
+            )
+        );
+        return Processing_Status::fatal;
+    }
+
+    Small_Vector<ast::Parameter, 16> params;
+    for (const ast::Parameter& p : expression.get_parameters()) {
+        params.push_back(p);
+    }
+    const bool success = context.emplace_function(
+        std::pmr::u8string { name, context.get_transient_memory() }, std::move(params),
+        ast::Expression { expression.get_body() }, source
+    );
+    COWEL_ASSERT(success);
+
+    return Value::unit;
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+Function_Definition::evaluate(const Invocation& call, Context& context) const
+{
+    const std::span<const ast::Parameter> function_params = m_parameters;
+
+    // Build per-parameter matchers, each accepting any type.
+    // Reserve capacity to keep references from Parameter to Value_Matcher stable.
+    const std::size_t param_count = function_params.size();
+    Small_Vector<Value_Of_Type_Matcher, 16> matchers;
+    Small_Vector<Parameter, 16> params;
+    Small_Vector<Parameter*, 16> param_ptrs;
+    matchers.reserve(param_count);
+    params.reserve(param_count);
+
+    for (const ast::Parameter& ast_param : function_params) {
+        matchers.emplace_back(Type::any);
+        params.emplace_back(ast_param.get_name(), Optionality::mandatory, matchers.back());
+        param_ptrs.push_back(&params.back());
+    }
+
+    // Match call arguments against parameters.
+    const Processing_Status match_status = match_call(param_ptrs, call, context);
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
+
+    // Build the binding map from matched parameters.
+    Context::Function_Binding_Chain bindings;
+    bindings.bindings = Context::Function_Binding_Map { context.get_transient_memory() };
+    for (std::size_t i = 0; i < param_ptrs.size(); ++i) {
+        if (matchers[i].was_matched()) {
+            bindings.bindings.emplace_back(
+                std::pmr::u8string { param_ptrs[i]->get_name(), context.get_transient_memory() },
+                matchers[i].get()
+            );
+        }
+    }
+
+    // Evaluate the body with parameter bindings in scope.
+    bindings.parent = context.get_function_bindings();
+    context.set_function_bindings(&bindings);
+    const auto result = evaluate_expression(m_body, call.call_frame, context);
+    context.set_function_bindings(bindings.parent);
+
+    return result;
 }
 
 Result<Value, Processing_Status> evaluate_unary(
