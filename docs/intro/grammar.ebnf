@@ -288,8 +288,7 @@ member-name
   = identifier
   | string-literal;
 expression
-  = assignment-expression
-  | let-expression;
+  = assignment-expression;
 keyword
   = IDENTIFIER-TOKEN ? equal to "let" | "fun" ?;
 assignment-expression

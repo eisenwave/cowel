@@ -70,6 +70,61 @@ public:
     Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const final;
 };
 
+/// @brief The run-time representation of a user-defined function,
+/// created by a *function-expression* `fun name(params) = body`.
+///
+/// When invoked via `\name(...)`, the stored parameters are matched against
+/// the call arguments and the body expression is evaluated.
+struct Function_Definition final : Directive_Behavior {
+private:
+    std::pmr::u8string m_name;
+    std::pmr::u8string m_decl;
+    Small_Vector<ast::Parameter, 16> m_parameters;
+    ast::Expression m_body;
+
+public:
+    [[nodiscard]]
+    explicit Function_Definition(
+        Small_Vector<ast::Parameter, 16>&& parameters,
+        ast::Expression&& body,
+        std::pmr::u8string&& name,
+        std::pmr::u8string&& decl
+    )
+        : Directive_Behavior { Type::any, {} }
+        , m_name { std::move(name) }
+        , m_decl { std::move(decl) }
+        , m_parameters { std::move(parameters) }
+        , m_body { std::move(body) }
+    {
+        set_tooltip_article(
+            Tooltip_Article {
+                .kind = Tooltip_Kind::function,
+                .subject = m_name,
+                .declaration_language = u8"cowel",
+                .declaration = m_decl,
+            }
+        );
+    }
+
+    [[nodiscard]]
+    Result<Value, Processing_Status> evaluate(const Invocation&, Context&) const final;
+
+    [[nodiscard]]
+    Processing_Status splice(Content_Policy& out, const Invocation&, Context&) const final;
+
+    [[nodiscard]]
+    std::span<const ast::Parameter> get_parameters() const
+    {
+        return m_parameters;
+    }
+
+    [[nodiscard]]
+    const ast::Expression& get_body() const
+    {
+        return m_body;
+    }
+};
+
 /// @brief A hover entry: source location and Markdown article text.
 struct Hover_Entry {
     File_Source_Span span;
@@ -93,6 +148,20 @@ public:
         Macro_Definition,
         Transparent_String_View_Hash8,
         Transparent_String_View_Equals8>;
+    using Function_Map = std::pmr::unordered_map<
+        std::pmr::u8string,
+        Function_Definition,
+        Transparent_String_View_Hash8,
+        Transparent_String_View_Equals8>;
+    using Function_Binding_Map = std::pmr::vector<std::pair<std::pmr::u8string, Value>>;
+
+    /// @brief A chain of function parameter bindings.
+    /// Each node in the chain corresponds to one level of function call nesting.
+    /// `parent` points to the bindings of the outer (caller) function, or nullptr.
+    struct Function_Binding_Chain {
+        Function_Binding_Map bindings;
+        const Function_Binding_Chain* parent = nullptr;
+    };
     using Alias_Map = std::pmr::unordered_map<
         std::pmr::u8string,
         const Directive_Behavior*,
@@ -144,6 +213,11 @@ private:
     ID_Map m_id_references { m_transient_memory };
     Alias_Map m_aliases { m_transient_memory };
     Macro_Map m_macros { m_transient_memory };
+    Function_Map m_functions { m_transient_memory };
+    /// @brief Current chain of function parameter bindings.
+    /// Each node is owned by the call stack (local variable in
+    /// `Function_Definition::evaluate`), not by the Context.
+    const Function_Binding_Chain* m_function_bindings = nullptr;
     const Directive_Behavior* m_error_behavior;
 
     const Name_Resolver& m_builtin_name_resolver;
@@ -623,6 +697,68 @@ public:
         std::span<const ast::Markup_Element> definition,
         std::u8string_view macro_source
     );
+
+    [[nodiscard]]
+    const Function_Definition* find_function(std::u8string_view id) const
+    {
+        const auto it = m_functions.find(id);
+        return it == m_functions.end() ? nullptr : &it->second;
+    }
+
+    [[nodiscard]]
+    bool emplace_function(
+        std::pmr::u8string&& name,
+        Small_Vector<ast::Parameter, 16>&& parameters,
+        ast::Expression&& body,
+        std::u8string_view function_source
+    );
+
+    /// @brief Sets the current function parameter bindings.
+    /// The bindings are owned by the caller and must outlive
+    /// the duration during which they are set.
+    void set_function_bindings(const Function_Binding_Chain* bindings)
+    {
+        m_function_bindings = bindings;
+    }
+
+    /// @brief Returns the current function parameter bindings, or nullptr.
+    [[nodiscard]]
+    const Function_Binding_Chain* get_function_bindings() const
+    {
+        return m_function_bindings;
+    }
+
+    /// @brief Looks up a variable by name, checking function parameter bindings first
+    /// and falling back to the global variable map.
+    [[nodiscard]]
+    const Value* get_variable_with_bindings(string_view_type key)
+    {
+        for (const Function_Binding_Chain* chain = m_function_bindings; chain;
+             chain = chain->parent) {
+            for (const auto& [name, value] : chain->bindings) {
+                if (name == key) {
+                    return &value;
+                }
+            }
+        }
+        return get_variable(key);
+    }
+
+    /// @brief Looks up a variable by name, checking function parameter bindings first
+    /// and falling back to the global variable map.
+    [[nodiscard]]
+    const Value* get_variable_with_bindings(string_view_type key) const
+    {
+        for (const Function_Binding_Chain* chain = m_function_bindings; chain;
+             chain = chain->parent) {
+            for (const auto& [name, value] : chain->bindings) {
+                if (name == key) {
+                    return &value;
+                }
+            }
+        }
+        return get_variable(key);
+    }
 
 private:
     [[nodiscard]]

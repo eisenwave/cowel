@@ -123,6 +123,11 @@ or expression-line-splices:
 assigns `1` to the variable `x` (same as `\cowel_var_set("x", 1)`).
 `\(let x = 1)` and `\ let x = 1` declares a new variable `x`
 with value `1` (same as `\cowel_var_let("x", 1)`).
+`\(fun sqr(x) = x * x)` and `\ fun sqr(x) = x * x` defines a function
+that can be called like a directive: `\sqr(2)` evaluates to `4`.
+Arguments are evaluated once and matched positionally or by name;
+parameters are visible to name lookup within the body.
+The function-defining expression itself evaluates to `unit`.
 Directive splices work the same way: `"Hello, \name!"`.
 
 A bare **identifier** in an expression that is not followed by a group or block

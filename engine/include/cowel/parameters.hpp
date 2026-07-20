@@ -386,7 +386,7 @@ struct Textual_Matcher : Value_Matcher {
     ) = 0;
 };
 
-struct Value_Of_Type_Matcher
+struct Value_Of_Type_Matcher final
     : Value_Matcher
     , Value_Holder<Value> {
     [[nodiscard]]

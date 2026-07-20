@@ -181,6 +181,7 @@ private:
 
     std::size_t m_pos = 0;
     bool m_success = true;
+    bool m_in_function_body = false;
 
 public:
     [[nodiscard]]
@@ -748,8 +749,8 @@ private:
 
     void consume_let_expression()
     {
-        const Token* const lettoken = peek(Token_Kind::let);
-        COWEL_ASSERT(lettoken);
+        const Token* const let_token = peek(Token_Kind::let);
+        COWEL_ASSERT(let_token);
 
         emit_and_advance_by_one(CST_Instruction_Kind::push_expr_let);
         consume_blank_sequence();
@@ -776,6 +777,13 @@ private:
         if (!expect_expression()) {
             error(m_tokens[m_pos].location, u8"Expected expression after '=' in let-expression."sv);
             skip_to_end_of_group_member();
+        }
+
+        if (m_in_function_body) {
+            error(
+                let_token->location,
+                u8"Let-expressions are not allowed inside function-expression bodies."sv
+            );
         }
 
         m_out.push_back({ CST_Instruction_Kind::pop_expr_let });
@@ -806,7 +814,7 @@ private:
             skip_to_end_of_group_member();
             return;
         }
-        consume_group();
+        consume_function_parameters();
 
         consume_blank_sequence();
 
@@ -821,12 +829,51 @@ private:
 
         consume_blank_sequence();
 
+        if (m_in_function_body) {
+            error(
+                fun_token->location,
+                u8"Function-expressions are not allowed inside function-expression bodies."sv
+            );
+        }
+
+        m_in_function_body = true;
         if (!expect_expression()) {
             error(m_tokens[m_pos].location, u8"Expected expression for function body after '='."sv);
             skip_to_end_of_group_member();
         }
+        m_in_function_body = false;
 
         m_out.push_back({ CST_Instruction_Kind::pop_expr_fun });
+    }
+
+    void consume_function_parameters()
+    {
+        COWEL_ASSERT(expect(Token_Kind::parenthesis_left));
+
+        const std::size_t instruction_index = m_out.size();
+        m_out.push_back({ CST_Instruction_Kind::push_function_parameters, 0 });
+
+        std::size_t param_count = 0;
+        while (!eof()) {
+            consume_blank_sequence();
+            if (expect(Token_Kind::parenthesis_right)) {
+                m_out.push_back({ CST_Instruction_Kind::pop_function_parameters });
+                m_out[instruction_index].n = param_count;
+                return;
+            }
+            if (expect(Token_Kind::comma)) {
+                m_out.push_back({ CST_Instruction_Kind::comma });
+                continue;
+            }
+            if (peek(Token_Kind::identifier)) {
+                emit_and_advance_by_one(CST_Instruction_Kind::id_expression);
+                ++param_count;
+                continue;
+            }
+            error(m_tokens[m_pos].location, u8"Expected parameter name or ')'."sv);
+            skip_to_end_of_group_member();
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Unterminated function parameter list.");
     }
 
     [[nodiscard]]
@@ -1230,6 +1277,8 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_expr_let);
         COWEL_ENUM_STRING_CASE8(push_expr_fun);
         COWEL_ENUM_STRING_CASE8(pop_expr_fun);
+        COWEL_ENUM_STRING_CASE8(push_function_parameters);
+        COWEL_ENUM_STRING_CASE8(pop_function_parameters);
         COWEL_ENUM_STRING_CASE8(push_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(pop_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(push_expr_logical_not);
@@ -1346,6 +1395,8 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case pop_expr_let:
     case push_expr_fun:
     case pop_expr_fun:
+    case push_function_parameters:
+    case pop_function_parameters:
     case pop_expr_bitwise_not:
     case pop_expr_logical_not:
     case pop_expr_unary_minus:
@@ -1448,6 +1499,8 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case pop_expr_directive_call:
     case pop_expr_let:
     case pop_expr_fun:
+    case push_function_parameters:
+    case pop_function_parameters:
     case push_expr_assign:
     case pop_expr_assign:
     case push_expr_logical_or:

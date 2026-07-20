@@ -12,6 +12,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/fixed_string.hpp"
 #include "cowel/util/meta.hpp"
+#include "cowel/util/small_vector.hpp"
 #include "cowel/util/source_position.hpp"
 
 #include "cowel/big_int.hpp"
@@ -676,12 +677,39 @@ static_assert(std::is_move_constructible_v<Let_Expression>);
 static_assert(std::is_copy_assignable_v<Let_Expression>);
 static_assert(std::is_move_assignable_v<Let_Expression>);
 
+/// @brief Represents a single parameter in a function-expression.
+struct Parameter {
+private:
+    std::u8string_view m_name;
+    File_Source_Span m_name_span;
+
+public:
+    [[nodiscard]]
+    Parameter(const std::u8string_view name, const File_Source_Span& name_span)
+        : m_name { name }
+        , m_name_span { name_span }
+    {
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_name() const
+    {
+        return m_name;
+    }
+
+    [[nodiscard]]
+    const File_Source_Span& get_name_span() const
+    {
+        return m_name_span;
+    }
+};
+
 /// @brief Represents a *function-expression* `fun name(params) = body`.
 struct Function_Expression {
 private:
     std::u8string_view m_name;
     File_Source_Span m_name_span;
-    Primary m_parameters;
+    Small_Vector<Parameter, 16> m_parameters;
     GC_Ref<Expression> m_body;
     File_Source_Span m_source_span;
     std::u8string_view m_source;
@@ -694,7 +722,7 @@ public:
     Function_Expression(
         std::u8string_view name,
         File_Source_Span name_span,
-        Primary&& parameters,
+        Small_Vector<Parameter, 16>&& parameters,
         GC_Ref<Expression> body,
         File_Source_Span source_span,
         std::u8string_view source
@@ -717,7 +745,7 @@ public:
     }
 
     [[nodiscard]]
-    const Primary& get_parameters() const
+    std::span<const Parameter> get_parameters() const
     {
         return m_parameters;
     }

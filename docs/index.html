@@ -1565,6 +1565,8 @@ h1 {
 <a href=#binary-expressions><h3>Binary expressions</h3></a>
 <div class=toc-num data-level=3>6.6</div>
 <a href=#variable-expressions><h3>Variable declarations and assignments</h3></a>
+<div class=toc-num data-level=3>6.7</div>
+<a href=#function-expressions><h3>Function expressions</h3></a>
 <div class=toc-num data-level=2>7</div>
 <a href=#types-intro><h2>Types</h2></a>
 <div class=toc-num data-level=3>7.1</div>
@@ -2871,8 +2873,7 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>string-literal</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>assignment-expression</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>let-expression</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>assignment-expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>keyword</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-> <h- data-h=name_mac>? equal to "let" | "fun" ?</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>assignment-expression</h->
@@ -3239,14 +3240,14 @@ COWEL markup:
 </example-block>
 
 <p>A related form is the <dfn>expression line splice</dfn>,
-which starts with '<code><h- data-h=str_esc>\</h-><h- data-h=str_esc> </h-></code>'
+which starts with '<code>\ </code>'
 followed by an expression on the next line.
 The terminating newline is part of the splice,
 not part of the text markup.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=str_esc>\</h-><h- data-h=str_esc> </h->1 + 2
+</p><code-block><h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim> </h-><h- data-h=num>1</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>2</h->
 ;</code-block>
 <p>Generated HTML:
 </p><code-block>3;</code-block>
@@ -3767,15 +3768,48 @@ or reference the variable by name.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
-</p><code-block><h- data-h=str_esc>\ </h->let x = 42
+</p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>let</h-> <h- data-h=name_var>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>42</h->
 <h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>x</h-><h- data-h=str_intp_dlim>)</h->
-<h- data-h=str_esc>\ </h->x = 123
+<h- data-h=str_intp_dlim>\ </h-><h- data-h=name_var>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>123</h->
 <h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>x</h-><h- data-h=str_intp_dlim>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>42
 123</code-block>
 </example-block>
-<h2 id=types-intro><a class=para href=#types-intro></a>7. Types</h2>
+
+<h3 id=function-expressions><a class=para href=#function-expressions></a>6.7. Function expressions</h3>
+
+<p>A <g-term>function-expression</g-term> defines a callable function
+that can be invoked like a directive.
+It has the form <code>fun name(params) = body</code>,
+where <code>params</code> is a comma-separated list of identifiers
+and <code>body</code> is a single expression.
+</p>
+<p>When evaluated, the function-expression has a side effect:
+it stores the function under the given <code>name</code>,
+making it available for later calls via <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>name</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=sym_par>)</h-></code>.
+The expression itself evaluates to <code>unit</code>.
+</p>
+<p>When called, each argument is evaluated exactly once
+and matched against the function's parameters
+using the same positional and named argument rules as directives.
+The body expression is then evaluated with the parameters in scope,
+and its result becomes the result of the call.
+Parameters are checked before global variables during name lookup.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>sqr</h-><h- data-h=sym_par>(</h-><h- data-h=name_var>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_var>x</h-> <h- data-h=sym_op>*</h-> <h- data-h=name_var>x</h->
+<h- data-h=mk_tag>\sqr</h-><h- data-h=sym_par>(</h-><h- data-h=num>2</h-><h- data-h=sym_par>)</h-> and <h- data-h=mk_tag>\sqr</h-><h- data-h=sym_par>(</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>4 and 25</code-block>
+</example-block>
+
+<p>Functions cannot be nested inside other function bodies,
+and <g-term>let-expression</g-term>s are similarly forbidden within function bodies.
+Functions only have access to their own parameters and to global variables;
+they do not capture variables from enclosing scopes.
+</p><h2 id=types-intro><a class=para href=#types-intro></a>7. Types</h2>
 
 <p>While most of the content a user writes tends to be in a markup context,
 some is written in a <dfn>scripting context</dfn>.

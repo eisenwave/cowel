@@ -543,3 +543,40 @@ Generated HTML:
 123
 }
 }
+
+\h3(id="function-expressions"){Function expressions}
+
+A \gterm{function-expression} defines a callable function
+that can be invoked like a directive.
+It has the form \cowdoc_c{fun name(params) = body},
+where \cowdoc_c{params} is a comma-separated list of identifiers
+and \cowdoc_c{body} is a single expression.
+
+When evaluated, the function-expression has a side effect:
+it stores the function under the given \cowdoc_c{name},
+making it available for later calls via \cowdoc_c{\\name(...)}.
+The expression itself evaluates to \cowdoc_c{unit}.
+
+When called, each argument is evaluated exactly once
+and matched against the function's parameters
+using the same positional and named argument rules as directives.
+The body expression is then evaluated with the parameters in scope,
+and its result becomes the result of the call.
+Parameters are checked before global variables during name lookup.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\ fun sqr(x) = x * x
+\sqr(2) and \sqr(5)
+}}
+Generated HTML:
+\htmlblock{
+4 and 25
+}
+}
+
+Functions cannot be nested inside other function bodies,
+and \gterm{let-expression}s are similarly forbidden within function bodies.
+Functions only have access to their own parameters and to global variables;
+they do not capture variables from enclosing scopes.

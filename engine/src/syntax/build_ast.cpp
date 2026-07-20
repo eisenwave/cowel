@@ -351,7 +351,7 @@ Let_Expression::Let_Expression(
 Function_Expression::Function_Expression(
     const std::u8string_view name,
     const File_Source_Span name_span,
-    Primary&& parameters,
+    Small_Vector<Parameter, 16>&& parameters,
     GC_Ref<Expression> body,
     const File_Source_Span source_span,
     const std::u8string_view source
@@ -365,7 +365,6 @@ Function_Expression::Function_Expression(
 {
     COWEL_ASSERT(!m_name.empty());
     COWEL_ASSERT(m_name.length() == m_name_span.length);
-    COWEL_ASSERT(m_parameters.get_kind() == Primary_Kind::group);
     COWEL_ASSERT(m_body);
     COWEL_ASSERT(m_source_span.length == m_source.length());
     COWEL_ASSERT(!m_source.empty());
@@ -1163,9 +1162,47 @@ private:
             consume_expression_trivia_instruction();
         }
 
-        // Build the parameter list as a group.
-        ast::Primary parameters = try_build_group().value();
-        COWEL_ASSERT(parameters.get_kind() == ast::Primary_Kind::group);
+        // Build the parameter list.
+        // Each id_expression inside the push/pop_function_parameters
+        // becomes one Parameter AST node.
+        const CST_Instruction param_push = pop_instruction();
+        COWEL_ASSERT(param_push.kind == CST_Instruction_Kind::push_function_parameters);
+        advance_by_tokens(1);
+        const std::size_t param_count = param_push.n;
+        Small_Vector<ast::Parameter, 16> parameters;
+        for (std::size_t i = 0; i < param_count; ++i) {
+            // Consume any trivia between parameters.
+            while (!eof() && peek_instruction().kind == CST_Instruction_Kind::skip) {
+                const CST_Instruction trivia_instruction = pop_instruction();
+                COWEL_ASSERT(trivia_instruction.kind == CST_Instruction_Kind::skip);
+                advance_by_tokens(1);
+            }
+            // Consume optional comma between parameters.
+            if (!eof() && peek_instruction().kind == CST_Instruction_Kind::comma) {
+                pop_instruction();
+                advance_by_tokens(1);
+                while (!eof() && peek_instruction().kind == CST_Instruction_Kind::skip) {
+                    const CST_Instruction trivia_instruction = pop_instruction();
+                    COWEL_ASSERT(trivia_instruction.kind == CST_Instruction_Kind::skip);
+                    advance_by_tokens(1);
+                }
+            }
+            // Build the parameter name as an id_expression.
+            ast::Primary param_name_primary = build_simple_primary();
+            COWEL_ASSERT(param_name_primary.get_kind() == ast::Primary_Kind::id_expression);
+            parameters.emplace_back(
+                param_name_primary.get_source(), param_name_primary.get_source_span()
+            );
+        }
+        // Consume trailing trivia before pop.
+        while (!eof() && peek_instruction().kind == CST_Instruction_Kind::skip) {
+            const CST_Instruction trivia_instruction = pop_instruction();
+            COWEL_ASSERT(trivia_instruction.kind == CST_Instruction_Kind::skip);
+            advance_by_tokens(1);
+        }
+        const CST_Instruction param_pop = pop_instruction();
+        COWEL_ASSERT(param_pop.kind == CST_Instruction_Kind::pop_function_parameters);
+        advance_by_tokens(1);
 
         // Consume whitespace/comments between `)` and `=`.
         while (!eof() && peek_token().kind != Token_Kind::equals) {
