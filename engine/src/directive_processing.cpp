@@ -863,22 +863,30 @@ evaluate(const ast::Function_Expression& expression, const Frame_Index, Context&
 
     // Check for duplicates.
     if (context.find_macro(name) || context.find_alias(name) || context.find_function(name)) {
-        context.try_fatal(
+        context.try_fatal_f(
             diagnostic::function_duplicate, expression.get_name_span(),
-            joined_char_sequence(
-                {
-                    u8"The name \""sv,
-                    name,
-                    u8"\" is already defined as a function, macro, or alias. "sv,
-                    u8"Redefinitions or duplicate definitions are not allowed."sv,
-                }
-            )
+            u8"The name \"{}\" is already defined as a function, macro, or alias. "
+            u8"Redefinitions or duplicate definitions are not allowed."sv,
+            name
         );
         return Processing_Status::fatal;
     }
 
     Small_Vector<ast::Parameter, 16> params;
     for (const ast::Parameter& p : expression.get_parameters()) {
+        // Check for duplicate parameter names.
+        for (const ast::Parameter& existing : params) {
+            if (existing.get_name() == p.get_name()) {
+                context.try_error_f(
+                    diagnostic::function_duplicate_parameter, p.get_name_span(),
+                    u8"The parameter name \"{}\" appears more than once in the "
+                    u8"parameter list of function \"{}\". "
+                    u8"Parameter names must be unique."sv,
+                    p.get_name(), name
+                );
+                return Processing_Status::error;
+            }
+        }
         params.push_back(p);
     }
     const bool success = context.emplace_function(

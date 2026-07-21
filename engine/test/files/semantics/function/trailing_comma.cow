@@ -1,0 +1,11 @@
+\test_input{
+\ fun f(x,) = x
+\f(1)
+\ fun g(x, y,) = x + y
+\g(2, 3)
+}
+
+\test_output{
+1
+5
+}

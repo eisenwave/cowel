@@ -836,12 +836,13 @@ private:
             );
         }
 
+        const bool outer_function_body = m_in_function_body;
         m_in_function_body = true;
         if (!expect_expression()) {
             error(m_tokens[m_pos].location, u8"Expected expression for function body after '='."sv);
             skip_to_end_of_group_member();
         }
-        m_in_function_body = false;
+        m_in_function_body = outer_function_body;
 
         m_out.push_back({ CST_Instruction_Kind::pop_expr_fun });
     }
@@ -854,6 +855,7 @@ private:
         m_out.push_back({ CST_Instruction_Kind::push_function_parameters, 0 });
 
         std::size_t param_count = 0;
+        bool expect_name = true;
         while (!eof()) {
             consume_blank_sequence();
             if (expect(Token_Kind::parenthesis_right)) {
@@ -862,16 +864,37 @@ private:
                 return;
             }
             if (expect(Token_Kind::comma)) {
-                m_out.push_back({ CST_Instruction_Kind::comma });
+                if (expect_name && param_count == 0) {
+                    error(m_tokens[m_pos].location, u8"Unexpected comma before first parameter."sv);
+                }
+                else if (expect_name) {
+                    error(
+                        m_tokens[m_pos].location,
+                        u8"Unexpected duplicate comma between parameters."sv
+                    );
+                }
+                else {
+                    m_out.push_back({ CST_Instruction_Kind::skip });
+                    expect_name = true;
+                    continue;
+                }
+                m_out.push_back({ CST_Instruction_Kind::skip });
                 continue;
             }
-            if (peek(Token_Kind::identifier)) {
+            if (expect_name && peek(Token_Kind::identifier)) {
                 emit_and_advance_by_one(CST_Instruction_Kind::id_expression);
                 ++param_count;
+                expect_name = false;
                 continue;
+            }
+            if (!expect_name) {
+                error(m_tokens[m_pos].location, u8"Expected ',' or ')' after parameter name."sv);
+                skip_to_end_of_group_member();
+                return;
             }
             error(m_tokens[m_pos].location, u8"Expected parameter name or ')'."sv);
             skip_to_end_of_group_member();
+            return;
         }
         COWEL_ASSERT_UNREACHABLE(u8"Unterminated function parameter list.");
     }

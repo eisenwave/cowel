@@ -10,6 +10,10 @@
 \ fun dup() = 0
 \test_expect_fatal("function.duplicate"){e\ fun dup() = 1
 }
+\test_expect_error("function.duplicate_parameter"){f\ fun dup_param(x, x) = x
+}
+\test_expect_error("function.duplicate_parameter"){g\ fun dup_param2(x, y, x) = x + y
+}
 }
 
 \test_output{
@@ -18,4 +22,6 @@ b
 c
 d
 e
+f
+g
 }

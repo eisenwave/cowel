@@ -1984,5 +1984,15 @@ TEST(Parse_Fail, fun_missing_body)
     ASSERT_TRUE(run_parse_fail_test(u8"fun_missing_body.cow"));
 }
 
+TEST(Parse_Fail, fun_leading_comma)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_leading_comma.cow"));
+}
+
+TEST(Parse_Fail, fun_duplicate_comma)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_duplicate_comma.cow"));
+}
+
 } // namespace
 } // namespace cowel

@@ -35,11 +35,6 @@ struct Invocation {
     /// because `0` indicates the document top level,
     /// with each level of invocation being one greater than the level below.
     Frame_Index call_frame;
-    /// @brief If true, parameter bindings of this invocation are visible
-    /// during name lookup of id-expressions in its content.
-    /// This is `true` for function calls and `false` for macro invocations,
-    /// because macros access their arguments through `\cowel_put` / `\cowel_get`.
-    bool transparent_to_parameter_lookup = false;
 
     [[nodiscard]]
     bool has_arguments() const
