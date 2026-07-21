@@ -1,0 +1,12 @@
+\test_input{
+\ fun sqr(x) = x * x
+\sqr(2)
+\sqr(0)
+\sqr(-3)
+}
+
+\test_output{
+4
+0
+9
+}

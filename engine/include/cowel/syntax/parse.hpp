@@ -62,6 +62,11 @@ namespace cowel {
     F(pop_expr_directive_call, "pop_expr_directive_call")                                          \
     F(push_expr_let, "push_expr_let")                                                              \
     F(pop_expr_let, "pop_expr_let")                                                                \
+    F(push_expr_fun, "push_expr_fun")                                                              \
+    F(pop_expr_fun, "pop_expr_fun")                                                                \
+    /* `n` is the amount of parameters. */                                                         \
+    F(push_function_parameters, "push_function_parameters")                                        \
+    F(pop_function_parameters, "pop_function_parameters")                                          \
     F(push_expr_assign, "push_expr_assign")                                                        \
     F(pop_expr_assign, "pop_expr_assign")                                                          \
     F(push_expr_logical_or, "push_expr_logical_or")                                                \
@@ -122,6 +127,7 @@ constexpr bool cst_instruction_kind_has_operand(CST_Instruction_Kind type)
     switch (type) {
     case push_document:
     case push_group:
+    case push_function_parameters:
     case push_quoted_string:
     case push_block: return true;
 

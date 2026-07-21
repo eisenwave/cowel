@@ -1,0 +1,34 @@
+push_document 3
+
+push_expression_line_splice
+push_expr_fun
+skip
+id_expression
+push_function_parameters 0
+pop_function_parameters
+skip
+skip
+decimal_int
+pop_expr_fun
+pop_expression_line_splice
+
+push_expression_splice
+push_expr_fun
+skip
+id_expression
+push_function_parameters 1
+id_expression
+pop_function_parameters
+skip
+skip
+push_expr_multiply
+id_expression
+skip
+skip
+id_expression
+pop_expr_multiply
+pop_expr_fun
+pop_expression_splice
+text
+
+pop_document

@@ -12,6 +12,7 @@
 #include "cowel/util/assert.hpp"
 #include "cowel/util/fixed_string.hpp"
 #include "cowel/util/meta.hpp"
+#include "cowel/util/small_vector.hpp"
 #include "cowel/util/source_position.hpp"
 
 #include "cowel/big_int.hpp"
@@ -676,8 +677,110 @@ static_assert(std::is_move_constructible_v<Let_Expression>);
 static_assert(std::is_copy_assignable_v<Let_Expression>);
 static_assert(std::is_move_assignable_v<Let_Expression>);
 
-using Expression_Variant
-    = std::variant<Directive, Primary, Unary_Expression, Binary_Expression, Let_Expression>;
+/// @brief Represents a single parameter in a function-expression.
+struct Parameter {
+private:
+    std::u8string_view m_name;
+    File_Source_Span m_name_span;
+
+public:
+    [[nodiscard]]
+    Parameter(const std::u8string_view name, const File_Source_Span& name_span)
+        : m_name { name }
+        , m_name_span { name_span }
+    {
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_name() const
+    {
+        return m_name;
+    }
+
+    [[nodiscard]]
+    const File_Source_Span& get_name_span() const
+    {
+        return m_name_span;
+    }
+};
+
+/// @brief Represents a *function-expression* `fun name(params) = body`.
+struct Function_Expression {
+private:
+    std::u8string_view m_name;
+    File_Source_Span m_name_span;
+    Small_Vector<Parameter, 16> m_parameters;
+    GC_Ref<Expression> m_body;
+    File_Source_Span m_source_span;
+    std::u8string_view m_source;
+
+public:
+    [[nodiscard]]
+    Function_Expression(const Function_Expression&);
+    [[nodiscard]]
+    Function_Expression(Function_Expression&&) noexcept;
+    Function_Expression(
+        std::u8string_view name,
+        File_Source_Span name_span,
+        Small_Vector<Parameter, 16>&& parameters,
+        GC_Ref<Expression> body,
+        File_Source_Span source_span,
+        std::u8string_view source
+    );
+
+    Function_Expression& operator=(const Function_Expression&);
+    Function_Expression& operator=(Function_Expression&&) noexcept;
+    ~Function_Expression();
+
+    [[nodiscard]]
+    std::u8string_view get_name() const
+    {
+        return m_name;
+    }
+
+    [[nodiscard]]
+    const File_Source_Span& get_name_span() const
+    {
+        return m_name_span;
+    }
+
+    [[nodiscard]]
+    std::span<const Parameter> get_parameters() const
+    {
+        return m_parameters;
+    }
+
+    [[nodiscard]]
+    const Expression& get_body() const
+    {
+        return *m_body;
+    }
+
+    [[nodiscard]]
+    const File_Source_Span& get_source_span() const
+    {
+        return m_source_span;
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_source() const
+    {
+        return m_source;
+    }
+};
+
+static_assert(std::is_copy_constructible_v<Function_Expression>);
+static_assert(std::is_move_constructible_v<Function_Expression>);
+static_assert(std::is_copy_assignable_v<Function_Expression>);
+static_assert(std::is_move_assignable_v<Function_Expression>);
+
+using Expression_Variant = std::variant<
+    Directive,
+    Primary,
+    Unary_Expression,
+    Binary_Expression,
+    Let_Expression,
+    Function_Expression>;
 
 /// @brief Represents an *expression* or *expression-splice*.
 struct Expression : Expression_Variant {
@@ -763,6 +866,21 @@ public:
         : Expression_Variant { std::move(value) }
         , m_source_span { std::get<Let_Expression>(*this).get_source_span() }
         , m_source { std::get<Let_Expression>(*this).get_source() }
+    {
+    }
+
+    [[nodiscard]]
+    Expression(const Function_Expression& value)
+        : Expression_Variant { value }
+        , m_source_span { value.get_source_span() }
+        , m_source { value.get_source() }
+    {
+    }
+    [[nodiscard]]
+    Expression(Function_Expression&& value)
+        : Expression_Variant { std::move(value) }
+        , m_source_span { std::get<Function_Expression>(*this).get_source_span() }
+        , m_source { std::get<Function_Expression>(*this).get_source() }
     {
     }
 
@@ -861,13 +979,30 @@ public:
     }
 
     [[nodiscard]]
+    bool is_fun() const
+    {
+        return std::holds_alternative<ast::Function_Expression>(*this);
+    }
+    [[nodiscard]]
+    const ast::Function_Expression& as_fun() const
+    {
+        return std::get<ast::Function_Expression>(*this);
+    }
+    [[nodiscard]]
+    const ast::Function_Expression* try_as_fun() const
+    {
+        return std::get_if<ast::Function_Expression>(this);
+    }
+
+    [[nodiscard]]
     bool is_value() const noexcept
     {
         return is_directive() //
             || (is_primary() && as_primary().is_value())
             || (is_unary() && as_unary().get_operand().is_value())
             || (is_binary() && as_binary().get_lhs().is_value() && as_binary().get_rhs().is_value())
-            || (is_let() && as_let().get_value().is_value());
+            || (is_let() && as_let().get_value().is_value())
+            || (is_fun() && as_fun().get_body().is_value());
     }
 
     [[nodiscard]]
@@ -1115,6 +1250,13 @@ inline Let_Expression::Let_Expression(Let_Expression&&) noexcept = default;
 inline Let_Expression& Let_Expression::operator=(const Let_Expression&) = default;
 inline Let_Expression& Let_Expression::operator=(Let_Expression&&) noexcept = default;
 inline Let_Expression::~Let_Expression() = default;
+
+inline Function_Expression::Function_Expression(const Function_Expression&) = default;
+inline Function_Expression::Function_Expression(Function_Expression&&) noexcept = default;
+inline Function_Expression& Function_Expression::operator=(const Function_Expression&) = default;
+inline Function_Expression& Function_Expression::operator=(Function_Expression&&) noexcept
+    = default;
+inline Function_Expression::~Function_Expression() = default;
 
 inline Group_Member::Group_Member(Group_Member&&) noexcept = default;
 inline Group_Member::Group_Member(const Group_Member&) = default;

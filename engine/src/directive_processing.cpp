@@ -283,6 +283,9 @@ const Directive_Behavior* Context::find_directive(std::u8string_view name)
     if (const Directive_Behavior* const macro = find_macro(name)) {
         return macro;
     }
+    if (const Directive_Behavior* const function = find_function(name)) {
+        return function;
+    }
     return m_builtin_name_resolver(name);
 }
 
@@ -303,6 +306,23 @@ bool Context::emplace_macro(
     std::pmr::u8string decl_str { macro_source, memory };
     const auto [_, success] = m_macros.try_emplace(
         std::move(name), std::move(body), std::move(name_copy), std::move(decl_str)
+    );
+    return success;
+}
+
+bool Context::emplace_function(
+    std::pmr::u8string&& name,
+    Small_Vector<ast::Parameter, 16>&& parameters,
+    ast::Expression&& body,
+    const std::u8string_view function_source
+)
+{
+    std::pmr::memory_resource* const memory = m_functions.get_allocator().resource();
+    std::pmr::u8string name_copy { name, memory };
+    std::pmr::u8string decl_str { function_source, memory };
+    const auto [_, success] = m_functions.try_emplace(
+        std::move(name), std::move(parameters), std::move(body), std::move(name_copy),
+        std::move(decl_str)
     );
     return success;
 }
@@ -439,7 +459,7 @@ Processing_Status splice_primary(
         return Processing_Status::ok;
     }
     case ast::Primary_Kind::id_expression: {
-        const Value* const var = context.get_variable(primary.get_source());
+        const Value* const var = context.get_variable_with_bindings(primary.get_source());
         if (!var) {
             context.try_error(
                 diagnostic::id_lookup, primary.get_source_span(),
@@ -668,6 +688,17 @@ Processing_Status splice_expression_to_plaintext(
 }
 
 [[nodiscard]]
+Processing_Status
+Function_Definition::splice(Content_Policy& out, const Invocation& call, Context& context) const
+{
+    const auto result = evaluate(call, context);
+    if (!result) {
+        return result.error();
+    }
+    return splice_value(out, *result, call.directive.get_source_span(), context);
+}
+
+[[nodiscard]]
 Result<Value, Processing_Status>
 evaluate_expression(const ast::Expression& value, Frame_Index frame, Context& context)
 {
@@ -817,6 +848,102 @@ evaluate(const ast::Let_Expression& expression, const Frame_Index frame, Context
         Builtin_Operation_Kind::let_dynamic, lhs, *rhs_result, expression.get_source_span(),
         expression.get_source_span(), context
     );
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+evaluate(const ast::Function_Expression& expression, const Frame_Index, Context& context)
+{
+    const std::u8string_view name = expression.get_name();
+    const std::u8string_view source = expression.get_source();
+
+    // The parser already ensures the function name is a valid identifier.
+    COWEL_ASSERT(!name.empty());
+    COWEL_ASSERT(is_identifier(name));
+
+    // Check for duplicates.
+    if (context.find_macro(name) || context.find_alias(name) || context.find_function(name)) {
+        context.try_fatal_f(
+            diagnostic::function_duplicate, expression.get_name_span(),
+            u8"The name \"{}\" is already defined as a function, macro, or alias. "
+            u8"Redefinitions or duplicate definitions are not allowed."sv,
+            name
+        );
+        return Processing_Status::fatal;
+    }
+
+    Small_Vector<ast::Parameter, 16> params;
+    for (const ast::Parameter& p : expression.get_parameters()) {
+        // Check for duplicate parameter names.
+        for (const ast::Parameter& existing : params) {
+            if (existing.get_name() == p.get_name()) {
+                context.try_error_f(
+                    diagnostic::function_duplicate_parameter, p.get_name_span(),
+                    u8"The parameter name \"{}\" appears more than once in the "
+                    u8"parameter list of function \"{}\". "
+                    u8"Parameter names must be unique."sv,
+                    p.get_name(), name
+                );
+                return Processing_Status::error;
+            }
+        }
+        params.push_back(p);
+    }
+    const bool success = context.emplace_function(
+        std::pmr::u8string { name, context.get_transient_memory() }, std::move(params),
+        ast::Expression { expression.get_body() }, source
+    );
+    COWEL_ASSERT(success);
+
+    return Value::unit;
+}
+
+[[nodiscard]]
+Result<Value, Processing_Status>
+Function_Definition::evaluate(const Invocation& call, Context& context) const
+{
+    const std::span<const ast::Parameter> function_params = m_parameters;
+
+    // Build per-parameter matchers, each accepting any type.
+    // Reserve capacity to keep references from Parameter to Value_Matcher stable.
+    const std::size_t param_count = function_params.size();
+    Small_Vector<Value_Of_Type_Matcher, 16> matchers;
+    Small_Vector<Parameter, 16> params;
+    Small_Vector<Parameter*, 16> param_ptrs;
+    matchers.reserve(param_count);
+    params.reserve(param_count);
+
+    for (const ast::Parameter& ast_param : function_params) {
+        matchers.emplace_back(Type::any);
+        params.emplace_back(ast_param.get_name(), Optionality::mandatory, matchers.back());
+        param_ptrs.push_back(&params.back());
+    }
+
+    // Match call arguments against parameters.
+    const Processing_Status match_status = match_call(param_ptrs, call, context);
+    if (match_status != Processing_Status::ok) {
+        return match_status;
+    }
+
+    // Build the binding map from matched parameters.
+    Context::Function_Binding_Chain bindings;
+    bindings.bindings = Context::Function_Binding_Map { context.get_transient_memory() };
+    for (std::size_t i = 0; i < param_ptrs.size(); ++i) {
+        if (matchers[i].was_matched()) {
+            bindings.bindings.emplace_back(
+                std::pmr::u8string { param_ptrs[i]->get_name(), context.get_transient_memory() },
+                matchers[i].get()
+            );
+        }
+    }
+
+    // Evaluate the body with parameter bindings in scope.
+    bindings.parent = context.get_function_bindings();
+    context.set_function_bindings(&bindings);
+    const auto result = evaluate_expression(m_body, call.call_frame, context);
+    context.set_function_bindings(bindings.parent);
+
+    return result;
 }
 
 Result<Value, Processing_Status> evaluate_unary(
@@ -1030,7 +1157,7 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         return Value::static_string(value.get_source(), value.get_string_kind());
     }
     case ast::Primary_Kind::id_expression: {
-        const Value* const var = context.get_variable(value.get_source());
+        const Value* const var = context.get_variable_with_bindings(value.get_source());
         if (!var) {
             context.try_error(
                 diagnostic::id_lookup, value.get_source_span(),

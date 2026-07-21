@@ -1,0 +1,9 @@
+\test_input{
+\ let g = 100
+\ fun get_g() = g
+\get_g()
+}
+
+\test_output{
+100
+}

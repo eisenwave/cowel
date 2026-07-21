@@ -207,6 +207,14 @@ inline constexpr std::u8string_view macro_name_invalid = u8"macro.name.invalid";
 /// an attempt was made to define a macro which already exists.
 inline constexpr std::u8string_view macro_duplicate = u8"macro.duplicate";
 
+/// @brief In a function-expression `fun name(params) = body`,
+/// an attempt was made to define a function with a name that already exists.
+inline constexpr std::u8string_view function_duplicate = u8"function.duplicate";
+/// @brief In a function-expression `fun name(params) = body`,
+/// a parameter name appears more than once in the parameter list.
+inline constexpr std::u8string_view function_duplicate_parameter //
+    = u8"function.duplicate_parameter";
+
 /// @brief In `\cowel_put`,
 /// the target name is invalid.
 inline constexpr std::u8string_view put_invalid = u8"put.invalid";

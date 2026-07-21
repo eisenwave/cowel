@@ -1,0 +1,68 @@
+{
+  "description": "Test fun keyword highlighting in expressions and as plain text",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 2,
+      "expected": "keyword.other.cowel",
+      "description": "fun keyword in expression-line-splice has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 6,
+      "expected": "entity.name.function.cowel",
+      "description": "Function name f in expression-line-splice has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 7,
+      "expected": "punctuation.definition.parameters.begin.cowel",
+      "description": "Opening paren of parameter list has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 10,
+      "expected": "variable.other.cowel",
+      "description": "Parameter name x has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 11,
+      "expected": "punctuation.definition.parameters.end.cowel",
+      "description": "Closing paren of parameter list has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 17,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "Multiplication operator * has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 11,
+      "expected": "punctuation.separator.comma.cowel",
+      "description": "Comma between parameters has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 2,
+      "expected": "keyword.other.cowel",
+      "description": "fun keyword in expression-splice has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 0,
+      "expected": "source.cowel",
+      "description": "fun as document text does not get keyword highlighting"
+    }
+  ]
+}

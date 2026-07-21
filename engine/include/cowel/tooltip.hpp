@@ -14,6 +14,7 @@ enum struct Tooltip_Kind : Default_Underlying {
     escape,
     builtin_directive,
     macro,
+    function,
 };
 
 struct Tooltip_Article {
@@ -53,6 +54,7 @@ constexpr std::u8string_view tooltip_kind_title(const Tooltip_Kind kind)
     case named_escape: return u8"Named escape";
     case escape: return u8"Escape";
     case macro: return u8"Macro";
+    case function: return u8"Function";
     default: return u8"Directive";
     }
 }

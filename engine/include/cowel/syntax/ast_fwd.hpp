@@ -11,6 +11,7 @@ struct Primary;
 struct Unary_Expression;
 struct Binary_Expression;
 struct Let_Expression;
+struct Parameter;
 
 } // namespace cowel::ast
 

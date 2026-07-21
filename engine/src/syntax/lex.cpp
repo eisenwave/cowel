@@ -78,6 +78,7 @@ std::u8string_view token_kind_source(const Token_Kind kind)
     case greater_than: return u8">"sv;
     case greater_equal: return u8">="sv;
     case false_: return u8"false"sv;
+    case fun: return u8"fun"sv;
     case infinity: return u8"infinity"sv;
     case let: return u8"let"sv;
     case null: return u8"null"sv;
@@ -821,6 +822,11 @@ private:
         }
         if (match == u8"let"sv) {
             emit(Token_Kind::let, length);
+            advance_by(length);
+            return true;
+        }
+        if (match == u8"fun"sv) {
+            emit(Token_Kind::fun, length);
             advance_by(length);
             return true;
         }

@@ -1,0 +1,10 @@
+\test_input{
+\ fun sub(a, b) = a - b
+\sub(a = 10, b = 3)
+\sub(b = 3, a = 10)
+}
+
+\test_output{
+7
+7
+}

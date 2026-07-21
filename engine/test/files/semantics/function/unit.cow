@@ -1,0 +1,8 @@
+\test_input{
+\ fun nothing() = unit
+\nothing
+}
+
+\test_output{
+
+}
