@@ -5,6 +5,7 @@
 ### Engine
 
 - Added `cowel_str_at` directive for accessing a code point by index (#417)
+- Added string concatenation for binary `+` with `str` operands
 - Added *directive-line-splice* syntax like `\ 1 + 2`.
   This is evaluated the same as `\(1 + 2)`, but is more syntactically lightweight,
   and conveniently consumes the trailing newline as well (#396).
