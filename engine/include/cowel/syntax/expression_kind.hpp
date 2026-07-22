@@ -130,6 +130,7 @@ binary_expression_kind_comparison_kind(const Binary_Expression_Kind kind)
     F(plus_dynamic)                                                                                \
     F(plus_int_int)                                                                                \
     F(plus_float_float)                                                                            \
+    F(plus_str_str)                                                                                \
     F(minus_dynamic)                                                                               \
     F(minus_int_int)                                                                               \
     F(minus_float_float)                                                                           \

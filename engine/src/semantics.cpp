@@ -648,6 +648,7 @@ Result<Builtin_Operation_Kind, Processing_Status> check_dynamically_typed_operat
     case ge_str_str:
     case plus_int_int:
     case plus_float_float:
+    case plus_str_str:
     case minus_int_int:
     case minus_float_float:
     case multiply_int_int:
