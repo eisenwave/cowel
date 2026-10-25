@@ -188,6 +188,8 @@ and returns a value when evaluated.
 \codeblock("ebnf"){
 primary-expression
   = parenthesized-expression
+  | let-expression
+  | function-expression
   | UNIT-TOKEN
   | NULL-TOKEN
   | bool-literal
@@ -234,14 +236,17 @@ Variables are introduced using \cowdoc_dir{cowel_var_let} and \cowdoc_dir{cowel_
 
 \codeblock("ebnf"){
 directive-call-expression
-  = identifier, group, [ block ]
-  | identifier, block;
+  = identifier, group, { block }
+  | identifier, block, { block };
 }
 
 A \gterm{directive-call-expression} invokes a directive
 whose name is the given \gterm{identifier}.
 If no such directive exists,
 an error is raised.
+
+After an optional \gterm{group},
+any following \gterm{block}s form an ordered sequence of block arguments.
 
 \Bex{
 COWEL markup:

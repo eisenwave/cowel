@@ -1,0 +1,38 @@
+\test_input{
+\cowel_macro("blocks"){\cowel_put(block=0)\cowel_put(block=1)}\
+\blocks{A}{B}
+
+\cowel_macro("selectors"){\cowel_put(pos=0)\cowel_put(name="named")}\
+\selectors("Pos", named = "Name")
+
+\cowel_macro("selector_else"){\
+\cowel_put(block=1, else="BlockElse")
+\cowel_put(pos=1, else="PosElse")
+\cowel_put(name="missing", else="NameElse")}\
+\selector_else{Only}
+
+\cowel_macro("block_conflict"){\cowel_put(block=0){ignored}}\
+\test_expect_error("put.invalid"){\block_conflict{A}}
+
+\cowel_macro("selector_conflict"){\cowel_put(pos=0, name="named")}\
+\test_expect_error("put.invalid"){\selector_conflict("Pos", named = "Name")}
+
+\cowel_macro("block_range"){\cowel_put(block=5)}\
+\test_expect_error("put.range"){\block_range{A}}
+}
+
+\test_output{
+AB
+
+PosName
+
+BlockElse
+PosElse
+NameElse
+
+<error->\cowel_put(block=0){ignored}</error->
+
+<error->\cowel_put(pos=0, name="named")</error->
+
+<error->\cowel_put(block=5)</error->
+}

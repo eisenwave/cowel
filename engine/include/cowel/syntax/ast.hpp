@@ -394,7 +394,7 @@ private:
     bool m_has_ellipsis = false;
 
     std::optional<Primary> m_arguments;
-    std::optional<Primary> m_content;
+    Small_Vector<Primary, 1> m_block_arguments;
     mutable bool m_symbolized = false;
 
 public:
@@ -404,7 +404,7 @@ public:
         std::u8string_view source,
         std::u8string_view name,
         std::optional<Primary>&& args,
-        std::optional<Primary>&& content
+        Small_Vector<Primary, 1>&& block_arguments
     );
 
     [[nodiscard]]
@@ -470,18 +470,10 @@ public:
     std::span<const ast::Group_Member> get_argument_span() const;
 
     [[nodiscard]]
-    Primary* get_content()
+    std::span<const Primary> get_block_arguments() const
     {
-        return m_content ? &*m_content : nullptr;
+        return m_block_arguments;
     }
-    [[nodiscard]]
-    const Primary* get_content() const
-    {
-        return m_content ? &*m_content : nullptr;
-    }
-
-    [[nodiscard]]
-    std::span<const ast::Markup_Element> get_content_span() const;
 
     [[nodiscard]]
     bool is_symbolized() const
@@ -1291,14 +1283,6 @@ inline std::span<const ast::Group_Member> Directive::get_argument_span() const
     return {};
 }
 
-[[nodiscard]]
-inline std::span<const ast::Markup_Element> Directive::get_content_span() const
-{
-    if (m_content) {
-        return m_content->get_elements();
-    }
-    return {};
-}
 // NOLINTEND(readability-redundant-inline-specifier)
 
 } // namespace cowel::ast

@@ -117,10 +117,12 @@ The usual argument matching is performed as follows:
 
 \ol{
   \li{
-    If a block argument is provided,
-    that argument matches the last parameter of the directive.
+    Block arguments match the final parameters of the directive in order.
+    That is, rather than matching parameters starting from the first parameter,
+    a single block argument matches the final parameter,
+    two block arguments match the final two parameters, etc.
     \Bex{
-    The syntax \cowdoc_c{\\d("a", "b"){xzy}} is equivalent to \cowdoc_c{\\d("a", "b", {xzy})}.
+    The syntax \cowdoc_c{\\d("a", "b"){x}{y}} supplies two final block arguments.
     }
   }
   \li{

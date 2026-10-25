@@ -739,28 +739,40 @@ Processing_Status match_call(
 
     Small_Vector<int, 32> argument_indices_by_parameter(parameters.size(), -1);
 
-    if (call.content) {
+    if (call.block_arguments.size() > parameters.size()) {
+        on_fail(
+            call.block_arguments.front().get_source_span(),
+            u8"Block argument does not match any parameter."sv, context
+        );
+        return Processing_Status::error;
+    }
+
+    const std::size_t block_parameter_offset = parameters.size() - call.block_arguments.size();
+    for (std::size_t block_index = 0; block_index < call.block_arguments.size(); ++block_index) {
+        const std::size_t parameter_index = block_parameter_offset + block_index;
+        const ast::Primary& block = call.block_arguments[block_index];
         if (parameters.empty()) {
             on_fail(
-                call.content->get_source_span(), //
+                block.get_source_span(), //
                 u8"Block argument does not match any parameter."sv, //
                 context
             );
             return Processing_Status::error;
         }
-        const auto arg = Argument::block(*call.content);
+        const auto arg = Argument::block(block);
         const Match_Fail_Options fail_options {
             .emit = on_fail,
             .status = on_fail_status,
-            .location = call.content->get_source_span(),
+            .location = block.get_source_span(),
         };
-        const Processing_Status block_status = parameters.back()->get_value_matcher().match_value(
-            arg, call.content_frame, context, fail_options
-        );
+        const Processing_Status block_status
+            = parameters[parameter_index]->get_value_matcher().match_value(
+                arg, call.content_frame, context, fail_options
+            );
         if (block_status != Processing_Status::ok) {
             return block_status;
         }
-        argument_indices_by_parameter.back() = std::numeric_limits<int>::max();
+        argument_indices_by_parameter[parameter_index] = std::numeric_limits<int>::max();
     }
 
     Match_Call match_call {

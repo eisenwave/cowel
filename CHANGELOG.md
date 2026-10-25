@@ -4,6 +4,9 @@
 
 ### Engine
 
+- Added ability to provide multiple block arguments as in `\d{}{}` instead of just one.
+  - This is a breaking change and alters the meaning of existing uses of `\d{}{}`;
+    previously, the second pair of braces was plain text.
 - Added `cowel_str_at` directive for accessing a code point by index (#417)
 - Added string concatenation for binary `+` with `str` operands
 - Added *directive-line-splice* syntax like `\ 1 + 2`.

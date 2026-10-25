@@ -1,8 +1,10 @@
-push_document 4
+push_document 6
+
 push_expression_splice
 decimal_int
 pop_expression_splice
 text
+
 push_directive_splice
 push_group 1
 push_positional_member
@@ -22,4 +24,20 @@ pop_expression_splice
 pop_block
 pop_directive_splice
 text
+
+push_expression_splice
+push_expr_directive_call
+push_block 1
+text
+pop_block
+push_block 1
+text
+pop_block
+push_block 1
+text
+pop_block
+pop_expr_directive_call
+pop_expression_splice
+text
+
 pop_document

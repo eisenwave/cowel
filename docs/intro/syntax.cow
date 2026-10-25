@@ -26,7 +26,7 @@ built on top of only a few \dfn{markup elements}:
     \cowdoc_c{\\* block comments *\\}
   }
   \li{
-    \cowdoc_c{\\directive_splices("positional", "args",named_args = 0){and content}}
+    \cowdoc_c{\\directive_splices("positional", "args",named_args = 0){block 1}{block 2}}
   }
   \li{
     Expression splices, such as
@@ -665,8 +665,8 @@ Every directive has three parts:
     group provides additional inputs to the directive.
   }
   \li{
-    An optional \cowdoc_c{\cowel_highlight_phantom{\\d}{block of content}}
-    provides a "main input" to a directive.
+    An optional sequence of \cowdoc_c{\cowel_highlight_phantom{\\d}\**\{block}}
+    arguments provides additional inputs to the directive.
   }
 }
 
@@ -674,7 +674,7 @@ In EBNF grammar, a \gterm{directive-splice} is constructed as follows:
 
 \codeblock("ebnf"){
 directive-splice
-  = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], [ block ];
+  = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], { block };
 DIRECTIVE-SPLICE-NAME-TOKEN
   = "\", IDENTIFIER-TOKEN;
 }
@@ -892,9 +892,7 @@ Generated HTML:
 }
 
 \Bnote{
-Only one such block of content can be provided, unlike in TeX,
-which has a similar syntax,
-but permits multiple blocks. Each block is separated by a pair of braces.
+Multiple block arguments can be provided.
 }
 
 \h3{Expression splices}

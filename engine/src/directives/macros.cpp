@@ -137,9 +137,9 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
     case Processing_Status::fatal: return match_status;
     case Processing_Status::error:
     case Processing_Status::error_brk: {
-        COWEL_ASSERT(call.content);
+        COWEL_ASSERT(call.has_block_arguments());
         context.try_fatal(
-            diagnostic::alias_name_invalid, call.content->get_source_span(),
+            diagnostic::alias_name_invalid, call.get_block_arguments_source_span(),
             u8"Fatal error because generation of an alias failed."sv
         );
         return Processing_Status::fatal;
@@ -201,7 +201,7 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
         }
         const bool success = context.emplace_macro(
             std::pmr::u8string { alias_name, context.get_transient_memory() },
-            call.get_content_span(), call.directive.get_source()
+            call.block_arguments.front().get_elements(), call.directive.get_source()
         );
         COWEL_ASSERT(success);
     }
@@ -227,21 +227,73 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
 
     Lazy_Value_Of_Type_Matcher else_matcher { else_type };
     Parameter else_param { u8"else"sv, Optionality::optional, else_matcher };
+    Integer_Matcher block_index_matcher;
+    Parameter block_index_param { u8"block"sv, Optionality::optional, block_index_matcher };
+    Integer_Matcher positional_index_matcher;
+    Parameter positional_index_param { u8"pos"sv, Optionality::optional, positional_index_matcher };
+    String_Matcher name_matcher { context.get_transient_memory() };
+    Parameter name_param { u8"name"sv, Optionality::optional, name_matcher };
     Block_Matcher content_matcher;
     Parameter content_param { u8"content"sv, Optionality::optional, content_matcher };
-    Parameter* const parameters[] { &else_param, &content_param };
+    Parameter* const parameters[] {
+        &else_param, &block_index_param, &positional_index_param, &name_param, &content_param,
+    };
 
     const auto match_status = match_call(parameters, call, context);
     if (match_status != Processing_Status::ok) {
         return match_status;
     }
 
+    const int selector_count = //
+        int(block_index_matcher.was_matched()) + //
+        int(positional_index_matcher.was_matched()) + //
+        int(name_matcher.was_matched());
+    if (selector_count > 1) {
+        context.try_error(
+            diagnostic::put_invalid, call.get_arguments_source_span(),
+            u8"Only one of the 'block', 'pos', or 'name' arguments may be provided to \\cowel_put."sv
+        );
+        return Processing_Status::error;
+    }
+    if (selector_count != 0 && content_matcher.was_matched()) {
+        context.try_error(
+            diagnostic::put_invalid, call.get_arguments_source_span(),
+            u8"A 'block', 'pos', or 'name' argument cannot be combined with a block argument."sv
+        );
+        return Processing_Status::error;
+    }
+
     Call_Stack& stack = context.get_call_stack();
     const Invocation& target_invocation = stack[call.content_frame].invocation;
 
+    const auto get_index = [](const Integer_Matcher& matcher) -> std::optional<std::size_t> {
+        const auto [value, lossy] = matcher.get().as_i64();
+        if (lossy || value < 0) {
+            return {};
+        }
+        return std::size_t(value);
+    };
+
+    const bool has_else = else_matcher.was_matched();
+    const auto get_block_argument
+        = [&](const std::size_t index) -> Result<std::optional<Argument>, Processing_Status> {
+        if (index < target_invocation.block_arguments.size()) {
+            return std::optional<Argument> {
+                Argument::block(target_invocation.block_arguments[index])
+            };
+        }
+        if (!has_else) {
+            context.try_error(
+                diagnostic::put_out_of_range, call.get_arguments_source_span(),
+                u8"The requested block argument index is out of range."sv
+            );
+        }
+        return std::optional<Argument> {};
+    };
+
     // Simple case like \cowel_put where we expand the given contents.
-    if (!content_matcher.was_matched()) {
-        if (!target_invocation.content) {
+    if (selector_count == 0 && !content_matcher.was_matched()) {
+        if (target_invocation.block_arguments.empty()) {
             context.try_error(
                 diagnostic::put_invalid, call.directive.get_source_span(),
                 u8"\\cowel_put attempted to expand a block argument, but none was provided. "
@@ -249,27 +301,69 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
             );
             return Processing_Status::error;
         }
-        return Argument::block(*target_invocation.content);
+        return Argument::block(target_invocation.block_arguments.front());
     }
 
-    const bool has_else = else_matcher.was_matched();
+    if (block_index_matcher.was_matched()) {
+        const std::optional<std::size_t> index = get_index(block_index_matcher);
+        if (!index) {
+            context.try_error(
+                diagnostic::put_invalid, block_index_matcher.get_location(),
+                u8"The 'block' argument must be a non-negative integer."sv
+            );
+            return Processing_Status::error;
+        }
+        const Result<std::optional<Argument>, Processing_Status> result
+            = get_block_argument(*index);
+        if (!result) {
+            return result.error();
+        }
+        if (!*result) {
+            if (has_else) {
+                return else_matcher.get();
+            }
+            return Processing_Status::error;
+        }
+        return **result;
+    }
 
     std::pmr::vector<char8_t> target_text { context.get_transient_memory() };
-    const Processing_Status target_status
-        = splice_to_plaintext(target_text, call.get_content_span(), call.content_frame, context);
-    if (target_status != Processing_Status::ok) {
-        return target_status;
-    }
-    const auto target_string = as_u8string_view(target_text);
+    std::u8string_view target_string;
+    std::optional<std::size_t> needle_index;
 
-    // Simple case like \put where we expand the given contents.
-    if (target_string.empty()) {
-        // FIXME: error if need be
-        COWEL_ASSERT(target_invocation.content);
-        return Argument::block(*target_invocation.content);
+    if (positional_index_matcher.was_matched()) {
+        const std::optional<std::size_t> index = get_index(positional_index_matcher);
+        if (!index) {
+            context.try_error(
+                diagnostic::put_invalid, positional_index_matcher.get_location(),
+                u8"The 'pos' argument must be a non-negative integer."sv
+            );
+            return Processing_Status::error;
+        }
+        needle_index = index;
+    }
+    else if (name_matcher.was_matched()) {
+        target_string = name_matcher.get();
+    }
+    else {
+        const Processing_Status target_status = splice_to_plaintext(
+            target_text, call.block_arguments.front().get_elements(), call.content_frame, context
+        );
+        if (target_status != Processing_Status::ok) {
+            return target_status;
+        }
+        target_string = as_u8string_view(target_text);
+
+        // Simple case like \put where we expand the given contents.
+        if (target_string.empty()) {
+            // FIXME: error if need be
+            COWEL_ASSERT(target_invocation.has_block_arguments());
+            return Argument::block(target_invocation.block_arguments.front());
+        }
+
+        needle_index = from_characters<std::size_t>(target_string);
     }
 
-    const std::optional<std::size_t> needle_index = from_characters<std::size_t>(target_string);
     const auto arg_result = [&] -> Result<std::optional<Argument>, Processing_Status> {
         if (needle_index) {
             Put_Positional expand_positional {
@@ -280,20 +374,28 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
                 target_invocation.get_arguments_span(), target_invocation.content_frame
             );
             if (!maybe_result && !has_else) {
-                const Characters8 limit_chars = to_characters8(expand_positional.index);
-                context.try_error(
-                    diagnostic::put_out_of_range, call.directive.get_source_span(),
-                    joined_char_sequence(
-                        {
-                            u8"This \\put directive is invalid "
-                            u8"because the positional argument at index ["sv,
-                            target_string,
-                            u8"] was requested, but only "sv,
-                            limit_chars.as_string(),
-                            u8" were provided. "sv,
-                        }
-                    )
-                );
+                if (positional_index_matcher.was_matched()) {
+                    context.try_error(
+                        diagnostic::put_out_of_range, call.get_arguments_source_span(),
+                        u8"The requested positional argument index is out of range."sv
+                    );
+                }
+                else {
+                    const Characters8 limit_chars = to_characters8(expand_positional.index);
+                    context.try_error(
+                        diagnostic::put_out_of_range, call.directive.get_source_span(),
+                        joined_char_sequence(
+                            {
+                                u8"This \\put directive is invalid "
+                                u8"because the positional argument at index ["sv,
+                                target_string,
+                                u8"] was requested, but only "sv,
+                                limit_chars.as_string(),
+                                u8" were provided. "sv,
+                            }
+                        )
+                    );
+                }
             }
             return maybe_result;
         }

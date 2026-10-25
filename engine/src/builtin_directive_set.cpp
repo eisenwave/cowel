@@ -529,7 +529,13 @@ constexpr Put_Behavior cowel_put {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_put"sv,
-    .declaration = u8R"md(cowel_put(else?: lazy any, content?: block): any)md"sv,
+    .declaration = u8R"md(cowel_put(
+  else?: lazy any,
+  block?: int,
+  pos?: int,
+  name?: str,
+  content?: block,
+): any)md"sv,
     .description = u8R"md(In macro expansion, inserts supplied content or arguments.)md"sv,
     .example = u8R"md(If `m` is `cowel_macro("m"){\cowel_put{0}}`, then `\m("x")` emits `x`.)md"sv,
   },

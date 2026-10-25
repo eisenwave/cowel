@@ -270,20 +270,22 @@ Directive::Directive(
     std::u8string_view source,
     std::u8string_view name,
     std::optional<Primary>&& args,
-    std::optional<Primary>&& content
+    Small_Vector<Primary, 1>&& block_arguments
 )
     : m_source_span { source_span }
     , m_source { source }
     , m_name { name }
     , m_arguments { std::move(args) }
-    , m_content { std::move(content) }
+    , m_block_arguments { std::move(block_arguments) }
 {
     COWEL_ASSERT(m_source_span.length == m_source.length());
     COWEL_ASSERT(!m_name.empty());
     COWEL_ASSERT(!m_name.starts_with(u8'\\'));
     COWEL_ASSERT(m_name.length() <= source_span.length);
     COWEL_ASSERT(!m_arguments || m_arguments->get_kind() == Primary_Kind::group);
-    COWEL_ASSERT(!m_content || m_content->get_kind() == Primary_Kind::block);
+    for (const Primary& block : m_block_arguments) {
+        COWEL_ASSERT(block.get_kind() == Primary_Kind::block);
+    }
 
     // this needs to be late-initialized here because it is declared after m_arguments
     m_has_ellipsis
@@ -742,12 +744,10 @@ private:
         if (kind == Directive_Kind::call) {
             ignore_skips();
         }
-        auto block = [&] -> std::optional<ast::Primary> {
-            if (!eof() && peek_instruction().kind == CST_Instruction_Kind::push_block) {
-                return try_build_block();
-            }
-            return {};
-        }();
+        Small_Vector<ast::Primary, 1> block_arguments;
+        while (!eof() && peek_instruction().kind == CST_Instruction_Kind::push_block) {
+            block_arguments.push_back(try_build_block().value());
+        }
 
         const CST_Instruction pop_instruction = this->pop_instruction();
         COWEL_ASSERT(
@@ -775,7 +775,7 @@ private:
         const auto source_span = raw_name_span.with_length(source_length);
         const std::u8string_view source = extract(source_span);
 
-        return { source_span, source, name, std::move(arguments), std::move(block) };
+        return { source_span, source, name, std::move(arguments), std::move(block_arguments) };
     }
 
     [[nodiscard]]

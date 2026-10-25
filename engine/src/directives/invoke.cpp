@@ -59,7 +59,7 @@ Invoke_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
     }
 
     return splice_invocation(
-        out, call.directive, name_string, nullptr, call.content, call.content_frame, context
+        out, call.directive, name_string, nullptr, call.block_arguments, call.content_frame, context
     );
 }
 

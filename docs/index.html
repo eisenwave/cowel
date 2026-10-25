@@ -2042,7 +2042,7 @@ built on top of only a few <dfn>markup elements</dfn>:
     <code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt> block comments </h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt_dlim>\</h-></code>
   </li>
   <li>
-    <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_splices</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>positional</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>args</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>named_args</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->and content<h- data-h=sym_brac>}</h-></code>
+    <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_splices</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>positional</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>args</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>named_args</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->block 1<h- data-h=sym_brac>}</h->{block 2}</code>
   </li>
   <li>
     Expression splices, such as
@@ -2146,10 +2146,7 @@ a <g-term>DOCUMENT</g-term> is matched as follows:
 <h- data-h=name_nt_decl>BLOCK-COMMENT-CHAR</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>CHAR</h-> <h- data-h=sym_op>-</h-> <h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>*</h-><h- data-h=str_dlim>"</h-> <h- data-h=name_mac>? followed by "\" ?</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>DIRECTIVE-SPLICE</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>GROUP</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>BLOCK</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>BLOCK</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>GROUP</h-> <h- data-h=name_mac>? not followed by "{" ?</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-> <h- data-h=name_mac>? not followed by "(" or "{" ?</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>GROUP</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>BLOCK</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>DIRECTIVE-SPLICE-NAME-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>EXPRESSION-SPLICE</h->
@@ -2847,7 +2844,7 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>expression-splice</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>expression-line-splice</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>directive-splice</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>expression-splice</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>EXPRESSION-SPLICE-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>expression-line-splice</h->
@@ -2914,8 +2911,8 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>primary-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>directive-call-expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>directive-call-expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_sqr>]</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>block</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_brac>}</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>block</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>primary-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parenthesized-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>let-expression</h->
@@ -3025,15 +3022,15 @@ COWEL markup:
     group provides additional inputs to the directive.
   </li>
   <li>
-    An optional <code><h- data-h=sym_brac>{</h->block of content<h- data-h=sym_brac>}</h-></code>
-    provides a "main input" to a directive.
+    An optional sequence of <code><h- data-h=sym_brac>{</h->block<h- data-h=sym_brac>}</h-></code>
+    arguments provides additional inputs to the directive.
   </li>
 </ul>
 
 <p>In EBNF grammar, a <g-term>directive-splice</g-term> is constructed as follows:
 </p>
 <code-block><h- data-h=name_nt_decl>directive-splice</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIRECTIVE-SPLICE-NAME-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>group</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>DIRECTIVE-SPLICE-NAME-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h-></code-block>
 
@@ -3220,9 +3217,7 @@ COWEL markup:
 </example-block>
 
 <note-block><p><intro-></intro-> 
-Only one such block of content can be provided, unlike in TeX,
-which has a similar syntax,
-but permits multiple blocks. Each block is separated by a pair of braces.
+Multiple block arguments can be provided.
 </p></note-block>
 
 <h3 id=expression-splices><a class=para href=#expression-splices></a>4.4. Expression splices</h3>
@@ -3446,6 +3441,8 @@ and returns a value when evaluated.
 
 <code-block><h- data-h=name_nt_decl>primary-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parenthesized-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>let-expression</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>function-expression</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>UNIT-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>NULL-TOKEN</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>bool-literal</h->
@@ -3488,13 +3485,16 @@ an error is raised.
 <h3 id=directive-call-expression><a class=para href=#directive-call-expression></a>6.3. <g-term>directive-call-expression</g-term></h3>
 
 <code-block><h- data-h=name_nt_decl>directive-call-expression</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_sqr>]</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>block</h-><h- data-h=sym_punc>;</h-></code-block>
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>group</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_brac>}</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>block</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>block</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p>A <g-term>directive-call-expression</g-term> invokes a directive
 whose name is the given <g-term>identifier</g-term>.
 If no such directive exists,
 an error is raised.
+</p>
+<p>After an optional <g-term>group</g-term>,
+any following <g-term>block</g-term>s form an ordered sequence of block arguments.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
@@ -4418,10 +4418,12 @@ unless all positional arguments appear contiguously at the start of the argument
 </p>
 <ol>
   <li>
-    If a block argument is provided,
-    that argument matches the last parameter of the directive.
+    Block arguments match the final parameters of the directive in order.
+    That is, rather than matching parameters starting from the first parameter,
+    a single block argument matches the final parameter,
+    two block arguments match the final two parameters, etc.
     <example-block><p><intro-></intro-> 
-    The syntax <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>d</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->xzy<h- data-h=sym_brac>}</h-></code> is equivalent to <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>d</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_brac>{</h->xzy<h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h-></code>.
+    The syntax <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>d</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h->{y}</code> supplies two final block arguments.
     </p></example-block>
   </li>
   <li>
