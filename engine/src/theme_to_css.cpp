@@ -67,9 +67,45 @@ std::optional<ulight::Highlight_Type> highlight_type_by_long_string(std::u8strin
 
 namespace {
 
-bool decode_variant(std::pmr::vector<Style>& out, const json::Object& object)
+/// @brief Resolves a literal CSS value or a reference to a palette color (`"$..."`).
+/// Palette colors may reference other palette colors,
+/// so resolution recurses until it reaches a literal CSS value.
+/// @param palette The optional palette containing named colors.
+/// @param value The literal CSS value or `$name` reference to resolve.
+/// @param resolution_stack Palette names currently being resolved, used to detect cycles.
+std::optional<std::u8string_view> resolve_palette_reference(
+    const json::Object* const palette,
+    const std::u8string_view value,
+    std::pmr::vector<std::u8string_view>& resolution_stack
+)
+{
+    if (!value.starts_with(u8'$')) {
+        return value;
+    }
+    if (!palette) {
+        return {};
+    }
+
+    const std::u8string_view name = value.substr(1);
+    const json::String* const palette_value = palette->find_string(name);
+    if (!palette_value || std::ranges::contains(resolution_stack, name)) {
+        return {};
+    }
+
+    resolution_stack.push_back(name);
+    const auto result = resolve_palette_reference(palette, *palette_value, resolution_stack);
+    resolution_stack.pop_back();
+    return result;
+}
+
+bool decode_variant(
+    std::pmr::vector<Style>& out,
+    const json::Object& object,
+    const json::Object* palette
+)
 {
     std::pmr::vector<Property> properties { out.get_allocator() };
+    std::pmr::vector<std::u8string_view> resolution_stack { out.get_allocator() };
     for (const json::Member& member : object) {
         const std::optional<ulight::Highlight_Type> type
             = highlight_type_by_long_string(member.key);
@@ -78,14 +114,24 @@ bool decode_variant(std::pmr::vector<Style>& out, const json::Object& object)
         }
         properties.clear();
         if (const auto* const string = member.value.as_string()) {
-            properties.emplace_back(u8"color", *string);
+            const std::optional<std::u8string_view> color
+                = resolve_palette_reference(palette, *string, resolution_stack);
+            if (!color) {
+                return false;
+            }
+            properties.emplace_back(u8"color", *color);
             out.emplace_back(*type, properties);
             continue;
         }
         if (const auto* const object = member.value.as_object()) {
             for (const json::Member& style_member : *object) {
                 if (const auto* const str = style_member.value.as_string()) {
-                    properties.emplace_back(style_member.key, *str);
+                    const std::optional<std::u8string_view> value
+                        = resolve_palette_reference(palette, *str, resolution_stack);
+                    if (!value) {
+                        return false;
+                    }
+                    properties.emplace_back(style_member.key, *value);
                 }
                 else {
                     return false;
@@ -141,13 +187,20 @@ bool theme_to_css(
     std::pmr::vector<Style> light_styles;
     std::pmr::vector<Style> dark_styles;
 
+    const json::Value* const palette_value = root_object->find_value(u8"palette");
+    if (palette_value && !palette_value->as_object()) {
+        return false;
+    }
+    const json::Object* const palette = palette_value ? palette_value->as_object() : nullptr;
+
     const auto* const light = root_object->find_object(u8"light");
     const auto* const dark = root_object->find_object(u8"dark");
 
     if (!light || !dark) {
         return false;
     }
-    if (!decode_variant(light_styles, *light) || !decode_variant(dark_styles, *dark)) {
+    if (!decode_variant(light_styles, *light, palette)
+        || !decode_variant(dark_styles, *dark, palette)) {
         return false;
     }
 
