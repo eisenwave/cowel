@@ -12,7 +12,7 @@
   - Highlighting through `\cowel_highlight` is also provided.
 - Added *assignment-expression*s like `\ x = y` (#418).
 - Added *let-expression*s like `\ let x = y` for declaring new variables (#420).
-- Also updated µlight:
+- Also updated µlight (#426):
   - Added support for syntax highlighting themes that use palettes.
   - Improved the quality of highlighting.
   - Added highlighting for Java, YAML, and C#.
