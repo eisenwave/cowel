@@ -476,6 +476,7 @@ else()
         engine/test/src/test_parsing.cpp
         engine/test/src/test_regexp.cpp
         engine/test/src/test_small_vector.cpp
+        engine/test/src/test_theme_to_css.cpp
         engine/test/src/test_to_chars.cpp
         engine/test/src/test_typo.cpp
         engine/test/src/test_valid.cpp
