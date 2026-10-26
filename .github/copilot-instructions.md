@@ -299,3 +299,7 @@ CHANGELOG.md
   Use this for stream-driven token/CST dumps.
 - Treat this file as primary operating guidance;
   search only for missing details or when commands here no longer match repository reality.
+- Be cautious when using any JSON-based tooling such as MCPs;
+  since COWEL syntax relies heavily on backslashes, these need to be escaped in JSON strings.
+  Emitting tab characters via `"\t..."` in patches is a common mistake,
+  and can be detected by checking the resulting file for unintended tab characters.
