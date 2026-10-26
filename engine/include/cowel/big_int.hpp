@@ -5,6 +5,7 @@
 #include <compare>
 #include <cstddef>
 #include <limits>
+#include <optional>
 #include <string_view>
 
 #include "cowel/util/ascii_algorithm.hpp"
@@ -739,18 +740,31 @@ public:
 
     // TYPE CONVERSION =============================================================================
 
+    template <std::integral T>
+    [[nodiscard]]
+    constexpr Conversion_Result<T> as() const noexcept
+    {
+        constexpr int N = std::numeric_limits<T>::digits;
+        if constexpr (std::is_same_v<T, Int128>) {
+            return as_i128();
+        }
+        else {
+            static_assert(N <= 127, "Sorry, only i128 or narrower is supported.");
+            const auto [i128, i128_lossy] = as_i128();
+            return { .value = T(i128), .lossy = i128_lossy || T(i128) != i128 };
+        }
+    }
+
     [[nodiscard]]
     constexpr Conversion_Result<Int32> as_i32() const noexcept
     {
-        const auto [i128, i128_lossy] = as_i128();
-        return { .value = Int32(i128), .lossy = i128_lossy || Int32(i128) != i128 };
+        return as<Int32>();
     }
 
     [[nodiscard]]
     constexpr Conversion_Result<Int64> as_i64() const noexcept
     {
-        const auto [i128, i128_lossy] = as_i128();
-        return { .value = Int64(i128), .lossy = i128_lossy || Int64(i128) != i128 };
+        return as<Int64>();
     }
 
     [[nodiscard]]
@@ -761,6 +775,17 @@ public:
         }
         const bool lossy = cowel_big_int_trunc_i128(get_host_handle());
         return { .value = cowel_big_int_small_result, .lossy = lossy };
+    }
+
+    template <std::integral T>
+    [[nodiscard]]
+    constexpr std::optional<T> checked_as() const noexcept
+    {
+        const auto [value, lossy] = as<T>();
+        if (lossy) {
+            return {};
+        }
+        return value;
     }
 
     /// @brief Returns the value of this integer truncated to 32 bits.
