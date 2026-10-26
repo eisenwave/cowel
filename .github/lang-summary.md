@@ -23,21 +23,25 @@ This makes COWEL easy to nest foreign content in.
 - **Line comment** — `\: comment text` extends to end of line.
   The trailing newline is consumed, so it leaves no blank line.
 - **Block comment** — `\* ... *\` (non-nestable).
-- **Directive splice** — `\name(args){content}` (see next section).
+- **Directive splice** — `\name(args){block1}{block2}...` (see next section).
 - **Expression splice** — `\(expression)` evaluates an expression and inserts its text result.
 - **Expression line splice** — `\ expression` evaluates an expression on the next line and inserts its text result; the terminating newline is absorbed by the splice.
 
 ## Directives: the core abstraction
 
 ```
-\name(pos1, pos2, named=val){block content}
+\name(pos1, pos2, named=val){block1}{block2}...
 ```
 
-The **group** `(...)` holds arguments; the **block** `{...}` is syntactic sugar for
-the last parameter. Either or both may be omitted.
+The **group** `(...)` holds ordinary arguments;
+following **blocks** `{...}` are separate block arguments.
+Block arguments match the final parameters in order.
+For a directive with parameters `x`, `y`, and `z`,
+`\d{}{}` binds the two blocks to `y` and `z`, not to `x` and `y`.
+Either part may be omitted.
 
 Argument matching follows Kotlin-style rules:
-1. `{...}` matches the last parameter.
+1. Block arguments match final parameters in order.
 2. Positional args match parameters left to right.
 3. Named args (`name = value`) match by name and may follow positional args,
    but positional args may not follow named args.
@@ -115,7 +119,8 @@ All binary and prefix operators desugar to `cowel_*` builtins
 (e.g. numeric `a + b` ≡ `cowel_add(a, b)`).
 When both operands of `+` are `str`,
 `+` concatenates them.
-A directive call `name(args)` or `name{block}` is also a valid expression.
+A directive call `name(args){block1}{block2}...` or `name{block1}{block2}...`
+is also a valid expression.
 
 Values can be spliced into text using directives and expression-splices
 or expression-line-splices:

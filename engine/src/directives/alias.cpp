@@ -22,9 +22,9 @@ Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& c
     case Processing_Status::fatal: return match_status;
     case Processing_Status::error:
     case Processing_Status::error_brk: {
-        COWEL_ASSERT(call.content);
+        COWEL_ASSERT(call.has_block_arguments());
         context.try_fatal(
-            diagnostic::alias_name_invalid, call.content->get_source_span(),
+            diagnostic::alias_name_invalid, call.get_block_arguments_source_span(),
             u8"Fatal error because generation of an alias failed."sv
         );
         return Processing_Status::fatal;
@@ -75,10 +75,10 @@ Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& c
         );
         return Processing_Status::fatal;
     }
-    COWEL_ASSERT(call.content);
+    COWEL_ASSERT(call.has_block_arguments());
     if (!is_identifier(target_name)) {
         context.try_fatal(
-            diagnostic::alias_name_invalid, call.content->get_source_span(),
+            diagnostic::alias_name_invalid, call.get_block_arguments_source_span(),
             joined_char_sequence(
                 {
                     u8"The target name \""sv,
@@ -93,7 +93,7 @@ Processing_Status Alias_Behavior::do_evaluate(const Invocation& call, Context& c
     const Directive_Behavior* target_behavior = context.find_directive(target_name);
     if (!target_behavior) {
         context.try_fatal(
-            diagnostic::alias_name_invalid, call.content->get_source_span(),
+            diagnostic::alias_name_invalid, call.get_block_arguments_source_span(),
             joined_char_sequence(
                 {
                     u8"No existing directive with the name \""sv,

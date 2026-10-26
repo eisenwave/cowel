@@ -339,14 +339,22 @@ struct Node {
         return { .kind = Node_Kind::directive, .name_or_text = name };
     }
     [[nodiscard]]
-    static Node directive(std::u8string_view name, Node&& args, Node&& content)
+    static Node directive(std::u8string_view name, Node&& args, std::vector<Node>&& block_arguments)
     {
         COWEL_ASSERT(args.kind == Node_Kind::group);
-        COWEL_ASSERT(content.kind == Node_Kind::block);
+        for (const Node& block : block_arguments) {
+            COWEL_ASSERT(block.kind == Node_Kind::block);
+        }
+        std::vector<Node> children;
+        children.reserve(1 + block_arguments.size());
+        children.push_back(std::move(args));
+        for (Node& block : std::move(block_arguments)) {
+            children.push_back(std::move(block));
+        }
         return {
             .kind = Node_Kind::directive,
             .name_or_text = name,
-            .children = { std::move(args), std::move(content) },
+            .children = std::move(children),
         };
     }
     [[nodiscard]]
@@ -360,13 +368,18 @@ struct Node {
         };
     }
     [[nodiscard]]
-    static Node directive_with_content(std::u8string_view name, Node&& content)
+    static Node directive_with_block_arguments(
+        const std::u8string_view name,
+        std::vector<Node>&& block_arguments
+    )
     {
-        COWEL_ASSERT(content.kind == Node_Kind::block);
+        for (const Node& block : block_arguments) {
+            COWEL_ASSERT(block.kind == Node_Kind::block);
+        }
         return {
             .kind = Node_Kind::directive,
             .name_or_text = name,
-            .children = { std::move(content) },
+            .children = std::move(block_arguments),
         };
     }
 
@@ -552,22 +565,17 @@ struct Node {
     [[nodiscard]]
     static Node from(const ast::Directive& actual)
     {
+        std::vector<Node> block_arguments;
+        for (const ast::Primary& block : actual.get_block_arguments()) {
+            block_arguments.push_back(from(block));
+        }
         if (const ast::Primary* args = actual.get_arguments()) {
-            if (const ast::Primary* content = actual.get_content()) {
-                return directive(actual.get_name(), from(*args), from(*content));
-            }
-            else { // NOLINT(readability-else-after-return)
-                return directive_with_arguments(actual.get_name(), from(*args));
-            }
+            return directive(actual.get_name(), from(*args), std::move(block_arguments));
         }
-        else {
-            if (const ast::Primary* content = actual.get_content()) {
-                return directive_with_content(actual.get_name(), from(*content));
-            }
-            else { // NOLINT(readability-else-after-return)
-                return directive(actual.get_name());
-            }
+        if (!block_arguments.empty()) {
+            return directive_with_block_arguments(actual.get_name(), std::move(block_arguments));
         }
+        return directive(actual.get_name());
     }
 
     [[nodiscard]]
@@ -1368,7 +1376,18 @@ TEST(Parse_And_Build, expression_splice_contexts)
                         ),
                     }
                 ),
-                Node::block({ Node::expression_splice(Node::integer(u8"2")) })
+                { Node::block({ Node::expression_splice(Node::integer(u8"2")) }) }
+            ),
+            Node::text(u8"\n"),
+            Node::expression_splice(
+                Node::directive_with_block_arguments(
+                    u8"foo",
+                    {
+                        Node::block({ Node::text(u8"a") }),
+                        Node::block({ Node::text(u8"b") }),
+                        Node::block({ Node::text(u8"c") }),
+                    }
+                )
             ),
             Node::text(u8"\n"),
         },
@@ -1712,7 +1731,7 @@ TEST(Parse_And_Build, file_ends_in_brace)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const ast::Pmr_Vector<Node> expected {
-        { Node::directive_with_content(u8"d", Node::block({})) },
+        { Node::directive_with_block_arguments(u8"d", { Node::block({}) }) },
         &memory,
     };
 
@@ -1750,7 +1769,9 @@ TEST(Parse_And_Build, hello_code)
     static std::pmr::monotonic_buffer_resource memory;
     static const ast::Pmr_Vector<Node> expected {
         {
-            Node::directive_with_content(u8"c", Node::block({ Node::text(u8"/* awoo */") })),
+            Node::directive_with_block_arguments(
+                u8"c", { Node::block({ Node::text(u8"/* awoo */") }) }
+            ),
             Node::text(u8"\n"),
         },
         &memory,
@@ -1775,7 +1796,7 @@ TEST(Parse_And_Build, hello_directive)
                         Node::named(u8"x", { Node::integer(u8"0") }),
                     }
                 ),
-                Node::block({ Node::text(u8"test") })
+                { Node::block({ Node::text(u8"test") }) }
             ),
             Node::text(u8"\n"),
         },
@@ -1783,6 +1804,34 @@ TEST(Parse_And_Build, hello_directive)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"hello_directive.cow");
+}
+
+TEST(Parse_And_Build, directive_block_sequence)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive(
+                u8"d",
+                Node::group({ Node::positional({ Node::quoted_string({ Node::text(u8"x") }) }) }),
+                {
+                    Node::block({ Node::text(u8"a") }),
+                    Node::block({ Node::text(u8"b") }),
+                    Node::block({ Node::text(u8"c") }),
+                }
+            ),
+            Node::text(u8"\n"),
+            Node::directive(
+                u8"e",
+                Node::group({ Node::positional({ Node::quoted_string({ Node::text(u8"x") }) }) }),
+                { Node::block({ Node::text(u8"a") }) }
+            ),
+            Node::text(u8" {b}{c}"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"directive_block_sequence.cow");
 }
 
 TEST(Parse_And_Build, directive_as_argument)
@@ -1801,7 +1850,9 @@ TEST(Parse_And_Build, directive_as_argument)
             Node::directive_with_arguments(
                 u8"b"sv,
                 Node::group(
-                    { Node::positional({ Node::directive(u8"y", Node::group(), Node::block()) }) }
+                    { Node::positional(
+                        { Node::directive(u8"y", Node::group(), { Node::block() }) }
+                    ) }
                 )
             ),
             Node::text(u8"\n"),
@@ -1809,7 +1860,9 @@ TEST(Parse_And_Build, directive_as_argument)
             Node::directive_with_arguments(
                 u8"c"sv,
                 Node::group(
-                    { Node::positional({ Node::directive(u8"z", Node::group(), Node::block()) }) }
+                    { Node::positional(
+                        { Node::directive(u8"z", Node::group(), { Node::block() }) }
+                    ) }
                 )
             ),
             Node::text(u8"\n"),
@@ -1817,7 +1870,9 @@ TEST(Parse_And_Build, directive_as_argument)
             Node::directive_with_arguments(
                 u8"d"sv,
                 Node::group(
-                    { Node::positional({ Node::directive_with_content(u8"w", Node::block()) }) }
+                    { Node::positional(
+                        { Node::directive_with_block_arguments(u8"w", { Node::block() }) }
+                    ) }
                 )
             ),
             Node::text(u8"\n"),
@@ -1844,7 +1899,7 @@ TEST(Parse_And_Build, escape_numeric)
                         Node::positional({ Node::quoted_string({ Node::escape(u8"\\+00A0") }) }),
                     }
                 ),
-                Node::block({ Node::escape(u8"\\+00A0") })
+                { Node::block({ Node::escape(u8"\\+00A0") }) }
             ),
             Node::text(u8"\n"),
         },
@@ -1872,7 +1927,7 @@ TEST(Parse_And_Build, escape_named)
                         ),
                     }
                 ),
-                Node::block({ Node::escape(u8"\\'DIGIT ZERO'") })
+                { Node::block({ Node::escape(u8"\\'DIGIT ZERO'") }) }
             ),
             Node::text(u8"\n"),
         },

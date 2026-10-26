@@ -54,10 +54,7 @@ BLOCK-COMMENT-TOKEN
 BLOCK-COMMENT-CHAR
   = CHAR - ("*" ? followed by "\" ?);
 DIRECTIVE-SPLICE
-  = DIRECTIVE-SPLICE-NAME-TOKEN, GROUP, BLOCK
-  | DIRECTIVE-SPLICE-NAME-TOKEN, BLOCK
-  | DIRECTIVE-SPLICE-NAME-TOKEN, GROUP ? not followed by "{" ?
-  | DIRECTIVE-SPLICE-NAME-TOKEN ? not followed by "(" or "{" ?;
+  = DIRECTIVE-SPLICE-NAME-TOKEN, [ GROUP ], { BLOCK };
 DIRECTIVE-SPLICE-NAME-TOKEN
   = "\", IDENTIFIER-TOKEN;
 EXPRESSION-SPLICE
@@ -262,7 +259,7 @@ common-markup-element
   | expression-splice
   | expression-line-splice;
 directive-splice
-  = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], [ block ];
+  = DIRECTIVE-SPLICE-NAME-TOKEN, [ group ], { block };
 expression-splice
   = EXPRESSION-SPLICE-TOKEN, expression, PARENTHESIS-RIGHT-TOKEN;
 expression-line-splice
@@ -329,8 +326,8 @@ postfix-expression
   = primary-expression
   | directive-call-expression;
 directive-call-expression
-  = identifier, group, [ block ]
-  | identifier, block;
+  = identifier, group, { block }
+  | identifier, block, { block };
 primary-expression
   = parenthesized-expression
   | let-expression

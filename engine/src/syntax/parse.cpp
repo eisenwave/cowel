@@ -365,7 +365,7 @@ private:
         if (peek(Token_Kind::parenthesis_left)) {
             consume_group();
         }
-        if (peek(Token_Kind::brace_left)) {
+        while (peek(Token_Kind::brace_left)) {
             consume_block();
         }
         m_out.push_back({ CST_Instruction_Kind::pop_directive_splice });
@@ -1190,7 +1190,7 @@ private:
 
         consume_blank_sequence();
         bool has_block = false;
-        if (peek(Token_Kind::brace_left)) {
+        while (peek(Token_Kind::brace_left)) {
             has_block = true;
             consume_block();
         }

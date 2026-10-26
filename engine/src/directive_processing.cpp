@@ -715,7 +715,7 @@ evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
         .name = directive.get_name(),
         .directive = directive,
         .arguments = directive.get_arguments(),
-        .content = directive.get_content(),
+        .block_arguments = directive.get_block_arguments(),
         .content_frame = frame,
         .call_frame = {},
     };
@@ -1213,7 +1213,7 @@ Processing_Status splice_invocation( //
     const ast::Directive& directive,
     std::u8string_view name,
     const ast::Primary* args,
-    const ast::Primary* content,
+    const std::span<const ast::Primary> block_arguments,
     Frame_Index content_frame,
     Context& context
 )
@@ -1223,7 +1223,7 @@ Processing_Status splice_invocation( //
         .name = name,
         .directive = directive,
         .arguments = args,
-        .content = content,
+        .block_arguments = block_arguments,
         .content_frame = content_frame,
         .call_frame = {},
     };
@@ -1257,7 +1257,7 @@ Processing_Status splice_directive_invocation( //
 )
 {
     return splice_invocation(
-        out, d, d.get_name(), d.get_arguments(), d.get_content(), content_frame, context
+        out, d, d.get_name(), d.get_arguments(), d.get_block_arguments(), content_frame, context
     );
 }
 

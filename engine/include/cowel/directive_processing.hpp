@@ -49,7 +49,7 @@ Processing_Status splice_invocation(
     const ast::Directive& directive,
     std::u8string_view name,
     const ast::Primary* args,
-    const ast::Primary* content,
+    std::span<const ast::Primary> block_arguments,
     Frame_Index content_frame,
     Context& context
 );

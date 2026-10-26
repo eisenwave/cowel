@@ -21,9 +21,9 @@ struct Invocation {
     const ast::Directive& directive;
     /// @brief The arguments with which the directive is invoked.
     const ast::Primary* arguments;
-    /// @brief The content with which the directive is invoked.
-    const ast::Primary* content;
-    /// @brief The stack frame index of the content.
+    /// @brief The block arguments with which the directive is invoked.
+    std::span<const ast::Primary> block_arguments;
+    /// @brief The stack frame index of the block arguments.
     /// For root content, this is zero.
     /// All content in a macro definition (and arguments of directives within)
     /// have the same frame index as that invocation.
@@ -58,24 +58,26 @@ struct Invocation {
     }
 
     [[nodiscard]]
-    bool has_empty_content() const
+    bool has_block_arguments() const
     {
-        return !content || !content->has_elements();
+        return !block_arguments.empty();
     }
 
     [[nodiscard]]
-    std::span<const ast::Markup_Element> get_content_span() const
+    std::span<const ast::Primary> get_block_arguments() const
     {
-        if (content) {
-            return content->get_elements();
+        return block_arguments;
+    }
+
+    [[nodiscard]]
+    File_Source_Span get_block_arguments_source_span() const
+    {
+        if (block_arguments.empty()) {
+            return directive.get_source_span();
         }
-        return {};
-    }
-
-    [[nodiscard]]
-    File_Source_Span get_content_source_span() const
-    {
-        return content ? content->get_source_span() : directive.get_source_span();
+        const File_Source_Span first = block_arguments.front().get_source_span();
+        const File_Source_Span last = block_arguments.back().get_source_span();
+        return first.with_length(last.end() - first.begin);
     }
 };
 
@@ -96,7 +98,7 @@ inline Invocation make_invocation( //
         .name = d.get_name(),
         .directive = d,
         .arguments = d.get_arguments(),
-        .content = d.get_content(),
+        .block_arguments = d.get_block_arguments(),
         .content_frame = content_frame,
         .call_frame = call_frame,
     };

@@ -156,7 +156,7 @@ public:
             .name = name_string,
             .directive = d,
             .arguments = d.get_arguments(),
-            .content = d.get_content(),
+            .block_arguments = d.get_block_arguments(),
             .content_frame = content_frame,
             .call_frame = content_frame,
         };

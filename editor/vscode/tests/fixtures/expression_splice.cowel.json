@@ -35,6 +35,69 @@
       "col": 4,
       "expected": "keyword.operator.arithmetic.cowel",
       "description": "Operator in splice"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 0,
+      "expected": "punctuation.definition.template-expression.begin.cowel",
+      "description": "Directive-call expression splice begins correctly"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 2,
+      "expected": "support.function.directive.cowel",
+      "description": "Directive-call expression name has directive scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 5,
+      "expected": "punctuation.section.content.begin.cowel",
+      "description": "First directive-call block begins correctly"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 7,
+      "expected": "punctuation.section.content.end.cowel",
+      "description": "First directive-call block ends correctly"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 8,
+      "expected": "punctuation.section.content.begin.cowel",
+      "description": "Second directive-call block begins correctly"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 10,
+      "expected": "punctuation.section.content.end.cowel",
+      "description": "Second directive-call block ends correctly"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 11,
+      "expected": "punctuation.section.content.begin.cowel",
+      "description": "Third directive-call block begins correctly"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 13,
+      "expected": "punctuation.section.content.end.cowel",
+      "description": "Third directive-call block ends correctly"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 14,
+      "expected": "punctuation.definition.template-expression.end.cowel",
+      "description": "Directive-call expression splice ends correctly"
     }
   ]
 }

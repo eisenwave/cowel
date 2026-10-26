@@ -476,7 +476,7 @@ private:
         if (peek(u8'(')) {
             consume_group();
         }
-        if (peek(u8'{')) {
+        while (peek(u8'{')) {
             consume_block();
         }
 

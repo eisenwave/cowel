@@ -1,11 +1,14 @@
 \test_input{
+\ fun choose(first, second, third) = third
 A\(1 + 2)B
 \("x \(2 * 3) y")
 \({\(7 + 2)})
+\(choose{first}{second}{third})
 }
 
 \test_output{
 A3B
 x 6 y
 9
+third
 }
