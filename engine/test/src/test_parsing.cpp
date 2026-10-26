@@ -2019,6 +2019,16 @@ TEST(Parse_Fail, directive_line_splice_trailing)
     ASSERT_TRUE(run_parse_fail_test(u8"directive_line_splice_trailing.cow"));
 }
 
+TEST(Parse_Fail, fun_line_splice)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_line_splice.cow"));
+}
+
+TEST(Parse_Fail, fun_line_splice_in_block)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_line_splice_in_block.cow"));
+}
+
 TEST(Parse_Fail, fun_missing_name)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"fun_missing_name.cow"));
