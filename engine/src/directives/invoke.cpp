@@ -18,7 +18,7 @@ Invoke_Behavior::splice(Content_Policy& out, const Invocation& call, Context& co
 {
     Spliceable_To_String_Matcher directive_name_string { context.get_transient_memory() };
     Parameter string_param { u8"name", Optionality::mandatory, directive_name_string };
-    Block_Matcher content_matcher;
+    Pack_Of_Type_Matcher content_matcher { Type::pack_of(&Type::block) };
     Parameter content_param { u8"content"sv, Optionality::optional, content_matcher };
     Parameter* const parameters[] { &string_param, &content_param };
 

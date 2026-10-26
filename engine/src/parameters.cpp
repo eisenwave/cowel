@@ -747,9 +747,12 @@ Processing_Status match_call(
         return on_fail_status;
     }
 
+    const bool last_parameter_is_pack
+        = !parameters.empty() && parameters.back()->get_type().is_pack();
     const std::size_t block_parameter_offset = parameters.size() - call.block_arguments.size();
     for (std::size_t block_index = 0; block_index < call.block_arguments.size(); ++block_index) {
-        const std::size_t parameter_index = block_parameter_offset + block_index;
+        const std::size_t parameter_index
+            = last_parameter_is_pack ? parameters.size() - 1 : block_parameter_offset + block_index;
         const ast::Primary& block = call.block_arguments[block_index];
         if (parameters.empty()) {
             on_fail(

@@ -1,12 +1,22 @@
 \test_input{
 \cowel_invoke("cowel_to_html"){abc&}
 
+\ fun zero() = 0
+\cowel_invoke("zero")
+
+\ fun select(first, second) = second
+\cowel_invoke("select"){first}{second}
+
 \test_expect_error("type.mismatch"){\cowel_invoke}
 \test_expect_error("invoke.name.invalid"){\cowel_invoke("???")}
 }
 
 \test_output{
 abc&amp;
+
+0
+
+second
 
 <error->\cowel_invoke</error->
 <error->\cowel_invoke("???")</error->
