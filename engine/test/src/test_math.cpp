@@ -871,6 +871,48 @@ TEST(Big_Int, as_int)
     EXPECT_EQ(pow_2_200_minus_1.as_i128(), Conversion_Result(Int128 { -1 }, true));
 }
 
+TEST(Big_Int, as_generic)
+{
+    EXPECT_EQ(Big_Int(123).as<Int32>(), Conversion_Result(Int32 { 123 }, false));
+    EXPECT_EQ(Big_Int(123).as<Uint32>(), Conversion_Result(Uint32 { 123 }, false));
+
+    const auto checked_i32 = Big_Int(123).checked_as<Int32>();
+    ASSERT_TRUE(checked_i32.has_value());
+    EXPECT_EQ(*checked_i32, 123);
+
+    const auto checked_u32 = Big_Int(123).checked_as<Uint32>();
+    ASSERT_TRUE(checked_u32.has_value());
+    EXPECT_EQ(*checked_u32, 123);
+
+    const auto u32_max = Big_Int::pow2(32) - 1_n;
+    EXPECT_EQ(u32_max.as<Uint32>(), Conversion_Result(std::numeric_limits<Uint32>::max(), false));
+    const auto checked_u32_max = u32_max.checked_as<Uint32>();
+    ASSERT_TRUE(checked_u32_max.has_value());
+    EXPECT_EQ(*checked_u32_max, std::numeric_limits<Uint32>::max());
+
+    const auto u32_overflow = Big_Int::pow2(32);
+    EXPECT_EQ(u32_overflow.as<Uint32>(), Conversion_Result(Uint32 { 0 }, true));
+    EXPECT_FALSE(u32_overflow.checked_as<Uint32>().has_value());
+    EXPECT_EQ(
+        Big_Int(-1).as<Uint32>(), Conversion_Result(std::numeric_limits<Uint32>::max(), true)
+    );
+    EXPECT_FALSE(Big_Int(-1).checked_as<Uint32>().has_value());
+
+    const auto u64_max = Big_Int::pow2(64) - 1_n;
+    EXPECT_EQ(u64_max.as<Uint64>(), Conversion_Result(std::numeric_limits<Uint64>::max(), false));
+    const auto checked_u64_max = u64_max.checked_as<Uint64>();
+    ASSERT_TRUE(checked_u64_max.has_value());
+    EXPECT_EQ(*checked_u64_max, std::numeric_limits<Uint64>::max());
+
+    const auto u64_overflow = Big_Int::pow2(64);
+    EXPECT_EQ(u64_overflow.as<Uint64>(), Conversion_Result(Uint64 { 0 }, true));
+    EXPECT_FALSE(u64_overflow.checked_as<Uint64>().has_value());
+    EXPECT_EQ(
+        Big_Int(-1).as<Uint64>(), Conversion_Result(std::numeric_limits<Uint64>::max(), true)
+    );
+    EXPECT_FALSE(Big_Int(-1).checked_as<Uint64>().has_value());
+}
+
 TEST(Big_Int, from_characters)
 {
     struct Test_Case {
