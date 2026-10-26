@@ -671,7 +671,7 @@ private:
     }
 
     /// @brief Advances the parser past this group member,
-    /// to a comma or closing parenthesis.
+    /// to a comma, closing parenthesis, or line terminator.
     ///
     /// This function should only be used for error recovery.
     /// It also takes nested constructs like parentheses and braces into account,
@@ -679,34 +679,33 @@ private:
     /// Doing so is usually sufficient to avoid an explosion in error count on recovery.
     void skip_to_end_of_group_member()
     {
-        if (peek(Token_Kind::comma) || peek(Token_Kind::parenthesis_right)) {
+        constexpr auto is_terminator = [](const Token_Kind kind) {
+            return kind == Token_Kind::comma //
+                || kind == Token_Kind::parenthesis_right //
+                || kind == Token_Kind::line_terminator;
+        };
+        if (const Token* const next = peek(); !next || is_terminator(next->kind)) {
             return;
         }
-
         const std::size_t initial_pos = m_pos;
         while (true) {
             const Token* const next = peek();
             if (!next) {
                 break;
             }
-            switch (next->kind) {
-            case Token_Kind::comma:
-            case Token_Kind::parenthesis_right: {
+            if (is_terminator(next->kind)) {
                 goto done;
             }
-            case Token_Kind::parenthesis_left: {
+            if (next->kind == Token_Kind::parenthesis_left) {
                 consume_group();
                 continue;
             }
-            case Token_Kind::brace_left: {
+            if (next->kind == Token_Kind::brace_left) {
                 consume_block();
                 continue;
             }
-            default: {
-                advance_by(1);
-                continue;
-            }
-            }
+            // We must ensure progress, else we crash.
+            advance_by(1);
         }
     done:
         // If we haven't made any progress,
@@ -840,7 +839,9 @@ private:
         m_in_function_body = true;
         if (!expect_expression()) {
             error(m_tokens[m_pos].location, u8"Expected expression for function body after '='."sv);
+            m_in_function_body = outer_function_body;
             skip_to_end_of_group_member();
+            return;
         }
         m_in_function_body = outer_function_body;
 
