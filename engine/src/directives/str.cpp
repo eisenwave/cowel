@@ -575,8 +575,8 @@ Str_Substr_Behavior::evaluate(const Invocation& call, Context& context) const
             );
             return Processing_Status::error;
         }
-        if (length_big.as_i64().lossy
-            || std::size_t(length_big.as_i64().value) + start > text.length()) {
+        const std::optional length = length_big.checked_as<std::size_t>();
+        if (!length || *length > text.length() - start) {
             context.try_error_f(
                 diagnostic::str_substr_range, length_matcher.get_location(),
                 u8"The given start+length {}+{}={} exceeds the string length {}."sv, //
@@ -584,9 +584,8 @@ Str_Substr_Behavior::evaluate(const Invocation& call, Context& context) const
             );
             return Processing_Status::error;
         }
-        const auto length = std::size_t(Int128(length_big));
 
-        return Value::string(text.substr(start, length), String_Kind::ascii);
+        return Value::string(text.substr(start, *length), String_Kind::ascii);
     }
 
     const auto begin_result = code_point_index_to_code_unit_index(text, start);
@@ -619,8 +618,8 @@ Str_Substr_Behavior::evaluate(const Invocation& call, Context& context) const
         );
         return Processing_Status::error;
     }
-    if (length_big.as_i64().lossy
-        || std::size_t(length_big.as_i64().value) + start > text.length()) {
+    const std::optional length = length_big.checked_as<std::size_t>();
+    if (!length || *length > text.length() - start) {
         context.try_error_f(
             diagnostic::str_substr_range, length_matcher.get_location(),
             u8"The given start+length {}+{}={} exceeds the string length {}."sv, //
@@ -629,16 +628,15 @@ Str_Substr_Behavior::evaluate(const Invocation& call, Context& context) const
         );
         return Processing_Status::error;
     }
-    const auto length = std::size_t(Int128(length_big));
 
-    const auto end_result = code_point_index_to_code_unit_index(tail, length);
+    const auto end_result = code_point_index_to_code_unit_index(tail, *length);
     if (!end_result) {
         const auto& err = end_result.error();
         if (err.kind == Code_Point_Index_To_Code_Unit_Index_Error_Kind::index_out_of_range) {
             context.try_error_f(
                 diagnostic::str_substr_range, length_matcher.get_location(),
                 u8"The given start+length {}+{}={} exceed the string length {}."sv, //
-                start, length, start + length, err.code_point_index
+                start_big, length_big, start_big + length_big, err.code_point_index
             );
             return Processing_Status::error;
         }
