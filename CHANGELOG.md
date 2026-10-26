@@ -15,6 +15,7 @@
   - Highlighting through `\cowel_highlight` is also provided.
 - Added *assignment-expression*s like `\ x = y` (#418).
 - Added *let-expression*s like `\ let x = y` for declaring new variables (#420).
+- Added *function-expression*s like `\ fun sum(a, b) = a + b` for declaring functions (#424).
 - Also updated µlight (#426):
   - Added support for syntax highlighting themes that use palettes.
   - Improved the quality of highlighting.
@@ -22,8 +23,10 @@
 
 ### VSCode extension
 
-- Added syntax highlighting for the new *directive-line-splice* feature.
-- Added syntax highlighting for *let-expression*s.
+- Added syntax highlighting for new features:
+  - *directive-line-splice*
+  - *let-expression*
+  - *function-expression*
 - Fixed `x-y` being highlighted as identifier instead of as subtraction expression (#415).
 
 ### Command line interface
