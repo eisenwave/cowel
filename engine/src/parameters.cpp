@@ -744,7 +744,7 @@ Processing_Status match_call(
             call.block_arguments.front().get_source_span(),
             u8"Block argument does not match any parameter."sv, context
         );
-        return Processing_Status::error;
+        return on_fail_status;
     }
 
     const std::size_t block_parameter_offset = parameters.size() - call.block_arguments.size();
@@ -757,7 +757,7 @@ Processing_Status match_call(
                 u8"Block argument does not match any parameter."sv, //
                 context
             );
-            return Processing_Status::error;
+            return on_fail_status;
         }
         const auto arg = Argument::block(block);
         const Match_Fail_Options fail_options {
