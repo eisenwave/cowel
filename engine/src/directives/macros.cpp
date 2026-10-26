@@ -266,14 +266,6 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
     Call_Stack& stack = context.get_call_stack();
     const Invocation& target_invocation = stack[call.content_frame].invocation;
 
-    const auto get_index = [](const Integer_Matcher& matcher) -> std::optional<std::size_t> {
-        const auto [value, lossy] = matcher.get().as_i64();
-        if (lossy || value < 0) {
-            return {};
-        }
-        return std::size_t(value);
-    };
-
     const bool has_else = else_matcher.was_matched();
     const auto get_block_argument
         = [&](const std::size_t index) -> Result<std::optional<Argument>, Processing_Status> {
@@ -305,7 +297,7 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
     }
 
     if (block_index_matcher.was_matched()) {
-        const std::optional<std::size_t> index = get_index(block_index_matcher);
+        const std::optional index = block_index_matcher.get().checked_as<std::size_t>();
         if (!index) {
             context.try_error(
                 diagnostic::put_invalid, block_index_matcher.get_location(),
@@ -332,7 +324,7 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
     std::optional<std::size_t> needle_index;
 
     if (positional_index_matcher.was_matched()) {
-        const std::optional<std::size_t> index = get_index(positional_index_matcher);
+        const std::optional index = positional_index_matcher.get().checked_as<std::size_t>();
         if (!index) {
             context.try_error(
                 diagnostic::put_invalid, positional_index_matcher.get_location(),
