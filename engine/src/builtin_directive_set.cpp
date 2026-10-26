@@ -318,7 +318,7 @@ constexpr Invoke_Behavior cowel_invoke {
   Tooltip_Article {
     .kind = Tooltip_Kind::builtin_directive,
     .subject = u8"cowel_invoke"sv,
-    .declaration = u8R"md(cowel_invoke(name: str, content: block): any)md"sv,
+    .declaration = u8R"md(cowel_invoke(name: str, content: pack block): any)md"sv,
     .description = u8R"md(Dynamically invokes a directive by name.)md"sv,
     .example = u8R"md(`cowel_invoke("cowel_char_by_name"){DIGIT ZERO}` calls it dynamically.)md"sv,
   },

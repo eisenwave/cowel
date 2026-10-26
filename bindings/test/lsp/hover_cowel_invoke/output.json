@@ -34,7 +34,7 @@
     "result": {
       "contents": {
         "kind": "markdown",
-        "value": "### Directive `cowel_invoke`\n```\ncowel_invoke(name: str, content: block): any\n```\nDynamically invokes a directive by name.\n\n#### Example\n`cowel_invoke(\"cowel_char_by_name\"){DIGIT ZERO}` calls it dynamically.\n"
+        "value": "### Directive `cowel_invoke`\n```\ncowel_invoke(name: str, content: pack block): any\n```\nDynamically invokes a directive by name.\n\n#### Example\n`cowel_invoke(\"cowel_char_by_name\"){DIGIT ZERO}` calls it dynamically.\n"
       },
       "range": {
         "start": {

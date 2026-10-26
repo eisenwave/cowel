@@ -1448,7 +1448,7 @@ but it can have unintended side effects:
 \pre{
 \cowel_highlight_as("markup-tag"){cowel_invoke}(
   \cowdoc_param("name", "string"),
-  \cowdoc_param("content", "block"),
+  \cowdoc_param("content", "pack block"),
 ): \cowel_highlight_as("keyword-type"){any}
 }
 
@@ -1457,9 +1457,8 @@ This process is called a \dfn{dynamic invocation}.
 Most invocations are \dfn{static invocations}.
 
 The name of the invoked directive is provided as the first positional argument.
-All other arguments are ignored.
-The content provided to \cowdoc_dir{cowel_invoke}
-is the content provided to the invoked directive.
+The (possibly empty) pack of blocks provided to \cowdoc_dir{cowel_invoke}
+is forwarded to the invoked directive.
 
 \Bex{
 Any directive \cowdoc_dir{abc} can be invoked statically or dynamically:

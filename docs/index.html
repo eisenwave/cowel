@@ -5643,7 +5643,7 @@ but it can have unintended side effects:
 <pre>
 <h- data-h=mk_tag>cowel_invoke</h->(
   <h- data-h=mk_attr>name</h->: <h- data-h=kw_type>string</h->,
-  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>block</h->,
+  <h- data-h=mk_attr>content</h->: <h- data-h=kw_type>pack block</h->,
 ): <h- data-h=kw_type>any</h->
 </pre>
 
@@ -5652,9 +5652,8 @@ This process is called a <dfn>dynamic invocation</dfn>.
 Most invocations are <dfn>static invocations</dfn>.
 </p>
 <p>The name of the invoked directive is provided as the first positional argument.
-All other arguments are ignored.
-The content provided to <code><h- data-h=mk_tag>\cowel_invoke</h-></code>
-is the content provided to the invoked directive.
+The (possibly empty) pack of blocks provided to <code><h- data-h=mk_tag>\cowel_invoke</h-></code>
+is forwarded to the invoked directive.
 </p>
 <example-block><p><intro-></intro-> 
 Any directive <code><h- data-h=mk_tag>\abc</h-></code> can be invoked statically or dynamically:
