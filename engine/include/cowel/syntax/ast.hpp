@@ -382,6 +382,7 @@ static_assert(std::is_move_assignable_v<Primary>);
 enum struct Member_Kind : Default_Underlying {
     named,
     positional,
+    expansion,
     ellipsis,
 };
 
@@ -674,12 +675,18 @@ struct Parameter {
 private:
     std::u8string_view m_name;
     File_Source_Span m_name_span;
+    bool m_is_pack;
 
 public:
     [[nodiscard]]
-    Parameter(const std::u8string_view name, const File_Source_Span& name_span)
+    Parameter(
+        const std::u8string_view name,
+        const File_Source_Span& name_span,
+        const bool is_pack = false
+    )
         : m_name { name }
         , m_name_span { name_span }
+        , m_is_pack { is_pack }
     {
     }
 
@@ -693,6 +700,12 @@ public:
     const File_Source_Span& get_name_span() const
     {
         return m_name_span;
+    }
+
+    [[nodiscard]]
+    bool is_pack() const
+    {
+        return m_is_pack;
     }
 };
 
@@ -1019,11 +1032,6 @@ struct [[nodiscard]]
 Group_Member final {
 public:
     [[nodiscard]]
-    static Group_Member ellipsis( //
-        File_Source_Span source_span,
-        std::u8string_view source
-    );
-    [[nodiscard]]
     static Group_Member named( //
         Primary&& name,
         Expression&& value
@@ -1031,6 +1039,17 @@ public:
     [[nodiscard]]
     static Group_Member positional( //
         Expression&& value
+    );
+    [[nodiscard]]
+    static Group_Member expansion( //
+        File_Source_Span source_span,
+        std::u8string_view source,
+        Expression&& value
+    );
+    [[nodiscard]]
+    static Group_Member ellipsis( //
+        File_Source_Span source_span,
+        std::u8string_view source
     );
 
 private:

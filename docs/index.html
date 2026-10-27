@@ -1536,8 +1536,10 @@ h1 {
 <div class=toc-num data-level=5>4.3.2.2</div>
 <a href=#positional-arguments><h5>Positional arguments</h5></a>
 <div class=toc-num data-level=5>4.3.2.3</div>
-<a href=#ellipses><h5>Ellipses</h5></a>
+<a href=#pack-expansions><h5>Pack expansions</h5></a>
 <div class=toc-num data-level=5>4.3.2.4</div>
+<a href=#ellipses><h5>Ellipses</h5></a>
+<div class=toc-num data-level=5>4.3.2.5</div>
 <a href=#groups><h5>Groups</h5></a>
 <div class=toc-num data-level=4>4.3.3</div>
 <a href=#directive-content><h4>Directive content</h4></a>
@@ -2689,15 +2691,17 @@ some of which represents a value of a basic type (<a href=#types-intro>§7. Type
 <h- data-h=name_nt_decl>DECIMAL-INT-TOKEN</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIGIT</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>DIGIT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>HEXADECIMAL-INT-TOKEN</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>HEXADECIMAL-DIGIT</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>HEXADECIMAL-DIGIT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0x</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>HEX-DIGIT</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>HEX-DIGIT</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>BINARY-DIGIT</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>OCTAL-DIGIT</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>0</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>1</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>2</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>3</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>4</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>5</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>6</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>7</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
-<h- data-h=name_nt_decl>HEXADECIMAL-DIGIT</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIGIT</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>A</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>B</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>C</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>D</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>E</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>F</h-><h- data-h=str_dlim>"</h->
-  <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>c</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>d</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>e</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>f</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
+<h- data-h=name_nt_decl>HEX-DIGIT</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>LOWER-HEX-DIGIT</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>UPPER-HEX-DIGIT</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>LOWER-HEX-DIGIT</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIGIT</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>c</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>d</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>e</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>f</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>UPPER-HEX-DIGIT</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>DIGIT</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>A</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>B</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>C</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>D</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>E</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_op>|</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>F</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p>The tokens listed above are later matched by an <g-term>int-literal</g-term>,
 and represent a value of type <tt-><h- data-h=kw_type>int</h-></tt->
@@ -2714,7 +2718,7 @@ and represent a value of type <tt-><h- data-h=kw_type>int</h-></tt->
 is determined by interpreting each digit from left to right
 as decimal digits of a base-<math display=inline><mi>B</mi></math> integer,
 from most significant to least significant.
-The <g-term>HEXADECIMAL-DIGIT</g-term>s <tt->a..f</tt-> and <tt->A..F</tt-> both represent
+The <g-term>HEX-DIGIT</g-term>s <tt->a..f</tt-> and <tt->A..F</tt-> both represent
 digits of value <math display=inline><mn>10</mn></math>..<math display=inline><mn>15</mn></math>.
 </p>
 <p>Leading zeros are ignored.
@@ -2861,11 +2865,14 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
 <h- data-h=name_nt_decl>group-member</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>named-group-member</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>positional-group-member</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>expansion-group-member</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>named-group-member</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>member-name</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>EQUALS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>positional-group-member</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>expansion-group-member</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>postfix-expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>member-name</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>string-literal</h-><h- data-h=sym_punc>;</h->
@@ -2932,12 +2939,12 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>keyword</h-> <h- data-h=name_mac>? "let" ?</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>function-expression</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>keyword</h-> <h- data-h=name_mac>? "fun" ?</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h->
-  <h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>parameter-list</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h->
+  <h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>parameter-list</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>COMMA-TOKEN</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h->
   <h- data-h=sym_op>,</h-> <h- data-h=name_nt>function-body</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>parameter-list</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parameter</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>parameter</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>COMMA-TOKEN</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parameter</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>parameter</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>parameter</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>function-body</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>bool-literal</h->
@@ -3063,18 +3070,22 @@ which is constructed as follows:
 <h- data-h=name_nt_decl>group-member</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>named-group-member</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>positional-group-member</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>expansion-group-member</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>named-group-member</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>member-name</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>EQUALS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>positional-group-member</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>expansion-group-member</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>postfix-expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>member-name</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>identifier</h->
   <h- data-h=sym_op>|</h-> <h- data-h=name_nt>string-literal</h-><h- data-h=sym_punc>;</h-></code-block>
 
 <p><dfn>Directive arguments</dfn> can be
 <dfn>positional arguments</dfn>,
-<dfn>named arguments</dfn>, or
+<dfn>named arguments</dfn>,
+<dfn>argument expansions</dfn>, or
 <dfn>ellipses</dfn>.
 Arguments are separated by commas.
 </p>
@@ -3090,8 +3101,9 @@ Often, arguments are converted to HTML attributes.
 <p>A <dfn>named argument</dfn> is a <g-term>group-member</g-term> of the form
 <code><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_var>value</h-></code>,
 where spaces anywhere around <tt-><h- data-h=mk_attr>name</h-></tt-> and <code>value</code> are ignored.
-Named arguments are matched to directive parameters before any positional arguments,
-meaning that positional arguments fill the remaining unmatched arguments.
+Named arguments select directive parameters by name.
+Positional arguments select the next unmatched parameter,
+so positional arguments fill the remaining unmatched parameters.
 </p>
 <p>Argument names can consist of any character, except
 ASCII control characters,
@@ -3129,7 +3141,24 @@ not its escaped variant <code><h- data-h=err>\</h-><h- data-h=err>=</h-></code>.
 except that an unbalanced closing U+005D (<tt->]</tt->) or a U+002C (<tt->,</tt->)
 ends the content.
 </p>
-<h5 id=ellipses><a class=para href=#ellipses></a>4.3.2.3. Ellipses</h5>
+<h5 id=pack-expansions><a class=para href=#pack-expansions></a>4.3.2.3. Pack expansions</h5>
+
+<p>An <dfn>pack expansion</dfn> is a <g-term>group-member</g-term>
+consisting of <code><h- data-h=name_attr>...</h-></code> followed by a <g-term>postfix-expression</g-term>.
+The expression must evaluate to a <tt-><h- data-h=kw_type>group</h-></tt->.
+Its members are inserted into the surrounding argument list
+in their original order.
+</p>
+<p>Both positional and named group members are preserved by the expansion.
+The expanded members are then matched
+as if they had been written directly in the surrounding group.
+</p>
+<p>COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_add</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>6</code-block>
+
+<h5 id=ellipses><a class=para href=#ellipses></a>4.3.2.4. Ellipses</h5>
 
 <p>An <dfn>ellipsis argument</dfn> is a <g-term>group-member</g-term>
 spelled <code><h- data-h=name_attr>...</h-></code>.
@@ -3159,7 +3188,7 @@ or has preceding content within an argument.
 <h- data-h=mk_tag>\m</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=sym_par>)</h->   <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> error: ellipsis is not expanded from a macro</h-></code-block>
 </example-block>
 
-<h5 id=groups><a class=para href=#groups></a>4.3.2.4. Groups</h5>
+<h5 id=groups><a class=para href=#groups></a>4.3.2.5. Groups</h5>
 
 <p>Groups make it possible to group any of the aforementioned constructs.
 Groups begin with <code><h- data-h=sym_par>(</h-></code>
@@ -3785,10 +3814,21 @@ COWEL markup:
 
 <h3 id=function-expressions><a class=para href=#function-expressions></a>6.7. Function expressions</h3>
 
+<code-block><h- data-h=name_nt_decl>function-expression</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>keyword</h-> <h- data-h=name_mac>? "fun" ?</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h->
+  <h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-LEFT-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>parameter-list</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>COMMA-TOKEN</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>PARENTHESIS-RIGHT-TOKEN</h->
+  <h- data-h=sym_op>,</h-> <h- data-h=name_nt>function-body</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>parameter-list</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parameter</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>parameter</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>parameter</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>function-body</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h-></code-block>
+
 <p>A <g-term>function-expression</g-term> defines a callable function
 that can be invoked like a directive.
 It has the form <code>fun name(params) = body</code>,
-where <code>params</code> is a comma-separated list of identifiers
+where <code>params</code> is an optional comma-separated list of parameters
 and <code>body</code> is a single expression.
 </p>
 <p>When evaluated, the function-expression has a side effect:
@@ -3809,6 +3849,22 @@ COWEL markup:
 <h- data-h=mk_tag>\sqr</h-><h- data-h=sym_par>(</h-><h- data-h=num>2</h-><h- data-h=sym_par>)</h-> and <h- data-h=mk_tag>\sqr</h-><h- data-h=sym_par>(</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>4 and 25</code-block>
+</example-block>
+
+<p>A parameter prefixed with <code><h- data-h=name_attr>...</h-></code> is a <dfn>variadic parameter</dfn>.
+It must be the final parameter in the list
+and captures zero or more remaining positional arguments.
+Inside the function body,
+the parameter is bound to a <tt-><h- data-h=kw_type>group</h-></tt->
+containing the captured values in order.
+The values can be forwarded to another call with an argument expansion.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>sum</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=mk_tag>cowel_add</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_par>)</h->
+<h- data-h=err>\</h-><h- data-h=mk_tag>sum</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>6</code-block>
 </example-block>
 
 <p>Functions cannot be nested inside other function bodies,

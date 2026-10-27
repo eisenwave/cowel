@@ -557,10 +557,23 @@ Generated HTML:
 
 \h3(id="function-expressions"){Function expressions}
 
+\codeblock("ebnf"){
+function-expression
+  = keyword ? "fun" ?, IDENTIFIER-TOKEN
+  , PARENTHESIS-LEFT-TOKEN, [ parameter-list ], [ COMMA-TOKEN ], PARENTHESIS-RIGHT-TOKEN
+  , function-body;
+parameter-list
+  = parameter, { COMMA-TOKEN, parameter };
+parameter
+  = [ ELLIPSIS-TOKEN ], IDENTIFIER-TOKEN;
+function-body
+  = ASSIGN-TOKEN, expression;
+}
+
 A \gterm{function-expression} defines a callable function
 that can be invoked like a directive.
 It has the form \cowdoc_c{fun name(params) = body},
-where \cowdoc_c{params} is a comma-separated list of identifiers
+where \cowdoc_c{params} is an optional comma-separated list of parameters
 and \cowdoc_c{body} is a single expression.
 
 When evaluated, the function-expression has a side effect:
@@ -584,6 +597,26 @@ COWEL markup:
 Generated HTML:
 \htmlblock{
 4 and 25
+}
+}
+
+A parameter prefixed with \ellipsis is a \dfn{variadic parameter}.
+It must be the final parameter in the list
+and captures zero or more remaining positional arguments.
+Inside the function body,
+the parameter is bound to a \cowdoc_type{group}
+containing the captured values in order.
+The values can be forwarded to another call with an argument expansion.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\ fun sum(...args) = cowel_add(...args)
+\sum(1, 2, 3)
+}}
+Generated HTML:
+\htmlblock{
+6
 }
 }
 

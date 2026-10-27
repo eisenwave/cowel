@@ -102,6 +102,8 @@ namespace cowel {
     F(pop_named_member, "pop_named_member")                                                        \
     F(push_positional_member, "push_positional_member")                                            \
     F(pop_positional_member, "pop_positional_member")                                              \
+    F(push_expansion_group_member, "push_expansion_group_member")                                  \
+    F(pop_expansion_group_member, "pop_expansion_group_member")                                    \
     F(push_ellipsis_argument, "push_ellipsis_argument")                                            \
     F(pop_ellipsis_argument, "pop_ellipsis_argument")                                              \
     /* `n` is the amount of markup elements in the block. */                                       \

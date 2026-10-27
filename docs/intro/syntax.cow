@@ -454,15 +454,17 @@ OCTAL-INT-TOKEN
 DECIMAL-INT-TOKEN
   = DIGIT, { DIGIT };
 HEXADECIMAL-INT-TOKEN
-  = "0x", HEXADECIMAL-DIGIT, { HEXADECIMAL-DIGIT };
+  = "0x", HEX-DIGIT, { HEX-DIGIT };
 BINARY-DIGIT
   = "0" | "1";
 OCTAL-DIGIT
   = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
-HEXADECIMAL-DIGIT
-  = DIGIT
-  | "A" | "B" | "C" | "D" | "E" | "F"
-  | "a" | "b" | "c" | "d" | "e" | "f";
+HEX-DIGIT
+  = LOWER-HEX-DIGIT | UPPER-HEX-DIGIT;
+LOWER-HEX-DIGIT
+  = DIGIT | "a" | "b" | "c" | "d" | "e" | "f";
+UPPER-HEX-DIGIT
+  = DIGIT | "A" | "B" | "C" | "D" | "E" | "F";
 }
 
 The tokens listed above are later matched by an \gterm{int-literal},
@@ -480,7 +482,7 @@ The value of an \gterm{int-literal} in base \math{\mi{B}}
 is determined by interpreting each digit from left to right
 as decimal digits of a base-\math{\mi{B}} integer,
 from most significant to least significant.
-The \gterm{HEXADECIMAL-DIGIT}s \tt{a..f} and \tt{A..F} both represent
+The \gterm{HEX-DIGIT}s \tt{a..f} and \tt{A..F} both represent
 digits of value \math{\mn{10}}..\math{\mn{15}}.
 
 Leading zeros are ignored.
@@ -711,11 +713,14 @@ group-member-list
 group-member
   = named-group-member
   | positional-group-member
+  | expansion-group-member
   | ELLIPSIS-TOKEN;
 named-group-member
   = member-name, EQUALS-TOKEN, expression;
 positional-group-member
   = expression;
+expansion-group-member
+  = ELLIPSIS-TOKEN, postfix-expression;
 member-name
   = identifier
   | string-literal;
@@ -723,7 +728,8 @@ member-name
 
 \dfn{Directive arguments} can be
 \dfn{positional arguments},
-\dfn{named arguments}, or
+\dfn{named arguments},
+\dfn{argument expansions}, or
 \dfn{ellipses}.
 Arguments are separated by commas.
 
@@ -743,8 +749,9 @@ Generated HTML:
 A \dfn{named argument} is a \gterm{group-member} of the form
 \cowdoc_c{\cowel_highlight_phantom{\\d\'LEFT PARENTHESIS'}name = value},
 where spaces anywhere around \cowdoc_attr{name} and \cowdoc_c{value} are ignored.
-Named arguments are matched to directive parameters before any positional arguments,
-meaning that positional arguments fill the remaining unmatched arguments.
+Named arguments select directive parameters by name.
+Positional arguments select the next unmatched parameter,
+so positional arguments fill the remaining unmatched parameters.
 
 Argument names can consist of any character, except
 ASCII control characters,
@@ -783,6 +790,27 @@ A \dfn{positional argument} is a \gterm{group-member} of the form
 Positional arguments are content just like any other content,
 except that an unbalanced closing \cowdoc_cp(0x5D) or a \cowdoc_cp(0x2C)
 ends the content.
+
+\h5{Pack expansions}
+
+An \dfn{pack expansion} is a \gterm{group-member}
+consisting of \ellipsis followed by a \gterm{postfix-expression}.
+The expression must evaluate to a \cowdoc_type{group}.
+Its members are inserted into the surrounding argument list
+in their original order.
+
+Both positional and named group members are preserved by the expansion.
+The expanded members are then matched
+as if they had been written directly in the surrounding group.
+
+COWEL markup:
+\cowblock{\literally{
+\cowel_add(...(1, 2, 3))
+}}
+Generated HTML:
+\htmlblock{
+6
+}
 
 \h5{Ellipses}
 

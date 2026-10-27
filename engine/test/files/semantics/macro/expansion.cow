@@ -1,0 +1,18 @@
+\test_input{
+\cowel_macro("pos"){\cowel_put{0}\cowel_put{1}\cowel_put{2}\cowel_put{3}}\
+\pos(...("A", "B"), ...( "C",), "D")
+
+\cowel_macro("named"){\cowel_put{first}\cowel_put{second}\cowel_put{third}}\
+\named(...(first = "A"), ...(second = "B"), third = "C")
+
+\cowel_macro("mixed"){\cowel_put{0}\cowel_put{first}\cowel_put{1}\cowel_put{second}}\
+\mixed(...("A",), first = "B", ...( "C",), second = "D")
+}
+
+\test_output{
+ABCD
+
+ABC
+
+ABCD
+}

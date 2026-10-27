@@ -249,6 +249,25 @@ Group_Member Group_Member::positional(Expression&& value)
     // clang-format on
 }
 
+Group_Member Group_Member::expansion(
+    const File_Source_Span source_span,
+    const std::u8string_view source,
+    Expression&& value
+)
+{
+    COWEL_DEBUG_ASSERT(source.starts_with(u8"..."));
+    COWEL_DEBUG_ASSERT(source_span.length == source.length());
+    // clang-format off
+    return {
+        source_span,
+        source,
+        {},
+        gc_ref_make<Expression>(std::move(value)),
+        Member_Kind::expansion,
+    };
+    // clang-format on
+}
+
 Group_Member::Group_Member(
     const File_Source_Span& source_span,
     std::u8string_view source,
@@ -882,6 +901,25 @@ private:
             return ast::Group_Member::positional(std::move(expression));
         }
 
+        case CST_Instruction_Kind::push_expansion_group_member: {
+            const CST_Instruction ellipsis = pop_instruction();
+            COWEL_ASSERT(ellipsis.kind == CST_Instruction_Kind::ellipsis);
+            const File_Source_Span expansion_span = make_file_span(initial_pos);
+            advance_by_tokens(1);
+            ignore_skips();
+
+            ast::Expression expression = build_expression();
+            const Source_Span source_end = peek_token().location;
+            const File_Source_Span source_span
+                = expansion_span.with_length(source_end.begin - expansion_span.begin);
+            ignore_skips();
+            const auto pop_instruction = this->pop_instruction();
+            COWEL_ASSERT(pop_instruction.kind == CST_Instruction_Kind::pop_expansion_group_member);
+            return ast::Group_Member::expansion(
+                source_span, extract(source_span), std::move(expression)
+            );
+        }
+
         case CST_Instruction_Kind::push_ellipsis_argument: {
             std::optional<File_Source_Span> source_span;
             while (true) {
@@ -1171,35 +1209,32 @@ private:
         const std::size_t param_count = param_push.n;
         Small_Vector<ast::Parameter, 16> parameters;
         for (std::size_t i = 0; i < param_count; ++i) {
-            // Consume any trivia between parameters.
-            while (!eof() && peek_instruction().kind == CST_Instruction_Kind::skip) {
-                const CST_Instruction trivia_instruction = pop_instruction();
-                COWEL_ASSERT(trivia_instruction.kind == CST_Instruction_Kind::skip);
-                advance_by_tokens(1);
-            }
-            // Consume optional comma between parameters.
-            if (!eof() && peek_instruction().kind == CST_Instruction_Kind::comma) {
+            ignore_skips();
+            // 1. Use the leading ellipsis (if any)
+            //    to determine whether the parameter is variadic.
+            bool is_pack = false;
+            if (!eof() && peek_instruction().kind == CST_Instruction_Kind::ellipsis) {
                 pop_instruction();
                 advance_by_tokens(1);
-                while (!eof() && peek_instruction().kind == CST_Instruction_Kind::skip) {
-                    const CST_Instruction trivia_instruction = pop_instruction();
-                    COWEL_ASSERT(trivia_instruction.kind == CST_Instruction_Kind::skip);
-                    advance_by_tokens(1);
-                }
+                ignore_skips();
+                is_pack = true;
             }
-            // Build the parameter name as an id_expression.
+
+            // 2. Build the parameter name.
             ast::Primary param_name_primary = build_simple_primary();
             COWEL_ASSERT(param_name_primary.get_kind() == ast::Primary_Kind::id_expression);
             parameters.emplace_back(
-                param_name_primary.get_source(), param_name_primary.get_source_span()
+                param_name_primary.get_source(), param_name_primary.get_source_span(), is_pack
             );
+
+            // 3. Consume comma delimiter between/after parameters.
+            if (!eof() && peek_instruction().kind == CST_Instruction_Kind::comma) {
+                pop_instruction();
+                advance_by_tokens(1);
+                ignore_skips();
+            }
         }
-        // Consume trailing trivia before pop.
-        while (!eof() && peek_instruction().kind == CST_Instruction_Kind::skip) {
-            const CST_Instruction trivia_instruction = pop_instruction();
-            COWEL_ASSERT(trivia_instruction.kind == CST_Instruction_Kind::skip);
-            advance_by_tokens(1);
-        }
+        ignore_skips();
         const CST_Instruction param_pop = pop_instruction();
         COWEL_ASSERT(param_pop.kind == CST_Instruction_Kind::pop_function_parameters);
         advance_by_tokens(1);

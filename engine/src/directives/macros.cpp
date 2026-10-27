@@ -40,20 +40,43 @@ struct Put_Named {
     /// @param frame The content frame of the call.
     [[nodiscard]]
     Result<std::optional<Argument>, Processing_Status>
-    find(std::span<const ast::Group_Member> members, Frame_Index frame) const
+    find(const std::span<const ast::Group_Member> members, const Frame_Index frame) const
     {
         for (const ast::Group_Member& arg : members) {
             switch (arg.get_kind()) {
             case ast::Member_Kind::positional: {
                 continue;
             }
+            case ast::Member_Kind::expansion: {
+                Result<Value, Processing_Status> value
+                    = evaluate_expression(arg.get_value(), frame, context);
+                if (!value) {
+                    return value.error();
+                }
+                if (!value->is_group()) {
+                    context.try_error_f(
+                        diagnostic::type_mismatch, arg.get_source_span(),
+                        u8"Expansion requires a group, but got {}."sv,
+                        value->get_type().get_display_name()
+                    );
+                    return Processing_Status::error;
+                }
+                for (const Group_Member_Value& expanded : value->get_group_members()) {
+                    if (expanded.name.is_str() && expanded.name.as_string() == needle_name) {
+                        return std::optional<Argument>(
+                            Argument::named(expanded.name, expanded.value, arg.get_source_span())
+                        );
+                    }
+                }
+                continue;
+            }
             case ast::Member_Kind::ellipsis: {
                 const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
-                const auto maybe_result = find(
+                auto maybe_result = find(
                     ellipsis_frame.invocation.get_arguments_span(),
                     ellipsis_frame.invocation.content_frame
                 );
-                if (maybe_result) {
+                if (!maybe_result || *maybe_result) {
                     return maybe_result;
                 }
                 continue;
@@ -90,7 +113,8 @@ struct Put_Positional {
     /// @param members The group members, usually call arguments.
     /// @param frame The content frame of the call.
     [[nodiscard]]
-    std::optional<Argument> find(std::span<const ast::Group_Member> members, Frame_Index frame)
+    Result<std::optional<Argument>, Processing_Status>
+    find(std::span<const ast::Group_Member> members, Frame_Index frame)
     {
         for (const ast::Group_Member& arg : members) {
             switch (arg.get_kind()) {
@@ -103,20 +127,48 @@ struct Put_Positional {
                     ellipsis_frame.invocation.get_arguments_span(),
                     ellipsis_frame.invocation.content_frame
                 );
-                if (maybe_result) {
+                if (!maybe_result || *maybe_result) {
                     return maybe_result;
+                }
+                continue;
+            }
+            case ast::Member_Kind::expansion: {
+                Result<Value, Processing_Status> value
+                    = evaluate_expression(arg.get_value(), frame, context);
+                if (!value) {
+                    return value.error();
+                }
+                if (!value->is_group()) {
+                    context.try_error(
+                        diagnostic::type_mismatch, arg.get_source_span(),
+                        joined_char_sequence(
+                            {
+                                u8"Expansion requires a group, but got "sv,
+                                value->get_type().get_display_name(),
+                                u8"."sv,
+                            }
+                        )
+                    );
+                    return Processing_Status::error;
+                }
+                for (const Group_Member_Value& expanded : value->get_group_members()) {
+                    if (expanded.name.is_null() && needle_index == index++) {
+                        return std::optional<Argument>(
+                            Argument::positional(expanded.value, arg.get_source_span())
+                        );
+                    }
                 }
                 continue;
             }
             case ast::Member_Kind::positional: {
                 if (needle_index == index++) {
-                    return Argument::positional(arg);
+                    return std::optional<Argument>(Argument::positional(arg));
                 }
                 continue;
             }
             }
         }
-        return {};
+        return std::optional<Argument> {};
     }
 };
 
@@ -362,10 +414,14 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
                 .context = context,
                 .needle_index = *needle_index,
             };
-            std::optional<Argument> maybe_result = expand_positional.find(
-                target_invocation.get_arguments_span(), target_invocation.content_frame
-            );
-            if (!maybe_result && !has_else) {
+            Result<std::optional<Argument>, Processing_Status> maybe_result
+                = expand_positional.find(
+                    target_invocation.get_arguments_span(), target_invocation.content_frame
+                );
+            if (!maybe_result) {
+                return maybe_result.error();
+            }
+            if (!*maybe_result && !has_else) {
                 if (positional_index_matcher.was_matched()) {
                     context.try_error(
                         diagnostic::put_out_of_range, call.get_arguments_source_span(),
@@ -389,7 +445,7 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
                     );
                 }
             }
-            return maybe_result;
+            return *maybe_result;
         }
         // NOLINTNEXTLINE(readability-else-after-return)
         else {

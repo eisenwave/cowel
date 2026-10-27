@@ -1,0 +1,40 @@
+\test_input{
+\ fun sum(...args) = cowel_add(...args)
+\sum(1, 2, 3)
+\cowel_add(...(4, 5))
+\sum(...(1, 2), ...(3, 4))
+\sum(...(1, 2), 3, ...(4, 5))
+\cowel_add(...(1, 2), 3, ...(4, 5))
+
+\ fun pick(first, second) = first + second
+\pick(...(first = 6, second = 7))
+\pick(...(first = 8,), second = 9)
+\pick(...(1,), second = 2)
+
+\ fun first3(first, second, third) = cowel_add(first, second, third)
+\first3(...(1, 2), 3)
+\first3(...(1,), ...(2,), 3)
+\first3(...(first = 1, second = 2), third = 3)
+
+\ fun select_block(first, second, third) = third
+\ fun accept_blocks(...blocks) = select_block(...blocks)
+\accept_blocks{a}{b}{c}
+}
+
+\test_output{
+6
+9
+10
+15
+15
+
+13
+17
+3
+
+6
+6
+6
+
+c
+}

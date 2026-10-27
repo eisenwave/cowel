@@ -79,6 +79,7 @@ enum struct Node_Kind : Default_Underlying {
     group,
     named_argument,
     positional_argument,
+    expansion,
     ellipsis,
     expression_splice,
 };
@@ -457,6 +458,12 @@ struct Node {
     }
 
     [[nodiscard]]
+    static Node expansion(Node&& operand)
+    {
+        return { .kind = Node_Kind::expansion, .children = { std::move(operand) } };
+    }
+
+    [[nodiscard]]
     static Node ellipsis()
     {
         return { .kind = Node_Kind::ellipsis };
@@ -634,14 +641,17 @@ struct Node {
     static Node from(const ast::Group_Member& arg)
     {
         switch (arg.get_kind()) {
-        case ast::Member_Kind::ellipsis: {
-            return ellipsis();
-        }
         case ast::Member_Kind::named: {
             return Node::named(from_member_name(arg.get_name()), from(arg.get_value()));
         }
         case ast::Member_Kind::positional: {
             return positional(from(arg.get_value()));
+        }
+        case ast::Member_Kind::expansion: {
+            return expansion(from(arg.get_value()));
+        }
+        case ast::Member_Kind::ellipsis: {
+            return ellipsis();
         }
         }
         COWEL_ASSERT_UNREACHABLE(u8"Invalid argument type.");
@@ -847,6 +857,10 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
 
     case Node_Kind::positional_argument: {
         return out << "PosArg" << "{" << node.children << '}';
+    }
+
+    case Node_Kind::expansion: {
+        return out << "Expansion(" << node.children.front() << ')';
     }
 
     case Node_Kind::ellipsis: {
@@ -1994,6 +2008,72 @@ TEST(Parse_And_Build, function_expression)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"fun/ast.cow");
 }
 
+TEST(Parse_And_Build, expansion_expression)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group(
+                    {
+                        Node::expansion(Node::id_expression(u8"args")),
+                        Node::expansion(Node::id_expression(u8"x")),
+                        Node::expansion(
+                            Node::directive_with_arguments(
+                                u8"f",
+                                Node::group({ Node::expansion(Node::id_expression(u8"args")) })
+                            )
+                        ),
+                        Node::ellipsis(),
+                    }
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"expansion.cow");
+}
+
+TEST(Parse_And_Build, expansion_member_source)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    std::optional<Actual_Document> parsed = parse_and_build_file(u8"expansion.cow", &memory);
+    ASSERT_TRUE(parsed);
+
+    const ast::Directive* const directive = parsed->content.front().try_as_directive();
+    ASSERT_NE(directive, nullptr);
+    ASSERT_NE(directive->get_arguments(), nullptr);
+    const std::span<const ast::Group_Member> members = directive->get_argument_span();
+    ASSERT_EQ(members.size(), 4);
+    EXPECT_EQ(members[0].get_source(), u8"...args");
+    EXPECT_EQ(members[1].get_source(), u8"...(x)");
+    EXPECT_EQ(members[2].get_source(), u8"...f(...args)");
+}
+
+TEST(Parse_And_Build, function_variadic_parameter)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+
+    std::optional<Actual_Document> parsed = parse_and_build_file(u8"fun/variadic.cow", &memory);
+    ASSERT_TRUE(parsed);
+
+    ASSERT_EQ(parsed->content.size(), 2);
+    const ast::Expression* const expression = parsed->content.front().try_as_expression();
+    ASSERT_NE(expression, nullptr);
+    const ast::Function_Expression* const function = expression->try_as_fun();
+    ASSERT_NE(function, nullptr);
+
+    const std::span<const ast::Parameter> parameters = function->get_parameters();
+    ASSERT_EQ(parameters.size(), 2);
+    EXPECT_EQ(parameters[0].get_name(), u8"x");
+    EXPECT_EQ(parameters[1].get_name(), u8"args");
+    EXPECT_FALSE(parameters[0].is_pack());
+    EXPECT_TRUE(parameters[1].is_pack());
+}
+
 TEST(Parse_Fail, directive_splice_as_argument)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"directive_splice_as_argument.cow"));
@@ -2057,6 +2137,31 @@ TEST(Parse_Fail, fun_leading_comma)
 TEST(Parse_Fail, fun_duplicate_comma)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"fun_duplicate_comma.cow"));
+}
+
+TEST(Parse_Fail, expansion_missing_operand)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"expansion_missing_operand.cow"));
+}
+
+TEST(Parse_Fail, expansion_non_postfix_operand)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"expansion_non_postfix_operand.cow"));
+}
+
+TEST(Parse_Fail, fun_variadic_missing_name)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_variadic_missing_name.cow"));
+}
+
+TEST(Parse_Fail, fun_variadic_not_last)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_variadic_not_last.cow"));
+}
+
+TEST(Parse_Fail, fun_duplicate_variadic)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_duplicate_variadic.cow"));
 }
 
 } // namespace

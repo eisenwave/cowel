@@ -907,15 +907,18 @@ Function_Definition::evaluate(const Invocation& call, Context& context) const
     // Build per-parameter matchers, each accepting any type.
     // Reserve capacity to keep references from Parameter to Value_Matcher stable.
     const std::size_t param_count = function_params.size();
-    Small_Vector<Value_Of_Type_Matcher, 16> matchers;
+    Small_Vector<Declared_Matcher, 16> matchers;
     Small_Vector<Parameter, 16> params;
     Small_Vector<Parameter*, 16> param_ptrs;
     matchers.reserve(param_count);
     params.reserve(param_count);
 
     for (const ast::Parameter& ast_param : function_params) {
-        matchers.emplace_back(Type::any);
-        params.emplace_back(ast_param.get_name(), Optionality::mandatory, matchers.back());
+        Declared_Matcher& matcher = matchers.emplace_back(ast_param.is_pack());
+        params.emplace_back(
+            ast_param.get_name(),
+            ast_param.is_pack() ? Optionality::optional : Optionality::mandatory, matcher
+        );
         param_ptrs.push_back(&params.back());
     }
 
@@ -929,12 +932,26 @@ Function_Definition::evaluate(const Invocation& call, Context& context) const
     Context::Function_Binding_Chain bindings;
     bindings.bindings = Context::Function_Binding_Map { context.get_transient_memory() };
     for (std::size_t i = 0; i < param_ptrs.size(); ++i) {
-        if (matchers[i].was_matched()) {
-            bindings.bindings.emplace_back(
-                std::pmr::u8string { param_ptrs[i]->get_name(), context.get_transient_memory() },
-                matchers[i].get()
-            );
+        Declared_Matcher& matcher = matchers[i];
+        if (!matcher.is_pack() && !matcher.was_matched()) {
+            continue;
         }
+
+        Value value;
+        if (matcher.is_pack()) {
+            Small_Vector<Value, 16> values;
+            for (const auto& value_with_location : matcher.get_values()) {
+                values.push_back(value_with_location.value);
+            }
+            value = Value::group_pack(values);
+        }
+        else {
+            value = matcher.get_value();
+        }
+        bindings.bindings.emplace_back(
+            std::pmr::u8string { param_ptrs[i]->get_name(), context.get_transient_memory() },
+            std::move(value)
+        );
     }
 
     // Evaluate the body with parameter bindings in scope.
@@ -1048,10 +1065,29 @@ struct Evaluate_Member_Values {
     Context& context;
 
     [[nodiscard]]
-    Processing_Status operator()(std::span<const ast::Group_Member> members)
+    Processing_Status operator()(const std::span<const ast::Group_Member> members)
     {
         for (const auto& m : members) {
             switch (const auto kind = m.get_kind()) {
+            case ast::Member_Kind::expansion: {
+                Result<Value, Processing_Status> value
+                    = evaluate_expression(m.get_value(), frame, context);
+                if (!value) {
+                    return value.error();
+                }
+                if (!value->is_group()) {
+                    context.try_error_f(
+                        diagnostic::type_mismatch, m.get_source_span(),
+                        u8"Expansion requires a group, but got {}."sv,
+                        value->get_type().get_display_name()
+                    );
+                    return Processing_Status::error;
+                }
+                for (const Group_Member_Value& member : value->get_group_members()) {
+                    out.push_back(member);
+                }
+                break;
+            }
             case ast::Member_Kind::ellipsis: {
                 const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
                 const auto status = Evaluate_Member_Values {

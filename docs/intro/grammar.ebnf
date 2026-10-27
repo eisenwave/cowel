@@ -276,11 +276,14 @@ group-member-list
 group-member
   = named-group-member
   | positional-group-member
+  | expansion-group-member
   | ELLIPSIS-TOKEN;
 named-group-member
   = member-name, EQUALS-TOKEN, expression;
 positional-group-member
   = expression;
+expansion-group-member
+  = ELLIPSIS-TOKEN, postfix-expression;
 member-name
   = identifier
   | string-literal;
@@ -347,12 +350,12 @@ let-expression
   = keyword ? "let" ?, IDENTIFIER-TOKEN, ASSIGN-TOKEN, expression;
 function-expression
   = keyword ? "fun" ?, IDENTIFIER-TOKEN
-  , PARENTHESIS-LEFT-TOKEN, parameter-list, PARENTHESIS-RIGHT-TOKEN
+  , PARENTHESIS-LEFT-TOKEN, [ parameter-list ], [ COMMA-TOKEN ], PARENTHESIS-RIGHT-TOKEN
   , function-body;
 parameter-list
-  = parameter, { COMMA-TOKEN, parameter }, [ COMMA-TOKEN ];
+  = parameter, { COMMA-TOKEN, parameter };
 parameter
-  = IDENTIFIER-TOKEN;
+  = [ ELLIPSIS-TOKEN ], IDENTIFIER-TOKEN;
 function-body
   = ASSIGN-TOKEN, expression;
 bool-literal
