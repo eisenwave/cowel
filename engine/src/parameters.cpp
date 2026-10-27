@@ -911,9 +911,12 @@ Processing_Status match_call(
             .argument_indices_by_parameter = argument_indices_by_parameter,
         }
     );
-    const auto overall_status = status_concat(expansion_status, matching_status);
-    if (status_is_break(overall_status)) {
-        return overall_status;
+    // The following check for non-provided parameters will produce noise
+    // when matching parameters failed due to prior errors
+    // (because lots will be non-provided due to the errors),
+    // so we should abort here instead of greedily trying to produce more errors.
+    if (matching_status != Processing_Status::ok) {
+        return status_concat(expansion_status, matching_status);
     }
 
     for (Parameter* const p : parameters) {
@@ -929,11 +932,11 @@ Processing_Status match_call(
                 ),
                 context
             );
-            return status_concat(overall_status, on_fail_status);
+            return on_fail_status;
         }
     }
 
-    return overall_status;
+    return Processing_Status::ok;
 }
 
 } // namespace cowel
