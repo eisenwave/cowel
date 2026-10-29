@@ -730,6 +730,14 @@ private:
         COWEL_ASSERT(m_pos != initial_pos);
     }
 
+    void skip_to_end_of_parameters()
+    {
+        while (!eof() && !peek(Token_Kind::parenthesis_right)) {
+            advance_by(1);
+        }
+        COWEL_ASSERT(expect(Token_Kind::parenthesis_right));
+    }
+
     /// @brief Matches the name of an argument, including any surrounding whitespace and the `=`
     /// character following it.
     /// If the argument couldn't be matched, returns `false` and keeps the parser state unchanged.
@@ -904,22 +912,16 @@ private:
                 error(
                     m_tokens[m_pos].location, u8"A variadic parameter must be the last parameter."sv
                 );
-                while (!eof() && !peek(Token_Kind::parenthesis_right)) {
-                    advance_by(1);
-                }
-                (void)expect(Token_Kind::parenthesis_right);
+                skip_to_end_of_parameters();
                 return;
             }
-            if (expect_name && peek(Token_Kind::ellipsis)) {
+            if (expect_name && expect(Token_Kind::ellipsis)) {
                 m_out.push_back({ CST_Instruction_Kind::ellipsis });
-                advance_by(1);
+                consume_blank_sequence();
                 has_pack_parameter = true;
                 if (!peek(Token_Kind::identifier)) {
                     error(m_tokens[m_pos].location, u8"Expected parameter name after '...'."sv);
-                    while (!eof() && !peek(Token_Kind::parenthesis_right)) {
-                        advance_by(1);
-                    }
-                    (void)expect(Token_Kind::parenthesis_right);
+                    skip_to_end_of_parameters();
                     return;
                 }
                 emit_and_advance_by_one(CST_Instruction_Kind::id_expression);

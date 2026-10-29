@@ -1,1 +1,2 @@
 \(fun f(x, ...args) = args)
+\(fun s( ...  args ) = 0)

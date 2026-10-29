@@ -1,4 +1,5 @@
-push_document 2
+push_document 4
+
 push_expression_splice
 push_expr_fun
 skip
@@ -16,4 +17,23 @@ id_expression
 pop_expr_fun
 pop_expression_splice
 text
+
+push_expression_splice
+push_expr_fun
+skip
+id_expression
+push_function_parameters 1
+skip
+ellipsis
+skip
+id_expression
+skip
+pop_function_parameters
+skip
+skip
+decimal_int
+pop_expr_fun
+pop_expression_splice
+text
+
 pop_document

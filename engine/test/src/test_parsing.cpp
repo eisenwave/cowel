@@ -54,6 +54,8 @@ enum struct Node_Kind : Default_Underlying {
     unary_minus,
     let_expression,
     function_expression,
+    parameter,
+    pack_parameter,
     binary_assign,
     binary_logical_or,
     binary_logical_and,
@@ -181,13 +183,27 @@ struct Node {
     }
 
     [[nodiscard]]
-    static Node function_expression(std::u8string_view name, Node&& body)
+    static Node
+    function_expression(std::u8string_view name, std::vector<Node> parameters, Node&& body)
     {
+        parameters.push_back(std::move(body));
         return {
             .kind = Node_Kind::function_expression,
             .name_or_text = name,
-            .children = { std::move(body) },
+            .children = std::move(parameters),
         };
+    }
+
+    [[nodiscard]]
+    static Node parameter(std::u8string_view name)
+    {
+        return { .kind = Node_Kind::parameter, .name_or_text = name };
+    }
+
+    [[nodiscard]]
+    static Node pack_parameter(std::u8string_view name)
+    {
+        return { .kind = Node_Kind::pack_parameter, .name_or_text = name };
     }
 
     [[nodiscard]]
@@ -633,8 +649,20 @@ struct Node {
     [[nodiscard]]
     static Node from(const ast::Function_Expression& actual)
     {
+        const std::span<const ast::Parameter> actual_parameters = actual.get_parameters();
+        std::vector<Node> parameters;
+        parameters.reserve(actual_parameters.size());
+        for (const ast::Parameter& parameter : actual_parameters) {
+            parameters.push_back(from(parameter));
+        }
         Node body = from(actual.get_body());
-        return function_expression(actual.get_name(), std::move(body));
+        return function_expression(actual.get_name(), std::move(parameters), std::move(body));
+    }
+
+    [[nodiscard]]
+    static Node from(const ast::Parameter& actual)
+    {
+        return actual.is_pack() ? pack_parameter(actual.get_name()) : parameter(actual.get_name());
     }
 
     [[nodiscard]]
@@ -762,7 +790,22 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
         return out << "Let(" << node.name_or_text << ", " << node.children.front() << ')';
     }
     case Node_Kind::function_expression: {
-        return out << "Fun(" << node.name_or_text << ", " << node.children.front() << ')';
+        out << "Fun(" << node.name_or_text << ", [";
+        for (std::size_t i = 0; i + 1 < node.children.size(); ++i) {
+            if (i > 0) {
+                out << ", ";
+            }
+            out << node.children[i];
+        }
+        COWEL_ASSERT(!node.children.empty()); // Last child is function body.
+        return out << "], " << node.children.back() << ')';
+    }
+
+    case Node_Kind::parameter: {
+        return out << "Param(" << node.name_or_text << ')';
+    }
+    case Node_Kind::pack_parameter: {
+        return out << "PackParam(" << node.name_or_text << ')';
     }
     case Node_Kind::binary_logical_or: {
         return out << "LogicalOr(" << node.children.front() << ", " << node.children.back() << ')';
@@ -1973,7 +2016,7 @@ TEST(Parse_And_Build, arguments_balanced_braces)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/balanced_braces.cow");
 }
 
-TEST(Parse_And_Build, function_expression)
+TEST(Parse_And_Build, fun_ast)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const ast::Pmr_Vector<Node> expected {
@@ -1982,10 +2025,12 @@ TEST(Parse_And_Build, function_expression)
                 u8"d",
                 Node::group(
                     {
-                        Node::positional(Node::function_expression(u8"f", Node::integer(u8"0"))),
+                        Node::positional(
+                            Node::function_expression(u8"f", {}, Node::integer(u8"0"))
+                        ),
                         Node::positional(
                             Node::function_expression(
-                                u8"sqr",
+                                u8"sqr", { Node::parameter(u8"x") },
                                 Node::multiply(
                                     Node::id_expression(u8"x"), Node::id_expression(u8"x")
                                 )
@@ -1993,7 +2038,7 @@ TEST(Parse_And_Build, function_expression)
                         ),
                         Node::positional(
                             Node::function_expression(
-                                u8"add",
+                                u8"add", { Node::parameter(u8"x"), Node::parameter(u8"y") },
                                 Node::add(Node::id_expression(u8"x"), Node::id_expression(u8"y"))
                             )
                         ),
@@ -2008,7 +2053,7 @@ TEST(Parse_And_Build, function_expression)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"fun/ast.cow");
 }
 
-TEST(Parse_And_Build, expansion_expression)
+TEST(Parse_And_Build, expansion)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const ast::Pmr_Vector<Node> expected {
@@ -2053,25 +2098,29 @@ TEST(Parse_And_Build, expansion_member_source)
     EXPECT_EQ(members[2].get_source(), u8"...f(...args)");
 }
 
-TEST(Parse_And_Build, function_variadic_parameter)
+TEST(Parse_And_Build, fun_variadic)
 {
     static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"f", { Node::parameter(u8"x"), Node::pack_parameter(u8"args") },
+                    Node::id_expression(u8"args")
+                )
+            ),
+            Node::text(u8"\n"),
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"s", { Node::pack_parameter(u8"args") }, Node::integer(u8"0")
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
 
-    std::optional<Actual_Document> parsed = parse_and_build_file(u8"fun/variadic.cow", &memory);
-    ASSERT_TRUE(parsed);
-
-    ASSERT_EQ(parsed->content.size(), 2);
-    const ast::Expression* const expression = parsed->content.front().try_as_expression();
-    ASSERT_NE(expression, nullptr);
-    const ast::Function_Expression* const function = expression->try_as_fun();
-    ASSERT_NE(function, nullptr);
-
-    const std::span<const ast::Parameter> parameters = function->get_parameters();
-    ASSERT_EQ(parameters.size(), 2);
-    EXPECT_EQ(parameters[0].get_name(), u8"x");
-    EXPECT_EQ(parameters[1].get_name(), u8"args");
-    EXPECT_FALSE(parameters[0].is_pack());
-    EXPECT_TRUE(parameters[1].is_pack());
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"fun/variadic.cow");
 }
 
 TEST(Parse_Fail, directive_splice_as_argument)
