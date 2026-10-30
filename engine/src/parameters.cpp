@@ -856,7 +856,7 @@ Processing_Status match_call(
         .context = context,
     };
     const auto expansion_status = expand_args(call.get_arguments_span(), call.content_frame);
-    if (status_is_break(expansion_status)) {
+    if (expansion_status != Processing_Status::ok) {
         return status_max(expansion_status, on_fail_status);
     }
 
