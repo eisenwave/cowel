@@ -917,7 +917,9 @@ Function_Definition::evaluate(const Invocation& call, Context& context) const
         Declared_Matcher& matcher = matchers.emplace_back(ast_param.is_pack());
         params.emplace_back(
             ast_param.get_name(),
-            ast_param.is_pack() ? Optionality::optional : Optionality::mandatory, matcher
+            ast_param.is_pack() ? Optionality::optional : Optionality::mandatory, //
+            matcher, //
+            ast_param.try_get_default_argument()
         );
         param_ptrs.push_back(&params.back());
     }

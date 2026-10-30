@@ -2944,7 +2944,10 @@ The tokens from lexical analysis are matched by a context-free grammar as follow
 <h- data-h=name_nt_decl>parameter-list</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parameter</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>parameter</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>parameter</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>default-argument</h-> <h- data-h=sym_sqr>]</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>default-argument</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>function-body</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>bool-literal</h->
@@ -3821,7 +3824,10 @@ COWEL markup:
 <h- data-h=name_nt_decl>parameter-list</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>parameter</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name_nt>COMMA-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>parameter</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>parameter</h->
-  <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-> <h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-> <h- data-h=name_nt>default-argument</h-> <h- data-h=sym_sqr>]</h->
+  <h- data-h=sym_op>|</h-> <h- data-h=name_nt>ELLIPSIS-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>IDENTIFIER-TOKEN</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>default-argument</h->
+  <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h->
 <h- data-h=name_nt_decl>function-body</h->
   <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>ASSIGN-TOKEN</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>expression</h-><h- data-h=sym_punc>;</h-></code-block>
 
@@ -3867,6 +3873,50 @@ COWEL markup:
 </p><code-block>6</code-block>
 </example-block>
 
+<p>A parameter may specify a <dfn>default argument</dfn>,
+which is used when no argument is matched against that parameter.
+The default argument follows the parameter name after an equals sign
+and is an arbitrary expression.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>awoo</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>y</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_var>x</h-> <h- data-h=sym_op>+</h-> <h- data-h=name_var>y</h->
+<h- data-h=mk_tag>\awoo</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\awoo</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h->
+<h- data-h=mk_tag>\awoo</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>y</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>5</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>0
+1
+5</code-block>
+</example-block>
+
+<p>Default arguments are evaluated lazily:
+a default argument is evaluated only for calls which do not supply
+a matching argument,
+and it is evaluated anew each time such a call is made.
+This means that a default argument may have side effects,
+and that they happen on every call which relies on the default.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>let</h-> <h- data-h=name_var>bonus</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h->
+<h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>total</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_var>bonus</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_var>x</h->
+<h- data-h=mk_tag>\total</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+<h- data-h=str_intp_dlim>\ </h-><h- data-h=name_var>bonus</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>2</h->
+<h- data-h=mk_tag>\total</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>1
+2</code-block>
+</example-block>
+
+<p>A default argument is evaluated in the scope in which the call is made,
+so it may reference variables and directives visible at the call site.
+However, a default argument cannot refer to the parameters of the function
+whose parameter it belongs to,
+because those are only in scope inside the function body.
+A variadic parameter cannot have a default argument,
+because it already accepts zero or more arguments.
+</p>
 <p>Functions cannot be nested inside other function bodies,
 and <g-term>let-expression</g-term>s are similarly forbidden within function bodies.
 Functions only have access to their own parameters and to global variables;

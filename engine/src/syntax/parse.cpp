@@ -927,12 +927,35 @@ private:
                 emit_and_advance_by_one(CST_Instruction_Kind::id_expression);
                 ++param_count;
                 expect_name = false;
+                consume_blank_sequence();
+                if (peek(Token_Kind::equals)) {
+                    error(
+                        m_tokens[m_pos].location,
+                        u8"A variadic parameter cannot have a default argument."sv
+                    );
+                    skip_to_end_of_parameters();
+                    return;
+                }
                 continue;
             }
             if (expect_name && peek(Token_Kind::identifier)) {
                 emit_and_advance_by_one(CST_Instruction_Kind::id_expression);
                 ++param_count;
                 expect_name = false;
+                consume_blank_sequence();
+                if (expect(Token_Kind::equals)) {
+                    m_out.push_back({ CST_Instruction_Kind::push_default_argument });
+                    consume_blank_sequence();
+                    if (!expect_expression()) {
+                        error(
+                            m_tokens[m_pos].location,
+                            u8"Expected expression for default argument."sv
+                        );
+                        skip_to_end_of_parameters();
+                        return;
+                    }
+                    m_out.push_back({ CST_Instruction_Kind::pop_default_argument });
+                }
                 continue;
             }
             if (!expect_name) {
@@ -1398,6 +1421,8 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_expr_fun);
         COWEL_ENUM_STRING_CASE8(push_function_parameters);
         COWEL_ENUM_STRING_CASE8(pop_function_parameters);
+        COWEL_ENUM_STRING_CASE8(push_default_argument);
+        COWEL_ENUM_STRING_CASE8(pop_default_argument);
         COWEL_ENUM_STRING_CASE8(push_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(pop_expr_bitwise_not);
         COWEL_ENUM_STRING_CASE8(push_expr_logical_not);
@@ -1492,6 +1517,7 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case push_expr_parenthesized: return Token_Kind::parenthesis_left;
     case pop_expr_parenthesized: return Token_Kind::parenthesis_right;
     case push_expr_directive_call: return Token_Kind::identifier;
+    case push_default_argument: return Token_Kind::equals;
     case push_group: return Token_Kind::parenthesis_left;
     case pop_group: return Token_Kind::parenthesis_right;
     case push_block: return Token_Kind::brace_left;
@@ -1520,6 +1546,7 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case pop_expr_fun:
     case push_function_parameters:
     case pop_function_parameters:
+    case pop_default_argument:
     case pop_expr_bitwise_not:
     case pop_expr_logical_not:
     case pop_expr_unary_minus:
@@ -1595,6 +1622,7 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case push_expr_unary_plus:
     case push_expr_parenthesized:
     case push_expr_directive_call:
+    case push_default_argument:
     case push_group:
     case pop_group:
     case pop_expr_parenthesized:
@@ -1626,6 +1654,7 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case pop_expr_fun:
     case push_function_parameters:
     case pop_function_parameters:
+    case pop_default_argument:
     case push_expr_assign:
     case pop_expr_assign:
     case push_expr_logical_or:

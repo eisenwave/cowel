@@ -195,9 +195,19 @@ struct Node {
     }
 
     [[nodiscard]]
-    static Node parameter(std::u8string_view name)
+    static Node parameter(const std::u8string_view name)
     {
         return { .kind = Node_Kind::parameter, .name_or_text = name };
+    }
+
+    [[nodiscard]]
+    static Node parameter_with_default(const std::u8string_view name, Node&& default_argument)
+    {
+        return {
+            .kind = Node_Kind::parameter,
+            .name_or_text = name,
+            .children = { std::move(default_argument) },
+        };
     }
 
     [[nodiscard]]
@@ -662,7 +672,13 @@ struct Node {
     [[nodiscard]]
     static Node from(const ast::Parameter& actual)
     {
-        return actual.is_pack() ? pack_parameter(actual.get_name()) : parameter(actual.get_name());
+        if (actual.is_pack()) {
+            return pack_parameter(actual.get_name());
+        }
+        if (const ast::Expression* const default_argument = actual.try_get_default_argument()) {
+            return parameter_with_default(actual.get_name(), from(*default_argument));
+        }
+        return parameter(actual.get_name());
     }
 
     [[nodiscard]]
@@ -802,7 +818,10 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
     }
 
     case Node_Kind::parameter: {
-        return out << "Param(" << node.name_or_text << ')';
+        if (node.children.empty()) {
+            return out << "Param(" << node.name_or_text << ')';
+        }
+        return out << "Param(" << node.name_or_text << ", " << node.children.front() << ')';
     }
     case Node_Kind::pack_parameter: {
         return out << "PackParam(" << node.name_or_text << ')';
@@ -2123,6 +2142,55 @@ TEST(Parse_And_Build, fun_variadic)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"fun/variadic.cow");
 }
 
+TEST(Parse_And_Build, fun_default_arguments)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"awoo",
+                    {
+                        Node::parameter_with_default(u8"x", Node::integer(u8"0")),
+                        Node::parameter_with_default(u8"y", Node::integer(u8"0")),
+                    },
+                    Node::add(Node::id_expression(u8"x"), Node::id_expression(u8"y"))
+                )
+            ),
+            Node::text(u8"\n"),
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"f",
+                    {
+                        Node::parameter(u8"a"),
+                        Node::parameter_with_default(
+                            u8"b", Node::multiply(Node::integer(u8"2"), Node::id_expression(u8"a"))
+                        ),
+                    },
+                    Node::id_expression(u8"b")
+                )
+            ),
+            Node::text(u8"\n"),
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"g",
+                    {
+                        Node::parameter_with_default(
+                            u8"prefix", Node::quoted_string({ Node::text(u8"a") })
+                        ),
+                        Node::pack_parameter(u8"rest"),
+                    },
+                    Node::id_expression(u8"rest")
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"fun/default_arguments.cow");
+}
+
 TEST(Parse_Fail, directive_splice_as_argument)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"directive_splice_as_argument.cow"));
@@ -2211,6 +2279,16 @@ TEST(Parse_Fail, fun_variadic_not_last)
 TEST(Parse_Fail, fun_duplicate_variadic)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"fun_duplicate_variadic.cow"));
+}
+
+TEST(Parse_Fail, fun_variadic_default_argument)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_variadic_default_argument.cow"));
+}
+
+TEST(Parse_Fail, fun_default_argument_missing_expression)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_default_argument_missing_expression.cow"));
 }
 
 } // namespace

@@ -17,8 +17,10 @@
 - Added *assignment-expression*s like `\ x = y` (#418).
 - Added *let-expression*s like `\ let x = y` for declaring new variables (#420).
 - Added *function-expression*s like `\ fun sum(a, b) = a + b` for declaring functions (#424).
-  - This includes variadic parameters and pack expansions
+  - This includes pack parameters and pack expansions
     as in `fun sum(...args) = cowel_add(...args)`.
+  - Scalar parameters may declare *default-argument*s
+    as in `fun add(x = 0, y = 0) = x + y`.
 - Also updated µlight (#426):
   - Added support for syntax highlighting themes that use palettes.
   - Improved the quality of highlighting.

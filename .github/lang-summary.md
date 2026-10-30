@@ -132,28 +132,39 @@ or expression-line-splices:
 assigns `1` to the variable `x` (same as `\cowel_var_set("x", 1)`).
 `\(let x = 1)` and `\ let x = 1` declares a new variable `x`
 with value `1` (same as `\cowel_var_let("x", 1)`).
-`\(fun sqr(x) = x * x)` and `\ fun sqr(x) = x * x` defines a function
-that can be called like a directive: `\sqr(2)` evaluates to `4`.
+Directive splices work the same way: `"Hello, \name!"`.
+
+### Functions
+
+`\(fun sqr(x) = x * x)` or `\ fun sqr(x) = x * x` defines a function
+that can be called like a directive: `\sqr(2)` splices `4`.
+The function-defining expression itself evaluates to `unit`.
+
+#### Parameters and arguments
 Arguments are evaluated once, from left to right, and matched positionally or by name;
 this includes members expanded from a pack,
 so the side effects of an argument are visible to the arguments that follow it.
 Parameters are visible to name lookup within the body.
-The function-defining expression itself evaluates to `unit`.
-Directive splices work the same way: `"Hello, \name!"`.
 
-### Name lookup
+#### Default arguments
+A scalar parameter may declare a default argument, `fun awoo(x = 0, y = 0) = x + y`;
+the default is used when no argument is matched against the parameter.
+Default arguments are evaluated, at the call site,
+if the parameter was not matched.
+
+#### Packs and variadic functions
+A group expansion member such as `...args` expands a pack
+when used in an argument group.
+A user-defined function can declare a final variadic parameter with the same syntax:
+`fun f(prefix, ...args) = args`.
+A variadic parameter cannot have a default argument.
+
+## Name lookup
 
 A bare **identifier** in an expression that is not followed by a group or block
 is an **id-expression** and resolves to the value of the variable with that name.
 This is the idiomatic way to read variables:
 `myvar` instead of `cowel_var_get("myvar")`.
-
-### Packs and variadic functions
-
-A group expansion member such as `...args` expands a pack
-when used in an argument group.
-A user-defined function can declare a final variadic parameter with the same syntax:
-`fun f(prefix, ...args) = args`.
 
 ## Defining macros
 

@@ -1,0 +1,215 @@
+{
+  "description": "Test syntax highlighting of default arguments in function parameter lists",
+  "assertions": [
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 2,
+      "expected": "keyword.other.cowel",
+      "description": "fun keyword in expression-splice has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 6,
+      "expected": "entity.name.function.cowel",
+      "description": "Function name awoo has correct scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 11,
+      "expected": "entity.other.attribute-name.cowel",
+      "description": "Parameter name x with default argument is highlighted as a named argument"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 13,
+      "expected": "keyword.operator.assignment.cowel",
+      "description": "Equals of default argument has assignment operator scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 15,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Integer in default argument has numeric scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 16,
+      "expected": "punctuation.separator.arguments.cowel",
+      "description": "Comma between parameters has argument separator scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 18,
+      "expected": "entity.other.attribute-name.cowel",
+      "description": "Parameter name y with default argument is highlighted as a named argument"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 22,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Second default argument integer has numeric scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 0,
+      "col": 25,
+      "expected": "keyword.operator.assignment.cowel",
+      "description": "Equals before function body has assignment operator scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 15,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Integer in default expression has numeric scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 17,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "Multiplication in default expression has arithmetic scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 1,
+      "col": 19,
+      "expected": "variable.other.cowel",
+      "description": "Identifier in default expression has variable scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 15,
+      "expected": "keyword.operator.assignment.cowel",
+      "description": "Equals of string default argument has assignment operator scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 17,
+      "expected": "punctuation.definition.string.begin.cowel",
+      "description": "Opening quote of string default argument has string begin scope"
+    },
+    {
+      "type": "scope-chain",
+      "line": 2,
+      "col": 18,
+      "expected": ["source.cowel", "meta.expression-splice.cowel", "string.quoted.double.cowel"],
+      "description": "String content of default argument has string scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 19,
+      "expected": "punctuation.definition.string.end.cowel",
+      "description": "Closing quote of string default argument has string end scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 22,
+      "expected": "constant.language.ellipsis.cowel",
+      "description": "Ellipsis of variadic parameter has ellipsis scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 2,
+      "col": 25,
+      "expected": "variable.other.cowel",
+      "description": "Name of variadic parameter has parameter scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 12,
+      "expected": "punctuation.section.group.begin.cowel",
+      "description": "Nested group in default argument has group begin scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 13,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Integer inside nested group in default argument has numeric scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 18,
+      "expected": "punctuation.section.group.end.cowel",
+      "description": "Closing paren of nested group in default argument has group end scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 3,
+      "col": 19,
+      "expected": "punctuation.definition.parameters.end.cowel",
+      "description": "Parameter list correctly ends after nested group"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 12,
+      "expected": "punctuation.definition.template-expression.begin.cowel",
+      "description": "Nested expression-splice in default argument has splice begin scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 16,
+      "expected": "keyword.operator.arithmetic.cowel",
+      "description": "Arithmetic inside nested splice in default argument has operator scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 19,
+      "expected": "punctuation.definition.template-expression.end.cowel",
+      "description": "Nested splice in default argument has splice end scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 4,
+      "col": 20,
+      "expected": "punctuation.definition.parameters.end.cowel",
+      "description": "Parameter list correctly ends after nested splice"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 12,
+      "expected": "support.function.directive.cowel",
+      "description": "Call to inc in default argument has directive-call scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 15,
+      "expected": "punctuation.section.group.begin.cowel",
+      "description": "Call argument group in default argument has group begin scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 16,
+      "expected": "constant.numeric.integer.decimal.cowel",
+      "description": "Argument of call in default argument has numeric scope"
+    },
+    {
+      "type": "top-scope",
+      "line": 5,
+      "col": 19,
+      "expected": "punctuation.definition.parameters.end.cowel",
+      "description": "Parameter list correctly ends after call in default argument"
+    }
+  ]
+}

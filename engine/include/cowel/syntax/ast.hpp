@@ -676,19 +676,18 @@ private:
     std::u8string_view m_name;
     File_Source_Span m_name_span;
     bool m_is_pack;
+    GC_Ref<Expression> m_default_argument;
 
 public:
+    /// @brief Constructs a parameter with a default argument,
+    /// which is used when no argument is provided for the parameter.
     [[nodiscard]]
     Parameter(
-        const std::u8string_view name,
+        std::u8string_view name,
         const File_Source_Span& name_span,
-        const bool is_pack = false
-    )
-        : m_name { name }
-        , m_name_span { name_span }
-        , m_is_pack { is_pack }
-    {
-    }
+        bool is_pack,
+        GC_Ref<Expression> default_argument
+    );
 
     [[nodiscard]]
     std::u8string_view get_name() const
@@ -706,6 +705,24 @@ public:
     bool is_pack() const
     {
         return m_is_pack;
+    }
+
+    [[nodiscard]]
+    bool has_default_argument() const
+    {
+        return static_cast<bool>(m_default_argument);
+    }
+
+    [[nodiscard]]
+    const Expression& get_default_argument() const
+    {
+        return *m_default_argument;
+    }
+
+    [[nodiscard]]
+    const Expression* try_get_default_argument() const
+    {
+        return m_default_argument ? &*m_default_argument : nullptr;
     }
 };
 
