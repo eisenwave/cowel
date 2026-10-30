@@ -47,8 +47,8 @@
       "type": "top-scope",
       "line": 2,
       "col": 11,
-      "expected": "punctuation.separator.comma.cowel",
-      "description": "Comma between parameters has correct scope"
+      "expected": "punctuation.separator.arguments.cowel",
+      "description": "Comma between parameters has argument separator scope"
     },
     {
       "type": "top-scope",

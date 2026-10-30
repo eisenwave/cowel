@@ -851,19 +851,23 @@ private:
     std::u8string_view m_name;
     Optionality m_optionality;
     Value_Matcher& m_value_matcher;
+    const ast::Expression* m_default_argument;
 
 public:
     [[nodiscard]]
     constexpr explicit Parameter(
         std::u8string_view name,
         Optionality optionality,
-        Value_Matcher& value_matcher
+        Value_Matcher& value_matcher,
+        const ast::Expression* default_argument = nullptr
     )
         : m_name { name }
         , m_optionality { optionality }
         , m_value_matcher { value_matcher }
+        , m_default_argument { default_argument }
     {
         COWEL_DEBUG_ASSERT(is_identifier(name));
+        COWEL_DEBUG_ASSERT(!value_matcher.get_matchable_type().is_pack() || !default_argument);
     }
 
     [[nodiscard]]
@@ -899,6 +903,19 @@ public:
     const Type& get_type() const
     {
         return m_value_matcher.get_matchable_type();
+    }
+
+    [[nodiscard]]
+    bool has_default_argument() const
+    {
+        return m_default_argument != nullptr;
+    }
+
+    [[nodiscard]]
+    const ast::Expression& get_default_argument() const
+    {
+        COWEL_ASSERT(has_default_argument());
+        return *m_default_argument;
     }
 };
 

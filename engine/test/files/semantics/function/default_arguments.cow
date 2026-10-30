@@ -1,0 +1,73 @@
+\test_input{
+\ fun awoo(x = 0, y = 0) = x + y
+\awoo()
+\awoo(1)
+\awoo(1, 2)
+\awoo(y = 5)
+\awoo(x = 3, y = 4)
+
+\ fun mix(a = 1, b = 2, c = 3) = a * 100 + b * 10 + c
+\mix()
+\mix(9)
+\mix(c = 7)
+\mix(8, c = 5)
+\mix(...(4, 5))
+
+\ fun inc(n) = n + 1
+\ fun via_call(v = inc(41)) = v
+\via_call()
+\via_call(0)
+
+\ let flag = 0
+\ fun lazy(v, unused = cowel_var_set("flag", 1)) = v
+\lazy(11, 0)
+\lazy(12, 9)
+\cowel_var_get("flag")
+\lazy(13)
+\cowel_var_get("flag")
+
+\ let known = 5
+\ fun read_known(v = known) = v
+\read_known()
+\cowel_var_set("known", 7)\
+\read_known()
+
+\ fun from_scope(v = suffix) = v
+\ let suffix = "suffixed"
+\from_scope()
+
+\ fun label_of(text = "text", fallback = "fallback") = fallback
+\label_of()
+\label_of{block}
+}
+
+\test_output{
+0
+1
+3
+5
+7
+
+123
+923
+127
+825
+453
+
+42
+0
+
+11
+12
+0
+13
+1
+
+5
+7
+
+suffixed
+
+fallback
+block
+}

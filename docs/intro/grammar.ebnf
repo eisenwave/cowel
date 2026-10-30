@@ -355,7 +355,10 @@ function-expression
 parameter-list
   = parameter, { COMMA-TOKEN, parameter };
 parameter
-  = [ ELLIPSIS-TOKEN ], IDENTIFIER-TOKEN;
+  = IDENTIFIER-TOKEN, [ default-argument ]
+  | ELLIPSIS-TOKEN, IDENTIFIER-TOKEN;
+default-argument
+  = ASSIGN-TOKEN, expression;
 function-body
   = ASSIGN-TOKEN, expression;
 bool-literal

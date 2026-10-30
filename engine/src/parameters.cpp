@@ -918,11 +918,38 @@ Processing_Status match_call(
     // (because lots will be non-provided due to the errors),
     // so we should abort here instead of greedily trying to produce more errors.
     if (matching_status != Processing_Status::ok) {
-        return matching_status;
+        return status_max(matching_status, on_fail_status);
     }
 
-    for (const Parameter* const p : parameters) {
-        if (p->is_mandatory() && !p->get_value_matcher().was_matched()) {
+    for (Parameter* const p : parameters) {
+        if (p->get_value_matcher().was_matched()) {
+            continue;
+        }
+
+        if (p->has_default_argument()) {
+            const ast::Expression& default_argument = p->get_default_argument();
+            const File_Source_Span& default_location = default_argument.get_source_span();
+            Result<Value, Processing_Status> default_value
+                = evaluate_expression(default_argument, call.content_frame, context);
+            if (!default_value) {
+                return status_max(default_value.error(), on_fail_status);
+            }
+            const Match_Fail_Options on_default_fail {
+                .emit = on_fail,
+                .status = on_fail_status,
+                .location = default_location,
+            };
+            const Processing_Status default_status = p->get_value_matcher().match_value(
+                Argument::positional(std::move(*default_value), default_location),
+                call.content_frame, context, on_default_fail
+            );
+            if (default_status != Processing_Status::ok) {
+                return status_max(matching_status, on_fail_status);
+            }
+            continue;
+        }
+
+        if (p->is_mandatory()) {
             on_fail(
                 call.directive.get_name_span(),
                 joined_char_sequence(

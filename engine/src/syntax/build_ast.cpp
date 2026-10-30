@@ -391,6 +391,22 @@ Function_Expression::Function_Expression(
     COWEL_ASSERT(!m_source.empty());
 }
 
+Parameter::Parameter(
+    const std::u8string_view name,
+    const File_Source_Span& name_span,
+    const bool is_pack,
+    GC_Ref<Expression> default_argument
+)
+    : m_name { name }
+    , m_name_span { name_span }
+    , m_is_pack { is_pack }
+    , m_default_argument { std::move(default_argument) }
+{
+    COWEL_ASSERT(!m_name.empty());
+    COWEL_ASSERT(m_name.length() == m_name_span.length);
+    COWEL_ASSERT(!m_is_pack || !m_default_argument);
+}
+
 void Primary::assert_validity() const
 {
     COWEL_ASSERT(!m_source_span.empty());
@@ -1223,11 +1239,33 @@ private:
             // 2. Build the parameter name.
             ast::Primary param_name_primary = build_simple_primary();
             COWEL_ASSERT(param_name_primary.get_kind() == ast::Primary_Kind::id_expression);
+
+            // 3. Build the default argument (if any).
+            GC_Ref<ast::Expression> default_argument;
+            ignore_skips();
+            if (!eof() && peek_instruction().kind == CST_Instruction_Kind::push_default_argument) {
+                const CST_Instruction default_push = pop_instruction();
+                COWEL_ASSERT(default_push.kind == CST_Instruction_Kind::push_default_argument);
+                COWEL_DEBUG_ASSERT(cst_instruction_kind_advances(default_push.kind));
+                // Consume the `=` token.
+                advance_by_tokens(1);
+                ignore_skips();
+
+                default_argument = gc_ref_make<ast::Expression>(build_expression());
+                ignore_skips();
+
+                const CST_Instruction default_pop = pop_instruction();
+                COWEL_ASSERT(default_pop.kind == CST_Instruction_Kind::pop_default_argument);
+                COWEL_DEBUG_ASSERT(!cst_instruction_kind_advances(default_pop.kind));
+            }
+
             parameters.emplace_back(
-                param_name_primary.get_source(), param_name_primary.get_source_span(), is_pack
+                param_name_primary.get_source(), //
+                param_name_primary.get_source_span(), //
+                is_pack, std::move(default_argument)
             );
 
-            // 3. Consume comma delimiter between/after parameters.
+            // 4. Consume comma delimiter between/after parameters.
             if (!eof() && peek_instruction().kind == CST_Instruction_Kind::comma) {
                 pop_instruction();
                 advance_by_tokens(1);

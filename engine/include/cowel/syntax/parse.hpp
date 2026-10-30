@@ -67,6 +67,8 @@ namespace cowel {
     /* `n` is the amount of parameters. */                                                         \
     F(push_function_parameters, "push_function_parameters")                                        \
     F(pop_function_parameters, "pop_function_parameters")                                          \
+    F(push_default_argument, "push_default_argument")                                              \
+    F(pop_default_argument, "pop_default_argument")                                                \
     F(push_expr_assign, "push_expr_assign")                                                        \
     F(pop_expr_assign, "pop_expr_assign")                                                          \
     F(push_expr_logical_or, "push_expr_logical_or")                                                \

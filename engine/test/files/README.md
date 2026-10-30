@@ -82,6 +82,7 @@ pop_document
 The instructions with an integer operand are:
 `push_document N` (N = top-level elements),
 `push_group N` (N = group members),
+`push_function_parameters N` (N = parameters),
 `push_block N` (N = block elements), and
 `push_quoted_string N` (N = string elements).
 

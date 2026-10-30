@@ -1,0 +1,3 @@
+\(fun awoo(x = 0, y = 0) = x + y)
+\(fun f(a, b = 2 * a) = b)
+\(fun g(prefix = "a", ...rest) = rest)
