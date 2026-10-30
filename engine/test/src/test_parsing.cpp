@@ -54,6 +54,8 @@ enum struct Node_Kind : Default_Underlying {
     unary_minus,
     let_expression,
     function_expression,
+    parameter,
+    pack_parameter,
     binary_assign,
     binary_logical_or,
     binary_logical_and,
@@ -79,6 +81,7 @@ enum struct Node_Kind : Default_Underlying {
     group,
     named_argument,
     positional_argument,
+    expansion,
     ellipsis,
     expression_splice,
 };
@@ -180,13 +183,27 @@ struct Node {
     }
 
     [[nodiscard]]
-    static Node function_expression(std::u8string_view name, Node&& body)
+    static Node
+    function_expression(std::u8string_view name, std::vector<Node> parameters, Node&& body)
     {
+        parameters.push_back(std::move(body));
         return {
             .kind = Node_Kind::function_expression,
             .name_or_text = name,
-            .children = { std::move(body) },
+            .children = std::move(parameters),
         };
+    }
+
+    [[nodiscard]]
+    static Node parameter(std::u8string_view name)
+    {
+        return { .kind = Node_Kind::parameter, .name_or_text = name };
+    }
+
+    [[nodiscard]]
+    static Node pack_parameter(std::u8string_view name)
+    {
+        return { .kind = Node_Kind::pack_parameter, .name_or_text = name };
     }
 
     [[nodiscard]]
@@ -457,6 +474,12 @@ struct Node {
     }
 
     [[nodiscard]]
+    static Node expansion(Node&& operand)
+    {
+        return { .kind = Node_Kind::expansion, .children = { std::move(operand) } };
+    }
+
+    [[nodiscard]]
     static Node ellipsis()
     {
         return { .kind = Node_Kind::ellipsis };
@@ -626,22 +649,37 @@ struct Node {
     [[nodiscard]]
     static Node from(const ast::Function_Expression& actual)
     {
+        const std::span<const ast::Parameter> actual_parameters = actual.get_parameters();
+        std::vector<Node> parameters;
+        parameters.reserve(actual_parameters.size());
+        for (const ast::Parameter& parameter : actual_parameters) {
+            parameters.push_back(from(parameter));
+        }
         Node body = from(actual.get_body());
-        return function_expression(actual.get_name(), std::move(body));
+        return function_expression(actual.get_name(), std::move(parameters), std::move(body));
+    }
+
+    [[nodiscard]]
+    static Node from(const ast::Parameter& actual)
+    {
+        return actual.is_pack() ? pack_parameter(actual.get_name()) : parameter(actual.get_name());
     }
 
     [[nodiscard]]
     static Node from(const ast::Group_Member& arg)
     {
         switch (arg.get_kind()) {
-        case ast::Member_Kind::ellipsis: {
-            return ellipsis();
-        }
         case ast::Member_Kind::named: {
             return Node::named(from_member_name(arg.get_name()), from(arg.get_value()));
         }
         case ast::Member_Kind::positional: {
             return positional(from(arg.get_value()));
+        }
+        case ast::Member_Kind::expansion: {
+            return expansion(from(arg.get_value()));
+        }
+        case ast::Member_Kind::ellipsis: {
+            return ellipsis();
         }
         }
         COWEL_ASSERT_UNREACHABLE(u8"Invalid argument type.");
@@ -752,7 +790,22 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
         return out << "Let(" << node.name_or_text << ", " << node.children.front() << ')';
     }
     case Node_Kind::function_expression: {
-        return out << "Fun(" << node.name_or_text << ", " << node.children.front() << ')';
+        out << "Fun(" << node.name_or_text << ", [";
+        for (std::size_t i = 0; i + 1 < node.children.size(); ++i) {
+            if (i > 0) {
+                out << ", ";
+            }
+            out << node.children[i];
+        }
+        COWEL_ASSERT(!node.children.empty()); // Last child is function body.
+        return out << "], " << node.children.back() << ')';
+    }
+
+    case Node_Kind::parameter: {
+        return out << "Param(" << node.name_or_text << ')';
+    }
+    case Node_Kind::pack_parameter: {
+        return out << "PackParam(" << node.name_or_text << ')';
     }
     case Node_Kind::binary_logical_or: {
         return out << "LogicalOr(" << node.children.front() << ", " << node.children.back() << ')';
@@ -847,6 +900,10 @@ std::ostream& operator<<(std::ostream& out, const Node& node)
 
     case Node_Kind::positional_argument: {
         return out << "PosArg" << "{" << node.children << '}';
+    }
+
+    case Node_Kind::expansion: {
+        return out << "Expansion(" << node.children.front() << ')';
     }
 
     case Node_Kind::ellipsis: {
@@ -1959,7 +2016,7 @@ TEST(Parse_And_Build, arguments_balanced_braces)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"arguments/balanced_braces.cow");
 }
 
-TEST(Parse_And_Build, function_expression)
+TEST(Parse_And_Build, fun_ast)
 {
     static std::pmr::monotonic_buffer_resource memory;
     static const ast::Pmr_Vector<Node> expected {
@@ -1968,10 +2025,12 @@ TEST(Parse_And_Build, function_expression)
                 u8"d",
                 Node::group(
                     {
-                        Node::positional(Node::function_expression(u8"f", Node::integer(u8"0"))),
+                        Node::positional(
+                            Node::function_expression(u8"f", {}, Node::integer(u8"0"))
+                        ),
                         Node::positional(
                             Node::function_expression(
-                                u8"sqr",
+                                u8"sqr", { Node::parameter(u8"x") },
                                 Node::multiply(
                                     Node::id_expression(u8"x"), Node::id_expression(u8"x")
                                 )
@@ -1979,7 +2038,7 @@ TEST(Parse_And_Build, function_expression)
                         ),
                         Node::positional(
                             Node::function_expression(
-                                u8"add",
+                                u8"add", { Node::parameter(u8"x"), Node::parameter(u8"y") },
                                 Node::add(Node::id_expression(u8"x"), Node::id_expression(u8"y"))
                             )
                         ),
@@ -1992,6 +2051,76 @@ TEST(Parse_And_Build, function_expression)
     };
 
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"fun/ast.cow");
+}
+
+TEST(Parse_And_Build, expansion)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::directive_with_arguments(
+                u8"d",
+                Node::group(
+                    {
+                        Node::expansion(Node::id_expression(u8"args")),
+                        Node::expansion(Node::id_expression(u8"x")),
+                        Node::expansion(
+                            Node::directive_with_arguments(
+                                u8"f",
+                                Node::group({ Node::expansion(Node::id_expression(u8"args")) })
+                            )
+                        ),
+                        Node::ellipsis(),
+                    }
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"expansion.cow");
+}
+
+TEST(Parse_And_Build, expansion_member_source)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    std::optional<Actual_Document> parsed = parse_and_build_file(u8"expansion.cow", &memory);
+    ASSERT_TRUE(parsed);
+
+    const ast::Directive* const directive = parsed->content.front().try_as_directive();
+    ASSERT_NE(directive, nullptr);
+    ASSERT_NE(directive->get_arguments(), nullptr);
+    const std::span<const ast::Group_Member> members = directive->get_argument_span();
+    ASSERT_EQ(members.size(), 4);
+    EXPECT_EQ(members[0].get_source(), u8"...args");
+    EXPECT_EQ(members[1].get_source(), u8"...(x)");
+    EXPECT_EQ(members[2].get_source(), u8"...f(...args)");
+}
+
+TEST(Parse_And_Build, fun_variadic)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"f", { Node::parameter(u8"x"), Node::pack_parameter(u8"args") },
+                    Node::id_expression(u8"args")
+                )
+            ),
+            Node::text(u8"\n"),
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"s", { Node::pack_parameter(u8"args") }, Node::integer(u8"0")
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"fun/variadic.cow");
 }
 
 TEST(Parse_Fail, directive_splice_as_argument)
@@ -2057,6 +2186,31 @@ TEST(Parse_Fail, fun_leading_comma)
 TEST(Parse_Fail, fun_duplicate_comma)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"fun_duplicate_comma.cow"));
+}
+
+TEST(Parse_Fail, expansion_missing_operand)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"expansion_missing_operand.cow"));
+}
+
+TEST(Parse_Fail, expansion_non_postfix_operand)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"expansion_non_postfix_operand.cow"));
+}
+
+TEST(Parse_Fail, fun_variadic_missing_name)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_variadic_missing_name.cow"));
+}
+
+TEST(Parse_Fail, fun_variadic_not_last)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_variadic_not_last.cow"));
+}
+
+TEST(Parse_Fail, fun_duplicate_variadic)
+{
+    ASSERT_TRUE(run_parse_fail_test(u8"fun_duplicate_variadic.cow"));
 }
 
 } // namespace

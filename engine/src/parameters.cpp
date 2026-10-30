@@ -3,10 +3,57 @@
 #include "cowel/util/char_sequence_factory.hpp"
 
 #include "cowel/context.hpp"
+#include "cowel/directive_processing.hpp"
 #include "cowel/parameters.hpp"
 #include "cowel/util/small_vector.hpp"
 
 namespace cowel {
+
+Result<Value, Processing_Status> Argument::evaluate(const Frame_Index frame, Context& context) const
+{
+    if (m_runtime_value) {
+        return *m_runtime_value;
+    }
+    return m_evaluate(m_ast_node, frame, context);
+}
+
+Processing_Status
+Argument::splice(Content_Policy& out, const Frame_Index frame, Context& context) const
+{
+    if (m_runtime_value) {
+        return splice_value(out, *m_runtime_value, m_location, context);
+    }
+    return m_splice(m_ast_node, out, frame, context);
+}
+
+Processing_Status Argument::splice_to_plaintext(
+    std::pmr::vector<char8_t>& out,
+    const Frame_Index frame,
+    Context& context
+) const
+{
+    if (m_runtime_value) {
+        return splice_value_to_plaintext(out, *m_runtime_value, m_location, context);
+    }
+    return m_splice_to_plaintext(m_ast_node, out, frame, context);
+}
+
+[[nodiscard]]
+const File_Source_Span& Argument::get_value_location() const
+{
+    if (m_runtime_value) {
+        return m_location;
+    }
+    return m_get_value_location(m_ast_node);
+}
+
+const Type& Argument::get_static_type(Context& context) const
+{
+    if (m_runtime_value) {
+        return m_runtime_value->get_type();
+    }
+    return m_get_static_type(m_ast_node, context);
+}
 
 Result<Value, Processing_Status> Argument::group_member_evaluate(
     const void* const ast_node, //
@@ -148,6 +195,26 @@ Processing_Status Value_Of_Type_Matcher::match_value(
         return on_fail.status;
     }
     m_value = { std::move(val.value()), argument.get_value_location() };
+    return Processing_Status::ok;
+}
+
+Processing_Status Declared_Matcher::match_value(
+    const Argument& argument,
+    Frame_Index frame,
+    Context& context,
+    const Match_Fail_Options& on_fail
+)
+{
+    Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    if (!val) {
+        return status_max(val.error(), on_fail.status);
+    }
+    if (m_is_pack) {
+        m_values.push_back({ .value = std::move(*val), .location = argument.get_value_location() });
+    }
+    else {
+        m_value = { .value = std::move(*val), .location = argument.get_value_location() };
+    }
     return Processing_Status::ok;
 }
 
@@ -490,233 +557,283 @@ enum struct Argument_Mode : Default_Underlying {
     pack_named,
 };
 
-struct Match_Call {
-    const std::span<Parameter* const> parameters;
-    Context& context;
-    const Fail_Callback on_fail;
-    const Processing_Status on_fail_status;
-    const std::span<int> argument_indices_by_parameter;
-    Argument_Mode mode;
-    std::size_t current_pack_param_index;
-    Value_Matcher* current_pack_value_matcher;
-
-    [[nodiscard]]
-    Processing_Status operator()(
-        std::span<const ast::Group_Member> args,
-        Frame_Index frame,
-        std::size_t cumulative_arg_index
-    );
+enum Parameter_Argument_Index : int {
+    parameter_not_provided = -1,
+    parameter_provided_as_block = std::numeric_limits<int>::max(),
 };
 
-Processing_Status Match_Call::operator()(
+struct Expand_Call_Arguments {
+    Small_Vector<Argument, 32> out_arguments {};
+    Small_Vector<Frame_Index, 32> out_frames {};
+    const Fail_Callback on_fail;
+    const Processing_Status on_fail_status;
+    Context& context;
+
+    [[nodiscard]]
+    Processing_Status operator()(std::span<const ast::Group_Member> args, Frame_Index frame);
+};
+
+[[nodiscard]]
+Processing_Status Expand_Call_Arguments::operator()(
     const std::span<const ast::Group_Member> args,
-    const Frame_Index frame,
-    const std::size_t cumulative_arg_index
+    const Frame_Index frame
 )
 {
-    for (std::size_t arg_index = 0; arg_index < args.size(); ++arg_index) {
-        const ast::Group_Member& member = args[arg_index];
-        const Match_Fail_Options on_member_fail {
-            .emit = on_fail,
-            .status = on_fail_status,
-            .location = member.get_source_span(),
-        };
-
-        switch (member.get_kind()) {
+    return process_greedy(args, [&](const ast::Group_Member& argument) -> Processing_Status {
+        switch (argument.get_kind()) {
         case ast::Member_Kind::positional: {
-            const auto arg = Argument::positional(member);
-
-            switch (mode) {
-            case Argument_Mode::named_only:
-            case Argument_Mode::pack_named: {
-                // TODO: more detailed feedback
-                on_fail(
-                    member.get_source_span(),
-                    u8"Providing a positional argument after a named argument is not valid."sv,
-                    context
-                );
-                return on_fail_status;
-            }
-
-            case Argument_Mode::pack_positional: {
-                // We shouldn't be in pack mode
-                // unless we have matched a pack parameter once in normal mode.
-                COWEL_ASSERT(current_pack_value_matcher);
-                COWEL_ASSERT(current_pack_param_index <= argument_indices_by_parameter.size());
-                COWEL_ASSERT(argument_indices_by_parameter[current_pack_param_index] != -1);
-
-                const auto arg_status
-                    = current_pack_value_matcher->match_value(arg, frame, context, on_member_fail);
-                if (arg_status != Processing_Status::ok) {
-                    return arg_status;
-                }
-                continue;
-            }
-
-            case Argument_Mode::normal: {
-                const std::size_t parameter_index = arg_index + cumulative_arg_index;
-                if (parameter_index >= argument_indices_by_parameter.size()) {
-                    on_fail(member.get_source_span(), u8"Too many arguments."sv, context);
-                    return on_fail_status;
-                }
-                if (argument_indices_by_parameter[parameter_index]
-                    == std::numeric_limits<int>::max()) {
-                    on_fail(
-                        member.get_source_span(),
-                        joined_char_sequence(
-                            {
-                                u8"This argument is invalid because the parameter \""sv,
-                                parameters[parameter_index]->get_name(),
-                                u8"\" has already been provided as a block argument.",
-                            }
-                        ),
-                        context
-                    );
-                    return on_fail_status;
-                }
-                // No other failure is possible:
-                // named arguments can only be provided after positional arguments,
-                // and positional arguments wouldn't match a parameter more than once.
-                COWEL_ASSERT(argument_indices_by_parameter[parameter_index] == -1);
-
-                // FIXME: pretty sure this should be = parameter_index
-                argument_indices_by_parameter[parameter_index] = int(arg_index);
-                Value_Matcher& value_matcher = parameters[parameter_index]->get_value_matcher();
-                const auto arg_status
-                    = value_matcher.match_value(arg, frame, context, on_member_fail);
-                if (arg_status != Processing_Status::ok) {
-                    return arg_status;
-                }
-                if (value_matcher.get_matchable_type().is_pack()) {
-                    mode = Argument_Mode::pack_positional;
-                    current_pack_param_index = parameter_index;
-                    current_pack_value_matcher = &value_matcher;
-                }
-                continue;
-            }
-            }
-            COWEL_ASSERT_UNREACHABLE(u8"Invalid mode.");
-        }
-
-        case ast::Member_Kind::ellipsis: {
-            const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
-            const auto recursive_status = (*this)(
-                ellipsis_frame.invocation.get_arguments_span(),
-                ellipsis_frame.invocation.content_frame, cumulative_arg_index + arg_index
-            );
-            if (recursive_status != Processing_Status::ok) {
-                return recursive_status;
-            }
-            continue;
+            out_arguments.push_back(Argument::positional(argument));
+            out_frames.push_back(frame);
+            return Processing_Status::ok;
         }
 
         case ast::Member_Kind::named: {
             Result<Value, Processing_Status> name_result
-                = evaluate(member.get_name(), frame, context);
+                = evaluate(argument.get_name(), frame, context);
             if (!name_result) {
                 return status_max(on_fail_status, name_result.error());
             }
             COWEL_ASSERT(name_result->is_str());
+            out_arguments.push_back(Argument::named(std::move(*name_result), argument));
+            out_frames.push_back(frame);
+            return Processing_Status::ok;
+        }
 
-            const auto arg = Argument::named(std::move(*name_result), member);
-            const std::u8string_view arg_name = arg.get_name().as_string();
-
-            // Handle pack of named arguments, i.e. parameters of type "pack named any".
-            // This should only be possible in normal mode because otherwise,
-            // there is an ambiguity between providing a named argument that goes into the pack
-            // and one that applies to a prior positional parameter.
-            if (mode == Argument_Mode::normal) {
-                const std::size_t parameter_index = arg_index + cumulative_arg_index;
-                if (parameter_index < argument_indices_by_parameter.size()) {
-                    auto* const parameter = parameters[parameter_index];
-                    const bool is_pack_named = parameter->get_type().is_pack()
-                        && parameter->get_type().get_members().front().is_named();
-                    if (is_pack_named) {
-                        argument_indices_by_parameter[parameter_index] = int(parameter_index);
-                        current_pack_value_matcher = &parameter->get_value_matcher();
-                        current_pack_param_index = parameter_index;
-                        mode = Argument_Mode::pack_named;
-                        const auto arg_status = parameter->get_value_matcher().match_value(
-                            arg, frame, context, on_member_fail
-                        );
-                        if (arg_status != Processing_Status::ok) {
-                            return arg_status;
+        case ast::Member_Kind::expansion: {
+            const Result<Value, Processing_Status> expanded_group_value
+                = evaluate_expression(argument.get_value(), frame, context);
+            if (!expanded_group_value) {
+                return status_max(expanded_group_value.error(), on_fail_status);
+            }
+            if (!expanded_group_value->is_group()) {
+                on_fail(
+                    argument.get_source_span(),
+                    joined_char_sequence(
+                        {
+                            u8"Expansion requires a group, but got "sv,
+                            expanded_group_value->get_type().get_display_name(),
+                            u8"."sv,
                         }
-                        goto named_parameter_matched;
-                    }
-                }
+                    ),
+                    context
+                );
+                return on_fail_status;
             }
-            // If we are already in a pack of named arguments and provide another named argument,
-            // we simply append it to the pack.
-            else if (mode == Argument_Mode::pack_named) {
-                COWEL_ASSERT(current_pack_value_matcher);
-                COWEL_ASSERT(current_pack_param_index <= argument_indices_by_parameter.size());
-                COWEL_ASSERT(argument_indices_by_parameter[current_pack_param_index] != -1);
-
-                const auto arg_status
-                    = current_pack_value_matcher->match_value(arg, frame, context, on_member_fail);
-                if (arg_status != Processing_Status::ok) {
-                    return arg_status;
-                }
-                goto named_parameter_matched;
+            for (const Group_Member_Value& expanded : expanded_group_value->get_group_members()) {
+                out_arguments.push_back(
+                    expanded.name.is_null()
+                        ? Argument::positional(expanded.value, argument.get_source_span())
+                        : Argument::named(expanded.name, expanded.value, argument.get_source_span())
+                );
+                out_frames.push_back(frame);
             }
+            return Processing_Status::ok;
+        }
 
-            COWEL_DEBUG_ASSERT(mode != Argument_Mode::pack_named);
-            mode = Argument_Mode::named_only;
-            // Otherwise, in the normal case, for the named argument,
-            // we need to find a parameter with the same name.
-            // Providing the same named argument twice or providing a named argument
-            // without a corresponding parameter need to be diagnosed.
-            for (std::size_t i = 0; i < parameters.size(); ++i) {
-                auto* const member_matcher = parameters[i];
-                if (arg_name != member_matcher->get_name()) {
-                    continue;
-                }
-                if (argument_indices_by_parameter[i] != -1) {
-                    on_fail(
-                        member.get_name_span(),
-                        joined_char_sequence(
-                            {
-                                u8"The named argument \""sv,
-                                arg_name,
-                                u8"\" cannot be provided more than once.",
-                            }
-                        ),
-                        context
-                    );
-                    return on_fail_status;
-                }
-                // FIXME: Pretty sure this should be = parameter_index
-                argument_indices_by_parameter[i] = int(arg_index);
-                const auto arg_status = member_matcher->get_value_matcher().match_value(
-                    arg, frame, context, on_member_fail
+        case ast::Member_Kind::ellipsis: {
+            const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
+            return (*this)(
+                ellipsis_frame.invocation.get_arguments_span(),
+                ellipsis_frame.invocation.content_frame
+            );
+        }
+        }
+
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid member kind.");
+    });
+}
+
+struct Match_Arguments_Options {
+    std::span<Parameter* const> parameters;
+    std::span<const Argument> arguments;
+    std::span<const Frame_Index> argument_frames;
+    Context& context;
+    Fail_Callback on_fail;
+    Processing_Status on_fail_status;
+    std::span<int> argument_indices_by_parameter;
+};
+
+Processing_Status match_argument(
+    const Match_Arguments_Options& options,
+    const Argument& argument,
+    const Frame_Index frame,
+    const std::size_t argument_index,
+    Argument_Mode& mode,
+    std::size_t& current_pack_param_index,
+    Value_Matcher*& current_pack_value_matcher
+)
+{
+    const Match_Fail_Options on_member_fail {
+        .emit = options.on_fail,
+        .status = options.on_fail_status,
+        .location = argument.get_location(),
+    };
+    if (argument.is_positional()) {
+        switch (mode) {
+        case Argument_Mode::named_only:
+        case Argument_Mode::pack_named: {
+            options.on_fail(
+                argument.get_location(),
+                u8"Providing a positional argument after a named argument is not valid."sv,
+                options.context
+            );
+            return options.on_fail_status;
+        }
+
+        case Argument_Mode::pack_positional: {
+            COWEL_ASSERT(current_pack_value_matcher);
+            COWEL_ASSERT(current_pack_param_index <= options.argument_indices_by_parameter.size());
+            COWEL_ASSERT(
+                options.argument_indices_by_parameter[current_pack_param_index]
+                != parameter_not_provided
+            );
+
+            return current_pack_value_matcher->match_value(
+                argument, frame, options.context, on_member_fail
+            );
+        }
+
+        case Argument_Mode::normal: {
+            const std::size_t parameter_index = argument_index;
+            if (parameter_index >= options.argument_indices_by_parameter.size()) {
+                options.on_fail(
+                    argument.get_location(), u8"Too many arguments."sv, options.context
+                );
+                return options.on_fail_status;
+            }
+            if (options.argument_indices_by_parameter[parameter_index]
+                == parameter_provided_as_block) {
+                options.on_fail(
+                    argument.get_location(),
+                    joined_char_sequence(
+                        {
+                            u8"This argument is invalid because the parameter \""sv,
+                            options.parameters[parameter_index]->get_name(),
+                            u8"\" has already been provided as a block argument.",
+                        }
+                    ),
+                    options.context
+                );
+                return options.on_fail_status;
+            }
+            COWEL_ASSERT(
+                options.argument_indices_by_parameter[parameter_index] == parameter_not_provided
+            );
+
+            options.argument_indices_by_parameter[parameter_index] = int(argument_index);
+            Value_Matcher& value_matcher = options.parameters[parameter_index]->get_value_matcher();
+            const auto arg_status
+                = value_matcher.match_value(argument, frame, options.context, on_member_fail);
+            if (arg_status != Processing_Status::ok) {
+                return arg_status;
+            }
+            if (value_matcher.get_matchable_type().is_pack()) {
+                mode = Argument_Mode::pack_positional;
+                current_pack_param_index = parameter_index;
+                current_pack_value_matcher = &value_matcher;
+            }
+            return Processing_Status::ok;
+        }
+        }
+        COWEL_ASSERT_UNREACHABLE(u8"Invalid mode.");
+    }
+
+    COWEL_DEBUG_ASSERT(argument.is_named());
+    const std::u8string_view arg_name = argument.get_name().as_string();
+    if (mode == Argument_Mode::pack_named) {
+        COWEL_ASSERT(current_pack_value_matcher);
+        COWEL_ASSERT(current_pack_param_index <= options.argument_indices_by_parameter.size());
+        COWEL_ASSERT(
+            options.argument_indices_by_parameter[current_pack_param_index]
+            != parameter_not_provided
+        );
+
+        return current_pack_value_matcher->match_value(
+            argument, frame, options.context, on_member_fail
+        );
+    }
+
+    if (mode == Argument_Mode::normal) {
+        const std::size_t parameter_index = argument_index;
+        if (parameter_index < options.argument_indices_by_parameter.size()) {
+            auto* const parameter = options.parameters[parameter_index];
+            const bool is_pack_named = parameter->get_type().is_pack()
+                && parameter->get_type().get_members().front().is_named();
+            if (is_pack_named) {
+                options.argument_indices_by_parameter[parameter_index] = int(argument_index);
+                current_pack_value_matcher = &parameter->get_value_matcher();
+                current_pack_param_index = parameter_index;
+                mode = Argument_Mode::pack_named;
+                const auto arg_status = parameter->get_value_matcher().match_value(
+                    argument, frame, options.context, on_member_fail
                 );
                 if (arg_status != Processing_Status::ok) {
                     return arg_status;
                 }
-                goto named_parameter_matched;
+                return Processing_Status::ok;
             }
-            on_fail(
-                member.get_name_span(),
+        }
+    }
+
+    COWEL_DEBUG_ASSERT(mode != Argument_Mode::pack_named);
+    mode = Argument_Mode::named_only;
+    for (std::size_t i = 0; i < options.parameters.size(); ++i) {
+        auto* const member_matcher = options.parameters[i];
+        if (arg_name != member_matcher->get_name()) {
+            continue;
+        }
+        if (options.argument_indices_by_parameter[i] != parameter_not_provided) {
+            options.on_fail(
+                argument.get_location(),
                 joined_char_sequence(
                     {
                         u8"The named argument \""sv,
                         arg_name,
-                        u8"\" does not correspond to any parameter"sv,
+                        u8"\" cannot be provided more than once.",
                     }
                 ),
-                context
+                options.context
             );
-            return on_fail_status;
-
-        named_parameter_matched:
-            continue;
+            return options.on_fail_status;
         }
+        options.argument_indices_by_parameter[i] = int(argument_index);
+        const auto arg_status = member_matcher->get_value_matcher().match_value(
+            argument, frame, options.context, on_member_fail
+        );
+        if (arg_status != Processing_Status::ok) {
+            return arg_status;
         }
-        COWEL_ASSERT_UNREACHABLE(u8"Invalid member kind.");
+        return Processing_Status::ok;
     }
+    options.on_fail(
+        argument.get_location(),
+        joined_char_sequence(
+            {
+                u8"The named argument \""sv,
+                arg_name,
+                u8"\" does not correspond to any parameter"sv,
+            }
+        ),
+        options.context
+    );
+    return options.on_fail_status;
+}
 
-    return Processing_Status::ok;
+[[nodiscard]]
+Processing_Status match_arguments(const Match_Arguments_Options& options)
+{
+    Argument_Mode mode = Argument_Mode::normal;
+    std::size_t current_pack_param_index = -1uz;
+    Value_Matcher* current_pack_value_matcher = nullptr;
+    std::size_t arg_index = 0;
+    return process_greedy(options.arguments, [&](const Argument& arg) {
+        const auto status = match_argument(
+            options, arg, options.argument_frames[arg_index], arg_index, //
+            mode, current_pack_param_index, current_pack_value_matcher
+        );
+        ++arg_index;
+        return status;
+    });
 }
 
 } // namespace
@@ -731,15 +848,21 @@ Processing_Status match_call(
 {
     COWEL_ASSERT(on_fail);
     COWEL_ASSERT(status_is_error(on_fail_status));
-    if constexpr (is_debug_build) {
-        for (const auto* const matcher : parameters) {
-            COWEL_ASSERT(matcher != nullptr);
-        }
+    COWEL_DEBUG_ASSERT(!std::ranges::contains(parameters, nullptr));
+
+    Expand_Call_Arguments expand_args {
+        .on_fail = on_fail,
+        .on_fail_status = on_fail_status,
+        .context = context,
+    };
+    const auto expansion_status = expand_args(call.get_arguments_span(), call.content_frame);
+    if (expansion_status != Processing_Status::ok) {
+        return status_max(expansion_status, on_fail_status);
     }
 
-    Small_Vector<int, 32> argument_indices_by_parameter(parameters.size(), -1);
-
-    if (call.block_arguments.size() > parameters.size()) {
+    const bool last_parameter_is_pack
+        = !parameters.empty() && parameters.back()->get_type().is_pack();
+    if (!last_parameter_is_pack && call.block_arguments.size() > parameters.size()) {
         on_fail(
             call.block_arguments.front().get_source_span(),
             u8"Block argument does not match any parameter."sv, context
@@ -747,8 +870,7 @@ Processing_Status match_call(
         return on_fail_status;
     }
 
-    const bool last_parameter_is_pack
-        = !parameters.empty() && parameters.back()->get_type().is_pack();
+    Small_Vector<int, 32> argument_indices_by_parameter(parameters.size(), parameter_not_provided);
     const std::size_t block_parameter_offset = parameters.size() - call.block_arguments.size();
     for (std::size_t block_index = 0; block_index < call.block_arguments.size(); ++block_index) {
         const std::size_t parameter_index
@@ -775,26 +897,26 @@ Processing_Status match_call(
         if (block_status != Processing_Status::ok) {
             return block_status;
         }
-        argument_indices_by_parameter[parameter_index] = std::numeric_limits<int>::max();
+        argument_indices_by_parameter[parameter_index] = parameter_provided_as_block;
     }
 
-    Match_Call match_call {
-        .parameters = parameters,
-        .context = context,
-        .on_fail = on_fail,
-        .on_fail_status = on_fail_status,
-        .argument_indices_by_parameter = argument_indices_by_parameter,
-        .mode = Argument_Mode::normal,
-        .current_pack_param_index = -1uz,
-        .current_pack_value_matcher = nullptr,
-    };
-    const Processing_Status status = match_call(
-        call.get_arguments_span(), //
-        call.content_frame, //
-        /* cumulative_arg_index= */ 0
+    const auto matching_status = match_arguments(
+        {
+            .parameters = parameters,
+            .arguments = expand_args.out_arguments,
+            .argument_frames = expand_args.out_frames,
+            .context = context,
+            .on_fail = on_fail,
+            .on_fail_status = on_fail_status,
+            .argument_indices_by_parameter = argument_indices_by_parameter,
+        }
     );
-    if (status != Processing_Status::ok) {
-        return status;
+    // The following check for non-provided parameters will produce noise
+    // when matching parameters failed due to prior errors
+    // (because lots will be non-provided due to the errors),
+    // so we should abort here instead of greedily trying to produce more errors.
+    if (matching_status != Processing_Status::ok) {
+        return status_concat(expansion_status, matching_status);
     }
 
     for (Parameter* const p : parameters) {

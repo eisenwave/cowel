@@ -64,8 +64,16 @@ consteval Fail_Callback make_fail_callback() noexcept
     return { const_v<lambda> };
 }
 
+/// @brief An argument to a macro/directive/function call.
+/// These arguments act as adaptors for either an AST node
+/// or a runtime argument.
+/// AST-backed arguments are necessary to enable lazy evaluation of arguments,
+/// whereas runtime arguments occur when expanded from a pack or from a group,
+/// in which case there may be no AST node that holds all the information anyway.
 struct Argument {
 public:
+    /// @brief Creates a lazily evaluated positional argument from an AST group member.
+    /// @param member The positional group member containing the argument expression.
     [[nodiscard]]
     static Argument positional(const ast::Group_Member& member)
     {
@@ -73,6 +81,17 @@ public:
         return { Value::null, member };
     }
 
+    /// @brief Creates an already evaluated positional argument.
+    /// @param value The evaluated argument value.
+    /// @param location The source location associated with the argument.
+    [[nodiscard]]
+    static Argument positional(Value value, const File_Source_Span& location)
+    {
+        return { Value::null, std::move(value), location };
+    }
+
+    /// @brief Creates a lazily evaluated block argument from an AST primary.
+    /// @param primary The block primary containing the argument content.
     [[nodiscard]]
     static Argument block(const ast::Primary& primary)
     {
@@ -80,11 +99,24 @@ public:
         return Argument { primary };
     }
 
+    /// @brief Creates a lazily evaluated named argument from an AST group member.
+    /// @param name The evaluated argument name.
+    /// @param member The named group member containing the argument expression.
     [[nodiscard]]
     static Argument named(Value name, const ast::Group_Member& member)
     {
         COWEL_ASSERT(member.get_kind() == ast::Member_Kind::named);
         return { std::move(name), member };
+    }
+
+    /// @brief Creates an already evaluated named argument.
+    /// @param name The evaluated argument name.
+    /// @param value The evaluated argument value.
+    /// @param location The source location associated with the argument.
+    [[nodiscard]]
+    static Argument named(Value name, Value value, const File_Source_Span& location)
+    {
+        return { std::move(name), std::move(value), location };
     }
 
 private:
@@ -124,6 +156,7 @@ private:
     /// @brief The evaluated argument name (in the case of named arguments),
     /// or `null` in the case of positional arguments.
     Value m_name;
+    std::optional<Value> m_runtime_value;
     /// @brief A type-erased reference to the AST node.
     const void* m_ast_node = nullptr;
     Result<Value, Processing_Status> (*m_evaluate)(const void*, Frame_Index, Context&) = nullptr;
@@ -167,6 +200,14 @@ private:
     {
     }
 
+    [[nodiscard]]
+    Argument(Value name, Value value, const File_Source_Span& location) noexcept
+        : m_name { std::move(name) }
+        , m_runtime_value { std::move(value) }
+        , m_location { location }
+    {
+    }
+
 public:
     [[nodiscard]]
     const Value& get_name() const
@@ -180,34 +221,16 @@ public:
     }
 
     [[nodiscard]]
-    Result<Value, Processing_Status> evaluate(const Frame_Index frame, Context& context) const
-    {
-        return m_evaluate(m_ast_node, frame, context);
-    }
+    Result<Value, Processing_Status> evaluate(Frame_Index frame, Context& context) const;
     [[nodiscard]]
-    Processing_Status splice(Content_Policy& out, const Frame_Index frame, Context& context) const
-    {
-        return m_splice(m_ast_node, out, frame, context);
-    }
+    Processing_Status splice(Content_Policy& out, Frame_Index frame, Context& context) const;
     [[nodiscard]]
-    Processing_Status splice_to_plaintext(
-        std::pmr::vector<char8_t>& out,
-        const Frame_Index frame,
-        Context& context
-    ) const
-    {
-        return m_splice_to_plaintext(m_ast_node, out, frame, context);
-    }
+    Processing_Status
+    splice_to_plaintext(std::pmr::vector<char8_t>& out, Frame_Index frame, Context& context) const;
     [[nodiscard]]
-    const File_Source_Span& get_value_location() const
-    {
-        return m_get_value_location(m_ast_node);
-    }
+    const File_Source_Span& get_value_location() const;
     [[nodiscard]]
-    const Type& get_static_type(Context& context) const
-    {
-        return m_get_static_type(m_ast_node, context);
-    }
+    const Type& get_static_type(Context& context) const;
 
     [[nodiscard]]
     constexpr bool is_named() const
@@ -394,6 +417,31 @@ struct Value_Of_Type_Matcher final
         : Value_Matcher { expected_type }
     {
     }
+    [[nodiscard]]
+    Processing_Status match_value(
+        const Argument& argument,
+        Frame_Index frame,
+        Context& context,
+        const Match_Fail_Options& on_fail
+    ) override;
+};
+
+/// @brief Matches either a single argument or a pack of arguments, of any type.
+struct Declared_Matcher final : Value_Matcher {
+    using value_type = Value_And_Location<Value>;
+
+private:
+    const bool m_is_pack;
+    std::optional<value_type> m_value;
+    Small_Vector<value_type, 16> m_values;
+
+public:
+    [[nodiscard]]
+    explicit Declared_Matcher(const bool is_pack)
+        : Value_Matcher { is_pack ? Type::pack_of(&Type::any) : Type::any }
+        , m_is_pack { is_pack }
+    {
+    }
 
     [[nodiscard]]
     Processing_Status match_value(
@@ -402,6 +450,39 @@ struct Value_Of_Type_Matcher final
         Context& context,
         const Match_Fail_Options& on_fail
     ) override;
+
+    [[nodiscard]]
+    bool was_matched() const override
+    {
+        return m_is_pack ? !m_values.empty() : m_value.has_value();
+    }
+
+    void reset() noexcept override
+    {
+        m_value.reset();
+        m_values.clear();
+    }
+
+    [[nodiscard]]
+    bool is_pack() const
+    {
+        return m_is_pack;
+    }
+
+    [[nodiscard]]
+    const Value& get_value() const
+    {
+        COWEL_ASSERT(!m_is_pack);
+        COWEL_ASSERT(m_value.has_value());
+        return m_value->value;
+    }
+
+    [[nodiscard]]
+    std::span<const value_type> get_values() const
+    {
+        COWEL_ASSERT(m_is_pack);
+        return m_values;
+    }
 };
 
 /// @brief Matches any spliceable value and splices it into a string.

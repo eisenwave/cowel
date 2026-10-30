@@ -122,6 +122,8 @@ When both operands of `+` are `str`,
 A directive call `name(args){block1}{block2}...` or `name{block1}{block2}...`
 is also a valid expression.
 
+### Splicing
+
 Values can be spliced into text using directives and expression-splices
 or expression-line-splices:
 `"x = \(1 + 2)"` or `{x = \(1 + 2)}` evaluates the expression and inserts `3`.
@@ -137,10 +139,19 @@ parameters are visible to name lookup within the body.
 The function-defining expression itself evaluates to `unit`.
 Directive splices work the same way: `"Hello, \name!"`.
 
+### Name lookup
+
 A bare **identifier** in an expression that is not followed by a group or block
 is an **id-expression** and resolves to the value of the variable with that name.
 This is the idiomatic way to read variables:
 `myvar` instead of `cowel_var_get("myvar")`.
+
+### Packs and variadic functions
+
+A group expansion member such as `...args` expands a pack
+when used in an argument group.
+A user-defined function can declare a final variadic parameter with the same syntax:
+`fun f(prefix, ...args) = args`.
 
 ## Defining macros
 

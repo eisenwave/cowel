@@ -1,0 +1,45 @@
+push_document 2
+push_directive_splice
+push_group 4
+skip
+
+push_expansion_group_member
+ellipsis
+id_expression
+pop_expansion_group_member
+comma
+skip
+
+push_expansion_group_member
+ellipsis
+push_expr_parenthesized
+id_expression
+pop_expr_parenthesized
+pop_expansion_group_member
+comma
+skip
+
+push_expansion_group_member
+ellipsis
+push_expr_directive_call
+push_group 1
+push_expansion_group_member
+ellipsis
+id_expression
+pop_expansion_group_member
+pop_group
+pop_expr_directive_call
+pop_expansion_group_member
+comma
+skip
+
+push_ellipsis_argument
+ellipsis
+pop_ellipsis_argument
+comma
+skip
+
+pop_group
+pop_directive_splice
+text
+pop_document

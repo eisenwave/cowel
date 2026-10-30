@@ -504,12 +504,6 @@ private:
         }
 
         const std::size_t first_member_instruction_index = m_out.size();
-        enum struct First_Member_Kind : Default_Underlying {
-            named,
-            positional,
-            ellipsis,
-        };
-
         const auto consume_group_tail = [&](std::size_t member_count) -> void {
             while (!eof()) {
                 if (expect(Token_Kind::parenthesis_right)) {
@@ -551,7 +545,7 @@ private:
             m_out.push_back({ pop });
         };
 
-        const auto first_member_kind = [&] -> std::optional<First_Member_Kind> {
+        const auto first_member_kind = [&] -> std::optional<ast::Member_Kind> {
             if (expect_member_name()) {
                 consume_blank_sequence();
                 if (!expect_expression()) {
@@ -560,14 +554,17 @@ private:
                     error(m_tokens[m_pos].location, u8"Invalid group member value."sv);
                     skip_to_end_of_group_member();
                 }
-                return First_Member_Kind::named;
+                return ast::Member_Kind::named;
+            }
+            if (expect_expansion_group_member()) {
+                return ast::Member_Kind::expansion;
+            }
+            if (expect_expression()) {
+                return ast::Member_Kind::positional;
             }
             if (expect(Token_Kind::ellipsis)) {
                 m_out.push_back({ CST_Instruction_Kind::ellipsis });
-                return First_Member_Kind::ellipsis;
-            }
-            if (expect_expression()) {
-                return First_Member_Kind::positional;
+                return ast::Member_Kind::ellipsis;
             }
             return {};
         }();
@@ -580,21 +577,21 @@ private:
 
         consume_blank_sequence();
 
-        if (*first_member_kind == First_Member_Kind::positional
+        if (*first_member_kind == ast::Member_Kind::positional
             && expect(Token_Kind::parenthesis_right)) {
             m_out.push_back({ CST_Instruction_Kind::pop_expr_parenthesized });
             return;
         }
 
         switch (*first_member_kind) {
-        case First_Member_Kind::named: {
+        case ast::Member_Kind::named: {
             promote_first_member_to_group(
                 CST_Instruction_Kind::push_named_member, CST_Instruction_Kind::pop_named_member
             );
             consume_group_tail(1);
             return;
         }
-        case First_Member_Kind::positional: {
+        case ast::Member_Kind::positional: {
             if (!peek(Token_Kind::comma)) {
                 error(
                     m_tokens[m_pos].location,
@@ -609,7 +606,15 @@ private:
             consume_group_tail(1);
             return;
         }
-        case First_Member_Kind::ellipsis: {
+        case ast::Member_Kind::expansion: {
+            promote_first_member_to_group(
+                CST_Instruction_Kind::push_expansion_group_member,
+                CST_Instruction_Kind::pop_expansion_group_member
+            );
+            consume_group_tail(1);
+            return;
+        }
+        case ast::Member_Kind::ellipsis: {
             promote_first_member_to_group(
                 CST_Instruction_Kind::push_ellipsis_argument,
                 CST_Instruction_Kind::pop_ellipsis_argument
@@ -632,12 +637,23 @@ private:
 
         CST_Instruction_Kind push_type;
         CST_Instruction_Kind pop_type;
+        bool expression_already_parsed = false;
 
         const bool is_named = expect_member_name();
         if (is_named) {
             consume_blank_sequence();
             push_type = CST_Instruction_Kind::push_named_member;
             pop_type = CST_Instruction_Kind::pop_named_member;
+        }
+        else if (expect_expansion_group_member()) {
+            push_type = CST_Instruction_Kind::push_expansion_group_member;
+            pop_type = CST_Instruction_Kind::pop_expansion_group_member;
+            expression_already_parsed = true;
+        }
+        else if (expect_expression()) {
+            push_type = CST_Instruction_Kind::push_positional_member;
+            pop_type = CST_Instruction_Kind::pop_positional_member;
+            expression_already_parsed = true;
         }
         else if (expect(Token_Kind::ellipsis)) {
             m_out.push_back({ CST_Instruction_Kind::ellipsis });
@@ -651,7 +667,8 @@ private:
 
         consume_blank_sequence();
 
-        if (push_type != CST_Instruction_Kind::push_ellipsis_argument) {
+        if (push_type != CST_Instruction_Kind::push_ellipsis_argument
+            && !expression_already_parsed) {
             if (!expect_expression()) {
                 error(m_tokens[m_pos].location, u8"Invalid group member value."sv);
                 skip_to_end_of_group_member();
@@ -711,6 +728,14 @@ private:
         // If we haven't made any progress,
         // this gets us stuck in an infinite loop of failing to parse.
         COWEL_ASSERT(m_pos != initial_pos);
+    }
+
+    void skip_to_end_of_parameters()
+    {
+        while (!eof() && !peek(Token_Kind::parenthesis_right)) {
+            advance_by(1);
+        }
+        COWEL_ASSERT(expect(Token_Kind::parenthesis_right));
     }
 
     /// @brief Matches the name of an argument, including any surrounding whitespace and the `=`
@@ -857,6 +882,7 @@ private:
 
         std::size_t param_count = 0;
         bool expect_name = true;
+        bool has_pack_parameter = false;
         while (!eof()) {
             consume_blank_sequence();
             if (expect(Token_Kind::parenthesis_right)) {
@@ -880,6 +906,27 @@ private:
                     continue;
                 }
                 m_out.push_back({ CST_Instruction_Kind::skip });
+                continue;
+            }
+            if (expect_name && has_pack_parameter) {
+                error(
+                    m_tokens[m_pos].location, u8"A variadic parameter must be the last parameter."sv
+                );
+                skip_to_end_of_parameters();
+                return;
+            }
+            if (expect_name && expect(Token_Kind::ellipsis)) {
+                m_out.push_back({ CST_Instruction_Kind::ellipsis });
+                consume_blank_sequence();
+                has_pack_parameter = true;
+                if (!peek(Token_Kind::identifier)) {
+                    error(m_tokens[m_pos].location, u8"Expected parameter name after '...'."sv);
+                    skip_to_end_of_parameters();
+                    return;
+                }
+                emit_and_advance_by_one(CST_Instruction_Kind::id_expression);
+                ++param_count;
+                expect_name = false;
                 continue;
             }
             if (expect_name && peek(Token_Kind::identifier)) {
@@ -1004,6 +1051,10 @@ private:
             return false;
         }
 
+        if (expect_postfix_expression()) {
+            return true;
+        }
+
         switch (next->kind) {
             // Prefix expressions:
         case Token_Kind::bitwise_not: {
@@ -1034,8 +1085,72 @@ private:
                 CST_Instruction_Kind::pop_expr_unary_minus
             );
         }
+        // Tokens that cannot start an expression in general:
+        case Token_Kind::comma:
+        case Token_Kind::ellipsis:
+        case Token_Kind::equals:
+        case Token_Kind::parenthesis_right:
+        case Token_Kind::brace_right:
+        case Token_Kind::directive_splice_name:
+        case Token_Kind::escape:
+        case Token_Kind::line_terminator:
+        // Binary operators cannot start an expression (they're infix):
+        case Token_Kind::asterisk:
+        case Token_Kind::equals_equals:
+        case Token_Kind::greater_equal:
+        case Token_Kind::greater_than:
+        case Token_Kind::less_equal:
+        case Token_Kind::less_than:
+        case Token_Kind::logical_and:
+        case Token_Kind::logical_or:
+        case Token_Kind::not_equals:
+        case Token_Kind::percent:
+        case Token_Kind::slash: return false;
+        // Tokens which would have been covered by matching a postfix-expression:
+        case Token_Kind::binary_int:
+        case Token_Kind::brace_left:
+        case Token_Kind::decimal_float:
+        case Token_Kind::decimal_int:
+        case Token_Kind::false_:
+        case Token_Kind::fun:
+        case Token_Kind::hexadecimal_int_literal:
+        case Token_Kind::identifier:
+        case Token_Kind::infinity:
+        case Token_Kind::let:
+        case Token_Kind::null:
+        case Token_Kind::octal_int:
+        case Token_Kind::parenthesis_left:
+        case Token_Kind::string_quote:
+        case Token_Kind::true_:
+        case Token_Kind::unit:
+        // Tokens that cannot appear in expressions
+        // or which should have been filtered out previously:
+        case Token_Kind::document_text:
+        case Token_Kind::expression_splice:
+        case Token_Kind::expression_line_splice:
+        case Token_Kind::quoted_string_text:
+        case Token_Kind::block_text:
+        case Token_Kind::error:
+        case Token_Kind::reserved_escape:
+        case Token_Kind::reserved_number:
+        case Token_Kind::whitespace:
+        case Token_Kind::block_comment:
+        case Token_Kind::line_comment: break;
+        }
 
-        // Postfix expressions:
+        error(m_tokens[m_pos].location, u8"Unexpected token in expression."sv);
+        return false;
+    }
+
+    [[nodiscard]]
+    bool expect_postfix_expression()
+    {
+        const Token* const next = peek();
+        if (!next) {
+            return false;
+        }
+
+        switch (next->kind) {
         case Token_Kind::identifier: {
             if (expect_directive_call_expression()) {
                 return true;
@@ -1043,8 +1158,6 @@ private:
             emit_and_advance_by_one(CST_Instruction_Kind::id_expression);
             return true;
         }
-
-        // Primary expressions:
         case Token_Kind::let: {
             consume_let_expression();
             return true;
@@ -1107,45 +1220,8 @@ private:
             emit_and_advance_by_one(CST_Instruction_Kind::decimal_float);
             return true;
         }
-
-        // Tokens that cannot start an expression in general:
-        case Token_Kind::comma:
-        case Token_Kind::ellipsis:
-        case Token_Kind::equals:
-        case Token_Kind::parenthesis_right:
-        case Token_Kind::brace_right:
-        case Token_Kind::directive_splice_name:
-        case Token_Kind::escape:
-        case Token_Kind::line_terminator:
-        // Binary operators cannot start an expression (they're infix):
-        case Token_Kind::asterisk:
-        case Token_Kind::equals_equals:
-        case Token_Kind::greater_equal:
-        case Token_Kind::greater_than:
-        case Token_Kind::less_equal:
-        case Token_Kind::less_than:
-        case Token_Kind::logical_and:
-        case Token_Kind::logical_or:
-        case Token_Kind::not_equals:
-        case Token_Kind::percent:
-        case Token_Kind::slash: return false;
-        // Tokens that cannot appear in expressions
-        // or which should have been filtered out previously:
-        case Token_Kind::document_text:
-        case Token_Kind::expression_splice:
-        case Token_Kind::expression_line_splice:
-        case Token_Kind::quoted_string_text:
-        case Token_Kind::block_text:
-        case Token_Kind::error:
-        case Token_Kind::reserved_escape:
-        case Token_Kind::reserved_number:
-        case Token_Kind::whitespace:
-        case Token_Kind::block_comment:
-        case Token_Kind::line_comment: break;
+        default: return false;
         }
-
-        error(m_tokens[m_pos].location, u8"Unexpected token in expression."sv);
-        return false;
     }
 
     [[nodiscard]]
@@ -1155,10 +1231,12 @@ private:
         const CST_Instruction_Kind pop
     )
     {
-        const Token* const next = expect(op);
-        COWEL_ASSERT(next && next->kind == op);
-
         Scoped_Attempt a = attempt();
+
+        const Token* const next = expect(op);
+        if (!next) {
+            return false;
+        }
 
         m_out.push_back({ push });
         consume_blank_sequence();
@@ -1261,6 +1339,23 @@ private:
             emit_and_advance_by_one(CST_Instruction_Kind::skip);
         }
     }
+
+    [[nodiscard]]
+    bool expect_expansion_group_member()
+    {
+        Scoped_Attempt a = attempt();
+        if (!expect(Token_Kind::ellipsis)) {
+            return false;
+        }
+
+        m_out.push_back({ CST_Instruction_Kind::ellipsis });
+        consume_blank_sequence();
+        if (!expect_postfix_expression()) {
+            return false;
+        }
+        a.commit();
+        return true;
+    }
 };
 
 } // namespace
@@ -1349,6 +1444,8 @@ std::u8string_view cst_instruction_kind_name(CST_Instruction_Kind type)
         COWEL_ENUM_STRING_CASE8(pop_named_member);
         COWEL_ENUM_STRING_CASE8(push_positional_member);
         COWEL_ENUM_STRING_CASE8(pop_positional_member);
+        COWEL_ENUM_STRING_CASE8(push_expansion_group_member);
+        COWEL_ENUM_STRING_CASE8(pop_expansion_group_member);
         COWEL_ENUM_STRING_CASE8(push_ellipsis_argument);
         COWEL_ENUM_STRING_CASE8(pop_ellipsis_argument);
         COWEL_ENUM_STRING_CASE8(push_block);
@@ -1412,6 +1509,8 @@ Token_Kind cst_instruction_kind_fixed_token(CST_Instruction_Kind type)
     case pop_named_member:
     case push_positional_member:
     case pop_positional_member:
+    case push_expansion_group_member:
+    case pop_expansion_group_member:
     case push_ellipsis_argument:
     case pop_ellipsis_argument:
     case pop_directive_splice:
@@ -1513,6 +1612,8 @@ bool cst_instruction_kind_advances(CST_Instruction_Kind kind)
     case pop_named_member:
     case push_positional_member:
     case pop_positional_member:
+    case push_expansion_group_member:
+    case pop_expansion_group_member:
     case push_ellipsis_argument:
     case pop_ellipsis_argument:
     case pop_directive_splice:
