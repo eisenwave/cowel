@@ -134,8 +134,10 @@ assigns `1` to the variable `x` (same as `\cowel_var_set("x", 1)`).
 with value `1` (same as `\cowel_var_let("x", 1)`).
 `\(fun sqr(x) = x * x)` and `\ fun sqr(x) = x * x` defines a function
 that can be called like a directive: `\sqr(2)` evaluates to `4`.
-Arguments are evaluated once and matched positionally or by name;
-parameters are visible to name lookup within the body.
+Arguments are evaluated once, from left to right, and matched positionally or by name;
+this includes members expanded from a pack,
+so the side effects of an argument are visible to the arguments that follow it.
+Parameters are visible to name lookup within the body.
 The function-defining expression itself evaluates to `unit`.
 Directive splices work the same way: `"Hello, \name!"`.
 
