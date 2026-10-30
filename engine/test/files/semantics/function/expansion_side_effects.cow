@@ -1,0 +1,16 @@
+\test_input{
+\ let x = 0
+\ fun second(a, b) = b
+\second(cowel_var_set("x", 1), x)
+\second(cowel_var_set("x", 2), ...(x,))
+\ fun third(a, b, c) = b + c
+\third(cowel_var_set("x", 10), ...(x,), x)
+\second(...(cowel_var_set("x", 3),), x)
+}
+
+\test_output{
+1
+2
+20
+3
+}
