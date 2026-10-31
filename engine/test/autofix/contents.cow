@@ -1,0 +1,3 @@
+\cowel_macro("issue"){\ref("https://wg21.link/\cowel_put"){\cowel_put}}
+\cowel_macro("term"){\i{\cowel_put}}
+An \term{italic} reference to \issue{P1234R0}.

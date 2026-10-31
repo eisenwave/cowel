@@ -1693,6 +1693,8 @@ h1 {
 <a href=#dir-cowel_alias><h4><code><h- data-h=mk_tag>\cowel_alias</h-></code> — Define aliases for an existing directive</h4></a>
 <div class=toc-num data-level=4>9.8.2</div>
 <a href=#dir-cowel_macro><h4><code><h- data-h=mk_tag>\cowel_macro</h-></code> — Define a macro</h4></a>
+<div class=toc-num data-level=5>9.8.2.1</div>
+<a href=#macro-autofix><h5>Automatic conversion</h5></a>
 <div class=toc-num data-level=4>9.8.3</div>
 <a href=#dir-cowel_put><h4><code><h- data-h=mk_tag>\cowel_put</h-></code> — Process provided macro content or arguments</h4></a>
 <div class=toc-num data-level=3>9.9</div>
@@ -3169,8 +3171,10 @@ as if they had been written directly in the surrounding group.
 
 <p>An <dfn>ellipsis argument</dfn> is a <g-term>group-member</g-term>
 spelled <code><h- data-h=name_attr>...</h-></code>.
-Ellipsis arguments are placeholders which expand to arguments provided to a surrounding macro.
-See also <a href=#dir-cowel_macro>§9.8.2. <code><h- data-h=mk_tag>\cowel_macro</h-></code> — Define a macro</a> and <a href=#dir-cowel_put>§9.8.3. <code><h- data-h=mk_tag>\cowel_put</h-></code> — Process provided macro content or arguments</a>.
+Ellipsis arguments are placeholders
+which expand to the arguments provided to the enclosing macro or function invocation.
+See also <a href=#function-expressions>§6.7. Function expressions</a>,
+<a href=#dir-cowel_macro>§9.8.2. <code><h- data-h=mk_tag>\cowel_macro</h-></code> — Define a macro</a>, and <a href=#dir-cowel_put>§9.8.3. <code><h- data-h=mk_tag>\cowel_put</h-></code> — Process provided macro content or arguments</a>.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
@@ -3182,13 +3186,26 @@ COWEL markup:
 </p><code-block><h- data-h=sym_punc>&lt;</h-><h- data-h=mk_tag>div</h-> <h- data-h=mk_attr>id</h-><h- data-h=sym_punc>=</h-><h- data-h=str>abc</h-><h- data-h=sym_punc>&gt;</h->inner text<h- data-h=sym_punc>&lt;/</h-><h- data-h=mk_tag>div</h-><h- data-h=sym_punc>&gt;</h-></code-block>
 </example-block>
 
+<p>The example above uses <code><h- data-h=mk_tag>\cowel_macro</h-></code>,
+which is deprecated in favor of function expressions
+(see <a href=#function-expressions>§6.7. Function expressions</a>).
+In the body of a function,
+the arguments of the call are forwarded with an argument expansion instead,
+typically <code>attr = (...args)</code>
+using a variadic parameter.
+A variadic parameter captures positional arguments only,
+so a call which passes named arguments
+has to match them against declared parameters instead.
+</p>
 <p>Specifically, any positional argument which begins with <code><h- data-h=name_attr>...</h-></code>
 (ignoring leading whitespace and comments)
 is considered an ellipsis.
 The text <tt->...</tt-> is not considered an ellipsis if it appears anywhere else
 or has preceding content within an argument.
 </p>
-<p>An error is raised if an ellipsis is used as an argument outside of a macro expansion.
+<p>An error is raised if an ellipsis appears outside of a macro or function invocation,
+at the top level of a document,
+because then there are no arguments to expand it to.
 </p>
 <example-block><p><intro-></intro-> 
 </p><code-block><h- data-h=mk_tag>\m</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>...</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-> <h- data-h=cmt_dlim>\:</h-><h- data-h=cmt> OK, providing string "...", not an ellipsis</h->
@@ -4297,8 +4314,9 @@ into a string,
 and <code>{Hello, <h- data-h=mk_tag>\</h-><h- data-h=mk_tag>d</h->!}</code> splices the result of <code><h- data-h=mk_tag>\d</h-></code> into a block.
 </p>
 <p>Splicing a directive always results in evaluation of that directive.
-For example, splicing <code><h- data-h=mk_tag>\cowel_macro</h-></code> evaluates <code><h- data-h=mk_tag>\cowel_macro</h-></code>,
+For example, splicing a <g-term>function-expression</g-term> evaluates the definition,
 and its resulting <tt-><h- data-h=kw_type>unit</h-></tt-> is spliced (resulting in no produced text).
+See <a href=#function-expressions>§6.7. Function expressions</a> for details.
 </p>
 <p>When a value is spliced, it is converted into plaintext.
 When splicing into strings, that plaintext simply becomes part of the string content.
@@ -5638,6 +5656,22 @@ One or multiple aliases can be defined as follows:
 ): <h- data-h=kw_type>unit</h->
 </pre>
 
+<warning-block><p><intro-></intro-> 
+The <code><h- data-h=mk_tag>\cowel_macro</h-></code> directive is deprecated
+and will be removed in a future version.
+Use a <dfn>function-expression</dfn> such as <code>fun m(content) = ...</code> instead
+(see <a href=#function-expressions>§6.7. Function expressions</a>).
+A function can be invoked like a directive,
+but its arguments are matched against declared parameters
+instead of being accessed with <code><h- data-h=mk_tag>\cowel_put</h-></code>.
+</p>
+<p>When a <code><h- data-h=mk_tag>\cowel_macro</h-></code> definition is processed,
+a warning with the diagnostic ID <code>deprecated</code> is raised.
+In auto-fix mode, such as with <code><h- data-h=name_cmd>--fix-all</h-></code>,
+the definition is rewritten into an equivalent function-expression if that is possible;
+see <a href=#macro-autofix>§9.8.2.1. Automatic conversion</a>.
+</p></warning-block>
+
 <p>The <code><h- data-h=mk_tag>\cowel_macro</h-></code> directive defines a block of content which
 can be processed at a later point in the document.
 The provided content is not processed, but remembered.
@@ -5670,6 +5704,105 @@ was invoked immediately before processing the content in the macro definition.
 This means that blank lines in the macro definition
 may also result in paragraph splits outside the macro.
 </p>
+<h5 id=macro-autofix><a class=para href=#macro-autofix></a>9.8.2.1. Automatic conversion</h5>
+
+<p>The warning raised for a <code><h- data-h=mk_tag>\cowel_macro</h-></code> definition
+is accompanied by an <dfn>auto-fix</dfn> when the definition can be converted automatically.
+Applying the fix replaces the whole definition with a function-expression
+which declares a function of the same name,
+so that the directive itself becomes unnecessary.
+The fixed source is written to the output file in place of the generated HTML.
+</p>
+<p>The message of the warning is
+<code>\cowel_macro is deprecated; use a function-expression instead.</code>
+If no fix is produced,
+the sentence <code>this definition could not be converted automatically.</code>
+is appended to it.
+</p>
+<p>The generated definition always uses the parenthesized form of the function-expression,
+such as <code><h- data-h=str_intp_dlim>\</h-><h- data-h=str_intp_dlim>(</h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>m</h-><h- data-h=sym_par>(</h-><h- data-h=name_var>content</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=err>...</h-><h- data-h=str_intp_dlim>)</h-></code>,
+because it may be followed by other markup on the same line;
+the <code>\ fun ...</code> form would consume the rest of the line as its expression.
+</p>
+<p>The parameters of the generated function are the macro arguments
+which the body designates with <code><h- data-h=mk_tag>\cowel_put</h-></code> calls.
+Every such call is replaced with a reference to the parameter
+which captures the argument that the call designates:
+</p><ul>
+  <li>
+    A call which designates the contents, such as
+    <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_put</h-></code>, <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_put</h-><h- data-h=sym_brac>{</h-><h- data-h=sym_brac>}</h-></code>, or <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_put</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>block</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-></code>,
+    becomes the parameter <code>content</code>.
+    This parameter is declared last,
+    so that it matches the block argument of an invocation and nothing else.
+  </li>
+  <li>
+    A call which designates the positional argument at an index, such as
+    <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h-></code> or <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_put</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>pos</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-></code>,
+    becomes the parameter <code>arg0</code>, and so on for every index.
+    The parameters for the positional arguments are declared first, in order of index.
+  </li>
+  <li>
+    A call which designates a named argument, such as
+    <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_put</h-><h- data-h=sym_brac>{</h->n<h- data-h=sym_brac>}</h-></code> or <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>cowel_put</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>n</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-></code>,
+    becomes a parameter with that name.
+    Named parameters are declared after the positional parameters.
+  </li>
+</ul>
+
+<p>The arguments of a macro are optional,
+so the parameter for a positional argument which the body does not use at all
+is given the default argument <code>{}</code>.
+A positional argument which the body does use has no default argument,
+unless the body accesses it with an <tt-><h- data-h=mk_attr>else</h-></tt-> fallback,
+which becomes the default argument of the parameter.
+A definition in which the same argument is accessed with two different
+<tt-><h- data-h=mk_attr>else</h-></tt-> fallbacks has no such single default argument and is not converted.
+</p>
+<p>An <code><h- data-h=name_attr>...</h-></code> argument is replaced with a pack parameter <code>...args</code>,
+which is declared before the <code>content</code> parameter.
+Like any pack parameter, it captures positional arguments only.
+An <code><h- data-h=name_attr>...</h-></code> expands all arguments of the invocation, including named arguments,
+so a definition in which an <code><h- data-h=name_attr>...</h-></code> forwards named arguments
+may require manual adjustment after the fix.
+</p>
+<p>No fix is produced for a definition which cannot be converted.
+This is the case if the definition
+</p><ul>
+  <li>defines more than one macro name,</li>
+  <li>contains a nested <code><h- data-h=mk_tag>\cowel_macro</h-></code> definition or a function-expression, or</li>
+  <li>designates an argument with a <code><h- data-h=mk_tag>\cowel_put</h-></code> call
+      which is not resolved when the definition is processed.</li>
+</ul>
+<p>A <code><h- data-h=mk_tag>\cowel_put</h-></code> call is not resolved in that way if it
+</p><ul>
+  <li>has an ellipsis or expansion argument,</li>
+  <li>uses a selector which is neither <tt-><h- data-h=mk_attr>else</h-></tt->, <tt-><h- data-h=mk_attr>block</h-></tt->,
+      <tt-><h- data-h=mk_attr>pos</h-></tt->, nor <tt-><h- data-h=mk_attr>name</h-></tt->,</li>
+  <li>combines several selectors, or repeats one of them,</li>
+  <li>passes a selector an argument which is not a literal of the appropriate type,</li>
+  <li>combines a selector with a target which is passed as a block argument,</li>
+  <li>designates a block argument other than the contents, that is, <code>block != 0</code>,</li>
+  <li>has more than one block argument,
+      or a block argument which is not a single piece of text, or</li>
+  <li>designates a named argument whose name is not a valid identifier.</li>
+</ul>
+
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=mk_tag>\cowel_macro</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>banner</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>div</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>class</h-><h- data-h=sym_punc>=</h-><h- data-h=str_dlim>"</h-><h- data-h=str>banner</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
+<h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->label<h- data-h=sym_brac>}</h->: <h- data-h=mk_tag>\cowel_put</h-> and <h- data-h=mk_tag>\cowel_put</h-><h- data-h=sym_brac>{</h->0<h- data-h=sym_brac>}</h->!
+<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\banner</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Positional</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>label</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Pattern</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Content<h- data-h=sym_brac>}</h-></code-block>
+<p>After auto-fixing:
+</p><code-block><h- data-h=str_intp_dlim>\(</h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>banner</h-><h- data-h=sym_par>(</h-><h- data-h=name_var>arg0</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_var>label</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_var>content</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h->
+<h- data-h=mk_tag>\cowel_html_element</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>div</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_par>(</h-><h- data-h=mk_attr>class</h-><h- data-h=sym_punc>=</h-><h- data-h=str_dlim>"</h-><h- data-h=str>banner</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->
+<h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>label</h-><h- data-h=str_intp_dlim>)</h->: <h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>content</h-><h- data-h=str_intp_dlim>)</h-> and <h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>arg0</h-><h- data-h=str_intp_dlim>)</h->!
+<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=str_intp_dlim>)</h->
+<h- data-h=mk_tag>\banner</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Positional</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>label</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Pattern</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->Content<h- data-h=sym_brac>}</h-></code-block>
+</example-block>
+
 <h4 id=dir-cowel_put><a class=para href=#dir-cowel_put></a>9.8.3. <code><h- data-h=mk_tag>\cowel_put</h-></code> — Process provided macro content or arguments</h4>
 
 <pre>
@@ -5681,6 +5814,8 @@ may also result in paragraph splits outside the macro.
 
 <p>The <code><h- data-h=mk_tag>\cowel_put</h-></code> directive processes content
 which was provided when a macro was invoked.
+It is deprecated along with <code><h- data-h=mk_tag>\cowel_macro</h-></code> (<a href=#dir-cowel_macro>§9.8.2. <code><h- data-h=mk_tag>\cowel_macro</h-></code> — Define a macro</a>),
+because a function accesses its arguments through its parameters instead.
 </p>
 <p>The content provided to <code><h- data-h=mk_tag>\cowel_put</h-></code> is converted to text,
 and <dfn>designates</dfn>

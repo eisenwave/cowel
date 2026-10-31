@@ -12,7 +12,24 @@
     "method": "textDocument/publishDiagnostics",
     "params": {
       "uri": "{{ROOT_URI}}/index.cow",
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 0
+            },
+            "end": {
+              "line": 0,
+              "character": 12
+            }
+          },
+          "severity": 2,
+          "code": "deprecated",
+          "source": "cowel",
+          "message": "\\cowel_macro is deprecated; use a function-expression instead."
+        }
+      ]
     }
   }
 ]

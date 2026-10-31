@@ -35,6 +35,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .no_indent = false,
             .no_source = false,
             .error_message = {},
+            .fix_all = false,
         };
     }
 
@@ -70,6 +71,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
     cowel_severity severity = COWEL_SEVERITY_INFO;
     bool no_indent = false;
     bool no_source = false;
+    bool fix_all = false;
     std::string subparser_error_msg;
 
     args::Command run_cmd {
@@ -81,6 +83,12 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
                                                       args::Options::Required };
             args::Positional<std::string> output_arg { sub, "output", "Output HTML file",
                                                        args::Options::Required };
+            args::Flag fix_all_arg {
+                sub,
+                "fix-all",
+                "Apply auto-fixes to the source instead of generating a document",
+                { "fix-all" },
+            };
             args::MapFlag<std::string, cowel_severity> severity_arg {
                 sub,
                 "severity",
@@ -97,6 +105,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             input_path = args::get(input_arg);
             output_path = args::get(output_arg);
             severity = args::get(severity_arg);
+            fix_all = fix_all_arg.Get();
         },
     };
 
@@ -203,6 +212,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .no_indent = false,
             .no_source = false,
             .error_message = {},
+            .fix_all = false,
         };
     }
     if (version_arg.Matched()) {
@@ -216,6 +226,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .no_indent = false,
             .no_source = false,
             .error_message = {},
+            .fix_all = false,
         };
     }
     if (parser.GetError() != args::Error::None) {
@@ -231,6 +242,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .no_indent = false,
             .no_source = false,
             .error_message = cowel::alloc_str(msg),
+            .fix_all = false,
         };
     }
 
@@ -245,6 +257,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .no_indent = false,
             .no_source = false,
             .error_message = {},
+            .fix_all = fix_all,
         };
     }
     if (tokenize_cmd) {
@@ -258,6 +271,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .no_indent = false,
             .no_source = false,
             .error_message = {},
+            .fix_all = false,
         };
     }
     if (parse_cmd) {
@@ -271,6 +285,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
             .no_indent = no_indent,
             .no_source = no_source,
             .error_message = {},
+            .fix_all = false,
         };
     }
 
@@ -284,6 +299,7 @@ cowel_parse_cli_options_u8(const char* const* const args, const std::size_t arg_
         .no_indent = false,
         .no_source = false,
         .error_message = {},
+        .fix_all = false,
     };
 }
 

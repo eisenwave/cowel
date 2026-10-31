@@ -1,3 +1,6 @@
+WARNING nested_error.cow:1:1: \cowel_macro is deprecated; use a function-expression instead. [deprecated]
+     1 | \cowel_macro("m"){\not_defined}
+       | ^~~~~~~~~~~~
 ERROR nested_error.cow:1:19: No directive with the name "not_defined" exists. [directive-lookup.unresolved]
      1 | \cowel_macro("m"){\not_defined}
        |                   ^~~~~~~~~~~~

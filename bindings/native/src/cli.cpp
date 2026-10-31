@@ -207,6 +207,8 @@ Options:
                                        warning, error, fatal, none
                               Default: info
       --no-color              Disable colored output
+      --fix-all               Apply auto-fixes instead of generating HTML
+                              (only applicable to the run command)
 )";
 
 constexpr std::string_view version_text = "11.0.0-pre\n";
@@ -274,6 +276,7 @@ int run_run_command(
         load_file_ref,
     Stderr_Logger& logger,
     const Function_Ref<void(const cowel_diagnostic_u8*) noexcept> log_ref,
+    const unsigned int flags,
     const cowel_severity min_log_severity
 )
 {
@@ -281,7 +284,7 @@ int run_run_command(
         .source = as_cowel_string_view(in_source),
         .highlight_theme_json = as_cowel_string_view(assets::wg21_json),
         .mode = COWEL_MODE_DOCUMENT,
-        .flags = 0,
+        .flags = flags,
         .min_log_severity = min_log_severity,
         .preserved_variables = nullptr,
         .preserved_variables_size = 0,
@@ -537,9 +540,10 @@ int main(int argc, const char* const* const argv)
         COWEL_ASSERT_UNREACHABLE(u8"Simple commands should have been handled above.");
     }
     case COWEL_CLI_COMMAND_RUN: {
+        const unsigned int flags = opts.fix_all ? COWEL_GEN_FLAGS_FIX_ALL : 0;
         return run_run_command(
             in_source, in_path_u8, out_path_u8, //
-            alloc_options, load_file_ref, logger, log_ref, opts.min_severity
+            alloc_options, load_file_ref, logger, log_ref, flags, opts.min_severity
         );
     }
     case COWEL_CLI_COMMAND_TOKENIZE: {

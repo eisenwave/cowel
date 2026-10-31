@@ -1,65 +1,65 @@
 \cowel_actions{
 
-\cowel_macro("cowdoc_c"){\
-\code("cowel", ...){\cowel_put}\
-}
+\(fun cowdoc_c(...args, content) = {\
+\code("cowel", ...args){\(content)}\
+})
 
-\cowel_macro("ellipsis"){\
+\(fun ellipsis() = {\
 \code("cowel"){\cowel_highlight_phantom{\\d(}...}\
-}
+})
 
-\cowel_macro("cowdoc_html"){\
-\code("html"){\cowel_put}\
-}
+\(fun cowdoc_html(content) = {\
+\code("html"){\(content)}\
+})
 
-\cowel_macro("cowdoc_dir"){\
-\cowdoc_c{\cowel_highlight_as("markup-tag"){\\\cowel_put}}\
-}
+\(fun cowdoc_dir(content) = {\
+\cowdoc_c{\cowel_highlight_as("markup-tag"){\\\(content)}}\
+})
 
-\cowel_macro("cowdoc_cp"){\
-U+\cowel_str_to_upper(cowel_to_str(..., base=16, zpad=4))\c{nbsp}(\tt{\cowel_char_by_num(...)})\
-}
+\(fun cowdoc_cp(...args) = {\
+U+\cowel_str_to_upper(cowel_to_str(...args, base=16, zpad=4))\c{nbsp}(\tt{\cowel_char_by_num(...args)})\
+})
 
-\cowel_macro("cowdoc_attr"){\
-\tt{\cowel_highlight_as("markup-attr"){\cowel_put}}\
-}
+\(fun cowdoc_attr(content) = {\
+\tt{\cowel_highlight_as("markup-attr"){\(content)}}\
+})
 
-\cowel_macro("cowdoc_esc"){\
-\tt{\cowel_highlight_as("string-escape"){\\\cowel_put}}\
-}
+\(fun cowdoc_esc(content) = {\
+\tt{\cowel_highlight_as("string-escape"){\\\(content)}}\
+})
 
-\cowel_macro("cowdoc_type"){\
-\tt{\cowel_highlight_as("keyword-type"){\cowel_put}}\
-}
+\(fun cowdoc_type(content) = {\
+\tt{\cowel_highlight_as("keyword-type"){\(content)}}\
+})
 
-\cowel_macro("cowdoc_param"){\
-\cowel_highlight_as("markup-attr"){\cowel_put{0}}: \cowel_highlight_as("keyword-type"){\cowel_put{1}}\
-}
+\(fun cowdoc_param(arg0, arg1) = {\
+\cowel_highlight_as("markup-attr"){\(arg0)}: \cowel_highlight_as("keyword-type"){\(arg1)}\
+})
 
-\cowel_macro("cowdoc_dir_h4"){\h4(id = "dir-\cowel_put{0}"){\cowdoc_dir{\cowel_put{0}} \cowel_char_by_name("EM DASH") \cowel_put{1}}}
+\(fun cowdoc_dir_h4(arg0, arg1) = {\h4(id = "dir-\(arg0)"){\cowdoc_dir{\(arg0)} \cowel_char_by_name("EM DASH") \(arg1)}})
 
-\cowel_macro("cowblock"){\
-\codeblock("cowel"){\cowel_put}\
-}
+\(fun cowblock(content) = {\
+\codeblock("cowel"){\(content)}\
+})
 
-\cowel_macro("htmlblock"){\
-\codeblock("html"){\cowel_put}\
-}
+\(fun htmlblock(content) = {\
+\codeblock("html"){\(content)}\
+})
 
-\cowel_macro("c"){\
+\(fun c(content) = {\
 \cowel_paragraph_enter\
-\cowel_char_by_entity("\cowel_put")\
-}
+\cowel_char_by_entity("\(content)")\
+})
 
-\cowel_macro("cowdoc_og_property"){\
+\(fun cowdoc_og_property(arg0, content) = {\
 \cowel_html_element(
   "meta",
   (
-    property = "og:\cowel_put{0}",
-    content = "\cowel_put{}",
+    property = "og:\(arg0)",
+    content = "\(content)",
   ),
 )\
-}
+})
 
 \there("std.head"){
 \cowel_html_element("title"){COWEL - Compact Web Language Documentation}

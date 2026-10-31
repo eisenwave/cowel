@@ -106,6 +106,17 @@ enum cowel_gen_flags {
     /// @brief Do not show source text alongside CST instructions.
     /// Applicable to `cowel_dump_parse` operations.
     COWEL_GEN_FLAGS_NO_SOURCE = 1 << 3,
+    /// @brief Apply auto-fixes to the source code during document generation.
+    ///
+    /// When this flag is set, auto-fixes are collected during processing,
+    /// and the result of the operation contains the fixed source code
+    /// instead of the generated document.
+    /// The contained source code is identical to the input
+    /// if there is nothing to fix.
+    ///
+    /// This flag is incompatible with using a preamble,
+    /// in which case no auto-fixes are collected.
+    COWEL_GEN_FLAGS_FIX_ALL = 1 << 4,
 };
 
 // NOLINTNEXTLINE(performance-enum-size)
@@ -805,6 +816,9 @@ struct cowel_parsed_cli_options_u8 {
     /// @brief Human-readable error description.
     /// Valid only when `ok` is false.
     cowel_mutable_string_view_u8 error_message;
+    /// @brief If true, apply auto-fixes to the source code instead of generating a document.
+    /// Valid only when `command` is `COWEL_CLI_COMMAND_RUN`.
+    bool fix_all;
 };
 
 /// @brief Parses CLI arguments into a `cowel_parsed_cli_options` struct.

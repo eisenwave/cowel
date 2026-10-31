@@ -16,3 +16,5 @@ Options:
                                  warning, error, fatal, none
                         Default: info
       --no-color        Disable colored output
+      --fix-all         Apply auto-fixes instead of generating HTML
+                        (only applicable to the run command)

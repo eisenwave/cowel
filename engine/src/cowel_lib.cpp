@@ -17,6 +17,7 @@
 #include "cowel/policy/html.hpp"
 
 #include "cowel/assets.hpp"
+#include "cowel/autofix.hpp"
 #include "cowel/builtin_directive_set.hpp"
 #include "cowel/context.hpp"
 #include "cowel/cowel.h"
@@ -637,6 +638,13 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
 
     std::pmr::vector<Hover_Entry> hover_entries { memory };
 
+    // Auto-fixes are only collected when they can be applied to the main source.
+    // When a preamble is used, that is impossible
+    // because the positions in diagnostics cannot be attributed to a specific source.
+    const bool collect_fixes
+        = (options.flags & COWEL_GEN_FLAGS_FIX_ALL) != 0 && preamble_source.empty();
+    std::pmr::vector<Source_Edit> fix_entries { memory };
+
     const Generation_Options gen_options {
         .error_behavior = &builtin_behavior.get_error_behavior(),
         .preserved_variables = preserved_variables,
@@ -647,6 +655,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
         .logger = logger,
         .highlighter = highlighter,
         .hover_sink = (options.flags & COWEL_GEN_FLAGS_COLLECT_HOVERS) ? &hover_entries : nullptr,
+        .fix_sink = collect_fixes ? &fix_entries : nullptr,
         .memory = memory,
     };
 
@@ -695,6 +704,39 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
                 article_data += e.article.size();
             }
         }
+    }
+
+    if (collect_fixes) {
+        // When fixing is requested, the result is the fixed source code
+        // instead of the generated document.
+        std::pmr::u8string fixed_source
+            = apply_source_edits(main_source, File_Id::main, fix_entries, memory);
+        if (fixed_source.empty()) {
+            return {
+                .status = static_cast<cowel_processing_status>(status),
+                .output = {},
+                .hovers = hovers_ptr,
+                .hovers_size = hovers_size,
+            };
+        }
+        auto* const fixed_data
+            = static_cast<char8_t*>(memory->allocate(fixed_source.size(), alignof(char8_t)));
+        if (fixed_data == nullptr) {
+            try_log(u8"Failed to allocate memory for the fixed source code."sv, Severity::fatal);
+            return {
+                .status = COWEL_PROCESSING_FATAL,
+                .output = {},
+                .hovers = hovers_ptr,
+                .hovers_size = hovers_size,
+            };
+        }
+        std::memcpy(fixed_data, fixed_source.data(), fixed_source.size());
+        return {
+            .status = static_cast<cowel_processing_status>(status),
+            .output = { fixed_data, fixed_source.size() },
+            .hovers = hovers_ptr,
+            .hovers_size = hovers_size,
+        };
     }
 
     if (html_sink->empty()) {

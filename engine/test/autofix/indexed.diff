@@ -1,0 +1,6 @@
+--- a/indexed.cow
++++ b/indexed.cow
+@@ -1,2 +1,2 @@
+-\cowel_macro("pair"){[\cowel_put{0}:\cowel_put{1}]}
++\(fun pair(arg0, arg1) = {[\(arg0):\(arg1)]})
+ \pair("alpha", "beta")

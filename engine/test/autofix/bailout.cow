@@ -1,0 +1,7 @@
+\cowel_var_let("i", 0)
+\cowel_macro("select"){\cowel_put(pos=i)}
+\cowel_macro("apply"){\(fun identity(x) = x)\identity(7)}
+\cowel_macro("first"){\cowel_put(pos=0, else={})\cowel_put{0}}
+\select("first", "second")
+\apply
+\first("fallback")

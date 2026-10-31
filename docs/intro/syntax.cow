@@ -816,8 +816,10 @@ Generated HTML:
 
 An \dfn{ellipsis argument} is a \gterm{group-member}
 spelled \ellipsis.
-Ellipsis arguments are placeholders which expand to arguments provided to a surrounding macro.
-See also \ref("#dir-cowel_macro") and \ref("#dir-cowel_put").
+Ellipsis arguments are placeholders
+which expand to the arguments provided to the enclosing macro or function invocation.
+See also \ref("#function-expressions"),
+\ref("#dir-cowel_macro"), and \ref("#dir-cowel_put").
 
 \Bex{
 COWEL markup:
@@ -833,13 +835,26 @@ Generated HTML:
 }
 }
 
+The example above uses \cowdoc_dir{cowel_macro},
+which is deprecated in favor of function expressions
+(see \ref("#function-expressions")).
+In the body of a function,
+the arguments of the call are forwarded with an argument expansion instead,
+typically \cowdoc_c{attr = (...args)}
+using a variadic parameter.
+A variadic parameter captures positional arguments only,
+so a call which passes named arguments
+has to match them against declared parameters instead.
+
 Specifically, any positional argument which begins with \ellipsis
 (ignoring leading whitespace and comments)
 is considered an ellipsis.
 The text \tt{...} is not considered an ellipsis if it appears anywhere else
 or has preceding content within an argument.
 
-An error is raised if an ellipsis is used as an argument outside of a macro expansion.
+An error is raised if an ellipsis appears outside of a macro or function invocation,
+at the top level of a document,
+because then there are no arguments to expand it to.
 
 \Bex{
 \cowblock{\literally{

@@ -156,7 +156,6 @@ public:
         Function_Definition,
         Transparent_String_View_Hash8,
         Transparent_String_View_Equals8>;
-
     using Alias_Map = std::pmr::unordered_map<
         std::pmr::u8string,
         const Directive_Behavior*,
@@ -225,6 +224,7 @@ private:
     Diagnostic_Frame_Stack m_active_diagnostic_frames;
     Small_Vector<File_Source_Span, 8> m_diagnostic_stack;
     std::pmr::vector<Hover_Entry>* m_hover_sink = nullptr;
+    std::pmr::vector<Source_Edit>* m_fix_sink = nullptr;
 
 public:
     /// @brief Constructs a new context.
@@ -394,6 +394,34 @@ public:
     {
         if (m_hover_sink != nullptr) {
             m_hover_sink->push_back({ span, std::pmr::u8string { article, m_memory } });
+        }
+    }
+
+    /// @brief Sets the sink into which auto-fixes are pushed during processing.
+    /// Only used when the `COWEL_GEN_FLAGS_FIX_ALL` flag is set in the generation options.
+    void set_fix_sink(std::pmr::vector<Source_Edit>& sink) noexcept
+    {
+        m_fix_sink = &sink;
+    }
+
+    /// @brief Returns true if auto-fixes are being collected.
+    [[nodiscard]]
+    bool collects_fixes() const noexcept
+    {
+        return m_fix_sink != nullptr;
+    }
+
+    /// @brief Records an auto-fix which resolves a diagnostic.
+    /// Does nothing if `collects_fixes()` is false.
+    void push_fix(const Source_Edit& fix)
+    {
+        if (m_fix_sink != nullptr) {
+            m_fix_sink->push_back(
+                Source_Edit {
+                    fix.span,
+                    std::pmr::u8string { fix.replacement, m_memory },
+                }
+            );
         }
     }
 

@@ -9,6 +9,7 @@
 #include "cowel/util/severity.hpp"
 #include "cowel/util/source_position.hpp"
 
+#include "cowel/autofix.hpp"
 #include "cowel/fwd.hpp"
 
 namespace cowel {
@@ -40,6 +41,11 @@ struct Diagnostic {
     /// @brief Stack of invocation locations from where this diagnostic originates.
     /// Entries are ordered from top frame to bottom frame.
     std::span<const File_Source_Span> stack;
+    /// @brief Auto-fixes for this diagnostic, each of which resolves the problem
+    /// that the diagnostic describes by rewriting the source code.
+    /// Empty when no fix is available,
+    /// e.g. when fixes are not being collected during processing.
+    std::span<const Source_Edit> fixes {};
 };
 
 namespace diagnostic {

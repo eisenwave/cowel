@@ -59,7 +59,7 @@ no HTML is generated from the ignored content.
 This is not a special case; it is the normal model, like Lisp macros.
 
 ```
-\cowel_macro(noop){}
+\ fun noop(content) = {}
 \noop{\b{this bold tag is never processed}}  \: produces nothing
 ```
 
@@ -179,6 +179,9 @@ This is the idiomatic way to read variables:
 
 ## Defining macros
 
+`\cowel_macro` is **deprecated** in favor of *function-expression*s,
+but it is still supported.
+
 ```
 \cowel_macro(myname){body}
 ```
@@ -190,6 +193,22 @@ Inside the body, `\cowel_put` accesses what the caller provided:
 - `\cowel_put{0}` — first positional argument (zero-indexed).
 - `\cowel_put{argname}` — named argument.
 - `\cowel_put(else=fallback){0}` — with fallback if argument is absent.
+
+Defining a macro reports a `deprecated` warning,
+which carries an auto-fix that rewrites the definition as an equivalent function-expression.
+Within that rewrite, every `\cowel_put` becomes access to the parameter
+which holds the argument that the call designates:
+
+- `\cowel_put` → `content`, the parameter matched by a block argument.
+- `\cowel_put{0}` → `arg0`, `\cowel_put{1}` → `arg1`, and so on.
+- `\cowel_put{argname}` → `argname`.
+- `\cowel_put(else=fallback){0}` → `arg0 = fallback`, i.e. a default argument.
+- `...`, the *ellipsis argument*, → `...args`, the pack parameter.
+
+A definition which cannot be converted automatically, such as one
+which nests another macro or function definition, is reported without a fix.
+`cowel run --fix-all` applies the auto-fixes of all diagnostics
+and writes the fixed COWEL source to the output file.
 
 Multiple names share one body: `\cowel_macro(a, b){...}`.
 `\cowel_alias(alias){target}` makes `alias` forward to an existing directive.

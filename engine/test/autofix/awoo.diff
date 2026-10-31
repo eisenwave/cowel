@@ -1,0 +1,6 @@
+--- a/awoo.cow
++++ b/awoo.cow
+@@ -1,2 +1,2 @@
+-\cowel_macro("awoo"){}
++\(fun awoo() = {})
+ \awoo
