@@ -3862,8 +3862,7 @@ COWEL markup:
 </example-block>
 
 <p>A parameter prefixed with <code><h- data-h=name_attr>...</h-></code> is a <dfn>variadic parameter</dfn>.
-It must be the final parameter in the list
-and captures zero or more remaining positional arguments.
+It captures zero or more positional arguments.
 Inside the function body,
 the parameter is bound to a <tt-><h- data-h=kw_type>group</h-></tt->
 containing the captured values in order.
@@ -3875,6 +3874,22 @@ COWEL markup:
 <h- data-h=err>\</h-><h- data-h=mk_tag>sum</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>6</code-block>
+</example-block>
+
+<p>A variadic parameter does not have to be the final parameter in the list.
+All remaining positional arguments are captured by it,
+so any parameter which follows a variadic parameter
+can only be matched by a block argument or by a named argument.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>total</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_var>extra</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=mk_tag>cowel_add</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>+</h-> <h- data-h=name_var>extra</h->
+<h- data-h=mk_tag>\total</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>extra</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>4</h-><h- data-h=sym_par>)</h->
+<h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>select</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_var>content</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_var>content</h->
+<h- data-h=mk_tag>\select</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->hello world<h- data-h=sym_brac>}</h-></code-block>
+<p>Generated HTML:
+</p><code-block>10
+hello world</code-block>
 </example-block>
 
 <h4 id=default-arguments><a class=para href=#default-arguments></a>6.7.1. Default arguments</h4>
