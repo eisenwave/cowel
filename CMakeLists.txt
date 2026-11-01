@@ -459,6 +459,7 @@ else()
 
     add_executable(cowel-test
         ${HEADERS}
+        engine/test/src/diff.cpp
         engine/test/src/document_file_testing.cpp
         engine/test/src/main.cpp
         engine/test/src/test_char_sequence.cpp
