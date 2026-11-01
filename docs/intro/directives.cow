@@ -604,8 +604,7 @@ Generated HTML:
 }
 
 A parameter prefixed with \ellipsis is a \dfn{variadic parameter}.
-It must be the final parameter in the list
-and captures zero or more remaining positional arguments.
+It captures zero or more positional arguments.
 Inside the function body,
 the parameter is bound to a \cowdoc_type{group}
 containing the captured values in order.
@@ -620,6 +619,26 @@ COWEL markup:
 Generated HTML:
 \htmlblock{
 6
+}
+}
+
+A variadic parameter does not have to be the final parameter in the list.
+All remaining positional arguments are captured by it,
+so any parameter which follows a variadic parameter
+can only be matched by a block argument or by a named argument.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\ fun total(...args, extra) = cowel_add(...args) + extra
+\total(1, 2, 3, extra = 4)
+\ fun select(...args, content) = content
+\select(1, 2, 3){hello world}
+}}
+Generated HTML:
+\htmlblock{
+10
+hello world
 }
 }
 

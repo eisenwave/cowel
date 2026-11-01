@@ -2142,6 +2142,49 @@ TEST(Parse_And_Build, fun_variadic)
     COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"fun/variadic.cow");
 }
 
+TEST(Parse_And_Build, fun_pack_before_parameters)
+{
+    static std::pmr::monotonic_buffer_resource memory;
+    static const ast::Pmr_Vector<Node> expected {
+        {
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"f", { Node::pack_parameter(u8"args"), Node::parameter(u8"content") },
+                    Node::id_expression(u8"content")
+                )
+            ),
+            Node::text(u8"\n"),
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"g",
+                    {
+                        Node::parameter(u8"x"),
+                        Node::pack_parameter(u8"args"),
+                        Node::parameter(u8"content"),
+                    },
+                    Node::add(Node::id_expression(u8"x"), Node::integer(u8"1"))
+                )
+            ),
+            Node::text(u8"\n"),
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"h", { Node::pack_parameter(u8"args"), Node::parameter(u8"content") },
+                    Node::group(
+                        {
+                            Node::positional({ Node::id_expression(u8"args") }),
+                            Node::positional({ Node::id_expression(u8"content") }),
+                        }
+                    )
+                )
+            ),
+            Node::text(u8"\n"),
+        },
+        &memory,
+    };
+
+    COWEL_PARSE_AND_BUILD_BOILERPLATE(u8"fun/pack_before_parameters.cow");
+}
+
 TEST(Parse_And_Build, fun_default_arguments)
 {
     static std::pmr::monotonic_buffer_resource memory;
@@ -2269,11 +2312,6 @@ TEST(Parse_Fail, expansion_non_postfix_operand)
 TEST(Parse_Fail, fun_variadic_missing_name)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"fun_variadic_missing_name.cow"));
-}
-
-TEST(Parse_Fail, fun_variadic_not_last)
-{
-    ASSERT_TRUE(run_parse_fail_test(u8"fun_variadic_not_last.cow"));
 }
 
 TEST(Parse_Fail, fun_duplicate_variadic)

@@ -908,14 +908,15 @@ private:
                 m_out.push_back({ CST_Instruction_Kind::skip });
                 continue;
             }
-            if (expect_name && has_pack_parameter) {
-                error(
-                    m_tokens[m_pos].location, u8"A variadic parameter must be the last parameter."sv
-                );
-                skip_to_end_of_parameters();
-                return;
-            }
             if (expect_name && expect(Token_Kind::ellipsis)) {
+                if (has_pack_parameter) {
+                    error(
+                        m_tokens[m_pos].location,
+                        u8"A function can have only one variadic parameter."sv
+                    );
+                    skip_to_end_of_parameters();
+                    return;
+                }
                 m_out.push_back({ CST_Instruction_Kind::ellipsis });
                 consume_blank_sequence();
                 has_pack_parameter = true;

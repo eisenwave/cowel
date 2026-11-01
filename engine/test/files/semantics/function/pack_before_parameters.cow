@@ -1,0 +1,37 @@
+\test_input{
+\ fun select(...args, content) = content
+\select{block}
+\select(content = "named")
+\select("positional", content = "named after pack")
+\select{a}{b}
+
+\ fun sum(...args, content) = cowel_add(...args)
+\sum(1, 2, 3){}
+\sum(1, 2, 3, content = 0)
+\sum(...(1, 2), 3, content = 0)
+
+\ fun shifted(x, ...args, content) = x + cowel_add(...args)
+\shifted(1, 2, 3){}
+\shifted(1, 2, 3, content = 4)
+
+\ fun forward(...args, content) = select(...args, content = content)
+\forward{a}{b}
+\forward("named", content = "passed")
+}
+
+\test_output{
+block
+named
+named after pack
+b
+
+6
+6
+6
+
+6
+6
+
+b
+passed
+}
