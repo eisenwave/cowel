@@ -884,7 +884,7 @@ Processing_Status match_call(
     //    While this is out of line with the usual left-to-right evaluation order of arguments,
     //    block arguments have no side effects anyway (they are all literals),
     //    so we can process them in a separate pass.
-    //    Pack parameters consume all corresponding blocks arguments.
+    //    Pack parameters consume all corresponding block arguments.
     {
         std::size_t block_index = call.block_arguments.size();
         std::size_t parameter_index = parameters.size();
