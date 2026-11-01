@@ -882,7 +882,6 @@ private:
 
         std::size_t param_count = 0;
         bool expect_name = true;
-        bool has_pack_parameter = false;
         while (!eof()) {
             consume_blank_sequence();
             if (expect(Token_Kind::parenthesis_right)) {
@@ -909,17 +908,8 @@ private:
                 continue;
             }
             if (expect_name && expect(Token_Kind::ellipsis)) {
-                if (has_pack_parameter) {
-                    error(
-                        m_tokens[m_pos].location,
-                        u8"A function can have only one variadic parameter."sv
-                    );
-                    skip_to_end_of_parameters();
-                    return;
-                }
                 m_out.push_back({ CST_Instruction_Kind::ellipsis });
                 consume_blank_sequence();
-                has_pack_parameter = true;
                 if (!peek(Token_Kind::identifier)) {
                     error(m_tokens[m_pos].location, u8"Expected parameter name after '...'."sv);
                     skip_to_end_of_parameters();

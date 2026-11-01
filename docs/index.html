@@ -3876,20 +3876,25 @@ COWEL markup:
 </p><code-block>6</code-block>
 </example-block>
 
-<p>A variadic parameter does not have to be the final parameter in the list.
-All remaining positional arguments are captured by it,
-so any parameter which follows a variadic parameter
-can only be matched by a block argument or by a named argument.
+<p>A variadic parameter does not have to be the final parameter in the list,
+and a parameter list may contain any number of them.
+The <dfn>leftmost</dfn> variadic parameter
+captures the remaining positional arguments,
+and the <dfn>rightmost</dfn> variadic parameter
+captures the remaining block arguments.
 </p>
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>total</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_var>extra</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=mk_tag>cowel_add</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>+</h-> <h- data-h=name_var>extra</h->
 <h- data-h=mk_tag>\total</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_punc>,</h-> <h- data-h=mk_attr>extra</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>4</h-><h- data-h=sym_par>)</h->
 <h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>select</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_var>content</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_var>content</h->
-<h- data-h=mk_tag>\select</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->hello world<h- data-h=sym_brac>}</h-></code-block>
+<h- data-h=mk_tag>\select</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->hello world<h- data-h=sym_brac>}</h->
+<h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>pair</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>left</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_attr>...</h-><h- data-h=name_var>right</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=mk_tag>cowel_add</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>left</h-><h- data-h=sym_par>)</h->
+<h- data-h=err>\</h-><h- data-h=mk_tag>pair</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->hello<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>{</h->world<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block>10
-hello world</code-block>
+hello world
+6</code-block>
 </example-block>
 
 <h4 id=default-arguments><a class=para href=#default-arguments></a>6.7.1. Default arguments</h4>

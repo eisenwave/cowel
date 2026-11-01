@@ -1,2 +1,4 @@
 \(fun f(x, ...args) = args)
 \(fun s( ...  args ) = 0)
+\(fun g(...a, ...b) = 0)
+\(fun h(x, ...a, ...b, content) = content)

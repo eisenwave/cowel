@@ -689,8 +689,8 @@ Processing_Status Argument_Consumer::consume(const Argument& argument, const Fra
         const std::size_t parameter_index = argument_index;
         if (parameter_index < argument_indices_by_parameter.size()) {
             auto* const parameter = parameters[parameter_index];
-            const bool is_pack_named = parameter->get_type().is_pack()
-                && parameter->get_type().get_members().front().is_named();
+            const bool is_pack_named
+                = parameter->is_pack() && parameter->get_type().get_members().front().is_named();
             if (is_pack_named) {
                 argument_indices_by_parameter[parameter_index] = int(argument_index);
                 current_pack_value_matcher = &parameter->get_value_matcher();
@@ -863,9 +863,9 @@ Processing_Status match_call(
     COWEL_ASSERT(status_is_error(on_fail_status));
     COWEL_DEBUG_ASSERT(!std::ranges::contains(parameters, nullptr));
 
-    const bool last_parameter_is_pack
-        = !parameters.empty() && parameters.back()->get_type().is_pack();
-    if (!last_parameter_is_pack && call.block_arguments.size() > parameters.size()) {
+    const bool has_pack_parameter
+        = std::ranges::any_of(parameters, [](const Parameter* const p) { return p->is_pack(); });
+    if (!has_pack_parameter && call.block_arguments.size() > parameters.size()) {
         on_fail(
             call.block_arguments.front().get_source_span(),
             u8"Block argument does not match any parameter."sv, context
@@ -884,24 +884,36 @@ Processing_Status match_call(
     //    While this is out of line with the usual left-to-right evaluation order of arguments,
     //    block arguments have no side effects anyway (they are all literals),
     //    so we can process them in a separate pass.
-    const std::size_t block_parameter_offset = parameters.size() - call.block_arguments.size();
-    for (std::size_t block_index = 0; block_index < call.block_arguments.size(); ++block_index) {
-        const ast::Primary& block = call.block_arguments[block_index];
-        if (parameters.empty()) {
-            on_fail(
-                block.get_source_span(), //
-                u8"Block argument does not match any parameter."sv, //
-                context
+    //    Pack parameters consume all corresponding blocks arguments.
+    {
+        std::size_t block_index = call.block_arguments.size();
+        std::size_t parameter_index = parameters.size();
+        while (block_index > 0 && parameter_index-- > 0) {
+            if (parameters[parameter_index]->is_pack()) {
+                // The pack parameter matches all remaining block arguments from left to right.
+                for (std::size_t i = 0; i < block_index; ++i) {
+                    const Processing_Status block_status = consumer.consume_block(
+                        call.block_arguments[i], call.content_frame, parameter_index
+                    );
+                    if (block_status != Processing_Status::ok) {
+                        return status_max(block_status, on_fail_status);
+                    }
+                }
+                block_index = 0;
+                break;
+            }
+            --block_index;
+            const Processing_Status block_status = consumer.consume_block(
+                call.block_arguments[block_index], call.content_frame, parameter_index
             );
-            return on_fail_status;
+            if (block_status != Processing_Status::ok) {
+                return status_max(block_status, on_fail_status);
+            }
         }
-        const std::size_t parameter_index
-            = last_parameter_is_pack ? parameters.size() - 1 : block_parameter_offset + block_index;
-        const Processing_Status block_status
-            = consumer.consume_block(block, call.content_frame, parameter_index);
-        if (block_status != Processing_Status::ok) {
-            return block_status;
-        }
+        // At this point, all block arguments must have been consumed,
+        // either because they were matched with a parameter each,
+        // or because a pack parameter captured all remaining ones.
+        COWEL_DEBUG_ASSERT(block_index == 0);
     }
 
     // 2. Expand the remaining arguments from left to right (possibly with side effects).
