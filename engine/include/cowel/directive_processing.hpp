@@ -64,6 +64,17 @@ Processing_Status splice_directive_invocation(
     Context& context
 );
 
+/// @brief Resolves the invocation whose arguments an ellipsis argument expands to.
+/// Raises an error if using an ellipsis is not valid where `ellipsis` appears.
+/// @return The invocation whose arguments the ellipsis expands to,
+/// or `nullptr` if the ellipsis appears outside of a macro expansion.
+[[nodiscard]]
+const Invocation* resolve_ellipsis_invocation(
+    const ast::Group_Member& ellipsis,
+    Frame_Index content_frame,
+    Context& context
+);
+
 /// @brief If `context.collects_hovers()` and `node` has a real code point
 /// (i.e. not a whitespace escape),
 /// pushes a hover article of the form "U+XXXX" for the escape node.

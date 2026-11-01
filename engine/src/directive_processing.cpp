@@ -742,6 +742,23 @@ evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
 }
 
 [[nodiscard]]
+const Invocation* resolve_ellipsis_invocation(
+    const ast::Group_Member& ellipsis,
+    const Frame_Index content_frame,
+    Context& context
+)
+{
+    if (content_frame == Frame_Index::root) {
+        context.try_error(
+            diagnostic::ellipsis_outside, ellipsis.get_source_span(),
+            u8"An ellipsis argument can only be expanded from a macro, but this one appeared outside of any macro expansion."sv
+        );
+        return nullptr;
+    }
+    return &context.get_call_stack()[content_frame].invocation;
+}
+
+[[nodiscard]]
 Result<Value, Processing_Status> evaluate(
     const ast::Unary_Expression& expression, //
     const Frame_Index frame,
@@ -1091,10 +1108,14 @@ struct Evaluate_Member_Values {
                 break;
             }
             case ast::Member_Kind::ellipsis: {
-                const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
+                const Invocation* const ellipsis_invocation
+                    = resolve_ellipsis_invocation(m, frame, context);
+                if (!ellipsis_invocation) {
+                    return Processing_Status::error;
+                }
                 const auto status = Evaluate_Member_Values {
-                    out, ellipsis_frame.invocation.content_frame, context
-                }(ellipsis_frame.invocation.get_arguments_span());
+                    out, ellipsis_invocation->content_frame, context //
+                }(ellipsis_invocation->get_arguments_span());
                 if (status != Processing_Status::ok) {
                     return status;
                 }

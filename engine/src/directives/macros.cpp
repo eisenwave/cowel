@@ -71,10 +71,14 @@ struct Put_Named {
                 continue;
             }
             case ast::Member_Kind::ellipsis: {
-                const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
+                const Invocation* const ellipsis_invocation
+                    = resolve_ellipsis_invocation(arg, frame, context);
+                if (!ellipsis_invocation) {
+                    return Processing_Status::error;
+                }
                 auto maybe_result = find(
-                    ellipsis_frame.invocation.get_arguments_span(),
-                    ellipsis_frame.invocation.content_frame
+                    ellipsis_invocation->get_arguments_span(), //
+                    ellipsis_invocation->content_frame
                 );
                 if (!maybe_result || *maybe_result) {
                     return maybe_result;
@@ -122,10 +126,14 @@ struct Put_Positional {
                 continue;
             }
             case ast::Member_Kind::ellipsis: {
-                const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
+                const Invocation* const ellipsis_invocation
+                    = resolve_ellipsis_invocation(arg, frame, context);
+                if (!ellipsis_invocation) {
+                    return Processing_Status::error;
+                }
                 auto maybe_result = find(
-                    ellipsis_frame.invocation.get_arguments_span(),
-                    ellipsis_frame.invocation.content_frame
+                    ellipsis_invocation->get_arguments_span(), //
+                    ellipsis_invocation->content_frame
                 );
                 if (!maybe_result || *maybe_result) {
                     return maybe_result;

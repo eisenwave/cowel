@@ -837,10 +837,14 @@ Processing_Status Argument_Expander::operator()(
         }
 
         case ast::Member_Kind::ellipsis: {
-            const Stack_Frame& ellipsis_frame = context.get_call_stack()[frame];
+            const Invocation* const ellipsis_invocation
+                = resolve_ellipsis_invocation(argument, frame, context);
+            if (!ellipsis_invocation) {
+                return on_fail_status;
+            }
             return (*this)(
-                ellipsis_frame.invocation.get_arguments_span(),
-                ellipsis_frame.invocation.content_frame
+                ellipsis_invocation->get_arguments_span(), //
+                ellipsis_invocation->content_frame
             );
         }
         }
