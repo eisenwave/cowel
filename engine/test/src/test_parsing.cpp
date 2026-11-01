@@ -2135,6 +2135,26 @@ TEST(Parse_And_Build, fun_variadic)
                 )
             ),
             Node::text(u8"\n"),
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"g", { Node::pack_parameter(u8"a"), Node::pack_parameter(u8"b") },
+                    Node::integer(u8"0")
+                )
+            ),
+            Node::text(u8"\n"),
+            Node::expression_splice(
+                Node::function_expression(
+                    u8"h",
+                    {
+                        Node::parameter(u8"x"),
+                        Node::pack_parameter(u8"a"),
+                        Node::pack_parameter(u8"b"),
+                        Node::parameter(u8"content"),
+                    },
+                    Node::id_expression(u8"content")
+                )
+            ),
+            Node::text(u8"\n"),
         },
         &memory,
     };
@@ -2312,11 +2332,6 @@ TEST(Parse_Fail, expansion_non_postfix_operand)
 TEST(Parse_Fail, fun_variadic_missing_name)
 {
     ASSERT_TRUE(run_parse_fail_test(u8"fun_variadic_missing_name.cow"));
-}
-
-TEST(Parse_Fail, fun_duplicate_variadic)
-{
-    ASSERT_TRUE(run_parse_fail_test(u8"fun_duplicate_variadic.cow"));
 }
 
 TEST(Parse_Fail, fun_variadic_default_argument)

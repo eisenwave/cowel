@@ -622,10 +622,12 @@ Generated HTML:
 }
 }
 
-A variadic parameter does not have to be the final parameter in the list.
-All remaining positional arguments are captured by it,
-so any parameter which follows a variadic parameter
-can only be matched by a block argument or by a named argument.
+A variadic parameter does not have to be the final parameter in the list,
+and a parameter list may contain any number of them.
+The \dfn{leftmost} variadic parameter
+captures the remaining positional arguments,
+and the \dfn{rightmost} variadic parameter
+captures the remaining block arguments.
 
 \Bex{
 COWEL markup:
@@ -634,11 +636,14 @@ COWEL markup:
 \total(1, 2, 3, extra = 4)
 \ fun select(...args, content) = content
 \select(1, 2, 3){hello world}
+\ fun pair(...left, ...right) = cowel_add(...left)
+\pair(1, 2, 3){hello}{world}
 }}
 Generated HTML:
 \htmlblock{
 10
 hello world
+6
 }
 }
 

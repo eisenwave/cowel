@@ -906,6 +906,12 @@ public:
     }
 
     [[nodiscard]]
+    bool is_pack() const
+    {
+        return get_type().is_pack();
+    }
+
+    [[nodiscard]]
     bool has_default_argument() const
     {
         return m_default_argument != nullptr;

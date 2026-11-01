@@ -1,0 +1,54 @@
+\test_input{
+\ fun first_of(first, second) = first
+\ fun second_of(first, second) = second
+\ fun sole_of(only) = only
+
+\ fun pincer(...left, ...right) = second_of(...right)
+\pincer(1, 2, 3){A}{B}
+\ fun pincer_sum(...left, ...right) = cowel_add(...left)
+\pincer_sum(1, 2, 3){A}{B}
+\ fun sum_three_packs(...a, ...b, ...c) = cowel_add(...a)
+\sum_three_packs(1, 2){x}{y}
+
+\ fun blocks_and_scalars(...a, x, y) = first_of(x, y)
+\blocks_and_scalars{A}{B}{C}
+\ fun trailing_scalar(...a, ...b, x) = x
+\trailing_scalar(1, 2){A}{B}
+
+\ fun named_between(...a, x, ...b) = x
+\named_between(1, 2, x = "named argument")
+\ fun add_named(...a, x, ...b) = cowel_add(cowel_add(...a), x)
+\add_named(1, 2, x = 3)
+
+\ fun lone_left(...a, ...b) = sole_of(...a)
+\lone_left(7)
+\ fun block_only(...a, ...b) = sole_of(...b)
+\block_only{only block}
+
+\ fun left_of_pack(y, ...a, ...b) = y
+\test_expect_error("type.mismatch"){A\left_of_pack{first}{second}}
+\ fun middle_pack(...a, x, ...b) = 0
+\test_expect_error("type.mismatch"){B\middle_pack{block}}
+\ fun pack_and_positional(...a) = 0
+\test_expect_error("type.mismatch"){C\pack_and_positional(1){2}}
+}
+
+\test_output{
+
+B
+6
+3
+
+B
+B
+
+named argument
+6
+
+7
+only block
+
+A
+B
+C
+}

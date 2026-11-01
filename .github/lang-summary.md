@@ -157,8 +157,10 @@ A group expansion member such as `...args` expands a pack
 when used in an argument group.
 A user-defined function can declare a variadic parameter with the same syntax:
 `fun f(prefix, ...args) = args`.
-A variadic parameter need not be final;
-the parameters which follow it can only be matched by block or named arguments,
+A variadic parameter need not be final,
+and a parameter list may contain any number of them.
+The leftmost variadic parameter captures the remaining positional arguments,
+and the rightmost captures the remaining block arguments,
 so `fun f(...args, content) = content` accepts
 any number of positional arguments plus a block argument.
 A variadic parameter cannot have a default argument.
