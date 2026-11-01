@@ -25,6 +25,7 @@
   - Added support for syntax highlighting themes that use palettes.
   - Improved the quality of highlighting.
   - Added highlighting for Java, YAML, and C#.
+- Fixed a crash when an ellipsis argument is used outside of a macro expansion (#443).
 
 ### VSCode extension
 

@@ -1,0 +1,13 @@
+\test_input{
+\test_expect_error("ellipsis.outside"){\cowel_add(1, ...)}
+\cowel_macro("pos"){\cowel_put{0}}\
+\test_expect_error("ellipsis.outside"){\pos(...)}
+\cowel_macro("named"){\cowel_put{n}}\
+\test_expect_error("ellipsis.outside"){\named(...)}
+}
+
+\test_output{
+<error->\cowel_add(1, ...)</error->
+<error->\cowel_put{0}</error->
+<error->\cowel_put{n}</error->
+}
