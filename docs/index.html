@@ -3871,7 +3871,7 @@ The values can be forwarded to another call with an argument expansion.
 <example-block><p><intro-></intro-> 
 COWEL markup:
 </p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>sum</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=mk_tag>cowel_add</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_par>)</h->
-<h- data-h=err>\</h-><h- data-h=mk_tag>sum</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-></code-block>
+<h- data-h=mk_tag>\sum</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-></code-block>
 <p>Generated HTML:
 </p><code-block>6</code-block>
 </example-block>
@@ -3890,7 +3890,7 @@ COWEL markup:
 <h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>select</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_var>content</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_var>content</h->
 <h- data-h=mk_tag>\select</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->hello world<h- data-h=sym_brac>}</h->
 <h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>pair</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>left</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_attr>...</h-><h- data-h=name_var>right</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=mk_tag>cowel_add</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>left</h-><h- data-h=sym_par>)</h->
-<h- data-h=err>\</h-><h- data-h=mk_tag>pair</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->hello<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>{</h->world<h- data-h=sym_brac>}</h-></code-block>
+<h- data-h=mk_tag>\pair</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->hello<h- data-h=sym_brac>}</h->{world}</code-block>
 <p>Generated HTML:
 </p><code-block>10
 hello world
