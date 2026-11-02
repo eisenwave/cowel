@@ -95,6 +95,7 @@ enum struct Unified_Diff_Error_Kind : unsigned char {
     source_missing_trailing_newline,
     invalid_hunk_header,
     invalid_hunk_line,
+    stray_hunk_line,
     hunk_count_mismatch,
     hunk_out_of_order,
     hunk_out_of_range,

@@ -537,8 +537,21 @@ TEST(Diff, parse_hunk_header)
     EXPECT_EQ(single->new_start, 6);
     EXPECT_EQ(single->new_count, 1);
 
+    // The closing `@@` is mandatory, even when no section heading follows it.
+    EXPECT_FALSE(parse_hunk_header(u8"@@ -1 +1"));
+    EXPECT_FALSE(parse_hunk_header(u8"@@ -1 +1 "));
+
     EXPECT_FALSE(parse_hunk_header(u8"@@ -x,1 +1,1 @@"));
     EXPECT_FALSE(parse_hunk_header(u8"not a hunk header"));
+}
+
+TEST(Diff, unified_diff_rejects_truncated_header)
+{
+    const auto result
+        = apply_unified_diff(u8"a\n", u8"@@ -1 +1\n-a\n+b\n", std::pmr::get_default_resource());
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::invalid_hunk_header);
 }
 
 TEST(Diff, unified_diff_parse)
@@ -592,6 +605,22 @@ TEST(Diff, unified_diff_apply_empty)
 
     ASSERT_TRUE(result);
     EXPECT_EQ(result.value(), u8"one\ntwo\n");
+}
+
+TEST(Diff, unified_diff_apply_to_empty_source)
+{
+    // A file-creation patch applies to an empty source.
+    const auto created
+        = apply_unified_diff({}, u8"@@ -0,0 +1 @@\n+added\n", std::pmr::get_default_resource());
+
+    ASSERT_TRUE(created);
+    EXPECT_EQ(created.value(), u8"added\n");
+
+    // An empty patch leaves an empty source unchanged.
+    const auto unchanged = apply_unified_diff({}, {}, std::pmr::get_default_resource());
+
+    ASSERT_TRUE(unchanged);
+    EXPECT_TRUE(unchanged.value().empty());
 }
 
 TEST(Diff, unified_diff_apply_multiple_hunks)
@@ -687,6 +716,18 @@ TEST(Diff, unified_diff_rejects_source_mismatch)
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::source_mismatch);
     EXPECT_EQ(result.error().message, u8"Unified diff context does not match the source code.");
+}
+
+TEST(Diff, unified_diff_rejects_stray_line)
+{
+    // The blank line ends the leading hunk, but `+c` must not be discarded.
+    const auto result = apply_unified_diff(
+        u8"a\n", u8"@@ -1 +1 @@\n-a\n+b\n\n+c\n", std::pmr::get_default_resource()
+    );
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::stray_hunk_line);
+    EXPECT_EQ(result.error().span.line, 4);
 }
 
 TEST(Diff, unified_diff_rejects_overlapping_hunks)
