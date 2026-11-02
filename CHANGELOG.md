@@ -26,6 +26,7 @@
   - Improved the quality of highlighting.
   - Added highlighting for Java, YAML, and C#.
 - Fixed a crash when an ellipsis argument is used outside of a macro expansion (#443).
+- Fixed a crash on `cowel_highlight_as("")`.
 
 ### VSCode extension
 
