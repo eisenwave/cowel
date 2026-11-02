@@ -2048,7 +2048,7 @@ built on top of only a few <dfn>markup elements</dfn>:
     <code><h- data-h=cmt_dlim>\</h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt> block comments </h-><h- data-h=cmt_dlim>*</h-><h- data-h=cmt_dlim>\</h-></code>
   </li>
   <li>
-    <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_splices</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>positional</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>args</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>named_args</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->block 1<h- data-h=sym_brac>}</h->{block 2}</code>
+    <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>directive_splices</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>positional</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>args</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-><h- data-h=mk_attr>named_args</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->block 1<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>{</h->block 2<h- data-h=sym_brac>}</h-></code>
   </li>
   <li>
     Expression splices, such as
@@ -3890,7 +3890,7 @@ COWEL markup:
 <h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>select</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>args</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_var>content</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_var>content</h->
 <h- data-h=mk_tag>\select</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->hello world<h- data-h=sym_brac>}</h->
 <h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>pair</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>left</h-><h- data-h=sym_punc>,</h-> <h- data-h=name_attr>...</h-><h- data-h=name_var>right</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=mk_tag>cowel_add</h-><h- data-h=sym_par>(</h-><h- data-h=name_attr>...</h-><h- data-h=name_var>left</h-><h- data-h=sym_par>)</h->
-<h- data-h=mk_tag>\pair</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->hello<h- data-h=sym_brac>}</h->{world}</code-block>
+<h- data-h=mk_tag>\pair</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->hello<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>{</h->world<h- data-h=sym_brac>}</h-></code-block>
 <p>Generated HTML:
 </p><code-block>10
 hello world
@@ -4555,7 +4555,7 @@ unless all positional arguments appear contiguously at the start of the argument
     a single block argument matches the final parameter,
     two block arguments match the final two parameters, etc.
     <example-block><p><intro-></intro-> 
-    The syntax <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>d</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h->{y}</code> supplies two final block arguments.
+    The syntax <code><h- data-h=mk_tag>\</h-><h- data-h=mk_tag>d</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>a</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>b</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>{</h->x<h- data-h=sym_brac>}</h-><h- data-h=sym_brac>{</h->y<h- data-h=sym_brac>}</h-></code> supplies two final block arguments.
     </p></example-block>
   </li>
   <li>
