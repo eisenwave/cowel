@@ -9,6 +9,10 @@
 
 \cowel_highlight("x"){\cowel_highlight_as("string"){x}}
 \cowel_highlight("x"){\cowel_highlight_as("string", opaque=false){x}}
+
+\test_expect_error("highlight.name.invalid"){\cowel_highlight_as(""){}}
+\test_expect_error("highlight.name.invalid"){\cowel_highlight_as(""){x}}
+\test_expect_error("highlight.name.invalid"){\cowel_highlight_as("no-such-highlight"){x}}
 }
 
 \test_output{
@@ -22,4 +26,8 @@ div
 
 <h- data-h=str>x</h->
 <h- data-h=str><h- data-h=kw>x</h-></h->
+
+<error->\cowel_highlight_as(""){}</error->
+<error->\cowel_highlight_as(""){x}</error->
+<error->\cowel_highlight_as("no-such-highlight"){x}</error->
 }

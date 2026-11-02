@@ -59,7 +59,8 @@ std::optional<ulight::Highlight_Type> highlight_type_by_long_string(std::u8strin
     const auto it = std::ranges::lower_bound(
         highlight_type_lookup, str, {}, &Highlight_Lookup_Entry::long_string
     );
-    if (it == std::end(highlight_type_lookup) || it->long_string != str) {
+    if (it == std::end(highlight_type_lookup) || it->long_string != str
+        || it->type == ulight::Highlight_Type::none) {
         return {};
     }
     return it->type;

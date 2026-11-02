@@ -105,5 +105,34 @@ TEST(Theme_To_Css, rejects_unresolved_palette_references)
     EXPECT_TRUE(actual.empty());
 }
 
+TEST(Theme_To_Css, ignores_the_none_highlight_type)
+{
+    /// The "none" highlight type has an empty long name,
+    /// which would produce a broken `h-[data-h^=]` selector.
+    /// Such keys must be ignored like any other unknown highlight name.
+    std::pmr::monotonic_buffer_resource memory;
+    std::pmr::vector<char8_t> actual { &memory };
+    constexpr auto theme = u8R"JSON(
+{
+    "light": {
+        "": "red"
+    },
+    "dark": {
+        "": "#123456"
+    }
+}
+)JSON";
+
+    ASSERT_TRUE(theme_to_css(actual, theme, &memory));
+    const std::u8string_view actual_view { actual.data(), actual.size() };
+    EXPECT_EQ(actual_view, u8R"CSS(@media (prefers-color-scheme: light) {
+}
+@media (prefers-color-scheme: dark) {
+}
+
+
+)CSS");
+}
+
 } // namespace
 } // namespace cowel
