@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include "cowel/util/diff.hpp"
+#include "diff.hpp"
 
 namespace cowel {
 namespace {
@@ -518,6 +518,227 @@ TEST(Diff, fuzz)
         EXPECT_EQ(result_length, to_size);
         EXPECT_TRUE(std::ranges::equal(result_span, to));
     }
+}
+
+TEST(Diff, parse_hunk_header)
+{
+    const auto header = parse_hunk_header(u8"@@ -1,3 +1,4 @@ int main()");
+    ASSERT_TRUE(header);
+    EXPECT_EQ(header->old_start, 1);
+    EXPECT_EQ(header->old_count, 3);
+    EXPECT_EQ(header->new_start, 1);
+    EXPECT_EQ(header->new_count, 4);
+
+    // The count defaults to 1 when it is omitted.
+    const auto single = parse_hunk_header(u8"@@ -5 +6 @@");
+    ASSERT_TRUE(single);
+    EXPECT_EQ(single->old_start, 5);
+    EXPECT_EQ(single->old_count, 1);
+    EXPECT_EQ(single->new_start, 6);
+    EXPECT_EQ(single->new_count, 1);
+
+    // The closing `@@` is mandatory, even when no section heading follows it.
+    EXPECT_FALSE(parse_hunk_header(u8"@@ -1 +1"));
+    EXPECT_FALSE(parse_hunk_header(u8"@@ -1 +1 "));
+
+    EXPECT_FALSE(parse_hunk_header(u8"@@ -x,1 +1,1 @@"));
+    EXPECT_FALSE(parse_hunk_header(u8"not a hunk header"));
+}
+
+TEST(Diff, unified_diff_rejects_truncated_header)
+{
+    const auto result
+        = apply_unified_diff(u8"a\n", u8"@@ -1 +1\n-a\n+b\n", std::pmr::get_default_resource());
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::invalid_hunk_header);
+}
+
+TEST(Diff, unified_diff_parse)
+{
+    const auto parsed = parse_unified_diff(
+        u8R"(--- a/file
++++ b/file
+@@ -2,2 +2,3 @@ function
+ line2
+-old
++new
++extra
+)",
+        std::pmr::get_default_resource()
+    );
+
+    ASSERT_TRUE(parsed);
+    ASSERT_EQ(parsed->hunks.size(), 1);
+    const Unified_Diff_Hunk& hunk = parsed->hunks.front();
+    EXPECT_EQ(hunk.old_start, 2);
+    EXPECT_EQ(hunk.old_count, 2);
+    EXPECT_EQ(hunk.new_count, 3);
+    const std::pmr::vector<Unified_Diff_Hunk_Line> expected_lines {
+        { Edit_Type::common, u8"line2" },
+        { Edit_Type::del, u8"old" },
+        { Edit_Type::ins, u8"new" },
+        { Edit_Type::ins, u8"extra" },
+    };
+    EXPECT_EQ(hunk.lines, expected_lines);
+}
+
+TEST(Diff, unified_diff_apply)
+{
+    const auto result = apply_unified_diff(
+        u8"one\ntwo\nthree\n", u8R"(@@ -1,3 +1,2 @@
+-one
++ONE
+ two
+-three
+)",
+        std::pmr::get_default_resource()
+    );
+
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.value(), u8"ONE\ntwo\n");
+}
+
+TEST(Diff, unified_diff_apply_empty)
+{
+    const auto result = apply_unified_diff(u8"one\ntwo\n", {}, std::pmr::get_default_resource());
+
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.value(), u8"one\ntwo\n");
+}
+
+TEST(Diff, unified_diff_apply_to_empty_source)
+{
+    // A file-creation patch applies to an empty source.
+    const auto created
+        = apply_unified_diff({}, u8"@@ -0,0 +1 @@\n+added\n", std::pmr::get_default_resource());
+
+    ASSERT_TRUE(created);
+    EXPECT_EQ(created.value(), u8"added\n");
+
+    // An empty patch leaves an empty source unchanged.
+    const auto unchanged = apply_unified_diff({}, {}, std::pmr::get_default_resource());
+
+    ASSERT_TRUE(unchanged);
+    EXPECT_TRUE(unchanged.value().empty());
+}
+
+TEST(Diff, unified_diff_apply_multiple_hunks)
+{
+    const auto result = apply_unified_diff(
+        u8"a\nb\nc\nd\ne\nf\n", u8R"(@@ -1,2 +1,2 @@
+-a
++A
+ b
+@@ -5,2 +5,3 @@
+ e
+-f
++F
++G
+)",
+        std::pmr::get_default_resource()
+    );
+
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.value(), u8"A\nb\nc\nd\ne\nF\nG\n");
+}
+
+TEST(Diff, unified_diff_apply_insertion_at_beginning_and_end)
+{
+    const auto result = apply_unified_diff(
+        u8"a\nb\n", u8R"(@@ -0,0 +1,1 @@
++start
+@@ -2,0 +3,1 @@
++end
+)",
+        std::pmr::get_default_resource()
+    );
+
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.value(), u8"start\na\nb\nend\n");
+}
+
+TEST(Diff, unified_diff_rejects_bad_header)
+{
+    const auto result
+        = parse_unified_diff(u8"@@ -x,1 +1,1 @@\n-a\n+a\n", std::pmr::get_default_resource());
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::invalid_hunk_header);
+    EXPECT_EQ(result.error().span.begin, 0);
+    EXPECT_EQ(result.error().message, u8"Invalid unified diff hunk header.");
+}
+
+TEST(Diff, unified_diff_rejects_bad_body)
+{
+    const auto result
+        = parse_unified_diff(u8"@@ -1,1 +1,1 @@\n?a\n", std::pmr::get_default_resource());
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::invalid_hunk_line);
+    EXPECT_EQ(result.error().span.line, 1);
+}
+
+TEST(Diff, unified_diff_rejects_bad_counts)
+{
+    const auto result
+        = parse_unified_diff(u8"@@ -1,2 +1,1 @@\n-a\n+a\n", std::pmr::get_default_resource());
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::hunk_count_mismatch);
+}
+
+TEST(Diff, unified_diff_rejects_bad_line_numbers)
+{
+    const auto result = apply_unified_diff(
+        u8"a\n", u8"@@ -3,1 +3,1 @@\n-a\n+b\n", std::pmr::get_default_resource()
+    );
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::hunk_out_of_range);
+    EXPECT_EQ(result.error().span.begin, 0);
+}
+
+TEST(Diff, unified_diff_rejects_missing_source_newline)
+{
+    const auto result = apply_unified_diff(u8"one", {}, std::pmr::get_default_resource());
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::source_missing_trailing_newline);
+}
+
+TEST(Diff, unified_diff_rejects_source_mismatch)
+{
+    const auto result = apply_unified_diff(
+        u8"a\n", u8"@@ -1,1 +1,1 @@\n-old\n+new\n", std::pmr::get_default_resource()
+    );
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::source_mismatch);
+    EXPECT_EQ(result.error().message, u8"Unified diff context does not match the source code.");
+}
+
+TEST(Diff, unified_diff_rejects_stray_line)
+{
+    // The blank line ends the leading hunk, but `+c` must not be discarded.
+    const auto result = apply_unified_diff(
+        u8"a\n", u8"@@ -1 +1 @@\n-a\n+b\n\n+c\n", std::pmr::get_default_resource()
+    );
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::stray_hunk_line);
+    EXPECT_EQ(result.error().span.line, 4);
+}
+
+TEST(Diff, unified_diff_rejects_overlapping_hunks)
+{
+    const auto result = apply_unified_diff(
+        u8"a\nb\n", u8"@@ -1,1 +1,1 @@\n-a\n+A\n@@ -1,1 +1,1 @@\n-b\n+B\n",
+        std::pmr::get_default_resource()
+    );
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error().kind, Unified_Diff_Error_Kind::hunk_out_of_order);
 }
 
 } // namespace
