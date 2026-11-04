@@ -23,18 +23,23 @@ struct Invocation {
     const ast::Primary* arguments;
     /// @brief The block arguments with which the directive is invoked.
     std::span<const ast::Primary> block_arguments;
-    /// @brief The stack frame index of the block arguments.
-    /// For root content, this is zero.
+    /// @brief The stack frame in which the block arguments appear.
+    /// A null reference means root content, i.e. the document top level.
     /// All content in a macro definition (and arguments of directives within)
-    /// have the same frame index as that invocation.
-    /// Intuitively, all visible content inside a macro has the same frame index,
+    /// have the same frame as that invocation.
+    /// Intuitively, all visible content inside a macro lives in the same frame,
     /// just like in a C++ function.
-    Frame_Index content_frame;
-    /// @brief The stack frame index of the invocation.
-    /// This is always at least `1`
-    /// because `0` indicates the document top level,
-    /// with each level of invocation being one greater than the level below.
-    Frame_Index call_frame;
+    Frame_Ref content_frame;
+    /// @brief The stack frame which is processing this invocation.
+    /// This is the frame which was pushed for this invocation when the invocation
+    /// comes from the AST,
+    /// and the content frame when the invocation was synthesized
+    /// (e.g. for the pseudo-directives of `\math`).
+    ///
+    /// Unlike `content_frame`,
+    /// this reference is only ever set for the invocation which is currently in flight;
+    /// the copy of the invocation which is stored in its own `Stack_Frame` leaves it null.
+    Frame_Ref call_frame;
 
     [[nodiscard]]
     bool has_arguments() const
@@ -84,14 +89,14 @@ struct Invocation {
 /// @brief Creates a new `Invocation` object from a directive,
 /// which is what we consider a "direct call".
 /// @param d The directive which is invoked.
-/// @param content_frame The frame index of the directive.
-/// @param call_frame The frame index of the invocation.
+/// @param content_frame The frame in which the directive appears.
+/// @param call_frame The frame of the invocation.
 /// @param args Arguments for this invocation.
 [[nodiscard]]
 inline Invocation make_invocation( //
     const ast::Directive& d,
-    Frame_Index content_frame,
-    Frame_Index call_frame
+    Frame_Ref content_frame,
+    Frame_Ref call_frame
 )
 {
     return {
@@ -99,8 +104,8 @@ inline Invocation make_invocation( //
         .directive = d,
         .arguments = d.get_arguments(),
         .block_arguments = d.get_block_arguments(),
-        .content_frame = content_frame,
-        .call_frame = call_frame,
+        .content_frame = std::move(content_frame),
+        .call_frame = std::move(call_frame),
     };
 }
 

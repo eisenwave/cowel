@@ -603,6 +603,29 @@ Generated HTML:
 }
 }
 
+A function body can contain blocks,
+and a block which the body returns is not spliced when the call is made.
+It is spliced later, at the point where the result of the call is used,
+which may be after the call itself has already completed.
+The parameters of the call stay in scope for content
+which is spliced lazily from the function body in this way,
+so a block returned by a function body can refer to the function's parameters.
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\ fun in_brackets(x) = {[\(x)]}
+\in_brackets(42)
+\ let saved = in_brackets(7)
+\(saved)
+}}
+Generated HTML:
+\htmlblock{
+[42]
+[7]
+}
+}
+
 A parameter prefixed with \ellipsis is a \dfn{variadic parameter}.
 It captures zero or more positional arguments.
 Inside the function body,
@@ -703,5 +726,11 @@ because it already accepts zero or more arguments.
 
 Functions cannot be nested inside other function bodies,
 and \gterm{let-expression}s are similarly forbidden within function bodies.
-Functions only have access to their own parameters and to global variables;
-they do not capture variables from enclosing scopes.
+A function body can only refer to the function's own parameters
+and to global variables;
+it does not capture local variables from an enclosing scope.
+
+This does not conflict with the fact that content which a function body
+splices lazily can still refer to the parameters of that call:
+those parameters belong to the call which produced the content,
+not to the scope in which the function was defined.

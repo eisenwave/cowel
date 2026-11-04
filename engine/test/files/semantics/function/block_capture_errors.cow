@@ -1,0 +1,18 @@
+\test_input{
+\ fun f(x) = {[\(x)\(missing)]}
+\test_expect_error("id.lookup"){A[\f(1)]}
+
+\ fun g(y) = {[\(y)]}
+\test_expect_error("id.lookup"){B[\(y)]}
+
+\ fun h(x) = {[\(x)]}
+C[\h(3)]
+}
+
+\test_output{
+A[[1]]
+
+B[]
+
+C[[3]]
+}

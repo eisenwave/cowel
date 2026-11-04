@@ -40,12 +40,12 @@ struct String_With_Meta {
 
 struct Block_And_Frame {
     const ast::Primary* block;
-    Frame_Index frame;
+    Frame_Ref frame;
 };
 
 struct Directive_And_Frame {
     const ast::Directive* directive;
-    Frame_Index frame;
+    Frame_Ref frame;
 };
 
 using Dynamic_String_Value = GC_Ref<char8_t>;
@@ -172,9 +172,9 @@ public:
     static Value regex(Reg_Exp&&);
 
     [[nodiscard]]
-    static Value block(const ast::Primary& block, Frame_Index frame);
+    static Value block(const ast::Primary& block, Frame_Ref frame);
     [[nodiscard]]
-    static Value block(const ast::Directive& block, Frame_Index frame);
+    static Value block(const ast::Directive& block, Frame_Ref frame);
 
     static Value group(std::span<const Group_Member_Value> values);
     static Value group_move(std::span<Group_Member_Value> values);
@@ -220,6 +220,8 @@ public:
         static_assert(std::is_nothrow_copy_constructible_v<Big_Int>);
         static_assert(std::is_nothrow_copy_constructible_v<Dynamic_String_Value>);
         static_assert(std::is_nothrow_copy_constructible_v<Group_Value>);
+        static_assert(std::is_nothrow_copy_constructible_v<Block_And_Frame>);
+        static_assert(std::is_nothrow_copy_constructible_v<Directive_And_Frame>);
     }
 
     [[nodiscard]]
@@ -234,6 +236,8 @@ public:
         static_assert(std::is_nothrow_move_constructible_v<Big_Int>);
         static_assert(std::is_nothrow_move_constructible_v<Dynamic_String_Value>);
         static_assert(std::is_nothrow_move_constructible_v<Group_Value>);
+        static_assert(std::is_nothrow_move_constructible_v<Block_And_Frame>);
+        static_assert(std::is_nothrow_move_constructible_v<Directive_And_Frame>);
     }
 
     constexpr Value& operator=(const Value& other) noexcept;
@@ -437,6 +441,14 @@ public:
         }
         COWEL_ASSERT_UNREACHABLE(u8"Value is not a string.");
     }
+
+    [[nodiscard]]
+    Dynamic_String_Value unsafe_copy_dynamic_string_ref() const
+    {
+        COWEL_ASSERT(m_index == dynamic_string_index);
+        return m_value.dynamic_string;
+    }
+
     [[nodiscard]]
     constexpr String_With_Meta as_string_with_meta() const
     {
@@ -537,8 +549,8 @@ constexpr Value::Union Value::Union::make(T&& other, const Index other_index) no
     case short_string_index: return { .short_string = other.short_string };
     case dynamic_string_index: return { .dynamic_string = std::forward<T>(other).dynamic_string };
     case regex_index: return { .regex = std::forward<T>(other).regex };
-    case block_index: return { .block = other.block };
-    case directive_index: return { .directive = other.directive };
+    case block_index: return { .block = std::forward<T>(other).block };
+    case directive_index: return { .directive = std::forward<T>(other).directive };
     case group_index: return { .group = std::forward<T>(other).group };
     }
     COWEL_ASSERT_UNREACHABLE(u8"Invalid index.");
@@ -549,14 +561,74 @@ constexpr void
 Value::Union::assign(const Index self_index, T&& other, const Index other_index) noexcept
 {
     switch (other_index) {
-    case unit_index: unit = other.unit; break;
-    case null_index: null = other.null; break;
-    case boolean_index: boolean = other.boolean; break;
-    case floating_index: floating = other.floating; break;
-    case static_string_index: static_string = other.static_string; break;
-    case short_string_index: short_string = other.short_string; break;
-    case block_index: block = other.block; break;
-    case directive_index: directive = other.directive; break;
+    case unit_index: {
+        if (self_index != unit_index) {
+            destroy(self_index);
+        }
+        unit = other.unit;
+        break;
+    }
+
+    case null_index: {
+        if (self_index != null_index) {
+            destroy(self_index);
+        }
+        null = other.null;
+        break;
+    }
+
+    case boolean_index: {
+        if (self_index != boolean_index) {
+            destroy(self_index);
+        }
+        boolean = other.boolean;
+        break;
+    }
+
+    case floating_index: {
+        if (self_index != floating_index) {
+            destroy(self_index);
+        }
+        floating = other.floating;
+        break;
+    }
+
+    case static_string_index: {
+        if (self_index != static_string_index) {
+            destroy(self_index);
+        }
+        static_string = other.static_string;
+        break;
+    }
+
+    case short_string_index: {
+        if (self_index != short_string_index) {
+            destroy(self_index);
+        }
+        short_string = other.short_string;
+        break;
+    }
+
+    case block_index: {
+        if (self_index == block_index) {
+            block = std::forward<T>(other).block;
+        }
+        else {
+            destroy(self_index);
+            std::construct_at(&block, std::forward<T>(other).block);
+        }
+        break;
+    }
+    case directive_index: {
+        if (self_index == directive_index) {
+            directive = std::forward<T>(other).directive;
+        }
+        else {
+            destroy(self_index);
+            std::construct_at(&directive, std::forward<T>(other).directive);
+        }
+        break;
+    }
 
     case integer_index: {
         if (self_index == integer_index) {
@@ -609,14 +681,18 @@ constexpr void Value::Union::destroy(const Index index) noexcept
     case boolean_index:
     case floating_index:
     case static_string_index:
-    case short_string_index:
-    case block_index:
-    case directive_index: {
+    case short_string_index: {
         static_assert(std::is_trivially_destructible_v<Unit>);
         static_assert(std::is_trivially_destructible_v<Null>);
         static_assert(std::is_trivially_destructible_v<Short_String_Value>);
-        static_assert(std::is_trivially_destructible_v<Block_And_Frame>);
-        static_assert(std::is_trivially_destructible_v<Directive_And_Frame>);
+        break;
+    }
+    case block_index: {
+        block.~Block_And_Frame();
+        break;
+    }
+    case directive_index: {
+        directive.~Directive_And_Frame();
         break;
     }
     case integer_index: {
@@ -645,6 +721,8 @@ constexpr Value& Value::operator=(const Value& other) noexcept
     static_assert(std::is_nothrow_copy_assignable_v<Big_Int>);
     static_assert(std::is_nothrow_copy_assignable_v<Dynamic_String_Value>);
     static_assert(std::is_nothrow_copy_assignable_v<Group_Value>);
+    static_assert(std::is_nothrow_copy_assignable_v<Block_And_Frame>);
+    static_assert(std::is_nothrow_copy_assignable_v<Directive_And_Frame>);
     if (this != &other) {
         m_value.assign(m_index, other.m_value, other.m_index);
         m_index = other.m_index;
@@ -659,6 +737,8 @@ constexpr Value& Value::operator=(Value&& other) noexcept
     static_assert(std::is_nothrow_move_assignable_v<Big_Int>);
     static_assert(std::is_nothrow_move_assignable_v<Dynamic_String_Value>);
     static_assert(std::is_nothrow_move_assignable_v<Group_Value>);
+    static_assert(std::is_nothrow_move_assignable_v<Block_And_Frame>);
+    static_assert(std::is_nothrow_move_assignable_v<Directive_And_Frame>);
     m_value.assign(m_index, std::move(other).m_value, other.m_index);
     m_index = other.m_index;
     m_string_kind = other.m_string_kind;

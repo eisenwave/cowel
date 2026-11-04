@@ -52,7 +52,7 @@ Processing_Status write_empty_head_document(
                                    Context&) { return Processing_Status::ok; };
     constexpr auto write_body
         = [](Content_Policy& policy, std::span<const ast::Markup_Element> content,
-             Context& context) { return splice_all(policy, content, Frame_Index::root, context); };
+             Context& context) { return splice_all(policy, content, Frame_Ref {}, context); };
 
     return write_head_body_document(
         out, content, context, const_v<write_head>, const_v<write_body>

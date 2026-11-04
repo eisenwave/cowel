@@ -24,17 +24,17 @@ struct Ignorant_Content_Policy : virtual Content_Policy {
     void write(Char_Sequence8, Output_Language) override { }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Primary&, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Primary&, Frame_Ref, Context&) override
     {
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Directive&, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Directive&, Frame_Ref, Context&) override
     {
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Expression&, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Expression&, Frame_Ref, Context&) override
     {
         return Processing_Status::ok;
     }

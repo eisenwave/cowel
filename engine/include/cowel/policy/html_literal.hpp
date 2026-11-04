@@ -36,7 +36,7 @@ struct HTML_Literal_Content_Policy : virtual HTML_Content_Policy {
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Primary& node, Frame_Index, Context& context) override
+    Processing_Status consume(const ast::Primary& node, Frame_Ref, Context& context) override
     {
         switch (node.get_kind()) {
         case ast::Primary_Kind::text: {
@@ -74,16 +74,16 @@ struct HTML_Literal_Content_Policy : virtual HTML_Content_Policy {
 
     [[nodiscard]]
     Processing_Status
-    consume(const ast::Directive& directive, Frame_Index frame, Context& context) override
+    consume(const ast::Directive& directive, Frame_Ref frame, Context& context) override
     {
-        return splice_directive_invocation(*this, directive, frame, context);
+        return splice_directive_invocation(*this, directive, std::move(frame), context);
     }
 
     [[nodiscard]]
     Processing_Status
-    consume(const ast::Expression& expression, Frame_Index frame, Context& context) override
+    consume(const ast::Expression& expression, Frame_Ref frame, Context& context) override
     {
-        return splice_expression(*this, expression, frame, context);
+        return splice_expression(*this, expression, std::move(frame), context);
     }
 };
 

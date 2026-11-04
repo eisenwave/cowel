@@ -210,7 +210,13 @@ public:
     constexpr void reset()
     {
         if (m_node) {
-            COWEL_DEBUG_ASSERT(m_node->allocation_alignment >= alignof(T));
+            // The alignment is only asserted if `T` is complete here,
+            // because a reference may be released in a translation unit
+            // which only knows a forward declaration of `T`
+            // (`Stack_Frame` in `invocation.hpp` is one such type).
+            if constexpr (requires { sizeof(T); }) {
+                COWEL_DEBUG_ASSERT(m_node->allocation_alignment >= alignof(T));
+            }
             m_node->drop_reference();
             m_node = nullptr;
         }
@@ -229,6 +235,14 @@ public:
     T& operator*() const
     {
         return *operator->();
+    }
+
+    /// @brief Returns a non-owning pointer to the referenced object,
+    /// or `nullptr` if this reference is null.
+    [[nodiscard]]
+    T* get() const
+    {
+        return m_node ? operator->() : nullptr;
     }
 
     [[nodiscard]]

@@ -104,7 +104,7 @@ public:
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Primary& node, Frame_Index, Context& context) override
+    Processing_Status consume(const ast::Primary& node, Frame_Ref, Context& context) override
     {
         switch (node.get_kind()) {
         case ast::Primary_Kind::text: {
@@ -153,7 +153,7 @@ public:
 
     [[nodiscard]]
     Processing_Status
-    consume(const ast::Directive& directive, Frame_Index frame, Context& context) override
+    consume(const ast::Directive& directive, Frame_Ref frame, Context& context) override
     {
         // The purpose of m_directive_depth is to prevent malformed output which results
         // from directives directly feeding their contents into this policy,
@@ -166,7 +166,7 @@ public:
         // a simple bool is insufficient to keep track of whether we are in a directive.
         m_line_state = Blank_Line_Initial_State::middle;
         const Directive_Depth_Guard depth_guard { *this };
-        return splice_directive_invocation(*this, directive, frame, context);
+        return splice_directive_invocation(*this, directive, std::move(frame), context);
     }
 
     /// @brief Enables paragraph splitting to take place inside a directive.

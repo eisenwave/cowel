@@ -29,21 +29,21 @@ public:
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Primary&, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Primary&, Frame_Ref, Context&) override
     {
         return Processing_Status::ok;
     }
     [[nodiscard]]
     Processing_Status
-    consume(const ast::Directive& directive, Frame_Index frame, Context& context) override
+    consume(const ast::Directive& directive, Frame_Ref frame, Context& context) override
     {
-        return m_parent.consume(directive, frame, context);
+        return m_parent.consume(directive, std::move(frame), context);
     }
     [[nodiscard]]
     Processing_Status
-    consume(const ast::Expression& expression, Frame_Index frame, Context& context) override
+    consume(const ast::Expression& expression, Frame_Ref frame, Context& context) override
     {
-        return m_parent.consume(expression, frame, context);
+        return m_parent.consume(expression, std::move(frame), context);
     }
 };
 

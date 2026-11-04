@@ -50,7 +50,7 @@ Processing_Status splice_invocation(
     std::u8string_view name,
     const ast::Primary* args,
     std::span<const ast::Primary> block_arguments,
-    Frame_Index content_frame,
+    Frame_Ref content_frame,
     Context& context
 );
 
@@ -60,18 +60,21 @@ Processing_Status splice_invocation(
 Processing_Status splice_directive_invocation(
     Content_Policy& out,
     const ast::Directive& d,
-    Frame_Index content_frame,
+    Frame_Ref content_frame,
     Context& context
 );
 
 /// @brief Resolves the invocation whose arguments an ellipsis argument expands to.
 /// Raises an error if using an ellipsis is not valid where `ellipsis` appears.
+/// @param ellipsis The ellipsis argument member.
+/// @param content_frame The frame of the content in which the ellipsis appears,
+/// or `nullptr` (in case of the document root).
 /// @return The invocation whose arguments the ellipsis expands to,
 /// or `nullptr` if the ellipsis appears outside of a macro expansion.
 [[nodiscard]]
 const Invocation* resolve_ellipsis_invocation(
     const ast::Group_Member& ellipsis,
-    Frame_Index content_frame,
+    const Stack_Frame* content_frame,
     Context& context
 );
 
@@ -121,7 +124,7 @@ Processing_Status process_lazy(R&& content, Consumer consumer)
 inline Processing_Status splice_all(
     Content_Policy& out,
     std::span<const ast::Markup_Element> content,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
@@ -165,7 +168,7 @@ Result<Value, Processing_Status> splice_value_to_string(
 Processing_Status splice_expression(
     Content_Policy& out,
     const ast::Expression& value,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 );
 
@@ -173,7 +176,7 @@ Processing_Status splice_expression(
 Processing_Status splice_primary(
     Content_Policy& out, //
     const ast::Primary& primary,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 );
 
@@ -190,7 +193,7 @@ Processing_Status splice_value_to_plaintext(
 Processing_Status splice_expression_to_plaintext(
     std::pmr::vector<char8_t>& out,
     const ast::Expression& value,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 );
 
@@ -198,49 +201,49 @@ Processing_Status splice_expression_to_plaintext(
 inline Processing_Status splice_quoted_string(
     Content_Policy& out,
     const ast::Primary& quoted_string,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
     COWEL_ASSERT(quoted_string.get_kind() == ast::Primary_Kind::quoted_string);
-    return splice_all(out, quoted_string.get_elements(), frame, context);
+    return splice_all(out, quoted_string.get_elements(), std::move(frame), context);
 }
 
 [[nodiscard]]
 inline Processing_Status
-splice_block(Content_Policy& out, const ast::Primary& block, Frame_Index frame, Context& context)
+splice_block(Content_Policy& out, const ast::Primary& block, Frame_Ref frame, Context& context)
 {
     COWEL_ASSERT(block.get_kind() == ast::Primary_Kind::block);
-    return splice_all(out, block.get_elements(), frame, context);
+    return splice_all(out, block.get_elements(), std::move(frame), context);
 }
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate_expression(const ast::Expression& value, Frame_Index frame, Context& context);
+evaluate_expression(const ast::Expression& value, Frame_Ref frame, Context& context);
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate(const ast::Directive& directive, Frame_Index frame, Context& context);
+evaluate(const ast::Directive& directive, Frame_Ref frame, Context& context);
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate(const ast::Primary& value, Frame_Index frame, Context& context);
+evaluate(const ast::Primary& value, Frame_Ref frame, Context& context);
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate(const ast::Unary_Expression& expression, Frame_Index frame, Context& context);
+evaluate(const ast::Unary_Expression& expression, Frame_Ref frame, Context& context);
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate(const ast::Binary_Expression& expression, Frame_Index frame, Context& context);
+evaluate(const ast::Binary_Expression& expression, Frame_Ref frame, Context& context);
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate(const ast::Let_Expression& expression, Frame_Index frame, Context& context);
+evaluate(const ast::Let_Expression& expression, Frame_Ref frame, Context& context);
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate(const ast::Function_Expression& expression, Frame_Index frame, Context& context);
+evaluate(const ast::Function_Expression& expression, Frame_Ref frame, Context& context);
 
 Result<Value, Processing_Status> evaluate_unary(
     Unary_Expression_Kind kind, //
@@ -292,7 +295,7 @@ const Type& get_type(const ast::Primary& primary);
 Processing_Status splice_to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Markup_Element> content,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 );
 

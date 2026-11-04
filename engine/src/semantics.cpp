@@ -67,15 +67,16 @@ std::u8string Type::get_display_name() const
     return result;
 }
 
-Value Value::block(const ast::Primary& block, Frame_Index frame)
+Value Value::block(const ast::Primary& block, Frame_Ref frame)
 {
     COWEL_ASSERT(block.get_kind() == ast::Primary_Kind::block);
-    return Value { Union { .block = Block_And_Frame { &block, frame } }, block_index };
+    return Value { Union { .block = Block_And_Frame { &block, std::move(frame) } }, block_index };
 }
 
-Value Value::block(const ast::Directive& block, Frame_Index frame)
+Value Value::block(const ast::Directive& block, Frame_Ref frame)
 {
-    return Value { Union { .directive = Directive_And_Frame { &block, frame } }, directive_index };
+    return Value { Union { .directive = Directive_And_Frame { &block, std::move(frame) } },
+                   directive_index };
 }
 
 Value Value::dynamic_string_forced(const std::u8string_view value, const String_Kind kind)

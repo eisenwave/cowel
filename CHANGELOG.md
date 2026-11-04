@@ -21,12 +21,15 @@
     as in `fun sum(...args) = cowel_add(...args)`.
   - Scalar parameters may declare *default-argument*s
     as in `fun add(x = 0, y = 0) = x + y`.
+  - The parameters of a call remain in scope
+    for splicing of block returned by the function.
 - Also updated µlight (#426):
   - Added support for syntax highlighting themes that use palettes.
   - Improved the quality of highlighting.
   - Added highlighting for Java, YAML, and C#.
 - Fixed a crash when an ellipsis argument is used outside of a macro expansion (#443).
 - Fixed a crash on `cowel_highlight_as("")`.
+- Fixed memory leak when `Value` is being reassigned.
 
 ### VSCode extension
 

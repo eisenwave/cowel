@@ -22,13 +22,13 @@ public:
     }
 
     [[nodiscard]]
-    Processing_Status consume(const ast::Directive& directive, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Directive& directive, Frame_Ref, Context&) override
     {
         write(directive.get_source(), Output_Language::text);
         return Processing_Status::ok;
     }
     [[nodiscard]]
-    Processing_Status consume(const ast::Expression& expression, Frame_Index, Context&) override
+    Processing_Status consume(const ast::Expression& expression, Frame_Ref, Context&) override
     {
         write(expression.get_source(), Output_Language::text);
         return Processing_Status::ok;
