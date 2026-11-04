@@ -120,34 +120,33 @@ public:
     }
 
 private:
-    static Result<Value, Processing_Status>
-    group_member_evaluate(const void*, Frame_Index, Context&);
+    static Result<Value, Processing_Status> group_member_evaluate(const void*, Frame_Ref, Context&);
     static Processing_Status group_member_splice(
         const void*, //
         Content_Policy&,
-        Frame_Index,
+        Frame_Ref,
         Context&
     );
     static Processing_Status group_member_splice_to_plaintext(
         const void*, //
         std::pmr::vector<char8_t>& out,
-        Frame_Index,
+        Frame_Ref,
         Context&
     );
     static const File_Source_Span& group_member_get_source_span(const void*) noexcept;
     static const Type& group_member_get_static_type(const void*, Context&) noexcept;
 
-    static Result<Value, Processing_Status> primary_evaluate(const void*, Frame_Index, Context&);
+    static Result<Value, Processing_Status> primary_evaluate(const void*, Frame_Ref, Context&);
     static Processing_Status primary_splice(
         const void*, //
         Content_Policy&,
-        Frame_Index,
+        Frame_Ref,
         Context&
     );
     static Processing_Status primary_splice_to_plaintext(
         const void*, //
         std::pmr::vector<char8_t>& out,
-        Frame_Index,
+        Frame_Ref,
         Context&
     );
     static const File_Source_Span& primary_get_source_span(const void*) noexcept;
@@ -159,12 +158,12 @@ private:
     std::optional<Value> m_runtime_value;
     /// @brief A type-erased reference to the AST node.
     const void* m_ast_node = nullptr;
-    Result<Value, Processing_Status> (*m_evaluate)(const void*, Frame_Index, Context&) = nullptr;
-    Processing_Status (*m_splice)(const void*, Content_Policy&, Frame_Index, Context&) = nullptr;
+    Result<Value, Processing_Status> (*m_evaluate)(const void*, Frame_Ref, Context&) = nullptr;
+    Processing_Status (*m_splice)(const void*, Content_Policy&, Frame_Ref, Context&) = nullptr;
     Processing_Status (*m_splice_to_plaintext)(
         const void*,
         std::pmr::vector<char8_t>&,
-        Frame_Index,
+        Frame_Ref,
         Context&
     ) = nullptr;
     const File_Source_Span& (*m_get_value_location)(const void*) noexcept = nullptr;
@@ -221,12 +220,12 @@ public:
     }
 
     [[nodiscard]]
-    Result<Value, Processing_Status> evaluate(Frame_Index frame, Context& context) const;
+    Result<Value, Processing_Status> evaluate(Frame_Ref frame, Context& context) const;
     [[nodiscard]]
-    Processing_Status splice(Content_Policy& out, Frame_Index frame, Context& context) const;
+    Processing_Status splice(Content_Policy& out, Frame_Ref frame, Context& context) const;
     [[nodiscard]]
     Processing_Status
-    splice_to_plaintext(std::pmr::vector<char8_t>& out, Frame_Index frame, Context& context) const;
+    splice_to_plaintext(std::pmr::vector<char8_t>& out, Frame_Ref frame, Context& context) const;
     [[nodiscard]]
     const File_Source_Span& get_value_location() const;
     [[nodiscard]]
@@ -333,13 +332,13 @@ public:
     /// @brief Attempts matching the value contained in `argument`
     /// according to this matcher's behavior.
     /// @param argument The argument to match.
-    /// @param frame The frame index of the argument.
+    /// @param frame The frame of the content in which the argument appears.
     /// @param context The current context.
     /// @return A `Processing_Status` if content generation failed during the matching process.
     [[nodiscard]]
     virtual Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context& context,
         const Match_Fail_Options& on_fail
     ) = 0;
@@ -359,7 +358,7 @@ struct Lazy_Value_Of_Type_Matcher final
     : Value_Matcher
     , Value_Holder<Argument> {
 private:
-    Frame_Index m_markup_frame { -2 };
+    Frame_Ref m_markup_frame;
 
 public:
     [[nodiscard]]
@@ -371,13 +370,13 @@ public:
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context&,
         const Match_Fail_Options& //
     ) override;
 
     [[nodiscard]]
-    Frame_Index get_frame() const
+    Frame_Ref get_frame() const
     {
         COWEL_ASSERT(was_matched());
         return m_markup_frame;
@@ -395,7 +394,7 @@ struct Textual_Matcher : Value_Matcher {
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context& context,
         const Match_Fail_Options& on_fail
     ) override;
@@ -420,7 +419,7 @@ struct Value_Of_Type_Matcher final
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context& context,
         const Match_Fail_Options& on_fail
     ) override;
@@ -446,7 +445,7 @@ public:
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context& context,
         const Match_Fail_Options& on_fail
     ) override;
@@ -503,7 +502,7 @@ public:
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context& context,
         const Match_Fail_Options& on_fail
     ) override;
@@ -527,7 +526,7 @@ public:
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context& context,
         const Match_Fail_Options& on_fail
     ) override;
@@ -553,7 +552,7 @@ struct Boolean_Matcher final
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context&,
         const Match_Fail_Options& on_fail
     ) override;
@@ -572,7 +571,7 @@ struct Integer_Matcher final
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context&,
         const Match_Fail_Options& on_fail
     ) override;
@@ -591,7 +590,7 @@ struct Float_Matcher final
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context&,
         const Match_Fail_Options& on_fail
     ) override;
@@ -653,7 +652,7 @@ struct Block_Matcher final
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context&,
         const Match_Fail_Options& on_fail
     ) override;
@@ -678,7 +677,7 @@ public:
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context& context,
         const Match_Fail_Options& on_fail
     ) override;
@@ -723,7 +722,7 @@ public:
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument, //
-        Frame_Index,
+        Frame_Ref,
         Context&,
         const Match_Fail_Options&
     ) override
@@ -774,7 +773,7 @@ public:
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context& context,
         const Match_Fail_Options& on_fail
     ) override;
@@ -840,7 +839,7 @@ struct Group_Pack_Named_Str_Matcher final
     [[nodiscard]]
     Processing_Status match_value(
         const Argument& argument,
-        Frame_Index frame,
+        Frame_Ref frame,
         Context& context,
         const Match_Fail_Options& on_fail
     ) override;

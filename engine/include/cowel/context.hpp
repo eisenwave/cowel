@@ -1,7 +1,10 @@
 #ifndef COWEL_CONTEXT_HPP
 #define COWEL_CONTEXT_HPP
 
+#include <algorithm>
+#include <cstddef>
 #include <memory_resource>
+#include <span>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -153,15 +156,7 @@ public:
         Function_Definition,
         Transparent_String_View_Hash8,
         Transparent_String_View_Equals8>;
-    using Function_Binding_Map = std::pmr::vector<std::pair<std::pmr::u8string, Value>>;
 
-    /// @brief A chain of function parameter bindings.
-    /// Each node in the chain corresponds to one level of function call nesting.
-    /// `parent` points to the bindings of the outer (caller) function, or nullptr.
-    struct Function_Binding_Chain {
-        Function_Binding_Map bindings;
-        const Function_Binding_Chain* parent = nullptr;
-    };
     using Alias_Map = std::pmr::unordered_map<
         std::pmr::u8string,
         const Directive_Behavior*,
@@ -174,15 +169,17 @@ public:
         Transparent_String_View_Equals8>;
 
 private:
+    using Diagnostic_Frame_Stack = Small_Vector<Frame_Ref, 8>;
+
     struct Scoped_Diagnostic_Frame {
     private:
-        Small_Vector<Frame_Index, 8>* m_frames = nullptr;
+        Diagnostic_Frame_Stack* m_frames = nullptr;
 
     public:
-        explicit Scoped_Diagnostic_Frame(Small_Vector<Frame_Index, 8>& frames, Frame_Index frame)
+        explicit Scoped_Diagnostic_Frame(Diagnostic_Frame_Stack& frames, Frame_Ref frame)
             : m_frames { &frames }
         {
-            m_frames->push_back(frame);
+            m_frames->push_back(std::move(frame));
         }
 
         Scoped_Diagnostic_Frame(const Scoped_Diagnostic_Frame&) = delete;
@@ -214,10 +211,6 @@ private:
     Alias_Map m_aliases { m_transient_memory };
     Macro_Map m_macros { m_transient_memory };
     Function_Map m_functions { m_transient_memory };
-    /// @brief Current chain of function parameter bindings.
-    /// Each node is owned by the call stack (local variable in
-    /// `Function_Definition::evaluate`), not by the Context.
-    const Function_Binding_Chain* m_function_bindings = nullptr;
     const Directive_Behavior* m_error_behavior;
 
     const Name_Resolver& m_builtin_name_resolver;
@@ -229,7 +222,7 @@ private:
     Variable_Map m_variables { m_memory };
 
     Call_Stack m_call_stack { m_memory };
-    Small_Vector<Frame_Index, 8> m_active_diagnostic_frames;
+    Diagnostic_Frame_Stack m_active_diagnostic_frames;
     Small_Vector<File_Source_Span, 8> m_diagnostic_stack;
     std::pmr::vector<Hover_Entry>* m_hover_sink = nullptr;
 
@@ -331,9 +324,9 @@ public:
     }
 
     [[nodiscard]]
-    Scoped_Diagnostic_Frame push_diagnostic_frame(Frame_Index frame)
+    Scoped_Diagnostic_Frame push_diagnostic_frame(Frame_Ref frame)
     {
-        return Scoped_Diagnostic_Frame { m_active_diagnostic_frames, frame };
+        return Scoped_Diagnostic_Frame { m_active_diagnostic_frames, std::move(frame) };
     }
 
     [[nodiscard]]
@@ -713,47 +706,20 @@ public:
         std::u8string_view function_source
     );
 
-    /// @brief Sets the current function parameter bindings.
-    /// The bindings are owned by the caller and must outlive
-    /// the duration during which they are set.
-    void set_function_bindings(const Function_Binding_Chain* bindings)
-    {
-        m_function_bindings = bindings;
-    }
-
-    /// @brief Returns the current function parameter bindings, or nullptr.
-    [[nodiscard]]
-    const Function_Binding_Chain* get_function_bindings() const
-    {
-        return m_function_bindings;
-    }
-
-    /// @brief Looks up a variable by name, checking function parameter bindings first
+    /// @brief Looks up a variable by name, checking the function parameter bindings
+    /// visible in the given frame,
     /// and falling back to the global variable map.
     [[nodiscard]]
-    const Value* get_variable_with_bindings(string_view_type key)
+    const Value*
+    get_variable_with_bindings(string_view_type key, const Stack_Frame* const frame) const
     {
-        for (const Function_Binding_Chain* chain = m_function_bindings; chain;
-             chain = chain->parent) {
-            for (const auto& [name, value] : chain->bindings) {
-                if (name == key) {
-                    return &value;
-                }
-            }
-        }
-        return get_variable(key);
-    }
-
-    /// @brief Looks up a variable by name, checking function parameter bindings first
-    /// and falling back to the global variable map.
-    [[nodiscard]]
-    const Value* get_variable_with_bindings(string_view_type key) const
-    {
-        for (const Function_Binding_Chain* chain = m_function_bindings; chain;
-             chain = chain->parent) {
-            for (const auto& [name, value] : chain->bindings) {
-                if (name == key) {
-                    return &value;
+        for (const Stack_Frame* scope = frame; scope;
+             scope = scope->invocation.content_frame.get()) {
+            const Call_Bindings& bindings = scope->bindings;
+            const std::size_t count = std::min(bindings.parameters.size(), bindings.values.size());
+            for (std::size_t i = 0; i < count; ++i) {
+                if (bindings.parameters[i].get_name() == key) {
+                    return &bindings.values[i];
                 }
             }
         }
@@ -778,25 +744,28 @@ private:
         //       so maybe this doesn't matter and we should just expand the whole call stack
         //       unfiltered.
         m_diagnostic_stack.clear();
-        const Frame_Index diagnostic_frame = m_active_diagnostic_frames.empty()
-            ? Frame_Index::root
-            : m_active_diagnostic_frames.back();
+        // A null frame expresses the document top level,
+        // so a content frame of null is what the top-level content has.
+        const Stack_Frame* const diagnostic_frame = m_active_diagnostic_frames.empty()
+            ? nullptr
+            : m_active_diagnostic_frames.back().get();
 
         bool has_previous_content_frame = false;
-        Frame_Index previous_content_frame {};
+        const Stack_Frame* previous_content_frame = nullptr;
 
-        for (std::size_t i = m_call_stack.size(); i > 0; --i) {
-            const Stack_Frame& frame = m_call_stack[Frame_Index(static_cast<int>(i - 1))];
-            const Frame_Index content_frame = frame.invocation.content_frame;
-            if (content_frame == diagnostic_frame) {
+        const std::span<const Frame_Ref> active_frames = m_call_stack.get_active_frames();
+        for (std::size_t i = active_frames.size(); i > 0; --i) {
+            const Stack_Frame& frame = *active_frames[i - 1];
+            const Stack_Frame* const content_frame_pointer = frame.invocation.content_frame.get();
+            if (content_frame_pointer == diagnostic_frame) {
                 continue;
             }
-            if (has_previous_content_frame && content_frame == previous_content_frame) {
+            if (has_previous_content_frame && content_frame_pointer == previous_content_frame) {
                 continue;
             }
 
             m_diagnostic_stack.push_back(frame.invocation.directive.get_name_span());
-            previous_content_frame = content_frame;
+            previous_content_frame = content_frame_pointer;
             has_previous_content_frame = true;
         }
 

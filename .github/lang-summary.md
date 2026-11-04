@@ -146,6 +146,11 @@ this includes members expanded from a pack,
 so the side effects of an argument are visible to the arguments that follow it.
 Parameters are visible to name lookup within the body.
 
+Parameters are "captured" by a block returned by the function,
+similar to how lambdas capture local variables in other languages.
+`fun in_brackets(x) = {[\(x)]}` yields `[42]` for `\in_brackets(42)`,
+or when the result of `in_brackets(42)` is stored in a variable and spliced later.
+
 #### Default arguments
 A scalar parameter may declare a default argument, `fun awoo(x = 0, y = 0) = x + y`;
 the default is used when no argument is matched against the parameter.

@@ -3861,6 +3861,25 @@ COWEL markup:
 </p><code-block>4 and 25</code-block>
 </example-block>
 
+<p>A function body can contain blocks,
+and a block which the body returns is not spliced when the call is made.
+It is spliced later, at the point where the result of the call is used,
+which may be after the call itself has already completed.
+The parameters of the call stay in scope for content
+which is spliced lazily from the function body in this way,
+so a block returned by a function body can refer to the function's parameters.
+</p>
+<example-block><p><intro-></intro-> 
+COWEL markup:
+</p><code-block><h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>fun</h-> <h- data-h=name_fun_decl>in_brackets</h-><h- data-h=sym_par>(</h-><h- data-h=name_var>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h->[<h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>x</h-><h- data-h=str_intp_dlim>)</h->]<h- data-h=sym_brac>}</h->
+<h- data-h=mk_tag>\in_brackets</h-><h- data-h=sym_par>(</h-><h- data-h=num>42</h-><h- data-h=sym_par>)</h->
+<h- data-h=str_intp_dlim>\ </h-><h- data-h=kw>let</h-> <h- data-h=name_var>saved</h-> <h- data-h=sym_punc>=</h-> <h- data-h=mk_tag>in_brackets</h-><h- data-h=sym_par>(</h-><h- data-h=num>7</h-><h- data-h=sym_par>)</h->
+<h- data-h=str_intp_dlim>\(</h-><h- data-h=name_var>saved</h-><h- data-h=str_intp_dlim>)</h-></code-block>
+<p>Generated HTML:
+</p><code-block>[42]
+[7]</code-block>
+</example-block>
+
 <p>A parameter prefixed with <code><h- data-h=name_attr>...</h-></code> is a <dfn>variadic parameter</dfn>.
 It captures zero or more positional arguments.
 Inside the function body,
@@ -3945,8 +3964,14 @@ because it already accepts zero or more arguments.
 
 <p>Functions cannot be nested inside other function bodies,
 and <g-term>let-expression</g-term>s are similarly forbidden within function bodies.
-Functions only have access to their own parameters and to global variables;
-they do not capture variables from enclosing scopes.
+A function body can only refer to the function's own parameters
+and to global variables;
+it does not capture local variables from an enclosing scope.
+</p>
+<p>This does not conflict with the fact that content which a function body
+splices lazily can still refer to the parameters of that call:
+those parameters belong to the call which produced the content,
+not to the scope in which the function was defined.
 </p><h2 id=types-intro><a class=para href=#types-intro></a>7. Types</h2>
 
 <p>While most of the content a user writes tends to be in a markup context,

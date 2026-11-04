@@ -280,6 +280,33 @@ TEST(GC_Ref, as_span)
     }
 }
 
+TEST(GC_Ref, get_null_ref_is_nullptr)
+{
+    const GC_Ref<int> ref;
+    EXPECT_EQ(ref.get(), nullptr);
+}
+
+TEST(GC_Ref, get_returns_pointer_to_object)
+{
+    GC_Ref<int> ref = gc_ref_make<int>(42);
+    const int* const pointer = ref.get();
+    ASSERT_NE(pointer, nullptr);
+    EXPECT_EQ(*pointer, 42);
+    EXPECT_EQ(pointer, &*ref);
+}
+
+TEST(GC_Ref, get_does_not_own)
+{
+    GC_Ref<int> ref = gc_ref_make<int>(7);
+    GC_Node* const node = ref.unsafe_get_node();
+    ASSERT_EQ(node->reference_count, 1u);
+    const int* const pointer = ref.get();
+    ASSERT_NE(pointer, nullptr);
+    EXPECT_EQ(*pointer, 7);
+    // Getting a pointer must not affect the reference count.
+    EXPECT_EQ(node->reference_count, 1u);
+}
+
 TEST(GC_Ref, from_range_destructor_tracking)
 {
     int live = 0;

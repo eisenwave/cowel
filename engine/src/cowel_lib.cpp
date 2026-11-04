@@ -653,7 +653,7 @@ cowel_gen_result_u8 do_generate_html(const cowel_options_u8& options)
     const Processing_Status status = run_generation(
         [&](Context& context) -> Processing_Status {
             if (options.mode == COWEL_MODE_MINIMAL) {
-                return splice_all(html_policy, root_content, Frame_Index::root, context);
+                return splice_all(html_policy, root_content, Frame_Ref {}, context);
             }
             COWEL_ASSERT(options.mode == COWEL_MODE_DOCUMENT);
             return write_wg21_document(html_policy, root_content, context);

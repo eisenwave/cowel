@@ -21,6 +21,8 @@
     as in `fun sum(...args) = cowel_add(...args)`.
   - Scalar parameters may declare *default-argument*s
     as in `fun add(x = 0, y = 0) = x + y`.
+  - The parameters of a call remain in scope
+    for splicing of block returned by the function.
 - Also updated µlight (#426):
   - Added support for syntax highlighting themes that use palettes.
   - Improved the quality of highlighting.

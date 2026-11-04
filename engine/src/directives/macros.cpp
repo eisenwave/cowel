@@ -39,8 +39,10 @@ struct Put_Named {
     /// @param members The group members, usually call arguments.
     /// @param frame The content frame of the call.
     [[nodiscard]]
-    Result<std::optional<Argument>, Processing_Status>
-    find(const std::span<const ast::Group_Member> members, const Frame_Index frame) const
+    Result<std::optional<Argument>, Processing_Status> find(
+        const std::span<const ast::Group_Member> members,
+        Frame_Ref frame // NOLINT(performance-unnecessary-value-param)
+    ) const
     {
         for (const ast::Group_Member& arg : members) {
             switch (arg.get_kind()) {
@@ -72,7 +74,7 @@ struct Put_Named {
             }
             case ast::Member_Kind::ellipsis: {
                 const Invocation* const ellipsis_invocation
-                    = resolve_ellipsis_invocation(arg, frame, context);
+                    = resolve_ellipsis_invocation(arg, frame.get(), context);
                 if (!ellipsis_invocation) {
                     return Processing_Status::error;
                 }
@@ -117,8 +119,10 @@ struct Put_Positional {
     /// @param members The group members, usually call arguments.
     /// @param frame The content frame of the call.
     [[nodiscard]]
-    Result<std::optional<Argument>, Processing_Status>
-    find(std::span<const ast::Group_Member> members, Frame_Index frame)
+    Result<std::optional<Argument>, Processing_Status> find(
+        std::span<const ast::Group_Member> members,
+        Frame_Ref frame // NOLINT(performance-unnecessary-value-param)
+    )
     {
         for (const ast::Group_Member& arg : members) {
             switch (arg.get_kind()) {
@@ -127,7 +131,7 @@ struct Put_Positional {
             }
             case ast::Member_Kind::ellipsis: {
                 const Invocation* const ellipsis_invocation
-                    = resolve_ellipsis_invocation(arg, frame, context);
+                    = resolve_ellipsis_invocation(arg, frame.get(), context);
                 if (!ellipsis_invocation) {
                     return Processing_Status::error;
                 }
@@ -272,7 +276,7 @@ Processing_Status Macro_Behavior::do_evaluate(const Invocation& call, Context& c
 Result<Argument, Processing_Status>
 Put_Behavior::resolve(const Invocation& call, Context& context) const
 {
-    if (call.content_frame == Frame_Index::root) {
+    if (!call.content_frame) {
         context.try_error(
             diagnostic::put_outside, call.directive.get_source_span(),
             u8"\\cowel_put can only be used when expanded from macros, "
@@ -323,8 +327,7 @@ Put_Behavior::resolve(const Invocation& call, Context& context) const
         return Processing_Status::error;
     }
 
-    Call_Stack& stack = context.get_call_stack();
-    const Invocation& target_invocation = stack[call.content_frame].invocation;
+    const Invocation& target_invocation = call.content_frame->invocation;
 
     const bool has_else = else_matcher.was_matched();
     const auto get_block_argument
@@ -511,8 +514,7 @@ Put_Behavior::evaluate(const Invocation& call, Context& context) const
         return result.error();
     }
 
-    Call_Stack& stack = context.get_call_stack();
-    const Invocation& target_invocation = stack[call.content_frame].invocation;
+    const Invocation& target_invocation = call.content_frame->invocation;
 
     return result->evaluate(target_invocation.content_frame, context);
 }
@@ -526,8 +528,7 @@ Put_Behavior::splice(Content_Policy& out, const Invocation& call, Context& conte
         return try_generate_error(out, call, context, result.error());
     }
 
-    Call_Stack& stack = context.get_call_stack();
-    const Invocation& target_invocation = stack[call.content_frame].invocation;
+    const Invocation& target_invocation = call.content_frame->invocation;
 
     try_inherit_paragraph(out);
     return result->splice(out, target_invocation.content_frame, context);

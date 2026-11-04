@@ -178,8 +178,10 @@ struct Logical_Expression_Evaluator {
     }
 
     [[nodiscard]]
-    Result<bool, Processing_Status>
-    operator()(std::span<const Argument> arguments, Frame_Index frame) const
+    Result<bool, Processing_Status> operator()(
+        std::span<const Argument> arguments,
+        Frame_Ref frame // NOLINT(performance-unnecessary-value-param)
+    ) const
     {
         const bool neutral_element = kind == Logical_Expression_Kind::logical_and;
         const bool terminator = !neutral_element;

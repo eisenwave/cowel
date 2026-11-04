@@ -1,0 +1,52 @@
+\test_input{
+\ fun f(x) = {[\(x)]}
+[\f(42)]
+
+\ let blk = f(9)
+[\(blk)]
+
+\ fun g(a, b) = {[\(cowel_add(a, b))]}
+[\g(1, 2)]
+
+\ fun h(x = 7) = {[\(x)]}
+[\h()]
+
+\ fun sum3(...args) = {[\(cowel_add(...args))]}
+[\sum3(1, 2, 3)]
+
+\ let gvar = "global"
+\ fun use_global(x) = {[\(x) and \(gvar)]}
+[\use_global("local")]
+
+\ fun inner() = {[inner says \(p)]}
+\ fun outer(p) = {[outer calls \inner()]}
+[\outer(42)]
+
+\ fun inner3(p) = {[\(p)]}
+\ fun outer3(p) = {inner3 says \inner3("inner value")}
+[\outer3("outer value")]
+
+\ let shared = "global shared"
+\ fun local(shared) = {[\(shared)]}
+[\local("parameter")]
+}
+
+\test_output{
+[[42]]
+
+[[9]]
+
+[[3]]
+
+[[7]]
+
+[[6]]
+
+[[local and global]]
+
+[[outer calls [inner says 42]]]
+
+[inner3 says [inner value]]
+
+[[parameter]]
+}

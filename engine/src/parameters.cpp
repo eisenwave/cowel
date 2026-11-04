@@ -9,33 +9,32 @@
 
 namespace cowel {
 
-Result<Value, Processing_Status> Argument::evaluate(const Frame_Index frame, Context& context) const
+Result<Value, Processing_Status> Argument::evaluate(Frame_Ref frame, Context& context) const
 {
     if (m_runtime_value) {
         return *m_runtime_value;
     }
-    return m_evaluate(m_ast_node, frame, context);
+    return m_evaluate(m_ast_node, std::move(frame), context);
 }
 
-Processing_Status
-Argument::splice(Content_Policy& out, const Frame_Index frame, Context& context) const
+Processing_Status Argument::splice(Content_Policy& out, Frame_Ref frame, Context& context) const
 {
     if (m_runtime_value) {
         return splice_value(out, *m_runtime_value, m_location, context);
     }
-    return m_splice(m_ast_node, out, frame, context);
+    return m_splice(m_ast_node, out, std::move(frame), context);
 }
 
 Processing_Status Argument::splice_to_plaintext(
     std::pmr::vector<char8_t>& out,
-    const Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 ) const
 {
     if (m_runtime_value) {
         return splice_value_to_plaintext(out, *m_runtime_value, m_location, context);
     }
-    return m_splice_to_plaintext(m_ast_node, out, frame, context);
+    return m_splice_to_plaintext(m_ast_node, out, std::move(frame), context);
 }
 
 [[nodiscard]]
@@ -57,34 +56,34 @@ const Type& Argument::get_static_type(Context& context) const
 
 Result<Value, Processing_Status> Argument::group_member_evaluate(
     const void* const ast_node, //
-    const Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
     return evaluate_expression(
-        static_cast<const ast::Group_Member*>(ast_node)->get_value(), frame, context
+        static_cast<const ast::Group_Member*>(ast_node)->get_value(), std::move(frame), context
     );
 }
 Processing_Status Argument::group_member_splice(
     const void* const ast_node, //
     Content_Policy& out,
-    const Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
     return splice_expression(
-        out, static_cast<const ast::Group_Member*>(ast_node)->get_value(), frame, context
+        out, static_cast<const ast::Group_Member*>(ast_node)->get_value(), std::move(frame), context
     );
 }
 Processing_Status Argument::group_member_splice_to_plaintext(
     const void* ast_node,
     std::pmr::vector<char8_t>& out,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
     return splice_expression_to_plaintext(
-        out, static_cast<const ast::Group_Member*>(ast_node)->get_value(), frame, context
+        out, static_cast<const ast::Group_Member*>(ast_node)->get_value(), std::move(frame), context
     );
 }
 const File_Source_Span& Argument::group_member_get_source_span(const void* const ast_node) noexcept
@@ -101,30 +100,32 @@ Argument::group_member_get_static_type(const void* const ast_node, Context& cont
 
 Result<Value, Processing_Status> Argument::primary_evaluate(
     const void* const ast_node, //
-    const Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
-    return cowel::evaluate(*static_cast<const ast::Primary*>(ast_node), frame, context);
+    return cowel::evaluate(*static_cast<const ast::Primary*>(ast_node), std::move(frame), context);
 }
 Processing_Status Argument::primary_splice(
     const void* const ast_node, //
     Content_Policy& out,
-    const Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
-    return cowel::splice_primary(out, *static_cast<const ast::Primary*>(ast_node), frame, context);
+    return cowel::splice_primary(
+        out, *static_cast<const ast::Primary*>(ast_node), std::move(frame), context
+    );
 }
 Processing_Status Argument::primary_splice_to_plaintext(
     const void* ast_node,
     std::pmr::vector<char8_t>& out,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
     return splice_expression_to_plaintext(
-        out, *static_cast<const ast::Primary*>(ast_node), frame, context
+        out, *static_cast<const ast::Primary*>(ast_node), std::move(frame), context
     );
 }
 const File_Source_Span& Argument::primary_get_source_span(const void* ast_node) noexcept
@@ -138,7 +139,7 @@ const Type& Argument::primary_get_static_type(const void* const ast_node, Contex
 
 Processing_Status Lazy_Value_Of_Type_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
@@ -163,18 +164,18 @@ Processing_Status Lazy_Value_Of_Type_Matcher::match_value(
         return on_fail.status;
     }
     m_value = { argument, argument.get_location() };
-    m_markup_frame = frame;
+    m_markup_frame = std::move(frame);
     return Processing_Status::ok;
 }
 
 Processing_Status Value_Of_Type_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
 {
-    Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    Result<Value, Processing_Status> val = argument.evaluate(std::move(frame), context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -200,12 +201,12 @@ Processing_Status Value_Of_Type_Matcher::match_value(
 
 Processing_Status Declared_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
 {
-    Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    Result<Value, Processing_Status> val = argument.evaluate(std::move(frame), context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -220,7 +221,7 @@ Processing_Status Declared_Matcher::match_value(
 
 Processing_Status Textual_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
@@ -228,7 +229,8 @@ Processing_Status Textual_Matcher::match_value(
     COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
 
     std::pmr::vector<char8_t> buffer { context.get_transient_memory() };
-    const Processing_Status status = argument.splice_to_plaintext(buffer, frame, context);
+    const Processing_Status status
+        = argument.splice_to_plaintext(buffer, std::move(frame), context);
     if (status != Processing_Status::ok) {
         return status;
     }
@@ -239,7 +241,7 @@ Processing_Status Textual_Matcher::match_value(
 
 Processing_Status Spliceable_To_String_Matcher::match_value(
     const Argument& argument, //
-    Frame_Index frame, //
+    Frame_Ref frame, //
     Context& context, //
     const Match_Fail_Options& on_fail
 )
@@ -247,7 +249,8 @@ Processing_Status Spliceable_To_String_Matcher::match_value(
     COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
 
     m_data.clear();
-    const Processing_Status status = argument.splice_to_plaintext(m_data, frame, context);
+    const Processing_Status status
+        = argument.splice_to_plaintext(m_data, std::move(frame), context);
     if (status != Processing_Status::ok) {
         m_data.clear();
         return status;
@@ -258,14 +261,14 @@ Processing_Status Spliceable_To_String_Matcher::match_value(
 
 Processing_Status String_Matcher::match_value(
     const Argument& argument, //
-    Frame_Index frame, //
+    Frame_Ref frame, //
     Context& context, //
     const Match_Fail_Options& on_fail
 )
 {
     COWEL_DEBUG_ASSERT(status_is_error(on_fail.status));
 
-    const Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    const Result<Value, Processing_Status> val = argument.evaluate(std::move(frame), context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -283,12 +286,12 @@ Processing_Status String_Matcher::match_value(
 
 Processing_Status Boolean_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
 {
-    const Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    const Result<Value, Processing_Status> val = argument.evaluate(std::move(frame), context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -305,12 +308,12 @@ Processing_Status Boolean_Matcher::match_value(
 
 Processing_Status Integer_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
 {
-    Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    Result<Value, Processing_Status> val = argument.evaluate(std::move(frame), context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -325,12 +328,12 @@ Processing_Status Integer_Matcher::match_value(
 
 Processing_Status Float_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
 {
-    const Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    const Result<Value, Processing_Status> val = argument.evaluate(std::move(frame), context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -382,12 +385,12 @@ bool Sorted_Options_Matcher::match_string(
 
 Processing_Status Block_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
 {
-    const Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    const Result<Value, Processing_Status> val = argument.evaluate(std::move(frame), context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -402,12 +405,12 @@ Processing_Status Block_Matcher::match_value(
 
 Processing_Status Pack_Of_Type_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
 {
-    Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    Result<Value, Processing_Status> val = argument.evaluate(std::move(frame), context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -435,7 +438,7 @@ Processing_Status Pack_Of_Type_Matcher::match_value(
 
 Processing_Status Pack_Named_Of_Type_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
@@ -451,7 +454,7 @@ Processing_Status Pack_Named_Of_Type_Matcher::match_value(
         return on_fail.status;
     }
 
-    Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    Result<Value, Processing_Status> val = argument.evaluate(std::move(frame), context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -484,12 +487,12 @@ Processing_Status Pack_Named_Of_Type_Matcher::match_value(
 
 Processing_Status Group_Pack_Named_Str_Matcher::match_value(
     const Argument& argument,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context,
     const Match_Fail_Options& on_fail
 )
 {
-    Result<Value, Processing_Status> val = argument.evaluate(frame, context);
+    Result<Value, Processing_Status> val = argument.evaluate(std::move(frame), context);
     if (!val) {
         return status_max(val.error(), on_fail.status);
     }
@@ -594,15 +597,15 @@ struct Argument_Consumer {
 
     /// @brief Matches the argument with the parameter that it belongs to.
     [[nodiscard]]
-    Processing_Status consume(const Argument& argument, Frame_Index frame);
+    Processing_Status consume(const Argument& argument, Frame_Ref frame);
 
     /// @brief Matches a block argument with the parameter at the given index.
     [[nodiscard]]
     Processing_Status
-    consume_block(const ast::Primary& block, Frame_Index frame, std::size_t parameter_index);
+    consume_block(const ast::Primary& block, Frame_Ref frame, std::size_t parameter_index);
 };
 
-Processing_Status Argument_Consumer::consume(const Argument& argument, const Frame_Index frame)
+Processing_Status Argument_Consumer::consume(const Argument& argument, Frame_Ref frame)
 {
     const Match_Fail_Options on_member_fail {
         .emit = on_fail,
@@ -629,7 +632,7 @@ Processing_Status Argument_Consumer::consume(const Argument& argument, const Fra
             );
 
             return current_pack_value_matcher->match_value(
-                argument, frame, context, on_member_fail
+                argument, std::move(frame), context, on_member_fail
             );
         }
 
@@ -658,7 +661,7 @@ Processing_Status Argument_Consumer::consume(const Argument& argument, const Fra
             argument_indices_by_parameter[parameter_index] = int(argument_index);
             Value_Matcher& value_matcher = parameters[parameter_index]->get_value_matcher();
             const auto arg_status
-                = value_matcher.match_value(argument, frame, context, on_member_fail);
+                = value_matcher.match_value(argument, std::move(frame), context, on_member_fail);
             if (arg_status != Processing_Status::ok) {
                 return arg_status;
             }
@@ -682,7 +685,9 @@ Processing_Status Argument_Consumer::consume(const Argument& argument, const Fra
             argument_indices_by_parameter[current_pack_param_index] != parameter_not_provided
         );
 
-        return current_pack_value_matcher->match_value(argument, frame, context, on_member_fail);
+        return current_pack_value_matcher->match_value(
+            argument, std::move(frame), context, on_member_fail
+        );
     }
 
     if (mode == Argument_Mode::normal) {
@@ -696,13 +701,9 @@ Processing_Status Argument_Consumer::consume(const Argument& argument, const Fra
                 current_pack_value_matcher = &parameter->get_value_matcher();
                 current_pack_param_index = parameter_index;
                 mode = Argument_Mode::pack_named;
-                const auto arg_status = parameter->get_value_matcher().match_value(
-                    argument, frame, context, on_member_fail
+                return parameter->get_value_matcher().match_value(
+                    argument, std::move(frame), context, on_member_fail
                 );
-                if (arg_status != Processing_Status::ok) {
-                    return arg_status;
-                }
-                return Processing_Status::ok;
             }
         }
     }
@@ -729,13 +730,9 @@ Processing_Status Argument_Consumer::consume(const Argument& argument, const Fra
             return on_fail_status;
         }
         argument_indices_by_parameter[i] = int(argument_index);
-        const auto arg_status = member_matcher->get_value_matcher().match_value(
-            argument, frame, context, on_member_fail
+        return member_matcher->get_value_matcher().match_value(
+            argument, std::move(frame), context, on_member_fail
         );
-        if (arg_status != Processing_Status::ok) {
-            return arg_status;
-        }
-        return Processing_Status::ok;
     }
     on_fail(
         argument.get_location(),
@@ -753,7 +750,7 @@ Processing_Status Argument_Consumer::consume(const Argument& argument, const Fra
 
 Processing_Status Argument_Consumer::consume_block(
     const ast::Primary& block,
-    const Frame_Index frame,
+    Frame_Ref frame,
     const std::size_t parameter_index
 )
 {
@@ -764,7 +761,7 @@ Processing_Status Argument_Consumer::consume_block(
     };
     const Processing_Status block_status
         = parameters[parameter_index]->get_value_matcher().match_value(
-            Argument::block(block), frame, context, on_member_fail
+            Argument::block(block), std::move(frame), context, on_member_fail
         );
     if (block_status != Processing_Status::ok) {
         return block_status;
@@ -780,14 +777,12 @@ struct Argument_Expander {
     Processing_Status on_fail_status;
 
     [[nodiscard]]
-    Processing_Status operator()(std::span<const ast::Group_Member> args, Frame_Index frame);
+    Processing_Status operator()(std::span<const ast::Group_Member> args, Frame_Ref frame);
 };
 
 [[nodiscard]]
-Processing_Status Argument_Expander::operator()(
-    const std::span<const ast::Group_Member> args,
-    const Frame_Index frame
-)
+Processing_Status
+Argument_Expander::operator()(const std::span<const ast::Group_Member> args, Frame_Ref frame)
 {
     return process_greedy(args, [&](const ast::Group_Member& argument) -> Processing_Status {
         switch (argument.get_kind()) {
@@ -838,7 +833,7 @@ Processing_Status Argument_Expander::operator()(
 
         case ast::Member_Kind::ellipsis: {
             const Invocation* const ellipsis_invocation
-                = resolve_ellipsis_invocation(argument, frame, context);
+                = resolve_ellipsis_invocation(argument, frame.get(), context);
             if (!ellipsis_invocation) {
                 return on_fail_status;
             }

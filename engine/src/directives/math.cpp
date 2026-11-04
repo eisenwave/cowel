@@ -112,8 +112,7 @@ public:
     }
 
     [[nodiscard]]
-    Processing_Status
-    consume(const ast::Primary& node, const Frame_Index frame, Context& context) override
+    Processing_Status consume(const ast::Primary& node, Frame_Ref frame, Context& context) override
     {
         const auto kind = node.get_kind();
         const bool attempt_diagnose_text = !m_permit_text
@@ -133,17 +132,17 @@ public:
                 );
             }
         }
-        return HTML_Content_Policy::consume(node, frame, context);
+        return HTML_Content_Policy::consume(node, std::move(frame), context);
     }
 
     [[nodiscard]]
     Processing_Status
-    consume(const ast::Directive& d, const Frame_Index content_frame, Context& context) override
+    consume(const ast::Directive& d, Frame_Ref content_frame, Context& context) override
     {
         const std::u8string_view name_string = d.get_name();
         const std::ptrdiff_t index = mathml_element_index(name_string);
         if (index < 0) {
-            return HTML_Content_Policy::consume(d, content_frame, context);
+            return HTML_Content_Policy::consume(d, std::move(content_frame), context);
         }
 
         Pack_Named_Of_Type_Matcher attr_matcher { pack_named_bool_or_str };

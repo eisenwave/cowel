@@ -386,21 +386,21 @@ void try_lookup_error(const ast::Directive& directive, Context& context)
 Processing_Status splice_to_plaintext(
     std::pmr::vector<char8_t>& out,
     std::span<const ast::Markup_Element> content,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
     const auto diagnostic_frame = context.push_diagnostic_frame(frame);
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
     Text_Only_Policy policy { sink };
-    return splice_all(policy, content, frame, context);
+    return splice_all(policy, content, std::move(frame), context);
 }
 
 [[nodiscard]]
 Processing_Status splice_expression(
     Content_Policy& out,
     const ast::Expression& value,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
@@ -408,12 +408,12 @@ Processing_Status splice_expression(
     // Fast path for directives.
     // Can bypass forming a `Value` when splicing directives that return blocks.
     if (const auto* const directive = value.try_as_directive()) {
-        return splice_directive_invocation(out, *directive, frame, context);
+        return splice_directive_invocation(out, *directive, std::move(frame), context);
     }
     // Fast path for primary-expressions.
     // Can bypass forming a Value when splicing string literals etc.
     if (const auto* const primary = value.try_as_primary()) {
-        return splice_primary(out, *primary, frame, context);
+        return splice_primary(out, *primary, std::move(frame), context);
     }
 
     // Assignment and let expressions are evaluated for their side effects only;
@@ -421,13 +421,14 @@ Processing_Status splice_expression(
     if (const auto* const binary = value.try_as_binary()) {
         if (binary->get_kind() == Binary_Expression_Kind::assign) {
             const Result<Value, Processing_Status> evaluated
-                = evaluate_expression(value, frame, context);
+                = evaluate_expression(value, std::move(frame), context);
             return evaluated ? Processing_Status::ok : evaluated.error();
         }
     }
 
     // General path for anything else: evaluate and splice the value.
-    const Result<Value, Processing_Status> evaluated = evaluate_expression(value, frame, context);
+    const Result<Value, Processing_Status> evaluated
+        = evaluate_expression(value, std::move(frame), context);
     if (!evaluated) {
         return evaluated.error();
     }
@@ -439,9 +440,9 @@ Processing_Status splice_expression(
 
 [[nodiscard]]
 Processing_Status splice_primary(
-    Content_Policy& out,
+    Content_Policy& out, //
     const ast::Primary& primary,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
@@ -459,7 +460,8 @@ Processing_Status splice_primary(
         return Processing_Status::ok;
     }
     case ast::Primary_Kind::id_expression: {
-        const Value* const var = context.get_variable_with_bindings(primary.get_source());
+        const Value* const var
+            = context.get_variable_with_bindings(primary.get_source(), frame.get());
         if (!var) {
             context.try_error(
                 diagnostic::id_lookup, primary.get_source_span(),
@@ -477,15 +479,15 @@ Processing_Status splice_primary(
     }
     case ast::Primary_Kind::int_literal:
     case ast::Primary_Kind::decimal_float_literal: {
-        const Result<Value, Processing_Status> value = evaluate(primary, frame, context);
+        const Result<Value, Processing_Status> value = evaluate(primary, std::move(frame), context);
         COWEL_ASSERT(value);
         return splice_value(out, *value, primary.get_source_span(), context);
     }
     case ast::Primary_Kind::quoted_string: {
-        return splice_quoted_string(out, primary, frame, context);
+        return splice_quoted_string(out, primary, std::move(frame), context);
     }
     case ast::Primary_Kind::block: {
-        return splice_block(out, primary, frame, context);
+        return splice_block(out, primary, std::move(frame), context);
     }
     default: break;
     }
@@ -678,13 +680,13 @@ Result<Value, Processing_Status> splice_value_to_string(
 Processing_Status splice_expression_to_plaintext(
     std::pmr::vector<char8_t>& out,
     const ast::Expression& value,
-    Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
     Capturing_Ref_Text_Sink sink { out, Output_Language::text };
     Text_Only_Policy policy { sink };
-    return splice_expression(policy, value, frame, context);
+    return splice_expression(policy, value, std::move(frame), context);
 }
 
 [[nodiscard]]
@@ -700,29 +702,28 @@ Function_Definition::splice(Content_Policy& out, const Invocation& call, Context
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate_expression(const ast::Expression& value, Frame_Index frame, Context& context)
+evaluate_expression(const ast::Expression& value, Frame_Ref frame, Context& context)
 {
     const auto diagnostic_frame = context.push_diagnostic_frame(frame);
-    const auto visitor = [&](const auto& v) { return evaluate(v, frame, context); };
+    const auto visitor = [&](const auto& v) { return evaluate(v, std::move(frame), context); };
     return std::visit(visitor, value);
 }
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
+evaluate(const ast::Directive& directive, Frame_Ref frame, Context& context)
 {
     Invocation call {
         .name = directive.get_name(),
         .directive = directive,
         .arguments = directive.get_arguments(),
         .block_arguments = directive.get_block_arguments(),
-        .content_frame = frame,
+        .content_frame = std::move(frame),
         .call_frame = {},
     };
     const Directive_Behavior* const behavior = context.find_directive(call.name);
     if (!behavior) {
         try_lookup_error(directive, context);
-        call.call_frame = context.get_call_stack().get_top_index();
         return Processing_Status::error;
     }
 
@@ -737,36 +738,36 @@ evaluate(const ast::Directive& directive, Frame_Index frame, Context& context)
     }
 
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
-    call.call_frame = scope.get_index();
+    call.call_frame = scope.get_ref();
     return behavior->evaluate(call, context);
 }
 
 [[nodiscard]]
 const Invocation* resolve_ellipsis_invocation(
     const ast::Group_Member& ellipsis,
-    const Frame_Index content_frame,
+    const Stack_Frame* const content_frame,
     Context& context
 )
 {
-    if (content_frame == Frame_Index::root) {
+    if (!content_frame) {
         context.try_error(
             diagnostic::ellipsis_outside, ellipsis.get_source_span(),
             u8"An ellipsis argument can only be expanded from a macro, but this one appeared outside of any macro expansion."sv
         );
         return nullptr;
     }
-    return &context.get_call_stack()[content_frame].invocation;
+    return &content_frame->invocation;
 }
 
 [[nodiscard]]
 Result<Value, Processing_Status> evaluate(
     const ast::Unary_Expression& expression, //
-    const Frame_Index frame,
+    Frame_Ref frame,
     Context& context
 )
 {
     Result<Value, Processing_Status> result
-        = evaluate_expression(expression.get_operand(), frame, context);
+        = evaluate_expression(expression.get_operand(), std::move(frame), context);
     if (!result) {
         return result;
     }
@@ -775,7 +776,7 @@ Result<Value, Processing_Status> evaluate(
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate(const ast::Binary_Expression& expression, const Frame_Index frame, Context& context)
+evaluate(const ast::Binary_Expression& expression, Frame_Ref frame, Context& context)
 {
     const Binary_Expression_Kind kind = expression.get_kind();
     const File_Source_Span& span = expression.get_source_span();
@@ -835,7 +836,7 @@ evaluate(const ast::Binary_Expression& expression, const Frame_Index frame, Cont
     if (!lhs_result) {
         return lhs_result;
     }
-    auto rhs_result = evaluate_expression(expression.get_rhs(), frame, context);
+    auto rhs_result = evaluate_expression(expression.get_rhs(), std::move(frame), context);
     if (!rhs_result) {
         return rhs_result;
     }
@@ -852,10 +853,10 @@ evaluate(const ast::Binary_Expression& expression, const Frame_Index frame, Cont
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate(const ast::Let_Expression& expression, const Frame_Index frame, Context& context)
+evaluate(const ast::Let_Expression& expression, Frame_Ref frame, Context& context)
 {
     Result<Value, Processing_Status> rhs_result
-        = evaluate_expression(expression.get_value(), frame, context);
+        = evaluate_expression(expression.get_value(), std::move(frame), context);
     if (!rhs_result) {
         return rhs_result;
     }
@@ -868,8 +869,11 @@ evaluate(const ast::Let_Expression& expression, const Frame_Index frame, Context
 }
 
 [[nodiscard]]
-Result<Value, Processing_Status>
-evaluate(const ast::Function_Expression& expression, const Frame_Index, Context& context)
+Result<Value, Processing_Status> evaluate(
+    const ast::Function_Expression& expression,
+    Frame_Ref, // NOLINT(performance-unnecessary-value-param)
+    Context& context
+)
 {
     const std::u8string_view name = expression.get_name();
     const std::u8string_view source = expression.get_source();
@@ -947,39 +951,36 @@ Function_Definition::evaluate(const Invocation& call, Context& context) const
         return match_status;
     }
 
-    // Build the binding map from matched parameters.
-    Context::Function_Binding_Chain bindings;
-    bindings.bindings = Context::Function_Binding_Map { context.get_transient_memory() };
-    for (std::size_t i = 0; i < param_ptrs.size(); ++i) {
-        Declared_Matcher& matcher = matchers[i];
-        if (!matcher.is_pack() && !matcher.was_matched()) {
-            continue;
-        }
-
-        Value value;
+    // Build the positional bindings from the matched parameters.
+    // The bindings belong to the frame of this call,
+    // because they must outlive the evaluation of the body:
+    // blocks and directives in the body are spliced lazily,
+    // and may only be spliced once this function has already returned.
+    Call_Bindings& bindings = call.call_frame->bindings;
+    COWEL_DEBUG_ASSERT(function_params.size() == matchers.size());
+    bindings.parameters = function_params;
+    bindings.values.clear();
+    bindings.values.reserve(function_params.size());
+    for (std::size_t i = 0; i < function_params.size(); ++i) {
+        const Declared_Matcher& matcher = matchers[i];
+        COWEL_DEBUG_ASSERT(matcher.is_pack() || matcher.was_matched());
         if (matcher.is_pack()) {
             Small_Vector<Value, 16> values;
             for (const auto& value_with_location : matcher.get_values()) {
                 values.push_back(value_with_location.value);
             }
-            value = Value::group_pack(values);
+            bindings.values.emplace_back(Value::group_pack(values));
         }
         else {
-            value = matcher.get_value();
+            bindings.values.emplace_back(matcher.get_value());
         }
-        bindings.bindings.emplace_back(
-            std::pmr::u8string { param_ptrs[i]->get_name(), context.get_transient_memory() },
-            std::move(value)
-        );
     }
 
     // Evaluate the body with parameter bindings in scope.
-    bindings.parent = context.get_function_bindings();
-    context.set_function_bindings(&bindings);
-    const auto result = evaluate_expression(m_body, call.call_frame, context);
-    context.set_function_bindings(bindings.parent);
-
-    return result;
+    // The bindings are not restored once the body has been evaluated;
+    // they remain associated with the frame of this call,
+    // so that content which is spliced lazily can still resolve parameters.
+    return evaluate_expression(m_body, call.call_frame, context);
 }
 
 Result<Value, Processing_Status> evaluate_unary(
@@ -1080,7 +1081,7 @@ namespace {
 
 struct Evaluate_Member_Values {
     std::pmr::vector<Group_Member_Value>& out;
-    Frame_Index frame;
+    Frame_Ref frame;
     Context& context;
 
     [[nodiscard]]
@@ -1109,7 +1110,7 @@ struct Evaluate_Member_Values {
             }
             case ast::Member_Kind::ellipsis: {
                 const Invocation* const ellipsis_invocation
-                    = resolve_ellipsis_invocation(m, frame, context);
+                    = resolve_ellipsis_invocation(m, frame.get(), context);
                 if (!ellipsis_invocation) {
                     return Processing_Status::error;
                 }
@@ -1152,7 +1153,7 @@ struct Evaluate_Member_Values {
 
 [[nodiscard]]
 Result<Value, Processing_Status>
-evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
+evaluate(const ast::Primary& value, Frame_Ref frame, Context& context)
 {
     const auto diagnostic_frame = context.push_diagnostic_frame(frame);
     COWEL_ASSERT(value.is_value());
@@ -1216,7 +1217,8 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         return Value::static_string(value.get_source(), value.get_string_kind());
     }
     case ast::Primary_Kind::id_expression: {
-        const Value* const var = context.get_variable_with_bindings(value.get_source());
+        const Value* const var
+            = context.get_variable_with_bindings(value.get_source(), frame.get());
         if (!var) {
             context.try_error(
                 diagnostic::id_lookup, value.get_source_span(),
@@ -1239,7 +1241,7 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         //       We also don't need to re-compute the string kind then.
         Vector_Text_Sink text { Output_Language::text, context.get_transient_memory() };
         Text_Only_Policy policy { text };
-        const Processing_Status result = splice_primary(policy, value, frame, context);
+        const Processing_Status result = splice_primary(policy, value, std::move(frame), context);
         if (result != Processing_Status::ok) {
             return result;
         }
@@ -1248,12 +1250,14 @@ evaluate(const ast::Primary& value, Frame_Index frame, Context& context)
         return Value::string(result_str, kind);
     }
     case ast::Primary_Kind::block: {
-        return Value::block(value, frame);
+        return Value::block(value, std::move(frame));
     }
     case ast::Primary_Kind::group: {
         std::pmr::vector<Group_Member_Value> members;
         members.reserve(value.get_members_size());
-        const auto status = Evaluate_Member_Values { members, frame, context }(value.get_members());
+        const auto status = Evaluate_Member_Values {
+            members, std::move(frame), context //
+        }(value.get_members());
         if (status != Processing_Status::ok) {
             return status;
         }
@@ -1273,7 +1277,7 @@ Processing_Status splice_invocation( //
     std::u8string_view name,
     const ast::Primary* args,
     const std::span<const ast::Primary> block_arguments,
-    Frame_Index content_frame,
+    Frame_Ref content_frame,
     Context& context
 )
 {
@@ -1283,13 +1287,12 @@ Processing_Status splice_invocation( //
         .directive = directive,
         .arguments = args,
         .block_arguments = block_arguments,
-        .content_frame = content_frame,
+        .content_frame = std::move(content_frame),
         .call_frame = {},
     };
     const Directive_Behavior* const behavior = context.find_directive(name);
     if (!behavior) {
         try_lookup_error(directive, context);
-        call.call_frame = context.get_call_stack().get_top_index();
         return try_generate_error(out, call, context);
     }
 
@@ -1304,19 +1307,20 @@ Processing_Status splice_invocation( //
     }
 
     const Scoped_Frame scope = context.get_call_stack().push_scoped({ *behavior, call });
-    call.call_frame = scope.get_index();
+    call.call_frame = scope.get_ref();
     return behavior->splice(out, call, context);
 }
 
 Processing_Status splice_directive_invocation( //
     Content_Policy& out,
     const ast::Directive& d,
-    Frame_Index content_frame,
+    Frame_Ref content_frame,
     Context& context
 )
 {
     return splice_invocation(
-        out, d, d.get_name(), d.get_arguments(), d.get_block_arguments(), content_frame, context
+        out, d, d.get_name(), d.get_arguments(), d.get_block_arguments(), std::move(content_frame),
+        context
     );
 }
 
