@@ -1,0 +1,6 @@
+--- a/pack.cow
++++ b/pack.cow
+@@ -1,2 +1,2 @@
+-\cowel_macro("join"){\cowel_add(...)}
++\(fun join(...args) = {\cowel_add(...args)})
+ \join(1, 2, 3)

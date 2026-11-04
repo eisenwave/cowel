@@ -236,6 +236,7 @@ set(COMMON_LIBRARY_SOURCES
     engine/include/cowel/document_generation.hpp
     engine/include/cowel/document_sections.hpp
     engine/include/cowel/fwd.hpp
+    engine/include/cowel/function_bindings.hpp
     engine/include/cowel/integration_testing.hpp
     engine/include/cowel/invocation.hpp
     engine/include/cowel/json.hpp
@@ -287,6 +288,7 @@ set(COMMON_LIBRARY_SOURCES
     engine/src/syntax/parse_utils.cpp
     engine/src/syntax/parse.cpp
 
+    engine/src/autofix.cpp
     engine/src/cli_options.cpp
     engine/src/content_policies.cpp
     engine/src/cowel_lib.cpp
@@ -462,6 +464,7 @@ else()
         engine/test/src/diff.cpp
         engine/test/src/document_file_testing.cpp
         engine/test/src/main.cpp
+        engine/test/src/test_autofix.cpp
         engine/test/src/test_char_sequence.cpp
         engine/test/src/test_chars_strings.cpp
         engine/test/src/test_code_point_names.cpp

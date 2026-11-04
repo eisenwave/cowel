@@ -8,6 +8,7 @@
 #include "cowel/util/small_vector.hpp"
 
 #include "cowel/directive_behavior.hpp"
+#include "cowel/function_bindings.hpp"
 #include "cowel/fwd.hpp"
 #include "cowel/invocation.hpp"
 #include "cowel/syntax/ast.hpp"
@@ -33,6 +34,7 @@ struct Call_Bindings {
 };
 
 struct Stack_Frame {
+    /// @brief The behavior that was invoked, i.e. a directive, macro, or function.
     const Directive_Behavior& behavior;
     /// @brief The invocation that this frame was pushed for.
     Invocation invocation;

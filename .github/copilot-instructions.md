@@ -44,6 +44,7 @@ both this file and `lang-summary.md` must be updated to reflect the change.
 - Core C++ headers: `engine/include/cowel/`
 - Core C++ sources: `engine/src/`
 - C++ tests: `engine/test/src/`
+- Auto-fix test fixtures: `engine/test/autofix/` (`.cow` + `.diff` pairs)
 - Native CLI wrapper: `bindings/native/src/`
 - Node wrapper TS sources: `bindings/node/src/`
 - Node wrapper TS tests: `bindings/node/test/`
@@ -230,6 +231,8 @@ Mitigation:
 - Directive implementations: `engine/src/directives/*.cpp`
 - Builtin directive wiring: `engine/src/builtin_directive_set.cpp`, `engine/include/cowel/builtin_directive_set.hpp`
 - Document generation: `engine/src/document_generation.cpp`
+- Auto-fixes: `engine/include/cowel/autofix.hpp`, `engine/src/autofix.cpp`
+- `cowel_macro` deprecation and its auto-fix: `engine/src/directives/macros.cpp`
 - Services/settings/context: `engine/src/services.cpp`, `engine/include/cowel/settings.hpp`, `engine/include/cowel/context.hpp`
 - C++ tests focused by behavior: `engine/test/src/test_*.cpp`
 - Lexer and parser test fixture format: `test/README.md`
@@ -299,6 +302,11 @@ CHANGELOG.md
   Use this for stream-driven token/CST dumps.
 - Treat this file as primary operating guidance;
   search only for missing details or when commands here no longer match repository reality.
+- `cowel run --fix-all <input> <output>` writes the auto-fixed COWEL source to the output file
+  instead of generated HTML; do not combine it with golden HTML validation.
+- Prefer *function-expression*s (`\ fun f(x) = ...`) over `\cowel_macro`,
+  which is deprecated in favor of function expressions
+  and reports a `deprecated` warning.
 - Be cautious when using any JSON-based tooling such as MCPs;
   since COWEL syntax relies heavily on backslashes, these need to be escaped in JSON strings.
   Emitting tab characters via `"\t..."` in patches is a common mistake,

@@ -42,6 +42,7 @@ export enum GenFlags {
     noColor = 1 << 1,
     noIndent = 1 << 2,
     noSource = 1 << 3,
+    fixAll = 1 << 4,
 }
 
 export type GenOptions = {
@@ -51,6 +52,11 @@ export type GenOptions = {
     preservedVariables?: string[];
     highlightPolicy: SyntaxHighlightPolicy;
     enableXHighlighting: boolean;
+    /**
+     * If true, the result holds the auto-fixed source code
+     * instead of the generated document.
+     */
+    fixAll?: boolean;
     loadFile(path: string, baseFileId: number): FileResult;
     log(diagnostic: Diagnostic): void;
 };
@@ -257,6 +263,7 @@ type CowelWasmExports = WebAssembly.Exports & {
         preservedVariablesSize: number,
         highlightPolicy: SyntaxHighlightPolicy,
         enableXHighlighting: boolean,
+        fixAll: boolean,
     ): void;
     register_assertion_handler(): void;
     generate_code_citation(
@@ -991,6 +998,7 @@ export type ParsedCliOptions = {
     noColor: boolean;
     noIndent: boolean;
     noSource: boolean;
+    fixAll: boolean;
     errorMessage: string;
 };
 
@@ -1240,7 +1248,8 @@ export class CowelWasm {
      *   offset 27: no_source      (uint8)
      *   offset 28: error.text     (ptr)
      *   offset 32: error.length   (uint32)
-     *   total: 36 bytes, align 4
+     *   offset 36: fix_all        (uint8)
+     *   total: 40 bytes, align 4
      */
     parseCliOptions(args: string[]): ParsedCliOptions {
         const encoder = new TextEncoder();
@@ -1267,7 +1276,7 @@ export class CowelWasm {
         }
 
         // Allocate the result struct.
-        const resultAlloc = this.alloc2(36, 4);
+        const resultAlloc = this.alloc2(40, 4);
         this.exports.cowel_parse_cli_options_u8(resultAlloc.address, argsArrayAddr, args.length);
 
         // Read fields from the result struct.
@@ -1283,6 +1292,7 @@ export class CowelWasm {
         const noSource = this.heap_u8[resultAlloc.address + 27] !== 0;
         const errorTextAddr = this.heap_u32[resultAlloc.address / 4 + 7];
         const errorLength = this.heap_u32[resultAlloc.address / 4 + 8];
+        const fixAll = this.heap_u8[resultAlloc.address + 36] !== 0;
 
         // Decode heap-allocated strings before freeing.
         const input = inputTextAddr !== 0 ? this.decodeUtf8(inputTextAddr, inputLength) : "";
@@ -1316,6 +1326,7 @@ export class CowelWasm {
             noColor,
             noIndent,
             noSource,
+            fixAll,
             errorMessage,
         };
     }
@@ -1482,6 +1493,7 @@ export class CowelWasm {
             preservedVariables.length,
             genOptions.highlightPolicy,
             genOptions.enableXHighlighting,
+            genOptions.fixAll ?? false,
         );
 
         return {

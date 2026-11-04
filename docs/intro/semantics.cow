@@ -291,8 +291,9 @@ into a string,
 and \cowdoc_c{{Hello, \\d!}} splices the result of \cowdoc_dir{d} into a block.
 
 Splicing a directive always results in evaluation of that directive.
-For example, splicing \cowdoc_dir{cowel_macro} evaluates \cowdoc_dir{cowel_macro},
+For example, splicing a \gterm{function-expression} evaluates the definition,
 and its resulting \cowdoc_type{unit} is spliced (resulting in no produced text).
+See \ref("#function-expressions") for details.
 
 When a value is spliced, it is converted into plaintext.
 When splicing into strings, that plaintext simply becomes part of the string content.

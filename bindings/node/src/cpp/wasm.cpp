@@ -44,7 +44,7 @@ static_assert(sizeof(cowel_dump_tokens_options_u8) == 40);
 static_assert(alignof(cowel_dump_tokens_options_u8) == 4);
 static_assert(sizeof(cowel_dump_parse_options_u8) == 40);
 static_assert(alignof(cowel_dump_parse_options_u8) == 4);
-static_assert(sizeof(cowel_parsed_cli_options_u8) == 36);
+static_assert(sizeof(cowel_parsed_cli_options_u8) == 40);
 static_assert(alignof(cowel_parsed_cli_options_u8) == 4);
 #endif
 
@@ -124,7 +124,8 @@ void init_options(
     const cowel_string_view_u8* const preserved_variables,
     const size_t preserved_variables_size,
     const cowel_syntax_highlight_policy highlight_policy,
-    const bool enable_x_highlighting
+    const bool enable_x_highlighting,
+    const bool fix_all
 ) noexcept
 {
     static constexpr cowel_syntax_highlighter_u8 x_highlighter
@@ -139,7 +140,7 @@ void init_options(
         .source = { source_text, source_length },
         .highlight_theme_json = { nullptr, 0 },
         .mode = mode,
-        .flags = COWEL_GEN_FLAGS_NONE,
+        .flags = fix_all ? COWEL_GEN_FLAGS_FIX_ALL : COWEL_GEN_FLAGS_NONE,
         .min_log_severity = min_log_severity,
         .preserved_variables = preserved_variables,
         .preserved_variables_size = preserved_variables_size,

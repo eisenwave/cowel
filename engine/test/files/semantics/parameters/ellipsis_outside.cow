@@ -1,0 +1,15 @@
+\test_input{
+\test_expect_error("ellipsis.outside"){\cowel_not(...)}
+\ fun put_pos(content) = content
+\test_expect_error("ellipsis.outside"){\put_pos(...)}
+\ fun put_named(content) = content
+\test_expect_error("ellipsis.outside"){\put_named(...)}
+\test_expect_error("ellipsis.outside"){\(fun f(...args) = args)\f(...)}
+}
+
+\test_output{
+<error->\cowel_not(...)</error->
+
+
+
+}

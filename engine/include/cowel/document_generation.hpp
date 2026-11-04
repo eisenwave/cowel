@@ -43,6 +43,11 @@ struct Generation_Options {
     /// records a `Hover_Entry` here during processing.
     std::pmr::vector<Hover_Entry>* hover_sink = nullptr;
 
+    /// @brief Optional sink for auto-fixes.
+    /// When non-null, auto-fixes for emitted diagnostics are recorded here
+    /// during processing.
+    std::pmr::vector<Source_Edit>* fix_sink = nullptr;
+
     /// @brief A source of memory to be used throughout generation,
     /// emitting diagnostics, etc.
     std::pmr::memory_resource* memory;

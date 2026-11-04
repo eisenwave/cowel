@@ -64,6 +64,8 @@ Options:
                                  warning, error, fatal, none
                         Default: info
       --no-color        Disable colored output
+      --fix-all         Apply auto-fixes instead of generating HTML
+                        (only applicable to the run command)
 `;
 
 type LoadedFile = {
@@ -235,6 +237,11 @@ function logError(
 
 type RunOptions = {
     minSeverity: cowel.Severity;
+    /**
+     * If true, the output is the auto-fixed source code
+     * instead of the generated document.
+     */
+    fixAll: boolean;
 };
 
 type TokenizeOptions = cowel.DumpTokensOptions;
@@ -264,6 +271,7 @@ async function compile(
         minSeverity: options.minSeverity,
         highlightPolicy: cowel.SyntaxHighlightPolicy.fall_back,
         enableXHighlighting: false,
+        fixAll: options.fixAll,
         loadFile,
         log,
     });
@@ -560,7 +568,12 @@ async function main(): Promise<number> {
         }
         case "run": {
             colorsEnabled = !opts.noColor;
-            const runOpts: RunOptions = { minSeverity: opts.minSeverity };
+            // Auto-fixing is incompatible with live reload, where the output
+            // file is served to the browser; always render a document then.
+            const runOpts: RunOptions = {
+                minSeverity: opts.minSeverity,
+                fixAll: opts.fixAll && !isWatch,
+            };
             if (isWatch) {
                 return watchAndServe(opts.input, opts.output, runOpts);
             }

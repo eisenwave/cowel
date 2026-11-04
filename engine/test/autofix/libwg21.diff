@@ -1,0 +1,195 @@
+--- a/libwg21.cow
++++ b/libwg21.cow
+@@ -1,76 +1,76 @@
+ \: cowel 0.10.2
+ \cowel_actions{
+ 
+-\cowel_macro("hl"){\cowel_paragraph_enter\cowel_highlight_as(...){\cowel_put}}
+-\cowel_macro("docnum"){\ref("https://wg21.link/\cowel_put"){\cowel_put}}
+-\cowel_macro("cppblock"){\codeblock("cpp"){\cowel_put}}
+-\cowel_macro("stable_ref"){\span(class="stable-ref"){[\cowel_put]}}
+-
+-\cowel_macro("eelis"){\ref("https://eel.is/c++draft/\cowel_put")}
+-\cowel_macro("iref"){ (\eelis{\cowel_put})}
+-\cowel_macro("tref"){\eelis{\cowel_put}}
+-
+-\cowel_macro("term"){\i{\cowel_put}}
+-\cowel_macro("exposid"){\i{\hl("name"){\cowel_put}}}
+-\cowel_macro("placeholder"){\i{\cowel_put}}
+-\cowel_macro("placeholdernc"){\i{\cowel_put}}
+-\cowel_macro("tcode"){\code("cpp"){\cowel_put}}
+-\cowel_macro("ocode"){\cowel_to_html{\code("cpp"){\cowel_put}}}
+-\cowel_macro("keyword"){\hl("keyword"){\cowel_put}}
+-\cowel_macro("grammarterm"){\gterm{\cowel_put}}
+-\cowel_macro("header"){\code("cpp"){\hl("string"){<\cowel_put>}}}
+-\cowel_macro("cv"){\exposid{cv}}
+-\cowel_macro("seebelow"){\exposid{see below}}
+-\cowel_macro("IsoC"){ISO/IEC\'NO-BREAK SPACE'9899:2024}
+-
+-\cowel_macro("itemdecl"){\codeblock("cpp",borders=false){\cowel_put}}
+-\cowel_macro("itemdescr"){\Bindent{\cowel_paragraphs{\cowel_put}}}
+-
+-\cowel_macro("Fundescx"){\i{\cowel_put}}
+-\cowel_macro("Fundesc"){\i{\cowel_put}:}
+-\cowel_macro("recommended"){\Fundesc{Recommended practice}}
+-\cowel_macro("required"){\Fundesc{Required behavior}}
+-\cowel_macro("constraints"){\Fundesc{Constraints}}
+-\cowel_macro("mandates"){\Fundesc{Mandates}}
+-\cowel_macro("expects"){\Fundesc{Preconditions}}
+-\cowel_macro("hardexpects"){\Fundesc{Hardened preconditions}}
+-\cowel_macro("effects"){\Fundesc{Effects}}
+-\cowel_macro("ensures"){\Fundesc{Postconditions}}
+-\cowel_macro("returns"){\Fundesc{Returns}}
+-\cowel_macro("throws"){\Fundesc{Throws}}
+-\cowel_macro("default"){\Fundesc{Default behavior}}
+-\cowel_macro("complexity"){\Fundesc{Complexity}}
+-\cowel_macro("remarks"){\Fundesc{Remarks}}
+-\cowel_macro("errors"){\Fundesc{Error conditions}}
+-\cowel_macro("sync"){\Fundesc{Synchronization}}
+-\cowel_macro("implimits"){\Fundesc{Implementation limits}}
+-\cowel_macro("result"){\Fundesc{Result}}
+-\cowel_macro("returntype"){\Fundesc{Return type}}
+-\cowel_macro("constantwhen"){\Fundesc{Constant When}}
+-
+-\cowel_macro("oldconcept"){\i{Cpp17\cowel_put}}
+-\cowel_macro("libconcept"){\tcode{\cowel_put}}
+-\cowel_macro("exposconcept"){\tcode{\exposid{\cowel_put}}}
+-\cowel_macro("libheader"){\header{\cowel_put}}
+-
+-\cowel_macro("note"){[\i{Note}: \cowel_put \'EM DASH' \i{end note}]}
+-\cowel_macro("example"){[\i{Example}: \cowel_put \'EM DASH' \i{end example}]}
+-\cowel_macro("footnote"){🞰) \cowel_put}
+-
+-\cowel_macro("normal"){\cowel_html_element("span", (class="normal")){\cowel_put}}
+-
+-\cowel_macro("opt"){\cowel_put(else={})\sub(class="opt"){opt}}
+-\cowel_macro("seq"){\cowel_put(else={})\sub(class="opt"){seq}}
+-\cowel_macro("seqopt"){\cowel_put(else={})\sub(class="opt"){seq opt}}
+-\cowel_macro("gramgroup"){\normal{⟪} \cowel_put \normal{⟫}}
++\(fun hl(...args, content) = {\cowel_paragraph_enter\cowel_highlight_as(...args){\(content)}})
++\(fun docnum(content) = {\ref("https://wg21.link/\(content)"){\(content)}})
++\(fun cppblock(content) = {\codeblock("cpp"){\(content)}})
++\(fun stable_ref(content) = {\span(class="stable-ref"){[\(content)]}})
++
++\(fun eelis(content) = {\ref("https://eel.is/c++draft/\(content)")})
++\(fun iref(content) = { (\eelis{\(content)})})
++\(fun tref(content) = {\eelis{\(content)}})
++
++\(fun term(content) = {\i{\(content)}})
++\(fun exposid(content) = {\i{\hl("name"){\(content)}}})
++\(fun placeholder(content) = {\i{\(content)}})
++\(fun placeholdernc(content) = {\i{\(content)}})
++\(fun tcode(content) = {\code("cpp"){\(content)}})
++\(fun ocode(content) = {\cowel_to_html{\code("cpp"){\(content)}}})
++\(fun keyword(content) = {\hl("keyword"){\(content)}})
++\(fun grammarterm(content) = {\gterm{\(content)}})
++\(fun header(content) = {\code("cpp"){\hl("string"){<\(content)>}}})
++\(fun cv() = {\exposid{cv}})
++\(fun seebelow() = {\exposid{see below}})
++\(fun IsoC() = {ISO/IEC\'NO-BREAK SPACE'9899:2024})
++
++\(fun itemdecl(content) = {\codeblock("cpp",borders=false){\(content)}})
++\(fun itemdescr(content) = {\Bindent{\cowel_paragraphs{\(content)}}})
++
++\(fun Fundescx(content) = {\i{\(content)}})
++\(fun Fundesc(content) = {\i{\(content)}:})
++\(fun recommended() = {\Fundesc{Recommended practice}})
++\(fun required() = {\Fundesc{Required behavior}})
++\(fun constraints() = {\Fundesc{Constraints}})
++\(fun mandates() = {\Fundesc{Mandates}})
++\(fun expects() = {\Fundesc{Preconditions}})
++\(fun hardexpects() = {\Fundesc{Hardened preconditions}})
++\(fun effects() = {\Fundesc{Effects}})
++\(fun ensures() = {\Fundesc{Postconditions}})
++\(fun returns() = {\Fundesc{Returns}})
++\(fun throws() = {\Fundesc{Throws}})
++\(fun default() = {\Fundesc{Default behavior}})
++\(fun complexity() = {\Fundesc{Complexity}})
++\(fun remarks() = {\Fundesc{Remarks}})
++\(fun errors() = {\Fundesc{Error conditions}})
++\(fun sync() = {\Fundesc{Synchronization}})
++\(fun implimits() = {\Fundesc{Implementation limits}})
++\(fun result() = {\Fundesc{Result}})
++\(fun returntype() = {\Fundesc{Return type}})
++\(fun constantwhen() = {\Fundesc{Constant When}})
++
++\(fun oldconcept(content) = {\i{Cpp17\(content)}})
++\(fun libconcept(content) = {\tcode{\(content)}})
++\(fun exposconcept(content) = {\tcode{\exposid{\(content)}}})
++\(fun libheader(content) = {\header{\(content)}})
++
++\(fun note(content) = {[\i{Note}: \(content) \'EM DASH' \i{end note}]})
++\(fun example(content) = {[\i{Example}: \(content) \'EM DASH' \i{end example}]})
++\(fun footnote(content) = {🞰) \(content)})
++
++\(fun normal(content) = {\cowel_html_element("span", (class="normal")){\(content)}})
++
++\(fun opt(content = {}) = {\(content)\sub(class="opt"){opt}})
++\(fun seq(content = {}) = {\(content)\sub(class="opt"){seq}})
++\(fun seqopt(content = {}) = {\(content)\sub(class="opt"){seq opt}})
++\(fun gramgroup(content) = {\normal{⟪} \(content) \normal{⟫}})
+ 
+-\cowel_macro("brk"){\wbr}
++\(fun brk() = {\wbr})
+ 
+-\cowel_macro("etc"){\cowel_paragraph_enter\cowel_text_as_html{[\'HORIZONTAL ELLIPSIS']}}
++\(fun etc() = {\cowel_paragraph_enter\cowel_text_as_html{[\'HORIZONTAL ELLIPSIS']}})
+ 
+-\cowel_macro("bigoh"){\'MATHEMATICAL SCRIPT CAPITAL O'(\cowel_put)}
++\(fun bigoh(content) = {\'MATHEMATICAL SCRIPT CAPITAL O'(\(content))})
+ 
+-\cowel_macro("editnote"){\Bnote(class="edit", ...){\cowel_put}}
++\(fun editnote(...args, content) = {\Bnote(class="edit", ...args){\(content)}})
+ 
+ \style{
+   html {
+@@ -183,37 +183,37 @@
+ 
+ 
+ \cowel_var_let("pnum", 0)
+-\cowel_macro("pnum"){\
++\(fun pnum() = {\
+ \cowel_paragraph_enter\
+ \cowel_var_set("pnum", cowel_add(cowel_var_get("pnum"),1))\
+ \cowel_var_get("pnum")\
+-}
++})
+ 
+ \cowel_var_let("snum1", 0)
+-\cowel_macro("snum1"){\
++\(fun snum1() = {\
+ \cowel_paragraph_enter\
+ \cowel_var_set("pnum", 0)\
+ \cowel_var_set("snum2", 0)\
+ \cowel_var_set("snum1", cowel_add(cowel_var_get("snum1"),1))\
+ \cowel_var_get("snum1")\
+-}
++})
+ 
+ \cowel_var_let("snum2", 0)
+-\cowel_macro("snum2"){\
++\(fun snum2() = {\
+ \cowel_paragraph_enter\
+ \cowel_var_set("pnum", 0)\
+ \cowel_var_set("snum2", cowel_add(cowel_var_get("snum2"),1))\
+ \cowel_var_get("snum2")\
+-}
++})
+ 
+-\cowel_macro("three_way_poll"){\table(class="three-way-poll"){
++\(fun three_way_poll(arg0, arg1, arg2) = {\table(class="three-way-poll"){
+ \tr{\th{F}\th{N}\th{A}}
+-\tr{\td{\cowel_put{0}}\td{\cowel_put{1}}\td{\cowel_put{2}}}
+-}}
++\tr{\td{\(arg0)}\td{\(arg1)}\td{\(arg2)}}
++}})
+ 
+-\cowel_macro("five_way_poll"){\table(class="five-way-poll"){
++\(fun five_way_poll(arg0, arg1, arg2, arg3, arg4) = {\table(class="five-way-poll"){
+ \tr{\th{SF}\th{F}\th{N}\th{A}\th{SA}}
+-\tr{\td{\cowel_put{0}}\td{\cowel_put{1}}\td{\cowel_put{2}}\td{\cowel_put{3}}\td{\cowel_put{4}}}
+-}}
++\tr{\td{\(arg0)}\td{\(arg1)}\td{\(arg2)}\td{\(arg3)}\td{\(arg4)}}
++}})
+ 
+ }\

@@ -697,6 +697,13 @@ Function_Definition::splice(Content_Policy& out, const Invocation& call, Context
     if (!result) {
         return result.error();
     }
+    // A function body is spliced in place of the invocation,
+    // just like the body of a macro.
+    // Paragraph splitting from the surroundings therefore needs to apply to it,
+    // and the call itself must not act as a black box for the paragraph policy.
+    // Otherwise, a directive like \codeblock that forcibly ends a paragraph
+    // could not do so when it appears in the body of a function.
+    try_inherit_paragraph(out);
     return splice_value(out, *result, call.directive.get_source_span(), context);
 }
 
@@ -915,6 +922,19 @@ Result<Value, Processing_Status> evaluate(
         ast::Expression { expression.get_body() }, source
     );
     COWEL_ASSERT(success);
+
+    // Emit a hover for the definition,
+    // mirroring the hovers emitted for macro and alias definitions.
+    if (context.collects_hovers()) {
+        if (const Function_Definition* const definition = context.find_function(name)) {
+            const Tooltip_Article& article = definition->get_tooltip_article();
+            if (!article.subject.empty()) {
+                std::pmr::u8string rendered { context.get_transient_memory() };
+                render_tooltip_article(rendered, article);
+                context.push_hover(expression.get_name_span(), rendered);
+            }
+        }
+    }
 
     return Value::unit;
 }

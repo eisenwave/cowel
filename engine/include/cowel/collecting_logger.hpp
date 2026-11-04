@@ -21,6 +21,7 @@ struct Collected_Diagnostic {
     std::pmr::u8string id;
     File_Source_Span location;
     std::pmr::u8string message;
+    std::pmr::vector<Source_Edit> fixes;
 
     [[nodiscard]]
     Collected_Diagnostic(const Diagnostic& d, std::pmr::memory_resource* const memory)
@@ -28,7 +29,14 @@ struct Collected_Diagnostic {
         , id { to_string(d.id, memory) }
         , location { d.location }
         , message { to_string(d.message, memory) }
+        , fixes { memory }
     {
+        fixes.reserve(d.fixes.size());
+        for (const Source_Edit& fix : d.fixes) {
+            fixes.push_back(
+                Source_Edit { fix.span, std::pmr::u8string { fix.replacement, memory } }
+            );
+        }
     }
 };
 

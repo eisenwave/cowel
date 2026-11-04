@@ -100,7 +100,7 @@
 \cowel_include("hover_include_target.cow")
 \cowel_include_text("hover_include_target.cow")
 \cowel_invoke("b"){text}
-\cowel_macro("_hm"){x}
+\ fun _hm() = {x}
 \_hm
 \cowel_no_invoke{\b{text}}
 \cowel_paragraphs{text}

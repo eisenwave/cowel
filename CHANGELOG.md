@@ -19,10 +19,26 @@
 - Added *function-expression*s like `\ fun sum(a, b) = a + b` for declaring functions (#424).
   - This includes pack parameters and pack expansions
     as in `fun sum(...args) = cowel_add(...args)`.
+  - A pack parameter need not be the final parameter;
+    parameters which follow it can only be matched by block or named arguments,
+    so `fun f(...args, content) = ...` accepts
+    any number of positional arguments plus a block argument.
   - Scalar parameters may declare *default-argument*s
     as in `fun add(x = 0, y = 0) = x + y`.
   - The parameters of a call remain in scope
     for splicing of block returned by the function.
+- Deprecated `cowel_macro` in favor of *function-expression*s.
+  - Defining a macro reports a `deprecated` warning.
+  - The warning carries an auto-fix which rewrites the definition
+    as an equivalent function-expression.
+    Every `cowel_put` call becomes access to the parameter
+    which holds the macro argument that the call designates,
+    so `\cowel_put` becomes `content`, `\cowel_put{0}` becomes `arg0`, and so on.
+  - A definition which cannot be converted automatically is reported without a fix.
+- Added support for *auto-fix*es on diagnostics.
+  A diagnostic may carry a set of *source-edit*s,
+  each of which replaces a span of the source code with new text,
+  so that applying the edits resolves the problem that the diagnostic describes.
 - Also updated µlight (#426):
   - Added support for syntax highlighting themes that use palettes.
   - Improved the quality of highlighting.
@@ -30,6 +46,11 @@
 - Fixed a crash when an ellipsis argument is used outside of a macro expansion (#443).
 - Fixed a crash on `cowel_highlight_as("")`.
 - Fixed memory leak when `Value` is being reassigned.
+- Fixed a crash when an ellipsis argument `...` appears
+  where it cannot be expanded, such as at the top-level of a document;
+  the `ellipsis.outside` diagnostic is reported instead.
+- Fixed function parameters not being visible
+  in lazily spliced blocks and directives within the function body.
 
 ### VSCode extension
 
@@ -38,6 +59,7 @@
   - *let-expression*
   - *function-expression*
 - Fixed `x-y` being highlighted as identifier instead of as subtraction expression (#415).
+- The language server now reports the deprecation of `cowel_macro` as a warning.
 
 ### Command line interface
 
@@ -45,6 +67,9 @@
   This is mainly intended as a developer tool for debugging (#407).
 - Added a `cowel parse` command for dumping the CST instructions obtained when parsing a COWEL document.
   This is mainly intended as a developer tool for debugging (#411).
+- Added a `--fix-all` option to the `cowel run` command,
+  which applies the auto-fixes of all diagnostics to the input document
+  and writes the fixed COWEL source to the output file instead of HTML.
 
 **Full Changelog**:
 [`v0.10.2...main`](https://github.com/eisenwave/cowel/compare/v0.10.2...main)

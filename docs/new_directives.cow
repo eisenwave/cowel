@@ -1268,6 +1268,22 @@ One or multiple aliases can be defined as follows:
 ): \cowel_highlight_as("keyword-type"){unit}
 }
 
+\Bwarn{
+The \cowdoc_dir{cowel_macro} directive is deprecated
+and will be removed in a future version.
+Use a \dfn{function-expression} such as \cowdoc_c{fun m(content) = ...} instead
+(see \ref("#function-expressions")).
+A function can be invoked like a directive,
+but its arguments are matched against declared parameters
+instead of being accessed with \cowdoc_dir{cowel_put}.
+
+When a \cowdoc_dir{cowel_macro} definition is processed,
+a warning with the diagnostic ID \code("cowel"){deprecated} is raised.
+In auto-fix mode, such as with \code("sh"){--fix-all},
+the definition is rewritten into an equivalent function-expression if that is possible;
+see \ref("#macro-autofix").
+}
+
 The \cowdoc_dir{cowel_macro} directive defines a block of content which
 can be processed at a later point in the document.
 The provided content is not processed, but remembered.
@@ -1304,6 +1320,109 @@ was invoked immediately before processing the content in the macro definition.
 This means that blank lines in the macro definition
 may also result in paragraph splits outside the macro.
 
+\h5(id="macro-autofix"){Automatic conversion}
+
+The warning raised for a \cowdoc_dir{cowel_macro} definition
+is accompanied by an \dfn{auto-fix} when the definition can be converted automatically.
+Applying the fix replaces the whole definition with a function-expression
+which declares a function of the same name,
+so that the directive itself becomes unnecessary.
+The fixed source is written to the output file in place of the generated HTML.
+
+The message of the warning is
+\code("text"){\\cowel_macro is deprecated; use a function-expression instead.}
+If no fix is produced,
+the sentence \code("text"){this definition could not be converted automatically.}
+is appended to it.
+
+The generated definition always uses the parenthesized form of the function-expression,
+such as \cowdoc_c{\\(fun m(content) = ...)},
+because it may be followed by other markup on the same line;
+the \cowdoc_c{\\ fun ...} form would consume the rest of the line as its expression.
+
+The parameters of the generated function are the macro arguments
+which the body designates with \cowdoc_dir{cowel_put} calls.
+Every such call is replaced with a reference to the parameter
+which captures the argument that the call designates:
+\ul{
+  \li{
+    A call which designates the contents, such as
+    \cowdoc_c{\\cowel_put}, \cowdoc_c{\\cowel_put{}}, or \cowdoc_c{\\cowel_put(block = 0)},
+    becomes the parameter \cowdoc_c{content}.
+    This parameter is declared last,
+    so that it matches the block argument of an invocation and nothing else.
+  }
+  \li{
+    A call which designates the positional argument at an index, such as
+    \cowdoc_c{\\cowel_put{0}} or \cowdoc_c{\\cowel_put(pos = 0)},
+    becomes the parameter \cowdoc_c{arg0}, and so on for every index.
+    The parameters for the positional arguments are declared first, in order of index.
+  }
+  \li{
+    A call which designates a named argument, such as
+    \cowdoc_c{\\cowel_put{n}} or \cowdoc_c{\\cowel_put(name = "n")},
+    becomes a parameter with that name.
+    Named parameters are declared after the positional parameters.
+  }
+}
+
+The arguments of a macro are optional,
+so the parameter for a positional argument which the body does not use at all
+is given the default argument \cowdoc_c{{}}.
+A positional argument which the body does use has no default argument,
+unless the body accesses it with an \cowdoc_attr{else} fallback,
+which becomes the default argument of the parameter.
+A definition in which the same argument is accessed with two different
+\cowdoc_attr{else} fallbacks has no such single default argument and is not converted.
+
+An \ellipsis argument is replaced with a pack parameter \cowdoc_c{...args},
+which is declared before the \cowdoc_c{content} parameter.
+Like any pack parameter, it captures positional arguments only.
+An \ellipsis expands all arguments of the invocation, including named arguments,
+so a definition in which an \ellipsis forwards named arguments
+may require manual adjustment after the fix.
+
+No fix is produced for a definition which cannot be converted.
+This is the case if the definition
+\ul{
+  \li{defines more than one macro name,}
+  \li{contains a nested \cowdoc_dir{cowel_macro} definition or a function-expression, or}
+  \li{designates an argument with a \cowdoc_dir{cowel_put} call
+      which is not resolved when the definition is processed.}
+}
+A \cowdoc_dir{cowel_put} call is not resolved in that way if it
+\ul{
+  \li{has an ellipsis or expansion argument,}
+  \li{uses a selector which is neither \cowdoc_attr{else}, \cowdoc_attr{block},
+      \cowdoc_attr{pos}, nor \cowdoc_attr{name},}
+  \li{combines several selectors, or repeats one of them,}
+  \li{passes a selector an argument which is not a literal of the appropriate type,}
+  \li{combines a selector with a target which is passed as a block argument,}
+  \li{designates a block argument other than the contents, that is, \cowdoc_c{block != 0},}
+  \li{has more than one block argument,
+      or a block argument which is not a single piece of text, or}
+  \li{designates a named argument whose name is not a valid identifier.}
+}
+
+\Bex{
+COWEL markup:
+\cowblock{\literally{
+\cowel_macro("banner"){
+\cowel_html_element("div", (class="banner")){
+\cowel_put{label}: \cowel_put and \cowel_put{0}!
+}}
+\banner("Positional", label = "Pattern"){Content}
+}}
+After auto-fixing:
+\cowblock{\literally{
+\(fun banner(arg0, label, content) = {
+\cowel_html_element("div", (class="banner")){
+\(label): \(content) and \(arg0)!
+}})
+\banner("Positional", label = "Pattern"){Content}
+}}
+}
+
 \cowdoc_dir_h4("cowel_put", "Process provided macro content or arguments")
 
 \pre{
@@ -1315,6 +1434,8 @@ may also result in paragraph splits outside the macro.
 
 The \cowdoc_dir{cowel_put} directive processes content
 which was provided when a macro was invoked.
+It is deprecated along with \cowdoc_dir{cowel_macro} (\ref("#dir-cowel_macro")),
+because a function accesses its arguments through its parameters instead.
 
 The content provided to \cowdoc_dir{cowel_put} is converted to text,
 and \dfn{designates}
@@ -1671,14 +1792,14 @@ The result is in the range \math{\mrow{
 
 \h3(id="basic-arithmetic-operations"){Basic arithmetic operations}
 
-\cowel_macro("left_fold_math_func"){\
+\(fun left_fold_math_func(content) = {\
 \mathblock{\mrow{
-\mi{\cowel_put}\
+\mi{\(content)}\
 \mo(stretchy=false){(}\
 \mo{…}\
-\mi{\cowel_put}\
+\mi{\(content)}\
 \mo(stretchy=false){(}\
-\mi{\cowel_put}\
+\mi{\(content)}\
 \mo(stretchy=false){(}\
 \msub{\mi{x}\mn{0}}\
 \mo(separator=true){,}\
@@ -1692,19 +1813,19 @@ The result is in the range \math{\mrow{
 \msub{\mi{x}\mi{n}}\
 \mo(stretchy=false){)}\
 }}\
-}\
+})\
 \
-\cowel_macro("left_fold_math_op"){\
+\(fun left_fold_math_op(content) = {\
 \math{\mrow{
 \msub{\mi{x}\mn{0}}\
-\mo{\cowel_put}\
+\mo{\(content)}\
 \msub{\mi{x}\mn{1}}\
-\mo{\cowel_put}\
+\mo{\(content)}\
 \mo{…}\
-\mo{\cowel_put}\
+\mo{\(content)}\
 \msub{\mi{x}\mi{n}}\
 }}\
-}\
+})\
 
 \cowdoc_dir_h4("cowel_pos", "Copy")
 

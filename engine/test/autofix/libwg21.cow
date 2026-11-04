@@ -1,0 +1,219 @@
+\: cowel 0.10.2
+\cowel_actions{
+
+\cowel_macro("hl"){\cowel_paragraph_enter\cowel_highlight_as(...){\cowel_put}}
+\cowel_macro("docnum"){\ref("https://wg21.link/\cowel_put"){\cowel_put}}
+\cowel_macro("cppblock"){\codeblock("cpp"){\cowel_put}}
+\cowel_macro("stable_ref"){\span(class="stable-ref"){[\cowel_put]}}
+
+\cowel_macro("eelis"){\ref("https://eel.is/c++draft/\cowel_put")}
+\cowel_macro("iref"){ (\eelis{\cowel_put})}
+\cowel_macro("tref"){\eelis{\cowel_put}}
+
+\cowel_macro("term"){\i{\cowel_put}}
+\cowel_macro("exposid"){\i{\hl("name"){\cowel_put}}}
+\cowel_macro("placeholder"){\i{\cowel_put}}
+\cowel_macro("placeholdernc"){\i{\cowel_put}}
+\cowel_macro("tcode"){\code("cpp"){\cowel_put}}
+\cowel_macro("ocode"){\cowel_to_html{\code("cpp"){\cowel_put}}}
+\cowel_macro("keyword"){\hl("keyword"){\cowel_put}}
+\cowel_macro("grammarterm"){\gterm{\cowel_put}}
+\cowel_macro("header"){\code("cpp"){\hl("string"){<\cowel_put>}}}
+\cowel_macro("cv"){\exposid{cv}}
+\cowel_macro("seebelow"){\exposid{see below}}
+\cowel_macro("IsoC"){ISO/IEC\'NO-BREAK SPACE'9899:2024}
+
+\cowel_macro("itemdecl"){\codeblock("cpp",borders=false){\cowel_put}}
+\cowel_macro("itemdescr"){\Bindent{\cowel_paragraphs{\cowel_put}}}
+
+\cowel_macro("Fundescx"){\i{\cowel_put}}
+\cowel_macro("Fundesc"){\i{\cowel_put}:}
+\cowel_macro("recommended"){\Fundesc{Recommended practice}}
+\cowel_macro("required"){\Fundesc{Required behavior}}
+\cowel_macro("constraints"){\Fundesc{Constraints}}
+\cowel_macro("mandates"){\Fundesc{Mandates}}
+\cowel_macro("expects"){\Fundesc{Preconditions}}
+\cowel_macro("hardexpects"){\Fundesc{Hardened preconditions}}
+\cowel_macro("effects"){\Fundesc{Effects}}
+\cowel_macro("ensures"){\Fundesc{Postconditions}}
+\cowel_macro("returns"){\Fundesc{Returns}}
+\cowel_macro("throws"){\Fundesc{Throws}}
+\cowel_macro("default"){\Fundesc{Default behavior}}
+\cowel_macro("complexity"){\Fundesc{Complexity}}
+\cowel_macro("remarks"){\Fundesc{Remarks}}
+\cowel_macro("errors"){\Fundesc{Error conditions}}
+\cowel_macro("sync"){\Fundesc{Synchronization}}
+\cowel_macro("implimits"){\Fundesc{Implementation limits}}
+\cowel_macro("result"){\Fundesc{Result}}
+\cowel_macro("returntype"){\Fundesc{Return type}}
+\cowel_macro("constantwhen"){\Fundesc{Constant When}}
+
+\cowel_macro("oldconcept"){\i{Cpp17\cowel_put}}
+\cowel_macro("libconcept"){\tcode{\cowel_put}}
+\cowel_macro("exposconcept"){\tcode{\exposid{\cowel_put}}}
+\cowel_macro("libheader"){\header{\cowel_put}}
+
+\cowel_macro("note"){[\i{Note}: \cowel_put \'EM DASH' \i{end note}]}
+\cowel_macro("example"){[\i{Example}: \cowel_put \'EM DASH' \i{end example}]}
+\cowel_macro("footnote"){🞰) \cowel_put}
+
+\cowel_macro("normal"){\cowel_html_element("span", (class="normal")){\cowel_put}}
+
+\cowel_macro("opt"){\cowel_put(else={})\sub(class="opt"){opt}}
+\cowel_macro("seq"){\cowel_put(else={})\sub(class="opt"){seq}}
+\cowel_macro("seqopt"){\cowel_put(else={})\sub(class="opt"){seq opt}}
+\cowel_macro("gramgroup"){\normal{⟪} \cowel_put \normal{⟫}}
+
+\cowel_macro("brk"){\wbr}
+
+\cowel_macro("etc"){\cowel_paragraph_enter\cowel_text_as_html{[\'HORIZONTAL ELLIPSIS']}}
+
+\cowel_macro("bigoh"){\'MATHEMATICAL SCRIPT CAPITAL O'(\cowel_put)}
+
+\cowel_macro("editnote"){\Bnote(class="edit", ...){\cowel_put}}
+
+\style{
+  html {
+    --light-edit-note-block-border-color: #6faba9;
+    --light-edit-note-block-background-color: #e6f4f3;
+    --light-edit-note-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236faba9"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+
+    --dark-edit-note-block-border-color: #6faba9;
+    --dark-edit-note-block-background-color: #232f30;
+    --dark-edit-note-block-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="%236faba9"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>');
+
+    --light-diff-comment-color: #386a57ff;
+    --dark-diff-comment-color: #a7c7bbff;
+  }
+
+  @media (prefers-color-scheme: light) {
+    html {
+      --edit-note-block-border-color: var(--light-edit-note-block-border-color);
+      --edit-note-block-background-color: var(--light-edit-note-block-background-color);
+      --edit-note-block-image: var(--light-edit-note-block-image);
+      --diff-comment-color: var(--light-diff-comment-color);
+    }
+  }
+  @media (prefers-color-scheme: dark) {
+    html {
+      --edit-note-block-border-color: var(--dark-edit-note-block-border-color);
+      --edit-note-block-background-color: var(--dark-edit-note-block-background-color);
+      --edit-note-block-image: var(--dark-edit-note-block-image);
+      --diff-comment-color: var(--dark-diff-comment-color);
+    }
+  }
+  html.light {
+    --edit-note-block-border-color: var(--light-edit-note-block-border-color);
+    --edit-note-block-background-color: var(--light-edit-note-block-background-color);
+    --edit-note-block-image: var(--light-edit-note-block-image);
+    --diff-comment-color: var(--light-diff-comment-color);
+  }
+  html.dark {
+    --edit-note-block-border-color: var(--dark-edit-note-block-border-color);
+    --edit-note-block-background-color: var(--dark-edit-note-block-background-color);
+    --edit-note-block-image: var(--dark-edit-note-block-image);
+    --diff-comment-color: var(--dark-diff-comment-color);
+  }
+
+  note-block.edit {
+    background-color: var(--edit-note-block-background-color);
+    border-left: var(--border-thickness) solid var(--edit-note-block-border-color);
+  }
+
+  note-block.edit::before {
+    background-image: var(--edit-note-block-image);
+  }
+
+  note-block.edit intro-::before {
+    content: "Drafting note:";
+    color: var(--edit-note-block-border-color);
+  }
+
+  ins-block .para::before {
+    display: none;
+  }
+
+  .grammar dd {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .opt {
+    font-family: var(--serif-family);
+    font-style: oblique;
+  }
+
+  .normal {
+    font-style: normal;
+    font-family: var(--serif-family);
+  }
+
+  .stable-ref {
+    float: right;
+  }
+
+  .three-way-poll {
+    table-layout: fixed;
+  }
+  .three-way-poll td {
+    width: 2em;
+    text-align: center;
+  }
+  .five-way-poll {
+    table-layout: fixed;
+  }
+  .five-way-poll td {
+    width: 20%;
+    text-align: center;
+  }
+
+  q::before {
+    content: "\'LEFT DOUBLE QUOTATION MARK'";
+  }
+  q::after {
+    content: "\'RIGHT DOUBLE QUOTATION MARK'";
+  }
+
+  diff-block h-[data-h^=cmt],
+  html.light diff-block h-[data-h^=cmt],
+  html.dark diff-block h-[data-h^=cmt] {
+    color: var(--diff-comment-color);
+  }
+}
+
+
+\cowel_var_let("pnum", 0)
+\cowel_macro("pnum"){\
+\cowel_paragraph_enter\
+\cowel_var_set("pnum", cowel_add(cowel_var_get("pnum"),1))\
+\cowel_var_get("pnum")\
+}
+
+\cowel_var_let("snum1", 0)
+\cowel_macro("snum1"){\
+\cowel_paragraph_enter\
+\cowel_var_set("pnum", 0)\
+\cowel_var_set("snum2", 0)\
+\cowel_var_set("snum1", cowel_add(cowel_var_get("snum1"),1))\
+\cowel_var_get("snum1")\
+}
+
+\cowel_var_let("snum2", 0)
+\cowel_macro("snum2"){\
+\cowel_paragraph_enter\
+\cowel_var_set("pnum", 0)\
+\cowel_var_set("snum2", cowel_add(cowel_var_get("snum2"),1))\
+\cowel_var_get("snum2")\
+}
+
+\cowel_macro("three_way_poll"){\table(class="three-way-poll"){
+\tr{\th{F}\th{N}\th{A}}
+\tr{\td{\cowel_put{0}}\td{\cowel_put{1}}\td{\cowel_put{2}}}
+}}
+
+\cowel_macro("five_way_poll"){\table(class="five-way-poll"){
+\tr{\th{SF}\th{F}\th{N}\th{A}\th{SA}}
+\tr{\td{\cowel_put{0}}\td{\cowel_put{1}}\td{\cowel_put{2}}\td{\cowel_put{3}}\td{\cowel_put{4}}}
+}}
+
+}\

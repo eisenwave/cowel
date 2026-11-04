@@ -61,6 +61,9 @@ Processing_Status run_generation(
     if (options.hover_sink != nullptr) {
         context.set_hover_sink(*options.hover_sink);
     }
+    if (options.fix_sink != nullptr) {
+        context.set_fix_sink(*options.fix_sink);
+    }
 
     const auto status = generate(context);
 
