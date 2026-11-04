@@ -1,7 +1,6 @@
 #include "cowel/autofix.hpp"
 
 #include <algorithm>
-#include <memory>
 #include <vector>
 
 namespace cowel {
@@ -71,23 +70,6 @@ std::pmr::u8string apply_source_edits(
 )
 {
     return apply_source_edits_impl(source, source_begin, file, edits, memory);
-}
-
-std::span<const Source_Edit> persist_source_edits(
-    const std::span<const Source_Edit> edits,
-    std::pmr::memory_resource* const memory
-)
-{
-    if (edits.empty()) {
-        return std::span<const Source_Edit> {};
-    }
-    // The memory is deliberately never deallocated,
-    // so that the edits remain valid for as long as the memory resource does.
-    auto* const copy = static_cast<Source_Edit*>(
-        memory->allocate(edits.size() * sizeof(Source_Edit), alignof(Source_Edit))
-    );
-    std::uninitialized_copy(edits.begin(), edits.end(), copy);
-    return std::span<const Source_Edit> { copy, edits.size() };
 }
 
 } // namespace cowel

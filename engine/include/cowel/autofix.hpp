@@ -63,20 +63,6 @@ std::pmr::u8string apply_source_edits(
     std::pmr::memory_resource* memory
 );
 
-/// @brief Produces a copy of @p edits whose memory is never reclaimed,
-/// and which remains valid for as long as @p memory remains valid.
-///
-/// This is used to attach auto-fixes to a diagnostic,
-/// which may be inspected after the context which produced the fix has been destroyed.
-/// The result is allocated from @p memory and is never deallocated,
-/// so @p memory must be a memory resource which outlives the diagnostic.
-///
-/// @param edits The edits to copy.
-/// @param memory The memory resource for the result.
-[[nodiscard]]
-std::span<const Source_Edit>
-persist_source_edits(std::span<const Source_Edit> edits, std::pmr::memory_resource* memory);
-
 } // namespace cowel
 
 #endif

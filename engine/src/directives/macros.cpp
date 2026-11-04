@@ -795,7 +795,7 @@ void warn_macro_deprecated(
             call.directive.get_name_span(),
             message,
             {},
-            persist_source_edits(fixes, context.get_persistent_memory()),
+            fixes,
         }
     );
 }
