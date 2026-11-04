@@ -441,6 +441,14 @@ public:
         }
         COWEL_ASSERT_UNREACHABLE(u8"Value is not a string.");
     }
+
+    [[nodiscard]]
+    Dynamic_String_Value unsafe_copy_dynamic_string_ref() const
+    {
+        COWEL_ASSERT(m_index == dynamic_string_index);
+        return m_value.dynamic_string;
+    }
+
     [[nodiscard]]
     constexpr String_With_Meta as_string_with_meta() const
     {
@@ -553,12 +561,53 @@ constexpr void
 Value::Union::assign(const Index self_index, T&& other, const Index other_index) noexcept
 {
     switch (other_index) {
-    case unit_index: unit = other.unit; break;
-    case null_index: null = other.null; break;
-    case boolean_index: boolean = other.boolean; break;
-    case floating_index: floating = other.floating; break;
-    case static_string_index: static_string = other.static_string; break;
-    case short_string_index: short_string = other.short_string; break;
+    case unit_index: {
+        if (self_index != unit_index) {
+            destroy(self_index);
+        }
+        unit = other.unit;
+        break;
+    }
+
+    case null_index: {
+        if (self_index != null_index) {
+            destroy(self_index);
+        }
+        null = other.null;
+        break;
+    }
+
+    case boolean_index: {
+        if (self_index != boolean_index) {
+            destroy(self_index);
+        }
+        boolean = other.boolean;
+        break;
+    }
+
+    case floating_index: {
+        if (self_index != floating_index) {
+            destroy(self_index);
+        }
+        floating = other.floating;
+        break;
+    }
+
+    case static_string_index: {
+        if (self_index != static_string_index) {
+            destroy(self_index);
+        }
+        static_string = other.static_string;
+        break;
+    }
+
+    case short_string_index: {
+        if (self_index != short_string_index) {
+            destroy(self_index);
+        }
+        short_string = other.short_string;
+        break;
+    }
 
     case block_index: {
         if (self_index == block_index) {

@@ -277,6 +277,39 @@ TEST(Value, self_copy_assign)
     EXPECT_EQ(v.as_integer(), 42_n);
 }
 
+TEST(Value, assign_trivial_releases_dynamic_string)
+{
+    const Value trivial_values[] {
+        Value::unit,
+        Value::null,
+        Value::boolean(true),
+        Value::floating(1.0),
+        Value::static_string(u8"static"sv, String_Kind::ascii),
+        Value::string(u8"ab"sv, String_Kind::ascii),
+    };
+
+    for (const Value& trivial : trivial_values) {
+        Value value = Value::dynamic_string_forced(u8"dynamic"sv, String_Kind::ascii);
+        const Dynamic_String_Value ref = value.unsafe_copy_dynamic_string_ref();
+        ASSERT_EQ(ref.unsafe_get_node()->reference_count, std::size_t { 2 });
+
+        value = trivial;
+
+        EXPECT_EQ(ref.unsafe_get_node()->reference_count, std::size_t { 1 });
+    }
+}
+
+TEST(Value, move_assign_trivial_releases_dynamic_string)
+{
+    Value value = Value::dynamic_string_forced(u8"dynamic"sv, String_Kind::ascii);
+    const Dynamic_String_Value ref = value.unsafe_copy_dynamic_string_ref();
+    ASSERT_EQ(ref.unsafe_get_node()->reference_count, std::size_t { 2 });
+
+    value = Value::boolean(false);
+
+    EXPECT_EQ(ref.unsafe_get_node()->reference_count, std::size_t { 1 });
+}
+
 // =============================================================================
 // Value — equality across mismatched types
 // =============================================================================

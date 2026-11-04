@@ -29,6 +29,7 @@
   - Added highlighting for Java, YAML, and C#.
 - Fixed a crash when an ellipsis argument is used outside of a macro expansion (#443).
 - Fixed a crash on `cowel_highlight_as("")`.
+- Fixed memory leak when `Value` is being reassigned.
 
 ### VSCode extension
 
